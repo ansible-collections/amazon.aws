@@ -1,10 +1,11 @@
-test_group: '{{ resource_prefix }}-group'
+---
+test_group: "{{ resource_prefix }}-group"
 test_path: /
-test_user: '{{ test_users[0] }}'
-test_user3: '{{ test_users[2] }}'
+test_user: "{{ test_users[0] }}"
+test_user3: "{{ test_users[2] }}"
 test_password: ATotallySecureUncrackablePassword1!
 test_new_password: ATotallyNewSecureUncrackablePassword1!
 test_users:
-- '{{ resource_prefix }}-user-a'
-- '{{ resource_prefix }}-user-b'
-- '{{ resource_prefix }}-user-c'
+  - "{{ resource_prefix }}-user-a"
+  - "{{ resource_prefix }}-user-b"
+  - "{{ resource_prefix }}-user-c"

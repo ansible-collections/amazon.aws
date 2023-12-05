@@ -1,7 +1,7 @@
 ---
 # defaults file for ec2_instance_iam_instance_profile
-ec2_instance_type: 't3.micro'
-ec2_instance_tag_TestId: '{{ resource_prefix }}-instance-profile'
+ec2_instance_type: t3.micro
+ec2_instance_tag_TestId: "{{ resource_prefix }}-instance-profile"
 
-first_iam_role: "ansible-test-{{ tiny_prefix }}-instance_role"
-second_iam_role: "ansible-test-{{ tiny_prefix }}-instance_role-2"
+first_iam_role: ansible-test-{{ tiny_prefix }}-instance_role
+second_iam_role: ansible-test-{{ tiny_prefix }}-instance_role-2

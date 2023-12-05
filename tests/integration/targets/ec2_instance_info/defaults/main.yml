@@ -1,6 +1,6 @@
 ---
-ec2_instance_type: 't2.micro'
-ec2_instance_tag_TestId: '{{ resource_prefix }}-instance-info'
+ec2_instance_type: t2.micro
+ec2_instance_tag_TestId: "{{ resource_prefix }}-instance-info"
 ec2_instance_name: "{{ resource_prefix }}-test-instance-info"
 ec2_instance_user_data: |
   packages:

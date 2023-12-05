@@ -1,19 +1,19 @@
 ---
 # defaults file for elb_classic_lb
-elb_name: 'ansible-test-{{ tiny_prefix }}'
+elb_name: ansible-test-{{ tiny_prefix }}
 
-vpc_cidr: '10.{{ 256 | random(seed=resource_prefix) }}.0.0/16'
-subnet_cidr_1: '10.{{ 256 | random(seed=resource_prefix) }}.1.0/24'
-subnet_cidr_2: '10.{{ 256 | random(seed=resource_prefix) }}.2.0/24'
-subnet_cidr_3: '10.{{ 256 | random(seed=resource_prefix) }}.3.0/24'
-subnet_cidr_4: '10.{{ 256 | random(seed=resource_prefix) }}.4.0/24'
+vpc_cidr: 10.{{ 256 | random(seed=resource_prefix) }}.0.0/16
+subnet_cidr_1: 10.{{ 256 | random(seed=resource_prefix) }}.1.0/24
+subnet_cidr_2: 10.{{ 256 | random(seed=resource_prefix) }}.2.0/24
+subnet_cidr_3: 10.{{ 256 | random(seed=resource_prefix) }}.3.0/24
+subnet_cidr_4: 10.{{ 256 | random(seed=resource_prefix) }}.4.0/24
 
 default_tags:
   snake_case_key: snake_case_value
   camelCaseKey: camelCaseValue
   PascalCaseKey: PascalCaseValue
-  "key with spaces": value with spaces
-  "Upper With Spaces": Upper With Spaces
+  key with spaces: value with spaces
+  Upper With Spaces: Upper With Spaces
 
 partial_tags:
   snake_case_key: snake_case_value
@@ -23,8 +23,8 @@ updated_tags:
   updated_snake_case_key: updated_snake_case_value
   updatedCamelCaseKey: updatedCamelCaseValue
   UpdatedPascalCaseKey: UpdatedPascalCaseValue
-  "updated key with spaces": updated value with spaces
-  "updated Upper With Spaces": Updated Upper With Spaces
+  updated key with spaces: updated value with spaces
+  updated Upper With Spaces: Updated Upper With Spaces
 
 default_listeners:
   - protocol: http
@@ -35,8 +35,8 @@ default_listeners:
     instance_port: 8080
     instance_protocol: http
 default_listener_tuples:
-  - [80, 80, "HTTP", "HTTP"]
-  - [8080, 8080, "HTTP", "HTTP"]
+  - [80, 80, HTTP, HTTP]
+  - [8080, 8080, HTTP, HTTP]
 
 purged_listeners:
   - protocol: http
@@ -44,7 +44,7 @@ purged_listeners:
     instance_port: 8080
     instance_protocol: http
 purged_listener_tuples:
-  - [8080, 8080, "HTTP", "HTTP"]
+  - [8080, 8080, HTTP, HTTP]
 
 updated_listeners:
   - protocol: http
@@ -55,24 +55,24 @@ updated_listeners:
     instance_port: 8080
     instance_protocol: http
 updated_listener_tuples:
-  - [80, 8181, "HTTP", "HTTP"]
-  - [8080, 8080, "HTTP", "HTTP"]
+  - [80, 8181, HTTP, HTTP]
+  - [8080, 8080, HTTP, HTTP]
 
 unproxied_listener:
   - protocol: http
     load_balancer_port: 80
     instance_port: 8181
-    proxy_protocol: False
+    proxy_protocol: false
 unproxied_listener_tuples:
-  - [80, 8181, "HTTP", "HTTP"]
+  - [80, 8181, HTTP, HTTP]
 
 proxied_listener:
   - protocol: http
     load_balancer_port: 80
     instance_port: 8181
-    proxy_protocol: True
+    proxy_protocol: true
 proxied_listener_tuples:
-  - [80, 8181, "HTTP", "HTTP"]
+  - [80, 8181, HTTP, HTTP]
 
 ssh_listeners:
   - protocol: tcp
@@ -80,45 +80,45 @@ ssh_listeners:
     instance_port: 22
     instance_protocol: tcp
 ssh_listener_tuples:
-  - [22, 22, "TCP", "TCP"]
+  - [22, 22, TCP, TCP]
 
 default_health_check:
-    ping_protocol: http
-    ping_port: 80
-    ping_path: "/index.html"
-    response_timeout: 5
-    interval: 30
-    unhealthy_threshold: 2
-    healthy_threshold: 10
-default_health_check_target: "HTTP:80/index.html"
+  ping_protocol: http
+  ping_port: 80
+  ping_path: /index.html
+  response_timeout: 5
+  interval: 30
+  unhealthy_threshold: 2
+  healthy_threshold: 10
+default_health_check_target: HTTP:80/index.html
 
 updated_health_check:
-    ping_protocol: http
-    ping_port: 8181
-    ping_path: "/healthz"
-    response_timeout: 15
-    interval: 42
-    unhealthy_threshold: 7
-    healthy_threshold: 6
-updated_health_check_target: "HTTP:8181/healthz"
+  ping_protocol: http
+  ping_port: 8181
+  ping_path: /healthz
+  response_timeout: 15
+  interval: 42
+  unhealthy_threshold: 7
+  healthy_threshold: 6
+updated_health_check_target: HTTP:8181/healthz
 
 nonhttp_health_check:
-    ping_protocol: tcp
-    ping_port: 8282
-    response_timeout: 16
-    interval: 43
-    unhealthy_threshold: 8
-    healthy_threshold: 2
-nonhttp_health_check_target: "TCP:8282"
+  ping_protocol: tcp
+  ping_port: 8282
+  response_timeout: 16
+  interval: 43
+  unhealthy_threshold: 8
+  healthy_threshold: 2
+nonhttp_health_check_target: TCP:8282
 
 ssh_health_check:
-    ping_protocol: tcp
-    ping_port: 22
-    response_timeout: 5
-    interval: 10
-    unhealthy_threshold: 2
-    healthy_threshold: 2
-ssh_health_check_target: "TCP:22"
+  ping_protocol: tcp
+  ping_port: 22
+  response_timeout: 5
+  interval: 10
+  unhealthy_threshold: 2
+  healthy_threshold: 2
+ssh_health_check_target: TCP:22
 
 default_idle_timeout: 25
 updated_idle_timeout: 50
@@ -126,39 +126,39 @@ default_drain_timeout: 15
 updated_drain_timeout: 25
 
 app_stickiness:
-    type: application
-    cookie: MyCookie
-    enabled: true
+  type: application
+  cookie: MyCookie
+  enabled: true
 
 updated_app_stickiness:
-    type: application
-    cookie: AnotherCookie
+  type: application
+  cookie: AnotherCookie
 
 lb_stickiness:
-    type: loadbalancer
+  type: loadbalancer
 
 updated_lb_stickiness:
-    type: loadbalancer
-    expiration: 600
+  type: loadbalancer
+  expiration: 600
 
 # Amazon's SDKs don't provide the list of account ID's.  Amazon only provide a
 # web page.  If you want to run the tests outside the US regions you'll need to
 # update this.
 # https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/enable-access-logs.html
 access_log_account_id_map:
-    us-east-1: '127311923021'
-    us-east-2: '033677994240'
-    us-west-1: '027434742980'
-    us-west-2: '797873946194'
-    us-gov-west-1: '048591011584'
-    us-gov-east-1: '190560391635'
+  us-east-1: "127311923021"
+  us-east-2: "033677994240"
+  us-west-1: "027434742980"
+  us-west-2: "797873946194"
+  us-gov-west-1: "048591011584"
+  us-gov-east-1: "190560391635"
 
-access_log_account_id: '{{ access_log_account_id_map[aws_region] }}'
+access_log_account_id: "{{ access_log_account_id_map[aws_region] }}"
 
-s3_logging_bucket_a: 'ansible-test-{{ tiny_prefix }}-a'
-s3_logging_bucket_b: 'ansible-test-{{ tiny_prefix }}-b'
-default_logging_prefix: 'logs'
-updated_logging_prefix: 'mylogs'
+s3_logging_bucket_a: ansible-test-{{ tiny_prefix }}-a
+s3_logging_bucket_b: ansible-test-{{ tiny_prefix }}-b
+default_logging_prefix: logs
+updated_logging_prefix: mylogs
 default_logging_interval: 5
 updated_logging_interval: 60
 
@@ -166,5 +166,5 @@ local_certs:
   - priv_key: "{{ remote_tmp_dir }}/private-1.pem"
     cert: "{{ remote_tmp_dir }}/public-1.pem"
     csr: "{{ remote_tmp_dir }}/csr-1.csr"
-    domain: "elb-classic.{{ tiny_prefix }}.ansible.test"
+    domain: elb-classic.{{ tiny_prefix }}.ansible.test
     name: "{{ resource_prefix }}_{{ resource_prefix }}_1"

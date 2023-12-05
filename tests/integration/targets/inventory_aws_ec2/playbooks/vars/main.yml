@@ -1,6 +1,6 @@
 ---
 test_instances:
-  - name: '{{ resource_prefix }}'
+  - name: "{{ resource_prefix }}"
     instance_type: t2.micro
     tags:
       OtherTag: value

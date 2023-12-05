@@ -10,12 +10,12 @@
     - amazon.aws
     - community.aws
   block:
-    - name: "List all available services (Check Mode)"
+    - name: List all available services (Check Mode)
       ec2_vpc_endpoint_service_info:
       check_mode: true
       register: services_check
 
-    - name: "Verify services (Check Mode)"
+    - name: Verify services (Check Mode)
       vars:
         first_service: "{{ services_check.service_details[0] }}"
       ansible.builtin.assert:
@@ -37,11 +37,11 @@
           - '"tags" in first_service'
           - '"vpc_endpoint_policy_supported" in first_service'
 
-    - name: "List all available services"
+    - name: List all available services
       ec2_vpc_endpoint_service_info:
       register: services_info
 
-    - name: "Verify services"
+    - name: Verify services
       vars:
         first_service: "{{ services_info.service_details[0] }}"
       ansible.builtin.assert:
@@ -63,12 +63,12 @@
           - '"tags" in first_service'
           - '"vpc_endpoint_policy_supported" in first_service'
 
-    - name: "Limit services by name"
+    - name: Limit services by name
       ec2_vpc_endpoint_service_info:
         service_names: "{{ search_service_names }}"
       register: services_info
 
-    - name: "Verify services"
+    - name: Verify services
       vars:
         first_service: "{{ services_info.service_details[0] }}"
         # The same service sometimes pop up twice. s3 for example has
@@ -100,17 +100,17 @@
           - '"tags" in first_service'
           - '"vpc_endpoint_policy_supported" in first_service'
 
-    - name: "Grab single service details to test filters"
+    - name: Grab single service details to test filters
       ansible.builtin.set_fact:
         example_service: "{{ services_info.service_details[0] }}"
 
-    - name: "Limit services by filter"
+    - name: Limit services by filter
       ec2_vpc_endpoint_service_info:
         filters:
           service-name: "{{ example_service.service_name }}"
       register: filtered_service
 
-    - name: "Verify services"
+    - name: Verify services
       vars:
         first_service: "{{ filtered_service.service_details[0] }}"
       ansible.builtin.assert:

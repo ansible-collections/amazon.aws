@@ -1,7 +1,8 @@
+---
 - name: Test copy recursively object from one bucket to another one.
   block:
     - name: Create S3 bucket
-      s3_bucket:
+      amazon.aws.s3_bucket:
         name: "{{ item }}"
         state: present
       with_items:
@@ -31,7 +32,7 @@
       register: _objects
 
     - name: Ensure no object were found into bucket
-      assert:
+      ansible.builtin.assert:
         that:
           - _objects.s3_keys | length == 0
 
@@ -42,7 +43,7 @@
         mode: copy
         copy_src:
           bucket: "{{ bucket_src }}"
-          prefix: "file"
+          prefix: file
       register: _copy_with_prefix
 
     - name: list objects from bucket
@@ -52,7 +53,7 @@
       register: _objects
 
     - name: Ensure objects with prefix 'file' were copied into bucket
-      assert:
+      ansible.builtin.assert:
         that:
           - _copy_with_prefix is changed
           - _objects.s3_keys | length == 3
@@ -67,7 +68,7 @@
         mode: copy
         copy_src:
           bucket: "{{ bucket_src }}"
-          prefix: "file"
+          prefix: file
       register: _copy_with_prefix_idempotency
 
     - name: list objects from bucket
@@ -77,7 +78,7 @@
       register: _objects
 
     - name: Ensure objects with prefix 'file' were copied into bucket
-      assert:
+      ansible.builtin.assert:
         that:
           - _copy_with_prefix_idempotency is not changed
           - _objects.s3_keys | length == 3
@@ -101,7 +102,7 @@
       register: _objects
 
     - name: Ensure all objects were copied into bucket
-      assert:
+      ansible.builtin.assert:
         that:
           - _copy_all is changed
           - _objects.s3_keys | length == 5
@@ -122,11 +123,11 @@
       register: _objects
 
     - name: Ensure number of copied objects remains the same.
-      assert:
+      ansible.builtin.assert:
         that:
           - _copy_all_idempotency is not changed
           - _objects.s3_keys | length == 5
-  
+
   vars:
     bucket_src: "{{ bucket_name }}-recursive-src"
     bucket_dst: "{{ bucket_name }}-recursive-dst"
@@ -141,12 +142,12 @@
         content: |
           some content for file3.txt
       - object: testfile.py
-        content: "This is a sample text file"
+        content: This is a sample text file
       - object: another.txt
-        content: "another file to create into bucket"
+        content: another file to create into bucket
 
   always:
-    - include_tasks: delete_bucket.yml
+    - ansible.builtin.include_tasks: delete_bucket.yml
       with_items:
         - "{{ bucket_src }}"
         - "{{ bucket_dst }}"

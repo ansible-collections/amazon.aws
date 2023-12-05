@@ -1,8 +1,9 @@
+---
 - hosts: all
-  gather_facts: no
+  gather_facts: false
   collections:
-  - amazon.aws
-  - community.aws
+    - amazon.aws
+    - community.aws
   roles:
   # Test the behaviour of module_utils.core.AnsibleAWSModule.client (boto3)
-  - 'ansibleawsmodule.client'
+    - ansibleawsmodule.client

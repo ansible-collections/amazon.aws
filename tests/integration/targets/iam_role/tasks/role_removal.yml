@@ -1,59 +1,60 @@
+---
 - name: Remove IAM Role (CHECK MODE)
-  iam_role:
+  community.aws.iam_role:
     state: absent
-    name: '{{ test_role }}'
-    delete_instance_profile: yes
-  check_mode: yes
+    name: "{{ test_role }}"
+    delete_instance_profile: true
+  check_mode: true
   register: iam_role
-- assert:
+- ansible.builtin.assert:
     that:
-    - iam_role is changed
+      - iam_role is changed
 
 - name: iam_role_info after deleting role in check mode
-  iam_role_info:
-    name: '{{ test_role }}'
+  community.aws.iam_role_info:
+    name: "{{ test_role }}"
   register: role_info
-- assert:
+- ansible.builtin.assert:
     that:
-    - role_info is succeeded
-    - role_info.iam_roles | length == 1
+      - role_info is succeeded
+      - role_info.iam_roles | length == 1
 
 - name: Remove IAM Role
-  iam_role:
+  community.aws.iam_role:
     state: absent
-    name: '{{ test_role }}'
-    delete_instance_profile: yes
+    name: "{{ test_role }}"
+    delete_instance_profile: true
   register: iam_role
-- assert:
+- ansible.builtin.assert:
     that:
-    - iam_role is changed
+      - iam_role is changed
 
 - name: iam_role_info after deleting role
-  iam_role_info:
-    name: '{{ test_role }}'
+  community.aws.iam_role_info:
+    name: "{{ test_role }}"
   register: role_info
-- assert:
+- ansible.builtin.assert:
     that:
-    - role_info is succeeded
-    - role_info.iam_roles | length == 0
+      - role_info is succeeded
+      - role_info.iam_roles | length == 0
 
 - name: Remove IAM Role (should be gone already) - check mode
-  iam_role:
+  community.aws.iam_role:
     state: absent
-    name: '{{ test_role }}'
-    delete_instance_profile: yes
+    name: "{{ test_role }}"
+    delete_instance_profile: true
   register: iam_role
-  check_mode: yes
-- assert:
+  check_mode: true
+- ansible.builtin.assert:
     that:
-    - iam_role is not changed
+      - iam_role is not changed
 
 - name: Remove IAM Role (should be gone already)
-  iam_role:
+  community.aws.iam_role:
     state: absent
-    name: '{{ test_role }}'
-    delete_instance_profile: yes
+    name: "{{ test_role }}"
+    delete_instance_profile: true
   register: iam_role
-- assert:
+- ansible.builtin.assert:
     that:
-    - iam_role is not changed
+      - iam_role is not changed

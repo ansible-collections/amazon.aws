@@ -1,3 +1,4 @@
+---
 name: Collection Docs
 concurrency:
   group: docs-${{ github.head_ref }}
@@ -5,7 +6,6 @@ concurrency:
 on:
   pull_request_target:
     types: [opened, synchronize, reopened, closed]
-
 env:
   GHP_BASE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
 
@@ -45,7 +45,7 @@ jobs:
       - name: PR comment
         uses: ansible-community/github-docs-build/actions/ansible-docs-build-comment@main
         with:
-          body-includes: '## Docs Build'
+          body-includes: "## Docs Build"
           reactions: heart
           action: ${{ needs.build-docs.outputs.changed != 'true' && 'remove' || '' }}
           on-closed-action: remove

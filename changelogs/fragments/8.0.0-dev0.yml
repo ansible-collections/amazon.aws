@@ -1,2 +1,3 @@
+---
 trivial:
-- bump galaxy.yml to release 8.0.0-dev0
+  - bump galaxy.yml to release 8.0.0-dev0

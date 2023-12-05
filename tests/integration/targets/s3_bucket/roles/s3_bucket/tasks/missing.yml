@@ -1,28 +1,28 @@
 ---
-- name: 'Attempt to delete non-existent buckets'
+- name: Attempt to delete non-existent buckets
   block:
-    - set_fact:
+    - ansible.builtin.set_fact:
         local_bucket_name: "{{ bucket_name | hash('md5')}}-missing"
     # ============================================================
     #
     # While in theory the 'simple' test case covers this there are
     # ways in which eventual-consistency could catch us out.
     #
-    - name: 'Delete non-existstent s3_bucket (never created)'
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
+    - name: Delete non-existstent s3_bucket (never created)
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
         state: absent
       register: output
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - output is success
           - output is not changed
 
   # ============================================================
   always:
-    - name: 'Ensure all buckets are deleted'
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
+    - name: Ensure all buckets are deleted
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
         state: absent
-      ignore_errors: yes
+      ignore_errors: true

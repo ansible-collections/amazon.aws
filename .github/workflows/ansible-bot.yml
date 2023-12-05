@@ -1,3 +1,4 @@
+---
 name: ansible bot
 on:
   issues:

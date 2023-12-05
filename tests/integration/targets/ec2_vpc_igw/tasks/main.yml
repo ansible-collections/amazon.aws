@@ -1,850 +1,848 @@
+---
 - name: ec2_vpc_igw tests
   module_defaults:
     group/aws:
-      access_key: '{{ aws_access_key }}'
-      secret_key: '{{ aws_secret_key }}'
-      session_token: '{{ security_token | default(omit) }}'
-      region: '{{ aws_region }}'
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
   block:
   # ============================================================
-  - name: Fetch IGWs in check_mode
-    ec2_vpc_igw_info:
-    register: igw_info
-    check_mode: true
-  - name: Assert success
-    assert:
-      that:
-      - igw_info is successful
-      - '"internet_gateways" in igw_info'
+    - name: Fetch IGWs in check_mode
+      amazon.aws.ec2_vpc_igw_info:
+      register: igw_info
+      check_mode: true
+    - name: Assert success
+      ansible.builtin.assert:
+        that:
+          - igw_info is successful
+          - '"internet_gateways" in igw_info'
 
-  # ============================================================
-  - name: Create a VPC
-    ec2_vpc_net:
-      name: '{{ vpc_name }}'
-      state: present
-      cidr_block: '{{ vpc_cidr }}'
-      tags:
-        Name: '{{ resource_prefix }}-vpc'
-        Description: Created by ansible-test
-    register: vpc_result
-  - name: Assert success
-    assert:
-      that:
-      - vpc_result is successful
-      - '"vpc" in vpc_result'
-      - '"id" in vpc_result.vpc'
-      - vpc_result.vpc.state == 'available'
-      - '"tags" in vpc_result.vpc'
-      - vpc_result.vpc.tags | length == 2
-      - vpc_result.vpc.tags["Name"] == resource_prefix+"-vpc"
-      - vpc_result.vpc.tags["Description"] == "Created by ansible-test"
+    # ============================================================
+    - name: Create a VPC
+      amazon.aws.ec2_vpc_net:
+        name: "{{ vpc_name }}"
+        state: present
+        cidr_block: "{{ vpc_cidr }}"
+        tags:
+          Name: "{{ resource_prefix }}-vpc"
+          Description: Created by ansible-test
+      register: vpc_result
+    - name: Assert success
+      ansible.builtin.assert:
+        that:
+          - vpc_result is successful
+          - '"vpc" in vpc_result'
+          - '"id" in vpc_result.vpc'
+          - vpc_result.vpc.state == 'available'
+          - '"tags" in vpc_result.vpc'
+          - vpc_result.vpc.tags | length == 2
+          - vpc_result.vpc.tags["Name"] == resource_prefix+"-vpc"
+          - vpc_result.vpc.tags["Description"] == "Created by ansible-test"
 
-  # ============================================================
-  - name: Create a second VPC
-    ec2_vpc_net:
-      name: '{{ vpc_name_2 }}'
-      state: present
-      cidr_block: '{{ vpc_cidr_2 }}'
-      tags:
-        Description: Created by ansible-test
-    register: vpc_2_result
+    # ============================================================
+    - name: Create a second VPC
+      amazon.aws.ec2_vpc_net:
+        name: "{{ vpc_name_2 }}"
+        state: present
+        cidr_block: "{{ vpc_cidr_2 }}"
+        tags:
+          Description: Created by ansible-test
+      register: vpc_2_result
 
-  # ============================================================
-  - name: Search for internet gateway by VPC - no matches
-    ec2_vpc_igw_info:
-      filters:
-        attachment.vpc-id: '{{ vpc_result.vpc.id }}'
-    register: igw_info
+    # ============================================================
+    - name: Search for internet gateway by VPC - no matches
+      amazon.aws.ec2_vpc_igw_info:
+        filters:
+          attachment.vpc-id: "{{ vpc_result.vpc.id }}"
+      register: igw_info
 
-  - name: Assert success
-    assert:
-      that:
-      - igw_info is successful
-      - '"internet_gateways" in igw_info'
-      - (igw_info.internet_gateways | length) == 0
+    - name: Assert success
+      ansible.builtin.assert:
+        that:
+          - igw_info is successful
+          - '"internet_gateways" in igw_info'
+          - (igw_info.internet_gateways | length) == 0
 
-  # ============================================================
-  - name: Create internet gateway (expected changed=true) - CHECK_MODE
-    ec2_vpc_igw:
-      state: present
-      vpc_id: '{{ vpc_result.vpc.id }}'
-      tags:
-        tag_one: '{{ resource_prefix }} One'
-        Tag Two: two {{ resource_prefix }}
-    register: vpc_igw_create
-    check_mode: yes
+    # ============================================================
+    - name: Create internet gateway (expected changed=true) - CHECK_MODE
+      amazon.aws.ec2_vpc_igw:
+        state: present
+        vpc_id: "{{ vpc_result.vpc.id }}"
+        tags:
+          tag_one: "{{ resource_prefix }} One"
+          Tag Two: two {{ resource_prefix }}
+      register: vpc_igw_create
+      check_mode: true
 
-  - name: Assert creation would happen (expected changed=true) - CHECK_MODE
-    assert:
-      that:
-      - vpc_igw_create is changed
+    - name: Assert creation would happen (expected changed=true) - CHECK_MODE
+      ansible.builtin.assert:
+        that:
+          - vpc_igw_create is changed
 
-  - name: Create internet gateway (expected changed=true)
-    ec2_vpc_igw:
-      state: present
-      vpc_id: '{{ vpc_result.vpc.id }}'
-      tags:
-        tag_one: '{{ resource_prefix }} One'
-        Tag Two: two {{ resource_prefix }}
-    register: vpc_igw_create
+    - name: Create internet gateway (expected changed=true)
+      amazon.aws.ec2_vpc_igw:
+        state: present
+        vpc_id: "{{ vpc_result.vpc.id }}"
+        tags:
+          tag_one: "{{ resource_prefix }} One"
+          Tag Two: two {{ resource_prefix }}
+      register: vpc_igw_create
 
-  - name: Assert creation happened (expected changed=true)
-    assert:
-      that:
-      - "'ec2:CreateTags' not in vpc_igw_create.resource_actions"
-      - "'ec2:DeleteTags' not in vpc_igw_create.resource_actions"
-      - vpc_igw_create is changed
-      - vpc_igw_create.gateway_id.startswith("igw-")
-      - vpc_igw_create.vpc_id == vpc_result.vpc.id
-      - '"tags" in vpc_igw_create'
-      - vpc_igw_create.tags | length == 2
-      - vpc_igw_create.tags["tag_one"] == '{{ resource_prefix }} One'
-      - vpc_igw_create.tags["Tag Two"] == 'two {{ resource_prefix }}'
-      - '"gateway_id" in vpc_igw_create'
+    - name: Assert creation happened (expected changed=true)
+      ansible.builtin.assert:
+        that:
+          - "'ec2:CreateTags' not in vpc_igw_create.resource_actions"
+          - "'ec2:DeleteTags' not in vpc_igw_create.resource_actions"
+          - vpc_igw_create is changed
+          - vpc_igw_create.gateway_id.startswith("igw-")
+          - vpc_igw_create.vpc_id == vpc_result.vpc.id
+          - '"tags" in vpc_igw_create'
+          - vpc_igw_create.tags | length == 2
+          - vpc_igw_create.tags["tag_one"] == '{{ resource_prefix }} One'
+          - vpc_igw_create.tags["Tag Two"] == 'two {{ resource_prefix }}'
+          - '"gateway_id" in vpc_igw_create'
 
-  # ============================================================
-  - name: Save IDs for later
-    set_fact:
-      igw_id: '{{ vpc_igw_create.gateway_id }}'
-      vpc_id: '{{ vpc_result.vpc.id }}'
-      vpc_2_id: '{{ vpc_2_result.vpc.id }}'
+    # ============================================================
+    - name: Save IDs for later
+      ansible.builtin.set_fact:
+        igw_id: "{{ vpc_igw_create.gateway_id }}"
+        vpc_id: "{{ vpc_result.vpc.id }}"
+        vpc_2_id: "{{ vpc_2_result.vpc.id }}"
 
-  - name: Search for internet gateway by VPC
-    ec2_vpc_igw_info:
-      filters:
-        attachment.vpc-id: '{{ vpc_id }}'
-      convert_tags: false
-    register: igw_info
+    - name: Search for internet gateway by VPC
+      amazon.aws.ec2_vpc_igw_info:
+        filters:
+          attachment.vpc-id: "{{ vpc_id }}"
+        convert_tags: false
+      register: igw_info
 
-  - name: Check standard IGW details
-    assert:
-      that:
-      - '"internet_gateways" in igw_info'
-      - igw_info.internet_gateways | length == 1
-      - '"attachments" in current_igw'
-      - current_igw.attachments | length == 1
-      - '"state" in current_igw.attachments[0]'
-      - current_igw.attachments[0].state == "available"
-      - '"vpc_id" in current_igw.attachments[0]'
-      - current_igw.attachments[0].vpc_id == vpc_id
-      - '"internet_gateway_id" in current_igw'
-      - current_igw.internet_gateway_id == igw_id
-      - '"tags" in current_igw'
-      - current_igw.tags | length == 2
-      - '"key" in current_igw.tags[0]'
-      - '"value" in current_igw.tags[0]'
-      - '"key" in current_igw.tags[1]'
-      - '"value" in current_igw.tags[1]'
+    - name: Check standard IGW details
+      ansible.builtin.assert:
+        that:
+          - '"internet_gateways" in igw_info'
+          - igw_info.internet_gateways | length == 1
+          - '"attachments" in current_igw'
+          - current_igw.attachments | length == 1
+          - '"state" in current_igw.attachments[0]'
+          - current_igw.attachments[0].state == "available"
+          - '"vpc_id" in current_igw.attachments[0]'
+          - current_igw.attachments[0].vpc_id == vpc_id
+          - '"internet_gateway_id" in current_igw'
+          - current_igw.internet_gateway_id == igw_id
+          - '"tags" in current_igw'
+          - current_igw.tags | length == 2
+          - '"key" in current_igw.tags[0]'
+          - '"value" in current_igw.tags[0]'
+          - '"key" in current_igw.tags[1]'
+          - '"value" in current_igw.tags[1]'
           # Order isn't guaranteed in boto3 style, so just check the keys and
           # values we expect are in there.
-      - current_igw.tags[0].key in ["tag_one", "Tag Two"]
-      - current_igw.tags[1].key in ["tag_one", "Tag Two"]
-      - current_igw.tags[0].value in [resource_prefix + " One", "two " + resource_prefix]
-      - current_igw.tags[1].value in [resource_prefix + " One", "two " + resource_prefix]
-    vars:
-      current_igw: '{{ igw_info.internet_gateways[0] }}'
+          - current_igw.tags[0].key in ["tag_one", "Tag Two"]
+          - current_igw.tags[1].key in ["tag_one", "Tag Two"]
+          - current_igw.tags[0].value in [resource_prefix + " One", "two " + resource_prefix]
+          - current_igw.tags[1].value in [resource_prefix + " One", "two " + resource_prefix]
+      vars:
+        current_igw: "{{ igw_info.internet_gateways[0] }}"
 
-  - name: Fetch IGW by ID
-    ec2_vpc_igw_info:
-      internet_gateway_ids: '{{ igw_id }}'
-    register: igw_info
+    - name: Fetch IGW by ID
+      amazon.aws.ec2_vpc_igw_info:
+        internet_gateway_ids: "{{ igw_id }}"
+      register: igw_info
 
-  - name: Check standard IGW details
-    assert:
-      that:
-      - '"internet_gateways" in igw_info'
-      - igw_info.internet_gateways | length == 1
-      - '"attachments" in current_igw'
-      - current_igw.attachments | length == 1
-      - '"state" in current_igw.attachments[0]'
-      - current_igw.attachments[0].state == "available"
-      - '"vpc_id" in current_igw.attachments[0]'
-      - current_igw.attachments[0].vpc_id == vpc_id
-      - '"internet_gateway_id" in current_igw'
-      - current_igw.internet_gateway_id == igw_id
-      - '"tags" in current_igw'
-      - current_igw.tags | length == 2
-      - '"tag_one" in current_igw.tags'
-      - '"Tag Two" in current_igw.tags'
-      - current_igw.tags["tag_one"] == '{{ resource_prefix }} One'
-      - current_igw.tags["Tag Two"] == 'two {{ resource_prefix }}'
-    vars:
-      current_igw: '{{ igw_info.internet_gateways[0] }}'
+    - name: Check standard IGW details
+      ansible.builtin.assert:
+        that:
+          - '"internet_gateways" in igw_info'
+          - igw_info.internet_gateways | length == 1
+          - '"attachments" in current_igw'
+          - current_igw.attachments | length == 1
+          - '"state" in current_igw.attachments[0]'
+          - current_igw.attachments[0].state == "available"
+          - '"vpc_id" in current_igw.attachments[0]'
+          - current_igw.attachments[0].vpc_id == vpc_id
+          - '"internet_gateway_id" in current_igw'
+          - current_igw.internet_gateway_id == igw_id
+          - '"tags" in current_igw'
+          - current_igw.tags | length == 2
+          - '"tag_one" in current_igw.tags'
+          - '"Tag Two" in current_igw.tags'
+          - current_igw.tags["tag_one"] == '{{ resource_prefix }} One'
+          - current_igw.tags["Tag Two"] == 'two {{ resource_prefix }}'
+      vars:
+        current_igw: "{{ igw_info.internet_gateways[0] }}"
 
-  - name: Fetch IGW by ID (list)
-    ec2_vpc_igw_info:
-      internet_gateway_ids:
-      - '{{ igw_id }}'
-    register: igw_info
+    - name: Fetch IGW by ID (list)
+      amazon.aws.ec2_vpc_igw_info:
+        internet_gateway_ids:
+          - "{{ igw_id }}"
+      register: igw_info
 
-  - name: Check standard IGW details
-    assert:
-      that:
-      - '"internet_gateways" in igw_info'
-      - igw_info.internet_gateways | length == 1
-      - '"attachments" in current_igw'
-      - current_igw.attachments | length == 1
-      - '"state" in current_igw.attachments[0]'
-      - current_igw.attachments[0].state == "available"
-      - '"vpc_id" in current_igw.attachments[0]'
-      - current_igw.attachments[0].vpc_id == vpc_id
-      - '"internet_gateway_id" in current_igw'
-      - current_igw.internet_gateway_id == igw_id
-      - '"tags" in current_igw'
-    vars:
-      current_igw: '{{ igw_info.internet_gateways[0] }}'
+    - name: Check standard IGW details
+      ansible.builtin.assert:
+        that:
+          - '"internet_gateways" in igw_info'
+          - igw_info.internet_gateways | length == 1
+          - '"attachments" in current_igw'
+          - current_igw.attachments | length == 1
+          - '"state" in current_igw.attachments[0]'
+          - current_igw.attachments[0].state == "available"
+          - '"vpc_id" in current_igw.attachments[0]'
+          - current_igw.attachments[0].vpc_id == vpc_id
+          - '"internet_gateway_id" in current_igw'
+          - current_igw.internet_gateway_id == igw_id
+          - '"tags" in current_igw'
+      vars:
+        current_igw: "{{ igw_info.internet_gateways[0] }}"
 
-  - name: Attempt to recreate internet gateway on VPC (expected changed=false) - CHECK_MODE
-    ec2_vpc_igw:
-      state: present
-      vpc_id: '{{ vpc_result.vpc.id }}'
-    register: vpc_igw_recreate
-    check_mode: yes
+    - name: Attempt to recreate internet gateway on VPC (expected changed=false) - CHECK_MODE
+      amazon.aws.ec2_vpc_igw:
+        state: present
+        vpc_id: "{{ vpc_result.vpc.id }}"
+      register: vpc_igw_recreate
+      check_mode: true
 
-  - name: Assert recreation would do nothing (expected changed=false) - CHECK_MODE
-    assert:
-      that:
-      - vpc_igw_recreate is not changed
-      - vpc_igw_recreate.gateway_id == igw_id
-      - vpc_igw_recreate.vpc_id == vpc_id
-      - '"tags" in vpc_igw_create'
-      - vpc_igw_create.tags | length == 2
-      - vpc_igw_create.tags["tag_one"] == '{{ resource_prefix }} One'
-      - vpc_igw_create.tags["Tag Two"] == 'two {{ resource_prefix }}'
+    - name: Assert recreation would do nothing (expected changed=false) - CHECK_MODE
+      ansible.builtin.assert:
+        that:
+          - vpc_igw_recreate is not changed
+          - vpc_igw_recreate.gateway_id == igw_id
+          - vpc_igw_recreate.vpc_id == vpc_id
+          - '"tags" in vpc_igw_create'
+          - vpc_igw_create.tags | length == 2
+          - vpc_igw_create.tags["tag_one"] == '{{ resource_prefix }} One'
+          - vpc_igw_create.tags["Tag Two"] == 'two {{ resource_prefix }}'
 
-  - name: Attempt to recreate internet gateway on VPC (expected changed=false)
-    ec2_vpc_igw:
-      state: present
-      vpc_id: '{{ vpc_result.vpc.id }}'
-    register: vpc_igw_recreate
+    - name: Attempt to recreate internet gateway on VPC (expected changed=false)
+      amazon.aws.ec2_vpc_igw:
+        state: present
+        vpc_id: "{{ vpc_result.vpc.id }}"
+      register: vpc_igw_recreate
 
-  - name: Assert recreation did nothing (expected changed=false)
-    assert:
-      that:
-      - vpc_igw_recreate is not changed
-      - vpc_igw_recreate.gateway_id == igw_id
-      - vpc_igw_recreate.vpc_id == vpc_id
-      - '"tags" in vpc_igw_create'
-      - vpc_igw_create.tags | length == 2
-      - vpc_igw_create.tags["tag_one"] == '{{ resource_prefix }} One'
-      - vpc_igw_create.tags["Tag Two"] == 'two {{ resource_prefix }}'
+    - name: Assert recreation did nothing (expected changed=false)
+      ansible.builtin.assert:
+        that:
+          - vpc_igw_recreate is not changed
+          - vpc_igw_recreate.gateway_id == igw_id
+          - vpc_igw_recreate.vpc_id == vpc_id
+          - '"tags" in vpc_igw_create'
+          - vpc_igw_create.tags | length == 2
+          - vpc_igw_create.tags["tag_one"] == '{{ resource_prefix }} One'
+          - vpc_igw_create.tags["Tag Two"] == 'two {{ resource_prefix }}'
 
-  # ============================================================
-  - name: Update the tags (no change) - CHECK_MODE
-    ec2_vpc_igw:
-      state: present
-      vpc_id: '{{ vpc_result.vpc.id }}'
-      tags:
-        tag_one: '{{ resource_prefix }} One'
-        Tag Two: two {{ resource_prefix }}
-    register: vpc_igw_recreate
-    check_mode: yes
+    # ============================================================
+    - name: Update the tags (no change) - CHECK_MODE
+      amazon.aws.ec2_vpc_igw:
+        state: present
+        vpc_id: "{{ vpc_result.vpc.id }}"
+        tags:
+          tag_one: "{{ resource_prefix }} One"
+          Tag Two: two {{ resource_prefix }}
+      register: vpc_igw_recreate
+      check_mode: true
 
-  - name: Assert tag update would do nothing (expected changed=false) - CHECK_MODE
-    assert:
-      that:
-      - vpc_igw_recreate is not changed
-      - vpc_igw_recreate.gateway_id == igw_id
-      - vpc_igw_recreate.vpc_id == vpc_id
-      - '"tags" in vpc_igw_recreate'
-      - vpc_igw_recreate.tags | length == 2
-      - vpc_igw_recreate.tags["tag_one"] == '{{ resource_prefix }} One'
-      - vpc_igw_recreate.tags["Tag Two"] == 'two {{ resource_prefix }}'
+    - name: Assert tag update would do nothing (expected changed=false) - CHECK_MODE
+      ansible.builtin.assert:
+        that:
+          - vpc_igw_recreate is not changed
+          - vpc_igw_recreate.gateway_id == igw_id
+          - vpc_igw_recreate.vpc_id == vpc_id
+          - '"tags" in vpc_igw_recreate'
+          - vpc_igw_recreate.tags | length == 2
+          - vpc_igw_recreate.tags["tag_one"] == '{{ resource_prefix }} One'
+          - vpc_igw_recreate.tags["Tag Two"] == 'two {{ resource_prefix }}'
 
-  - name: Update the tags (no change)
-    ec2_vpc_igw:
-      state: present
-      vpc_id: '{{ vpc_result.vpc.id }}'
-      tags:
-        tag_one: '{{ resource_prefix }} One'
-        Tag Two: two {{ resource_prefix }}
-    register: vpc_igw_recreate
+    - name: Update the tags (no change)
+      amazon.aws.ec2_vpc_igw:
+        state: present
+        vpc_id: "{{ vpc_result.vpc.id }}"
+        tags:
+          tag_one: "{{ resource_prefix }} One"
+          Tag Two: two {{ resource_prefix }}
+      register: vpc_igw_recreate
 
-  - name: Assert tag update did nothing (expected changed=false)
-    assert:
-      that:
-      - vpc_igw_recreate is not changed
-      - vpc_igw_recreate.gateway_id == igw_id
-      - vpc_igw_recreate.vpc_id == vpc_id
-      - '"tags" in vpc_igw_recreate'
-      - vpc_igw_recreate.tags | length == 2
-      - vpc_igw_recreate.tags["tag_one"] == '{{ resource_prefix }} One'
-      - vpc_igw_recreate.tags["Tag Two"] == 'two {{ resource_prefix }}'
+    - name: Assert tag update did nothing (expected changed=false)
+      ansible.builtin.assert:
+        that:
+          - vpc_igw_recreate is not changed
+          - vpc_igw_recreate.gateway_id == igw_id
+          - vpc_igw_recreate.vpc_id == vpc_id
+          - '"tags" in vpc_igw_recreate'
+          - vpc_igw_recreate.tags | length == 2
+          - vpc_igw_recreate.tags["tag_one"] == '{{ resource_prefix }} One'
+          - vpc_igw_recreate.tags["Tag Two"] == 'two {{ resource_prefix }}'
 
-  # ============================================================
-  - name: Update the tags (remove and add) - CHECK_MODE
-    ec2_vpc_igw:
-      state: present
-      vpc_id: '{{ vpc_result.vpc.id }}'
-      tags:
-        tag_three: '{{ resource_prefix }} Three'
-        Tag Two: two {{ resource_prefix }}
-    register: vpc_igw_update
-    check_mode: yes
+    # ============================================================
+    - name: Update the tags (remove and add) - CHECK_MODE
+      amazon.aws.ec2_vpc_igw:
+        state: present
+        vpc_id: "{{ vpc_result.vpc.id }}"
+        tags:
+          tag_three: "{{ resource_prefix }} Three"
+          Tag Two: two {{ resource_prefix }}
+      register: vpc_igw_update
+      check_mode: true
 
-  - name: Assert tag update would happen (expected changed=true) - CHECK_MODE
-    assert:
-      that:
-      - vpc_igw_update is changed
-      - vpc_igw_update.gateway_id == igw_id
-      - vpc_igw_update.vpc_id == vpc_id
-      - '"tags" in vpc_igw_update'
-      - vpc_igw_update.tags | length == 2
+    - name: Assert tag update would happen (expected changed=true) - CHECK_MODE
+      ansible.builtin.assert:
+        that:
+          - vpc_igw_update is changed
+          - vpc_igw_update.gateway_id == igw_id
+          - vpc_igw_update.vpc_id == vpc_id
+          - '"tags" in vpc_igw_update'
+          - vpc_igw_update.tags | length == 2
 
-  - name: Update the tags (remove and add)
-    ec2_vpc_igw:
-      state: present
-      vpc_id: '{{ vpc_result.vpc.id }}'
-      tags:
-        tag_three: '{{ resource_prefix }} Three'
-        Tag Two: two {{ resource_prefix }}
-    register: vpc_igw_update
+    - name: Update the tags (remove and add)
+      amazon.aws.ec2_vpc_igw:
+        state: present
+        vpc_id: "{{ vpc_result.vpc.id }}"
+        tags:
+          tag_three: "{{ resource_prefix }} Three"
+          Tag Two: two {{ resource_prefix }}
+      register: vpc_igw_update
 
-  - name: Assert tags are updated (expected changed=true)
-    assert:
-      that:
-      - vpc_igw_update is changed
-      - vpc_igw_update.gateway_id == igw_id
-      - vpc_igw_update.vpc_id == vpc_id
-      - '"tags" in vpc_igw_update'
-      - vpc_igw_update.tags | length == 2
-      - vpc_igw_update.tags["tag_three"] == '{{ resource_prefix }} Three'
-      - vpc_igw_update.tags["Tag Two"] == 'two {{ resource_prefix }}'
+    - name: Assert tags are updated (expected changed=true)
+      ansible.builtin.assert:
+        that:
+          - vpc_igw_update is changed
+          - vpc_igw_update.gateway_id == igw_id
+          - vpc_igw_update.vpc_id == vpc_id
+          - '"tags" in vpc_igw_update'
+          - vpc_igw_update.tags | length == 2
+          - vpc_igw_update.tags["tag_three"] == '{{ resource_prefix }} Three'
+          - vpc_igw_update.tags["Tag Two"] == 'two {{ resource_prefix }}'
 
-  # ============================================================
-  - name: Update the tags add without purge - CHECK_MODE
-    ec2_vpc_igw:
-      state: present
-      vpc_id: '{{ vpc_result.vpc.id }}'
-      purge_tags: no
-      tags:
-        tag_one: '{{ resource_prefix }} One'
-    register: vpc_igw_update
-    check_mode: yes
+    # ============================================================
+    - name: Update the tags add without purge - CHECK_MODE
+      amazon.aws.ec2_vpc_igw:
+        state: present
+        vpc_id: "{{ vpc_result.vpc.id }}"
+        purge_tags: false
+        tags:
+          tag_one: "{{ resource_prefix }} One"
+      register: vpc_igw_update
+      check_mode: true
 
-  - name: Assert tags would be added - CHECK_MODE
-    assert:
-      that:
-      - vpc_igw_update is changed
-      - vpc_igw_update.gateway_id == igw_id
-      - vpc_igw_update.vpc_id == vpc_id
-      - '"tags" in vpc_igw_update'
+    - name: Assert tags would be added - CHECK_MODE
+      ansible.builtin.assert:
+        that:
+          - vpc_igw_update is changed
+          - vpc_igw_update.gateway_id == igw_id
+          - vpc_igw_update.vpc_id == vpc_id
+          - '"tags" in vpc_igw_update'
 
-  - name: Update the tags add without purge
-    ec2_vpc_igw:
-      state: present
-      vpc_id: '{{ vpc_result.vpc.id }}'
-      purge_tags: no
-      tags:
-        tag_one: '{{ resource_prefix }} One'
-    register: vpc_igw_update
+    - name: Update the tags add without purge
+      amazon.aws.ec2_vpc_igw:
+        state: present
+        vpc_id: "{{ vpc_result.vpc.id }}"
+        purge_tags: false
+        tags:
+          tag_one: "{{ resource_prefix }} One"
+      register: vpc_igw_update
 
-  - name: Assert tags added
-    assert:
-      that:
-      - vpc_igw_update is changed
-      - vpc_igw_update.gateway_id == igw_id
-      - vpc_igw_update.vpc_id == vpc_id
-      - '"tags" in vpc_igw_update'
-      - vpc_igw_update.tags | length == 3
-      - vpc_igw_update.tags["tag_one"] == '{{ resource_prefix }} One'
-      - vpc_igw_update.tags["tag_three"] == '{{ resource_prefix }} Three'
-      - vpc_igw_update.tags["Tag Two"] == 'two {{ resource_prefix }}'
+    - name: Assert tags added
+      ansible.builtin.assert:
+        that:
+          - vpc_igw_update is changed
+          - vpc_igw_update.gateway_id == igw_id
+          - vpc_igw_update.vpc_id == vpc_id
+          - '"tags" in vpc_igw_update'
+          - vpc_igw_update.tags | length == 3
+          - vpc_igw_update.tags["tag_one"] == '{{ resource_prefix }} One'
+          - vpc_igw_update.tags["tag_three"] == '{{ resource_prefix }} Three'
+          - vpc_igw_update.tags["Tag Two"] == 'two {{ resource_prefix }}'
 
+    # ============================================================
+    - name: Update with CamelCase tags - CHECK_MODE
+      amazon.aws.ec2_vpc_igw:
+        state: present
+        vpc_id: "{{ vpc_result.vpc.id }}"
+        tags:
+          lowercase spaced: hello cruel world
+          Title Case: Hello Cruel World
+          CamelCase: SimpleCamelCase
+          snake_case: simple_snake_case
+      register: vpc_igw_update
+      check_mode: true
 
-  # ============================================================
-  - name: Update with CamelCase tags - CHECK_MODE
-    ec2_vpc_igw:
-      state: present
-      vpc_id: '{{ vpc_result.vpc.id }}'
-      tags:
-        lowercase spaced: "hello cruel world"
-        Title Case: "Hello Cruel World"
-        CamelCase: "SimpleCamelCase"
-        snake_case: "simple_snake_case"
-    register: vpc_igw_update
-    check_mode: yes
+    - name: Assert tag update would happen (expected changed=true) - CHECK_MODE
+      ansible.builtin.assert:
+        that:
+          - vpc_igw_update is changed
+          - vpc_igw_update.gateway_id == igw_id
+          - vpc_igw_update.vpc_id == vpc_id
+          - '"tags" in vpc_igw_update'
 
-  - name: Assert tag update would happen (expected changed=true) - CHECK_MODE
-    assert:
-      that:
-      - vpc_igw_update is changed
-      - vpc_igw_update.gateway_id == igw_id
-      - vpc_igw_update.vpc_id == vpc_id
-      - '"tags" in vpc_igw_update'
+    - name: Update the tags - remove and add
+      amazon.aws.ec2_vpc_igw:
+        state: present
+        vpc_id: "{{ vpc_result.vpc.id }}"
+        tags:
+          lowercase spaced: hello cruel world
+          Title Case: Hello Cruel World
+          CamelCase: SimpleCamelCase
+          snake_case: simple_snake_case
+      register: vpc_igw_update
 
-  - name: Update the tags - remove and add
-    ec2_vpc_igw:
-      state: present
-      vpc_id: '{{ vpc_result.vpc.id }}'
-      tags:
-        lowercase spaced: "hello cruel world"
-        Title Case: "Hello Cruel World"
-        CamelCase: "SimpleCamelCase"
-        snake_case: "simple_snake_case"
-    register: vpc_igw_update
+    - name: assert tags are updated (expected changed=true)
+      ansible.builtin.assert:
+        that:
+          - vpc_igw_update is changed
+          - vpc_igw_update.gateway_id == igw_id
+          - vpc_igw_update.vpc_id == vpc_id
+          - '"tags" in vpc_igw_update'
+          - vpc_igw_update.tags | length == 4
+          - vpc_igw_update.tags["lowercase spaced"] == 'hello cruel world'
+          - vpc_igw_update.tags["Title Case"] == 'Hello Cruel World'
+          - vpc_igw_update.tags["CamelCase"] == 'SimpleCamelCase'
+          - vpc_igw_update.tags["snake_case"] == 'simple_snake_case'
 
-  - name: assert tags are updated (expected changed=true)
-    assert:
-      that:
-      - vpc_igw_update is changed
-      - vpc_igw_update.gateway_id == igw_id
-      - vpc_igw_update.vpc_id == vpc_id
-      - '"tags" in vpc_igw_update'
-      - vpc_igw_update.tags | length == 4
-      - vpc_igw_update.tags["lowercase spaced"] == 'hello cruel world'
-      - vpc_igw_update.tags["Title Case"] == 'Hello Cruel World'
-      - vpc_igw_update.tags["CamelCase"] == 'SimpleCamelCase'
-      - vpc_igw_update.tags["snake_case"] == 'simple_snake_case'
+    # ============================================================
+    - name: Gather information about a filtered list of Internet Gateways using tags
+      amazon.aws.ec2_vpc_igw_info:
+        filters:
+          tag:Title Case: Hello Cruel World
+      register: igw_info
 
-  # ============================================================
-  - name: Gather information about a filtered list of Internet Gateways using tags
-    ec2_vpc_igw_info:
-      filters:
-        tag:Title Case: "Hello Cruel World"
-    register: igw_info
+    - name: Assert success
+      ansible.builtin.assert:
+        that:
+          - igw_info is successful
+          - '"internet_gateways" in igw_info'
+          - igw_info.internet_gateways | selectattr("internet_gateway_id",'equalto',"{{ igw_id }}")
 
-  - name: Assert success
-    assert:
-      that:
-      - igw_info is successful
-      - '"internet_gateways" in igw_info'
-      - igw_info.internet_gateways | selectattr("internet_gateway_id",'equalto',"{{
-        igw_id }}")
+    - name: Gather information about a filtered list of Internet Gateways using tags - CHECK_MODE
+      amazon.aws.ec2_vpc_igw_info:
+        filters:
+          tag:Title Case: Hello Cruel World
+      register: igw_info
+      check_mode: true
 
-  - name: Gather information about a filtered list of Internet Gateways using tags - CHECK_MODE
-    ec2_vpc_igw_info:
-      filters:
-        tag:Title Case: "Hello Cruel World"
-    register: igw_info
-    check_mode: yes
+    - name: Assert success - CHECK_MODE
+      ansible.builtin.assert:
+        that:
+          - igw_info is successful
+          - '"internet_gateways" in igw_info'
+          - igw_info.internet_gateways | selectattr("internet_gateway_id",'equalto',"{{ igw_id }}")
 
-  - name: Assert success - CHECK_MODE
-    assert:
-      that:
-      - igw_info is successful
-      - '"internet_gateways" in igw_info'
-      - igw_info.internet_gateways | selectattr("internet_gateway_id",'equalto',"{{
-        igw_id }}")
+    # ============================================================
+    - name: Gather information about a filtered list of Internet Gateways using tags (no match)
+      amazon.aws.ec2_vpc_igw_info:
+        filters:
+          tag:tag_one: "{{ resource_prefix }} One"
+      register: igw_info
 
-  # ============================================================
-  - name: Gather information about a filtered list of Internet Gateways using tags (no match)
-    ec2_vpc_igw_info:
-      filters:
-        tag:tag_one: '{{ resource_prefix }} One'
-    register: igw_info
+    - name: Assert success
+      ansible.builtin.assert:
+        that:
+          - igw_info is successful
+          - '"internet_gateways" in igw_info'
+          - igw_info.internet_gateways | length == 0
 
-  - name: Assert success
-    assert:
-      that:
-      - igw_info is successful
-      - '"internet_gateways" in igw_info'
-      - igw_info.internet_gateways | length == 0
+    - name: Gather information about a filtered list of Internet Gateways using tags (no match) - CHECK_MODE
+      amazon.aws.ec2_vpc_igw_info:
+        filters:
+          tag:tag_one: "{{ resource_prefix }} One"
+      register: igw_info
+      check_mode: true
 
-  - name: Gather information about a filtered list of Internet Gateways using tags (no match) - CHECK_MODE
-    ec2_vpc_igw_info:
-      filters:
-        tag:tag_one: '{{ resource_prefix }} One'
-    register: igw_info
-    check_mode: yes
+    - name: Assert success - CHECK_MODE
+      ansible.builtin.assert:
+        that:
+          - igw_info is successful
+          - '"internet_gateways" in igw_info'
+          - igw_info.internet_gateways | length == 0
 
-  - name: Assert success - CHECK_MODE
-    assert:
-      that:
-      - igw_info is successful
-      - '"internet_gateways" in igw_info'
-      - igw_info.internet_gateways | length == 0
+    # ============================================================
+    - name: Remove all tags - CHECK_MODE
+      amazon.aws.ec2_vpc_igw:
+        state: present
+        vpc_id: "{{ vpc_result.vpc.id }}"
+        tags: {}
+      register: vpc_igw_update
+      check_mode: true
 
-  # ============================================================
-  - name: Remove all tags - CHECK_MODE
-    ec2_vpc_igw:
-      state: present
-      vpc_id: '{{ vpc_result.vpc.id }}'
-      tags: {}
-    register: vpc_igw_update
-    check_mode: yes
+    - name: Assert tags would be removed - CHECK_MODE
+      ansible.builtin.assert:
+        that:
+          - vpc_igw_update is changed
 
-  - name: Assert tags would be removed - CHECK_MODE
-    assert:
-      that:
-      - vpc_igw_update is changed
+    - name: Remove all tags
+      amazon.aws.ec2_vpc_igw:
+        state: present
+        vpc_id: "{{ vpc_result.vpc.id }}"
+        tags: {}
+      register: vpc_igw_update
 
-  - name: Remove all tags
-    ec2_vpc_igw:
-      state: present
-      vpc_id: '{{ vpc_result.vpc.id }}'
-      tags: {}
-    register: vpc_igw_update
+    - name: Assert tags removed
+      ansible.builtin.assert:
+        that:
+          - vpc_igw_update is changed
+          - vpc_igw_update.gateway_id == igw_id
+          - vpc_igw_update.vpc_id == vpc_id
+          - '"tags" in vpc_igw_update'
+          - vpc_igw_update.tags | length == 0
 
-  - name: Assert tags removed
-    assert:
-      that:
-      - vpc_igw_update is changed
-      - vpc_igw_update.gateway_id == igw_id
-      - vpc_igw_update.vpc_id == vpc_id
-      - '"tags" in vpc_igw_update'
-      - vpc_igw_update.tags | length == 0
+    # ============================================================
+    - name: Test state=absent (expected changed=true) - CHECK_MODE
+      amazon.aws.ec2_vpc_igw:
+        state: absent
+        vpc_id: "{{ vpc_result.vpc.id }}"
+      register: vpc_igw_delete
+      check_mode: true
 
-  # ============================================================
-  - name: Test state=absent (expected changed=true) - CHECK_MODE
-    ec2_vpc_igw:
-      state: absent
-      vpc_id: '{{ vpc_result.vpc.id }}'
-    register: vpc_igw_delete
-    check_mode: yes
+    - name: Assert state=absent (expected changed=true) - CHECK_MODE
+      ansible.builtin.assert:
+        that:
+          - vpc_igw_delete is changed
 
-  - name: Assert state=absent (expected changed=true) - CHECK_MODE
-    assert:
-      that:
-      - vpc_igw_delete is changed
+    - name: Test state=absent (expected changed=true)
+      amazon.aws.ec2_vpc_igw:
+        state: absent
+        vpc_id: "{{ vpc_result.vpc.id }}"
+      register: vpc_igw_delete
 
-  - name: Test state=absent (expected changed=true)
-    ec2_vpc_igw:
-      state: absent
-      vpc_id: '{{ vpc_result.vpc.id }}'
-    register: vpc_igw_delete
+    - name: Assert state=absent (expected changed=true)
+      ansible.builtin.assert:
+        that:
+          - vpc_igw_delete is changed
 
-  - name: Assert state=absent (expected changed=true)
-    assert:
-      that:
-      - vpc_igw_delete is changed
+    # ============================================================
+    - name: Fetch IGW by ID (list)
+      amazon.aws.ec2_vpc_igw_info:
+        internet_gateway_ids:
+          - "{{ igw_id }}"
+      register: igw_info
+      ignore_errors: true
 
-  # ============================================================
-  - name: Fetch IGW by ID (list)
-    ec2_vpc_igw_info:
-      internet_gateway_ids:
-      - '{{ igw_id }}'
-    register: igw_info
-    ignore_errors: true
-
-  - name: Check IGW does not exist
-    assert:
-      that:
+    - name: Check IGW does not exist
+      ansible.builtin.assert:
+        that:
         # Deliberate choice not to change bevahiour when searching by ID
-      - igw_info is failed
+          - igw_info is failed
 
-  # ============================================================
-  - name: Test state=absent when already deleted (expected changed=false) - CHECK_MODE
-    ec2_vpc_igw:
-      state: absent
-      vpc_id: '{{ vpc_result.vpc.id }}'
-    register: vpc_igw_delete
-    check_mode: yes
+    # ============================================================
+    - name: Test state=absent when already deleted (expected changed=false) - CHECK_MODE
+      amazon.aws.ec2_vpc_igw:
+        state: absent
+        vpc_id: "{{ vpc_result.vpc.id }}"
+      register: vpc_igw_delete
+      check_mode: true
 
-  - name: Assert state=absent (expected changed=false) - CHECK_MODE
-    assert:
-      that:
-      - vpc_igw_delete is not changed
+    - name: Assert state=absent (expected changed=false) - CHECK_MODE
+      ansible.builtin.assert:
+        that:
+          - vpc_igw_delete is not changed
 
-  - name: Test state=absent when already deleted (expected changed=false)
-    ec2_vpc_igw:
-      state: absent
-      vpc_id: '{{ vpc_result.vpc.id }}'
-    register: vpc_igw_delete
+    - name: Test state=absent when already deleted (expected changed=false)
+      amazon.aws.ec2_vpc_igw:
+        state: absent
+        vpc_id: "{{ vpc_result.vpc.id }}"
+      register: vpc_igw_delete
 
-  - name: Assert state=absent (expected changed=false)
-    assert:
-      that:
-      - vpc_igw_delete is not changed
+    - name: Assert state=absent (expected changed=false)
+      ansible.builtin.assert:
+        that:
+          - vpc_igw_delete is not changed
 
-  # ============================================================
-  - name: Create new detached internet gateway - CHECK_MODE
-    ec2_vpc_igw:
-      state: present
-    register: detached_igw_result
-    check_mode: true
+    # ============================================================
+    - name: Create new detached internet gateway - CHECK_MODE
+      amazon.aws.ec2_vpc_igw:
+        state: present
+      register: detached_igw_result
+      check_mode: true
 
-  - name: Assert creation would happen (expected changed=true) - CHECK_MODE
-    assert:
-      that:
-      - detached_igw_result is changed
+    - name: Assert creation would happen (expected changed=true) - CHECK_MODE
+      ansible.builtin.assert:
+        that:
+          - detached_igw_result is changed
 
-  - name: Create new detached internet gateway (expected changed=true)
-    ec2_vpc_igw:
-      state: present
-    register: detached_igw_result
+    - name: Create new detached internet gateway (expected changed=true)
+      amazon.aws.ec2_vpc_igw:
+        state: present
+      register: detached_igw_result
 
-  - name: Assert creation happened (expected changed=true)
-    assert:
-      that:
-      - detached_igw_result is changed
-      - '"gateway_id" in detached_igw_result'
-      - detached_igw_result.gateway_id.startswith("igw-")
-      - not detached_igw_result.vpc_id
-      
-  # ============================================================
-  - name: Test state=absent when supplying only a gateway id (expected chaged=true) - CHECK_MODE
-    ec2_vpc_igw:
-      state: absent
-      internet_gateway_id: '{{ detached_igw_result.gateway_id }}'
-    register: vpc_igw_delete
-    check_mode: true
+    - name: Assert creation happened (expected changed=true)
+      ansible.builtin.assert:
+        that:
+          - detached_igw_result is changed
+          - '"gateway_id" in detached_igw_result'
+          - detached_igw_result.gateway_id.startswith("igw-")
+          - not detached_igw_result.vpc_id
 
-  - name: Assert state=absent when supplying only a gateway id (expected chaged=true) - CHECK_MODE
-    assert:
-      that:
-        - vpc_igw_delete is changed
+    # ============================================================
+    - name: Test state=absent when supplying only a gateway id (expected chaged=true) - CHECK_MODE
+      amazon.aws.ec2_vpc_igw:
+        state: absent
+        internet_gateway_id: "{{ detached_igw_result.gateway_id }}"
+      register: vpc_igw_delete
+      check_mode: true
 
-  - name: Search for IGW by ID
-    ec2_vpc_igw_info:
-      internet_gateway_ids: '{{ detached_igw_result.gateway_id }}'
-    register: igw_info
+    - name: Assert state=absent when supplying only a gateway id (expected chaged=true) - CHECK_MODE
+      ansible.builtin.assert:
+        that:
+          - vpc_igw_delete is changed
 
-  - name: Check that IGW was not deleted in check mode
-    assert:
-      that:
-        - '"internet_gateways" in igw_info'
-        - igw_info.internet_gateways | length == 1
+    - name: Search for IGW by ID
+      amazon.aws.ec2_vpc_igw_info:
+        internet_gateway_ids: "{{ detached_igw_result.gateway_id }}"
+      register: igw_info
 
-  - name: Test state=absent when supplying only a gateway id (expected chaged=true)
-    ec2_vpc_igw:
-      state: absent
-      internet_gateway_id: '{{ detached_igw_result.gateway_id }}'
-    register: vpc_igw_delete
+    - name: Check that IGW was not deleted in check mode
+      ansible.builtin.assert:
+        that:
+          - '"internet_gateways" in igw_info'
+          - igw_info.internet_gateways | length == 1
 
-  - name: Assert state=absent when supplying only a gateway id (expected chaged=true)
-    assert:
-      that:
-        - vpc_igw_delete is changed
+    - name: Test state=absent when supplying only a gateway id (expected chaged=true)
+      amazon.aws.ec2_vpc_igw:
+        state: absent
+        internet_gateway_id: "{{ detached_igw_result.gateway_id }}"
+      register: vpc_igw_delete
 
-  - name: Fetch removed IGW by ID
-    ec2_vpc_igw_info:
-      internet_gateway_ids: '{{ detached_igw_result.gateway_id }}'
-    register: igw_info
-    ignore_errors: true
+    - name: Assert state=absent when supplying only a gateway id (expected chaged=true)
+      ansible.builtin.assert:
+        that:
+          - vpc_igw_delete is changed
 
-  - name: Check IGW does not exist
-    assert:
-      that:
+    - name: Fetch removed IGW by ID
+      amazon.aws.ec2_vpc_igw_info:
+        internet_gateway_ids: "{{ detached_igw_result.gateway_id }}"
+      register: igw_info
+      ignore_errors: true
+
+    - name: Check IGW does not exist
+      ansible.builtin.assert:
+        that:
         # Deliberate choice not to change bevahiour when searching by ID
-      - igw_info is failed
+          - igw_info is failed
 
-  # ============================================================
-  - name: Create new internet gateway for vpc tests
-    ec2_vpc_igw:
-      state: present
-    register: detached_igw_result
-      
-  # ============================================================
-  - name: Test attaching VPC to gateway - CHECK_MODE
-    ec2_vpc_igw:
-      state: present
-      internet_gateway_id: '{{ detached_igw_result.gateway_id }}'
-      vpc_id: '{{ vpc_id }}'
-    register: attach_vpc_result
-    check_mode: true
+    # ============================================================
+    - name: Create new internet gateway for vpc tests
+      amazon.aws.ec2_vpc_igw:
+        state: present
+      register: detached_igw_result
 
-  - name: Assert that VPC was attached - CHECK_MODE
-    assert:
-      that:
-        - attach_vpc_result is changed
+    # ============================================================
+    - name: Test attaching VPC to gateway - CHECK_MODE
+      amazon.aws.ec2_vpc_igw:
+        state: present
+        internet_gateway_id: "{{ detached_igw_result.gateway_id }}"
+        vpc_id: "{{ vpc_id }}"
+      register: attach_vpc_result
+      check_mode: true
 
-  - name: Test attaching VPC to gateway
-    ec2_vpc_igw:
-      state: present
-      internet_gateway_id: '{{ detached_igw_result.gateway_id }}'
-      vpc_id: '{{ vpc_id }}'
-    register: attach_vpc_result
+    - name: Assert that VPC was attached - CHECK_MODE
+      ansible.builtin.assert:
+        that:
+          - attach_vpc_result is changed
 
-  - name: Assert that VPC was attached
-    assert:
-      that:
-        - attach_vpc_result is changed
-        - attach_vpc_result.vpc_id == vpc_id
-        - attach_vpc_result.gateway_id == detached_igw_result.gateway_id
+    - name: Test attaching VPC to gateway
+      amazon.aws.ec2_vpc_igw:
+        state: present
+        internet_gateway_id: "{{ detached_igw_result.gateway_id }}"
+        vpc_id: "{{ vpc_id }}"
+      register: attach_vpc_result
 
-  # ============================================================
-  - name: Test detaching VPC from gateway - CHECK_MODE
-    ec2_vpc_igw:
-      state: present
-      internet_gateway_id: '{{ detached_igw_result.gateway_id }}'
-      detach_vpc: true
-    register: detach_vpc_result
-    check_mode: true
+    - name: Assert that VPC was attached
+      ansible.builtin.assert:
+        that:
+          - attach_vpc_result is changed
+          - attach_vpc_result.vpc_id == vpc_id
+          - attach_vpc_result.gateway_id == detached_igw_result.gateway_id
 
-  - name: Assert that VPC was detached - CHECK_MODE
-    assert:
-      that:
-        - detach_vpc_result is changed
+    # ============================================================
+    - name: Test detaching VPC from gateway - CHECK_MODE
+      amazon.aws.ec2_vpc_igw:
+        state: present
+        internet_gateway_id: "{{ detached_igw_result.gateway_id }}"
+        detach_vpc: true
+      register: detach_vpc_result
+      check_mode: true
 
-  - name: Test detaching VPC from gateway
-    ec2_vpc_igw:
-      state: present
-      internet_gateway_id: '{{ detached_igw_result.gateway_id }}'
-      detach_vpc: true
-    register: detach_vpc_result
+    - name: Assert that VPC was detached - CHECK_MODE
+      ansible.builtin.assert:
+        that:
+          - detach_vpc_result is changed
 
-  - name: Assert that VPC was detached
-    assert:
-      that:
-        - detach_vpc_result is changed
-        - not detach_vpc_result.vpc_id
-        - detach_vpc_result.gateway_id == detached_igw_result.gateway_id
+    - name: Test detaching VPC from gateway
+      amazon.aws.ec2_vpc_igw:
+        state: present
+        internet_gateway_id: "{{ detached_igw_result.gateway_id }}"
+        detach_vpc: true
+      register: detach_vpc_result
 
-  # ============================================================
-  - name: Attach VPC to gateway for VPC change tests
-    ec2_vpc_igw:
-      state: present
-      internet_gateway_id: '{{ detached_igw_result.gateway_id }}'
-      vpc_id: '{{ vpc_id }}'
+    - name: Assert that VPC was detached
+      ansible.builtin.assert:
+        that:
+          - detach_vpc_result is changed
+          - not detach_vpc_result.vpc_id
+          - detach_vpc_result.gateway_id == detached_igw_result.gateway_id
 
-  # ============================================================
-  - name: Attempt change attached VPC with force_attach=false (default) - CHECK_MODE
-    ec2_vpc_igw:
-      state: present
-      internet_gateway_id: '{{ detached_igw_result.gateway_id }}'
-      vpc_id: '{{ vpc_2_result.vpc.id }}'
-    register: igw_vpc_changed_result
-    check_mode: true
+    # ============================================================
+    - name: Attach VPC to gateway for VPC change tests
+      amazon.aws.ec2_vpc_igw:
+        state: present
+        internet_gateway_id: "{{ detached_igw_result.gateway_id }}"
+        vpc_id: "{{ vpc_id }}"
 
-  - name: Assert VPC changed with force_attach=false (default) - CHECK_MODE
-    assert:
-      that:
-        - igw_vpc_changed_result is changed
-        - vpc_id not in igw_vpc_changed_result
-      
-  - name: Attempt change with force_attach=false (default) (expected failure)
-    ec2_vpc_igw:
-      state: present
-      internet_gateway_id: '{{ detached_igw_result.gateway_id }}'
-      vpc_id: '{{ vpc_2_result.vpc.id }}'
-    register: igw_vpc_changed_result
-    ignore_errors: true
+    # ============================================================
+    - name: Attempt change attached VPC with force_attach=false (default) - CHECK_MODE
+      amazon.aws.ec2_vpc_igw:
+        state: present
+        internet_gateway_id: "{{ detached_igw_result.gateway_id }}"
+        vpc_id: "{{ vpc_2_result.vpc.id }}"
+      register: igw_vpc_changed_result
+      check_mode: true
 
-  - name: Assert VPC changed with force_attach=false (default)
-    assert:
-      that:
-        - igw_vpc_changed_result is failed
-        - igw_vpc_changed_result.msg is search('VPC already attached, but does not match requested VPC.')
+    - name: Assert VPC changed with force_attach=false (default) - CHECK_MODE
+      ansible.builtin.assert:
+        that:
+          - igw_vpc_changed_result is changed
+          - vpc_id not in igw_vpc_changed_result
 
-  # ============================================================
-  - name: Attempt change attached VPC with force_attach=true - CHECK_MODE
-    ec2_vpc_igw:
-      state: present
-      internet_gateway_id: '{{ detached_igw_result.gateway_id }}'
-      vpc_id: '{{ vpc_2_result.vpc.id }}'
-      force_attach: true
-    register: igw_vpc_changed_result
-    check_mode: true
+    - name: Attempt change with force_attach=false (default) (expected failure)
+      amazon.aws.ec2_vpc_igw:
+        state: present
+        internet_gateway_id: "{{ detached_igw_result.gateway_id }}"
+        vpc_id: "{{ vpc_2_result.vpc.id }}"
+      register: igw_vpc_changed_result
+      ignore_errors: true
 
-  - name: Assert VPC changed with force_attach=true - CHECK_MODE
-    assert:
-      that:
-        - igw_vpc_changed_result is changed
-        - vpc_id not in igw_vpc_changed_result
-      
-  - name: Attempt change with force_attach=true
-    ec2_vpc_igw:
-      state: present
-      internet_gateway_id: '{{ detached_igw_result.gateway_id }}'
-      vpc_id: '{{ vpc_2_result.vpc.id }}'
-      force_attach: true
-    register: igw_vpc_changed_result
+    - name: Assert VPC changed with force_attach=false (default)
+      ansible.builtin.assert:
+        that:
+          - igw_vpc_changed_result is failed
+          - igw_vpc_changed_result.msg is search('VPC already attached, but does not match requested VPC.')
 
-  - name: Assert VPC changed with force_attach=true
-    assert:
-      that:
-        - igw_vpc_changed_result is changed
-        - igw_vpc_changed_result.vpc_id == vpc_2_id
+    # ============================================================
+    - name: Attempt change attached VPC with force_attach=true - CHECK_MODE
+      amazon.aws.ec2_vpc_igw:
+        state: present
+        internet_gateway_id: "{{ detached_igw_result.gateway_id }}"
+        vpc_id: "{{ vpc_2_result.vpc.id }}"
+        force_attach: true
+      register: igw_vpc_changed_result
+      check_mode: true
 
-  # ============================================================
-  - name: Test state=absent when supplying a gateway id and wrong vpc id (expected failure) - CHECK_MODE
-    ec2_vpc_igw:
-      state: absent
-      internet_gateway_id: '{{ detached_igw_result.gateway_id }}'
-      vpc_id: 'vpc-xxxxxxxxx'
-    register: vpc_igw_delete
-    check_mode: true
-    ignore_errors: true
+    - name: Assert VPC changed with force_attach=true - CHECK_MODE
+      ansible.builtin.assert:
+        that:
+          - igw_vpc_changed_result is changed
+          - vpc_id not in igw_vpc_changed_result
 
-  - name: Assert state=absent when supplying a gateway id and wrong vpc id (expected failure) - CHECK_MODE
-    assert:
-      that:
-        - vpc_igw_delete is failed
-        - vpc_igw_delete.msg is search('Supplied VPC.*does not match found VPC.*')
+    - name: Attempt change with force_attach=true
+      amazon.aws.ec2_vpc_igw:
+        state: present
+        internet_gateway_id: "{{ detached_igw_result.gateway_id }}"
+        vpc_id: "{{ vpc_2_result.vpc.id }}"
+        force_attach: true
+      register: igw_vpc_changed_result
 
-  - name: Test state=absent when supplying a gateway id and wrong vpc id (expected failure)
-    ec2_vpc_igw:
-      state: absent
-      internet_gateway_id: '{{ detached_igw_result.gateway_id}}'
-      vpc_id: 'vpc-xxxxxxxxx'
-    register: vpc_igw_delete
-    ignore_errors: true
+    - name: Assert VPC changed with force_attach=true
+      ansible.builtin.assert:
+        that:
+          - igw_vpc_changed_result is changed
+          - igw_vpc_changed_result.vpc_id == vpc_2_id
 
-  - name: Assert state=absent when supplying a gateway id and wrong vpc id (expected failure)
-    assert:
-      that:
-        - vpc_igw_delete is failed
-        - vpc_igw_delete.msg is search('Supplied VPC.*does not match found VPC.*')
+    # ============================================================
+    - name: Test state=absent when supplying a gateway id and wrong vpc id (expected failure) - CHECK_MODE
+      amazon.aws.ec2_vpc_igw:
+        state: absent
+        internet_gateway_id: "{{ detached_igw_result.gateway_id }}"
+        vpc_id: vpc-xxxxxxxxx
+      register: vpc_igw_delete
+      check_mode: true
+      ignore_errors: true
 
-  # ============================================================
-  - name: Test state=absent when supplying a gateway id and vpc id (expected chaged=true) - CHECK_MODE
-    ec2_vpc_igw:
-      state: absent
-      internet_gateway_id: '{{ detached_igw_result.gateway_id }}'
-      vpc_id: '{{ vpc_2_id }}'
-    register: vpc_igw_delete
-    check_mode: true
+    - name: Assert state=absent when supplying a gateway id and wrong vpc id (expected failure) - CHECK_MODE
+      ansible.builtin.assert:
+        that:
+          - vpc_igw_delete is failed
+          - vpc_igw_delete.msg is search('Supplied VPC.*does not match found VPC.*')
 
-  - name: Assert state=absent when supplying a gateway id and vpc id (expected chaged=true) - CHECK_MODE
-    assert:
-      that:
-        - vpc_igw_delete is changed
+    - name: Test state=absent when supplying a gateway id and wrong vpc id (expected failure)
+      amazon.aws.ec2_vpc_igw:
+        state: absent
+        internet_gateway_id: "{{ detached_igw_result.gateway_id}}"
+        vpc_id: vpc-xxxxxxxxx
+      register: vpc_igw_delete
+      ignore_errors: true
 
-  - name: Test state=absent when supplying a gateway id and vpc id (expected chaged=true)
-    ec2_vpc_igw:
-      state: absent
-      internet_gateway_id: '{{ detached_igw_result.gateway_id }}'
-      vpc_id: '{{ vpc_2_id }}'
-    register: vpc_igw_delete
+    - name: Assert state=absent when supplying a gateway id and wrong vpc id (expected failure)
+      ansible.builtin.assert:
+        that:
+          - vpc_igw_delete is failed
+          - vpc_igw_delete.msg is search('Supplied VPC.*does not match found VPC.*')
 
-  - name: Assert state=absent when supplying a gateway id and vpc id (expected chaged=true)
-    assert:
-      that:
-        - vpc_igw_delete is changed
+    # ============================================================
+    - name: Test state=absent when supplying a gateway id and vpc id (expected chaged=true) - CHECK_MODE
+      amazon.aws.ec2_vpc_igw:
+        state: absent
+        internet_gateway_id: "{{ detached_igw_result.gateway_id }}"
+        vpc_id: "{{ vpc_2_id }}"
+      register: vpc_igw_delete
+      check_mode: true
 
-  - name: Fetch removed IGW by ID
-    ec2_vpc_igw_info:
-      internet_gateway_ids: '{{ detached_igw_result.gateway_id }}'
-    register: igw_info
-    ignore_errors: true
+    - name: Assert state=absent when supplying a gateway id and vpc id (expected chaged=true) - CHECK_MODE
+      ansible.builtin.assert:
+        that:
+          - vpc_igw_delete is changed
 
-  - name: Check IGW does not exist
-    assert:
-      that:
+    - name: Test state=absent when supplying a gateway id and vpc id (expected chaged=true)
+      amazon.aws.ec2_vpc_igw:
+        state: absent
+        internet_gateway_id: "{{ detached_igw_result.gateway_id }}"
+        vpc_id: "{{ vpc_2_id }}"
+      register: vpc_igw_delete
+
+    - name: Assert state=absent when supplying a gateway id and vpc id (expected chaged=true)
+      ansible.builtin.assert:
+        that:
+          - vpc_igw_delete is changed
+
+    - name: Fetch removed IGW by ID
+      amazon.aws.ec2_vpc_igw_info:
+        internet_gateway_ids: "{{ detached_igw_result.gateway_id }}"
+      register: igw_info
+      ignore_errors: true
+
+    - name: Check IGW does not exist
+      ansible.builtin.assert:
+        that:
         # Deliberate choice not to change bevahiour when searching by ID
-      - igw_info is failed
+          - igw_info is failed
 
   always:
     # ============================================================
-  - name: Tidy up IGW
-    ec2_vpc_igw:
-      state: absent
-      vpc_id: '{{ vpc_result.vpc.id }}'
-    ignore_errors: true
+    - name: Tidy up IGW
+      amazon.aws.ec2_vpc_igw:
+        state: absent
+        vpc_id: "{{ vpc_result.vpc.id }}"
+      ignore_errors: true
 
-  - name: Tidy up IGW on second VPC
-    ec2_vpc_igw:
-      state: absent
-      vpc_id: '{{ vpc_2_result.vpc.id }}'
-    ignore_errors: true
+    - name: Tidy up IGW on second VPC
+      amazon.aws.ec2_vpc_igw:
+        state: absent
+        vpc_id: "{{ vpc_2_result.vpc.id }}"
+      ignore_errors: true
 
-  - name: Tidy up detached IGW
-    ec2_vpc_igw:
-      state: absent
-      internet_gateway_id: '{{ detached_igw_result.gateway_id }}'
-    ignore_errors: true
+    - name: Tidy up detached IGW
+      amazon.aws.ec2_vpc_igw:
+        state: absent
+        internet_gateway_id: "{{ detached_igw_result.gateway_id }}"
+      ignore_errors: true
 
-  - name: Tidy up VPC
-    ec2_vpc_net:
-      name: '{{ vpc_name }}'
-      state: absent
-      cidr_block: '{{ vpc_cidr }}'
-    ignore_errors: true
+    - name: Tidy up VPC
+      amazon.aws.ec2_vpc_net:
+        name: "{{ vpc_name }}"
+        state: absent
+        cidr_block: "{{ vpc_cidr }}"
+      ignore_errors: true
 
-  - name: Tidy up second VPC
-    ec2_vpc_net:
-      name: '{{ vpc_name_2 }}'
-      state: absent
-      cidr_block: '{{ vpc_cidr_2 }}'
-    ignore_errors: true
+    - name: Tidy up second VPC
+      amazon.aws.ec2_vpc_net:
+        name: "{{ vpc_name_2 }}"
+        state: absent
+        cidr_block: "{{ vpc_cidr_2 }}"
+      ignore_errors: true

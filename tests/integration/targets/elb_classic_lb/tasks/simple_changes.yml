@@ -2,29 +2,29 @@
 - block:
     ## Setup an ELB for testing changing one thing at a time
     - name: Create ELB
-      elb_classic_lb:
+      amazon.aws.elb_classic_lb:
         name: "{{ elb_name }}"
         state: present
         # zones: ['{{ availability_zone_a }}', '{{ availability_zone_b }}']
-        listeners: '{{ default_listeners }}'
-        health_check: '{{ default_health_check }}'
+        listeners: "{{ default_listeners }}"
+        health_check: "{{ default_health_check }}"
         wait: true
-        scheme: 'internal'
-        subnets: ['{{ subnet_a }}', '{{ subnet_b }}']
-        security_group_ids: ['{{ sg_a }}']
-        tags: '{{ default_tags }}'
-        cross_az_load_balancing: True
-        idle_timeout: '{{ default_idle_timeout }}'
-        connection_draining_timeout: '{{ default_drain_timeout }}'
+        scheme: internal
+        subnets: ["{{ subnet_a }}", "{{ subnet_b }}"]
+        security_group_ids: ["{{ sg_a }}"]
+        tags: "{{ default_tags }}"
+        cross_az_load_balancing: true
+        idle_timeout: "{{ default_idle_timeout }}"
+        connection_draining_timeout: "{{ default_drain_timeout }}"
         access_logs:
-          interval: '{{ default_logging_interval }}'
-          s3_location: '{{ s3_logging_bucket_a }}'
-          s3_prefix: '{{ default_logging_prefix }}'
+          interval: "{{ default_logging_interval }}"
+          s3_location: "{{ s3_logging_bucket_a }}"
+          s3_prefix: "{{ default_logging_prefix }}"
           enabled: true
       register: result
 
     - name: Verify that simple parameters were set
-      assert:
+      ansible.builtin.assert:
         that:
           - result is changed
           - result.elb.status == "created"
@@ -55,23 +55,21 @@
     ## AZ / Subnet changes are tested in wth the public/internal tests
     ## because they depend on the scheme of the LB
 
-    - include_tasks: 'simple_securitygroups.yml'
-    - include_tasks: 'simple_listeners.yml'
-    - include_tasks: 'simple_healthcheck.yml'
-    - include_tasks: 'simple_tags.yml'
-    - include_tasks: 'simple_cross_az.yml'
-    - include_tasks: 'simple_idle_timeout.yml'
-    - include_tasks: 'simple_draining_timeout.yml'
-    - include_tasks: 'simple_proxy_policy.yml'
-    - include_tasks: 'simple_stickiness.yml'
-    - include_tasks: 'simple_instances.yml'
-    - include_tasks: 'simple_logging.yml'
-
+    - ansible.builtin.include_tasks: simple_securitygroups.yml
+    - ansible.builtin.include_tasks: simple_listeners.yml
+    - ansible.builtin.include_tasks: simple_healthcheck.yml
+    - ansible.builtin.include_tasks: simple_tags.yml
+    - ansible.builtin.include_tasks: simple_cross_az.yml
+    - ansible.builtin.include_tasks: simple_idle_timeout.yml
+    - ansible.builtin.include_tasks: simple_draining_timeout.yml
+    - ansible.builtin.include_tasks: simple_proxy_policy.yml
+    - ansible.builtin.include_tasks: simple_stickiness.yml
+    - ansible.builtin.include_tasks: simple_instances.yml
+    - ansible.builtin.include_tasks: simple_logging.yml
   always:
-
     # ============================================================
     - name: remove the test load balancer
-      elb_classic_lb:
+      amazon.aws.elb_classic_lb:
         name: "{{ elb_name }}"
         state: absent
         wait: true

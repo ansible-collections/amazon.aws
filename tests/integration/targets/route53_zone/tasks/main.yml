@@ -1,19 +1,18 @@
 ---
-- name: 'route53_zone integration tests'
+- name: route53_zone integration tests
   collections:
     - amazon.aws
   module_defaults:
     group/aws:
-      access_key: '{{ aws_access_key }}'
-      secret_key: '{{ aws_secret_key }}'
-      session_token: '{{ security_token | default(omit) }}'
-      region: '{{ aws_region }}'
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
   block:
-
     # ============================================================
 
     - name: Create VPC for use in testing
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         name: "{{ resource_prefix }}-vpc"
         cidr_block: 10.22.32.0/23
         tags:
@@ -23,7 +22,7 @@
 
     # ============================================================
     - name: Create a public zone
-      route53_zone:
+      amazon.aws.route53_zone:
         zone: "{{ resource_prefix }}.public"
         comment: original comment
         state: present
@@ -32,7 +31,7 @@
           another_tag: "{{ resource_prefix }} again"
       register: output
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - output.changed
           - output.comment == 'original comment'
@@ -43,7 +42,7 @@
 
     # ============================================================
     - name: Create a public zone (CHECK MODE)
-      route53_zone:
+      amazon.aws.route53_zone:
         zone: "{{ resource_prefix }}.check.public"
         comment: original comment
         state: present
@@ -51,9 +50,9 @@
           TestTag: "{{ resource_prefix }}"
           another_tag: "{{ resource_prefix }} again"
       register: output
-      check_mode: yes
+      check_mode: true
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - output.changed
           - output.comment == 'original comment'
@@ -64,7 +63,7 @@
 
     # ============================================================
     - name: Do an idemptotent update of a public zone
-      route53_zone:
+      amazon.aws.route53_zone:
         zone: "{{ resource_prefix }}.public"
         comment: original comment
         state: present
@@ -73,7 +72,7 @@
           another_tag: "{{ resource_prefix }} again"
       register: output
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - not output.changed
           - output.comment == 'original comment'
@@ -83,7 +82,7 @@
           - not output.private_zone
 
     - name: Do an idemptotent update of a public zone (CHECK MODE)
-      route53_zone:
+      amazon.aws.route53_zone:
         zone: "{{ resource_prefix }}.public"
         comment: original comment
         state: present
@@ -91,9 +90,9 @@
           TestTag: "{{ resource_prefix }}"
           another_tag: "{{ resource_prefix }} again"
       register: output
-      check_mode: yes
+      check_mode: true
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - not output.changed
           - output.comment == 'original comment'
@@ -104,7 +103,7 @@
 
     # ============================================================
     - name: Modify tags on a public zone
-      route53_zone:
+      amazon.aws.route53_zone:
         zone: "{{ resource_prefix }}.public"
         comment: original comment
         state: present
@@ -113,7 +112,7 @@
         purge_tags: true
       register: output
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - output.changed
           - "'TestTag' not in output.tags"
@@ -121,7 +120,7 @@
 
     # ============================================================
     - name: Update comment and remove tags of a public zone
-      route53_zone:
+      amazon.aws.route53_zone:
         zone: "{{ resource_prefix }}.public"
         comment: updated comment
         state: present
@@ -129,23 +128,23 @@
         tags: {}
       register: output
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - output.changed
           - output.result.comment == "updated comment"
           - not output.tags
 
     - name: Update comment and remove tags of a public zone (CHECK MODE)
-      route53_zone:
+      amazon.aws.route53_zone:
         zone: "{{ resource_prefix }}.public"
         comment: updated comment for check
         state: present
         purge_tags: true
         tags: {}
       register: output
-      check_mode: yes
+      check_mode: true
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - output.changed
           - output.result.comment == "updated comment for check"
@@ -153,45 +152,45 @@
 
     # ============================================================
     - name: Delete public zone (CHECK MODE)
-      route53_zone:
+      amazon.aws.route53_zone:
         zone: "{{ resource_prefix }}.public"
         state: absent
       register: output
-      check_mode: yes
+      check_mode: true
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - output.changed
           - "'Successfully deleted' in output.result"
 
     - name: Delete public zone
-      route53_zone:
+      amazon.aws.route53_zone:
         zone: "{{ resource_prefix }}.public"
         state: absent
       register: output
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - output.changed
           - "'Successfully deleted' in output.result"
 
     # ============================================================
     - name: Create a private zone (CHECK MODE)
-      route53_zone:
+      amazon.aws.route53_zone:
         vpc_id: "{{ testing_vpc.vpc.id }}"
         vpc_region: "{{ aws_region }}"
         zone: "{{ resource_prefix }}.private"
         comment: original comment
         state: present
       register: output
-      check_mode: yes
+      check_mode: true
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - output.changed
 
     - name: Create a private zone
-      route53_zone:
+      amazon.aws.route53_zone:
         vpc_id: "{{ testing_vpc.vpc.id }}"
         vpc_region: "{{ aws_region }}"
         zone: "{{ resource_prefix }}.private"
@@ -199,12 +198,12 @@
         state: present
       register: output
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - output.changed
     # ============================================================
     - name: Idemptotent update a private zone
-      route53_zone:
+      amazon.aws.route53_zone:
         vpc_id: "{{ testing_vpc.vpc.id }}"
         vpc_region: "{{ aws_region }}"
         zone: "{{ resource_prefix }}.private"
@@ -212,29 +211,29 @@
         state: present
       register: output
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - not output.changed
           - "'There is already a private hosted zone in the same region with the same VPC' in output.msg"
 
     - name: Idemptotent update a private zone (CHECK MODE)
-      route53_zone:
+      amazon.aws.route53_zone:
         vpc_id: "{{ testing_vpc.vpc.id }}"
         vpc_region: "{{ aws_region }}"
         zone: "{{ resource_prefix }}.private"
         comment: original comment
         state: present
       register: output
-      check_mode: yes
+      check_mode: true
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - not output.changed
           - "'There is already a private hosted zone in the same region with the same VPC' in output.msg"
 
     # ============================================================
     - name: Update private zone comment
-      route53_zone:
+      amazon.aws.route53_zone:
         vpc_id: "{{ testing_vpc.vpc.id }}"
         vpc_region: "{{ aws_region }}"
         zone: "{{ resource_prefix }}.private"
@@ -242,107 +241,107 @@
         state: present
       register: output
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - output.changed
           - output.result.comment == "updated_comment"
 
     - name: Update private zone comment (CHECK MODE)
-      route53_zone:
+      amazon.aws.route53_zone:
         vpc_id: "{{ testing_vpc.vpc.id }}"
         vpc_region: "{{ aws_region }}"
         zone: "{{ resource_prefix }}.private"
         comment: updated_comment check
         state: present
       register: output
-      check_mode: yes
+      check_mode: true
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - output.changed
           - output.result.comment == "updated_comment check"
 
     # ============================================================
     - name: Try to delete private zone without setting vpc_id and vpc_region
-      route53_zone:
+      amazon.aws.route53_zone:
         zone: "{{ resource_prefix }}.private"
         state: absent
       register: output
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - not output.changed
-          - "output.result == 'No zone to delete.'"
+          - output.result == 'No zone to delete.'
 
     - name: Try to delete private zone without setting vpc_id and vpc_region (CHECK MODE)
-      route53_zone:
+      amazon.aws.route53_zone:
         zone: "{{ resource_prefix }}.private"
         state: absent
       register: output
-      check_mode: yes
+      check_mode: true
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - not output.changed
-          - "output.result == 'No zone to delete.'"
+          - output.result == 'No zone to delete.'
 
     # ============================================================
     - name: Try to delete a public zone that does not exists
-      route53_zone:
+      amazon.aws.route53_zone:
         zone: "{{ resource_prefix }}.publicfake"
         comment: original comment
         state: absent
       register: output
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - not output.changed
-          - "output.result == 'No zone to delete.'"
+          - output.result == 'No zone to delete.'
 
     - name: Try to delete a public zone that does not exists (CHECK MODE)
-      route53_zone:
+      amazon.aws.route53_zone:
         zone: "{{ resource_prefix }}.publicfake"
         comment: original comment
         state: absent
       register: output
-      check_mode: yes
+      check_mode: true
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - not output.changed
-          - "output.result == 'No zone to delete.'"
+          - output.result == 'No zone to delete.'
 
     # ============================================================
     - name: Delete private zone (CHECK MODE)
-      route53_zone:
+      amazon.aws.route53_zone:
         vpc_id: "{{ testing_vpc.vpc.id }}"
         vpc_region: "{{ aws_region }}"
         zone: "{{ resource_prefix }}.private"
         state: absent
       register: output
-      check_mode: yes
+      check_mode: true
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - output.changed
           - "'Successfully deleted' in output.result"
 
     - name: Delete private zone
-      route53_zone:
+      amazon.aws.route53_zone:
         vpc_id: "{{ testing_vpc.vpc.id }}"
         vpc_region: "{{ aws_region }}"
         zone: "{{ resource_prefix }}.private"
         state: absent
       register: output
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - output.changed
           - "'Successfully deleted' in output.result"
 
     # ============================================================
     - name: Create a private zone (new format) (CHECK MODE)
-      route53_zone:
+      amazon.aws.route53_zone:
         vpcs:
           - id: "{{ testing_vpc.vpc.id }}"
             region: "{{ aws_region }}"
@@ -350,14 +349,14 @@
         comment: original comment
         state: present
       register: output
-      check_mode: yes
+      check_mode: true
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - output.changed
 
     - name: Create a private zone (new format)
-      route53_zone:
+      amazon.aws.route53_zone:
         vpcs:
           - id: "{{ testing_vpc.vpc.id }}"
             region: "{{ aws_region }}"
@@ -366,13 +365,13 @@
         state: present
       register: output
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - output.changed
 
     # ============================================================
     - name: Idemptotent update a private zone (new format) (CHECK MODE)
-      route53_zone:
+      amazon.aws.route53_zone:
         vpcs:
           - id: "{{ testing_vpc.vpc.id }}"
             region: "{{ aws_region }}"
@@ -380,15 +379,15 @@
         comment: original comment
         state: present
       register: output
-      check_mode: yes
+      check_mode: true
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - not output.changed
           - "'There is already a private hosted zone in the same region with the same VPC' in output.msg"
 
     - name: Idemptotent update a private zone (new format)
-      route53_zone:
+      amazon.aws.route53_zone:
         vpcs:
           - id: "{{ testing_vpc.vpc.id }}"
             region: "{{ aws_region }}"
@@ -397,14 +396,14 @@
         state: present
       register: output
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - not output.changed
           - "'There is already a private hosted zone in the same region with the same VPC' in output.msg"
 
     # ============================================================
     - name: Update a private zone comment (new format) (CHECK MODE)
-      route53_zone:
+      amazon.aws.route53_zone:
         vpcs:
           - id: "{{ testing_vpc.vpc.id }}"
             region: "{{ aws_region }}"
@@ -412,14 +411,14 @@
         comment: new comment
         state: present
       register: output
-      check_mode: yes
+      check_mode: true
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - output.changed
 
     - name: Update a private zone comment (new format)
-      route53_zone:
+      amazon.aws.route53_zone:
         vpcs:
           - id: "{{ testing_vpc.vpc.id }}"
             region: "{{ aws_region }}"
@@ -428,28 +427,28 @@
         state: present
       register: output
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - output.changed
 
     # ============================================================
     - name: Delete private zone (new format) (CHECK MODE)
-      route53_zone:
+      amazon.aws.route53_zone:
         vpcs:
           - id: "{{ testing_vpc.vpc.id }}"
             region: "{{ aws_region }}"
         zone: "{{ resource_prefix }}.private"
         state: absent
       register: output
-      check_mode: yes
+      check_mode: true
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - output.changed
           - "'Successfully deleted' in output.result"
 
     - name: Delete private zone (new format)
-      route53_zone:
+      amazon.aws.route53_zone:
         vpcs:
           - id: "{{ testing_vpc.vpc.id }}"
             region: "{{ aws_region }}"
@@ -460,7 +459,7 @@
     # ============================================================
     - block:
         - name: Create second VPC for use in testing
-          ec2_vpc_net:
+          amazon.aws.ec2_vpc_net:
             name: "{{ resource_prefix }}-vpc2"
             cidr_block: 10.22.34.0/23
             tags:
@@ -469,7 +468,7 @@
           register: second_testing_vpc
 
         - name: Create a private zone with multiple VPCs (CHECK MODE)
-          route53_zone:
+          amazon.aws.route53_zone:
             vpcs:
               - id: "{{ testing_vpc.vpc.id }}"
                 region: "{{ aws_region }}"
@@ -479,14 +478,14 @@
             comment: original comment
             state: present
           register: output
-          check_mode: yes
+          check_mode: true
 
-        - assert:
+        - ansible.builtin.assert:
             that:
               - output.changed
 
         - name: Create a private zone with multiple VPCs
-          route53_zone:
+          amazon.aws.route53_zone:
             vpcs:
               - id: "{{ testing_vpc.vpc.id }}"
                 region: "{{ aws_region }}"
@@ -497,10 +496,10 @@
             state: present
           register: output
 
-        - assert:
+        - ansible.builtin.assert:
             that:
               - output.changed
-              - output.vpc_id == testing_vpc.vpc.id  # The first one for backwards compatibility
+              - output.vpc_id == testing_vpc.vpc.id # The first one for backwards compatibility
               - output.vpc_region == aws_region
               - (output.vpcs | length) == 2
               - output.vpcs.1.id == second_testing_vpc.vpc.id
@@ -508,7 +507,7 @@
 
         # ============================================================
         - name: Delete private zone with multiple VPCs (CHECK MODE)
-          route53_zone:
+          amazon.aws.route53_zone:
             vpcs:
               - id: "{{ testing_vpc.vpc.id }}"
                 region: "{{ aws_region }}"
@@ -517,15 +516,15 @@
             zone: "{{ resource_prefix }}.private"
             state: absent
           register: output
-          check_mode: yes
+          check_mode: true
 
-        - assert:
+        - ansible.builtin.assert:
             that:
               - output.changed
               - "'Successfully deleted' in output.result"
 
         - name: Delete private zone with multiple VPCs
-          route53_zone:
+          amazon.aws.route53_zone:
             vpcs:
               - id: "{{ testing_vpc.vpc.id }}"
                 region: "{{ aws_region }}"
@@ -535,21 +534,21 @@
             state: absent
           register: output
 
-        - assert:
+        - ansible.builtin.assert:
             that:
               - output.changed
               - "'Successfully deleted' in output.result"
 
       always:
         - name: Delete second VPC for use in testing
-          ec2_vpc_net:
+          amazon.aws.ec2_vpc_net:
             name: "{{ resource_prefix }}-vpc2"
             cidr_block: 10.22.34.0/23
             state: absent
 
     # ============================================================
     - name: Create a public zone
-      route53_zone:
+      amazon.aws.route53_zone:
         zone: "{{ resource_prefix }}.public2"
         comment: this is an example
         state: present
@@ -557,26 +556,26 @@
 
     # Delete zone using its id
     - name: Delete zone using attribute hosted_zone_id (CHECK MODE)
-      route53_zone:
+      amazon.aws.route53_zone:
         zone: "{{ resource_prefix }}.public2"
         hosted_zone_id: "{{new_zone.zone_id}}"
         state: absent
       register: output
-      check_mode: yes
+      check_mode: true
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - output.changed
           - "'Successfully deleted' in output.result"
 
     - name: Delete zone using attribute hosted_zone_id
-      route53_zone:
+      amazon.aws.route53_zone:
         zone: "{{ resource_prefix }}.public2"
         hosted_zone_id: "{{new_zone.zone_id}}"
         state: absent
       register: output
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - output.changed
           - "'Successfully deleted' in output.result"
@@ -584,34 +583,34 @@
   # ============================================================
   always:
     - name: Ensure public zone is deleted
-      route53_zone:
+      amazon.aws.route53_zone:
         zone: "{{ item }}"
         state: absent
       register: removed
       until: removed is not failed
-      ignore_errors: yes
+      ignore_errors: true
       retries: 10
       with_items:
         - "{{ resource_prefix }}.public"
         - "{{ resource_prefix }}.public2"
 
     - name: Ensure private zone is deleted
-      route53_zone:
+      amazon.aws.route53_zone:
         vpc_id: "{{ testing_vpc.vpc.id }}"
         vpc_region: "{{ aws_region }}"
         zone: "{{ resource_prefix }}.private"
         state: absent
       register: removed
       until: removed is not failed
-      ignore_errors: yes
+      ignore_errors: true
       retries: 10
 
     - name: remove the VPC
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         name: "{{ resource_prefix }}-vpc"
         cidr_block: 10.22.32.0/23
         state: absent
       register: removed
       until: removed is not failed
-      ignore_errors: yes
+      ignore_errors: true
       retries: 10

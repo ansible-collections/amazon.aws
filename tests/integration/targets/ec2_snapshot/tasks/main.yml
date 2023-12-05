@@ -23,36 +23,34 @@
 
   block:
     - name: Gather availability zones
-      aws_az_info:
+      amazon.aws.aws_az_info:
       register: azs
 
     - name: Run tasks for testing snapshot createVolumePermissions modifications
-      import_tasks: test_modify_create_volume_permissions.yml
-
-    # Create a new volume in detached mode without tags
+      ansible.builtin.import_tasks: test_modify_create_volume_permissions.yml
     - name: Create a detached volume without tags
-      ec2_vol:
+      amazon.aws.ec2_vol:
         volume_size: 1
-        zone: '{{ azs.availability_zones[0].zone_name }}'
+        zone: "{{ azs.availability_zones[0].zone_name }}"
       register: volume_detached
 
     # Capture snapshot of this detached volume and assert the results
     - name: Create a snapshot of detached volume without tags and store results
-      ec2_snapshot:
-        volume_id: '{{ volume_detached.volume_id }}'
+      amazon.aws.ec2_snapshot:
+        volume_id: "{{ volume_detached.volume_id }}"
       register: untagged_snapshot
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - untagged_snapshot is changed
           - untagged_snapshot.snapshots| length == 1
           - untagged_snapshot.snapshots[0].volume_id == volume_detached.volume_id
 
     - name: Setup an instance for testing, make sure volumes are attached before next task
-      ec2_instance:
-        name: '{{ resource_prefix }}'
+      amazon.aws.ec2_instance:
+        name: "{{ resource_prefix }}"
         instance_type: t2.nano
-        image_id: '{{ ec2_ami_id }}'
+        image_id: "{{ ec2_ami_id }}"
         volumes:
           - device_name: /dev/xvda
             ebs:
@@ -62,37 +60,37 @@
         wait: true
       register: instance
 
-    - set_fact:
-        volume_id: '{{ instance.instances[0].block_device_mappings[0].ebs.volume_id }}'
-        instance_id: '{{ instance.instances[0].instance_id }}'
-        device_name: '{{ instance.instances[0].block_device_mappings[0].device_name }}'
+    - ansible.builtin.set_fact:
+        volume_id: "{{ instance.instances[0].block_device_mappings[0].ebs.volume_id }}"
+        instance_id: "{{ instance.instances[0].instance_id }}"
+        device_name: "{{ instance.instances[0].block_device_mappings[0].device_name }}"
 
     - name: Take snapshot (check mode)
-      ec2_snapshot:
-        instance_id: '{{ instance_id }}'
-        device_name: '{{ device_name }}'
+      amazon.aws.ec2_snapshot:
+        instance_id: "{{ instance_id }}"
+        device_name: "{{ device_name }}"
         snapshot_tags:
-          Test: '{{ resource_prefix }}'
+          Test: "{{ resource_prefix }}"
       check_mode: true
       register: result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is changed
 
     - name: Take snapshot of volume
-      ec2_snapshot:
-        volume_id: '{{ volume_id }}'
+      amazon.aws.ec2_snapshot:
+        volume_id: "{{ volume_id }}"
       register: result
 
     # The Name tag is created automatically as the instance_name; ie the resource_prefix
     - name: Get info about snapshots
-      ec2_snapshot_info:
+      amazon.aws.ec2_snapshot_info:
         filters:
-          "tag:Name": '{{ resource_prefix }}'
+          tag:Name: "{{ resource_prefix }}"
       register: info_result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is changed
           - info_result is not changed
@@ -103,13 +101,13 @@
           - info_result.snapshots[0].tags == result.tags
 
     - name: Get info about snapshots (check_mode)
-      ec2_snapshot_info:
+      amazon.aws.ec2_snapshot_info:
         filters:
-          "tag:Name": '{{ resource_prefix }}'
+          tag:Name: "{{ resource_prefix }}"
       register: info_check
       check_mode: true
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - info_check is not changed
           - info_check.snapshots| length == 1
@@ -119,96 +117,96 @@
           - info_check.snapshots[0].tags == result.tags
 
     - name: Take snapshot if most recent >1hr (False) (check mode)
-      ec2_snapshot:
-        volume_id: '{{ volume_id }}'
+      amazon.aws.ec2_snapshot:
+        volume_id: "{{ volume_id }}"
         snapshot_tags:
-          Name: '{{ resource_prefix }}'
+          Name: "{{ resource_prefix }}"
         last_snapshot_min_age: 60
       check_mode: true
       register: result
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is not changed
 
     - name: Take snapshot if most recent >1hr (False)
-      ec2_snapshot:
-        volume_id: '{{ volume_id }}'
+      amazon.aws.ec2_snapshot:
+        volume_id: "{{ volume_id }}"
         last_snapshot_min_age: 60
       register: result
 
     - name: Get info about snapshots
-      ec2_snapshot_info:
+      amazon.aws.ec2_snapshot_info:
         filters:
-          "tag:Name": '{{ resource_prefix }}'
+          tag:Name: "{{ resource_prefix }}"
       register: info_result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is not changed
           - info_result.snapshots| length == 1
 
     - name: Pause so we can do a last_snapshot_min_age test
-      pause:
+      ansible.builtin.pause:
         minutes: 1
 
     - name: Take snapshot if most recent >1min (True) (check mode)
-      ec2_snapshot:
-        volume_id: '{{ volume_id }}'
+      amazon.aws.ec2_snapshot:
+        volume_id: "{{ volume_id }}"
         snapshot_tags:
-          Name: '{{ resource_prefix }}'
+          Name: "{{ resource_prefix }}"
         last_snapshot_min_age: 1
       check_mode: true
       register: result
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is changed
 
     - name: Take snapshot if most recent >1min (True)
-      ec2_snapshot:
-        volume_id: '{{ volume_id }}'
+      amazon.aws.ec2_snapshot:
+        volume_id: "{{ volume_id }}"
         last_snapshot_min_age: 1
       register: result
 
     - name: Get info about snapshots
-      ec2_snapshot_info:
+      amazon.aws.ec2_snapshot_info:
         filters:
-          "tag:Name": '{{ resource_prefix }}'
+          tag:Name: "{{ resource_prefix }}"
       register: info_result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is changed
           - info_result.snapshots| length == 2
           - result.snapshot_id in ( info_result.snapshots | map(attribute='snapshot_id') | list )
 
     - name: Take snapshot with a tag (check mode)
-      ec2_snapshot:
-        volume_id: '{{ volume_id }}'
+      amazon.aws.ec2_snapshot:
+        volume_id: "{{ volume_id }}"
         snapshot_tags:
-          MyTag: '{{ resource_prefix }}'
+          MyTag: "{{ resource_prefix }}"
       check_mode: true
       register: result
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is changed
 
     - name: Take snapshot and tag it
-      ec2_snapshot:
-        volume_id: '{{ volume_id }}'
+      amazon.aws.ec2_snapshot:
+        volume_id: "{{ volume_id }}"
         snapshot_tags:
-          MyTag: '{{ resource_prefix }}'
+          MyTag: "{{ resource_prefix }}"
       register: tagged_result
 
     - name: Get info about snapshots by tag
-      ec2_snapshot_info:
+      amazon.aws.ec2_snapshot_info:
         filters:
-          "tag:MyTag": '{{ resource_prefix }}'
+          tag:MyTag: "{{ resource_prefix }}"
       register: tag_info_result
 
-    - set_fact:
-        tagged_snapshot_id: '{{ tag_info_result.snapshots[0].snapshot_id }}'
+    - ansible.builtin.set_fact:
+        tagged_snapshot_id: "{{ tag_info_result.snapshots[0].snapshot_id }}"
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - tagged_result is changed
           - tagged_result.tags| length == 2
@@ -217,52 +215,52 @@
           - tagged_result.snapshot_id == tagged_snapshot_id
 
     - name: Get info about all snapshots for this test
-      ec2_snapshot_info:
+      amazon.aws.ec2_snapshot_info:
         filters:
-          "tag:Name": '{{ resource_prefix }}'
+          tag:Name: "{{ resource_prefix }}"
       register: info_result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - info_result.snapshots | length == 3
 
     - name: Generate extra snapshots
-      ec2_snapshot:
-        volume_id: '{{ volume_id }}'
+      amazon.aws.ec2_snapshot:
+        volume_id: "{{ volume_id }}"
         snapshot_tags:
-          ResourcePrefix: '{{ resource_prefix }}'
-      loop: '{{ range(1, 6, 1) | list }}'
+          ResourcePrefix: "{{ resource_prefix }}"
+      loop: "{{ range(1, 6, 1) | list }}"
       loop_control:
         # Anything under 15 will trigger SnapshotCreationPerVolumeRateExceeded,
         # this should now be automatically handled, but pause a little anyway to
         # avoid being aggressive
         pause: 15
-        label: "Generate extra snapshots - {{ item }}"
+        label: Generate extra snapshots - {{ item }}
 
     # Retrieve snapshots in paginated mode
     - name: Get snapshots in paginated mode using max_results option
-      ec2_snapshot_info:
+      amazon.aws.ec2_snapshot_info:
         filters:
-          "tag:Name": '{{ resource_prefix }}'
+          tag:Name: "{{ resource_prefix }}"
         max_results: 5
       register: info_result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - info_result.next_token_id is defined
 
     # Pagination : 2nd request
     - name: Get snapshots for a second paginated request
-      ec2_snapshot_info:
+      amazon.aws.ec2_snapshot_info:
         filters:
-          "tag:Name": '{{ resource_prefix }}'
+          tag:Name: "{{ resource_prefix }}"
         next_token_id: "{{ info_result.next_token_id }}"
         max_results: 5
       register: info_result_2
 
     # note: *MAX* 5 results, sometimes they'll throw us fewer...
     # 8 is the absolute max it should find
-    - assert:
+    - ansible.builtin.assert:
         that:
           - (length_1 | int ) + (length_2 | int) <= 8
       vars:
@@ -271,134 +269,133 @@
 
     # delete the tagged snapshot - check mode
     - name: Delete the tagged snapshot (check mode)
-      ec2_snapshot:
+      amazon.aws.ec2_snapshot:
         state: absent
-        snapshot_id: '{{ tagged_snapshot_id }}'
+        snapshot_id: "{{ tagged_snapshot_id }}"
       register: delete_result_check_mode
       check_mode: true
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - delete_result_check_mode is changed
 
     # check that snapshot_ids and max_results are mutually exclusive
     - name: Check that max_results and snapshot_ids are mutually exclusive
-      ec2_snapshot_info:
+      amazon.aws.ec2_snapshot_info:
         snapshot_ids:
-          - '{{ tagged_snapshot_id }}'
+          - "{{ tagged_snapshot_id }}"
         max_results: 5
       ignore_errors: true
       register: info_result
 
     - name: assert that operation failed
-      assert:
+      ansible.builtin.assert:
         that:
           - info_result is failed
 
     # check that snapshot_ids and next_token_id are mutually exclusive
     - name: Check that snapshot_ids and next_token_id are mutually exclusive
-      ec2_snapshot_info:
+      amazon.aws.ec2_snapshot_info:
         snapshot_ids:
-          - '{{ tagged_snapshot_id }}'
-        next_token_id: 'random_value_token'
+          - "{{ tagged_snapshot_id }}"
+        next_token_id: random_value_token
       ignore_errors: true
       register: info_result
 
     - name: assert that operation failed
-      assert:
+      ansible.builtin.assert:
         that:
           - info_result is failed
 
     # delete the tagged snapshot
     - name: Delete the tagged snapshot
-      ec2_snapshot:
+      amazon.aws.ec2_snapshot:
         state: absent
-        snapshot_id: '{{ tagged_snapshot_id }}'
+        snapshot_id: "{{ tagged_snapshot_id }}"
 
     # delete the tagged snapshot again (results in InvalidSnapshot.NotFound)
     - name: Delete already removed snapshot (check mode)
-      ec2_snapshot:
+      amazon.aws.ec2_snapshot:
         state: absent
-        snapshot_id: '{{ tagged_snapshot_id }}'
+        snapshot_id: "{{ tagged_snapshot_id }}"
       register: delete_result_second_check_mode
       check_mode: true
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - delete_result_second_check_mode is not changed
 
     - name: Delete already removed snapshot (idempotent)
-      ec2_snapshot:
+      amazon.aws.ec2_snapshot:
         state: absent
-        snapshot_id: '{{ tagged_snapshot_id }}'
+        snapshot_id: "{{ tagged_snapshot_id }}"
       register: delete_result_second_idempotent
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - delete_result_second_idempotent is not changed
 
     - name: Get info about all snapshots for this test
-      ec2_snapshot_info:
+      amazon.aws.ec2_snapshot_info:
         filters:
-          "tag:Name": '{{ resource_prefix }}'
+          tag:Name: "{{ resource_prefix }}"
       register: info_result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - info_result.snapshots| length == 7
           - tagged_snapshot_id not in ( info_result.snapshots | map(attribute='snapshot_id') | list )
 
     - name: Delete snapshots
-      ec2_snapshot:
+      amazon.aws.ec2_snapshot:
         state: absent
-        snapshot_id: '{{ item.snapshot_id }}'
-      with_items: '{{ info_result.snapshots }}'
+        snapshot_id: "{{ item.snapshot_id }}"
+      with_items: "{{ info_result.snapshots }}"
 
     - name: Get info about all snapshots for this test
-      ec2_snapshot_info:
+      amazon.aws.ec2_snapshot_info:
         filters:
-          "tag:Name": '{{ resource_prefix }}'
+          tag:Name: "{{ resource_prefix }}"
       register: info_result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - info_result.snapshots| length == 0
 
   always:
-
     - name: Snapshots to delete
-      ec2_snapshot_info:
+      amazon.aws.ec2_snapshot_info:
         filters:
-          "tag:Name": '{{ resource_prefix }}'
+          tag:Name: "{{ resource_prefix }}"
       register: tagged_snapshots
 
     - name: Delete tagged snapshots
-      ec2_snapshot:
+      amazon.aws.ec2_snapshot:
         state: absent
-        snapshot_id: '{{ item.snapshot_id }}'
-      with_items: '{{ tagged_snapshots.snapshots }}'
+        snapshot_id: "{{ item.snapshot_id }}"
+      with_items: "{{ tagged_snapshots.snapshots }}"
       ignore_errors: true
 
     - name: Delete instance
-      ec2_instance:
-        instance_ids: '{{ instance_id }}'
+      amazon.aws.ec2_instance:
+        instance_ids: "{{ instance_id }}"
         state: absent
       ignore_errors: true
 
     - name: Delete volume
-      ec2_vol:
-        id: '{{ volume_id }}'
+      amazon.aws.ec2_vol:
+        id: "{{ volume_id }}"
         state: absent
       ignore_errors: true
 
     - name: Delete detached and untagged volume
-      ec2_vol:
-        id: '{{ volume_detached.volume_id}}'
+      amazon.aws.ec2_vol:
+        id: "{{ volume_detached.volume_id}}"
         state: absent
       ignore_errors: true
 
     - name: Delete untagged snapshot
-      ec2_snapshot:
+      amazon.aws.ec2_snapshot:
         state: absent
-        snapshot_id: '{{ untagged_snapshot.snapshot_id }}'
+        snapshot_id: "{{ untagged_snapshot.snapshot_id }}"
       ignore_errors: true
