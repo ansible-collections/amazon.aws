@@ -50,7 +50,7 @@
         - _result_create_source_db_cluster.engine_mode == "provisioned"
         - "'engine_version' in _result_create_source_db_cluster"
         - "'master_username' in _result_create_source_db_cluster"
-        - _result_create_source_db_cluster.master_username == "{{ username }}"
+        - _result_create_source_db_cluster.master_username == username
         - "'port' in _result_create_source_db_cluster"
         - "'status' in _result_create_source_db_cluster"
         - _result_create_source_db_cluster.status == "available"
@@ -192,17 +192,17 @@
         - "'cluster_create_time' in mysql_cluster"
         - mysql_cluster.copy_tags_to_snapshot == false
         - "'db_cluster_arn' in mysql_cluster"
-        - mysql_cluster.db_cluster_identifier == "{{ mysql_cluster_id }}"
+        - mysql_cluster.db_cluster_identifier == mysql_cluster_id
         - "'db_cluster_parameter_group' in mysql_cluster"
         - "'db_cluster_resource_id' in mysql_cluster"
         - "'endpoint' in mysql_cluster"
         - "'engine' in mysql_cluster"
-        - mysql_cluster.engine == "{{ mysql_engine }}"
+        - mysql_cluster.engine == mysql_engine
         - "'engine_mode' in mysql_cluster"
         - mysql_cluster.engine_mode == "provisioned"
         - "'engine_version' in mysql_cluster"
         - "'master_username' in mysql_cluster"
-        - mysql_cluster.master_username == "{{ username }}"
+        - mysql_cluster.master_username == username
         - "'port' in mysql_cluster"
         - "'status' in mysql_cluster"
         - mysql_cluster.status == "available"

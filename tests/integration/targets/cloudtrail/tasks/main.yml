@@ -333,7 +333,7 @@
       that:
       - output is changed
       - output.trail.name == cloudtrail_name
-      - 'output.trail.s3_key_prefix ==  "{{ cloudtrail_prefix }}-2"'
+      - 'output.trail.s3_key_prefix ==  cloudtrail_prefix+"-2"'
 
   - name: 'Update S3 prefix (no change)'
     cloudtrail:
@@ -345,7 +345,7 @@
       that:
       - output is not changed
       - output.trail.name == cloudtrail_name
-      - 'output.trail.s3_key_prefix ==  "{{ cloudtrail_prefix }}-2"'
+      - 'output.trail.s3_key_prefix ==  cloudtrail_prefix+"-2"'
 
   - name: 'Get the trail info after updating S3 prefix'
     cloudtrail_info:
@@ -356,7 +356,7 @@
   - name: 'Assert that the s3_key_prefix is correct'
     assert:
       that:
-       - 'info.trail_list[0].s3_key_prefix == "{{ cloudtrail_prefix }}-2"'
+       - 'info.trail_list[0].s3_key_prefix == cloudtrail_prefix+"-2"'
 
   - name: 'Remove S3 prefix (CHECK MODE)'
     cloudtrail:
@@ -488,7 +488,7 @@
       that:
       - output is changed
       - output.trail.name == cloudtrail_name
-      - 'output.trail.sns_topic_name ==  "{{ sns_topic }}-2"'
+      - 'output.trail.sns_topic_name ==  sns_topic+"-2"'
 
   - name: 'Update SNS Topic (no change)'
     cloudtrail:
@@ -500,7 +500,7 @@
       that:
       - output is not changed
       - output.trail.name == cloudtrail_name
-      - 'output.trail.sns_topic_name ==  "{{ sns_topic }}-2"'
+      - 'output.trail.sns_topic_name ==  sns_topic+"-2"'
 
   - name: 'Get the trail info with SNS topic after update'
     cloudtrail_info:
@@ -511,7 +511,7 @@
   - name: 'Assert that the sns_topic is correctly set'
     assert:
       that:
-       - 'info.trail_list[0].sns_topic_name == "{{ sns_topic }}-2"'
+       - 'info.trail_list[0].sns_topic_name == sns_topic+"-2"'
 
   #- name: 'Remove SNS Topic (CHECK MODE)'
   #  cloudtrail:
@@ -735,7 +735,7 @@
       that:
       - output is changed
       - output.trail.name == cloudtrail_name
-      - 'output.trail.s3_bucket_name ==  "{{ s3_bucket_name }}-2"'
+      - 'output.trail.s3_bucket_name ==  s3_bucket_name+"-2"'
 
   - name: 'Update S3 bucket (no change)'
     cloudtrail:
@@ -747,7 +747,7 @@
       that:
       - output is not changed
       - output.trail.name == cloudtrail_name
-      - 'output.trail.s3_bucket_name ==  "{{ s3_bucket_name }}-2"'
+      - 'output.trail.s3_bucket_name ==  s3_bucket_name+"-2"'
 
   - name: 'Get the trail info with S3 bucket name'
     cloudtrail_info:
@@ -758,7 +758,7 @@
   - name: 'Assert that the S3 Bucket name is correctly set'
     assert:
       that:
-      - 'info.trail_list[0].s3_bucket_name ==  "{{ s3_bucket_name }}-2"'
+      - 'info.trail_list[0].s3_bucket_name ==  s3_bucket_name+"-2"'
       
   - name: 'Reset S3 bucket'
     cloudtrail:

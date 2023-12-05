@@ -129,7 +129,7 @@
           - update_result is not failed
           - update_result is changed
           - health_check_info.HealthCheck.HealthCheckConfig.IPAddress == '1.2.3.4'
-          - health_check_info.HealthCheck.HealthCheckConfig.FullyQualifiedDomainName == "{{ fqdn_1 }}"
+          - health_check_info.HealthCheck.HealthCheckConfig.FullyQualifiedDomainName == fqdn_1
 
 
     - name: 'Update Health Check by ID - Update IP address and FQDN - idempotency - check_mode'

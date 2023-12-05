@@ -1,5 +1,5 @@
 ---
-- name: set up aws connection info
+- name: Set up aws connection info
   module_defaults:
     group/aws:
       access_key: "{{ aws_access_key }}"
@@ -9,57 +9,56 @@
   collections:
     - amazon.aws
   block:
-  - name: ensure ansible user exists
-    iam_user:
-      name: '{{ test_user }}'
-      state: present
+    - name: Ensure ansible user exists
+      amazon.aws.iam_user:
+        name: "{{ test_user }}"
+        state: present
 
-  - name: Create Safe IAM Managed Policy
-    iam_managed_policy:
-      state: present
-      policy_name: '{{ custom_policy_name }}'
-      policy_description: A safe (deny-all) managed policy
-      policy: "{{ lookup('file', 'deny-all.json') }}"
-    register: create_managed_policy
+    - name: Create Safe IAM Managed Policy
+      community.aws.iam_managed_policy:
+        state: present
+        policy_name: "{{ custom_policy_name }}"
+        policy_description: A safe (deny-all) managed policy
+        policy: "{{ lookup('file', 'deny-all.json') }}"
+      register: create_managed_policy
 
-  - assert:
-      that:
-      - create_managed_policy is succeeded
+    - ansible.builtin.assert:
+        that:
+          - create_managed_policy is succeeded
 
-  - name: ensure group exists
-    iam_group:
-      name: '{{ test_group }}'
-      users:
-        - '{{ test_user }}'
-      state: present
-    register: iam_group
+    - name: Ensure group exists
+      amazon.aws.iam_group:
+        name: "{{ test_group }}"
+        users:
+          - "{{ test_user }}"
+        state: present
+      register: iam_group
 
-  - assert:
-      that:
-        - "'users' in iam_group.iam_group"
-        - "'group' in iam_group.iam_group"
-        - "'attached_policies' in iam_group.iam_group"
-        - iam_group is changed
-        - iam_group.iam_group.group.group_name == test_group
-        - iam_group.iam_group.group.path == "/"
+    - ansible.builtin.assert:
+        that:
+          - "'users' in iam_group.iam_group"
+          - "'group' in iam_group.iam_group"
+          - "'attached_policies' in iam_group.iam_group"
+          - iam_group is changed
+          - iam_group.iam_group.group.group_name == test_group
+          - iam_group.iam_group.group.path == "/"
 
-  - include_tasks: users.yml
-  - include_tasks: path.yml
-  - include_tasks: policy_update.yml
-  - include_tasks: deletion.yml
-
+    - ansible.builtin.include_tasks: users.yml
+    - ansible.builtin.include_tasks: path.yml
+    - ansible.builtin.include_tasks: policy_update.yml
+    - ansible.builtin.include_tasks: deletion.yml
   always:
-  - name: remove group
-    iam_group:
-      name: '{{ test_group }}'
-      state: absent
+    - name: Remove group
+      amazon.aws.iam_group:
+        name: "{{ test_group }}"
+        state: absent
 
-  - name: Remove Safe IAM Managed Policy
-    iam_managed_policy:
-      state: absent
-      policy_name: '{{ custom_policy_name }}'
+    - name: Remove Safe IAM Managed Policy
+      community.aws.iam_managed_policy:
+        state: absent
+        policy_name: "{{ custom_policy_name }}"
 
-  - name: remove ansible user
-    iam_user:
-      name: '{{ test_user }}'
-      state: absent
+    - name: Remove ansible user
+      amazon.aws.iam_user:
+        name: "{{ test_user }}"
+        state: absent

@@ -38,17 +38,17 @@
       - _result_create_db_cluster.copy_tags_to_snapshot == false
       - "'db_cluster_arn' in _result_create_db_cluster"
       - "'db_cluster_identifier' in _result_create_db_cluster"
-      - _result_create_db_cluster.db_cluster_identifier == "{{ cluster_id }}"
+      - _result_create_db_cluster.db_cluster_identifier == cluster_id
       - "'db_cluster_parameter_group' in _result_create_db_cluster"
       - "'db_cluster_resource_id' in _result_create_db_cluster"
       - "'endpoint' in _result_create_db_cluster"
       - "'engine' in _result_create_db_cluster"
-      - _result_create_db_cluster.engine == "{{ engine }}"
+      - _result_create_db_cluster.engine == engine
       - "'engine_mode' in _result_create_db_cluster"
       - _result_create_db_cluster.engine_mode == "provisioned"
       - "'engine_version' in _result_create_db_cluster"
       - "'master_username' in _result_create_db_cluster"
-      - _result_create_db_cluster.master_username == "{{ username }}"
+      - _result_create_db_cluster.master_username == username
       - "'port' in _result_create_db_cluster"
       - _result_create_db_cluster.port == {{ port }}
       - "'status' in _result_create_db_cluster"
@@ -80,17 +80,17 @@
       - _result_tag_db_cluster.copy_tags_to_snapshot == false
       - "'db_cluster_arn' in _result_tag_db_cluster"
       - "'db_cluster_identifier' in _result_tag_db_cluster"
-      - _result_tag_db_cluster.db_cluster_identifier == "{{ cluster_id }}"
+      - _result_tag_db_cluster.db_cluster_identifier == cluster_id
       - "'db_cluster_parameter_group' in _result_tag_db_cluster"
       - "'db_cluster_resource_id' in _result_tag_db_cluster"
       - "'endpoint' in _result_tag_db_cluster"
       - "'engine' in _result_tag_db_cluster"
-      - _result_tag_db_cluster.engine == "{{ engine }}"
+      - _result_tag_db_cluster.engine == engine
       - "'engine_mode' in _result_tag_db_cluster"
       - _result_tag_db_cluster.engine_mode == "provisioned"
       - "'engine_version' in _result_tag_db_cluster"
       - "'master_username' in _result_tag_db_cluster"
-      - _result_tag_db_cluster.master_username == "{{ username }}"
+      - _result_tag_db_cluster.master_username == username
       - "'port' in _result_tag_db_cluster"
       - _result_tag_db_cluster.port == {{ port }}
       - "'status' in _result_tag_db_cluster"
@@ -100,7 +100,7 @@
       - _result_tag_db_cluster.tags | length == 2
       - _result_tag_db_cluster.tags["Created_By"] == "{{ tags_create["Created_By"]
         }}"
-      - _result_tag_db_cluster.tags["Name"] == "{{ tags_create["Name"] }}"
+      - _result_tag_db_cluster.tags["Name"] == tags_create["Name"]
       - "'vpc_security_groups' in _result_tag_db_cluster"
 
   - name: Add a tag and remove a tag (purge_tags is True)
@@ -119,17 +119,17 @@
       - _result_tag_db_cluster.copy_tags_to_snapshot == false
       - "'db_cluster_arn' in _result_tag_db_cluster"
       - "'db_cluster_identifier' in _result_tag_db_cluster"
-      - _result_tag_db_cluster.db_cluster_identifier == "{{ cluster_id }}"
+      - _result_tag_db_cluster.db_cluster_identifier == cluster_id
       - "'db_cluster_parameter_group' in _result_tag_db_cluster"
       - "'db_cluster_resource_id' in _result_tag_db_cluster"
       - "'endpoint' in _result_tag_db_cluster"
       - "'engine' in _result_tag_db_cluster"
-      - _result_tag_db_cluster.engine == "{{ engine }}"
+      - _result_tag_db_cluster.engine == engine
       - "'engine_mode' in _result_tag_db_cluster"
       - _result_tag_db_cluster.engine_mode == "provisioned"
       - "'engine_version' in _result_tag_db_cluster"
       - "'master_username' in _result_tag_db_cluster"
-      - _result_tag_db_cluster.master_username == "{{ username }}"
+      - _result_tag_db_cluster.master_username == username
       - "'port' in _result_tag_db_cluster"
       - _result_tag_db_cluster.port == {{ port }}
       - "'status' in _result_tag_db_cluster"
@@ -137,7 +137,7 @@
       - _result_tag_db_cluster.storage_encrypted == false
       - "'tags' in _result_tag_db_cluster"
       - _result_tag_db_cluster.tags | length == 2
-      - _result_tag_db_cluster.tags["Name"] == "{{ tags_patch['Name'] }}"
+      - _result_tag_db_cluster.tags["Name"] == tags_patch['Name']
       - "'vpc_security_groups' in _result_tag_db_cluster"
 
   - name: Purge a tag from the cluster (CHECK MODE)
@@ -174,17 +174,17 @@
       - _result_tag_db_cluster.copy_tags_to_snapshot == false
       - "'db_cluster_arn' in _result_tag_db_cluster"
       - "'db_cluster_identifier' in _result_tag_db_cluster"
-      - _result_tag_db_cluster.db_cluster_identifier == "{{ cluster_id }}"
+      - _result_tag_db_cluster.db_cluster_identifier == cluster_id
       - "'db_cluster_parameter_group' in _result_tag_db_cluster"
       - "'db_cluster_resource_id' in _result_tag_db_cluster"
       - "'endpoint' in _result_tag_db_cluster"
       - "'engine' in _result_tag_db_cluster"
-      - _result_tag_db_cluster.engine == "{{ engine }}"
+      - _result_tag_db_cluster.engine == engine
       - "'engine_mode' in _result_tag_db_cluster"
       - _result_tag_db_cluster.engine_mode == "provisioned"
       - "'engine_version' in _result_tag_db_cluster"
       - "'master_username' in _result_tag_db_cluster"
-      - _result_tag_db_cluster.master_username == "{{ username }}"
+      - _result_tag_db_cluster.master_username == username
       - "'port' in _result_tag_db_cluster"
       - _result_tag_db_cluster.port == {{ port }}
       - "'status' in _result_tag_db_cluster"
@@ -229,17 +229,17 @@
       - _result_tag_db_cluster.copy_tags_to_snapshot == false
       - "'db_cluster_arn' in _result_tag_db_cluster"
       - "'db_cluster_identifier' in _result_tag_db_cluster"
-      - _result_tag_db_cluster.db_cluster_identifier == "{{ cluster_id }}"
+      - _result_tag_db_cluster.db_cluster_identifier == cluster_id
       - "'db_cluster_parameter_group' in _result_tag_db_cluster"
       - "'db_cluster_resource_id' in _result_tag_db_cluster"
       - "'endpoint' in _result_tag_db_cluster"
       - "'engine' in _result_tag_db_cluster"
-      - _result_tag_db_cluster.engine == "{{ engine }}"
+      - _result_tag_db_cluster.engine == engine
       - "'engine_mode' in _result_tag_db_cluster"
       - _result_tag_db_cluster.engine_mode == "provisioned"
       - "'engine_version' in _result_tag_db_cluster"
       - "'master_username' in _result_tag_db_cluster"
-      - _result_tag_db_cluster.master_username == "{{ username }}"
+      - _result_tag_db_cluster.master_username == username
       - "'port' in _result_tag_db_cluster"
       - _result_tag_db_cluster.port == {{ port }}
       - "'status' in _result_tag_db_cluster"
@@ -268,17 +268,17 @@
       - _result_tag_db_cluster.copy_tags_to_snapshot == false
       - "'db_cluster_arn' in _result_tag_db_cluster"
       - "'db_cluster_identifier' in _result_tag_db_cluster"
-      - _result_tag_db_cluster.db_cluster_identifier == "{{ cluster_id }}"
+      - _result_tag_db_cluster.db_cluster_identifier == cluster_id
       - "'db_cluster_parameter_group' in _result_tag_db_cluster"
       - "'db_cluster_resource_id' in _result_tag_db_cluster"
       - "'endpoint' in _result_tag_db_cluster"
       - "'engine' in _result_tag_db_cluster"
-      - _result_tag_db_cluster.engine == "{{ engine }}"
+      - _result_tag_db_cluster.engine == engine
       - "'engine_mode' in _result_tag_db_cluster"
       - _result_tag_db_cluster.engine_mode == "provisioned"
       - "'engine_version' in _result_tag_db_cluster"
       - "'master_username' in _result_tag_db_cluster"
-      - _result_tag_db_cluster.master_username == "{{ username }}"
+      - _result_tag_db_cluster.master_username == username
       - "'port' in _result_tag_db_cluster"
       - _result_tag_db_cluster.port == {{ port }}
       - "'status' in _result_tag_db_cluster"

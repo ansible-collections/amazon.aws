@@ -1,6 +1,7 @@
+---
 # defaults file for elb_application_lb
 
-resource_short: "{{ '%0.8x'%((16**8) | random(seed=resource_prefix)) }}"
+resource_short: "{{ '%0.8x' % ((16**8) | random(seed=resource_prefix)) }}"
 alb_name: alb-test-{{ resource_short }}
 alb_2_name: alb-test-2-{{ resource_short }}
 tg_name: alb-test-{{ resource_short }}
@@ -24,5 +25,4 @@ elb_access_log_account_id_map:
   us-gov-east-1: "190560391635"
   us-gov-west-1: "048591011584"
 
-
-elb_account_id: '{{ elb_access_log_account_id_map[aws_region] }}'
+elb_account_id: "{{ elb_access_log_account_id_map[aws_region] }}"

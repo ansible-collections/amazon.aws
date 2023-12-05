@@ -85,8 +85,8 @@
   - name: "Confirm whether the check mode is working normally."
     assert:
       that:
-        - "{{ presented_instance_fact.instances | length }} > 0"
-        - "{{ checkmode_instance_fact.instances | length }} == 0"
+        - presented_instance_fact.instances | length > 0
+        - checkmode_instance_fact.instances | length == 0
 
   - name: "Alter it by adding tags"
     ec2_instance:
@@ -142,7 +142,7 @@
     assert:
       that:
         - check_tags.instances[0].tags.Name.startswith(resource_prefix)
-        - "'{{ check_tags.instances[0].state.name }}' in  ['pending', 'running']"
+        - check_tags.instances[0].state.name in  ['pending', 'running']
 
   - name: "Try setting purge_tags to True without specifiying tags (should NOT purge tags)"
     ec2_instance:

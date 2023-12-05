@@ -56,9 +56,9 @@
     - name: Check return values of the create instance task
       assert:
         that:
-          - "{{ create_instance_results.instances | length }} > 0"
-          - "'{{ create_instance_results.instances.0.state.name }}' == 'running'"
-          - "'{{ create_instance_results.spec.HibernationOptions.Configured }}'"
+          - create_instance_results.instances | length > 0
+          - create_instance_results.instances.0.state.name == 'running'
+          - create_instance_results.spec.HibernationOptions.Configured
 
     - name: Gather information about the instance to get the hibernation status
       ec2_instance_info:
@@ -118,8 +118,8 @@
     - name: Check return values of the create instance task
       assert:
         that:
-          - "{{ not create_instance_results.changed }}"
-          - "{{ create_instance_results.instances | length }} > 0"
+          - not create_instance_results.changed
+          - create_instance_results.instances | length > 0
 
     - name: Create instance with hibernation options configured with unencrypted volume
       ec2_instance:

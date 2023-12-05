@@ -37,7 +37,7 @@
         - result is not failed
         - instance_info_result.instances[0].network_interfaces | length == 1
         - '"Would have created ENI if not in check mode." in result.msg'
-        - "'ec2:CreateNetworkInterface' not in {{ result.resource_actions }}"
+        - "'ec2:CreateNetworkInterface' not in result.resource_actions"
 
   - name: Create and attach another interface to above instance
     amazon.aws.ec2_eni:
@@ -96,9 +96,9 @@
         - result is changed
         - result is not failed
         - instance_info_result.instances[0].network_interfaces | length == 2
-        - '"Would have modified ENI: {{ eni_id_attached_multiple }} if not in check mode" in result.msg'
-        - "'ec2:CreateNetworkInterface' not in {{ result.resource_actions }}"
-        - "'ec2:ModifyNetworkInterfaceAttribute' not in {{ result.resource_actions }}"
+        - '"Would have modified ENI: "+eni_id_attached_multiple+" if not in check mode" in result.msg'
+        - "'ec2:CreateNetworkInterface' not in result.resource_actions"
+        - "'ec2:ModifyNetworkInterfaceAttribute' not in result.resource_actions"
 
 #=================================================================
 

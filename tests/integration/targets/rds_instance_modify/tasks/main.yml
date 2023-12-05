@@ -165,7 +165,7 @@
   - assert:
       that:
       - result.changed
-      - result.db_instance_identifier == "{{ instance_id }}"
+      - result.db_instance_identifier == instance_id
 
   - name: Immediately apply the pending update - check_mode
     rds_instance:
@@ -191,7 +191,7 @@
   - assert:
       that:
       - result.changed
-      - result.db_instance_identifier == "{{ modified_instance_id }}"
+      - result.db_instance_identifier == modified_instance_id
 
 
   # Test modifying CA certificate identifier -------------------------------------------

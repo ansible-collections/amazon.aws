@@ -27,19 +27,19 @@
       - "'cluster_create_time' in _result_create_source_db_cluster"
       - _result_create_source_db_cluster.copy_tags_to_snapshot == false
       - "'db_cluster_arn' in _result_create_source_db_cluster"
-      - _result_create_source_db_cluster.db_cluster_identifier == "{{ cluster_id }}"
+      - _result_create_source_db_cluster.db_cluster_identifier == cluster_id
       - "'db_cluster_parameter_group' in _result_create_source_db_cluster"
       - "'db_cluster_resource_id' in _result_create_source_db_cluster"
       - "'endpoint' in _result_create_source_db_cluster"
       - "'engine' in _result_create_source_db_cluster"
-      - _result_create_source_db_cluster.engine == "{{ engine }}"
+      - _result_create_source_db_cluster.engine == engine
       - "'engine_mode' in _result_create_source_db_cluster"
       - _result_create_source_db_cluster.engine_mode == "provisioned"
       - "'engine_version' in _result_create_source_db_cluster"
       - "'master_username' in _result_create_source_db_cluster"
-      - _result_create_source_db_cluster.master_username == "{{ username }}"
+      - _result_create_source_db_cluster.master_username == username
       - "'port' in _result_create_source_db_cluster"
-      - "_result_create_source_db_cluster.port == {{ port }}"
+      - _result_create_source_db_cluster.port == port
       - "'status' in _result_create_source_db_cluster"
       - _result_create_source_db_cluster.status == "available"
       - "'tags' in _result_create_source_db_cluster"
@@ -81,19 +81,19 @@
       - "'allocated_storage' in _result_cluster_snapshot"
       - "'cluster_create_time' in _result_cluster_snapshot"
       - "'db_cluster_identifier' in _result_cluster_snapshot"
-      - _result_cluster_snapshot.db_cluster_identifier == "{{ cluster_id }}"
+      - _result_cluster_snapshot.db_cluster_identifier == cluster_id
       - "'db_cluster_snapshot_identifier' in _result_cluster_snapshot"
-      - _result_cluster_snapshot.db_cluster_snapshot_identifier == "{{ snapshot_id }}"
+      - _result_cluster_snapshot.db_cluster_snapshot_identifier == snapshot_id
       - "'db_cluster_snapshot_arn' in _result_cluster_snapshot"
       - "'engine' in _result_cluster_snapshot"
-      - _result_cluster_snapshot.engine == "{{ engine }}"
+      - _result_cluster_snapshot.engine == engine
       # - "'engine_mode' in _result_cluster_snapshot"
       # - _result_cluster_snapshot.engine_mode == "serverless"
       - "'engine_version' in _result_cluster_snapshot"
       - "'iam_database_authentication_enabled' in _result_cluster_snapshot"
       - "'license_model' in _result_cluster_snapshot"
       - "'master_username' in _result_cluster_snapshot"
-      - _result_cluster_snapshot.master_username == "{{ username }}"
+      - _result_cluster_snapshot.master_username == username
       - "'snapshot_create_time' in _result_cluster_snapshot"
       - "'snapshot_type' in _result_cluster_snapshot"
       - "'status' in _result_cluster_snapshot"
@@ -110,8 +110,8 @@
   - assert:
       that:
       - _result_cluster_snapshot_info is successful
-      - _result_cluster_snapshot_info.cluster_snapshots[0].db_cluster_identifier == "{{ cluster_id }}"
-      - _result_cluster_snapshot_info.cluster_snapshots[0].db_cluster_snapshot_identifier == "{{ snapshot_id }}"
+      - _result_cluster_snapshot_info.cluster_snapshots[0].db_cluster_identifier == cluster_id
+      - _result_cluster_snapshot_info.cluster_snapshots[0].db_cluster_snapshot_identifier == snapshot_id
 
   - name: Get info of the existing DB cluster
     rds_cluster_info:
@@ -146,14 +146,14 @@
       - "'db_cluster_resource_id' in _result_create_source_db_cluster"
       - "'endpoint' in _result_create_source_db_cluster"
       - "'engine' in _result_create_source_db_cluster"
-      - _result_create_source_db_cluster.engine == "{{ engine }}"
+      - _result_create_source_db_cluster.engine == engine
       - "'engine_mode' in _result_create_source_db_cluster"
       - _result_create_source_db_cluster.engine_mode == "provisioned"
       - "'engine_version' in _result_create_source_db_cluster"
       - "'master_username' in _result_create_source_db_cluster"
-      - _result_create_source_db_cluster.master_username == "{{ username }}"
+      - _result_create_source_db_cluster.master_username == username
       - "'port' in _result_create_source_db_cluster"
-      - "_result_create_source_db_cluster.port == {{ port }}"
+      - _result_create_source_db_cluster.port == port
       - "'status' in _result_create_source_db_cluster"
       - _result_create_source_db_cluster.status == "available"
       - "'tags' in _result_create_source_db_cluster"
@@ -178,14 +178,14 @@
       - _result_cluster_snapshot.db_cluster_snapshot_identifier == "{{ snapshot_id }}-b"
       - "'db_cluster_snapshot_arn' in _result_cluster_snapshot"
       - "'engine' in _result_cluster_snapshot"
-      - _result_cluster_snapshot.engine == "{{ engine }}"
+      - _result_cluster_snapshot.engine == engine
       # - "'engine_mode' in _result_cluster_snapshot"
       # - _result_cluster_snapshot.engine_mode == "serverless"
       - "'engine_version' in _result_cluster_snapshot"
       - "'iam_database_authentication_enabled' in _result_cluster_snapshot"
       - "'license_model' in _result_cluster_snapshot"
       - "'master_username' in _result_cluster_snapshot"
-      - _result_cluster_snapshot.master_username == "{{ username }}"
+      - _result_cluster_snapshot.master_username == username
       - "'snapshot_create_time' in _result_cluster_snapshot"
       - "'snapshot_type' in _result_cluster_snapshot"
       - "'status' in _result_cluster_snapshot"
@@ -251,19 +251,19 @@
       - "'allocated_storage' in _result_cluster_snapshot"
       - "'cluster_create_time' in _result_cluster_snapshot"
       - "'db_cluster_identifier' in _result_cluster_snapshot"
-      - _result_cluster_snapshot.db_cluster_identifier == "{{ cluster_id }}"
+      - _result_cluster_snapshot.db_cluster_identifier == cluster_id
       - "'db_cluster_snapshot_identifier' in _result_cluster_snapshot"
       - _result_cluster_snapshot.db_cluster_snapshot_identifier == "{{ snapshot_id }}-b"
       - "'db_cluster_snapshot_arn' in _result_cluster_snapshot"
       - "'engine' in _result_cluster_snapshot"
-      - _result_cluster_snapshot.engine == "{{ engine }}"
+      - _result_cluster_snapshot.engine == engine
       # - "'engine_mode' in _result_cluster_snapshot"
       # - _result_cluster_snapshot.engine_mode == "serverless"
       - "'engine_version' in _result_cluster_snapshot"
       - "'iam_database_authentication_enabled' in _result_cluster_snapshot"
       - "'license_model' in _result_cluster_snapshot"
       - "'master_username' in _result_cluster_snapshot"
-      - _result_cluster_snapshot.master_username == "{{ username }}"
+      - _result_cluster_snapshot.master_username == username
       - "'snapshot_create_time' in _result_cluster_snapshot"
       - "'snapshot_type' in _result_cluster_snapshot"
       - "'status' in _result_cluster_snapshot"
@@ -306,19 +306,19 @@
       - "'allocated_storage' in _result_cluster_snapshot"
       - "'cluster_create_time' in _result_cluster_snapshot"
       - "'db_cluster_identifier' in _result_cluster_snapshot"
-      - _result_cluster_snapshot.db_cluster_identifier == "{{ cluster_id }}"
+      - _result_cluster_snapshot.db_cluster_identifier == cluster_id
       - "'db_cluster_snapshot_identifier' in _result_cluster_snapshot"
       - _result_cluster_snapshot.db_cluster_snapshot_identifier == "{{ snapshot_id }}-b"
       - "'db_cluster_snapshot_arn' in _result_cluster_snapshot"
       - "'engine' in _result_cluster_snapshot"
-      - _result_cluster_snapshot.engine == "{{ engine }}"
+      - _result_cluster_snapshot.engine == engine
       # - "'engine_mode' in _result_cluster_snapshot"
       # - _result_cluster_snapshot.engine_mode == "serverless"
       - "'engine_version' in _result_cluster_snapshot"
       - "'iam_database_authentication_enabled' in _result_cluster_snapshot"
       - "'license_model' in _result_cluster_snapshot"
       - "'master_username' in _result_cluster_snapshot"
-      - _result_cluster_snapshot.master_username == "{{ username }}"
+      - _result_cluster_snapshot.master_username == username
       - "'snapshot_create_time' in _result_cluster_snapshot"
       - "'snapshot_type' in _result_cluster_snapshot"
       - "'status' in _result_cluster_snapshot"
@@ -346,19 +346,19 @@
       - "'allocated_storage' in _result_cluster_snapshot"
       - "'cluster_create_time' in _result_cluster_snapshot"
       - "'db_cluster_identifier' in _result_cluster_snapshot"
-      - _result_cluster_snapshot.db_cluster_identifier == "{{ cluster_id }}"
+      - _result_cluster_snapshot.db_cluster_identifier == cluster_id
       - "'db_cluster_snapshot_identifier' in _result_cluster_snapshot"
       - _result_cluster_snapshot.db_cluster_snapshot_identifier == "{{ snapshot_id }}-b"
       - "'db_cluster_snapshot_arn' in _result_cluster_snapshot"
       - "'engine' in _result_cluster_snapshot"
-      - _result_cluster_snapshot.engine == "{{ engine }}"
+      - _result_cluster_snapshot.engine == engine
       # - "'engine_mode' in _result_cluster_snapshot"
       # - _result_cluster_snapshot.engine_mode == "serverless"
       - "'engine_version' in _result_cluster_snapshot"
       - "'iam_database_authentication_enabled' in _result_cluster_snapshot"
       - "'license_model' in _result_cluster_snapshot"
       - "'master_username' in _result_cluster_snapshot"
-      - _result_cluster_snapshot.master_username == "{{ username }}"
+      - _result_cluster_snapshot.master_username == username
       - "'snapshot_create_time' in _result_cluster_snapshot"
       - "'snapshot_type' in _result_cluster_snapshot"
       - "'status' in _result_cluster_snapshot"
@@ -413,8 +413,8 @@
   - assert:
       that:
         - _result_cluster_copy_snapshot.changed
-        - _result_cluster_copy_snapshot.db_cluster_identifier == "{{ cluster_id }}"
-        - _result_cluster_copy_snapshot.source_db_cluster_snapshot_arn == "{{ _snapshot_arn }}"
+        - _result_cluster_copy_snapshot.db_cluster_identifier == cluster_id
+        - _result_cluster_copy_snapshot.source_db_cluster_snapshot_arn == _snapshot_arn
         - _result_cluster_copy_snapshot.db_cluster_snapshot_identifier == "{{ snapshot_id }}-copy"
         - "'tags' in _result_cluster_copy_snapshot"
         - _result_cluster_copy_snapshot.tags | length == 3
@@ -446,8 +446,8 @@
   - assert:
       that:
         - not _result_cluster_copy_snapshot.changed
-        - _result_cluster_copy_snapshot.db_cluster_identifier == "{{ cluster_id }}"
-        - _result_cluster_copy_snapshot.source_db_cluster_snapshot_arn == "{{ _snapshot_arn }}"
+        - _result_cluster_copy_snapshot.db_cluster_identifier == cluster_id
+        - _result_cluster_copy_snapshot.source_db_cluster_snapshot_arn == _snapshot_arn
         - _result_cluster_copy_snapshot.db_cluster_snapshot_identifier == "{{ snapshot_id }}-copy"
         - "'tags' in _result_cluster_copy_snapshot"
         - _result_cluster_copy_snapshot.tags | length == 3

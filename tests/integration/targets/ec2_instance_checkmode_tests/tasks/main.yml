@@ -47,8 +47,8 @@
   - name: "Confirm whether the check mode is working normally."
     assert:
       that:
-        - "{{ presented_instance_fact.instances | length }} > 0"
-        - "{{ checkmode_instance_fact.instances | length }} == 0"
+        - presented_instance_fact.instances | length > 0
+        - checkmode_instance_fact.instances | length == 0
 
   - name: "Stop instance (check mode)"
     ec2_instance:
@@ -112,7 +112,7 @@
   - name: "Verify that it was not running."
     assert:
       that:
-        - '"{{ confirm_checkmode_runninginstance_fact.instances[0].state.name }}" != "running"'
+        - confirm_checkmode_runninginstance_fact.instances[0].state.name != "running"
 
   - name: "Running instance."
     ec2_instance:
@@ -132,7 +132,7 @@
   - name: "Verify that it was running."
     assert:
       that:
-        - '"{{ confirm_runninginstance_fact.instances[0].state.name }}" == "running"'
+        - confirm_runninginstance_fact.instances[0].state.name == "running"
 
   - name: "Tag instance."
     ec2_instance:
@@ -153,7 +153,7 @@
   - name: "Verify that it hasn't been re-tagged."
     assert:
       that:
-        - '"{{ confirm_not_tagged.instances[0].tags.TestTag }}" == "Some Value"'
+        - confirm_not_tagged.instances[0].tags.TestTag == "Some Value"
 
   - name: "Terminate instance in check mode."
     ec2_instance:
@@ -175,7 +175,7 @@
   - name: "Verify that it was not terminated,"
     assert:
       that:
-        - '"{{ confirm_checkmode_terminatedinstance_fact.instances[0].state.name }}" != "terminated"'
+        - confirm_checkmode_terminatedinstance_fact.instances[0].state.name != "terminated"
 
   - name: "Terminate instance."
     ec2_instance:
@@ -196,7 +196,7 @@
   - name: "Verify that it was terminated,"
     assert:
       that:
-        - '"{{ confirm_terminatedinstance_fact.instances[0].state.name }}" == "terminated"'
+        - confirm_terminatedinstance_fact.instances[0].state.name == "terminated"
 
   always:
   - name: "Terminate checkmode instances"
