@@ -2578,3 +2578,51 @@ releases:
       name: rds_global_cluster_info
       namespace: ''
     release_date: '2023-11-02'
+  7.1.0:
+    changes:
+      bugfixes:
+      - ec2_vpc_subnet - cleanly handle failure when subnet isn't created in time
+        (https://github.com/ansible-collections/amazon.aws/pull/1848).
+      - s3_object - Fix typo that caused false deprecation warning when setting ``overwrite=latest```
+        (https://github.com/ansible-collections/amazon.aws/pull/1847).
+      - s3_object - when doing a put and specifying ``Content-Type`` in metadata,
+        this module (since 6.0.0) erroneously set the ``Content-Type`` to ``None``
+        causing the put to fail. Fix now correctly honours the specified ``Content-Type``
+        (https://github.com/ansible-collections/amazon.aws/issues/1881).
+      minor_changes:
+      - autoscaling_group - minor PEP8 whitespace sanity fixes (https://github.com/ansible-collections/amazon.aws/pull/1846).
+      - ec2_ami_info - simplify parameters to ``get_image_attribute`` to only pass
+        ID of image (https://github.com/ansible-collections/amazon.aws/pull/1846).
+      - ec2_eip - use ``ResourceTags`` to set initial tags upon creation (https://github.com/ansible-collections/amazon.aws/issues/1843)
+      - ec2_security_group - use ``ResourceTags`` to set initial tags upon creation
+        (https://github.com/ansible-collections/amazon.aws/pull/1844)
+      - ec2_vpc_igw - use ``ResourceTags`` to set initial tags upon creation (https://github.com/ansible-collections/amazon.aws/issues/1843)
+      - ec2_vpc_route_table - use ``ResourceTags`` to set initial tags upon creation
+        (https://github.com/ansible-collections/amazon.aws/issues/1843)
+      - ec2_vpc_subnet - the default value for ``tags`` has been changed from ``{}``
+        to ``None``, to remove tags from a subnet an empty map must be explicitly
+        passed to the module (https://github.com/ansible-collections/amazon.aws/pull/1876).
+      - ec2_vpc_subnet - use ``ResourceTags`` to set initial tags upon creation (https://github.com/ansible-collections/amazon.aws/issues/1843)
+      - ec2_vpc_subnet - use ``wait_timeout`` to also control maximum time to wait
+        for initial creation of subnets (https://github.com/ansible-collections/amazon.aws/pull/1848).
+      - iam_group - add support for setting group path (https://github.com/ansible-collections/amazon.aws/pull/1892).
+      - iam_group - adds attached_policies return value (https://github.com/ansible-collections/amazon.aws/pull/1892).
+      - iam_group - code refactored to avoid single long function (https://github.com/ansible-collections/amazon.aws/pull/1892).
+      - ec2_instance - add support for AdditionalInfo option when creating
+        an instance (https://github.com/ansible-collections/amazon.aws/pull/1828).
+      - rds_instance_snapshot - minor PEP8 whitespace sanity fixes (https://github.com/ansible-collections/amazon.aws/pull/1846).
+      release_summary: This release brings some new features and several bugfixes.
+    fragments:
+    - 1828-ec2_instance_additional_info.yml
+    - 1843-ec2_eip.yml
+    - 1843-ec2_security_group-tags.yml
+    - 1843-ec2_vpc_igw.yml
+    - 1843-ec2_vpc_route_table.yml
+    - 1843-ec2_vpc_subnet.yml
+    - 1847-s3_object-fix-false-deprecation-warning.yml
+    - 1848-ec2_vpc_subnet-wait-creation.yml
+    - 1881-allow-s3_object-to-specify-content-type-in-metadata.yml
+    - 20231110-sanity.yml
+    - 20231130-iam_group.yml
+    - release_summary.yml
+    release_date: '2023-12-05'
