@@ -51,12 +51,12 @@
       - "'db_cluster_resource_id' in _result_create_src_db_cluster"
       - "'endpoint' in _result_create_src_db_cluster"
       - "'engine' in _result_create_src_db_cluster"
-      - _result_create_src_db_cluster.engine == "{{ engine }}"
+      - _result_create_src_db_cluster.engine == engine
       - "'engine_mode' in _result_create_src_db_cluster"
       - _result_create_src_db_cluster.engine_mode == "serverless"
       - "'engine_version' in _result_create_src_db_cluster"
       - "'master_username' in _result_create_src_db_cluster"
-      - _result_create_src_db_cluster.master_username == "{{ username }}"
+      - _result_create_src_db_cluster.master_username == username
       - "'port' in _result_create_src_db_cluster"
       - _result_create_src_db_cluster.port == {{ port }}
       - "'status' in _result_create_src_db_cluster"
@@ -107,12 +107,12 @@
       - "'db_cluster_resource_id' in _result_create_replica_db_cluster"
       - "'endpoint' in _result_create_replica_db_cluster"
       - "'engine' in _result_create_replica_db_cluster"
-      - _result_create_replica_db_cluster.engine == "{{ engine }}"
+      - _result_create_replica_db_cluster.engine == engine
       - "'engine_mode' in _result_create_replica_db_cluster"
       - _result_create_replica_db_cluster.engine_mode == "serverless"
       - "'engine_version' in _result_create_replica_db_cluster"
       - "'master_username' in _result_create_replica_db_cluster"
-      - _result_create_replica_db_cluster.master_username == "{{ username }}"
+      - _result_create_replica_db_cluster.master_username == username
       - "'port' in _result_create_replica_db_cluster"
       - _result_create_replica_db_cluster.port == {{ port }}
       - "'status' in _result_create_replica_db_cluster"

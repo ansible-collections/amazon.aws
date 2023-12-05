@@ -892,7 +892,7 @@
             - result is changed
             - "'tags' in result"
             - (result.tags | length) == 1
-            - result.tags["tag_one"] == "{{ resource_prefix }} One"
+            - result.tags["tag_one"] == resource_prefix+" One"
             - "'Tag Two' not in result.tags"
 
       - name: Remove the tag from an S3 object (idempotency)
@@ -911,7 +911,7 @@
             - result is not changed
             - "'tags' in result"
             - (result.tags | length) == 1
-            - result.tags["tag_one"] == "{{ resource_prefix }} One"
+            - result.tags["tag_one"] == resource_prefix+" One"
             - "'Tag Two' not in result.tags"
 
       - name: Add a tag for an S3 object with purge_tags False

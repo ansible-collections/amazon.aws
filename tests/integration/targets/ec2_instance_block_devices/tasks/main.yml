@@ -73,12 +73,12 @@
     - name: Confirm instance was created without check mode
       ansible.builtin.assert:
         that:
-          - "{{ presented_instance_fact.instances | length }} > 0"
+          - presented_instance_fact.instances | length > 0
 
     - name: Confirm instance was not created with check mode
       ansible.builtin.assert:
         that:
-          - "{{ checkmode_instance_fact.instances | length }} == 0"
+          - checkmode_instance_fact.instances | length == 0
 
     - name: Terminate instances
       amazon.aws.ec2_instance:

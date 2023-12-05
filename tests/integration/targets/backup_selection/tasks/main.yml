@@ -123,7 +123,7 @@
           - _result_create_selection_with_all_options.changed
           - "'backup_selection' in _result_create_selection_with_all_options"
           - _result_create_selection_with_all_options.backup_selection.iam_role_arn == iam_role.iam_role.arn
-          - _result_create_selection_with_all_options.backup_selection.selection_name == "all-options-{{ backup_selection_name }}"
+          - _result_create_selection_with_all_options.backup_selection.selection_name == "all-options-"+backup_selection_name
 
     - name: Create an AWS Backup selection with all options (idempotency)
       amazon.aws.backup_selection:
@@ -136,7 +136,7 @@
           - not _result_create_selection_with_all_options_idempotency.changed
           - "'backup_selection' in _result_create_selection_with_all_options_idempotency"
           - _result_create_selection_with_all_options_idempotency.backup_selection.iam_role_arn == iam_role.iam_role.arn
-          - _result_create_selection_with_all_options_idempotency.backup_selection.selection_name == "all-options-{{ backup_selection_name }}"
+          - _result_create_selection_with_all_options_idempotency.backup_selection.selection_name == "all-options-"+backup_selection_name
 
     - name: Get detailed information about the AWS Backup selection
       amazon.aws.backup_selection_info:
@@ -150,7 +150,7 @@
         that:
           - _result_backup_selection_info.backup_selections | length == 1
           - _result_backup_selection_info.backup_selections[0].iam_role_arn == iam_role.iam_role.arn
-          - _result_backup_selection_info.backup_selections[0].selection_name == "all-options-{{ backup_selection_name }}"
+          - _result_backup_selection_info.backup_selections[0].selection_name == "all-options-"+backup_selection_name
           - _result_backup_selection_info.backup_selections[0].resources == ['arn:aws:s3:::a-bucket']
           - _result_backup_selection_info.backup_selections[0].not_resources == ['arn:aws:s3:::another-bucket']
           - _result_backup_selection_info.backup_selections[0].list_of_tags[0].condition_value == "daily"
@@ -205,7 +205,7 @@
           - _result_create_selection_with_minimal_options.changed
           - "'backup_selection' in _result_create_selection_with_minimal_options"
           - _result_create_selection_with_minimal_options.backup_selection.iam_role_arn == iam_role.iam_role.arn
-          - _result_create_selection_with_minimal_options.backup_selection.selection_name == "{{ backup_selection_name }}"
+          - _result_create_selection_with_minimal_options.backup_selection.selection_name == backup_selection_name
 
     - name: Create an AWS Backup selection with minimal options (idempotency)
       amazon.aws.backup_selection:
@@ -218,7 +218,7 @@
           - not  _result_create_selection_with_minimal_options_idempotency.changed
           - "'backup_selection' in  _result_create_selection_with_minimal_options_idempotency"
           - _result_create_selection_with_minimal_options_idempotency.backup_selection.iam_role_arn == iam_role.iam_role.arn
-          - _result_create_selection_with_minimal_options_idempotency.backup_selection.selection_name == "{{ backup_selection_name }}"
+          - _result_create_selection_with_minimal_options_idempotency.backup_selection.selection_name == backup_selection_name
 
     - name: Get detailed information about the AWS Backup selection
       amazon.aws.backup_selection_info:
@@ -232,7 +232,7 @@
         that:
           - _result_backup_selection_info.backup_selections | length == 1
           - _result_backup_selection_info.backup_selections[0].iam_role_arn == iam_role.iam_role.arn
-          - _result_backup_selection_info.backup_selections[0].selection_name == "{{ backup_selection_name }}"
+          - _result_backup_selection_info.backup_selections[0].selection_name == backup_selection_name
           - _result_backup_selection_info.backup_selections[0].resources == ['arn:aws:s3:::a-bucket']
           - _result_backup_selection_info.backup_selections[0].not_resources == []
           - _result_backup_selection_info.backup_selections[0].list_of_tags | length == 0
@@ -282,7 +282,7 @@
     - name: Verify list_of_tags was not added in check mode
       ansible.builtin.assert:
         that:
-          - _result_backup_selection_info.backup_selections[0].selection_name == "{{ backup_selection_name }}"
+          - _result_backup_selection_info.backup_selections[0].selection_name == backup_selection_name
           - _result_backup_selection_info.backup_selections[0].list_of_tags == []
 
     - name: Modify an AWS Backup selection - add list_of_tags
@@ -316,7 +316,7 @@
       ansible.builtin.assert:
         that:
           - _result_backup_selection_info.backup_selections[0].iam_role_arn == iam_role.iam_role.arn
-          - _result_backup_selection_info.backup_selections[0].selection_name == "{{ backup_selection_name }}"
+          - _result_backup_selection_info.backup_selections[0].selection_name == backup_selection_name
           - _result_backup_selection_info.backup_selections[0].resources == [ 'arn:aws:s3:::a-bucket']
           - _result_backup_selection_info.backup_selections[0].not_resources == []
           - _result_backup_selection_info.backup_selections[0].list_of_tags[0].condition_value == "weekly"
@@ -363,7 +363,7 @@
     - name: Verify backup selection conditions were not added in check mode
       ansible.builtin.assert:
         that:
-          - _result_backup_selection_info.backup_selections[0].selection_name == "{{ backup_selection_name }}"
+          - _result_backup_selection_info.backup_selections[0].selection_name == backup_selection_name
           - _result_backup_selection_info.backup_selections[0].conditions.string_not_equals == []
 
     - name: Modify an AWS Backup selection - add conditions
@@ -397,7 +397,7 @@
       ansible.builtin.assert:
         that:
           - _result_backup_selection_info.backup_selections[0].iam_role_arn == iam_role.iam_role.arn
-          - _result_backup_selection_info.backup_selections[0].selection_name == "{{ backup_selection_name }}"
+          - _result_backup_selection_info.backup_selections[0].selection_name == backup_selection_name
           - _result_backup_selection_info.backup_selections[0].resources == ['arn:aws:s3:::a-bucket']
           - _result_backup_selection_info.backup_selections[0].not_resources == []
           - _result_backup_selection_info.backup_selections[0].list_of_tags[0].condition_value == "weekly"
@@ -446,7 +446,7 @@
     - name: Verify backup selection options were not updated in check mode
       ansible.builtin.assert:
         that:
-          - _result_backup_selection_info.backup_selections[0].selection_name == "{{ backup_selection_name }}"
+          - _result_backup_selection_info.backup_selections[0].selection_name == backup_selection_name
           - _result_backup_selection_info.backup_selections[0].resources == ['arn:aws:s3:::a-bucket']
           - _result_backup_selection_info.backup_selections[0].not_resources == []
           - _result_backup_selection_info.backup_selections[0].list_of_tags[0].condition_value == "weekly"
@@ -483,7 +483,7 @@
       ansible.builtin.assert:
         that:
           - _result_backup_selection_info.backup_selections[0].iam_role_arn == iam_role.iam_role.arn
-          - _result_backup_selection_info.backup_selections[0].selection_name == "{{ backup_selection_name }}"
+          - _result_backup_selection_info.backup_selections[0].selection_name == backup_selection_name
           - _result_backup_selection_info.backup_selections[0].resources == ['arn:aws:s3:::another-bucket']
           - _result_backup_selection_info.backup_selections[0].not_resources == ['arn:aws:s3:::a-bucket']
           - _result_backup_selection_info.backup_selections[0].list_of_tags[0].condition_value == "daily"
@@ -528,7 +528,7 @@
     - name: Verify list_of_tags was not removed in check mode
       ansible.builtin.assert:
         that:
-          - _result_backup_selection_info.backup_selections[0].selection_name == "{{ backup_selection_name }}"
+          - _result_backup_selection_info.backup_selections[0].selection_name == backup_selection_name
           - _result_backup_selection_info.backup_selections[0].resources == ['arn:aws:s3:::another-bucket']
           - _result_backup_selection_info.backup_selections[0].not_resources == ['arn:aws:s3:::a-bucket']
           - _result_backup_selection_info.backup_selections[0].list_of_tags [0].condition_value == "daily"
@@ -565,7 +565,7 @@
       ansible.builtin.assert:
         that:
           - _result_backup_selection_info.backup_selections[0].iam_role_arn == iam_role.iam_role.arn
-          - _result_backup_selection_info.backup_selections[0].selection_name == "{{ backup_selection_name }}"
+          - _result_backup_selection_info.backup_selections[0].selection_name == backup_selection_name
           - _result_backup_selection_info.backup_selections[0].resources == ['arn:aws:s3:::another-bucket']
           - _result_backup_selection_info.backup_selections[0].not_resources == ['arn:aws:s3:::a-bucket']
           - _result_backup_selection_info.backup_selections[0].list_of_tags == []
@@ -606,7 +606,7 @@
     - name: Verify conditions were not removed in check mode
       ansible.builtin.assert:
         that:
-          - _result_backup_selection_info.backup_selections[0].selection_name == "{{ backup_selection_name }}"
+          - _result_backup_selection_info.backup_selections[0].selection_name == backup_selection_name
           - _result_backup_selection_info.backup_selections[0].resources == ['arn:aws:s3:::another-bucket']
           - _result_backup_selection_info.backup_selections[0].not_resources == ['arn:aws:s3:::a-bucket']
           - _result_backup_selection_info.backup_selections[0].list_of_tags == []
@@ -643,7 +643,7 @@
       ansible.builtin.assert:
         that:
           - _result_backup_selection_info.backup_selections[0].iam_role_arn == iam_role.iam_role.arn
-          - _result_backup_selection_info.backup_selections[0].selection_name == "{{ backup_selection_name }}"
+          - _result_backup_selection_info.backup_selections[0].selection_name == backup_selection_name
           - _result_backup_selection_info.backup_selections[0].resources == ['arn:aws:s3:::another-bucket']
           - _result_backup_selection_info.backup_selections[0].not_resources == ['arn:aws:s3:::a-bucket']
           - _result_backup_selection_info.backup_selections[0].list_of_tags == []

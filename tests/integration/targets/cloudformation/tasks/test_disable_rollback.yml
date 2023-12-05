@@ -202,7 +202,7 @@
         that:
           - cf_stack.changed
           - cf_stack.output == "Stack UPDATE complete"
-          - stack_info.cloudformation["{{ stack_name }}-failtest"].stack_description.stack_status == "UPDATE_COMPLETE"
+          - stack_info.cloudformation[stack_name+"-failtest"].stack_description.stack_status == "UPDATE_COMPLETE"
 
   always:
 

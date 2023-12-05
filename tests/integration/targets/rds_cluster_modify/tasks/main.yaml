@@ -58,7 +58,7 @@
       - _result_create_source_db_cluster.engine_mode == "provisioned"
       - "'engine_version' in _result_create_source_db_cluster"
       - "'master_username' in _result_create_source_db_cluster"
-      - _result_create_source_db_cluster.master_username == "{{ username }}"
+      - _result_create_source_db_cluster.master_username == username
       - "'port' in _result_create_source_db_cluster"
       - _result_create_source_db_cluster.port == {{ port }}
       - "'status' in _result_create_source_db_cluster"
@@ -93,7 +93,7 @@
       - _result_modify_password.engine_mode == "provisioned"
       - "'engine_version' in _result_modify_password"
       - "'master_username' in _result_modify_password"
-      - _result_modify_password.master_username == "{{ username }}"
+      - _result_modify_password.master_username == username
       - "'port' in _result_create_source_db_cluster"
       - _result_modify_password.port == {{ port }}
       - "'status' in _result_modify_password"
@@ -126,7 +126,7 @@
       - _result_modify_port.engine_mode == "provisioned"
       - "'engine_version' in _result_modify_port"
       - "'master_username' in _result_modify_port"
-      - _result_modify_port.master_username == "{{ username }}"
+      - _result_modify_port.master_username == username
       - "'port' in _result_modify_port"
       - _result_modify_port.port == {{ new_port }}
       - "'status' in _result_modify_port"
@@ -161,7 +161,7 @@
       - _result_modify_id.engine_mode == "provisioned"
       - "'engine_version' in _result_modify_id"
       - "'master_username' in _result_modify_id"
-      - _result_modify_id.master_username == "{{ username }}"
+      - _result_modify_id.master_username == username
       - "'port' in _result_modify_id"
       - _result_modify_id.port == {{ new_port }}
       - "'status' in _result_modify_id"
@@ -220,7 +220,7 @@
       - _result_modify_db_parameter_group_name.engine_mode == "provisioned"
       - "'engine_version' in _result_modify_db_parameter_group_name"
       - "'master_username' in _result_modify_db_parameter_group_name"
-      - _result_modify_db_parameter_group_name.master_username == "{{ username }}"
+      - _result_modify_db_parameter_group_name.master_username == username
       - "'port' in _result_modify_db_parameter_group_name"
       - _result_modify_db_parameter_group_name.db_cluster_parameter_group == "{{ new_db_parameter_group_name
         }}"

@@ -54,5 +54,5 @@
   - name: "Confirm whether the check mode is working normally."
     assert:
       that:
-        - "{{ real_instance_fact.instances | length }} > 0"
-        - "{{ checkmode_instance_fact.instances | length }} == 0"
+        - real_instance_fact.instances | length > 0
+        - checkmode_instance_fact.instances | length == 0

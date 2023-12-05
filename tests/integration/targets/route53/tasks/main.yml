@@ -507,7 +507,7 @@
   - assert:
       that:
       - get_result.nameservers|length > 0
-      - get_result.set.Name == "qdn_test.{{ zone_two }}"
+      - get_result.set.Name == "qdn_test."+zone_two
       - get_result.set.ResourceRecords[0].Value == "192.0.2.1"
       - get_result.set.Type == "A"
 
