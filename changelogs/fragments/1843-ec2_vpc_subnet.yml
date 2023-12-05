@@ -1,4 +1,0 @@
-minor_changes:
-- ec2_vpc_subnet - use ``ResourceTags`` to set initial tags upon creation (https://github.com/ansible-collections/amazon.aws/issues/1843)
-- ec2_vpc_subnet - the default value for ``tags`` has been changed from ``{}`` to ``None``, to remove tags from a subnet an empty map must
-  be explicitly passed to the module (https://github.com/ansible-collections/amazon.aws/pull/1876).
