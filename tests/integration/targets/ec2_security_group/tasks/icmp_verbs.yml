@@ -3,11 +3,11 @@
     # ============================================================
     - name: Create simple rule using icmp verbs
       ec2_security_group:
-        name: '{{ec2_group_name}}-icmp-1'
-        vpc_id: '{{ vpc_result.vpc.id }}'
-        description: '{{ec2_group_description}}'
+        name: "{{ec2_group_name}}-icmp-1"
+        vpc_id: "{{ vpc_result.vpc.id }}"
+        description: "{{ec2_group_description}}"
         rules:
-          - proto: "icmp"
+          - proto: icmp
             icmp_type: 3
             icmp_code: 8
             cidr_ip:
@@ -19,10 +19,10 @@
     - name: Retrieve security group info
       ec2_security_group_info:
         filters:
-          group-name: '{{ ec2_group_name }}-icmp-1'
+          group-name: "{{ ec2_group_name }}-icmp-1"
       register: result_1
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is changed
           - result_1.security_groups is defined
@@ -31,61 +31,60 @@
 
     - name: Create ipv6 rule using icmp verbs
       ec2_security_group:
-        name: '{{ec2_group_name}}-icmp-2'
-        vpc_id: '{{ vpc_result.vpc.id }}'
-        description: '{{ec2_group_description}}'
+        name: "{{ec2_group_name}}-icmp-2"
+        vpc_id: "{{ vpc_result.vpc.id }}"
+        description: "{{ec2_group_description}}"
         rules:
-          - proto: "icmpv6"
+          - proto: icmpv6
             icmp_type: 1
             icmp_code: 4
-            cidr_ipv6: "64:ff9b::/96"
+            cidr_ipv6: 64:ff9b::/96
         state: present
       register: result
 
     - name: Retrieve security group info
       ec2_security_group_info:
         filters:
-          group-name: '{{ ec2_group_name }}-icmp-2'
+          group-name: "{{ ec2_group_name }}-icmp-2"
       register: result_1
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is changed
           - result_1.security_groups is defined
           - (result_1.security_groups|first).group_name == '{{ ec2_group_name }}-icmp-2'
           - (result_1.security_groups|first).ip_permissions[0].ip_protocol == "icmpv6"
 
-
     - name: Create rule using security group referencing
       ec2_security_group:
-        name: '{{ec2_group_name}}-icmp-3'
-        vpc_id: '{{ vpc_result.vpc.id }}'
-        description: '{{ec2_group_description}}'
+        name: "{{ec2_group_name}}-icmp-3"
+        vpc_id: "{{ vpc_result.vpc.id }}"
+        description: "{{ec2_group_description}}"
         rules:
-          - proto: "icmp"
+          - proto: icmp
             icmp_type: 5
             icmp_code: 1
-            group_name: '{{ec2_group_name}}-auto-create-2'
-            group_desc: "sg-group-referencing"
+            group_name: "{{ec2_group_name}}-auto-create-2"
+            group_desc: sg-group-referencing
         state: present
       register: result
 
     - name: Retrieve security group info
       ec2_security_group_info:
         filters:
-          group-name: '{{ ec2_group_name }}-icmp-3'
+          group-name: "{{ ec2_group_name }}-icmp-3"
       register: result_1
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is changed
           - (result_1.security_groups | first).ip_permissions[0].user_id_group_pairs is defined
 
     - name: Create list rule using 0 as icmp_type
       ec2_security_group:
-        name: '{{ec2_group_name}}-icmp-4'
-        vpc_id: '{{ vpc_result.vpc.id }}'
-        description: '{{ec2_group_description}}'
+        name: "{{ec2_group_name}}-icmp-4"
+        vpc_id: "{{ vpc_result.vpc.id }}"
+        description: "{{ec2_group_description}}"
         rules:
           - proto: icmp
             icmp_type: 0
@@ -93,7 +92,7 @@
             cidr_ip:
               - 10.0.0.0/8
               - 172.16.40.10/32
-          - proto: "tcp"
+          - proto: tcp
             from_port: 80
             to_port: 80
             cidr_ip: 172.16.40.10/32
@@ -103,10 +102,10 @@
     - name: Retrieve security group info
       ec2_security_group_info:
         filters:
-          group-name: '{{ ec2_group_name }}-icmp-4'
+          group-name: "{{ ec2_group_name }}-icmp-4"
       register: result_1
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is changed
           - (result_1.security_groups | first).ip_permissions | length == 2
@@ -115,30 +114,30 @@
     # ============================================================
     - name: Create a group with non-ICMP protocol
       ec2_security_group:
-        name: '{{ec2_group_name}}-icmp-4'
-        vpc_id: '{{ vpc_result.vpc.id }}'
-        description: '{{ec2_group_description}}'
+        name: "{{ec2_group_name}}-icmp-4"
+        vpc_id: "{{ vpc_result.vpc.id }}"
+        description: "{{ec2_group_description}}"
         rules:
-        - proto: "tcp"
-          icmp_type: 0
-          icmp_code: 1
-          cidr_ip:
-            - 10.0.0.0/8
-            - 172.16.40.10/32
+          - proto: tcp
+            icmp_type: 0
+            icmp_code: 1
+            cidr_ip:
+              - 10.0.0.0/8
+              - 172.16.40.10/32
         state: present
       register: result
       ignore_errors: true
 
     - name: assert that group creation fails when proto != icmp with icmp parameters
-      assert:
+      ansible.builtin.assert:
         that:
           - result is failed
 
     - name: Create a group with conflicting parameters
       ec2_security_group:
-        name: '{{ec2_group_name}}-icmp-4'
-        vpc_id: '{{ vpc_result.vpc.id }}'
-        description: '{{ec2_group_description}}'
+        name: "{{ec2_group_name}}-icmp-4"
+        vpc_id: "{{ vpc_result.vpc.id }}"
+        description: "{{ec2_group_description}}"
         rules:
           - proto: icmp
             from_port: 5
@@ -153,48 +152,48 @@
       ignore_errors: true
 
     - name: assert that group creation fails when using conflicting parameters
-      assert:
+      ansible.builtin.assert:
         that:
           - result is failed
 
     - name: Create a group with missing icmp parameters
       ec2_security_group:
-        name: '{{ec2_group_name}}-icmp-4'
-        vpc_id: '{{ vpc_result.vpc.id }}'
-        description: '{{ec2_group_description}}'
+        name: "{{ec2_group_name}}-icmp-4"
+        vpc_id: "{{ vpc_result.vpc.id }}"
+        description: "{{ec2_group_description}}"
         rules:
-        - proto: "tcp"
-          icmp_type: 0
-          cidr_ip:
-            - 10.0.0.0/8
-            - 172.16.40.10/32
+          - proto: tcp
+            icmp_type: 0
+            cidr_ip:
+              - 10.0.0.0/8
+              - 172.16.40.10/32
         state: present
       register: result
       ignore_errors: true
 
     - name: assert that group creation fails when missing icmp parameters
-      assert:
+      ansible.builtin.assert:
         that:
           - result is failed
 
   always:
     - name: tidy up egress rule test security group rules
       ec2_security_group:
-        name: '{{ec2_group_name}}-auto-create-2'
-        description: 'sg-group-referencing'
-        vpc_id: '{{ vpc_result.vpc.id }}'
+        name: "{{ec2_group_name}}-auto-create-2"
+        description: sg-group-referencing
+        vpc_id: "{{ vpc_result.vpc.id }}"
         rules: []
         rules_egress: []
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: tidy up egress rule test security group rules
       ec2_security_group:
-        name: '{{ec2_group_name}}-icmp-{{ item }}'
-        description: '{{ec2_group_description}}'
-        vpc_id: '{{ vpc_result.vpc.id }}'
+        name: "{{ec2_group_name}}-icmp-{{ item }}"
+        description: "{{ec2_group_description}}"
+        vpc_id: "{{ vpc_result.vpc.id }}"
         rules: []
         rules_egress: []
-      ignore_errors: yes
+      ignore_errors: true
       with_items:
         - 1
         - 2
@@ -203,17 +202,17 @@
 
     - name: tidy up egress rule test security group rules
       ec2_security_group:
-        name: '{{ec2_group_name}}-auto-create-2'
+        name: "{{ec2_group_name}}-auto-create-2"
         state: absent
-        vpc_id: '{{ vpc_result.vpc.id }}'
-      ignore_errors: yes
+        vpc_id: "{{ vpc_result.vpc.id }}"
+      ignore_errors: true
 
     - name: tidy up egress rule test security group
       ec2_security_group:
-        name: '{{ec2_group_name}}-icmp-{{ item }}'
+        name: "{{ec2_group_name}}-icmp-{{ item }}"
         state: absent
-        vpc_id: '{{ vpc_result.vpc.id }}'
-      ignore_errors: yes
+        vpc_id: "{{ vpc_result.vpc.id }}"
+      ignore_errors: true
       with_items:
         - 1
         - 2

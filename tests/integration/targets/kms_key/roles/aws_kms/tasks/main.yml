@@ -1,11 +1,12 @@
+---
 - name: kms_key integration tests
   collections:
-  - community.aws
+    - community.aws
   module_defaults:
     group/aws:
-      access_key: '{{ aws_access_key }}'
-      secret_key: '{{ aws_secret_key }}'
-      session_token: '{{ security_token | default(omit) }}'
-      region: '{{ aws_region }}'
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
   block:
-  - include_tasks: ./test_{{ inventory_hostname }}.yml
+    - ansible.builtin.include_tasks: ./test_{{ inventory_hostname }}.yml

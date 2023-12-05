@@ -3,57 +3,56 @@
 - name: Tests relating to createVolumePermission
   block:
     - name: Create a volume
-      ec2_vol:
+      amazon.aws.ec2_vol:
         volume_size: 1
-        zone: '{{ azs.availability_zones[0].zone_name }}'
+        zone: "{{ azs.availability_zones[0].zone_name }}"
       register: create_vol_result
 
-    - set_fact:
+    - ansible.builtin.set_fact:
         volume_id: "{{ create_vol_result.volume_id }}"
 
     - name: Take snapshot of volume
-      ec2_snapshot:
-        volume_id: '{{ volume_id }}'
+      amazon.aws.ec2_snapshot:
+        volume_id: "{{ volume_id }}"
         snapshot_tags:
-          Name: 'mandkulk-test-modify-test-snap'
+          Name: mandkulk-test-modify-test-snap
       register: create_snapshot_result
 
-    - set_fact:
+    - ansible.builtin.set_fact:
         snapshot_id: "{{ create_snapshot_result.snapshot_id }}"
 
-
-  # Run Tests ============================================
+    # Run Tests ============================================
 
     - name: Get current createVolumePermission
-      ec2_snapshot_info:
+      amazon.aws.ec2_snapshot_info:
         snapshot_ids:
           - "{{ snapshot_id }}"
       register: info_result
 
     - name: assert that createVolumePermission are "Private"
-      assert:
+      ansible.builtin.assert:
         that:
           - info_result.snapshots[0].create_volume_permissions | length == 0
 
-  # Update Permissions to add user_ids --------------------------------------------------------
+    # Update Permissions to add user_ids --------------------------------------------------------
     - name: Modify snapshot createVolmePermission - ADD new user_ids - check_mode
       amazon.aws.ec2_snapshot:
         snapshot_id: "{{ snapshot_id }}"
         modify_create_vol_permission: true
         user_ids:
-          - '111111111111'
-          - '222222222222'
+          - "111111111111"
+          - "222222222222"
         wait: true
       register: update_permission_result
       check_mode: true
 
     - name: Get current createVolumePermission
-      ec2_snapshot_info:
+      amazon.aws.ec2_snapshot_info:
         snapshot_ids:
           - "{{ snapshot_id }}"
       register: info_result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - update_permission_result is changed
           - update_permission_result is not failed
@@ -64,20 +63,20 @@
         snapshot_id: "{{ snapshot_id }}"
         modify_create_vol_permission: true
         user_ids:
-          - '111111111111'
-          - '222222222222'
+          - "111111111111"
+          - "222222222222"
         wait: true
       register: update_permission_result
 
     - name: Get current createVolumePermission
-      ec2_snapshot_info:
+      amazon.aws.ec2_snapshot_info:
         snapshot_ids:
           - "{{ snapshot_id }}"
       register: info_result
-    - set_fact:
+    - ansible.builtin.set_fact:
         permissions_list: "{{ info_result.snapshots[0].create_volume_permissions | map(attribute='user_id') | list }}"
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - update_permission_result is changed
           - update_permission_result is not failed
@@ -90,20 +89,20 @@
         snapshot_id: "{{ snapshot_id }}"
         modify_create_vol_permission: true
         user_ids:
-          - '111111111111'
-          - '222222222222'
+          - "111111111111"
+          - "222222222222"
         wait: true
       register: update_permission_result
 
     - name: Get current createVolumePermission
-      ec2_snapshot_info:
+      amazon.aws.ec2_snapshot_info:
         snapshot_ids:
           - "{{ snapshot_id }}"
       register: info_result
-    - set_fact:
+    - ansible.builtin.set_fact:
         permissions_list: "{{ info_result.snapshots[0].create_volume_permissions | map(attribute='user_id') | list }}"
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - update_permission_result is not changed
           - update_permission_result is not failed
@@ -114,45 +113,45 @@
         snapshot_id: "{{ snapshot_id }}"
         modify_create_vol_permission: true
         user_ids:
-          - '111111111111'
-          - '222222222222'
+          - "111111111111"
+          - "222222222222"
         wait: true
       register: update_permission_result
       check_mode: true
 
     - name: Get current createVolumePermission
-      ec2_snapshot_info:
+      amazon.aws.ec2_snapshot_info:
         snapshot_ids:
           - "{{ snapshot_id }}"
       register: info_result
-    - set_fact:
+    - ansible.builtin.set_fact:
         permissions_list: "{{ info_result.snapshots[0].create_volume_permissions | map(attribute='user_id') | list }}"
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - update_permission_result is not changed
           - update_permission_result is not failed
           - permissions_list | length == 2
 
-  # Update Permissions to remove user_id --------------------------------------------------------
+    # Update Permissions to remove user_id --------------------------------------------------------
     - name: Modify snapshot createVolmePermission - remove user_id - check_mode
       amazon.aws.ec2_snapshot:
         snapshot_id: "{{ snapshot_id }}"
         modify_create_vol_permission: true
         purge_create_vol_permission: true
         user_ids:
-          - '111111111111'
+          - "111111111111"
         wait: true
       register: update_permission_result
       check_mode: true
 
     - name: Get current createVolumePermission
-      ec2_snapshot_info:
+      amazon.aws.ec2_snapshot_info:
         snapshot_ids:
           - "{{ snapshot_id }}"
       register: info_result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - update_permission_result is changed
           - update_permission_result is not failed
@@ -164,19 +163,19 @@
         modify_create_vol_permission: true
         purge_create_vol_permission: true
         user_ids:
-          - '222222222222'
+          - "222222222222"
         wait: true
       register: update_permission_result
 
     - name: Get current createVolumePermission
-      ec2_snapshot_info:
+      amazon.aws.ec2_snapshot_info:
         snapshot_ids:
           - "{{ snapshot_id }}"
       register: info_result
-    - set_fact:
+    - ansible.builtin.set_fact:
         permissions_list: "{{ info_result.snapshots[0].create_volume_permissions | map(attribute='user_id') | list }}"
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - update_permission_result is changed
           - update_permission_result is not failed
@@ -190,19 +189,19 @@
         modify_create_vol_permission: true
         purge_create_vol_permission: true
         user_ids:
-          - '222222222222'
+          - "222222222222"
         wait: true
       register: update_permission_result
 
     - name: Get current createVolumePermission
-      ec2_snapshot_info:
+      amazon.aws.ec2_snapshot_info:
         snapshot_ids:
           - "{{ snapshot_id }}"
       register: info_result
-    - set_fact:
+    - ansible.builtin.set_fact:
         permissions_list: "{{ info_result.snapshots[0].create_volume_permissions | map(attribute='user_id') | list }}"
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - update_permission_result is not changed
           - update_permission_result is not failed
@@ -214,46 +213,46 @@
         modify_create_vol_permission: true
         purge_create_vol_permission: true
         user_ids:
-          - '222222222222'
+          - "222222222222"
         wait: true
       register: update_permission_result
       check_mode: true
 
     - name: Get current createVolumePermission
-      ec2_snapshot_info:
+      amazon.aws.ec2_snapshot_info:
         snapshot_ids:
           - "{{ snapshot_id }}"
       register: info_result
-    - set_fact:
+    - ansible.builtin.set_fact:
         permissions_list: "{{ info_result.snapshots[0].create_volume_permissions | map(attribute='user_id') | list }}"
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - update_permission_result is not changed
           - update_permission_result is not failed
           - permissions_list | length == 1
 
-  # Update Permissions to Public --------------------------------------------------------
+    # Update Permissions to Public --------------------------------------------------------
     - name: Modify snapshot createVolmePermission - add group_names 'all' - check_mode
       amazon.aws.ec2_snapshot:
         snapshot_id: "{{ snapshot_id }}"
         modify_create_vol_permission: true
         purge_create_vol_permission: true
         group_names:
-          - 'all'
+          - all
         wait: true
       register: update_permission_result
       check_mode: true
 
     - name: Get current createVolumePermission
-      ec2_snapshot_info:
+      amazon.aws.ec2_snapshot_info:
         snapshot_ids:
           - "{{ snapshot_id }}"
       register: info_result
-    - set_fact:
+    - ansible.builtin.set_fact:
         permissions_list: "{{ info_result.snapshots[0].create_volume_permissions | map(attribute='user_id') | list }}"
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - update_permission_result is changed
           - update_permission_result is not failed
@@ -266,19 +265,19 @@
         modify_create_vol_permission: true
         purge_create_vol_permission: true
         group_names:
-          - 'all'
+          - all
         wait: true
       register: update_permission_result
 
     - name: Get current createVolumePermission
-      ec2_snapshot_info:
+      amazon.aws.ec2_snapshot_info:
         snapshot_ids:
           - "{{ snapshot_id }}"
       register: info_result
-    - set_fact:
+    - ansible.builtin.set_fact:
         permissions_list: "{{ info_result.snapshots[0].create_volume_permissions | map(attribute='group') | list }}"
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - update_permission_result is changed
           - update_permission_result is not failed
@@ -292,19 +291,19 @@
         modify_create_vol_permission: true
         purge_create_vol_permission: true
         group_names:
-          - 'all'
+          - all
         wait: true
       register: update_permission_result
 
     - name: Get current createVolumePermission
-      ec2_snapshot_info:
+      amazon.aws.ec2_snapshot_info:
         snapshot_ids:
           - "{{ snapshot_id }}"
       register: info_result
-    - set_fact:
+    - ansible.builtin.set_fact:
         permissions_list: "{{ info_result.snapshots[0].create_volume_permissions | map(attribute='group') | list }}"
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - update_permission_result is not changed
           - update_permission_result is not failed
@@ -318,20 +317,20 @@
         modify_create_vol_permission: true
         purge_create_vol_permission: true
         group_names:
-          - 'all'
+          - all
         wait: true
       register: update_permission_result
       check_mode: true
 
     - name: Get current createVolumePermission
-      ec2_snapshot_info:
+      amazon.aws.ec2_snapshot_info:
         snapshot_ids:
           - "{{ snapshot_id }}"
       register: info_result
-    - set_fact:
+    - ansible.builtin.set_fact:
         permissions_list: "{{ info_result.snapshots[0].create_volume_permissions | map(attribute='group') | list }}"
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - update_permission_result is not changed
           - update_permission_result is not failed
@@ -339,7 +338,7 @@
           - '"222222222222" not in permissions_list'
           - '"all" in permissions_list'
 
-  # Reset Permissions to Private --------------------------------------------------------
+    # Reset Permissions to Private --------------------------------------------------------
     - name: Modify snapshot createVolmePermission - RESET to 'private' - check_mode
       amazon.aws.ec2_snapshot:
         snapshot_id: "{{ snapshot_id }}"
@@ -350,14 +349,14 @@
       check_mode: true
 
     - name: Get current createVolumePermission
-      ec2_snapshot_info:
+      amazon.aws.ec2_snapshot_info:
         snapshot_ids:
           - "{{ snapshot_id }}"
       register: info_result
-    - set_fact:
+    - ansible.builtin.set_fact:
         permissions_list: "{{ info_result.snapshots[0].create_volume_permissions | map(attribute='group') | list }}"
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - update_permission_result is changed
           - update_permission_result is not failed
@@ -374,14 +373,14 @@
       register: update_permission_result
 
     - name: Get current createVolumePermission
-      ec2_snapshot_info:
+      amazon.aws.ec2_snapshot_info:
         snapshot_ids:
           - "{{ snapshot_id }}"
       register: info_result
-    - set_fact:
+    - ansible.builtin.set_fact:
         permissions_list: "{{ info_result.snapshots[0].create_volume_permissions | list }}"
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - update_permission_result is changed
           - update_permission_result is not failed
@@ -398,14 +397,14 @@
       register: update_permission_result
 
     - name: Get current createVolumePermission
-      ec2_snapshot_info:
+      amazon.aws.ec2_snapshot_info:
         snapshot_ids:
           - "{{ snapshot_id }}"
       register: info_result
-    - set_fact:
+    - ansible.builtin.set_fact:
         permissions_list: "{{ info_result.snapshots[0].create_volume_permissions | list }}"
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - update_permission_result is not changed
           - update_permission_result is not failed
@@ -423,14 +422,14 @@
       check_mode: true
 
     - name: Get current createVolumePermission
-      ec2_snapshot_info:
+      amazon.aws.ec2_snapshot_info:
         snapshot_ids:
           - "{{ snapshot_id }}"
       register: info_result
-    - set_fact:
+    - ansible.builtin.set_fact:
         permissions_list: "{{ info_result.snapshots[0].create_volume_permissions | list }}"
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - update_permission_result is not changed
           - update_permission_result is not failed
@@ -438,17 +437,16 @@
           - '"222222222222" not in permissions_list'
           - '"all" not in permissions_list'
 
-# Teardown for this task ===============================
+  # Teardown for this task ===============================
   always:
+    - name: Delete snapshot
+      amazon.aws.ec2_snapshot:
+        snapshot_id: "{{ snapshot_id }}"
+        state: absent
+      ignore_errors: true
 
-  - name: Delete snapshot
-    ec2_snapshot:
-      snapshot_id: "{{ snapshot_id }}"
-      state: absent
-    ignore_errors: true
-
-  - name: Delete volume
-    ec2_vol:
-      id: "{{ volume_id }}"
-      state: absent
-    ignore_errors: true
+    - name: Delete volume
+      amazon.aws.ec2_vol:
+        id: "{{ volume_id }}"
+        state: absent
+      ignore_errors: true

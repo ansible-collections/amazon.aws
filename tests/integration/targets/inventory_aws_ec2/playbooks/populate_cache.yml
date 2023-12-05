@@ -1,19 +1,17 @@
 ---
 - hosts: 127.0.0.1
   connection: local
-  gather_facts: no
+  gather_facts: false
   environment: "{{ ansible_test.environment }}"
   tasks:
-
     - module_defaults:
         group/aws:
-          access_key: '{{ aws_access_key }}'
-          secret_key: '{{ aws_secret_key }}'
-          session_token: '{{ security_token | default(omit) }}'
-          region: '{{ aws_region }}'
+          access_key: "{{ aws_access_key }}"
+          secret_key: "{{ aws_secret_key }}"
+          session_token: "{{ security_token | default(omit) }}"
+          region: "{{ aws_region }}"
       block:
-
-        - debug:
+        - ansible.builtin.debug:
             var: groups
 
-        - include_tasks: tasks/tear_down.yml
+        - ansible.builtin.include_tasks: tasks/tear_down.yml

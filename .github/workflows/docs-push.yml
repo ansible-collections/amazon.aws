@@ -1,3 +1,4 @@
+---
 name: Collection Docs
 concurrency:
   group: docs-push-${{ github.sha }}
@@ -8,9 +9,9 @@ on:
       - main
       - stable-*
     tags:
-      - '*'
+      - "*"
   schedule:
-    - cron: '0 12 * * *'
+    - cron: "0 12 * * *"
 
 jobs:
   build-docs:

@@ -1,11 +1,11 @@
 ---
-availability_zone: '{{ ec2_availability_zone_names[0] }}'
+availability_zone: "{{ ec2_availability_zone_names[0] }}"
 
 # defaults file for test_ec2_ami
-ec2_ami_name: '{{resource_prefix}}'
-ec2_ami_description: 'Created by ansible integration tests'
+ec2_ami_name: "{{resource_prefix}}"
+ec2_ami_description: Created by ansible integration tests
 
-ec2_ami_image: '{{ ec2_ami_id }}'
+ec2_ami_image: "{{ ec2_ami_id }}"
 
-vpc_cidr: '10.{{ 256 | random(seed=resource_prefix) }}.0.0/16'
-subnet_cidr: '10.{{ 256 | random(seed=resource_prefix) }}.1.0/24'
+vpc_cidr: 10.{{ 256 | random(seed=resource_prefix) }}.0.0/16
+subnet_cidr: 10.{{ 256 | random(seed=resource_prefix) }}.1.0/24

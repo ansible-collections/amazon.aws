@@ -1,3 +1,4 @@
+---
 # defaults file for rds_cluster
 
 # Create cluster
@@ -13,5 +14,5 @@ new_password: test-rds_password-new
 
 # Tag cluster
 tags_patch:
-  Name: '{{ tiny_prefix }}-new'
+  Name: "{{ tiny_prefix }}-new"
   Created_by: Ansible rds_cluster integration tests

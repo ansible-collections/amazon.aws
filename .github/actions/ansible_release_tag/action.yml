@@ -1,24 +1,23 @@
-name: "Ansible GitHub Release"
-author: "Mark Chappell (tremble)"
+---
+name: Ansible GitHub Release
+author: Mark Chappell (tremble)
 branding:
-  icon: "git-branch"
-  color: "gray-dark"
-description: "Publish GitHub releases from an action"
+  icon: git-branch
+  color: gray-dark
+description: Publish GitHub releases from an action
 
 inputs:
   release:
-    description: "The release version to publish"
+    description: The release version to publish
     required: true
 
   collection-name:
-    description: "The name of the collection"
+    description: The name of the collection
     required: true
-
 
 runs:
   using: composite
   steps:
-
     - name: Checkout current ref
       uses: actions/checkout@master
       with:

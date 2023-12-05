@@ -28,1568 +28,1563 @@
 - module_defaults:
     # Add this as a default because we (almost) always need it
     amazon.aws.cloudtrail:
-      s3_bucket_name: '{{ s3_bucket_name }}'
-      region: '{{ aws_region }}'
+      s3_bucket_name: "{{ s3_bucket_name }}"
+      region: "{{ aws_region }}"
   collections:
     - amazon.aws
   block:
-
   # ============================================================
   #   Argument Tests
   # ============================================================
-  - name: 'S3 Bucket required when state is "present"'
-    module_defaults: { cloudtrail: {} }
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-    register: output
-    ignore_errors: yes
-  - assert:
-      that:
-      - output is failed
-
-  - name: 'CloudWatch cloudwatch_logs_log_group_arn required when cloudwatch_logs_role_arn passed'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      cloudwatch_logs_role_arn: 'SomeValue'
-    register: output
-    ignore_errors: yes
-  - assert:
-      that:
-      - output is failed
-      - '"parameters are required together" in output.msg'
-      - '"cloudwatch_logs_log_group_arn" in output.msg'
-
-  - name: 'CloudWatch cloudwatch_logs_role_arn required when cloudwatch_logs_log_group_arn passed'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      cloudwatch_logs_log_group_arn: 'SomeValue'
-    register: output
-    ignore_errors: yes
-  - assert:
-      that:
-      - output is failed
-      - '"parameters are required together" in output.msg'
-      - '"cloudwatch_logs_role_arn" in output.msg'
-
-  #- name: 'Global Logging must be enabled when enabling Multi-region'
-  #  cloudtrail:
-  #    state: present
-  #    name: '{{ cloudtrail_name }}'
-  #    include_global_events: no
-  #    is_multi_region_trail: yes
-  #  register: output
-  #  ignore_errors: yes
-  #- assert:
-  #    that:
-  #    - output is failed
-
-  # ============================================================
-  #   Preparation
-  # ============================================================
-  - name: 'Retrieve caller facts'
-    aws_caller_info: {}
-    register: aws_caller_info
-
-  - name: 'Create S3 bucket'
-    vars:
-      bucket_name: '{{ s3_bucket_name }}'
-    s3_bucket:
-      state: present
-      name: '{{ bucket_name }}'
-      policy: '{{ lookup("template", "s3-policy.j2") }}'
-  - name: 'Create second S3 bucket'
-    vars:
-      bucket_name: '{{ s3_bucket_name }}-2'
-    s3_bucket:
-      state: present
-      name: '{{ bucket_name }}'
-      policy: '{{ lookup("template", "s3-policy.j2") }}'
-
-  - name: 'Create SNS Topic'
-    vars:
-      sns_topic_name: '{{ sns_topic }}'
-    sns_topic:
-      state: present
-      name: '{{ sns_topic_name }}'
-      display_name: 'Used for testing SNS/CloudWatch integration'
-      policy: "{{ lookup('template', 'sns-policy.j2') | to_json }}"
-    register: output_sns_topic
-  - name: 'Create second SNS Topic'
-    vars:
-      sns_topic_name: '{{ sns_topic }}-2'
-    sns_topic:
-      state: present
-      name: '{{ sns_topic_name }}'
-      display_name: 'Used for testing SNS/CloudWatch integration'
-      policy: "{{ lookup('template', 'sns-policy.j2') | to_json }}"
-
-  - name: 'Create KMS Key'
-    kms_key:
-      state: present
-      alias: '{{ kms_alias }}'
-      enabled: yes
-      policy: "{{ lookup('template', 'kms-policy.j2') | to_json }}"
-    register: kms_key
-  - name: 'Create second KMS Key'
-    kms_key:
-      state: present
-      alias: '{{ kms_alias }}-2'
-      enabled: yes
-      policy: "{{ lookup('template', 'kms-policy.j2') | to_json }}"
-    register: kms_key2
-
-  - name: 'Create CloudWatch IAM Role'
-    iam_role:
-      state: present
-      name: '{{ cloudwatch_role }}'
-      assume_role_policy_document: "{{ lookup('template', 'cloudwatch-assume-policy.j2') }}"
-    register: output_cloudwatch_role
-  - name: 'Create CloudWatch Log Group'
-    cloudwatchlogs_log_group:
-      state: present
-      log_group_name: '{{ cloudwatch_log_group }}'
-      retention: 1
-    register: output_cloudwatch_log_group
-  - name: 'Create second CloudWatch Log Group'
-    cloudwatchlogs_log_group:
-      state: present
-      log_group_name: '{{ cloudwatch_log_group }}-2'
-      retention: 1
-    register: output_cloudwatch_log_group2
-  - name: 'Add inline policy to CloudWatch Role'
-    iam_policy:
-      state: present
-      iam_type: role
-      iam_name: '{{ cloudwatch_role }}'
-      policy_name: 'CloudWatch'
-      policy_json: "{{ lookup('template', 'cloudwatch-policy.j2') | to_json }}"
-
-  - name: 'Create CloudWatch IAM Role with no kms permissions'
-    iam_role:
-      state: present
-      name: '{{ cloudwatch_no_kms_role }}'
-      assume_role_policy_document: "{{ lookup('template', 'cloudtrail-no-kms-assume-policy.j2') }}"
-      managed_policies:
-        - "arn:aws:iam::aws:policy/AWSCloudTrail_FullAccess"
-    register: output_cloudwatch_no_kms_role
-
-  - name: pause to ensure role exists before attaching policy
-    pause:
-      seconds: 15
-
-  - name: 'Add inline policy to CloudWatch Role'
-    iam_policy:
-      state: present
-      iam_type: role
-      iam_name: '{{ cloudwatch_no_kms_role }}'
-      policy_name: 'CloudWatchNokms'
-      policy_json: "{{ lookup('template', 'cloudtrail-no-kms-policy.j2') }}"
-
-  # ============================================================
-  #   Tests
-  # ============================================================
-
-  - name: 'Create a trail (CHECK MODE)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-    register: output
-    check_mode: yes
-  - assert:
-      that:
-      - output is changed
-
-  - name: 'Create a trail'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-    register: output
-  - assert:
-      that:
-      - output is changed
-      - output.exists == True
-      - output.trail.name == cloudtrail_name
-
-  - name: 'No-op update to trail'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-    register: output
-  - assert:
-      that:
-      - output is not changed
-      - output.exists == True
-      # Check everything is what we expect before we start making changes
-      - output.trail.name == cloudtrail_name
-      - output.trail.home_region == aws_region
-      - output.trail.include_global_service_events == True
-      - output.trail.is_multi_region_trail == False
-      - output.trail.is_logging == True
-      - output.trail.log_file_validation_enabled == False
-      - output.trail.s3_bucket_name == s3_bucket_name
-      - output.trail.s3_key_prefix is none
-      - output.trail.kms_key_id is none
-      - output.trail.sns_topic_arn is none
-      - output.trail.sns_topic_name is none
-      - output.trail.tags | length == 0
-
-  - name: 'Get the trail info'
-    cloudtrail_info:
-    register: info
-
-  - name: 'Get the trail name from the cloud trail info'
-    set_fact:
-      trail_present: true
-      trail_arn: '{{ item.resource_id }}'
-    when: item.name == cloudtrail_name
-    loop: "{{ info.trail_list }}"
-
-  - name: 'Assert that the trail name is present in the info'
-    assert:
-      that:
-      - trail_present is defined
-      - trail_present == True
-
-  # ============================================================
-
-  - name: 'Set S3 prefix (CHECK MODE)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      s3_key_prefix: '{{ cloudtrail_prefix }}'
-    register: output
-    check_mode: yes
-  - assert:
-      that:
-      - output is changed
-
-  - name: 'Set S3 prefix'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      s3_key_prefix: '{{ cloudtrail_prefix }}'
-    register: output
-  - assert:
-      that:
-      - output is changed
-      - output.trail.name == cloudtrail_name
-      - output.trail.s3_key_prefix == cloudtrail_prefix
-
-  - name: 'Set S3 prefix (no change)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      s3_key_prefix: '{{ cloudtrail_prefix }}'
-    register: output
-  - assert:
-      that:
-      - output is not changed
-      - output.trail.name == cloudtrail_name
-      - output.trail.s3_key_prefix == cloudtrail_prefix
-
-  - name: 'No-op update to trail'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-    register: output
-  - assert:
-      that:
-      - output is not changed
-      - output.trail.name == cloudtrail_name
-      - output.trail.s3_key_prefix == cloudtrail_prefix
-
-  - name: 'Get the trail info'
-    cloudtrail_info:
-      trail_names:
-        - '{{ trail_arn }}'
-    register: info
-
-  - name: 'Assert that the s3_key_prefix is correct'
-    assert:
-      that:
-       - info.trail_list[0].s3_key_prefix == cloudtrail_prefix
-
-  - name: 'Update S3 prefix (CHECK MODE)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      s3_key_prefix: '{{ cloudtrail_prefix }}-2'
-    register: output
-    check_mode: yes
-  - assert:
-      that:
-      - output is changed
-
-  - name: 'Update S3 prefix'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      s3_key_prefix: '{{ cloudtrail_prefix }}-2'
-    register: output
-  - assert:
-      that:
-      - output is changed
-      - output.trail.name == cloudtrail_name
-      - 'output.trail.s3_key_prefix ==  cloudtrail_prefix+"-2"'
-
-  - name: 'Update S3 prefix (no change)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      s3_key_prefix: '{{ cloudtrail_prefix }}-2'
-    register: output
-  - assert:
-      that:
-      - output is not changed
-      - output.trail.name == cloudtrail_name
-      - 'output.trail.s3_key_prefix ==  cloudtrail_prefix+"-2"'
-
-  - name: 'Get the trail info after updating S3 prefix'
-    cloudtrail_info:
-      trail_names:
-        - '{{ trail_arn }}'
-    register: info
-
-  - name: 'Assert that the s3_key_prefix is correct'
-    assert:
-      that:
-       - 'info.trail_list[0].s3_key_prefix == cloudtrail_prefix+"-2"'
-
-  - name: 'Remove S3 prefix (CHECK MODE)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      s3_key_prefix: '/'
-    register: output
-    check_mode: yes
-  - assert:
-      that:
-      - output is changed
-
-  - name: 'Remove S3 prefix'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      s3_key_prefix: '/'
-    register: output
-  - assert:
-      that:
-      - output is changed
-      - output.trail.name == cloudtrail_name
-      - output.trail.s3_key_prefix is none
-
-  - name: 'Remove S3 prefix (no change)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      s3_key_prefix: '/'
-    register: output
-  - assert:
-      that:
-      - output is not changed
-      - output.trail.name == cloudtrail_name
-      - output.trail.s3_key_prefix is none
-
-  - name: 'Get the trail info after removing S3 prefix'
-    cloudtrail_info:
-      trail_names:
-        - '{{ trail_arn }}'
-    register: info
-
-  - name: 'Assert that the s3_key_prefix is None'
-    assert:
-      that:
-       - info.trail_list[0].s3_key_prefix is not defined
-
-  # ============================================================
-
-  - include_tasks: 'tagging.yml'
-
-  # ============================================================
-
-  - name: 'Set SNS Topic (CHECK MODE)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      sns_topic_name: '{{ sns_topic }}'
-    register: output
-    check_mode: yes
-  - assert:
-      that:
-      - output is changed
-
-  - name: 'Set SNS Topic'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      sns_topic_name: '{{ sns_topic }}'
-    register: output
-  - assert:
-      that:
-      - output is changed
-      - output.trail.name == cloudtrail_name
-      - output.trail.sns_topic_name == sns_topic
-
-  - name: 'Set SNS Topic (no change)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      sns_topic_name: '{{ sns_topic }}'
-    register: output
-  - assert:
-      that:
-      - output is not changed
-      - output.trail.name == cloudtrail_name
-      - output.trail.sns_topic_name == sns_topic
-
-  - name: 'No-op update to trail'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-    register: output
-  - assert:
-      that:
-      - output is not changed
-      - output.trail.name == cloudtrail_name
-      - output.trail.sns_topic_name == sns_topic
-
-  - name: 'Get the trail info with SNS topic'
-    cloudtrail_info:
-      trail_names:
-        - '{{ trail_arn }}'
-    register: info
-
-  - name: 'Assert that the sns_topic is correctly set'
-    assert:
-      that:
-       - info.trail_list[0].sns_topic_name == sns_topic
-
-  - name: 'Update SNS Topic (CHECK MODE)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      sns_topic_name: '{{ sns_topic }}-2'
-    register: output
-    check_mode: yes
-  - assert:
-      that:
-      - output is changed
-
-  - name: 'Update SNS Topic'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      sns_topic_name: '{{ sns_topic }}-2'
-    register: output
-  - assert:
-      that:
-      - output is changed
-      - output.trail.name == cloudtrail_name
-      - 'output.trail.sns_topic_name ==  sns_topic+"-2"'
-
-  - name: 'Update SNS Topic (no change)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      sns_topic_name: '{{ sns_topic }}-2'
-    register: output
-  - assert:
-      that:
-      - output is not changed
-      - output.trail.name == cloudtrail_name
-      - 'output.trail.sns_topic_name ==  sns_topic+"-2"'
-
-  - name: 'Get the trail info with SNS topic after update'
-    cloudtrail_info:
-      trail_names:
-        - '{{ trail_arn }}'
-    register: info
-
-  - name: 'Assert that the sns_topic is correctly set'
-    assert:
-      that:
-       - 'info.trail_list[0].sns_topic_name == sns_topic+"-2"'
-
-  #- name: 'Remove SNS Topic (CHECK MODE)'
-  #  cloudtrail:
-  #    state: present
-  #    name: '{{ cloudtrail_name }}'
-  #    sns_topic_name: ''
-  #  register: output
-  #  check_mode: yes
-  #- assert:
-  #    that:
-  #    - output is changed
-
-  #- name: 'Remove SNS Topic'
-  #  cloudtrail:
-  #    state: present
-  #    name: '{{ cloudtrail_name }}'
-  #    sns_topic_name: ''
-  #  register: output
-  #- assert:
-  #    that:
-  #    - output is changed
-  #    - output.trail.name == cloudtrail_name
-  #    - output.trail.sns_topic_name is none
-
-  #- name: 'Remove SNS Topic (no change)'
-  #  cloudtrail:
-  #    state: present
-  #    name: '{{ cloudtrail_name }}'
-  #    sns_topic_name: ''
-  #  register: output
-  #- assert:
-  #    that:
-  #    - output is not changed
-  #    - output.trail.name == cloudtrail_name
-  #    - output.trail.sns_topic_name is none
-
-
-  # ============================================================
-
-  - name: 'Set CloudWatch Log Group (CHECK MODE)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      cloudwatch_logs_log_group_arn: '{{ output_cloudwatch_log_group.arn }}'
-      cloudwatch_logs_role_arn: '{{ output_cloudwatch_role.arn }}'
-    register: output
-    check_mode: yes
-  - assert:
-      that:
-      - output is changed
-
-  - name: 'Set CloudWatch Log Group'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      cloudwatch_logs_log_group_arn: '{{ output_cloudwatch_log_group.arn }}'
-      cloudwatch_logs_role_arn: '{{ output_cloudwatch_role.arn }}'
-    register: output
-  - assert:
-      that:
-      - output is changed
-      - output.trail.name == cloudtrail_name
-      - output.trail.cloud_watch_logs_log_group_arn == output_cloudwatch_log_group.arn
-      - output.trail.cloud_watch_logs_role_arn == output_cloudwatch_role.arn
-
-  - name: 'Set CloudWatch Log Group (no change)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      cloudwatch_logs_log_group_arn: '{{ output_cloudwatch_log_group.arn }}'
-      cloudwatch_logs_role_arn: '{{ output_cloudwatch_role.arn }}'
-    register: output
-  - assert:
-      that:
-      - output is not changed
-      - output.trail.name == cloudtrail_name
-      - output.trail.cloud_watch_logs_log_group_arn == output_cloudwatch_log_group.arn
-      - output.trail.cloud_watch_logs_role_arn == output_cloudwatch_role.arn
-
-  - name: 'No-op update to trail'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-    register: output
-  - assert:
-      that:
-      - output is not changed
-      - output.trail.name == cloudtrail_name
-      - output.trail.cloud_watch_logs_log_group_arn == output_cloudwatch_log_group.arn
-      - output.trail.cloud_watch_logs_role_arn == output_cloudwatch_role.arn
-
-  - name: 'Get the trail info with CloudWatch Log Group'
-    cloudtrail_info:
-      trail_names:
-        - '{{ trail_arn }}'
-    register: info
-
-  - name: 'Assert that the cloud watch log group is correctly set'
-    assert:
-      that:
-       - info.trail_list[0].cloud_watch_logs_log_group_arn == output_cloudwatch_log_group.arn
-       - info.trail_list[0].cloud_watch_logs_role_arn == output_cloudwatch_role.arn
-
-  - name: 'Update CloudWatch Log Group (CHECK MODE)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      cloudwatch_logs_log_group_arn: '{{ output_cloudwatch_log_group2.arn }}'
-      cloudwatch_logs_role_arn: '{{ output_cloudwatch_role.arn }}'
-    register: output
-    check_mode: yes
-  - assert:
-      that:
-      - output is changed
-      - output.trail.cloud_watch_logs_log_group_arn == output_cloudwatch_log_group2.arn
-      - output.trail.cloud_watch_logs_role_arn == output_cloudwatch_role.arn
-
-  - name: 'Update CloudWatch Log Group'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      cloudwatch_logs_log_group_arn: '{{ output_cloudwatch_log_group2.arn }}'
-      cloudwatch_logs_role_arn: '{{ output_cloudwatch_role.arn }}'
-    register: output
-  - assert:
-      that:
-      - output is changed
-      - output.trail.name == cloudtrail_name
-      - output.trail.cloud_watch_logs_log_group_arn == output_cloudwatch_log_group2.arn
-      - output.trail.cloud_watch_logs_role_arn == output_cloudwatch_role.arn
-
-  - name: 'Update CloudWatch Log Group (no change)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      cloudwatch_logs_log_group_arn: '{{ output_cloudwatch_log_group2.arn }}'
-      cloudwatch_logs_role_arn: '{{ output_cloudwatch_role.arn }}'
-    register: output
-  - assert:
-      that:
-      - output is not changed
-      - output.trail.name == cloudtrail_name
-      - output.trail.cloud_watch_logs_log_group_arn == output_cloudwatch_log_group2.arn
-      - output.trail.cloud_watch_logs_role_arn == output_cloudwatch_role.arn
-
-  - name: 'Get the trail info with CloudWatch Log Group after update'
-    cloudtrail_info:
-      trail_names:
-        - '{{ trail_arn }}'
-    register: info
-
-  - name: 'Assert that the cloud watch log group is correctly set after update'
-    assert:
-      that:
-       - info.trail_list[0].cloud_watch_logs_log_group_arn == output_cloudwatch_log_group2.arn
-       - info.trail_list[0].cloud_watch_logs_role_arn == output_cloudwatch_role.arn
-
-  #- name: 'Remove CloudWatch Log Group (CHECK MODE)'
-  #  cloudtrail:
-  #    state: present
-  #    name: '{{ cloudtrail_name }}'
-  #    cloudwatch_logs_log_group_arn: ''
-  #    cloudwatch_logs_role_arn: ''
-  #  register: output
-  #  check_mode: yes
-  #- assert:
-  #    that:
-  #    - output is changed
-  #    - output.trail.name == cloudtrail_name
-  #    - output.trail.cloud_watch_logs_log_group_arn is none
-  #    - output.trail.cloud_watch_logs_role_arn is none
-
-  #- name: 'Remove CloudWatch Log Group'
-  #  cloudtrail:
-  #    state: present
-  #    name: '{{ cloudtrail_name }}'
-  #    cloudwatch_logs_log_group_arn: ''
-  #    cloudwatch_logs_role_arn: ''
-  #  register: output
-  #- assert:
-  #    that:
-  #    - output is changed
-  #    - output.trail.name == cloudtrail_name
-  #    - output.trail.cloud_watch_logs_log_group_arn is none
-  #    - output.trail.cloud_watch_logs_role_arn is none
-
-  #- name: 'Remove CloudWatch Log Group (no change)'
-  #  cloudtrail:
-  #    state: present
-  #    name: '{{ cloudtrail_name }}'
-  #    cloudwatch_logs_log_group_arn: ''
-  #    cloudwatch_logs_role_arn: ''
-  #  register: output
-  #- assert:
-  #    that:
-  #    - output is not changed
-  #    - output.trail.name == cloudtrail_name
-  #    - output.trail.cloud_watch_logs_log_group_arn is none
-  #    - output.trail.cloud_watch_logs_role_arn is none
-
-  # ============================================================
-
-  - name: 'Update S3 bucket (CHECK MODE)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      s3_bucket_name: '{{ s3_bucket_name }}-2'
-    register: output
-    check_mode: yes
-  - assert:
-      that:
-      - output is changed
-
-  - name: 'Update S3 bucket'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      s3_bucket_name: '{{ s3_bucket_name }}-2'
-    register: output
-  - assert:
-      that:
-      - output is changed
-      - output.trail.name == cloudtrail_name
-      - 'output.trail.s3_bucket_name ==  s3_bucket_name+"-2"'
-
-  - name: 'Update S3 bucket (no change)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      s3_bucket_name: '{{ s3_bucket_name }}-2'
-    register: output
-  - assert:
-      that:
-      - output is not changed
-      - output.trail.name == cloudtrail_name
-      - 'output.trail.s3_bucket_name ==  s3_bucket_name+"-2"'
-
-  - name: 'Get the trail info with S3 bucket name'
-    cloudtrail_info:
-      trail_names:
-        - '{{ trail_arn }}'
-    register: info
-
-  - name: 'Assert that the S3 Bucket name is correctly set'
-    assert:
-      that:
-      - 'info.trail_list[0].s3_bucket_name ==  s3_bucket_name+"-2"'
-      
-  - name: 'Reset S3 bucket'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-    register: output
-  - assert:
-      that:
-      - output.trail.name == cloudtrail_name
-      - output.trail.s3_bucket_name == s3_bucket_name
-
-  # ============================================================
-
-  - name: 'Disable logging (CHECK MODE)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      enable_logging: no
-    register: output
-    check_mode: yes
-  - assert:
-      that:
-      - output is changed
-
-  - name: 'Disable logging'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      enable_logging: no
-    register: output
-  - assert:
-      that:
-      - output is changed
-      - output.trail.name == cloudtrail_name
-      - output.trail.is_logging == False
-
-  - name: 'Disable logging (no change)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      enable_logging: no
-    register: output
-  - assert:
-      that:
-      - output is not changed
-      - output.trail.name == cloudtrail_name
-      - output.trail.is_logging == False
-
-  - name: 'Get the trail info to check the logging state'
-    cloudtrail_info:
-      trail_names:
-        - '{{ trail_arn }}'
-    register: info
-
-  - name: 'Assert that the logging state is correctly set'
-    assert:
-      that:
-      - info.trail_list[0].is_logging ==  False
-
-  # Ansible Documentation lists logging as explicitly defaulting to enabled
-
-  - name: 'Enable logging (CHECK MODE)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      enable_logging: yes
-    register: output
-    check_mode: yes
-  - assert:
-      that:
-      - output is changed
-
-  - name: 'Enable logging'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      enable_logging: yes
-    register: output
-  - assert:
-      that:
-      - output is changed
-      - output.trail.name == cloudtrail_name
-      - output.trail.is_logging == True
-
-  - name: 'Enable logging (no change)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      enable_logging: yes
-    register: output
-  - assert:
-      that:
-      - output is not changed
-      - output.trail.name == cloudtrail_name
-      - output.trail.is_logging == True
-
-  - name: 'Get the trail info to check the logging state'
-    cloudtrail_info:
-      trail_names:
-        - '{{ trail_arn }}'
-    register: info
-
-  - name: 'Assert that the logging state is correctly set'
-    assert:
-      that:
-      - info.trail_list[0].is_logging ==  True
-
-  # ============================================================
-
-  - name: 'Disable global logging (CHECK MODE)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      include_global_events: no
-    register: output
-    check_mode: yes
-  - assert:
-      that:
-      - output is changed
-
-  - name: 'Disable global logging'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      include_global_events: no
-    register: output
-  - assert:
-      that:
-      - output is changed
-      - output.trail.name == cloudtrail_name
-      - output.trail.include_global_service_events == False
-
-  - name: 'Disable global logging (no change)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      include_global_events: no
-    register: output
-  - assert:
-      that:
-      - output is not changed
-      - output.trail.name == cloudtrail_name
-      - output.trail.include_global_service_events == False
-
-  - name: 'Get the trail info to check the global logging state'
-    cloudtrail_info:
-      trail_names:
-        - '{{ trail_arn }}'
-    register: info
-
-  - name: 'Assert that the global logging state is correctly set'
-    assert:
-      that:
-      - info.trail_list[0].include_global_service_events ==  False
-
-  # Ansible Documentation lists Global-logging as explicitly defaulting to enabled
-
-  - name: 'Enable global logging (CHECK MODE)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      include_global_events: yes
-    register: output
-    check_mode: yes
-  - assert:
-      that:
-      - output is changed
-
-  - name: 'Enable global logging'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      include_global_events: yes
-    register: output
-  - assert:
-      that:
-      - output is changed
-      - output.trail.name == cloudtrail_name
-      - output.trail.include_global_service_events == True
-
-  - name: 'Enable global logging (no change)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      include_global_events: yes
-    register: output
-  - assert:
-      that:
-      - output is not changed
-      - output.trail.name == cloudtrail_name
-      - output.trail.include_global_service_events == True
-
-  - name: 'Get the trail info to check the global logging state (default)'
-    cloudtrail_info:
-      trail_names:
-        - '{{ trail_arn }}'
-    register: info
-
-  - name: 'Assert that the global logging state is correctly set (default)'
-    assert:
-      that:
-      - info.trail_list[0].include_global_service_events == True
-
-  # ============================================================
-
-  - name: 'Enable multi-region logging (CHECK MODE)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      is_multi_region_trail: yes
-    register: output
-    check_mode: yes
-  - assert:
-      that:
-      - output is changed
-
-  - name: 'Enable multi-region logging'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      is_multi_region_trail: yes
-    register: output
-  - assert:
-      that:
-      - output is changed
-      - output.trail.name == cloudtrail_name
-      - output.trail.is_multi_region_trail == True
-
-  - name: 'Enable multi-region logging (no change)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      is_multi_region_trail: yes
-    register: output
-  - assert:
-      that:
-      - output is not changed
-      - output.trail.name == cloudtrail_name
-      - output.trail.is_multi_region_trail == True
-
-  - name: 'Get the trail info to check the multi-region logging state (default)'
-    cloudtrail_info:
-      trail_names:
-        - '{{ trail_arn }}'
-    register: info
-
-  - name: 'Assert that the global logging state is correctly set (default)'
-    assert:
-      that:
-      - info.trail_list[0].is_multi_region_trail == True
-
-  # Ansible Documentation lists Multi-Region-logging as explicitly defaulting to disabled
-
-  - name: 'Disable multi-region logging (CHECK MODE)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      is_multi_region_trail: no
-    register: output
-    check_mode: yes
-  - assert:
-      that:
-      - output is changed
-
-  - name: 'Disable multi-region logging'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      is_multi_region_trail: no
-    register: output
-  - assert:
-      that:
-      - output is changed
-      - output.trail.name == cloudtrail_name
-      - output.trail.is_multi_region_trail == False
-
-  - name: 'Disable multi-region logging (no change)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      is_multi_region_trail: no
-    register: output
-  - assert:
-      that:
-      - output is not changed
-      - output.trail.name == cloudtrail_name
-      - output.trail.is_multi_region_trail == False
-
-  - name: 'Get the trail info to check the multi-region logging state (default)'
-    cloudtrail_info:
-      trail_names:
-        - '{{ trail_arn }}'
-    register: info
-
-  - name: 'Assert that the global logging state is correctly set (default)'
-    assert:
-      that:
-      - info.trail_list[0].is_multi_region_trail == False
-
-  # ============================================================
-
-  - name: 'Enable logfile validation (CHECK MODE)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      enable_log_file_validation: yes
-    register: output
-    check_mode: yes
-  - assert:
-      that:
-      - output is changed
-
-  - name: 'Enable logfile validation'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      enable_log_file_validation: yes
-    register: output
-  - assert:
-      that:
-      - output is changed
-      - output.trail.name == cloudtrail_name
-      - output.trail.log_file_validation_enabled == True
-
-  - name: 'Enable logfile validation (no change)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      enable_log_file_validation: yes
-    register: output
-  - assert:
-      that:
-      - output is not changed
-      - output.trail.name == cloudtrail_name
-      - output.trail.log_file_validation_enabled == True
-
-  - name: 'No-op update to trail'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-    register: output
-  - assert:
-      that:
-      - output is not changed
-      - output.trail.name == cloudtrail_name
-      - output.trail.log_file_validation_enabled == True
-
-  - name: 'Get the trail info to check the log file validation'
-    cloudtrail_info:
-      trail_names:
-        - '{{ trail_arn }}'
-    register: info
-
-  - name: 'Assert that the log file validation is correctly set'
-    assert:
-      that:
-      - info.trail_list[0].log_file_validation_enabled == True
-
-  - name: 'Disable logfile validation (CHECK MODE)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      enable_log_file_validation: no
-    register: output
-    check_mode: yes
-  - assert:
-      that:
-      - output is changed
-
-  - name: 'Disable logfile validation'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      enable_log_file_validation: no
-    register: output
-  - assert:
-      that:
-      - output is changed
-      - output.trail.name == cloudtrail_name
-      - output.trail.log_file_validation_enabled == False
-
-  - name: 'Disable logfile validation (no change)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      enable_log_file_validation: no
-    register: output
-  - assert:
-      that:
-      - output is not changed
-      - output.trail.name == cloudtrail_name
-      - output.trail.log_file_validation_enabled == False
-
-  - name: 'Get the trail info to check the log file validation'
-    cloudtrail_info:
-      trail_names:
-        - '{{ trail_arn }}'
-    register: info
-
-  - name: 'Assert that the log file validation is disabled'
-    assert:
-      that:
-      - info.trail_list[0].log_file_validation_enabled == False
-
-  # ============================================================
-
-  - name: 'Enable logging encryption (CHECK MODE)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      kms_key_id: '{{ kms_key.key_arn }}'
-    register: output
-    check_mode: yes
-  - assert:
-      that:
-      - output is changed
-
-  - name: 'Enable logging encryption'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      kms_key_id: '{{ kms_key.key_arn }}'
-    register: output
-  - assert:
-      that:
-      - output is changed
-      - output.trail.kms_key_id == kms_key.key_arn
-
-  - name: 'Enable logging encryption (no change)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      kms_key_id: '{{ kms_key.key_arn }}'
-    register: output
-  - assert:
-      that:
-      - output is not changed
-      - output.trail.kms_key_id == kms_key.key_arn
-
-  - name: 'Enable logging encryption (no change, check mode)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      kms_key_id: '{{ kms_key.key_arn }}'
-    check_mode: yes
-    register: output
-  - assert:
-      that:
-      - output is not changed
-      - output.trail.kms_key_id == kms_key.key_arn
-
-  - name: 'No-op update to trail'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-    register: output
-  - assert:
-      that:
-      - output is not changed
-      - output.trail.kms_key_id == kms_key.key_arn
-
-  - name: 'Get the trail info to check the logging encryption'
-    cloudtrail_info:
-      trail_names:
-        - '{{ trail_arn }}'
-    register: info
-
-  - name: 'Assert that the logging encryption is correctly set'
-    assert:
-      that:
-      - info.trail_list[0].kms_key_id == kms_key.key_arn
-
-  - name: 'Update logging encryption key (CHECK MODE)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      kms_key_id: '{{ kms_key2.key_arn }}'
-    register: output
-    check_mode: yes
-  - assert:
-      that:
-      - output is changed
-
-  - name: 'Update logging encryption key'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      kms_key_id: '{{ kms_key2.key_arn }}'
-    register: output
-  - assert:
-      that:
-      - output is changed
-      - output.trail.kms_key_id == kms_key2.key_arn
-
-  - name: 'Update logging encryption key (no change)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      kms_key_id: '{{ kms_key2.key_arn }}'
-    register: output
-  - assert:
-      that:
-      - output is not changed
-      - output.trail.kms_key_id == kms_key2.key_arn
-
-  - name: 'Get the trail info to check the logging key encryption'
-    cloudtrail_info:
-      trail_names:
-        - '{{ trail_arn }}'
-    register: info
-
-  - name: 'Assert that the logging key encryption is correctly set'
-    assert:
-      that:
-      - info.trail_list[0].kms_key_id == kms_key2.key_arn
-
-  - name: 'Update logging encryption to alias (CHECK MODE)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      kms_key_id: 'alias/{{ kms_alias }}'
-    register: output
-    check_mode: yes
-  - assert:
-      that:
-      - output is changed
-
-  - name: 'Update logging encryption to alias'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      kms_key_id: 'alias/{{ kms_alias }}'
-    register: output
-  - assert:
-      that:
-      - output is changed
-      - output.trail.kms_key_id == kms_key.key_arn
-
-  - name: 'Update logging encryption to alias (no change)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      kms_key_id: 'alias/{{ kms_alias }}'
-    register: output
-  - assert:
-      that:
-      - output is not changed
-      - output.trail.kms_key_id == kms_key.key_arn
-
-  - name: 'Update logging encryption to alias (CHECK MODE, no change)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      kms_key_id: '{{ kms_key.key_id }}' # Test when using key id
-    register: output
-    check_mode: yes
-  - assert:
-      that:
-      - output is not changed
-      - output.trail.kms_key_id == kms_key.key_id
-
-  - debug:
-      msg: '{{ output }}'
-
-  - name: 'Get the trail info to check the logging key encryption after update'
-    cloudtrail_info:
-      trail_names:
-        - '{{ trail_arn }}'
-    register: info
-
-  - name: 'Assert that the logging key encryption is correctly updated'
-    assert:
-      that:
-      - kms_key.key_id in info.trail_list[0].kms_key_id
-
-  # Assume role to a role with Denied access to KMS
-
-  - amazon.aws.sts_assume_role:
-      role_arn: '{{ output_cloudwatch_no_kms_role.arn }}'
-      role_session_name: "cloudtrailNoKms"
-      region: '{{ aws_region }}'
-    register: noKms_assumed_role
-
-  - name: 'Enable logging encryption w/ alias (no change, no kms permmissions, check mode)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      kms_key_id: 'alias/{{ kms_alias }}'
-      access_key: "{{ noKms_assumed_role.sts_creds.access_key }}"
-      secret_key: "{{ noKms_assumed_role.sts_creds.secret_key }}"
-      session_token: "{{ noKms_assumed_role.sts_creds.session_token }}"
-    check_mode: yes
-    register: output
-  - assert:
-      that:
-      - output is changed
-      # when using check_mode, with no kms permissions, and not giving kms_key_id as a key arn
-      # output will always be marked as changed.
-
-  - name: 'Disable logging encryption (CHECK MODE)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      kms_key_id: ''
-    register: output
-    check_mode: yes
-  - assert:
-     that:
-     - output is changed
-
-  - name: 'Disable logging encryption'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      kms_key_id: ''
-    register: output
-  - assert:
-     that:
-     - output.trail.kms_key_id == ""
-     - output is changed
-
-  - name: 'Disable logging encryption (no change)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      kms_key_id: ''
-    register: output
-  - assert:
-     that:
-     - output.kms_key_id == ""
-     - output is not changed
-
-  # ============================================================
-
-  - name: 'Delete a trail without providing bucket_name (CHECK MODE)'
-    module_defaults: { cloudtrail: {} }
-    cloudtrail:
-      state: absent
-      name: '{{ cloudtrail_name }}'
-    register: output
-    check_mode: yes
-  - assert:
-      that:
-      - output is changed
-
-  - name: 'Delete a trail while providing bucket_name (CHECK MODE)'
-    cloudtrail:
-      state: absent
-      name: '{{ cloudtrail_name }}'
-    register: output
-    check_mode: yes
-  - assert:
-      that:
-      - output is changed
-
-  - name: 'Delete a trail'
-    cloudtrail:
-      state: absent
-      name: '{{ cloudtrail_name }}'
-    register: output
-  - assert:
-      that:
-      - output is changed
-      - output.exists == False
-
-  - name: 'Delete a non-existent trail'
-    cloudtrail:
-      state: absent
-      name: '{{ cloudtrail_name }}'
-    register: output
-  - assert:
-      that:
-      - output is not changed
-      - output.exists == False
-
-  # ============================================================
-
-  - name: 'Test creation of a complex Trail (all features)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      s3_key_prefix: '{{ cloudtrail_prefix }}'
-      sns_topic_name: '{{ sns_topic }}'
-      cloudwatch_logs_log_group_arn: '{{ output_cloudwatch_log_group.arn }}'
-      cloudwatch_logs_role_arn: '{{ output_cloudwatch_role.arn }}'
-      is_multi_region_trail: yes
-      include_global_events: yes
-      enable_log_file_validation: yes
-      kms_key_id: '{{ kms_key.key_arn }}'
-    register: output
-  - assert:
-      that:
-      - output is changed
-      #- output.exists == True
-      - output.trail.name == cloudtrail_name
-      - output.trail.home_region == aws_region
-      - output.trail.include_global_service_events == True
-      - output.trail.is_multi_region_trail == True
-      - output.trail.is_logging == True
-      - output.trail.log_file_validation_enabled ==  True
-      - output.trail.s3_bucket_name == s3_bucket_name
-      - output.trail.s3_key_prefix == cloudtrail_prefix
-      - output.trail.kms_key_id == kms_key.key_arn
-      - output.trail.sns_topic_arn == output_sns_topic.sns_arn
-      - output.trail.sns_topic_name == sns_topic
-      - output.trail.tags | length == 0
-
-  - name: 'Test creation of a complex Trail (no change)'
-    cloudtrail:
-      state: present
-      name: '{{ cloudtrail_name }}'
-      s3_key_prefix: '{{ cloudtrail_prefix }}'
-      sns_topic_name: '{{ sns_topic }}'
-      cloudwatch_logs_log_group_arn: '{{ output_cloudwatch_log_group.arn }}'
-      cloudwatch_logs_role_arn: '{{ output_cloudwatch_role.arn }}'
-      is_multi_region_trail: yes
-      include_global_events: yes
-      enable_log_file_validation: yes
-      kms_key_id: '{{ kms_key.key_arn }}'
-    register: output
-  - assert:
-      that:
-      - output is not changed
-      - output.exists == True
-      - output.trail.name == cloudtrail_name
-      - output.trail.home_region == aws_region
-      - output.trail.include_global_service_events == True
-      - output.trail.is_multi_region_trail == True
-      - output.trail.is_logging == True
-      - output.trail.log_file_validation_enabled ==  True
-      - output.trail.s3_bucket_name == s3_bucket_name
-      - output.trail.s3_key_prefix == cloudtrail_prefix
-      - output.trail.kms_key_id == kms_key.key_arn
-      - output.trail.sns_topic_arn == output_sns_topic.sns_arn
-      - output.trail.sns_topic_name == sns_topic
-      - output.trail.tags | length == 0
-
-  - name: 'Get the trail info of the created trail'
-    cloudtrail_info:
-      trail_names:
-        - '{{ trail_arn }}'
-    register: info
-
-  - name: 'Assert that the logging key encryption is correctly updated'
-    assert:
-      that:
-      - info.trail_list[0].name == cloudtrail_name
-      - info.trail_list[0].home_region == aws_region
-      - info.trail_list[0].include_global_service_events == True
-      - info.trail_list[0].is_multi_region_trail == True
-      - info.trail_list[0].is_logging == True
-      - info.trail_list[0].log_file_validation_enabled ==  True
-      - info.trail_list[0].s3_bucket_name == s3_bucket_name
-      - info.trail_list[0].s3_key_prefix == cloudtrail_prefix
-      - info.trail_list[0].kms_key_id == kms_key.key_arn
-      - info.trail_list[0].sns_topic_arn == output_sns_topic.sns_arn
-      - info.trail_list[0].sns_topic_name == sns_topic
-      - info.trail_list[0].tags | length == 0
+    - name: S3 Bucket required when state is "present"
+      module_defaults: { cloudtrail: {}}
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+      register: output
+      ignore_errors: true
+    - ansible.builtin.assert:
+        that:
+          - output is failed
+
+    - name: CloudWatch cloudwatch_logs_log_group_arn required when cloudwatch_logs_role_arn passed
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        cloudwatch_logs_role_arn: SomeValue
+      register: output
+      ignore_errors: true
+    - ansible.builtin.assert:
+        that:
+          - output is failed
+          - '"parameters are required together" in output.msg'
+          - '"cloudwatch_logs_log_group_arn" in output.msg'
+
+    - name: CloudWatch cloudwatch_logs_role_arn required when cloudwatch_logs_log_group_arn passed
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        cloudwatch_logs_log_group_arn: SomeValue
+      register: output
+      ignore_errors: true
+    - ansible.builtin.assert:
+        that:
+          - output is failed
+          - '"parameters are required together" in output.msg'
+          - '"cloudwatch_logs_role_arn" in output.msg'
+
+    #- name: 'Global Logging must be enabled when enabling Multi-region'
+    #  cloudtrail:
+    #    state: present
+    #    name: '{{ cloudtrail_name }}'
+    #    include_global_events: no
+    #    is_multi_region_trail: yes
+    #  register: output
+    #  ignore_errors: yes
+    #- assert:
+    #    that:
+    #    - output is failed
+
+    # ============================================================
+    #   Preparation
+    # ============================================================
+    - name: Retrieve caller facts
+      amazon.aws.aws_caller_info: {}
+      register: aws_caller_info
+
+    - name: Create S3 bucket
+      vars:
+        bucket_name: "{{ s3_bucket_name }}"
+      amazon.aws.s3_bucket:
+        state: present
+        name: "{{ bucket_name }}"
+        policy: '{{ lookup("template", "s3-policy.j2") }}'
+    - name: Create second S3 bucket
+      vars:
+        bucket_name: "{{ s3_bucket_name }}-2"
+      amazon.aws.s3_bucket:
+        state: present
+        name: "{{ bucket_name }}"
+        policy: '{{ lookup("template", "s3-policy.j2") }}'
+
+    - name: Create SNS Topic
+      vars:
+        sns_topic_name: "{{ sns_topic }}"
+      community.aws.sns_topic:
+        state: present
+        name: "{{ sns_topic_name }}"
+        display_name: Used for testing SNS/CloudWatch integration
+        policy: "{{ lookup('template', 'sns-policy.j2') | to_json }}"
+      register: output_sns_topic
+    - name: Create second SNS Topic
+      vars:
+        sns_topic_name: "{{ sns_topic }}-2"
+      community.aws.sns_topic:
+        state: present
+        name: "{{ sns_topic_name }}"
+        display_name: Used for testing SNS/CloudWatch integration
+        policy: "{{ lookup('template', 'sns-policy.j2') | to_json }}"
+
+    - name: Create KMS Key
+      kms_key:
+        state: present
+        alias: "{{ kms_alias }}"
+        enabled: true
+        policy: "{{ lookup('template', 'kms-policy.j2') | to_json }}"
+      register: kms_key
+    - name: Create second KMS Key
+      kms_key:
+        state: present
+        alias: "{{ kms_alias }}-2"
+        enabled: true
+        policy: "{{ lookup('template', 'kms-policy.j2') | to_json }}"
+      register: kms_key2
+
+    - name: Create CloudWatch IAM Role
+      community.aws.iam_role:
+        state: present
+        name: "{{ cloudwatch_role }}"
+        assume_role_policy_document: "{{ lookup('template', 'cloudwatch-assume-policy.j2') }}"
+      register: output_cloudwatch_role
+    - name: Create CloudWatch Log Group
+      amazon.aws.cloudwatchlogs_log_group:
+        state: present
+        log_group_name: "{{ cloudwatch_log_group }}"
+        retention: 1
+      register: output_cloudwatch_log_group
+    - name: Create second CloudWatch Log Group
+      amazon.aws.cloudwatchlogs_log_group:
+        state: present
+        log_group_name: "{{ cloudwatch_log_group }}-2"
+        retention: 1
+      register: output_cloudwatch_log_group2
+    - name: Add inline policy to CloudWatch Role
+      amazon.aws.iam_policy:
+        state: present
+        iam_type: role
+        iam_name: "{{ cloudwatch_role }}"
+        policy_name: CloudWatch
+        policy_json: "{{ lookup('template', 'cloudwatch-policy.j2') | to_json }}"
+
+    - name: Create CloudWatch IAM Role with no kms permissions
+      community.aws.iam_role:
+        state: present
+        name: "{{ cloudwatch_no_kms_role }}"
+        assume_role_policy_document: "{{ lookup('template', 'cloudtrail-no-kms-assume-policy.j2') }}"
+        managed_policies:
+          - arn:aws:iam::aws:policy/AWSCloudTrail_FullAccess
+      register: output_cloudwatch_no_kms_role
+
+    - name: pause to ensure role exists before attaching policy
+      ansible.builtin.pause:
+        seconds: 15
+
+    - name: Add inline policy to CloudWatch Role
+      amazon.aws.iam_policy:
+        state: present
+        iam_type: role
+        iam_name: "{{ cloudwatch_no_kms_role }}"
+        policy_name: CloudWatchNokms
+        policy_json: "{{ lookup('template', 'cloudtrail-no-kms-policy.j2') }}"
+
+    # ============================================================
+    #   Tests
+    # ============================================================
+
+    - name: Create a trail (CHECK MODE)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+      register: output
+      check_mode: true
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+
+    - name: Create a trail
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+          - output.exists == True
+          - output.trail.name == cloudtrail_name
+
+    - name: No-op update to trail
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is not changed
+          - output.exists == True
+          # Check everything is what we expect before we start making changes
+          - output.trail.name == cloudtrail_name
+          - output.trail.home_region == aws_region
+          - output.trail.include_global_service_events == True
+          - output.trail.is_multi_region_trail == False
+          - output.trail.is_logging == True
+          - output.trail.log_file_validation_enabled == False
+          - output.trail.s3_bucket_name == s3_bucket_name
+          - output.trail.s3_key_prefix is none
+          - output.trail.kms_key_id is none
+          - output.trail.sns_topic_arn is none
+          - output.trail.sns_topic_name is none
+          - output.trail.tags | length == 0
+
+    - name: Get the trail info
+      cloudtrail_info:
+      register: info
+
+    - name: Get the trail name from the cloud trail info
+      ansible.builtin.set_fact:
+        trail_present: true
+        trail_arn: "{{ item.resource_id }}"
+      when: item.name == cloudtrail_name
+      loop: "{{ info.trail_list }}"
+
+    - name: Assert that the trail name is present in the info
+      ansible.builtin.assert:
+        that:
+          - trail_present is defined
+          - trail_present == True
+
+    # ============================================================
+
+    - name: Set S3 prefix (CHECK MODE)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        s3_key_prefix: "{{ cloudtrail_prefix }}"
+      register: output
+      check_mode: true
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+
+    - name: Set S3 prefix
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        s3_key_prefix: "{{ cloudtrail_prefix }}"
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+          - output.trail.name == cloudtrail_name
+          - output.trail.s3_key_prefix == cloudtrail_prefix
+
+    - name: Set S3 prefix (no change)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        s3_key_prefix: "{{ cloudtrail_prefix }}"
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is not changed
+          - output.trail.name == cloudtrail_name
+          - output.trail.s3_key_prefix == cloudtrail_prefix
+
+    - name: No-op update to trail
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is not changed
+          - output.trail.name == cloudtrail_name
+          - output.trail.s3_key_prefix == cloudtrail_prefix
+
+    - name: Get the trail info
+      cloudtrail_info:
+        trail_names:
+          - "{{ trail_arn }}"
+      register: info
+
+    - name: Assert that the s3_key_prefix is correct
+      ansible.builtin.assert:
+        that:
+          - info.trail_list[0].s3_key_prefix == cloudtrail_prefix
+
+    - name: Update S3 prefix (CHECK MODE)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        s3_key_prefix: "{{ cloudtrail_prefix }}-2"
+      register: output
+      check_mode: true
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+
+    - name: Update S3 prefix
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        s3_key_prefix: "{{ cloudtrail_prefix }}-2"
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+          - output.trail.name == cloudtrail_name
+          - output.trail.s3_key_prefix ==  cloudtrail_prefix+"-2"
+
+    - name: Update S3 prefix (no change)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        s3_key_prefix: "{{ cloudtrail_prefix }}-2"
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is not changed
+          - output.trail.name == cloudtrail_name
+          - output.trail.s3_key_prefix ==  cloudtrail_prefix+"-2"
+
+    - name: Get the trail info after updating S3 prefix
+      cloudtrail_info:
+        trail_names:
+          - "{{ trail_arn }}"
+      register: info
+
+    - name: Assert that the s3_key_prefix is correct
+      ansible.builtin.assert:
+        that:
+          - info.trail_list[0].s3_key_prefix == cloudtrail_prefix+"-2"
+
+    - name: Remove S3 prefix (CHECK MODE)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        s3_key_prefix: /
+      register: output
+      check_mode: true
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+
+    - name: Remove S3 prefix
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        s3_key_prefix: /
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+          - output.trail.name == cloudtrail_name
+          - output.trail.s3_key_prefix is none
+
+    - name: Remove S3 prefix (no change)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        s3_key_prefix: /
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is not changed
+          - output.trail.name == cloudtrail_name
+          - output.trail.s3_key_prefix is none
+
+    - name: Get the trail info after removing S3 prefix
+      cloudtrail_info:
+        trail_names:
+          - "{{ trail_arn }}"
+      register: info
+
+    - name: Assert that the s3_key_prefix is None
+      ansible.builtin.assert:
+        that:
+          - info.trail_list[0].s3_key_prefix is not defined
+
+    # ============================================================
+
+    - ansible.builtin.include_tasks: tagging.yml
+    - name: Set SNS Topic (CHECK MODE)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        sns_topic_name: "{{ sns_topic }}"
+      register: output
+      check_mode: true
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+
+    - name: Set SNS Topic
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        sns_topic_name: "{{ sns_topic }}"
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+          - output.trail.name == cloudtrail_name
+          - output.trail.sns_topic_name == sns_topic
+
+    - name: Set SNS Topic (no change)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        sns_topic_name: "{{ sns_topic }}"
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is not changed
+          - output.trail.name == cloudtrail_name
+          - output.trail.sns_topic_name == sns_topic
+
+    - name: No-op update to trail
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is not changed
+          - output.trail.name == cloudtrail_name
+          - output.trail.sns_topic_name == sns_topic
+
+    - name: Get the trail info with SNS topic
+      cloudtrail_info:
+        trail_names:
+          - "{{ trail_arn }}"
+      register: info
+
+    - name: Assert that the sns_topic is correctly set
+      ansible.builtin.assert:
+        that:
+          - info.trail_list[0].sns_topic_name == sns_topic
+
+    - name: Update SNS Topic (CHECK MODE)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        sns_topic_name: "{{ sns_topic }}-2"
+      register: output
+      check_mode: true
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+
+    - name: Update SNS Topic
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        sns_topic_name: "{{ sns_topic }}-2"
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+          - output.trail.name == cloudtrail_name
+          - output.trail.sns_topic_name ==  sns_topic+"-2"
+
+    - name: Update SNS Topic (no change)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        sns_topic_name: "{{ sns_topic }}-2"
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is not changed
+          - output.trail.name == cloudtrail_name
+          - output.trail.sns_topic_name ==  sns_topic+"-2"
+
+    - name: Get the trail info with SNS topic after update
+      cloudtrail_info:
+        trail_names:
+          - "{{ trail_arn }}"
+      register: info
+
+    - name: Assert that the sns_topic is correctly set
+      ansible.builtin.assert:
+        that:
+          - info.trail_list[0].sns_topic_name == sns_topic+"-2"
+
+    #- name: 'Remove SNS Topic (CHECK MODE)'
+    #  cloudtrail:
+    #    state: present
+    #    name: '{{ cloudtrail_name }}'
+    #    sns_topic_name: ''
+    #  register: output
+    #  check_mode: yes
+    #- assert:
+    #    that:
+    #    - output is changed
+
+    #- name: 'Remove SNS Topic'
+    #  cloudtrail:
+    #    state: present
+    #    name: '{{ cloudtrail_name }}'
+    #    sns_topic_name: ''
+    #  register: output
+    #- assert:
+    #    that:
+    #    - output is changed
+    #    - output.trail.name == cloudtrail_name
+    #    - output.trail.sns_topic_name is none
+
+    #- name: 'Remove SNS Topic (no change)'
+    #  cloudtrail:
+    #    state: present
+    #    name: '{{ cloudtrail_name }}'
+    #    sns_topic_name: ''
+    #  register: output
+    #- assert:
+    #    that:
+    #    - output is not changed
+    #    - output.trail.name == cloudtrail_name
+    #    - output.trail.sns_topic_name is none
+
+    # ============================================================
+
+    - name: Set CloudWatch Log Group (CHECK MODE)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        cloudwatch_logs_log_group_arn: "{{ output_cloudwatch_log_group.arn }}"
+        cloudwatch_logs_role_arn: "{{ output_cloudwatch_role.arn }}"
+      register: output
+      check_mode: true
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+
+    - name: Set CloudWatch Log Group
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        cloudwatch_logs_log_group_arn: "{{ output_cloudwatch_log_group.arn }}"
+        cloudwatch_logs_role_arn: "{{ output_cloudwatch_role.arn }}"
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+          - output.trail.name == cloudtrail_name
+          - output.trail.cloud_watch_logs_log_group_arn == output_cloudwatch_log_group.arn
+          - output.trail.cloud_watch_logs_role_arn == output_cloudwatch_role.arn
+
+    - name: Set CloudWatch Log Group (no change)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        cloudwatch_logs_log_group_arn: "{{ output_cloudwatch_log_group.arn }}"
+        cloudwatch_logs_role_arn: "{{ output_cloudwatch_role.arn }}"
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is not changed
+          - output.trail.name == cloudtrail_name
+          - output.trail.cloud_watch_logs_log_group_arn == output_cloudwatch_log_group.arn
+          - output.trail.cloud_watch_logs_role_arn == output_cloudwatch_role.arn
+
+    - name: No-op update to trail
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is not changed
+          - output.trail.name == cloudtrail_name
+          - output.trail.cloud_watch_logs_log_group_arn == output_cloudwatch_log_group.arn
+          - output.trail.cloud_watch_logs_role_arn == output_cloudwatch_role.arn
+
+    - name: Get the trail info with CloudWatch Log Group
+      cloudtrail_info:
+        trail_names:
+          - "{{ trail_arn }}"
+      register: info
+
+    - name: Assert that the cloud watch log group is correctly set
+      ansible.builtin.assert:
+        that:
+          - info.trail_list[0].cloud_watch_logs_log_group_arn == output_cloudwatch_log_group.arn
+          - info.trail_list[0].cloud_watch_logs_role_arn == output_cloudwatch_role.arn
+
+    - name: Update CloudWatch Log Group (CHECK MODE)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        cloudwatch_logs_log_group_arn: "{{ output_cloudwatch_log_group2.arn }}"
+        cloudwatch_logs_role_arn: "{{ output_cloudwatch_role.arn }}"
+      register: output
+      check_mode: true
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+          - output.trail.cloud_watch_logs_log_group_arn == output_cloudwatch_log_group2.arn
+          - output.trail.cloud_watch_logs_role_arn == output_cloudwatch_role.arn
+
+    - name: Update CloudWatch Log Group
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        cloudwatch_logs_log_group_arn: "{{ output_cloudwatch_log_group2.arn }}"
+        cloudwatch_logs_role_arn: "{{ output_cloudwatch_role.arn }}"
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+          - output.trail.name == cloudtrail_name
+          - output.trail.cloud_watch_logs_log_group_arn == output_cloudwatch_log_group2.arn
+          - output.trail.cloud_watch_logs_role_arn == output_cloudwatch_role.arn
+
+    - name: Update CloudWatch Log Group (no change)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        cloudwatch_logs_log_group_arn: "{{ output_cloudwatch_log_group2.arn }}"
+        cloudwatch_logs_role_arn: "{{ output_cloudwatch_role.arn }}"
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is not changed
+          - output.trail.name == cloudtrail_name
+          - output.trail.cloud_watch_logs_log_group_arn == output_cloudwatch_log_group2.arn
+          - output.trail.cloud_watch_logs_role_arn == output_cloudwatch_role.arn
+
+    - name: Get the trail info with CloudWatch Log Group after update
+      cloudtrail_info:
+        trail_names:
+          - "{{ trail_arn }}"
+      register: info
+
+    - name: Assert that the cloud watch log group is correctly set after update
+      ansible.builtin.assert:
+        that:
+          - info.trail_list[0].cloud_watch_logs_log_group_arn == output_cloudwatch_log_group2.arn
+          - info.trail_list[0].cloud_watch_logs_role_arn == output_cloudwatch_role.arn
+
+    #- name: 'Remove CloudWatch Log Group (CHECK MODE)'
+    #  cloudtrail:
+    #    state: present
+    #    name: '{{ cloudtrail_name }}'
+    #    cloudwatch_logs_log_group_arn: ''
+    #    cloudwatch_logs_role_arn: ''
+    #  register: output
+    #  check_mode: yes
+    #- assert:
+    #    that:
+    #    - output is changed
+    #    - output.trail.name == cloudtrail_name
+    #    - output.trail.cloud_watch_logs_log_group_arn is none
+    #    - output.trail.cloud_watch_logs_role_arn is none
+
+    #- name: 'Remove CloudWatch Log Group'
+    #  cloudtrail:
+    #    state: present
+    #    name: '{{ cloudtrail_name }}'
+    #    cloudwatch_logs_log_group_arn: ''
+    #    cloudwatch_logs_role_arn: ''
+    #  register: output
+    #- assert:
+    #    that:
+    #    - output is changed
+    #    - output.trail.name == cloudtrail_name
+    #    - output.trail.cloud_watch_logs_log_group_arn is none
+    #    - output.trail.cloud_watch_logs_role_arn is none
+
+    #- name: 'Remove CloudWatch Log Group (no change)'
+    #  cloudtrail:
+    #    state: present
+    #    name: '{{ cloudtrail_name }}'
+    #    cloudwatch_logs_log_group_arn: ''
+    #    cloudwatch_logs_role_arn: ''
+    #  register: output
+    #- assert:
+    #    that:
+    #    - output is not changed
+    #    - output.trail.name == cloudtrail_name
+    #    - output.trail.cloud_watch_logs_log_group_arn is none
+    #    - output.trail.cloud_watch_logs_role_arn is none
+
+    # ============================================================
+
+    - name: Update S3 bucket (CHECK MODE)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        s3_bucket_name: "{{ s3_bucket_name }}-2"
+      register: output
+      check_mode: true
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+
+    - name: Update S3 bucket
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        s3_bucket_name: "{{ s3_bucket_name }}-2"
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+          - output.trail.name == cloudtrail_name
+          - output.trail.s3_bucket_name ==  s3_bucket_name+"-2"
+
+    - name: Update S3 bucket (no change)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        s3_bucket_name: "{{ s3_bucket_name }}-2"
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is not changed
+          - output.trail.name == cloudtrail_name
+          - output.trail.s3_bucket_name ==  s3_bucket_name+"-2"
+
+    - name: Get the trail info with S3 bucket name
+      cloudtrail_info:
+        trail_names:
+          - "{{ trail_arn }}"
+      register: info
+
+    - name: Assert that the S3 Bucket name is correctly set
+      ansible.builtin.assert:
+        that:
+          - info.trail_list[0].s3_bucket_name ==  s3_bucket_name+"-2"
+
+    - name: Reset S3 bucket
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output.trail.name == cloudtrail_name
+          - output.trail.s3_bucket_name == s3_bucket_name
+
+    # ============================================================
+
+    - name: Disable logging (CHECK MODE)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        enable_logging: false
+      register: output
+      check_mode: true
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+
+    - name: Disable logging
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        enable_logging: false
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+          - output.trail.name == cloudtrail_name
+          - output.trail.is_logging == False
+
+    - name: Disable logging (no change)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        enable_logging: false
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is not changed
+          - output.trail.name == cloudtrail_name
+          - output.trail.is_logging == False
+
+    - name: Get the trail info to check the logging state
+      cloudtrail_info:
+        trail_names:
+          - "{{ trail_arn }}"
+      register: info
+
+    - name: Assert that the logging state is correctly set
+      ansible.builtin.assert:
+        that:
+          - info.trail_list[0].is_logging ==  False
+
+    # Ansible Documentation lists logging as explicitly defaulting to enabled
+
+    - name: Enable logging (CHECK MODE)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        enable_logging: true
+      register: output
+      check_mode: true
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+
+    - name: Enable logging
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        enable_logging: true
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+          - output.trail.name == cloudtrail_name
+          - output.trail.is_logging == True
+
+    - name: Enable logging (no change)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        enable_logging: true
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is not changed
+          - output.trail.name == cloudtrail_name
+          - output.trail.is_logging == True
+
+    - name: Get the trail info to check the logging state
+      cloudtrail_info:
+        trail_names:
+          - "{{ trail_arn }}"
+      register: info
+
+    - name: Assert that the logging state is correctly set
+      ansible.builtin.assert:
+        that:
+          - info.trail_list[0].is_logging ==  True
+
+    # ============================================================
+
+    - name: Disable global logging (CHECK MODE)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        include_global_events: false
+      register: output
+      check_mode: true
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+
+    - name: Disable global logging
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        include_global_events: false
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+          - output.trail.name == cloudtrail_name
+          - output.trail.include_global_service_events == False
+
+    - name: Disable global logging (no change)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        include_global_events: false
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is not changed
+          - output.trail.name == cloudtrail_name
+          - output.trail.include_global_service_events == False
+
+    - name: Get the trail info to check the global logging state
+      cloudtrail_info:
+        trail_names:
+          - "{{ trail_arn }}"
+      register: info
+
+    - name: Assert that the global logging state is correctly set
+      ansible.builtin.assert:
+        that:
+          - info.trail_list[0].include_global_service_events ==  False
+
+    # Ansible Documentation lists Global-logging as explicitly defaulting to enabled
+
+    - name: Enable global logging (CHECK MODE)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        include_global_events: true
+      register: output
+      check_mode: true
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+
+    - name: Enable global logging
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        include_global_events: true
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+          - output.trail.name == cloudtrail_name
+          - output.trail.include_global_service_events == True
+
+    - name: Enable global logging (no change)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        include_global_events: true
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is not changed
+          - output.trail.name == cloudtrail_name
+          - output.trail.include_global_service_events == True
+
+    - name: Get the trail info to check the global logging state (default)
+      cloudtrail_info:
+        trail_names:
+          - "{{ trail_arn }}"
+      register: info
+
+    - name: Assert that the global logging state is correctly set (default)
+      ansible.builtin.assert:
+        that:
+          - info.trail_list[0].include_global_service_events == True
+
+    # ============================================================
+
+    - name: Enable multi-region logging (CHECK MODE)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        is_multi_region_trail: true
+      register: output
+      check_mode: true
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+
+    - name: Enable multi-region logging
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        is_multi_region_trail: true
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+          - output.trail.name == cloudtrail_name
+          - output.trail.is_multi_region_trail == True
+
+    - name: Enable multi-region logging (no change)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        is_multi_region_trail: true
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is not changed
+          - output.trail.name == cloudtrail_name
+          - output.trail.is_multi_region_trail == True
+
+    - name: Get the trail info to check the multi-region logging state (default)
+      cloudtrail_info:
+        trail_names:
+          - "{{ trail_arn }}"
+      register: info
+
+    - name: Assert that the global logging state is correctly set (default)
+      ansible.builtin.assert:
+        that:
+          - info.trail_list[0].is_multi_region_trail == True
+
+    # Ansible Documentation lists Multi-Region-logging as explicitly defaulting to disabled
+
+    - name: Disable multi-region logging (CHECK MODE)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        is_multi_region_trail: false
+      register: output
+      check_mode: true
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+
+    - name: Disable multi-region logging
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        is_multi_region_trail: false
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+          - output.trail.name == cloudtrail_name
+          - output.trail.is_multi_region_trail == False
+
+    - name: Disable multi-region logging (no change)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        is_multi_region_trail: false
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is not changed
+          - output.trail.name == cloudtrail_name
+          - output.trail.is_multi_region_trail == False
+
+    - name: Get the trail info to check the multi-region logging state (default)
+      cloudtrail_info:
+        trail_names:
+          - "{{ trail_arn }}"
+      register: info
+
+    - name: Assert that the global logging state is correctly set (default)
+      ansible.builtin.assert:
+        that:
+          - info.trail_list[0].is_multi_region_trail == False
+
+    # ============================================================
+
+    - name: Enable logfile validation (CHECK MODE)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        enable_log_file_validation: true
+      register: output
+      check_mode: true
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+
+    - name: Enable logfile validation
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        enable_log_file_validation: true
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+          - output.trail.name == cloudtrail_name
+          - output.trail.log_file_validation_enabled == True
+
+    - name: Enable logfile validation (no change)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        enable_log_file_validation: true
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is not changed
+          - output.trail.name == cloudtrail_name
+          - output.trail.log_file_validation_enabled == True
+
+    - name: No-op update to trail
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is not changed
+          - output.trail.name == cloudtrail_name
+          - output.trail.log_file_validation_enabled == True
+
+    - name: Get the trail info to check the log file validation
+      cloudtrail_info:
+        trail_names:
+          - "{{ trail_arn }}"
+      register: info
+
+    - name: Assert that the log file validation is correctly set
+      ansible.builtin.assert:
+        that:
+          - info.trail_list[0].log_file_validation_enabled == True
+
+    - name: Disable logfile validation (CHECK MODE)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        enable_log_file_validation: false
+      register: output
+      check_mode: true
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+
+    - name: Disable logfile validation
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        enable_log_file_validation: false
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+          - output.trail.name == cloudtrail_name
+          - output.trail.log_file_validation_enabled == False
+
+    - name: Disable logfile validation (no change)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        enable_log_file_validation: false
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is not changed
+          - output.trail.name == cloudtrail_name
+          - output.trail.log_file_validation_enabled == False
+
+    - name: Get the trail info to check the log file validation
+      cloudtrail_info:
+        trail_names:
+          - "{{ trail_arn }}"
+      register: info
+
+    - name: Assert that the log file validation is disabled
+      ansible.builtin.assert:
+        that:
+          - info.trail_list[0].log_file_validation_enabled == False
+
+    # ============================================================
+
+    - name: Enable logging encryption (CHECK MODE)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        kms_key_id: "{{ kms_key.key_arn }}"
+      register: output
+      check_mode: true
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+
+    - name: Enable logging encryption
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        kms_key_id: "{{ kms_key.key_arn }}"
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+          - output.trail.kms_key_id == kms_key.key_arn
+
+    - name: Enable logging encryption (no change)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        kms_key_id: "{{ kms_key.key_arn }}"
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is not changed
+          - output.trail.kms_key_id == kms_key.key_arn
+
+    - name: Enable logging encryption (no change, check mode)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        kms_key_id: "{{ kms_key.key_arn }}"
+      check_mode: true
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is not changed
+          - output.trail.kms_key_id == kms_key.key_arn
+
+    - name: No-op update to trail
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is not changed
+          - output.trail.kms_key_id == kms_key.key_arn
+
+    - name: Get the trail info to check the logging encryption
+      cloudtrail_info:
+        trail_names:
+          - "{{ trail_arn }}"
+      register: info
+
+    - name: Assert that the logging encryption is correctly set
+      ansible.builtin.assert:
+        that:
+          - info.trail_list[0].kms_key_id == kms_key.key_arn
+
+    - name: Update logging encryption key (CHECK MODE)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        kms_key_id: "{{ kms_key2.key_arn }}"
+      register: output
+      check_mode: true
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+
+    - name: Update logging encryption key
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        kms_key_id: "{{ kms_key2.key_arn }}"
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+          - output.trail.kms_key_id == kms_key2.key_arn
+
+    - name: Update logging encryption key (no change)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        kms_key_id: "{{ kms_key2.key_arn }}"
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is not changed
+          - output.trail.kms_key_id == kms_key2.key_arn
+
+    - name: Get the trail info to check the logging key encryption
+      cloudtrail_info:
+        trail_names:
+          - "{{ trail_arn }}"
+      register: info
+
+    - name: Assert that the logging key encryption is correctly set
+      ansible.builtin.assert:
+        that:
+          - info.trail_list[0].kms_key_id == kms_key2.key_arn
+
+    - name: Update logging encryption to alias (CHECK MODE)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        kms_key_id: alias/{{ kms_alias }}
+      register: output
+      check_mode: true
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+
+    - name: Update logging encryption to alias
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        kms_key_id: alias/{{ kms_alias }}
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+          - output.trail.kms_key_id == kms_key.key_arn
+
+    - name: Update logging encryption to alias (no change)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        kms_key_id: alias/{{ kms_alias }}
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is not changed
+          - output.trail.kms_key_id == kms_key.key_arn
+
+    - name: Update logging encryption to alias (CHECK MODE, no change)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        kms_key_id: "{{ kms_key.key_id }}" # Test when using key id
+      register: output
+      check_mode: true
+    - ansible.builtin.assert:
+        that:
+          - output is not changed
+          - output.trail.kms_key_id == kms_key.key_id
+
+    - ansible.builtin.debug:
+        msg: "{{ output }}"
+
+    - name: Get the trail info to check the logging key encryption after update
+      cloudtrail_info:
+        trail_names:
+          - "{{ trail_arn }}"
+      register: info
+
+    - name: Assert that the logging key encryption is correctly updated
+      ansible.builtin.assert:
+        that:
+          - kms_key.key_id in info.trail_list[0].kms_key_id
+
+    # Assume role to a role with Denied access to KMS
+
+    - amazon.aws.sts_assume_role:
+        role_arn: "{{ output_cloudwatch_no_kms_role.arn }}"
+        role_session_name: cloudtrailNoKms
+        region: "{{ aws_region }}"
+      register: noKms_assumed_role
+
+    - name: Enable logging encryption w/ alias (no change, no kms permmissions, check mode)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        kms_key_id: alias/{{ kms_alias }}
+        access_key: "{{ noKms_assumed_role.sts_creds.access_key }}"
+        secret_key: "{{ noKms_assumed_role.sts_creds.secret_key }}"
+        session_token: "{{ noKms_assumed_role.sts_creds.session_token }}"
+      check_mode: true
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+    # when using check_mode, with no kms permissions, and not giving kms_key_id as a key arn
+    # output will always be marked as changed.
+
+    - name: Disable logging encryption (CHECK MODE)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        kms_key_id: ""
+      register: output
+      check_mode: true
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+
+    - name: Disable logging encryption
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        kms_key_id: ""
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output.trail.kms_key_id == ""
+          - output is changed
+
+    - name: Disable logging encryption (no change)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        kms_key_id: ""
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output.kms_key_id == ""
+          - output is not changed
+
+    # ============================================================
+
+    - name: Delete a trail without providing bucket_name (CHECK MODE)
+      module_defaults: { cloudtrail: {}}
+      amazon.aws.cloudtrail:
+        state: absent
+        name: "{{ cloudtrail_name }}"
+      register: output
+      check_mode: true
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+
+    - name: Delete a trail while providing bucket_name (CHECK MODE)
+      amazon.aws.cloudtrail:
+        state: absent
+        name: "{{ cloudtrail_name }}"
+      register: output
+      check_mode: true
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+
+    - name: Delete a trail
+      amazon.aws.cloudtrail:
+        state: absent
+        name: "{{ cloudtrail_name }}"
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+          - output.exists == False
+
+    - name: Delete a non-existent trail
+      amazon.aws.cloudtrail:
+        state: absent
+        name: "{{ cloudtrail_name }}"
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is not changed
+          - output.exists == False
+
+    # ============================================================
+
+    - name: Test creation of a complex Trail (all features)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        s3_key_prefix: "{{ cloudtrail_prefix }}"
+        sns_topic_name: "{{ sns_topic }}"
+        cloudwatch_logs_log_group_arn: "{{ output_cloudwatch_log_group.arn }}"
+        cloudwatch_logs_role_arn: "{{ output_cloudwatch_role.arn }}"
+        is_multi_region_trail: true
+        include_global_events: true
+        enable_log_file_validation: true
+        kms_key_id: "{{ kms_key.key_arn }}"
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+          #- output.exists == True
+          - output.trail.name == cloudtrail_name
+          - output.trail.home_region == aws_region
+          - output.trail.include_global_service_events == True
+          - output.trail.is_multi_region_trail == True
+          - output.trail.is_logging == True
+          - output.trail.log_file_validation_enabled ==  True
+          - output.trail.s3_bucket_name == s3_bucket_name
+          - output.trail.s3_key_prefix == cloudtrail_prefix
+          - output.trail.kms_key_id == kms_key.key_arn
+          - output.trail.sns_topic_arn == output_sns_topic.sns_arn
+          - output.trail.sns_topic_name == sns_topic
+          - output.trail.tags | length == 0
+
+    - name: Test creation of a complex Trail (no change)
+      amazon.aws.cloudtrail:
+        state: present
+        name: "{{ cloudtrail_name }}"
+        s3_key_prefix: "{{ cloudtrail_prefix }}"
+        sns_topic_name: "{{ sns_topic }}"
+        cloudwatch_logs_log_group_arn: "{{ output_cloudwatch_log_group.arn }}"
+        cloudwatch_logs_role_arn: "{{ output_cloudwatch_role.arn }}"
+        is_multi_region_trail: true
+        include_global_events: true
+        enable_log_file_validation: true
+        kms_key_id: "{{ kms_key.key_arn }}"
+      register: output
+    - ansible.builtin.assert:
+        that:
+          - output is not changed
+          - output.exists == True
+          - output.trail.name == cloudtrail_name
+          - output.trail.home_region == aws_region
+          - output.trail.include_global_service_events == True
+          - output.trail.is_multi_region_trail == True
+          - output.trail.is_logging == True
+          - output.trail.log_file_validation_enabled ==  True
+          - output.trail.s3_bucket_name == s3_bucket_name
+          - output.trail.s3_key_prefix == cloudtrail_prefix
+          - output.trail.kms_key_id == kms_key.key_arn
+          - output.trail.sns_topic_arn == output_sns_topic.sns_arn
+          - output.trail.sns_topic_name == sns_topic
+          - output.trail.tags | length == 0
+
+    - name: Get the trail info of the created trail
+      cloudtrail_info:
+        trail_names:
+          - "{{ trail_arn }}"
+      register: info
+
+    - name: Assert that the logging key encryption is correctly updated
+      ansible.builtin.assert:
+        that:
+          - info.trail_list[0].name == cloudtrail_name
+          - info.trail_list[0].home_region == aws_region
+          - info.trail_list[0].include_global_service_events == True
+          - info.trail_list[0].is_multi_region_trail == True
+          - info.trail_list[0].is_logging == True
+          - info.trail_list[0].log_file_validation_enabled ==  True
+          - info.trail_list[0].s3_bucket_name == s3_bucket_name
+          - info.trail_list[0].s3_key_prefix == cloudtrail_prefix
+          - info.trail_list[0].kms_key_id == kms_key.key_arn
+          - info.trail_list[0].sns_topic_arn == output_sns_topic.sns_arn
+          - info.trail_list[0].sns_topic_name == sns_topic
+          - info.trail_list[0].tags | length == 0
 
   always:
   # ============================================================
   #   Cleanup
   # ============================================================
-  - name: 'Delete test trail'
-    cloudtrail:
-      state: absent
-      name: '{{ cloudtrail_name }}'
-    ignore_errors: yes
-  - name: 'Delete S3 bucket'
-    s3_bucket:
-      state: absent
-      name: '{{ s3_bucket_name }}'
-      force: yes
-    ignore_errors: yes
-  - name: 'Delete second S3 bucket'
-    s3_bucket:
-      state: absent
-      name: '{{ s3_bucket_name }}-2'
-      force: yes
-    ignore_errors: yes
-  - name: 'Delete KMS Key'
-    kms_key:
-      state: absent
-      alias: '{{ kms_alias }}'
-    ignore_errors: yes
-  - name: 'Delete second KMS Key'
-    kms_key:
-      state: absent
-      alias: '{{ kms_alias }}-2'
-    ignore_errors: yes
-  - name: 'Delete SNS Topic'
-    sns_topic:
-      state: absent
-      name: '{{ sns_topic }}'
-    ignore_errors: yes
-  - name: 'Delete second SNS Topic'
-    sns_topic:
-      state: absent
-      name: '{{ sns_topic }}-2'
-    ignore_errors: yes
-  - name: 'Delete CloudWatch Log Group'
-    cloudwatchlogs_log_group:
-      state: absent
-      log_group_name: '{{ cloudwatch_log_group }}'
-    ignore_errors: yes
-  - name: 'Delete second CloudWatch Log Group'
-    cloudwatchlogs_log_group:
-      state: absent
-      log_group_name: '{{ cloudwatch_log_group }}-2'
-    ignore_errors: yes
-  - name: 'Remove inline policy to CloudWatch Role'
-    iam_policy:
-      state: absent
-      iam_type: role
-      iam_name: '{{ cloudwatch_role }}'
-      policy_name: 'CloudWatch'
-    ignore_errors: yes
-  - name: 'Delete CloudWatch IAM Role'
-    iam_role:
-      state: absent
-      name: '{{ cloudwatch_role }}'
-    ignore_errors: yes
-  - name: 'Remove inline policy to CloudWatch Role'
-    iam_policy:
-      state: absent
-      iam_type: role
-      iam_name: '{{ cloudwatch_no_kms_role }}'
-      policy_name: 'CloudWatchNokms'
-    ignore_errors: yes
-  - name: 'Delete CloudWatch No KMS IAM Role'
-    iam_role:
-      state: absent
-      name: '{{ cloudwatch_no_kms_role }}'
-    ignore_errors: yes
+    - name: Delete test trail
+      amazon.aws.cloudtrail:
+        state: absent
+        name: "{{ cloudtrail_name }}"
+      ignore_errors: true
+    - name: Delete S3 bucket
+      amazon.aws.s3_bucket:
+        state: absent
+        name: "{{ s3_bucket_name }}"
+        force: true
+      ignore_errors: true
+    - name: Delete second S3 bucket
+      amazon.aws.s3_bucket:
+        state: absent
+        name: "{{ s3_bucket_name }}-2"
+        force: true
+      ignore_errors: true
+    - name: Delete KMS Key
+      kms_key:
+        state: absent
+        alias: "{{ kms_alias }}"
+      ignore_errors: true
+    - name: Delete second KMS Key
+      kms_key:
+        state: absent
+        alias: "{{ kms_alias }}-2"
+      ignore_errors: true
+    - name: Delete SNS Topic
+      community.aws.sns_topic:
+        state: absent
+        name: "{{ sns_topic }}"
+      ignore_errors: true
+    - name: Delete second SNS Topic
+      community.aws.sns_topic:
+        state: absent
+        name: "{{ sns_topic }}-2"
+      ignore_errors: true
+    - name: Delete CloudWatch Log Group
+      amazon.aws.cloudwatchlogs_log_group:
+        state: absent
+        log_group_name: "{{ cloudwatch_log_group }}"
+      ignore_errors: true
+    - name: Delete second CloudWatch Log Group
+      amazon.aws.cloudwatchlogs_log_group:
+        state: absent
+        log_group_name: "{{ cloudwatch_log_group }}-2"
+      ignore_errors: true
+    - name: Remove inline policy to CloudWatch Role
+      amazon.aws.iam_policy:
+        state: absent
+        iam_type: role
+        iam_name: "{{ cloudwatch_role }}"
+        policy_name: CloudWatch
+      ignore_errors: true
+    - name: Delete CloudWatch IAM Role
+      community.aws.iam_role:
+        state: absent
+        name: "{{ cloudwatch_role }}"
+      ignore_errors: true
+    - name: Remove inline policy to CloudWatch Role
+      amazon.aws.iam_policy:
+        state: absent
+        iam_type: role
+        iam_name: "{{ cloudwatch_no_kms_role }}"
+        policy_name: CloudWatchNokms
+      ignore_errors: true
+    - name: Delete CloudWatch No KMS IAM Role
+      community.aws.iam_role:
+        state: absent
+        name: "{{ cloudwatch_no_kms_role }}"
+      ignore_errors: true

@@ -1,7 +1,5 @@
 ---
-- debug: msg="Starting test setup......"
-
-# CREATE DYNAMO DB TABLE
+- ansible.builtin.debug: msg="Starting test setup......"
 - name: Create minimal dynamo table
   community.aws.dynamodb_table:
     name: "{{ dynamodb_table_name }}"
@@ -13,7 +11,7 @@
 
 # ENABLE DYNAMODB STREAM AND GET STREAM ARN
 - name: Enable DynamoDB stream (currently not supported by community.aws.dynamodb_table)
-  command: aws dynamodb update-table --table-name "{{ dynamodb_table_name }}" --stream-specification StreamEnabled=True,StreamViewType=KEYS_ONLY
+  ansible.builtin.command: aws dynamodb update-table --table-name "{{ dynamodb_table_name }}" --stream-specification StreamEnabled=True,StreamViewType=KEYS_ONLY
   environment:
     AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
     AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
@@ -21,10 +19,10 @@
     AWS_DEFAULT_REGION: "{{ aws_region }}"
   register: enable_stream_result
 - name: convert it to an object
-  set_fact:
+  ansible.builtin.set_fact:
     enable_stream_result: "{{ enable_stream_result.stdout | from_json }}"
 - name: Get DynamoDB stream ARN
-  set_fact:
+  ansible.builtin.set_fact:
     dynamo_stream_arn: "{{ enable_stream_result.TableDescription.LatestStreamArn }}"
 
 # CREATE MINIMAL LAMBDA FUNCTION
@@ -35,46 +33,46 @@
   when: (lookup('env', 'HOME'))
 
 - name: create minimal lambda role
-  iam_role:
-    name: '{{ lambda_role_name }}'
+  community.aws.iam_role:
+    name: "{{ lambda_role_name }}"
     assume_role_policy_document: '{{ lookup("file", "minimal_trust_policy.json")}}'
     create_instance_profile: false
     managed_policies:
-    - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
-    - arn:aws:iam::aws:policy/AWSLambdaInvocation-DynamoDB
-    - arn:aws:iam::aws:policy/service-role/AWSLambdaDynamoDBExecutionRole
+      - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+      - arn:aws:iam::aws:policy/AWSLambdaInvocation-DynamoDB
+      - arn:aws:iam::aws:policy/service-role/AWSLambdaDynamoDBExecutionRole
   register: iam_role
 - name: wait 10 seconds for role to become available
-  pause:
+  ansible.builtin.pause:
     seconds: 10
   when: iam_role.changed
 
 - name: move lambda into place for archive module
-  copy:
+  ansible.builtin.copy:
     src: mini_lambda.py
-    dest: '{{ output_dir }}/mini_lambda.py'
+    dest: "{{ output_dir }}/mini_lambda.py"
     mode: preserve
 - name: bundle lambda into a zip
   register: zip_res
-  archive:
+  community.general.archive:
     format: zip
-    path: '{{ output_dir }}/mini_lambda.py'
-    dest: '{{ output_dir }}/mini_lambda.zip'
+    path: "{{ output_dir }}/mini_lambda.py"
+    dest: "{{ output_dir }}/mini_lambda.zip"
 
 - name: test state=present - upload the lambda
-  lambda:
-    name: '{{ lambda_function_name }}'
-    runtime: '{{ lambda_python_runtime }}'
-    handler: '{{ lambda_python_handler }}'
-    role: '{{ lambda_role_name }}'
-    zip_file: '{{ zip_res.dest }}'
+  amazon.aws.lambda:
+    name: "{{ lambda_function_name }}"
+    runtime: "{{ lambda_python_runtime }}"
+    handler: "{{ lambda_python_handler }}"
+    role: "{{ lambda_role_name }}"
+    zip_file: "{{ zip_res.dest }}"
     architecture: x86_64
   register: result
 
 - name: assert lambda upload succeeded
-  assert:
+  ansible.builtin.assert:
     that:
-    - result.changed
+      - result.changed
 
 - name: Get lambda function ARN
   ansible.builtin.set_fact:

@@ -879,7 +879,7 @@
         state: absent
         option_group_name: "{{ option_group_name }}"
       register: deleted_rds_mysql_option_group
-      ignore_errors: true  # noqa: ignore-errors
+      ignore_errors: true # noqa: ignore-errors
 
     - name: Remove security groups
       amazon.aws.ec2_security_group:
@@ -891,14 +891,14 @@
         - "{{ sg_1_name }}"
         - "{{ sg_2_name }}"
         - "{{ sg_3_name }}"
-      ignore_errors: true  # noqa: ignore-errors
+      ignore_errors: true # noqa: ignore-errors
 
     - name: Remove subnet
       amazon.aws.ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_id }}"
         state: absent
-      ignore_errors: true  # noqa: ignore-errors
+      ignore_errors: true # noqa: ignore-errors
 
     - name: Delete VPC
       amazon.aws.ec2_vpc_net:
@@ -906,4 +906,4 @@
         cidr_block: "{{ vpc_cidr }}"
         state: absent
         purge_cidrs: true
-      ignore_errors: true  # noqa: ignore-errors
+      ignore_errors: true # noqa: ignore-errors

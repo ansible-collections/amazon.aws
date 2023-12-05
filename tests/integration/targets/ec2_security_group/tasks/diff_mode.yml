@@ -1,59 +1,59 @@
 ---
-  # ============================================================
+# ============================================================
 
-  - name: create a group with a rule (CHECK MODE + DIFF)
-    ec2_security_group:
-      name: '{{ ec2_group_name }}'
-      description: '{{ ec2_group_description }}'
-      state: present
-      rules:
+- name: create a group with a rule (CHECK MODE + DIFF)
+  ec2_security_group:
+    name: "{{ ec2_group_name }}"
+    description: "{{ ec2_group_description }}"
+    state: present
+    rules:
       - proto: tcp
         from_port: 80
         to_port: 80
-        cidr_ip: 0.0.0.0/0
-      rules_egress:
+        cidr_ip: "0.0.0.0/0"
+    rules_egress:
       - proto: all
-        cidr_ip: 0.0.0.0/0
-    register: check_mode_result
-    check_mode: true
-    diff: true
+        cidr_ip: "0.0.0.0/0"
+  register: check_mode_result
+  check_mode: true
+  diff: true
 
-  - assert:
-      that:
-        - check_mode_result.changed
+- ansible.builtin.assert:
+    that:
+      - check_mode_result.changed
 
-  - name: create a group with a rule (DIFF)
-    ec2_security_group:
-      name: '{{ ec2_group_name }}'
-      description: '{{ ec2_group_description }}'
-      state: present
-      rules:
+- name: create a group with a rule (DIFF)
+  ec2_security_group:
+    name: "{{ ec2_group_name }}"
+    description: "{{ ec2_group_description }}"
+    state: present
+    rules:
       - proto: tcp
         from_port: 80
         to_port: 80
-        cidr_ip: 0.0.0.0/0
-      rules_egress:
+        cidr_ip: "0.0.0.0/0"
+    rules_egress:
       - proto: all
-        cidr_ip: 0.0.0.0/0
-    register: result
-    diff: true
+        cidr_ip: "0.0.0.0/0"
+  register: result
+  diff: true
 
-  - assert:
-      that:
-        - result.changed
-        - result.diff.0.after.ip_permissions == check_mode_result.diff.0.after.ip_permissions
-        - result.diff.0.after.ip_permissions_egress == check_mode_result.diff.0.after.ip_permissions_egress
+- ansible.builtin.assert:
+    that:
+      - result.changed
+      - result.diff.0.after.ip_permissions == check_mode_result.diff.0.after.ip_permissions
+      - result.diff.0.after.ip_permissions_egress == check_mode_result.diff.0.after.ip_permissions_egress
 
-  - name: add rules to make sorting occur (CHECK MODE + DIFF)
-    ec2_security_group:
-      name: '{{ ec2_group_name }}'
-      description: '{{ ec2_group_description }}'
-      state: present
-      rules:
+- name: add rules to make sorting occur (CHECK MODE + DIFF)
+  ec2_security_group:
+    name: "{{ ec2_group_name }}"
+    description: "{{ ec2_group_description }}"
+    state: present
+    rules:
       - proto: tcp
         from_port: 80
         to_port: 80
-        cidr_ip: 0.0.0.0/0
+        cidr_ip: "0.0.0.0/0"
       - proto: tcp
         from_port: 22
         to_port: 22
@@ -62,23 +62,23 @@
         from_port: 22
         to_port: 22
         cidr_ip: 10.0.0.0/8
-      rules_egress:
+    rules_egress:
       - proto: all
-        cidr_ip: 0.0.0.0/0
-    register: check_mode_result
-    check_mode: true
-    diff: true
+        cidr_ip: "0.0.0.0/0"
+  register: check_mode_result
+  check_mode: true
+  diff: true
 
-  - assert:
-      that:
-        - check_mode_result.changed
+- ansible.builtin.assert:
+    that:
+      - check_mode_result.changed
 
-  - name: add rules in a different order to test sorting consistency (DIFF)
-    ec2_security_group:
-      name: '{{ ec2_group_name }}'
-      description: '{{ ec2_group_description }}'
-      state: present
-      rules:
+- name: add rules in a different order to test sorting consistency (DIFF)
+  ec2_security_group:
+    name: "{{ ec2_group_name }}"
+    description: "{{ ec2_group_description }}"
+    state: present
+    rules:
       - proto: tcp
         from_port: 22
         to_port: 22
@@ -86,82 +86,82 @@
       - proto: tcp
         from_port: 80
         to_port: 80
-        cidr_ip: 0.0.0.0/0
+        cidr_ip: "0.0.0.0/0"
       - proto: tcp
         from_port: 22
         to_port: 22
         cidr_ip: 10.0.0.0/8
-      rules_egress:
+    rules_egress:
       - proto: all
-        cidr_ip: 0.0.0.0/0
-    register: result
-    diff: true
+        cidr_ip: "0.0.0.0/0"
+  register: result
+  diff: true
 
-  - assert:
-      that:
-        - result.changed
-        - result.diff.0.after.ip_permissions == check_mode_result.diff.0.after.ip_permissions
-        - result.diff.0.after.ip_permissions_egress == check_mode_result.diff.0.after.ip_permissions_egress
+- ansible.builtin.assert:
+    that:
+      - result.changed
+      - result.diff.0.after.ip_permissions == check_mode_result.diff.0.after.ip_permissions
+      - result.diff.0.after.ip_permissions_egress == check_mode_result.diff.0.after.ip_permissions_egress
 
-  - name: purge rules (CHECK MODE + DIFF)
-    ec2_security_group:
-      name: '{{ ec2_group_name }}'
-      description: '{{ ec2_group_description }}'
-      state: present
-      rules:
+- name: purge rules (CHECK MODE + DIFF)
+  ec2_security_group:
+    name: "{{ ec2_group_name }}"
+    description: "{{ ec2_group_description }}"
+    state: present
+    rules:
       - proto: tcp
         from_port: 80
         to_port: 80
-        cidr_ip: 0.0.0.0/0
-      rules_egress: []
-    register: check_mode_result
-    check_mode: true
-    diff: true
+        cidr_ip: "0.0.0.0/0"
+    rules_egress: []
+  register: check_mode_result
+  check_mode: true
+  diff: true
 
-  - assert:
-      that:
-        - check_mode_result.changed
+- ansible.builtin.assert:
+    that:
+      - check_mode_result.changed
 
-  - name: purge rules (DIFF)
-    ec2_security_group:
-      name: '{{ ec2_group_name }}'
-      description: '{{ ec2_group_description }}'
-      state: present
-      rules:
+- name: purge rules (DIFF)
+  ec2_security_group:
+    name: "{{ ec2_group_name }}"
+    description: "{{ ec2_group_description }}"
+    state: present
+    rules:
       - proto: tcp
         from_port: 80
         to_port: 80
-        cidr_ip: 0.0.0.0/0
-      rules_egress: []
-    register: result
-    diff: true
+        cidr_ip: "0.0.0.0/0"
+    rules_egress: []
+  register: result
+  diff: true
 
-  - assert:
-      that:
-        - result.changed
-        - result.diff.0.after.ip_permissions == check_mode_result.diff.0.after.ip_permissions
-        - result.diff.0.after.ip_permissions_egress == check_mode_result.diff.0.after.ip_permissions_egress
+- ansible.builtin.assert:
+    that:
+      - result.changed
+      - result.diff.0.after.ip_permissions == check_mode_result.diff.0.after.ip_permissions
+      - result.diff.0.after.ip_permissions_egress == check_mode_result.diff.0.after.ip_permissions_egress
 
-  - name: delete the security group (CHECK MODE + DIFF)
-    ec2_security_group:
-      name: '{{ ec2_group_name }}'
-      state: absent
-    register: check_mode_result
-    diff: true
-    check_mode: true
+- name: delete the security group (CHECK MODE + DIFF)
+  ec2_security_group:
+    name: "{{ ec2_group_name }}"
+    state: absent
+  register: check_mode_result
+  diff: true
+  check_mode: true
 
-  - assert:
-      that:
-        - check_mode_result.changed
+- ansible.builtin.assert:
+    that:
+      - check_mode_result.changed
 
-  - name: delete the security group (DIFF)
-    ec2_security_group:
-      name: '{{ ec2_group_name }}'
-      state: absent
-    register: result
-    diff: true
+- name: delete the security group (DIFF)
+  ec2_security_group:
+    name: "{{ ec2_group_name }}"
+    state: absent
+  register: result
+  diff: true
 
-  - assert:
-      that:
-        - result.changed
-        - not result.diff.0.after and not check_mode_result.diff.0.after
+- ansible.builtin.assert:
+    that:
+      - result.changed
+      - not result.diff.0.after and not check_mode_result.diff.0.after

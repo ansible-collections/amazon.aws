@@ -1,9 +1,9 @@
 ---
 - hosts: 127.0.0.1
   connection: local
-  gather_facts: no
+  gather_facts: false
   tasks:
     - name: assert inventory was not populated by aws_ec2 inventory plugin
-      assert:
+      ansible.builtin.assert:
         that:
           - "'aws_ec2' not in groups"

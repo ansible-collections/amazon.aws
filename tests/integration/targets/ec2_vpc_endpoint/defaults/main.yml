@@ -1,5 +1,6 @@
-vpc_name: '{{ resource_prefix }}-vpc'
-vpc_seed: '{{ resource_prefix }}'
+---
+vpc_name: "{{ resource_prefix }}-vpc"
+vpc_seed: "{{ resource_prefix }}"
 vpc_cidr: 10.{{ 256 | random(seed=vpc_seed) }}.22.0/24
 
 # S3, Cloud Trail and EC2 should generally be available...

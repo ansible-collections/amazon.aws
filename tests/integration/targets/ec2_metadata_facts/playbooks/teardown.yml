@@ -9,76 +9,76 @@
   hosts: localhost
 
   collections:
-  - amazon.aws
-  - community.aws
+    - amazon.aws
+    - community.aws
 
   tasks:
   # ============================================================
 
-  - name: terminate the instance
-    ec2_instance:
-      state: absent
-      instance_ids:
-        - "{{ ec2_instance_id }}"
-        - "{{ ec2_instance_id_py2 }}"
-      wait: True
-    ignore_errors: true
-    retries: 5
-    register: remove
-    until: remove is successful
+    - name: terminate the instance
+      amazon.aws.ec2_instance:
+        state: absent
+        instance_ids:
+          - "{{ ec2_instance_id }}"
+          - "{{ ec2_instance_id_py2 }}"
+        wait: true
+      ignore_errors: true
+      retries: 5
+      register: remove
+      until: remove is successful
 
-  - name: remove ssh key
-    ec2_key:
-      name: "{{ ec2_key_name }}"
-      state: absent
-    ignore_errors: true
+    - name: remove ssh key
+      amazon.aws.ec2_key:
+        name: "{{ ec2_key_name }}"
+        state: absent
+      ignore_errors: true
 
-  - name: remove the public route table
-    ec2_vpc_route_table:
-      vpc_id: "{{ vpc_id }}"
-      route_table_id: "{{ vpc_route_table_id }}"
-      lookup: id
-      state: absent
-    ignore_errors: true
-    retries: 5
-    register: remove
-    until: remove is successful
+    - name: remove the public route table
+      amazon.aws.ec2_vpc_route_table:
+        vpc_id: "{{ vpc_id }}"
+        route_table_id: "{{ vpc_route_table_id }}"
+        lookup: id
+        state: absent
+      ignore_errors: true
+      retries: 5
+      register: remove
+      until: remove is successful
 
-  - name: remove the internet gateway
-    ec2_vpc_igw:
-      vpc_id: "{{ vpc_id }}"
-      state: absent
-    ignore_errors: true
-    retries: 5
-    register: remove
-    until: remove is successful
+    - name: remove the internet gateway
+      amazon.aws.ec2_vpc_igw:
+        vpc_id: "{{ vpc_id }}"
+        state: absent
+      ignore_errors: true
+      retries: 5
+      register: remove
+      until: remove is successful
 
-  - name: remove the security group
-    ec2_security_group:
-      group_id: "{{ vpc_sg_id }}"
-      state: absent
-    ignore_errors: true
-    retries: 5
-    register: remove
-    until: remove is successful
+    - name: remove the security group
+      ec2_security_group:
+        group_id: "{{ vpc_sg_id }}"
+        state: absent
+      ignore_errors: true
+      retries: 5
+      register: remove
+      until: remove is successful
 
-  - name: remove the subnet
-    ec2_vpc_subnet:
-      cidr: "{{ vpc_cidr }}"
-      az: "{{ availability_zone }}"
-      vpc_id: "{{ vpc_id }}"
-      state: absent
-    ignore_errors: true
-    retries: 5
-    register: remove
-    until: remove is successful
+    - name: remove the subnet
+      amazon.aws.ec2_vpc_subnet:
+        cidr: "{{ vpc_cidr }}"
+        az: "{{ availability_zone }}"
+        vpc_id: "{{ vpc_id }}"
+        state: absent
+      ignore_errors: true
+      retries: 5
+      register: remove
+      until: remove is successful
 
-  - name: remove the VPC
-    ec2_vpc_net:
-      name: "{{ resource_prefix }}-vpc"
-      cidr_block: "{{ vpc_cidr }}"
-      state: absent
-    ignore_errors: true
-    retries: 5
-    register: remove
-    until: remove is successful
+    - name: remove the VPC
+      amazon.aws.ec2_vpc_net:
+        name: "{{ resource_prefix }}-vpc"
+        cidr_block: "{{ vpc_cidr }}"
+        state: absent
+      ignore_errors: true
+      retries: 5
+      register: remove
+      until: remove is successful

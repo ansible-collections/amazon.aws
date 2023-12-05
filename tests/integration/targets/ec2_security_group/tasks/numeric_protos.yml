@@ -1,66 +1,66 @@
 ---
 - block:
     - name: set up temporary group name for tests
-      set_fact:
-        group_tmp_name: '{{ec2_group_name}}-numbered-protos'
+      ansible.builtin.set_fact:
+        group_tmp_name: "{{ec2_group_name}}-numbered-protos"
 
     - name: Create a group with numbered protocol (GRE)
       ec2_security_group:
-        name: '{{ group_tmp_name }}'
-        vpc_id: '{{ vpc_result.vpc.id }}'
-        description: '{{ ec2_group_description }}'
+        name: "{{ group_tmp_name }}"
+        vpc_id: "{{ vpc_result.vpc.id }}"
+        description: "{{ ec2_group_description }}"
         rules:
-        - proto: 47
-          to_port: -1
-          from_port: -1
-          cidr_ip: 0.0.0.0/0
-        - proto: -1
-          ports: -1
-          cidr_ip: 0.0.0.0/0
+          - proto: 47
+            to_port: -1
+            from_port: -1
+            cidr_ip: "0.0.0.0/0"
+          - proto: -1
+            ports: -1
+            cidr_ip: "0.0.0.0/0"
         state: present
       register: result
 
     - name: Create a group with a quoted proto
       ec2_security_group:
-        name: '{{ group_tmp_name }}'
-        vpc_id: '{{ vpc_result.vpc.id }}'
-        description: '{{ ec2_group_description }}'
+        name: "{{ group_tmp_name }}"
+        vpc_id: "{{ vpc_result.vpc.id }}"
+        description: "{{ ec2_group_description }}"
         rules:
-        - proto: '47'
-          to_port: -1
-          from_port: -1
-          cidr_ip: 0.0.0.0/0
-        - proto: -1
-          ports: -1
-          cidr_ip: 0.0.0.0/0
+          - proto: "47"
+            to_port: -1
+            from_port: -1
+            cidr_ip: "0.0.0.0/0"
+          - proto: -1
+            ports: -1
+            cidr_ip: "0.0.0.0/0"
         state: present
       register: result
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is not changed
     - name: Add a tag with a numeric value
       ec2_security_group:
-        name: '{{ group_tmp_name }}'
-        vpc_id: '{{ vpc_result.vpc.id }}'
-        description: '{{ ec2_group_description }}'
+        name: "{{ group_tmp_name }}"
+        vpc_id: "{{ vpc_result.vpc.id }}"
+        description: "{{ ec2_group_description }}"
         tags:
           foo: 1
     - name: Read a tag with a numeric value
       ec2_security_group:
-        name: '{{ group_tmp_name }}'
-        vpc_id: '{{ vpc_result.vpc.id }}'
-        description: '{{ ec2_group_description }}'
+        name: "{{ group_tmp_name }}"
+        vpc_id: "{{ vpc_result.vpc.id }}"
+        description: "{{ ec2_group_description }}"
         tags:
           foo: 1
       register: result
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is not changed
 
   always:
     - name: tidy up egress rule test security group
       ec2_security_group:
-        name: '{{group_tmp_name}}'
+        name: "{{group_tmp_name}}"
         state: absent
-        vpc_id: '{{ vpc_result.vpc.id }}'
-      ignore_errors: yes
+        vpc_id: "{{ vpc_result.vpc.id }}"
+      ignore_errors: true

@@ -7,309 +7,306 @@
       region: "{{ aws_region }}"
 
   collections:
-  - amazon.aws
-  - community.aws
+    - amazon.aws
+    - community.aws
 
   block:
-  - name: Get available AZs
-    aws_az_info:
-      filters:
-        region-name: "{{ aws_region }}"
-    register: az_info
+    - name: Get available AZs
+      amazon.aws.aws_az_info:
+        filters:
+          region-name: "{{ aws_region }}"
+      register: az_info
 
-  - name: Pick an AZ
-    set_fact:
-      availability_zone: "{{ az_info['availability_zones'][0]['zone_name'] }}"
-
-  # ============================================================
-  - name: create a VPC
-    ec2_vpc_net:
-      name: "{{ resource_prefix }}-vpc"
-      state: present
-      cidr_block: "{{ vpc_cidr }}"
-      tags:
-        Name: "{{ resource_prefix }}-vpc"
-        Description: "Created by ansible-test"
-    register: vpc_result
-
-  - name: create a subnet
-    ec2_vpc_subnet:
-      cidr: "{{ vpc_cidr }}"
-      az: "{{ availability_zone }}"
-      vpc_id: "{{ vpc_result.vpc.id }}"
-      tags:
-        Name: "{{ resource_prefix }}-vpc"
-        Description: "Created by ansible-test"
-      state: present
-    register: vpc_subnet_result
-
-  - name: create a security group
-    ec2_security_group:
-      name: "{{ resource_prefix }}-sg"
-      description: "Created by {{ resource_prefix }}"
-      rules: []
-      state: present
-      vpc_id: "{{ vpc_result.vpc.id }}"
-    register: vpc_sg_result
-
-  - name: create a new ec2 key pair
-    ec2_key:
-      name: "{{ resource_prefix }}-keypair"
-
-  - name: Set facts to simplify use of extra resources
-    set_fact:
-      vpc_id: "{{ vpc_result.vpc.id }}"
-      vpc_subnet_id: "{{ vpc_subnet_result.subnet.id }}"
-      vpc_sg_id: "{{ vpc_sg_result.group_id }}"
-
-  # ============================================================
-
-  - name: Run tests for termianting associated instances
-    import_tasks: terminate_associated_instances.yml
-
-  # Assert that spot instance request is created
-  - name: Create simple spot instance request
-    ec2_spot_instance:
-      launch_specification:
-        image_id: "{{ ec2_ami_id }}"
-        key_name: "{{ resource_prefix }}-keypair"
-        instance_type: "t2.medium"
-        subnet_id: "{{ vpc_subnet_result.subnet.id }}"
-      tags:
-        ansible-test: "{{ resource_prefix }}"
-    register: create_result
-
-  - name: Assert that result has changed and request has been created
-    assert:
-      that:
-        - create_result is changed
-        - create_result.spot_request is defined
-        - create_result.spot_request.spot_instance_request_id is defined
-        - create_result.spot_request.launch_specification.subnet_id == vpc_subnet_result.subnet.id
-
-  - name: Get info about the spot instance request created
-    ec2_spot_instance_info:
-      spot_instance_request_ids:
-        - "{{ create_result.spot_request.spot_instance_request_id }}"
-    register: spot_instance_info_result
-
-  - name: Assert that the spot request created is open or active
-    assert:
-      that:
-        - spot_instance_info_result.spot_request[0].state in ['open', 'active']
-
-  - name: Create spot request with more complex options
-    ec2_spot_instance:
-      launch_specification:
-        image_id: "{{ ec2_ami_id }}"
-        key_name: "{{ resource_prefix }}-keypair"
-        instance_type: "t2.medium"
-        block_device_mappings:
-          - device_name: /dev/sdb
-            ebs:
-              delete_on_termination: True
-              volume_type: gp3
-              volume_size: 5
-        network_interfaces:
-          - associate_public_ip_address: False
-            subnet_id: "{{ vpc_subnet_result.subnet.id }}"
-            delete_on_termination: True
-            device_index: 0
-        placement:
-          availability_zone: '{{ availability_zone }}'
-        monitoring:
-          enabled: False
-      spot_price: 0.002
-      tags:
-        camelCase: "helloWorld"
-        PascalCase: "HelloWorld"
-        snake_case: "hello_world"
-        "Title Case": "Hello World"
-        "lowercase spaced": "hello world"
-        ansible-test: "{{ resource_prefix }}"
-    register: complex_create_result
-
-  - assert:
-      that:
-        - complex_create_result is changed
-        - complex_create_result.spot_request is defined
-        - complex_create_result.spot_request.spot_instance_request_id is defined
-        - complex_create_result.spot_request.type == 'one-time'
-        - '"0.002" in complex_create_result.spot_request.spot_price'  ## AWS pads trailing zeros on the spot price
-        - launch_spec.placement.availability_zone == availability_zone
-        - launch_spec.block_device_mappings|length == 1
-        - launch_spec.block_device_mappings.0.ebs.delete_on_termination == true
-        - launch_spec.block_device_mappings.0.ebs.volume_type == 'gp3'
-        - launch_spec.block_device_mappings.0.ebs.volume_size == 5
-        - launch_spec.network_interfaces|length == 1
-        - launch_spec.network_interfaces.0.device_index == 0
-        - launch_spec.network_interfaces.0.associate_public_ip_address == false
-        - launch_spec.network_interfaces.0.delete_on_termination == true
-        - spot_request_tags|length == 6
-        - spot_request_tags['camelCase'] == 'helloWorld'
-        - spot_request_tags['PascalCase'] == 'HelloWorld'
-        - spot_request_tags['snake_case'] == 'hello_world'
-        - spot_request_tags['Title Case'] == 'Hello World'
-        - spot_request_tags['lowercase spaced'] == 'hello world'
-    vars:
-      launch_spec: '{{ complex_create_result.spot_request.launch_specification }}'
-      spot_request_tags: '{{ complex_create_result.spot_request.tags }}'
-
-  - name: Get info about the complex spot instance request created
-    ec2_spot_instance_info:
-      spot_instance_request_ids:
-        - "{{ complex_create_result.spot_request.spot_instance_request_id }}"
-    register: complex_info_result
-
-  - name: Assert that the complex spot request created is open/active and correct keys are set
-    assert:
-      that:
-        - complex_info_result.spot_request[0].state in ['open', 'active']
-        - complex_create_result.spot_request.spot_price == complex_info_result.spot_request[0].spot_price
-        - create_launch_spec.block_device_mappings[0].ebs.volume_size == info_launch_spec.block_device_mappings[0].ebs.volume_size
-        - create_launch_spec.block_device_mappings[0].ebs.volume_type == info_launch_spec.block_device_mappings[0].ebs.volume_type
-        - create_launch_spec.network_interfaces[0].delete_on_termination == info_launch_spec.network_interfaces[0].delete_on_termination
-    vars:
-      create_launch_spec: "{{ complex_create_result.spot_request.launch_specification }}"
-      info_launch_spec: "{{ complex_info_result.spot_request[0].launch_specification }}"
-
-  - name: Get info about the created spot instance requests and filter result based on provided filters
-    ec2_spot_instance_info:
-      spot_instance_request_ids:
-        - '{{ create_result.spot_request.spot_instance_request_id }}'
-        - '{{ complex_create_result.spot_request.spot_instance_request_id }}'
-      filters:
-        tag:ansible-test: "{{ resource_prefix }}"
-        launch.block-device-mapping.device-name: /dev/sdb
-    register: spot_instance_info_filter_result
-
-  - name: Assert that the correct spot request was returned in the filtered result
-    assert:
-      that:
-        - spot_instance_info_filter_result.spot_request[0].spot_instance_request_id == complex_create_result.spot_request.spot_instance_request_id
-
-  # Assert check mode
-  - name: Create spot instance request (check_mode)
-    ec2_spot_instance:
-      launch_specification:
-        image_id: "{{ ec2_ami_id }}"
-        key_name: "{{ resource_prefix }}-keypair"
-        instance_type: "t2.medium"
-        subnet_id: "{{ vpc_subnet_result.subnet.id }}"
-      tags:
-        ansible-test: "{{ resource_prefix }}"
-    check_mode: True
-    register: check_create_result
-
-  - assert:
-      that:
-        - check_create_result is changed
-
-  - name: Remove spot instance request (check_mode)
-    ec2_spot_instance:
-      spot_instance_request_ids: '{{ create_result.spot_request.spot_instance_request_id }}'
-      state: absent
-    check_mode: True
-    register: check_cancel_result
-
-  - assert:
-      that:
-        - check_cancel_result is changed
-
-  - name: Remove spot instance requests
-    ec2_spot_instance:
-      spot_instance_request_ids:
-        - '{{ create_result.spot_request.spot_instance_request_id }}'
-        - '{{ complex_create_result.spot_request.spot_instance_request_id }}'
-      state: absent
-    register: cancel_result
-
-  - assert:
-      that:
-        - cancel_result is changed
-        - '"Cancelled Spot request" in cancel_result.msg'
-
-  - name: Sometimes we run the next test before the EC2 API is fully updated from the previous task
-    pause:
-      seconds: 3
-
-  - name: Check no change if request is already cancelled (idempotency)
-    ec2_spot_instance:
-      spot_instance_request_ids: '{{ create_result.spot_request.spot_instance_request_id }}'
-      state: absent
-    register: cancel_request_again
-
-  - assert:
-      that:
-        - cancel_request_again is not changed
-        - '"Spot request not found or already cancelled" in cancel_request_again.msg'
-
-  - name: Gracefully try to remove non-existent request (NotFound)
-    ec2_spot_instance:
-      spot_instance_request_ids:
-        - sir-12345678
-      state: absent
-    register: fake_cancel_result
-
-  - assert:
-      that:
-        - fake_cancel_result is not changed
-        - '"Spot request not found or already cancelled" in fake_cancel_result.msg'
-
-  always:
+    - name: Pick an AZ
+      ansible.builtin.set_fact:
+        availability_zone: "{{ az_info['availability_zones'][0]['zone_name'] }}"
 
     # ============================================================
-      - name: Delete spot instances
-        ec2_instance:
-          state: absent
-          filters:
-            vpc-id: "{{ vpc_result.vpc.id }}"
+    - name: create a VPC
+      amazon.aws.ec2_vpc_net:
+        name: "{{ resource_prefix }}-vpc"
+        state: present
+        cidr_block: "{{ vpc_cidr }}"
+        tags:
+          Name: "{{ resource_prefix }}-vpc"
+          Description: Created by ansible-test
+      register: vpc_result
 
-      - name: get all spot requests created during test
-        ec2_spot_instance_info:
-          filters:
-            tag:ansible-test: "{{ resource_prefix }}"
-        register: spot_request_list
+    - name: create a subnet
+      amazon.aws.ec2_vpc_subnet:
+        cidr: "{{ vpc_cidr }}"
+        az: "{{ availability_zone }}"
+        vpc_id: "{{ vpc_result.vpc.id }}"
+        tags:
+          Name: "{{ resource_prefix }}-vpc"
+          Description: Created by ansible-test
+        state: present
+      register: vpc_subnet_result
 
-      - name: remove spot instance requests
-        ec2_spot_instance:
-          spot_instance_request_ids:
-            - '{{ item.spot_instance_request_id }}'
-          state: 'absent'
-        ignore_errors: true
-        retries: 5
-        with_items: "{{ spot_request_list.spot_request }}"
+    - name: create a security group
+      ec2_security_group:
+        name: "{{ resource_prefix }}-sg"
+        description: Created by {{ resource_prefix }}
+        rules: []
+        state: present
+        vpc_id: "{{ vpc_result.vpc.id }}"
+      register: vpc_sg_result
 
-      - name: remove the security group
-        ec2_security_group:
-          name: "{{ resource_prefix }}-sg"
-          description: "{{ resource_prefix }}"
-          rules: []
-          state: absent
-          vpc_id: "{{ vpc_result.vpc.id }}"
-        ignore_errors: true
-        retries: 5
+    - name: create a new ec2 key pair
+      amazon.aws.ec2_key:
+        name: "{{ resource_prefix }}-keypair"
 
-      - name: remove the subnet
-        ec2_vpc_subnet:
-          cidr: "{{ vpc_cidr }}"
-          az: "{{ availability_zone }}"
-          vpc_id: "{{ vpc_result.vpc.id }}"
-          state: absent
-        ignore_errors: true
-        retries: 5
-        when: vpc_subnet_result is defined
+    - name: Set facts to simplify use of extra resources
+      ansible.builtin.set_fact:
+        vpc_id: "{{ vpc_result.vpc.id }}"
+        vpc_subnet_id: "{{ vpc_subnet_result.subnet.id }}"
+        vpc_sg_id: "{{ vpc_sg_result.group_id }}"
 
-      - name: remove the VPC
-        ec2_vpc_net:
-          name: "{{ resource_prefix }}-vpc"
-          cidr_block: "{{ vpc_cidr }}"
-          state: absent
-        ignore_errors: true
-        retries: 5
+    # ============================================================
 
-      - name: remove key pair by name
-        ec2_key:
-          name: "{{ resource_prefix }}-keypair"
-          state: absent
-        ignore_errors: true
+    - name: Run tests for termianting associated instances
+      ansible.builtin.import_tasks: terminate_associated_instances.yml
+    - name: Create simple spot instance request
+      ec2_spot_instance:
+        launch_specification:
+          image_id: "{{ ec2_ami_id }}"
+          key_name: "{{ resource_prefix }}-keypair"
+          instance_type: t2.medium
+          subnet_id: "{{ vpc_subnet_result.subnet.id }}"
+        tags:
+          ansible-test: "{{ resource_prefix }}"
+      register: create_result
+
+    - name: Assert that result has changed and request has been created
+      ansible.builtin.assert:
+        that:
+          - create_result is changed
+          - create_result.spot_request is defined
+          - create_result.spot_request.spot_instance_request_id is defined
+          - create_result.spot_request.launch_specification.subnet_id == vpc_subnet_result.subnet.id
+
+    - name: Get info about the spot instance request created
+      ec2_spot_instance_info:
+        spot_instance_request_ids:
+          - "{{ create_result.spot_request.spot_instance_request_id }}"
+      register: spot_instance_info_result
+
+    - name: Assert that the spot request created is open or active
+      ansible.builtin.assert:
+        that:
+          - spot_instance_info_result.spot_request[0].state in ['open', 'active']
+
+    - name: Create spot request with more complex options
+      ec2_spot_instance:
+        launch_specification:
+          image_id: "{{ ec2_ami_id }}"
+          key_name: "{{ resource_prefix }}-keypair"
+          instance_type: t2.medium
+          block_device_mappings:
+            - device_name: /dev/sdb
+              ebs:
+                delete_on_termination: true
+                volume_type: gp3
+                volume_size: 5
+          network_interfaces:
+            - associate_public_ip_address: false
+              subnet_id: "{{ vpc_subnet_result.subnet.id }}"
+              delete_on_termination: true
+              device_index: 0
+          placement:
+            availability_zone: "{{ availability_zone }}"
+          monitoring:
+            enabled: false
+        spot_price: !!float "0.002"
+        tags:
+          camelCase: helloWorld
+          PascalCase: HelloWorld
+          snake_case: hello_world
+          Title Case: Hello World
+          lowercase spaced: hello world
+          ansible-test: "{{ resource_prefix }}"
+      register: complex_create_result
+
+    - ansible.builtin.assert:
+        that:
+          - complex_create_result is changed
+          - complex_create_result.spot_request is defined
+          - complex_create_result.spot_request.spot_instance_request_id is defined
+          - complex_create_result.spot_request.type == 'one-time'
+          - '"0.002" in complex_create_result.spot_request.spot_price' ## AWS pads trailing zeros on the spot price
+          - launch_spec.placement.availability_zone == availability_zone
+          - launch_spec.block_device_mappings|length == 1
+          - launch_spec.block_device_mappings.0.ebs.delete_on_termination == true
+          - launch_spec.block_device_mappings.0.ebs.volume_type == 'gp3'
+          - launch_spec.block_device_mappings.0.ebs.volume_size == 5
+          - launch_spec.network_interfaces|length == 1
+          - launch_spec.network_interfaces.0.device_index == 0
+          - launch_spec.network_interfaces.0.associate_public_ip_address == false
+          - launch_spec.network_interfaces.0.delete_on_termination == true
+          - spot_request_tags|length == 6
+          - spot_request_tags['camelCase'] == 'helloWorld'
+          - spot_request_tags['PascalCase'] == 'HelloWorld'
+          - spot_request_tags['snake_case'] == 'hello_world'
+          - spot_request_tags['Title Case'] == 'Hello World'
+          - spot_request_tags['lowercase spaced'] == 'hello world'
+      vars:
+        launch_spec: "{{ complex_create_result.spot_request.launch_specification }}"
+        spot_request_tags: "{{ complex_create_result.spot_request.tags }}"
+
+    - name: Get info about the complex spot instance request created
+      ec2_spot_instance_info:
+        spot_instance_request_ids:
+          - "{{ complex_create_result.spot_request.spot_instance_request_id }}"
+      register: complex_info_result
+
+    - name: Assert that the complex spot request created is open/active and correct keys are set
+      ansible.builtin.assert:
+        that:
+          - complex_info_result.spot_request[0].state in ['open', 'active']
+          - complex_create_result.spot_request.spot_price == complex_info_result.spot_request[0].spot_price
+          - create_launch_spec.block_device_mappings[0].ebs.volume_size == info_launch_spec.block_device_mappings[0].ebs.volume_size
+          - create_launch_spec.block_device_mappings[0].ebs.volume_type == info_launch_spec.block_device_mappings[0].ebs.volume_type
+          - create_launch_spec.network_interfaces[0].delete_on_termination == info_launch_spec.network_interfaces[0].delete_on_termination
+      vars:
+        create_launch_spec: "{{ complex_create_result.spot_request.launch_specification }}"
+        info_launch_spec: "{{ complex_info_result.spot_request[0].launch_specification }}"
+
+    - name: Get info about the created spot instance requests and filter result based on provided filters
+      ec2_spot_instance_info:
+        spot_instance_request_ids:
+          - "{{ create_result.spot_request.spot_instance_request_id }}"
+          - "{{ complex_create_result.spot_request.spot_instance_request_id }}"
+        filters:
+          tag:ansible-test: "{{ resource_prefix }}"
+          launch.block-device-mapping.device-name: /dev/sdb
+      register: spot_instance_info_filter_result
+
+    - name: Assert that the correct spot request was returned in the filtered result
+      ansible.builtin.assert:
+        that:
+          - spot_instance_info_filter_result.spot_request[0].spot_instance_request_id == complex_create_result.spot_request.spot_instance_request_id
+
+    # Assert check mode
+    - name: Create spot instance request (check_mode)
+      ec2_spot_instance:
+        launch_specification:
+          image_id: "{{ ec2_ami_id }}"
+          key_name: "{{ resource_prefix }}-keypair"
+          instance_type: t2.medium
+          subnet_id: "{{ vpc_subnet_result.subnet.id }}"
+        tags:
+          ansible-test: "{{ resource_prefix }}"
+      check_mode: true
+      register: check_create_result
+
+    - ansible.builtin.assert:
+        that:
+          - check_create_result is changed
+
+    - name: Remove spot instance request (check_mode)
+      ec2_spot_instance:
+        spot_instance_request_ids: "{{ create_result.spot_request.spot_instance_request_id }}"
+        state: absent
+      check_mode: true
+      register: check_cancel_result
+
+    - ansible.builtin.assert:
+        that:
+          - check_cancel_result is changed
+
+    - name: Remove spot instance requests
+      ec2_spot_instance:
+        spot_instance_request_ids:
+          - "{{ create_result.spot_request.spot_instance_request_id }}"
+          - "{{ complex_create_result.spot_request.spot_instance_request_id }}"
+        state: absent
+      register: cancel_result
+
+    - ansible.builtin.assert:
+        that:
+          - cancel_result is changed
+          - '"Cancelled Spot request" in cancel_result.msg'
+
+    - name: Sometimes we run the next test before the EC2 API is fully updated from the previous task
+      ansible.builtin.pause:
+        seconds: 3
+
+    - name: Check no change if request is already cancelled (idempotency)
+      ec2_spot_instance:
+        spot_instance_request_ids: "{{ create_result.spot_request.spot_instance_request_id }}"
+        state: absent
+      register: cancel_request_again
+
+    - ansible.builtin.assert:
+        that:
+          - cancel_request_again is not changed
+          - '"Spot request not found or already cancelled" in cancel_request_again.msg'
+
+    - name: Gracefully try to remove non-existent request (NotFound)
+      ec2_spot_instance:
+        spot_instance_request_ids:
+          - sir-12345678
+        state: absent
+      register: fake_cancel_result
+
+    - ansible.builtin.assert:
+        that:
+          - fake_cancel_result is not changed
+          - '"Spot request not found or already cancelled" in fake_cancel_result.msg'
+
+  always:
+    # ============================================================
+    - name: Delete spot instances
+      amazon.aws.ec2_instance:
+        state: absent
+        filters:
+          vpc-id: "{{ vpc_result.vpc.id }}"
+
+    - name: get all spot requests created during test
+      ec2_spot_instance_info:
+        filters:
+          tag:ansible-test: "{{ resource_prefix }}"
+      register: spot_request_list
+
+    - name: remove spot instance requests
+      ec2_spot_instance:
+        spot_instance_request_ids:
+          - "{{ item.spot_instance_request_id }}"
+        state: absent
+      ignore_errors: true
+      retries: 5
+      with_items: "{{ spot_request_list.spot_request }}"
+
+    - name: remove the security group
+      ec2_security_group:
+        name: "{{ resource_prefix }}-sg"
+        description: "{{ resource_prefix }}"
+        rules: []
+        state: absent
+        vpc_id: "{{ vpc_result.vpc.id }}"
+      ignore_errors: true
+      retries: 5
+
+    - name: remove the subnet
+      amazon.aws.ec2_vpc_subnet:
+        cidr: "{{ vpc_cidr }}"
+        az: "{{ availability_zone }}"
+        vpc_id: "{{ vpc_result.vpc.id }}"
+        state: absent
+      ignore_errors: true
+      retries: 5
+      when: vpc_subnet_result is defined
+
+    - name: remove the VPC
+      amazon.aws.ec2_vpc_net:
+        name: "{{ resource_prefix }}-vpc"
+        cidr_block: "{{ vpc_cidr }}"
+        state: absent
+      ignore_errors: true
+      retries: 5
+
+    - name: remove key pair by name
+      amazon.aws.ec2_key:
+        name: "{{ resource_prefix }}-keypair"
+        state: absent
+      ignore_errors: true

@@ -1,20 +1,21 @@
-  # ============================================================
+---
+# ============================================================
 - name: verify there are no tags associated with the network interface
-  ec2_eni:
+  amazon.aws.ec2_eni:
     eni_id: "{{ eni_id_1 }}"
     state: present
     tags: {}
   register: result
 
-- assert:
+- ansible.builtin.assert:
     that:
       - not result.changed
       - not result.interface.tags
       - result.interface.name is undefined
 
-  # ============================================================
+# ============================================================
 - name: add tags to the network interface (check mode)
-  ec2_eni:
+  amazon.aws.ec2_eni:
     eni_id: "{{ eni_id_1 }}"
     state: present
     name: "{{ resource_prefix }}"
@@ -23,23 +24,23 @@
   check_mode: true
   register: result_check_mode
 
-- assert:
+- ansible.builtin.assert:
     that:
       - result_check_mode.changed
 
 - name: add tags to the network interface
-  ec2_eni:
+  amazon.aws.ec2_eni:
     eni_id: "{{ eni_id_1 }}"
     state: present
     name: "{{ resource_prefix }}"
     tags:
       CreatedBy: "{{ resource_prefix }}"
   register: result
-- ec2_eni_info:
+- amazon.aws.ec2_eni_info:
     eni_id: "{{ eni_id_1 }}"
   register: eni_info
 
-- assert:
+- ansible.builtin.assert:
     that:
       - result.changed
       - result.interface.id == eni_id_1
@@ -55,57 +56,57 @@
       - _interface_0.tag_set.Name == resource_prefix
       - _interface_0.name == resource_prefix
   vars:
-    _interface_0: '{{ eni_info.network_interfaces[0] }}'
+    _interface_0: "{{ eni_info.network_interfaces[0] }}"
 
-  # ============================================================
+# ============================================================
 - name: test idempotence by using the Name tag and the subnet (check mode)
-  ec2_eni:
+  amazon.aws.ec2_eni:
     name: "{{ resource_prefix }}"
     state: present
     subnet_id: "{{ vpc_subnet_result.subnet.id }}"
   check_mode: true
   register: result_check_mode
 
-- assert:
+- ansible.builtin.assert:
     that:
       - not result_check_mode.changed
 
 - name: test idempotence by using the Name tag and the subnet
-  ec2_eni:
+  amazon.aws.ec2_eni:
     name: "{{ resource_prefix }}"
     state: present
     subnet_id: "{{ vpc_subnet_result.subnet.id }}"
   register: result
 
-- assert:
+- ansible.builtin.assert:
     that:
       - not result.changed
       - result.interface.id == eni_id_1
 
-  # ============================================================
+# ============================================================
 - name: test tags are not purged if tags are null even if name is provided (check mode)
-  ec2_eni:
+  amazon.aws.ec2_eni:
     name: "{{ resource_prefix }}"
     state: present
     subnet_id: "{{ vpc_subnet_result.subnet.id }}"
   check_mode: true
   register: result_check_mode
 
-- assert:
+- ansible.builtin.assert:
     that:
       - not result_check_mode.changed
 
 - name: test tags are not purged if tags are null even if name is provided
-  ec2_eni:
+  amazon.aws.ec2_eni:
     name: "{{ resource_prefix }}"
     state: present
     subnet_id: "{{ vpc_subnet_result.subnet.id }}"
   register: result
-- ec2_eni_info:
+- amazon.aws.ec2_eni_info:
     eni_id: "{{ eni_id_1 }}"
   register: eni_info
 
-- assert:
+- ansible.builtin.assert:
     that:
       - not result.changed
       - result.interface.id == eni_id_1
@@ -118,21 +119,21 @@
       - _interface_0.tag_set.Name == resource_prefix
       - _interface_0.name == resource_prefix
   vars:
-    _interface_0: '{{ eni_info.network_interfaces[0] }}'
+    _interface_0: "{{ eni_info.network_interfaces[0] }}"
 
-  # ============================================================
+# ============================================================
 - name: test setting purge tags to false
-  ec2_eni:
+  amazon.aws.ec2_eni:
     eni_id: "{{ eni_id_1 }}"
     state: present
     purge_tags: false
     tags: {}
   register: result
-- ec2_eni_info:
+- amazon.aws.ec2_eni_info:
     eni_id: "{{ eni_id_1 }}"
   register: eni_info
 
-- assert:
+- ansible.builtin.assert:
     that:
       - not result.changed
       - result.interface.tags | length == 2
@@ -144,22 +145,22 @@
       - _interface_0.tag_set.Name == resource_prefix
       - _interface_0.name == resource_prefix
   vars:
-    _interface_0: '{{ eni_info.network_interfaces[0] }}'
+    _interface_0: "{{ eni_info.network_interfaces[0] }}"
 
-  # ============================================================
+# ============================================================
 - name: test adding a new tag without removing any others
-  ec2_eni:
+  amazon.aws.ec2_eni:
     eni_id: "{{ eni_id_1 }}"
     state: present
     purge_tags: false
     tags:
       environment: test
   register: result
-- ec2_eni_info:
+- amazon.aws.ec2_eni_info:
     eni_id: "{{ eni_id_1 }}"
   register: eni_info
 
-- assert:
+- ansible.builtin.assert:
     that:
       - result.changed
       - result.interface.tags | length == 3
@@ -173,22 +174,22 @@
       - _interface_0.tag_set.Name == resource_prefix
       - _interface_0.name == resource_prefix
   vars:
-    _interface_0: '{{ eni_info.network_interfaces[0] }}'
+    _interface_0: "{{ eni_info.network_interfaces[0] }}"
 
-  # ============================================================
+# ============================================================
 - name: test purging tags and adding a new one
-  ec2_eni:
+  amazon.aws.ec2_eni:
     name: "{{ resource_prefix }}"
     state: present
     subnet_id: "{{ vpc_subnet_result.subnet.id }}"
     tags:
       Description: "{{ resource_prefix }}"
   register: result
-- ec2_eni_info:
+- amazon.aws.ec2_eni_info:
     eni_id: "{{ eni_id_1 }}"
   register: eni_info
 
-- assert:
+- ansible.builtin.assert:
     that:
       - result.changed
       - result.interface.id == eni_id_1
@@ -201,21 +202,21 @@
       - _interface_0.tag_set.Name == resource_prefix
       - _interface_0.name == resource_prefix
   vars:
-    _interface_0: '{{ eni_info.network_interfaces[0] }}'
+    _interface_0: "{{ eni_info.network_interfaces[0] }}"
 
 - name: test purging tags and adding a new one is idempotent
-  ec2_eni:
+  amazon.aws.ec2_eni:
     name: "{{ resource_prefix }}"
     state: present
     subnet_id: "{{ vpc_subnet_result.subnet.id }}"
     tags:
       Description: "{{ resource_prefix }}"
   register: result
-- ec2_eni_info:
+- amazon.aws.ec2_eni_info:
     eni_id: "{{ eni_id_1 }}"
   register: eni_info
 
-- assert:
+- ansible.builtin.assert:
     that:
       - not result.changed
       - result.interface.id == eni_id_1
@@ -228,24 +229,24 @@
       - _interface_0.tag_set.Name == resource_prefix
       - _interface_0.name == resource_prefix
   vars:
-    _interface_0: '{{ eni_info.network_interfaces[0] }}'
+    _interface_0: "{{ eni_info.network_interfaces[0] }}"
 
-  # ============================================================
+# ============================================================
 - name: test purging all tags
-  ec2_eni:
+  amazon.aws.ec2_eni:
     eni_id: "{{ eni_id_1 }}"
     state: present
     tags: {}
   register: result
-- ec2_eni_info:
+- amazon.aws.ec2_eni_info:
     eni_id: "{{ eni_id_1 }}"
   register: eni_info
 
-- assert:
+- ansible.builtin.assert:
     that:
       - result.changed
       - not result.interface.tags
       - result.interface.name is undefined
       - _interface_0.tag_set | length == 0
   vars:
-    _interface_0: '{{ eni_info.network_interfaces[0] }}'
+    _interface_0: "{{ eni_info.network_interfaces[0] }}"
