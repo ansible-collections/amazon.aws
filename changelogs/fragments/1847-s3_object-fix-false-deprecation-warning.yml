@@ -1,3 +1,0 @@
----
-bugfixes:
-  - s3_object - Fix typo that caused false deprecation warning when setting `overwrite=latest` (https://github.com/ansible-collections/amazon.aws/pull/1847).
