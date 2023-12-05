@@ -1,4 +1,4 @@
 cloud/aws
 rds_instance_info
-time=30m
+time=35m
 rds_instance

@@ -1,4 +1,4 @@
-time=30m
+time=20m
 cloud/aws
 ec2_ami
 ec2_ami_info

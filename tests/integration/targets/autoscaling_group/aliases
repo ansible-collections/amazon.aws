@@ -1,4 +1,4 @@
-time=30m
+time=10m
 cloud/aws
 
 autoscaling_group_info

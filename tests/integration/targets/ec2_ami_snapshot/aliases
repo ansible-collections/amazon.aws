@@ -1,4 +1,4 @@
-time=10m
+time=5m
 cloud/aws
 
 ec2_ami
