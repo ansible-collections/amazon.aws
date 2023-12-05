@@ -46,9 +46,9 @@
     - name: Check return values of the create instance task
       assert:
         that:
-          - "{{ create_instance_results.instances | length }} > 0"
-          - "'{{ create_instance_results.instances.0.state.name }}' == 'running'"
-          - "'{{ create_instance_results.spec.DisableApiTermination }}'"
+          - create_instance_results.instances | length > 0
+          - create_instance_results.instances.0.state.name == 'running'
+          - create_instance_results.spec.DisableApiTermination
 
     - name: Get info on termination protection
       command: 'aws ec2 describe-instance-attribute --attribute disableApiTermination --instance-id {{ instance_id }}'
@@ -105,8 +105,8 @@
     - name: Check return values of the create instance task
       assert:
         that:
-          - "{{ not create_instance_results.changed }}"
-          - "{{ create_instance_results.instances | length }} > 0"
+          - not create_instance_results.changed
+          - create_instance_results.instances | length > 0
 
     - name: Try to terminate the instance (expected to fail)
       ec2_instance:
@@ -131,7 +131,7 @@
     - name: Check return value
       assert:
         that:
-          - "{{ set_termination_protectioncheck_mode_results.changed }}"
+          - set_termination_protectioncheck_mode_results.changed
 
     - name: Get info on termination protection
       command: 'aws ec2 describe-instance-attribute --attribute disableApiTermination --instance-id {{ instance_id }}'
@@ -197,7 +197,7 @@
     - name: Check return value
       assert:
         that:
-          - "{{ not set_termination_protection_results.changed }}"
+          - not set_termination_protection_results.changed
 
     - name: Set termination protection to true
       ec2_instance:
@@ -213,8 +213,8 @@
     - name: Check return value
       assert:
         that:
-          - "{{ set_termination_protection_results.changed }}"
-          - "{{ set_termination_protection_results.changes[0].DisableApiTermination.Value }}"
+          - set_termination_protection_results.changed
+          - set_termination_protection_results.changes[0].DisableApiTermination.Value
 
     - name: Set termination protection to true (idempotent)
       ec2_instance:
@@ -230,7 +230,7 @@
     - name: Check return value
       assert:
         that:
-          - "{{ not set_termination_protection_results.changed }}"
+          - not set_termination_protection_results.changed
 
     - name: Set termination protection to false (so we can terminate instance)
       ec2_instance:

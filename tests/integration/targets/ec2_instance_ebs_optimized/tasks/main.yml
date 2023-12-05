@@ -28,4 +28,4 @@
   - name: "Assert instance is ebs_optimized"
     assert:
       that:
-        - "{{ ebs_opt_instance_info.instances.0.ebs_optimized }}"
+        - ebs_opt_instance_info.instances.0.ebs_optimized

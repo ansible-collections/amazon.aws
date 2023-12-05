@@ -43,8 +43,8 @@
   - name: "Confirm whether the check mode is working normally."
     assert:
       that:
-        - "{{ presented_instance_fact.instances | length }} > 0"
-        - "{{ checkmode_instance_fact.instances | length }} == 0"
+        - presented_instance_fact.instances | length > 0
+        - checkmode_instance_fact.instances | length == 0
 
   - name: "Terminate instances"
     ec2_instance:

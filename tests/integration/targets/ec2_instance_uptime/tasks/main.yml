@@ -28,7 +28,7 @@
   - name: "Confirm existence of instance id."
     assert:
       that:
-        - "{{ instance_facts.instances | length }} == 1"
+        - instance_facts.instances | length == 1
 
   - name: "check using uptime 100 hours - should find nothing"
     ec2_instance_info:
@@ -42,7 +42,7 @@
   - name: "Confirm there is no running instance"
     assert:
       that:
-        - "{{ instance_facts.instances | length }} == 0"
+        - instance_facts.instances | length == 0
 
   - name: Sleep for 61 seconds and continue with play
     wait_for:
@@ -61,4 +61,4 @@
   - name: "Confirm there is one running instance"
     assert:
       that:
-        - "{{ instance_facts.instances | length }} == 1"
+        - instance_facts.instances | length == 1

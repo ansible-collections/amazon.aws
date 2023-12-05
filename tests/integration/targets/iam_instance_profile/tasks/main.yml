@@ -270,10 +270,10 @@
     - assert:
         that:
           - profile_info.iam_instance_profiles | length >= 4
-          - '"{{ test_role }}" in profile_names'
-          - '"{{ test_role }}-2" in profile_names'
-          - '"{{ test_profile }}" in profile_names'
-          - '"{{ test_profile_complex }}" in profile_names'
+          - 'test_role in profile_names'
+          - 'test_role+"-2" in profile_names'
+          - 'test_profile in profile_names'
+          - 'test_profile_complex in profile_names'
 
           - '"arn" in complex_profile'
           - '"create_date" in complex_profile'
@@ -291,7 +291,7 @@
           - complex_profile.roles[0].path == test_path
           - '"role_id" in complex_profile.roles[0]'
           - '"role_name" in complex_profile.roles[0]'
-          - complex_profile.roles[0].role_name == "{{ test_role }}-2"
+          - complex_profile.roles[0].role_name == test_role+"-2"
       vars:
         profile_names: '{{ profile_info.iam_instance_profiles | map(attribute="instance_profile_name") }}'
         complex_profile: '{{ profile_info.iam_instance_profiles | selectattr("instance_profile_name", "match", test_profile_complex) | first}}'
@@ -304,9 +304,9 @@
     - assert:
         that:
           - profile_info.iam_instance_profiles | length == 3
-          - '"{{ test_role }}" in profile_names'
-          - '"{{ test_role }}-2" in profile_names'
-          - '"{{ test_profile_complex }}" in profile_names'
+          - 'test_role in profile_names'
+          - 'test_role+"-2" in profile_names'
+          - 'test_profile_complex in profile_names'
 
           - '"arn" in complex_profile'
           - '"create_date" in complex_profile'
@@ -324,7 +324,7 @@
           - complex_profile.roles[0].path == test_path
           - '"role_id" in complex_profile.roles[0]'
           - '"role_name" in complex_profile.roles[0]'
-          - complex_profile.roles[0].role_name == "{{ test_role }}-2"
+          - complex_profile.roles[0].role_name == test_role+"-2"
       vars:
         profile_names: '{{ profile_info.iam_instance_profiles | map(attribute="instance_profile_name") }}'
         complex_profile: '{{ profile_info.iam_instance_profiles | selectattr("instance_profile_name", "match", test_profile_complex) | first}}'
@@ -337,7 +337,7 @@
     - assert:
         that:
           - profile_info.iam_instance_profiles | length == 1
-          - '"{{ test_profile_complex }}" in profile_names'
+          - 'test_profile_complex in profile_names'
 
           - '"arn" in complex_profile'
           - '"create_date" in complex_profile'
@@ -357,7 +357,7 @@
           - complex_profile.roles[0].path == test_path
           - '"role_id" in complex_profile.roles[0]'
           - '"role_name" in complex_profile.roles[0]'
-          - complex_profile.roles[0].role_name == "{{ test_role }}-2"
+          - complex_profile.roles[0].role_name == test_role+"-2"
           - '"tags" in complex_profile.roles[0]'
           - complex_profile.roles[0].tags == {}
       vars:

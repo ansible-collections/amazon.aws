@@ -114,7 +114,7 @@
           - volume1.volume.attachment_set | length == 0
           - not ("Name" in volume1.volume.tags)
           - not volume1.volume.encrypted
-          - volume1.volume.tags.ResourcePrefix == "{{ resource_prefix }}"
+          - volume1.volume.tags.ResourcePrefix == resource_prefix
 
     # no idempotency check needed here
 
@@ -142,9 +142,9 @@
           - volume2.volume_type == 'io1'
           - volume2.volume.iops == 101
           - volume2.volume.size == 4
-          - volume2.volume.tags.Name == "{{ resource_prefix }}"
+          - volume2.volume.tags.Name == resource_prefix
           - volume2.volume.encrypted
-          - volume2.volume.tags.ResourcePrefix == "{{ resource_prefix }}"
+          - volume2.volume.tags.ResourcePrefix == resource_prefix
 
     - name: create another volume (override module defaults) (idempotent)
       ec2_vol:
@@ -393,7 +393,7 @@
         that:
           - new_vol_attach_result.changed
           - "'volume_id' in new_vol_attach_result"
-          - new_vol_attach_result.volume_id == "{{ new_vol_attach_result.volume_id }}"
+          - new_vol_attach_result.volume_id == new_vol_attach_result.volume_id
           - "'attachment_set' in new_vol_attach_result.volume"
           - "'create_time' in new_vol_attach_result.volume"
           - "'id' in new_vol_attach_result.volume"
@@ -430,7 +430,7 @@
         that:
           - new_vol_attach_result.changed
           - "'volume_id' in new_vol_attach_result"
-          - new_vol_attach_result.volume_id == "{{ new_vol_attach_result.volume_id }}"
+          - new_vol_attach_result.volume_id == new_vol_attach_result.volume_id
           - "'attachment_set' in new_vol_attach_result.volume"
           - "'create_time' in new_vol_attach_result.volume"
           - "'id' in new_vol_attach_result.volume"
@@ -536,7 +536,7 @@
         that:
           - changed_gp3_volume.changed
           - "'volume_id' in changed_gp3_volume"
-          - changed_gp3_volume.volume_id == "{{ new_vol_attach_result.volume_id }}"
+          - changed_gp3_volume.volume_id == new_vol_attach_result.volume_id
           - "'attachment_set' in changed_gp3_volume.volume"
           - "'create_time' in changed_gp3_volume.volume"
           - "'id' in changed_gp3_volume.volume"
@@ -570,7 +570,7 @@
         that:
           - not changed_gp3_volume.changed
           - "'volume_id' in changed_gp3_volume"
-          - changed_gp3_volume.volume_id == "{{ new_vol_attach_result.volume_id }}"
+          - changed_gp3_volume.volume_id == new_vol_attach_result.volume_id
           - "'attachment_set' in changed_gp3_volume.volume"
           - "'create_time' in changed_gp3_volume.volume"
           - "'id' in changed_gp3_volume.volume"
@@ -721,7 +721,7 @@
           - dot_volume.volume.iops == 100
           - "'tags' in dot_volume.volume"
           - (dot_volume.volume.tags | length ) == 2
-          - dot_volume.volume.tags["Name"] == "{{ resource_prefix }}_delete_on_terminate"
+          - dot_volume.volume.tags["Name"] == resource_prefix+"_delete_on_terminate"
           - dot_volume.volume.tags["Tag Name with Space-and-dash"] == 'Tag Value with Space-and-dash'
 
     - name: Gather volume info without any filters
@@ -801,7 +801,7 @@
           - gp3_volume.volume.throughput == 130
           - "'tags' in gp3_volume.volume"
           - (gp3_volume.volume.tags | length ) == 2
-          - gp3_volume.volume.tags["ResourcePrefix"] == "{{ resource_prefix }}"
+          - gp3_volume.volume.tags["ResourcePrefix"] == resource_prefix
 
     - name: Read volume information to validate throughput
       ec2_vol_info:

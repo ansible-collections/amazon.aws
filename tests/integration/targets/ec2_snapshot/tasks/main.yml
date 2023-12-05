@@ -213,8 +213,8 @@
           - tagged_result is changed
           - tagged_result.tags| length == 2
           - tag_info_result.snapshots| length == 1
-          - tagged_result.tags.MyTag == "{{ resource_prefix }}"
-          - '"{{ tagged_result.snapshot_id }}" == "{{ tagged_snapshot_id }}"'
+          - tagged_result.tags.MyTag == resource_prefix
+          - tagged_result.snapshot_id == tagged_snapshot_id
 
     - name: Get info about all snapshots for this test
       ec2_snapshot_info:
