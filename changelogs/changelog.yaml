@@ -2611,7 +2611,7 @@ releases:
       - ec2_instance - add support for AdditionalInfo option when creating
         an instance (https://github.com/ansible-collections/amazon.aws/pull/1828).
       - rds_instance_snapshot - minor PEP8 whitespace sanity fixes (https://github.com/ansible-collections/amazon.aws/pull/1846).
-      release_summary: Thsi release brings some new features and several bugfixes.
+      release_summary: This release brings some new features and several bugfixes.
     fragments:
     - 1828-ec2_instance_additional_info.yml
     - 1843-ec2_eip.yml

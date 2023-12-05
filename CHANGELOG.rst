@@ -11,7 +11,7 @@ v7.1.0
 Release Summary
 ---------------
 
-Thsi release brings some new features and several bugfixes.
+This release brings some new features and several bugfixes.
 
 Minor Changes
 -------------
