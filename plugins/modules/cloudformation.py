@@ -595,6 +595,12 @@ def check_mode_changeset(module, stack_params, cfn):
     stack_params.pop("ClientRequestToken", None)
 
     try:
+        for _i in range(60):  # total time 5 min
+            # check stack is ready to have a change set created 
+            stack = get_stack_facts(module, cfn, stack_name, raise_errors=True)
+            if stack["StackStatus"] == "UPDATE_COMPLETE":
+                break
+            time.sleep(5)
         change_set = cfn.create_change_set(aws_retry=True, **stack_params)
         for _i in range(60):  # total time 5 min
             description = cfn.describe_change_set(aws_retry=True, ChangeSetName=change_set["Id"])
