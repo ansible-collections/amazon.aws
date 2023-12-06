@@ -184,6 +184,8 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 
 from ansible_collections.amazon.aws.plugins.module_utils.arn import validate_aws_arn
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.iam import AnsibleIAMError
+from ansible_collections.amazon.aws.plugins.module_utils.iam import convert_managed_policy_names_to_arns
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
@@ -203,25 +205,6 @@ def compare_attached_policies(current_attached_policies, new_attached_policies):
         return True
     else:
         return False
-
-
-def convert_friendly_names_to_arns(connection, module, policy_names):
-    # List comprehension that looks for any policy in the 'policy_names' list
-    # that does not begin with 'arn'. If there aren't any, short circuit.
-    # If there are, translate friendly name to the full arn
-    if all(validate_aws_arn(policy, service="iam") for policy in policy_names if policy is not None):
-        return policy_names
-    allpolicies = {}
-    paginator = connection.get_paginator("list_policies")
-    policies = paginator.paginate().build_full_result()["Policies"]
-
-    for policy in policies:
-        allpolicies[policy["PolicyName"]] = policy["Arn"]
-        allpolicies[policy["Arn"]] = policy["Arn"]
-    try:
-        return [allpolicies[policy] for policy in policy_names if policy is not None]
-    except KeyError as e:
-        module.fail_json(msg="Couldn't find policy: " + str(e))
 
 
 def wait_iam_exists(connection, module):
@@ -308,7 +291,7 @@ def create_or_update_user(connection, module):
     changed = False
 
     if managed_policies:
-        managed_policies = convert_friendly_names_to_arns(connection, module, managed_policies)
+        managed_policies = convert_managed_policy_names_to_arns(connection, managed_policies)
 
     # Get user
     user = get_user(connection, module, params["UserName"])
@@ -584,10 +567,15 @@ def main():
 
     state = module.params.get("state")
 
-    if state == "present":
-        create_or_update_user(connection, module)
-    else:
-        destroy_user(connection, module)
+    try:
+        if state == "present":
+            create_or_update_user(connection, module)
+        else:
+            destroy_user(connection, module)
+    except AnsibleIAMError as e:
+        if e.exception:
+            module.fail_json_aws(e.exception, msg=e.message)
+        module.fail_json(msg=e.message)
 
 
 if __name__ == "__main__":
