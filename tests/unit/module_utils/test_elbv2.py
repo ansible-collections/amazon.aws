@@ -188,6 +188,7 @@ class TestELBListeners:
             (None, "None"),
             (None, "HTTP1Only"),
             ("HTTP1Only", "HTTP2Only"),
+            ("HTTP1Only", "HTTP1Only"),
         ],
     )
     def test__compare_listener_alpn_policy(self, current_protocol, current_alpn, new_alpn):
@@ -257,6 +258,10 @@ class TestELBListeners:
                 "arn:aws:iam::012345678901:server-certificate/ansible-test-2",
             ),
             ("arn:aws:iam::012345678901:server-certificate/ansible-test-1", None),
+            (
+                "arn:aws:iam::012345678901:server-certificate/ansible-test-1",
+                "arn:aws:iam::012345678901:server-certificate/ansible-test-1",
+            ),
         ],
     )
     def test__compare_listener_certificates(self, current_protocol, new_protocol, current_certificate, new_certificate):
