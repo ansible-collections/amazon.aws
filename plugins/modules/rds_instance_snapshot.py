@@ -268,7 +268,7 @@ def get_parameters(parameters, method_name):
     required_options = get_boto3_client_method_parameters(client, method_name, required=True)
     if any(parameters.get(k) is None for k in required_options):
         method_description = get_rds_method_attribute(method_name, module).operation_description
-        module.fail_json(msg=f"To {method_description} requires the parameters: {*required_options,}")
+        module.fail_json(msg=f"To {method_description} requires the parameters: {*required_options, }")
     options = get_boto3_client_method_parameters(client, method_name)
     parameters = dict((k, v) for k, v in parameters.items() if k in options and v is not None)
 
