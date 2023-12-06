@@ -18,7 +18,7 @@
     that:
       - iam_role is changed
       - iam_role.iam_role.role_name == test_role
-      - iam_role.iam_role.description == 'Ansible Test Role {{ resource_prefix }}'
+      - iam_role.iam_role.description == "Ansible Test Role "+resource_prefix
 
 - name: Add Description (no change) - check mode
   community.aws.iam_role:
@@ -39,7 +39,7 @@
     that:
       - iam_role is not changed
       - iam_role.iam_role.role_name == test_role
-      - iam_role.iam_role.description == 'Ansible Test Role {{ resource_prefix }}'
+      - iam_role.iam_role.description == "Ansible Test Role "+resource_prefix
 
 - name: iam_role_info after adding Description
   community.aws.iam_role_info:
@@ -53,7 +53,7 @@
       - role_info.iam_roles[0].arn.endswith("role/" + test_role )
       - '"assume_role_policy_document" in role_info.iam_roles[0]'
       - '"create_date" in role_info.iam_roles[0]'
-      - role_info.iam_roles[0].description == "Ansible Test Role {{ resource_prefix }}"
+      - role_info.iam_roles[0].description == "Ansible Test Role "+resource_prefix
       - role_info.iam_roles[0].inline_policies | length == 0
       - role_info.iam_roles[0].instance_profiles | length == 1
       - role_info.iam_roles[0].instance_profiles[0].instance_profile_name == test_role
@@ -88,7 +88,7 @@
     that:
       - iam_role is changed
       - iam_role.iam_role.role_name == test_role
-      - iam_role.iam_role.description == 'Ansible Test Role (updated) {{ resource_prefix }}'
+      - iam_role.iam_role.description == 'Ansible Test Role (updated) '+resource_prefix
 
 - name: Update Description (no change) - check mode
   community.aws.iam_role:
@@ -109,7 +109,7 @@
     that:
       - iam_role is not changed
       - iam_role.iam_role.role_name == test_role
-      - iam_role.iam_role.description == 'Ansible Test Role (updated) {{ resource_prefix }}'
+      - iam_role.iam_role.description == 'Ansible Test Role (updated) '+resource_prefix
 
 - name: iam_role_info after updating Description
   community.aws.iam_role_info:
@@ -123,7 +123,7 @@
       - role_info.iam_roles[0].arn.endswith("role/" + test_role )
       - '"assume_role_policy_document" in role_info.iam_roles[0]'
       - '"create_date" in role_info.iam_roles[0]'
-      - role_info.iam_roles[0].description == "Ansible Test Role (updated) {{ resource_prefix }}"
+      - role_info.iam_roles[0].description == 'Ansible Test Role (updated) '+resource_prefix
       - role_info.iam_roles[0].inline_policies | length == 0
       - role_info.iam_roles[0].instance_profiles | length == 1
       - role_info.iam_roles[0].instance_profiles[0].instance_profile_name == test_role

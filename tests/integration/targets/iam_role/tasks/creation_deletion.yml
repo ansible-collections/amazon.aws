@@ -197,7 +197,7 @@
       - '"assume_role_policy_document" in iam_role.iam_role'
       - iam_role.iam_role.attached_policies | length == 0
       - iam_role.iam_role.max_session_duration == 3600
-      - iam_role.iam_role.path == '{{ test_path }}'
+      - iam_role.iam_role.path == test_path
       - iam_role.iam_role.role_name == test_role
       - '"create_date" in iam_role.iam_role'
       - '"role_id" in iam_role.iam_role'
@@ -242,7 +242,7 @@
       - role_info.iam_roles[0].instance_profiles[0].arn.endswith("instance-profile" + test_path + test_role)
       - role_info.iam_roles[0].managed_policies | length == 0
       - role_info.iam_roles[0].max_session_duration == 3600
-      - role_info.iam_roles[0].path == '{{ test_path }}'
+      - role_info.iam_roles[0].path == test_path
       - '"permissions_boundary" not in role_info.iam_roles[0]'
       - role_info.iam_roles[0].role_id == iam_role.iam_role.role_id
       - role_info.iam_roles[0].role_name == test_role
@@ -269,7 +269,7 @@
       - role_info.iam_roles[0].managed_policies | length == 0
       - role_info.iam_roles[0].max_session_duration == 3600
       - '"permissions_boundary" not in role_info.iam_roles[0]'
-      - role_info.iam_roles[0].path == '{{ test_path }}'
+      - role_info.iam_roles[0].path == test_path
       - role_info.iam_roles[0].role_id == iam_role.iam_role.role_id
       - role_info.iam_roles[0].role_name == test_role
       - role_info.iam_roles[0].tags | length == 0

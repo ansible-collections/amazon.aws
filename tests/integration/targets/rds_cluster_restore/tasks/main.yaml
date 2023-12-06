@@ -53,7 +53,7 @@
           - "'master_username' in _result_create_source_db_cluster"
           - _result_create_source_db_cluster.master_username == username
           - "'port' in _result_create_source_db_cluster"
-          - _result_create_source_db_cluster.port == {{ port }}
+          - _result_create_source_db_cluster.port == port
           - "'status' in _result_create_source_db_cluster"
           - _result_create_source_db_cluster.status == 'available'
           - _result_create_source_db_cluster.storage_encrypted == false
@@ -83,7 +83,7 @@
           - "'cluster_create_time' in _result_restored_db_cluster"
           - _result_restored_db_cluster.copy_tags_to_snapshot == false
           - "'db_cluster_arn' in _result_restored_db_cluster"
-          - _result_restored_db_cluster.db_cluster_identifier == '{{ cluster_id }}-point-in-time'
+          - _result_restored_db_cluster.db_cluster_identifier == cluster_id+'-point-in-time'
           - "'db_cluster_parameter_group' in _result_restored_db_cluster"
           - "'db_cluster_resource_id' in _result_restored_db_cluster"
           - "'endpoint' in _result_restored_db_cluster"
@@ -95,12 +95,12 @@
           - "'master_username' in _result_restored_db_cluster"
           - _result_restored_db_cluster.master_username == username
           - "'port' in _result_restored_db_cluster"
-          - _result_restored_db_cluster.port == {{ port }}
+          - _result_restored_db_cluster.port == port
           - "'status' in _result_restored_db_cluster"
           - _result_restored_db_cluster.status == "available"
           - "'tags' in _result_restored_db_cluster"
           - _result_restored_db_cluster.tags | length == 2
-          - _result_restored_db_cluster.tags.Name == '{{ cluster_id }}'
+          - _result_restored_db_cluster.tags.Name == cluster_id
           - _result_restored_db_cluster.tags.Created_by == 'Ansible rds_cluster tests'
           - "'vpc_security_groups' in _result_restored_db_cluster"
 
@@ -152,7 +152,7 @@
           - "'cluster_create_time' in _result_restored_db_cluster"
           - _result_restored_db_cluster.copy_tags_to_snapshot == false
           - "'db_cluster_arn' in _result_restored_db_cluster"
-          - _result_restored_db_cluster.db_cluster_identifier == '{{ cluster_id }}-restored-snapshot'
+          - _result_restored_db_cluster.db_cluster_identifier == cluster_id+'-restored-snapshot'
           - "'db_cluster_parameter_group' in _result_restored_db_cluster"
           - "'db_cluster_resource_id' in _result_restored_db_cluster"
           - "'endpoint' in _result_restored_db_cluster"
@@ -164,7 +164,7 @@
           - "'master_username' in _result_restored_db_cluster"
           - _result_restored_db_cluster.master_username == username
           - "'port' in _result_restored_db_cluster"
-          - _result_restored_db_cluster.port == {{ port }}
+          - _result_restored_db_cluster.port == port
           - "'status' in _result_restored_db_cluster"
           - _result_restored_db_cluster.status == "available"
           - "'tags' in _result_restored_db_cluster"

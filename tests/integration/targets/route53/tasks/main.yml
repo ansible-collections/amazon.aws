@@ -36,8 +36,8 @@
         that:
           - z1 is success
           - z1 is changed
-          - z1.comment == 'Created in Ansible test {{ resource_prefix }}'
-          - z1.tags.TestTag == '{{ resource_prefix }}.z1'
+          - z1.comment == 'Created in Ansible test '+resource_prefix
+          - z1.tags.TestTag == resource_prefix +'.z1'
 
     - name: Get zone details
       amazon.aws.route53_info:
@@ -63,8 +63,8 @@
         that:
           - z2 is success
           - z2 is changed
-          - z2.comment == 'Created in Ansible test {{ resource_prefix }}'
-          - z2.tags.TestTag == '{{ resource_prefix }}.z2'
+          - z2.comment == 'Created in Ansible test '+resource_prefix
+          - z2.tags.TestTag == resource_prefix +'.z2'
 
     - name: Get zone details
       amazon.aws.route53_info:
@@ -92,7 +92,7 @@
       ansible.builtin.assert:
         that:
           - list_by_name_result.HostedZones | length == 1
-          - list_by_name_result.HostedZones[0].Name == '{{ zone_one }}'
+          - list_by_name_result.HostedZones[0].Name == zone_one
 
     - name: Create A record using zone fqdn
       amazon.aws.route53:
@@ -332,7 +332,7 @@
         that:
           - cname_records.ResourceRecordSets|length == 1
           - cname_records.ResourceRecordSets[0].ResourceRecords|length == 1
-          - cname_records.ResourceRecordSets[0].ResourceRecords[0].Value == "order_test.{{ zone_one }}"
+          - cname_records.ResourceRecordSets[0].ResourceRecords[0].Value == "order_test."+zone_one
 
     ## Test CAA record creation
     - name: Create a LetsEncrypt CAA record

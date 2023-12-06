@@ -19,7 +19,7 @@
     - ansible.builtin.assert:
         that:
           - output is changed
-          - output.name == '{{ local_bucket_name }}'
+          - output.name == local_bucket_name
           - output.requester_pays
           - output.versioning.MfaDelete == 'Disabled'
           - output.versioning.Versioning == 'Enabled'
@@ -28,7 +28,7 @@
           - output.policy.Statement[0].Action == 's3:GetObject'
           - output.policy.Statement[0].Effect == 'Allow'
           - output.policy.Statement[0].Principal == '*'
-          - output.policy.Statement[0].Resource == 'arn:aws:s3:::{{ local_bucket_name }}/*'
+          - output.policy.Statement[0].Resource == 'arn
           - output.policy.Statement[0].Sid == 'AddPerm'
 
     # ============================================================
@@ -53,7 +53,7 @@
     - ansible.builtin.assert:
         that:
           - output is not changed
-          - output.name == '{{ local_bucket_name }}'
+          - output.name == local_bucket_name
           - output.requester_pays
           - output.versioning.MfaDelete == 'Disabled'
           - output.versioning.Versioning == 'Enabled'
@@ -62,7 +62,7 @@
           - output.policy.Statement[0].Action == 's3:GetObject'
           - output.policy.Statement[0].Effect == 'Allow'
           - output.policy.Statement[0].Principal == '*'
-          - output.policy.Statement[0].Resource == 'arn:aws:s3:::{{ local_bucket_name }}/*'
+          - output.policy.Statement[0].Resource == 'arn
           - output.policy.Statement[0].Sid == 'AddPerm'
 
     # ============================================================
@@ -84,7 +84,7 @@
           - output.policy.Statement[0].Action == 's3:GetObject'
           - output.policy.Statement[0].Effect == 'Deny'
           - output.policy.Statement[0].Principal.AWS == '*'
-          - output.policy.Statement[0].Resource == 'arn:aws:s3:::{{ local_bucket_name }}/*'
+          - output.policy.Statement[0].Resource == 'arn
           - output.policy.Statement[0].Sid == 'AddPerm'
 
     # ============================================================
@@ -109,7 +109,7 @@
     - ansible.builtin.assert:
         that:
           - output is changed
-          - output.name == '{{ local_bucket_name }}'
+          - output.name == local_bucket_name
           - not output.requester_pays
           - output.versioning.MfaDelete == 'Disabled'
           - output.versioning.Versioning in ['Suspended', 'Disabled']
@@ -118,7 +118,7 @@
           - output.policy.Statement[0].Action == 's3:GetObject'
           - output.policy.Statement[0].Effect == 'Allow'
           - output.policy.Statement[0].Principal == '*'
-          - output.policy.Statement[0].Resource == 'arn:aws:s3:::{{ local_bucket_name }}/*'
+          - output.policy.Statement[0].Resource == 'arn
           - output.policy.Statement[0].Sid == 'AddPerm'
 
     - name: Delete complex test bucket

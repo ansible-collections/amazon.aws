@@ -60,9 +60,9 @@
     - ansible.builtin.assert:
         that:
           - result.changed
-          - result.db_instance_identifier == '{{ instance_id }}'
+          - result.db_instance_identifier == instance_id
           - result.tags | length == 2
-          - result.tags.Name == '{{ instance_id }}'
+          - result.tags.Name == instance_id
           - result.tags.Created_by == 'Ansible rds_instance tests'
           - result.kms_key_id
           - result.storage_encrypted == true
@@ -159,7 +159,7 @@
         that:
           - result.changed
           - result.tags | length == 2
-          - result.tags.Name == '{{ instance_id }}-new'
+          - result.tags.Name == instance_id +'-new'
 
     - name: Add a tag and remove a tag (idempotence) - check_mode
       amazon.aws.rds_instance:
@@ -190,7 +190,7 @@
         that:
           - not result.changed
           - result.tags | length == 2
-          - result.tags.Name == '{{ instance_id }}-new'
+          - result.tags.Name == instance_id +'-new'
 
   always:
     - name: Remove DB instance

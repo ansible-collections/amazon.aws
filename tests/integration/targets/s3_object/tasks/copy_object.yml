@@ -140,7 +140,7 @@
       ansible.builtin.assert:
         that:
           - result is not changed
-          - result.msg == "Key this_key_does_not_exist.txt does not exist in bucket {{ copy_bucket.src }}."
+          - result.msg == "Key this_key_does_not_exist.txt does not exist in bucket "+copy_bucket.src+"."
 
   always:
     - ansible.builtin.include_tasks: delete_bucket.yml

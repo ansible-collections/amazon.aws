@@ -141,7 +141,7 @@
     - name: Verify alarm did not change after updating in check mode
       ansible.builtin.assert:
         that:
-          - alarm_info.metric_alarms[0]['{{item}}'] == alarm_info_idempotent_check.metric_alarms[0]['{{ item }}']
+          - alarm_info.metric_alarms[0][item] == alarm_info_idempotent_check.metric_alarms[0][item]
       with_items:
         - alarm_arn
         - statistic
@@ -188,7 +188,7 @@
     - name: Verify alarm did not change after updating in check mode
       ansible.builtin.assert:
         that:
-          - alarm_info.metric_alarms[0]['{{item}}'] == alarm_info_idempotent_check.metric_alarms[0]['{{ item }}']
+          - alarm_info.metric_alarms[0][item] == alarm_info_idempotent_check.metric_alarms[0][item]
       with_items:
         - alarm_arn
         - statistic

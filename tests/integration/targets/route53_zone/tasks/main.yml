@@ -35,9 +35,9 @@
         that:
           - output.changed
           - output.comment == 'original comment'
-          - output.name == '{{ resource_prefix }}.public.'
-          - output.tags.TestTag == '{{ resource_prefix }}'
-          - output.tags.another_tag == '{{ resource_prefix }} again'
+          - output.name == resource_prefix +'.public.'
+          - output.tags.TestTag == resource_prefix
+          - output.tags.another_tag == resource_prefix +' again'
           - not output.private_zone
 
     # ============================================================
@@ -56,9 +56,9 @@
         that:
           - output.changed
           - output.comment == 'original comment'
-          - output.name == '{{ resource_prefix }}.check.public.'
-          - output.tags.TestTag == '{{ resource_prefix }}'
-          - output.tags.another_tag == '{{ resource_prefix }} again'
+          - output.name == resource_prefix +'.check.public.'
+          - output.tags.TestTag == resource_prefix
+          - output.tags.another_tag == resource_prefix +' again'
           - not output.private_zone
 
     # ============================================================
@@ -76,9 +76,9 @@
         that:
           - not output.changed
           - output.comment == 'original comment'
-          - output.name == '{{ resource_prefix }}.public.'
-          - output.tags.TestTag == '{{ resource_prefix }}'
-          - output.tags.another_tag == '{{ resource_prefix }} again'
+          - output.name == resource_prefix +'.public.'
+          - output.tags.TestTag == resource_prefix
+          - output.tags.another_tag == resource_prefix +' again'
           - not output.private_zone
 
     - name: Do an idemptotent update of a public zone (CHECK MODE)
@@ -96,9 +96,9 @@
         that:
           - not output.changed
           - output.comment == 'original comment'
-          - output.name == '{{ resource_prefix }}.public.'
-          - output.tags.TestTag == '{{ resource_prefix }}'
-          - output.tags.another_tag == '{{ resource_prefix }} again'
+          - output.name == resource_prefix +'.public.'
+          - output.tags.TestTag == resource_prefix
+          - output.tags.another_tag == resource_prefix +' again'
           - not output.private_zone
 
     # ============================================================
@@ -116,7 +116,7 @@
         that:
           - output.changed
           - "'TestTag' not in output.tags"
-          - output.tags.AnotherTag == '{{ resource_prefix }}.anothertag'
+          - output.tags.AnotherTag == resource_prefix +'.anothertag'
 
     # ============================================================
     - name: Update comment and remove tags of a public zone

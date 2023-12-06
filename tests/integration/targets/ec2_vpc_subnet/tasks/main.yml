@@ -567,7 +567,7 @@
       ansible.builtin.assert:
         that:
           - vpc_add_duplicate_ipv6 is failed
-          - "'The IPv6 CIDR \\'{{ subnet_ipv6_cidr }}\\' conflicts with another subnet' in vpc_add_duplicate_ipv6.msg"
+          - "The IPv6 CIDR '"+subnet_ipv6_cidr +"' conflicts with another subnet" in vpc_add_duplicate_ipv6.msg
 
     # ============================================================
     - name: remove subnet ipv6 cidr (expected changed=true) (CHECK MODE)
