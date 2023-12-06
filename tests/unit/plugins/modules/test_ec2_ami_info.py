@@ -198,7 +198,7 @@ def test_list_ec2_images(m_get_images, m_get_image_attribute):
     m_get_images.assert_called_with(ec2_client, request_args)
 
     assert m_get_image_attribute.call_count == 2
-    assert m_get_image_attribute.assert_has_calls([call(ec2_client, images[0])], [call(ec2_client, images[1])])
+    assert m_get_image_attribute.has_called_with([call(ec2_client, images[0]), call(ec2_client, images[1])])
 
     assert len(list_ec2_images_result) == 2
     assert list_ec2_images_result[0]["image_id"] == "ami-1234567890"
