@@ -597,7 +597,7 @@ def check_mode_changeset(module, stack_params, cfn):
     try:
         for _i in range(60):  # total time 5 min
             # check stack is ready to have a change set created 
-            stack = get_stack_facts(module, cfn, stack_name, raise_errors=True)
+            stack = get_stack_facts(module, cfn, stack_params['StackName'], raise_errors=True)
             if stack["StackStatus"] == "UPDATE_COMPLETE":
                 break
             time.sleep(5)
