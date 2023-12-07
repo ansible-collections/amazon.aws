@@ -2383,4 +2383,4 @@ releases:
     - 1848-ec2_vpc_subnet-wait-creation.yml
     - 1881-allow-s3_object-to-specify-content-type-in-metadata.yml
     - release_summary.yml
-    release_date: '2023-12-05'
+    release_date: '2023-12-07'
