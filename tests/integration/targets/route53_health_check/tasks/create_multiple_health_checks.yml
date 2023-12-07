@@ -64,8 +64,8 @@
           - '"route53:UpdateHealthCheck" not in create_result.results[0].resource_actions'
           - '"route53:UpdateHealthCheck" not in create_result.results[1].resource_actions'
           - health_check_1_id != health_check_2_id
-          - Create multiple HTTP health check] - health_check_1_info.HealthCheck.HealthCheckConfig.ResourcePath == resource_path
-          - Create multiple HTTP health check] - health_check_2_info.HealthCheck.HealthCheckConfig.ResourcePath == resource_path_1
+          - health_check_1_info.HealthCheck.HealthCheckConfig.ResourcePath == resource_path
+          - health_check_2_info.HealthCheck.HealthCheckConfig.ResourcePath == resource_path_1
 
     - name: Create multiple HTTP health checks with different resource_path - idempotency - check_mode
       amazon.aws.route53_health_check:

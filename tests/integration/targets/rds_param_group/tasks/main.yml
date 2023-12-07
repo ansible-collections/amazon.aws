@@ -203,7 +203,7 @@
         that:
           - not result.changed
           - '"db_parameter_group_arn" in result'
-          - CHECK_MODE] - (result.db_parameter_group_name | lower) == ( rds_param_group.name | lower )
+          - (result.db_parameter_group_name | lower) == ( rds_param_group.name | lower )
           - '"description" in result'
           - '"tags" in result'
           - result.tags | length == 3

@@ -210,8 +210,8 @@
           - vpc_igw_recreate.vpc_id == vpc_id
           - '"tags" in vpc_igw_create'
           - vpc_igw_create.tags | length == 2
-          - CHECK_MODE] - vpc_igw_create.tags["tag_one"] == resource_prefix +' One'
-          - CHECK_MODE] - vpc_igw_create.tags["Tag Two"] == 'two '+ resource_prefix
+          - vpc_igw_create.tags["tag_one"] == resource_prefix +' One'
+          - vpc_igw_create.tags["Tag Two"] == 'two '+ resource_prefix
 
     - name: Attempt to recreate internet gateway on VPC (expected changed=false)
       amazon.aws.ec2_vpc_igw:
@@ -249,8 +249,8 @@
           - vpc_igw_recreate.vpc_id == vpc_id
           - '"tags" in vpc_igw_recreate'
           - vpc_igw_recreate.tags | length == 2
-          - CHECK_MODE] - vpc_igw_recreate.tags["tag_one"] == resource_prefix +' One'
-          - CHECK_MODE] - vpc_igw_recreate.tags["Tag Two"] == 'two '+ resource_prefix
+          - vpc_igw_recreate.tags["tag_one"] == resource_prefix +' One'
+          - vpc_igw_recreate.tags["Tag Two"] == 'two '+ resource_prefix
 
     - name: Update the tags (no change)
       amazon.aws.ec2_vpc_igw:
@@ -409,7 +409,7 @@
         that:
           - igw_info is successful
           - '"internet_gateways" in igw_info'
-          - igw_info.internet_gateways | selectattr("internet_gateway_id",'equalto',igw_id)
+          - igw_info.internet_gateways | selectattr("internet_gateway_id","equalto",igw_id)
 
     - name: Gather information about a filtered list of Internet Gateways using tags - CHECK_MODE
       amazon.aws.ec2_vpc_igw_info:
@@ -423,7 +423,7 @@
         that:
           - igw_info is successful
           - '"internet_gateways" in igw_info'
-          - CHECK_MODE] - igw_info.internet_gateways | selectattr("internet_gateway_id",'equalto',igw_id)
+          - igw_info.internet_gateways | selectattr("internet_gateway_id","equalto",igw_id)
 
     # ============================================================
     - name: Gather information about a filtered list of Internet Gateways using tags (no match)
