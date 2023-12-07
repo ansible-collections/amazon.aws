@@ -5,68 +5,32 @@ on: [workflow_call]  # allow this workflow to be called from other workflows
 
 jobs:
   sanity:
-    uses: ansible-network/github_actions/.github/workflows/sanity.yml@main
+    # stable-6 sanity test versions locked based on tested versions as of 7.0.0 release
+    uses: ansible-network/github_actions/.github/workflows/sanity.yml@b2b68168f3040e55553664b1fbcdc19cf10f49bc
     with:
-      matrix_include: "[]"
+      matrix_include: >-
+          []
+      # devel and milestone are a moving target while we should fix issues in the
+      # main and our current major releases, they're no always appropriate to
+      # backport to older releases.
       matrix_exclude: >-
-          [
-            {
-              "ansible-version": "stable-2.9"
-            },
-            {
-              "ansible-version": "stable-2.12",
-              "python-version": "3.7"
-            },
-            {
-              "ansible-version": "stable-2.12",
-              "python-version": "3.11"
-            },
-            {
-              "ansible-version": "stable-2.13",
-              "python-version": "3.7"
-            },
-            {
-              "ansible-version": "stable-2.13",
-              "python-version": "3.11"
-            },
-            {
-              "ansible-version": "stable-2.14",
-              "python-version": "3.7"
-            },
-            {
-              "ansible-version": "stable-2.14",
-              "python-version": "3.8"
-            },
-            {
-              "ansible-version": "stable-2.15",
-              "python-version": "3.7"
-            },
-            {
-              "ansible-version": "stable-2.15",
-              "python-version": "3.8"
-            },
-            {
-              "ansible-version": "milestone",
-              "python-version": "3.7"
-            },
-            {
-              "ansible-version": "milestone",
-              "python-version": "3.8"
-            },
-            {
-              "ansible-version": "milestone",
-              "python-version": "3.9"
-            },
-            {
-              "ansible-version": "devel",
-              "python-version": "3.7"
-            },
-            {
-              "ansible-version": "devel",
-              "python-version": "3.8"
-            },
-            {
-              "ansible-version": "devel",
-              "python-version": "3.9"
-            }
-          ]
+        [
+          {
+            "ansible-version": "milestone"
+          },
+          {
+            "ansible-version": "devel"
+          },
+          {
+            "ansible-version": "stable-2.14",
+            "python-version": "3.12"
+          },
+          {
+            "ansible-version": "stable-2.15",
+            "python-version": "3.12"
+          },
+          {
+            "ansible-version": "stable-2.16",
+            "python-version": "3.9"
+          }
+        ]

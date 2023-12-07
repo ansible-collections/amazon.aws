@@ -5,4 +5,28 @@ on: [workflow_call]  # allow this workflow to be called from other workflows
 
 jobs:
   unit-source:
-    uses: ansible-network/github_actions/.github/workflows/unit_source.yml@main
+    # stable-6 unit test versions locked based on tested versions as of 7.0.0 release
+    uses: ansible-network/github_actions/.github/workflows/unit_source.yml@b2b68168f3040e55553664b1fbcdc19cf10f49bc
+    with:
+      # devel and milestone are a moving target while we should fix issues in the
+      # main and our current major releases, they're no always appropriate to
+      # backport to older releases.
+      matrix_exclude: >-
+        [
+          {
+            "ansible-version": "milestone"
+          },
+          {
+            "ansible-version": "devel"
+          },
+          {
+            "python-version": "3.11"
+          },
+          {
+            "python-version": "3.12"
+          },
+          {
+            "ansible-version": "stable-2.16",
+            "python-version": "3.9"
+          }
+        ]
