@@ -7,7 +7,7 @@
       session_token: "{{ security_token | default(omit) }}"
   block:
     - name: Ensure the resource doesn't exist
-      rds_cluster:
+      amazon.aws.rds_cluster:
         id: "{{ cluster_id }}"
         state: absent
         engine: "{{ engine}}"
@@ -44,7 +44,7 @@
       loop: "{{ subnets }}"
 
     - name: Create security groups
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ item }}"
         description: Created by rds_cluster integration tests
         state: present
@@ -52,7 +52,7 @@
       loop: "{{ security_groups }}"
 
     - name: Create an RDS cluster in the VPC with two security groups
-      rds_cluster:
+      amazon.aws.rds_cluster:
         id: "{{ cluster_id }}"
         engine: "{{ engine }}"
         username: "{{ username }}"
@@ -92,7 +92,7 @@
           - _result_create_db_cluster.vpc_security_groups | selectattr('status', 'in', ['active', 'adding']) | list | length == 2
 
     - name: Add a new security group without purge (check_mode)
-      rds_cluster:
+      amazon.aws.rds_cluster:
         id: "{{ cluster_id }}"
         state: present
         vpc_security_group_ids:
@@ -107,7 +107,7 @@
           - _result_create_db_cluster.changed
 
     - name: Add a new security group without purge
-      rds_cluster:
+      amazon.aws.rds_cluster:
         id: "{{ cluster_id }}"
         state: present
         vpc_security_group_ids:
@@ -146,7 +146,7 @@
           - _result_create_db_cluster.vpc_security_groups | selectattr('status', 'in', ['active', 'adding']) | list | length == 3
 
     - name: Add a new security group without purge (test idempotence)
-      rds_cluster:
+      amazon.aws.rds_cluster:
         id: "{{ cluster_id }}"
         state: present
         vpc_security_group_ids:
@@ -160,7 +160,7 @@
           - not _result_create_db_cluster.changed
 
     - name: Add a security group with purge
-      rds_cluster:
+      amazon.aws.rds_cluster:
         id: "{{ cluster_id }}"
         state: present
         vpc_security_group_ids:
@@ -176,14 +176,14 @@
 
   always:
     - name: Delete DB cluster without creating a final snapshot
-      rds_cluster:
+      amazon.aws.rds_cluster:
         state: absent
         cluster_id: "{{ cluster_id }}"
         skip_final_snapshot: true
       ignore_errors: true
 
     - name: Remove security groups
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ item }}"
         description: created by rds_cluster integration tests
         state: absent

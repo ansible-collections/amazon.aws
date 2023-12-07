@@ -6,7 +6,7 @@
     # ============================================================
 
     - name: test without specifying required module options
-      autoscaling_group:
+      amazon.aws.autoscaling_group:
         access_key: "{{ aws_access_key }}"
         secret_key: "{{ aws_secret_key }}"
         session_token: "{{ security_token | default(omit) }}"
@@ -39,7 +39,7 @@
     # ============================================================
 
     - name: launch asg and wait for instances to be deemed healthy (no ELB)
-      autoscaling_group:
+      amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         launch_config_name: "{{ resource_prefix }}-lc"
         desired_capacity: 1
@@ -54,7 +54,7 @@
           - output.viable_instances == 1
 
     - name: Enable metrics collection - check_mode
-      autoscaling_group:
+      amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         metrics_collection: true
       register: output
@@ -66,7 +66,7 @@
           - '"autoscaling:UpdateAutoScalingGroup" not in output.resource_actions'
 
     - name: Enable metrics collection
-      autoscaling_group:
+      amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         metrics_collection: true
       register: output
@@ -75,7 +75,7 @@
           - output is changed
 
     - name: Enable metrics collection (idempotency)
-      autoscaling_group:
+      amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         metrics_collection: true
       register: output
@@ -84,7 +84,7 @@
           - output is not changed
 
     - name: Disable metrics collection - check_mode
-      autoscaling_group:
+      amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         metrics_collection: false
       register: output
@@ -96,7 +96,7 @@
           - '"autoscaling:UpdateAutoScalingGroup" not in output.resource_actions'
 
     - name: Disable metrics collection
-      autoscaling_group:
+      amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         metrics_collection: false
       register: output
@@ -105,7 +105,7 @@
           - output is changed
 
     - name: Disable metrics collection (idempotency)
-      autoscaling_group:
+      amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         metrics_collection: false
       register: output
@@ -114,13 +114,13 @@
           - output is not changed
 
     - name: kill asg
-      autoscaling_group:
+      amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         state: absent
         wait_timeout: 800
       async: 400
     - name: launch asg and do not wait for instances to be deemed healthy (no ELB)
-      autoscaling_group:
+      amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         launch_config_name: "{{ resource_prefix }}-lc"
         desired_capacity: 1
@@ -135,7 +135,7 @@
           - output.viable_instances == 0
 
     - name: kill asg
-      autoscaling_group:
+      amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         state: absent
         wait_timeout: 800
@@ -145,7 +145,7 @@
       delay: 10
       async: 400
     - name: create asg with asg metrics enabled
-      autoscaling_group:
+      amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         metrics_collection: true
         launch_config_name: "{{ resource_prefix }}-lc"
@@ -160,7 +160,7 @@
           - "'Group' in output.metrics_collection.0.Metric"
 
     - name: kill asg
-      autoscaling_group:
+      amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         state: absent
         wait_timeout: 800
@@ -187,7 +187,7 @@
           healthy_threshold: 2
       register: load_balancer
     - name: launch asg and wait for instances to be deemed healthy (ELB)
-      autoscaling_group:
+      amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         launch_config_name: "{{ resource_prefix }}-lc"
         health_check_type: ELB
@@ -209,7 +209,7 @@
 
     # grow scaling group to 3
     - name: add 2 more instances wait for instances to be deemed healthy (ELB)
-      autoscaling_group:
+      amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         launch_config_name: "{{ resource_prefix }}-lc"
         health_check_type: ELB
@@ -231,7 +231,7 @@
 
     # Test max_instance_lifetime option
     - name: enable asg max_instance_lifetime
-      autoscaling_group:
+      amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         max_instance_lifetime: 604801
       register: output
@@ -241,7 +241,7 @@
           - output.max_instance_lifetime == 604801
 
     - name: run without max_instance_lifetime
-      autoscaling_group:
+      amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         launch_config_name: "{{ resource_prefix }}-lc"
     - name: ensure max_instance_lifetime not affected by defaults
@@ -250,7 +250,7 @@
           - output.max_instance_lifetime == 604801
 
     - name: disable asg max_instance_lifetime
-      autoscaling_group:
+      amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         launch_config_name: "{{ resource_prefix }}-lc"
         max_instance_lifetime: 0
@@ -264,7 +264,7 @@
 
     # perform rolling replace with different launch configuration
     - name: perform rolling update to new AMI
-      autoscaling_group:
+      amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         launch_config_name: "{{ resource_prefix }}-lc-2"
         health_check_type: ELB
@@ -291,7 +291,7 @@
 
     # perform rolling replace with the original launch configuration
     - name: perform rolling update to new AMI while removing the load balancer
-      autoscaling_group:
+      amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         launch_config_name: "{{ resource_prefix }}-lc"
         health_check_type: EC2
@@ -318,7 +318,7 @@
 
     # perform rolling replace with new launch configuration and lc_check:false
     - name: "perform rolling update to new AMI with lc_check: false"
-      autoscaling_group:
+      amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         launch_config_name: "{{ resource_prefix }}-lc-2"
         health_check_type: EC2
@@ -335,7 +335,7 @@
         wait_timeout: 1800
         state: present
     - name: get autoscaling_group info
-      autoscaling_group_info:
+      amazon.aws.autoscaling_group_info:
         name: "{{ resource_prefix }}-asg"
       register: output
     - ansible.builtin.assert:
@@ -345,13 +345,13 @@
     # ============================================================
 
     - name: kill asg
-      autoscaling_group:
+      amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         state: absent
         wait_timeout: 800
       async: 400
     - name: "new asg with lc_check: false"
-      autoscaling_group:
+      amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         launch_config_name: "{{ resource_prefix }}-lc"
         health_check_type: EC2
@@ -368,7 +368,7 @@
         wait_timeout: 1800
         state: present
     - name: get autoscaling_group information
-      autoscaling_group_info:
+      amazon.aws.autoscaling_group_info:
         name: "{{ resource_prefix }}-asg"
       register: output
     - ansible.builtin.assert:
@@ -391,7 +391,7 @@
               - "{{ sg.group_id }}"
 
     - name: update autoscaling group with mixed-instances policy with mixed instances types - check_mode
-      autoscaling_group:
+      amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         launch_template:
           launch_template_name: "{{ resource_prefix }}-lt"
@@ -414,7 +414,7 @@
           - '"autoscaling:CreateOrUpdateTags" not in output.resource_actions'
 
     - name: update autoscaling group with mixed-instances policy with mixed instances types
-      autoscaling_group:
+      amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         launch_template:
           launch_template_name: "{{ resource_prefix }}-lt"
@@ -436,7 +436,7 @@
           - output.mixed_instances_policy[1] == 't2.nano'
 
     - name: update autoscaling group with mixed-instances policy with instances_distribution
-      autoscaling_group:
+      amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         launch_template:
           launch_template_name: "{{ resource_prefix }}-lt"
@@ -492,7 +492,7 @@
         state: present
       register: out_tg2
     - name: update autoscaling group with tg1
-      autoscaling_group:
+      amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         launch_template:
           launch_template_name: "{{ resource_prefix }}-lt"
@@ -509,7 +509,7 @@
           - output.target_group_arns[0] == out_tg1.target_group_arn
 
     - name: update autoscaling group add tg2
-      autoscaling_group:
+      amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         launch_template:
           launch_template_name: "{{ resource_prefix }}-lt"
@@ -527,7 +527,7 @@
           - output.target_group_arns | length == 2
 
     - name: update autoscaling group remove tg1
-      autoscaling_group:
+      amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         launch_template:
           launch_template_name: "{{ resource_prefix }}-lt"
@@ -545,7 +545,7 @@
           - output.target_group_arns[0] == out_tg2.target_group_arn
 
     - name: update autoscaling group remove tg2 and add tg1
-      autoscaling_group:
+      amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         launch_template:
           launch_template_name: "{{ resource_prefix }}-lt"
@@ -563,7 +563,7 @@
           - output.target_group_arns[0] == out_tg1.target_group_arn
 
     - name: target group no change
-      autoscaling_group:
+      amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         launch_template:
           launch_template_name: "{{ resource_prefix }}-lt"

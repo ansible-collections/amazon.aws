@@ -77,7 +77,7 @@
           - '"role" in result.msg'
 
     - name: test execute lambda with no function arn or name
-      lambda_execute:
+      amazon.aws.lambda_execute:
       register: result
       ignore_errors: true
     - name: assert failure when called with no parameters
@@ -185,7 +185,7 @@
 
     - ansible.builtin.include_tasks: tagging.yml
     - name: test lambda works (check mode)
-      lambda_execute:
+      amazon.aws.lambda_execute:
         name: "{{lambda_function_name}}"
         payload:
           name: Mr Ansible Tests
@@ -198,7 +198,7 @@
           - "'result' not in result"
 
     - name: test lambda works
-      lambda_execute:
+      amazon.aws.lambda_execute:
         name: "{{lambda_function_name}}"
         payload:
           name: Mr Ansible Tests
@@ -210,7 +210,7 @@
           - result.result.output.message == "hello Mr Ansible Tests"
 
     - name: test execute lambda with function arn
-      lambda_execute:
+      amazon.aws.lambda_execute:
         function_arn: "{{ lambda_function_arn }}"
         payload:
           name: Mr Ansible Tests
@@ -324,7 +324,7 @@
       check_mode: true
     - name: lambda_info | Assert successfull retrieval of all information 1
       vars:
-        lambda_info: "{{ lambda_infos_all.functions | selectattr('function_name', 'eq', lambda_function_name) | first }}"
+        amazon.aws.lambda_info: "{{ lambda_infos_all.functions | selectattr('function_name', 'eq', lambda_function_name) | first }}"
       ansible.builtin.assert:
         that:
           - lambda_infos_all is not failed
@@ -347,7 +347,7 @@
       check_mode: true
     - name: lambda_info | Assert successfull retrieval of all information 2
       vars:
-        lambda_info: "{{ lambda_infos_query_config.functions | selectattr('function_name', 'eq', lambda_function_name) | first }}"
+        amazon.aws.lambda_info: "{{ lambda_infos_query_config.functions | selectattr('function_name', 'eq', lambda_function_name) | first }}"
       ansible.builtin.assert:
         that:
           - lambda_infos_query_config is not failed
@@ -471,7 +471,7 @@
     #
     # # More Lambda update tests
     # - name: test state=present with all nullable variables explicitly set to null
-    #   lambda:
+    #   amazon.aws.lambda:
     #     name: '{{lambda_function_name}}'
     #     runtime: '{{ lambda_python_runtime }}'
     #     role: '{{ lambda_role_name }}'
@@ -524,7 +524,7 @@
           - result.configuration.environment.variables.extra_message == "I think you are great!!"
 
     - name: test lambda works
-      lambda_execute:
+      amazon.aws.lambda_execute:
         name: "{{lambda_function_name}}"
         payload:
           name: Mr Ansible Tests
@@ -685,7 +685,7 @@
         dest: "{{ remote_tmp_dir }}/lambda_layer.zip"
 
     - name: Create lambda layer
-      lambda_layer:
+      amazon.aws.lambda_layer:
         name: "{{ lambda_python_layers_names[0] }}"
         description: "{{ lambda_python_layers_names[0] }} lambda layer"
         content:
@@ -693,7 +693,7 @@
       register: first_layer
 
     - name: Create another lambda layer
-      lambda_layer:
+      amazon.aws.lambda_layer:
         name: "{{ lambda_python_layers_names[1] }}"
         description: "{{ lambda_python_layers_names[1] }} lambda layer"
         content:
@@ -775,7 +775,7 @@
 
   always:
     - name: Delete lambda layers
-      lambda_layer:
+      amazon.aws.lambda_layer:
         name: "{{ item }}"
         version: -1
         state: absent

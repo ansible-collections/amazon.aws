@@ -9,7 +9,7 @@
     - amazon.aws
   block:
     - name: Create a source DB cluster
-      rds_cluster:
+      amazon.aws.rds_cluster:
         id: "{{ cluster_id }}"
         state: present
         engine: "{{ engine}}"
@@ -56,7 +56,7 @@
           - _result_cluster_snapshot_info.cluster_snapshots | length == 0
 
     - name: Take a snapshot of the existing DB cluster (CHECK_MODE)
-      rds_cluster_snapshot:
+      amazon.aws.rds_cluster_snapshot:
         state: present
         db_cluster_identifier: "{{ cluster_id }}"
         db_cluster_snapshot_identifier: "{{ snapshot_id }}"
@@ -68,7 +68,7 @@
           - _result_cluster_snapshot.changed
 
     - name: Take a snapshot of the existing DB cluster
-      rds_cluster_snapshot:
+      amazon.aws.rds_cluster_snapshot:
         state: present
         db_cluster_identifier: "{{ cluster_id }}"
         db_cluster_snapshot_identifier: "{{ snapshot_id }}"
@@ -114,7 +114,7 @@
           - _result_cluster_snapshot_info.cluster_snapshots[0].db_cluster_snapshot_identifier == snapshot_id
 
     - name: Get info of the existing DB cluster
-      rds_cluster_info:
+      amazon.aws.rds_cluster_info:
         cluster_id: "{{ cluster_id }}"
       register: result_cluster_info
 
@@ -123,7 +123,7 @@
           - result_cluster_info is successful
 
     - name: Create another source DB cluster
-      rds_cluster:
+      amazon.aws.rds_cluster:
         id: "{{ cluster_id }}-b"
         state: present
         engine: "{{ engine}}"
@@ -160,7 +160,7 @@
           - "'vpc_security_groups' in _result_create_source_db_cluster"
 
     - name: Take another snapshot of the existing DB cluster
-      rds_cluster_snapshot:
+      amazon.aws.rds_cluster_snapshot:
         state: present
         db_cluster_identifier: "{{ cluster_id }}-b"
         db_cluster_snapshot_identifier: "{{ snapshot_id }}-b"
@@ -205,7 +205,7 @@
           - _result_cluster_snapshot_info.cluster_snapshots | length == 1
 
     - name: Delete existing DB cluster snapshot (CHECK_MODE)
-      rds_cluster_snapshot:
+      amazon.aws.rds_cluster_snapshot:
         state: absent
         db_cluster_snapshot_identifier: "{{ snapshot_id }}-b"
       register: _result_delete_snapshot
@@ -216,7 +216,7 @@
           - _result_delete_snapshot.changed
 
     - name: Delete the existing DB cluster snapshot
-      rds_cluster_snapshot:
+      amazon.aws.rds_cluster_snapshot:
         state: absent
         db_cluster_snapshot_identifier: "{{ snapshot_id }}-b"
       register: _result_delete_snapshot
@@ -226,7 +226,7 @@
           - _result_delete_snapshot.changed
 
     - name: Get info of the existing DB cluster
-      rds_cluster_info:
+      amazon.aws.rds_cluster_info:
         cluster_id: "{{ cluster_id }}"
       register: _result_cluster_info
 
@@ -235,7 +235,7 @@
           - result_cluster_info is successful
 
     - name: Take another snapshot of the existing DB cluster and assign tags
-      rds_cluster_snapshot:
+      amazon.aws.rds_cluster_snapshot:
         state: present
         db_cluster_identifier: "{{ cluster_id }}"
         db_cluster_snapshot_identifier: "{{ snapshot_id }}-b"
@@ -276,7 +276,7 @@
           - "'vpc_id' in _result_cluster_snapshot"
 
     - name: Attempt to take another snapshot of the existing DB cluster and assign tags (idempotence)
-      rds_cluster_snapshot:
+      amazon.aws.rds_cluster_snapshot:
         state: present
         db_cluster_identifier: "{{ cluster_id }}"
         db_cluster_snapshot_identifier: "{{ snapshot_id }}-b"
@@ -291,7 +291,7 @@
           - not _result_cluster_snapshot.changed
 
     - name: Take another snapshot of the existing DB cluster and update tags
-      rds_cluster_snapshot:
+      amazon.aws.rds_cluster_snapshot:
         state: present
         db_cluster_identifier: "{{ cluster_id }}"
         db_cluster_snapshot_identifier: "{{ snapshot_id }}-b"
@@ -331,7 +331,7 @@
           - "'vpc_id' in _result_cluster_snapshot"
 
     - name: Take another snapshot of the existing DB cluster and update tags without purge
-      rds_cluster_snapshot:
+      amazon.aws.rds_cluster_snapshot:
         state: present
         db_cluster_identifier: "{{ cluster_id }}"
         db_cluster_snapshot_identifier: "{{ snapshot_id }}-b"
@@ -372,7 +372,7 @@
           - "'vpc_id' in _result_cluster_snapshot"
 
     - name: Take another snapshot of the existing DB cluster and do not specify any tag to ensure previous tags are not removed
-      rds_cluster_snapshot:
+      amazon.aws.rds_cluster_snapshot:
         state: present
         db_cluster_identifier: "{{ cluster_id }}"
         db_cluster_snapshot_identifier: "{{ snapshot_id }}-b"
@@ -390,7 +390,7 @@
         _snapshot_arn: "{{ _result_cluster_snapshot.db_cluster_snapshot_arn }}"
 
     - name: Copy a DB cluster snapshot (check mode)
-      rds_cluster_snapshot:
+      amazon.aws.rds_cluster_snapshot:
         id: "{{ snapshot_id }}-copy"
         source_id: "{{ snapshot_id }}-b"
         copy_tags: true
@@ -403,7 +403,7 @@
           - _result_cluster_copy_snapshot.changed
 
     - name: Copy a DB cluster snapshot
-      rds_cluster_snapshot:
+      amazon.aws.rds_cluster_snapshot:
         id: "{{ snapshot_id }}-copy"
         source_id: "{{ snapshot_id }}-b"
         copy_tags: true
@@ -423,7 +423,7 @@
           - _result_cluster_copy_snapshot.tags["tag_three"] == "{{ snapshot_id }}-b Three"
 
     - name: Copy a DB cluster snapshot (idempotence - check mode)
-      rds_cluster_snapshot:
+      amazon.aws.rds_cluster_snapshot:
         id: "{{ snapshot_id }}-copy"
         source_id: "{{ snapshot_id }}-b"
         copy_tags: true
@@ -436,7 +436,7 @@
           - not _result_cluster_copy_snapshot.changed
 
     - name: Copy a DB cluster snapshot (idempotence)
-      rds_cluster_snapshot:
+      amazon.aws.rds_cluster_snapshot:
         id: "{{ snapshot_id }}-copy"
         source_id: "{{ snapshot_id }}-b"
         copy_tags: true
@@ -457,7 +457,7 @@
 
   always:
     - name: Delete the existing DB cluster snapshots
-      rds_cluster_snapshot:
+      amazon.aws.rds_cluster_snapshot:
         state: absent
         db_cluster_snapshot_identifier: "{{ item }}"
       register: _result_delete_snapshot
@@ -468,7 +468,7 @@
         - "{{ snapshot_id }}-copy"
 
     - name: Delete the existing DB cluster without creating a final snapshot
-      rds_cluster:
+      amazon.aws.rds_cluster:
         state: absent
         cluster_id: "{{ item }}"
         skip_final_snapshot: true

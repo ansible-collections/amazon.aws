@@ -57,13 +57,13 @@
       retries: 10
 
     - name: (Cleanup) Find all remaining Security Groups
-      ec2_security_group_info:
+      amazon.aws.ec2_security_group_info:
         filters:
           vpc-id: "{{ testing_vpc.vpc.id }}"
       register: security_groups
 
     - name: (Cleanup) Remove the security group rules
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         state: present
         name: "{{ item.group_name }}"
         description: "{{ item.description }}"
@@ -77,7 +77,7 @@
       retries: 10
 
     - name: (Cleanup) Remove the security groups
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         state: absent
         group_id: "{{ item.group_id }}"
       loop: "{{ security_groups.security_groups }}"

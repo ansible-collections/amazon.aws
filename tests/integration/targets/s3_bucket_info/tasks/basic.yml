@@ -1,6 +1,6 @@
 ---
 - name: Get simple S3 bucket list
-  s3_bucket_info:
+  amazon.aws.s3_bucket_info:
   register: bucket_list
 - name: Assert result.changed == False and bucket list was retrieved
   ansible.builtin.assert:
@@ -9,7 +9,7 @@
       - bucket_list.buckets
 
 - name: Get complex S3 bucket list
-  s3_bucket_info:
+  amazon.aws.s3_bucket_info:
     name_filter: "{{ name_pattern }}"
     bucket_facts:
       bucket_accelerate_configuration: true

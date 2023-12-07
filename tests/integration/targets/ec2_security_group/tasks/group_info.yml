@@ -4,7 +4,7 @@
 - block:
     # ======================== Setup =====================================
     - name: Create a group for testing group info retrieval below
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ ec2_group_name }}-info-1"
         vpc_id: "{{ vpc_result.vpc.id }}"
         description: "{{ ec2_group_description }}"
@@ -27,7 +27,7 @@
           - "'ec2:DeleteTags' not in group_info_test_setup.resource_actions"
 
     - name: Create another group for testing group info retrieval below
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ ec2_group_name }}-info-2"
         vpc_id: "{{ vpc_result.vpc.id }}"
         description: "{{ ec2_group_description }}"
@@ -40,7 +40,7 @@
     # ========================= ec2_group_info tests ====================
 
     - name: Retrieve security group info based on SG name
-      ec2_security_group_info:
+      amazon.aws.ec2_security_group_info:
         filters:
           group-name: "{{ ec2_group_name }}-info-2"
       register: result_1
@@ -52,7 +52,7 @@
           - (result_1.security_groups|first).group_name == '{{ ec2_group_name }}-info-2'
 
     - name: Retrieve security group info based on SG VPC
-      ec2_security_group_info:
+      amazon.aws.ec2_security_group_info:
         filters:
           vpc-id: "{{ vpc_result.vpc.id }}"
       register: result_2
@@ -65,7 +65,7 @@
           - (result_2.security_groups|length) > 2
 
     - name: Retrieve security group info based on SG tags
-      ec2_security_group_info:
+      amazon.aws.ec2_security_group_info:
         filters:
           tag:test: "{{ resource_prefix }}_ec2_group_info_module"
       register: result_3
@@ -77,7 +77,7 @@
           - (result_3.security_groups|first).group_id == group_info_test_setup.group_id
 
     - name: Retrieve security group info based on SG ID
-      ec2_security_group_info:
+      amazon.aws.ec2_security_group_info:
         filters:
           group-id: "{{ group_info_test_setup.group_id }}"
       register: result_4
@@ -92,13 +92,13 @@
   always:
     # ========================= Cleanup =================================
     - name: tidy up test security group 1
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ ec2_group_name }}-info-1"
         state: absent
       ignore_errors: true
 
     - name: tidy up test security group 2
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ ec2_group_name }}-info-2"
         state: absent
       ignore_errors: true

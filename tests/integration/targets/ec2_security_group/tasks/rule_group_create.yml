@@ -1,7 +1,7 @@
 ---
 - block:
     - name: Create a group with self-referring rule
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}-auto-create-1"
         vpc_id: "{{ vpc_result.vpc.id }}"
         description: "{{ec2_group_description}}"
@@ -14,14 +14,14 @@
       register: result
 
     - name: Create a second group rule
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}-auto-create-2"
         vpc_id: "{{ vpc_result.vpc.id }}"
         description: "{{ec2_group_description}}"
         state: present
 
     - name: Create a series of rules with a recently created group as target
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}-auto-create-1"
         vpc_id: "{{ vpc_result.vpc.id }}"
         description: "{{ec2_group_description}}"
@@ -44,7 +44,7 @@
           - result.warning is not defined
 
     - name: Create a group with only the default rule
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}-auto-create-1"
         vpc_id: "{{ vpc_result.vpc.id }}"
         description: "{{ec2_group_description}}"
@@ -63,7 +63,7 @@
           - result is failed
 
     - name: Create a group with a target of a separate group
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}-auto-create-1"
         vpc_id: "{{ vpc_result.vpc.id }}"
         description: "{{ec2_group_description}}"
@@ -82,7 +82,7 @@
           - result.warning is not defined
 
     - name: Create a 4th group
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}-auto-create-4"
         vpc_id: "{{ vpc_result.vpc.id }}"
         description: "{{ec2_group_description}}"
@@ -94,7 +94,7 @@
             cidr_ip: "0.0.0.0/0"
 
     - name: use recently created group in a rule
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}-auto-create-5"
         vpc_id: "{{ vpc_result.vpc.id }}"
         description: "{{ec2_group_description}}"
@@ -111,7 +111,7 @@
 
   always:
     - name: tidy up egress rule test security group rules
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}-auto-create-{{ item }}"
         description: "{{ec2_group_description}}"
         rules: []
@@ -119,7 +119,7 @@
       ignore_errors: true
       with_items: [5, 4, 3, 2, 1]
     - name: tidy up egress rule test security group
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}-auto-create-{{ item }}"
         state: absent
         vpc_id: "{{ vpc_result.vpc.id }}"

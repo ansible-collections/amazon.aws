@@ -54,7 +54,7 @@
       until: remove is successful
 
     - name: remove the security group
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         group_id: "{{ vpc_sg_id }}"
         state: absent
       ignore_errors: true

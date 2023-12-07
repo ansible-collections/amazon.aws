@@ -54,7 +54,7 @@
   register: setup_subnet_4
 
 - name: create a security group
-  ec2_security_group:
+  amazon.aws.ec2_security_group:
     name: "{{ resource_prefix }}-a"
     description: created by Ansible integration tests
     state: present
@@ -67,7 +67,7 @@
   register: setup_sg_1
 
 - name: create a security group
-  ec2_security_group:
+  amazon.aws.ec2_security_group:
     name: "{{ resource_prefix }}-b"
     description: created by Ansible integration tests
     state: present
@@ -80,7 +80,7 @@
   register: setup_sg_2
 
 - name: create a security group
-  ec2_security_group:
+  amazon.aws.ec2_security_group:
     name: "{{ resource_prefix }}-c"
     description: created by Ansible integration tests
     state: present

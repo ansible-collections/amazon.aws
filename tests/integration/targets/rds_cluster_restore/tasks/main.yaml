@@ -7,7 +7,7 @@
       session_token: "{{ security_token | default(omit) }}"
   block:
     - name: Ensure the resource doesn't exist
-      rds_cluster:
+      amazon.aws.rds_cluster:
         id: "{{ cluster_id }}"
         state: absent
         engine: "{{ engine}}"
@@ -22,7 +22,7 @@
       ignore_errors: true
 
     - name: Create a source DB cluster
-      rds_cluster:
+      amazon.aws.rds_cluster:
         id: "{{ cluster_id }}"
         state: present
         engine: "{{ engine}}"
@@ -61,7 +61,7 @@
           - "'vpc_security_groups' in _result_create_source_db_cluster"
 
     - name: Create a point in time DB cluster
-      rds_cluster:
+      amazon.aws.rds_cluster:
         state: present
         id: "{{ cluster_id }}-point-in-time"
         source_db_cluster_identifier: "{{ cluster_id }}"
@@ -105,7 +105,7 @@
           - "'vpc_security_groups' in _result_restored_db_cluster"
 
     - name: Create a point in time DB cluster (idempotence)
-      rds_cluster:
+      amazon.aws.rds_cluster:
         state: present
         id: "{{ cluster_id }}-point-in-time"
         source_db_cluster_identifier: "{{ cluster_id }}"
@@ -124,7 +124,7 @@
           - not _result_restored_db_cluster.changed
 
     - name: Take a snapshot of the DB cluster
-      rds_cluster_snapshot:
+      amazon.aws.rds_cluster_snapshot:
         state: present
         db_cluster_identifier: "{{ cluster_id }}"
         db_cluster_snapshot_identifier: "{{ cluster_id }}-snapshot"
@@ -136,7 +136,7 @@
           - _result_cluster_snapshot.changed
 
     - name: Restore DB cluster from source (snapshot)
-      rds_cluster:
+      amazon.aws.rds_cluster:
         creation_source: snapshot
         engine: "{{ engine }}"
         cluster_id: "{{ cluster_id }}-restored-snapshot"
@@ -174,14 +174,14 @@
   # Requires rds_export_task module
   always:
     - name: Delete the snapshot
-      rds_cluster_snapshot:
+      amazon.aws.rds_cluster_snapshot:
         db_cluster_snapshot_identifier: "{{ cluster_id }}-snapshot"
         state: absent
       register: _result_delete_snapshot
       ignore_errors: true
 
     - name: Delete DB cluster without creating a final snapshot
-      rds_cluster:
+      amazon.aws.rds_cluster:
         state: absent
         cluster_id: "{{ item }}"
         skip_final_snapshot: true

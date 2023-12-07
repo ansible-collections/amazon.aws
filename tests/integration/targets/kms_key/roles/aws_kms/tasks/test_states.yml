@@ -9,10 +9,10 @@
       amazon.aws.aws_caller_info:
       register: aws_caller_info
     - name: See whether key exists and its current state
-      kms_key_info:
+      amazon.aws.kms_key_info:
         alias: "{{ kms_key_alias }}"
     - name: create a key - check mode
-      kms_key:
+      amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}-check"
         tags:
           Hello: World
@@ -21,7 +21,7 @@
       register: key_check
       check_mode: true
     - name: find facts about the check mode key
-      kms_key_info:
+      amazon.aws.kms_key_info:
         alias: "{{ kms_key_alias }}-check"
       register: check_key
     - name: ensure that check mode worked as expected
@@ -31,7 +31,7 @@
           - key_check is changed
 
     - name: create a key
-      kms_key:
+      amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
         tags:
           Hello: World
@@ -66,7 +66,7 @@
       ansible.builtin.wait_for:
         timeout: 45
     - name: create a key (idempotence) - check mode
-      kms_key:
+      amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
         tags:
           Hello: World
@@ -79,7 +79,7 @@
           - key is not changed
 
     - name: create a key (idempotence)
-      kms_key:
+      amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
         tags:
           Hello: World
@@ -116,7 +116,7 @@
         kms_key_id: "{{ key.key_id }}"
         kms_key_arn: "{{ key.key_arn }}"
     - name: Enable key rotation - check mode
-      kms_key:
+      amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
         tags:
           Hello: World
@@ -130,7 +130,7 @@
           - key.changed
 
     - name: Enable key rotation
-      kms_key:
+      amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
         tags:
           Hello: World
@@ -164,7 +164,7 @@
       ansible.builtin.wait_for:
         timeout: 45
     - name: Enable key rotation (idempotence) - check mode
-      kms_key:
+      amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
         tags:
           Hello: World
@@ -178,7 +178,7 @@
           - not key.changed
 
     - name: Enable key rotation (idempotence)
-      kms_key:
+      amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
         tags:
           Hello: World
@@ -210,7 +210,7 @@
     # ------------------------------------------------------------------------------------------
 
     - name: Disable key - check mode
-      kms_key:
+      amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
         state: present
         enabled: false
@@ -221,7 +221,7 @@
           - key.changed
 
     - name: Disable key
-      kms_key:
+      amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
         state: present
         enabled: false
@@ -252,7 +252,7 @@
       ansible.builtin.wait_for:
         timeout: 45
     - name: Disable key (idempotence) - check mode
-      kms_key:
+      amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
         state: present
         enabled: false
@@ -263,7 +263,7 @@
           - not key.changed
 
     - name: Disable key (idempotence)
-      kms_key:
+      amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
         state: present
         enabled: false
@@ -292,7 +292,7 @@
     # ------------------------------------------------------------------------------------------
 
     - name: Delete key - check mode
-      kms_key:
+      amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
         state: absent
       register: key
@@ -302,7 +302,7 @@
           - key is changed
 
     - name: Delete key
-      kms_key:
+      amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
         state: absent
       register: key
@@ -338,7 +338,7 @@
           - (( deletion_time | to_datetime ) - ( now_time | to_datetime )).days >= 29
 
     - name: Delete key (idempotence) - check mode
-      kms_key:
+      amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
         state: absent
       register: key
@@ -348,7 +348,7 @@
           - not key.changed
 
     - name: Delete key (idempotence)
-      kms_key:
+      amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
         state: absent
       register: key
@@ -382,7 +382,7 @@
     # ------------------------------------------------------------------------------------------
 
     - name: Cancel key deletion - check mode
-      kms_key:
+      amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
         state: present
       register: key
@@ -392,7 +392,7 @@
           - key.changed
 
     - name: Cancel key deletion
-      kms_key:
+      amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
         state: present
       register: key
@@ -422,7 +422,7 @@
       ansible.builtin.wait_for:
         timeout: 45
     - name: Cancel key deletion (idempotence) - check mode
-      kms_key:
+      amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
         state: present
       register: key
@@ -432,7 +432,7 @@
           - not key.changed
 
     - name: Cancel key deletion (idempotence)
-      kms_key:
+      amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
         state: present
       register: key
@@ -461,7 +461,7 @@
     # ------------------------------------------------------------------------------------------
 
     - name: delete the key with a specific deletion window
-      kms_key:
+      amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
         state: absent
         pending_window: 7
@@ -484,7 +484,7 @@
     # ============================================================
     # test different key usage and specs
     - name: create kms key with different specs
-      kms_key:
+      amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}-diff-spec-usage"
         purge_grants: true
         key_spec: ECC_NIST_P256
@@ -509,7 +509,7 @@
     # ============================================================
     #   CLEAN-UP
     - name: finish off by deleting keys
-      kms_key:
+      amazon.aws.kms_key:
         state: absent
         alias: "{{ item }}"
         pending_window: 7

@@ -44,7 +44,7 @@
       register: vpc_subnet_result
 
     - name: create a security group
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ resource_prefix }}-sg"
         description: Created by {{ resource_prefix }}
         rules: []
@@ -67,7 +67,7 @@
     - name: Run tests for termianting associated instances
       ansible.builtin.import_tasks: terminate_associated_instances.yml
     - name: Create simple spot instance request
-      ec2_spot_instance:
+      amazon.aws.ec2_spot_instance:
         launch_specification:
           image_id: "{{ ec2_ami_id }}"
           key_name: "{{ resource_prefix }}-keypair"
@@ -86,7 +86,7 @@
           - create_result.spot_request.launch_specification.subnet_id == vpc_subnet_result.subnet.id
 
     - name: Get info about the spot instance request created
-      ec2_spot_instance_info:
+      amazon.aws.ec2_spot_instance_info:
         spot_instance_request_ids:
           - "{{ create_result.spot_request.spot_instance_request_id }}"
       register: spot_instance_info_result
@@ -97,7 +97,7 @@
           - spot_instance_info_result.spot_request[0].state in ['open', 'active']
 
     - name: Create spot request with more complex options
-      ec2_spot_instance:
+      amazon.aws.ec2_spot_instance:
         launch_specification:
           image_id: "{{ ec2_ami_id }}"
           key_name: "{{ resource_prefix }}-keypair"
@@ -154,7 +154,7 @@
         spot_request_tags: "{{ complex_create_result.spot_request.tags }}"
 
     - name: Get info about the complex spot instance request created
-      ec2_spot_instance_info:
+      amazon.aws.ec2_spot_instance_info:
         spot_instance_request_ids:
           - "{{ complex_create_result.spot_request.spot_instance_request_id }}"
       register: complex_info_result
@@ -172,7 +172,7 @@
         info_launch_spec: "{{ complex_info_result.spot_request[0].launch_specification }}"
 
     - name: Get info about the created spot instance requests and filter result based on provided filters
-      ec2_spot_instance_info:
+      amazon.aws.ec2_spot_instance_info:
         spot_instance_request_ids:
           - "{{ create_result.spot_request.spot_instance_request_id }}"
           - "{{ complex_create_result.spot_request.spot_instance_request_id }}"
@@ -188,7 +188,7 @@
 
     # Assert check mode
     - name: Create spot instance request (check_mode)
-      ec2_spot_instance:
+      amazon.aws.ec2_spot_instance:
         launch_specification:
           image_id: "{{ ec2_ami_id }}"
           key_name: "{{ resource_prefix }}-keypair"
@@ -204,7 +204,7 @@
           - check_create_result is changed
 
     - name: Remove spot instance request (check_mode)
-      ec2_spot_instance:
+      amazon.aws.ec2_spot_instance:
         spot_instance_request_ids: "{{ create_result.spot_request.spot_instance_request_id }}"
         state: absent
       check_mode: true
@@ -215,7 +215,7 @@
           - check_cancel_result is changed
 
     - name: Remove spot instance requests
-      ec2_spot_instance:
+      amazon.aws.ec2_spot_instance:
         spot_instance_request_ids:
           - "{{ create_result.spot_request.spot_instance_request_id }}"
           - "{{ complex_create_result.spot_request.spot_instance_request_id }}"
@@ -232,7 +232,7 @@
         seconds: 3
 
     - name: Check no change if request is already cancelled (idempotency)
-      ec2_spot_instance:
+      amazon.aws.ec2_spot_instance:
         spot_instance_request_ids: "{{ create_result.spot_request.spot_instance_request_id }}"
         state: absent
       register: cancel_request_again
@@ -243,7 +243,7 @@
           - '"Spot request not found or already cancelled" in cancel_request_again.msg'
 
     - name: Gracefully try to remove non-existent request (NotFound)
-      ec2_spot_instance:
+      amazon.aws.ec2_spot_instance:
         spot_instance_request_ids:
           - sir-12345678
         state: absent
@@ -263,13 +263,13 @@
           vpc-id: "{{ vpc_result.vpc.id }}"
 
     - name: get all spot requests created during test
-      ec2_spot_instance_info:
+      amazon.aws.ec2_spot_instance_info:
         filters:
           tag:ansible-test: "{{ resource_prefix }}"
       register: spot_request_list
 
     - name: remove spot instance requests
-      ec2_spot_instance:
+      amazon.aws.ec2_spot_instance:
         spot_instance_request_ids:
           - "{{ item.spot_instance_request_id }}"
         state: absent
@@ -278,7 +278,7 @@
       with_items: "{{ spot_request_list.spot_request }}"
 
     - name: remove the security group
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ resource_prefix }}-sg"
         description: "{{ resource_prefix }}"
         rules: []

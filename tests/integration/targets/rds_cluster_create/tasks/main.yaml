@@ -7,7 +7,7 @@
       session_token: "{{ security_token | default(omit) }}"
   block:
     - name: Ensure the resource doesn't exist
-      rds_cluster:
+      amazon.aws.rds_cluster:
         id: "{{ cluster_id }}"
         state: absent
         engine: "{{ engine}}"
@@ -22,7 +22,7 @@
       ignore_errors: true
 
     - name: Get info of all existing clusters
-      rds_cluster_info:
+      amazon.aws.rds_cluster_info:
       register: _result_cluster_info
 
     - ansible.builtin.assert:
@@ -30,7 +30,7 @@
           - _result_cluster_info is successful
 
     - name: Create minimal aurora cluster in default VPC and default subnet group (CHECK MODE)
-      rds_cluster:
+      amazon.aws.rds_cluster:
         engine: "{{ engine }}"
         username: "{{ username }}"
         password: "{{ password }}"
@@ -44,7 +44,7 @@
           - _result_create_db_cluster.changed
 
     - name: Create minimal aurora cluster in default VPC and default subnet group
-      rds_cluster:
+      amazon.aws.rds_cluster:
         engine: "{{ engine }}"
         username: "{{ username }}"
         password: "{{ password }}"
@@ -83,7 +83,7 @@
           - _result_create_db_cluster.tags["Name"] == "{{ tags_create["Name"]}}"
           - "'vpc_security_groups' in _result_create_db_cluster"
     - name: Get info of the existing cluster
-      rds_cluster_info:
+      amazon.aws.rds_cluster_info:
         cluster_id: "{{ cluster_id }}"
       register: result_cluster_info
 
@@ -92,7 +92,7 @@
           - result_cluster_info is successful
 
     - name: Create minimal aurora cluster in default VPC and default subnet group - idempotence (CHECK MODE)
-      rds_cluster:
+      amazon.aws.rds_cluster:
         engine: "{{ engine }}"
         username: "{{ username }}"
         password: "{{ password }}"
@@ -106,7 +106,7 @@
           - not _result_create_db_cluster.changed
 
     - name: Create minimal aurora cluster in default VPC and default subnet group - idempotence
-      rds_cluster:
+      amazon.aws.rds_cluster:
         engine: "{{ engine }}"
         username: "{{ username }}"
         password: "{{ password }}"
@@ -120,7 +120,7 @@
 
   always:
     - name: Delete DB cluster without creating a final snapshot
-      rds_cluster:
+      amazon.aws.rds_cluster:
         state: absent
         cluster_id: "{{ cluster_id }}"
         skip_final_snapshot: true

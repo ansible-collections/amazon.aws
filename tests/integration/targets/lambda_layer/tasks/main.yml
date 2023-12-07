@@ -41,7 +41,7 @@
         state: present
 
     - name: add object into bucket
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ s3_bucket_name }}"
         mode: put
         object: "{{ s3_bucket_object }}"
@@ -49,7 +49,7 @@
         src: "{{ zip_file_path }}"
 
     - name: Create lambda layer (check_mode=true)
-      lambda_layer:
+      amazon.aws.lambda_layer:
         name: "{{ layer_name }}"
         description: "{{ resource_prefix }} lambda layer first version"
         content:
@@ -61,7 +61,7 @@
       check_mode: true
 
     - name: Retrieve all layers versions
-      lambda_layer_info:
+      amazon.aws.lambda_layer_info:
         name: "{{ layer_name }}"
       register: layers
 
@@ -73,7 +73,7 @@
           - layers.layers_versions | length == 0
 
     - name: Create lambda layer (first version)
-      lambda_layer:
+      amazon.aws.lambda_layer:
         name: "{{ layer_name }}"
         description: "{{ resource_prefix }} lambda layer first version"
         content:
@@ -84,11 +84,11 @@
       register: first_version
 
     - name: Create another lambda layer version
-      lambda_layer:
+      amazon.aws.lambda_layer:
         name: "{{ layer_name }}"
         description: "{{ resource_prefix }} lambda layer second version"
         content:
-          s3_bucket: "{{ s3_bucket_name }}"
+          amazon.aws.s3_bucket: "{{ s3_bucket_name }}"
           s3_key: "{{ s3_bucket_object }}"
         compatible_runtimes:
           - python3.7
@@ -96,7 +96,7 @@
       register: last_version
 
     - name: Retrieve all layers with latest version
-      lambda_layer_info:
+      amazon.aws.lambda_layer_info:
       register: layers
 
     - name: Ensure layer created above was found
@@ -113,7 +113,7 @@
         layers_version_arns: '{{ layers.layers_versions | map(attribute="layer_version_arn") | list }}'
 
     - name: Retrieve all layers versions
-      lambda_layer_info:
+      amazon.aws.lambda_layer_info:
         name: "{{ layer_name }}"
       register: layers
 
@@ -130,7 +130,7 @@
         layers_version_arns: '{{ layers.layers_versions | map(attribute="layer_version_arn") | list }}'
 
     - name: Delete latest layer version
-      lambda_layer:
+      amazon.aws.lambda_layer:
         name: "{{ layer_name }}"
         version: "{{ last_version.layer_versions.0.version }}"
         state: absent
@@ -138,7 +138,7 @@
       register: delete_check_mode
 
     - name: Retrieve all layers versions
-      lambda_layer_info:
+      amazon.aws.lambda_layer_info:
         name: "{{ layer_name }}"
       register: layers
 
@@ -154,14 +154,14 @@
         layers_version_arns: '{{ layers.layers_versions | map(attribute="layer_version_arn") | list }}'
 
     - name: Delete latest layer version
-      lambda_layer:
+      amazon.aws.lambda_layer:
         name: "{{ layer_name }}"
         version: "{{ last_version.layer_versions.0.version }}"
         state: absent
       register: delete_layer
 
     - name: Retrieve all layers versions
-      lambda_layer_info:
+      amazon.aws.lambda_layer_info:
         name: "{{ layer_name }}"
       register: layers
 
@@ -177,7 +177,7 @@
         layers_version_arns: '{{ layers.layers_versions | map(attribute="layer_version_arn") | list }}'
 
     - name: Delete again the latest layer version (idempotency)
-      lambda_layer:
+      amazon.aws.lambda_layer:
         name: "{{ layer_name }}"
         version: "{{ last_version.layer_versions.0.version }}"
         state: absent
@@ -189,11 +189,11 @@
           - delete_idempotent is not changed
 
     - name: Create multiple lambda layer versions
-      lambda_layer:
+      amazon.aws.lambda_layer:
         name: "{{ layer_name }}"
         description: "{{ resource_prefix }} lambda layer version compatible with python3.{{ item }}"
         content:
-          s3_bucket: "{{ s3_bucket_name }}"
+          amazon.aws.s3_bucket: "{{ s3_bucket_name }}"
           s3_key: "{{ s3_bucket_object }}"
         compatible_runtimes:
           - python3.{{ item }}
@@ -201,14 +201,14 @@
       with_items: ["9", "10"]
 
     - name: Delete all layer versions
-      lambda_layer:
+      amazon.aws.lambda_layer:
         name: "{{ layer_name }}"
         version: -1
         state: absent
       register: delete_layer
 
     - name: Retrieve all layers versions
-      lambda_layer_info:
+      amazon.aws.lambda_layer_info:
         name: "{{ layer_name }}"
       register: layers
 
@@ -221,7 +221,7 @@
 
   always:
     - name: Delete lambda layer if not deleted during testing
-      lambda_layer:
+      amazon.aws.lambda_layer:
         name: "{{ layer_name }}"
         version: -1
         state: absent
@@ -234,7 +234,7 @@
       ignore_errors: true
 
     - name: Remove object from bucket
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ s3_bucket_name }}"
         mode: delobj
         object: "{{ s3_bucket_object }}"

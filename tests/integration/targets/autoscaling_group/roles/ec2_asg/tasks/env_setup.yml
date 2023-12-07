@@ -35,7 +35,7 @@
           - "{{ testing_subnet.subnet.id }}"
 
     - name: create a security group with the vpc created in the ec2_setup
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ resource_prefix }}-sg"
         description: a security group for ansible tests
         vpc_id: "{{ testing_vpc.vpc.id }}"

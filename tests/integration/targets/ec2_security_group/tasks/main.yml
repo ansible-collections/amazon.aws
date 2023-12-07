@@ -42,7 +42,7 @@
     - ansible.builtin.include_tasks: ./multi_nested_target.yml
     - ansible.builtin.include_tasks: ./group_info.yml
     - name: test state=absent (CHECK MODE)
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         description: "{{ec2_group_description}}"
         state: absent
@@ -56,7 +56,7 @@
 
     # ===========================================================
     - name: test state=absent
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         description: "{{ec2_group_description}}"
         state: absent
@@ -64,7 +64,7 @@
 
     # ============================================================
     - name: test state=present (expected changed=true) (CHECK MODE)
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         description: "{{ec2_group_description}}"
         state: present
@@ -78,7 +78,7 @@
 
     # ============================================================
     - name: test state=present (expected changed=true)
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         description: "{{ec2_group_description}}"
         state: present
@@ -92,7 +92,7 @@
 
     # ============================================================
     - name: test state=present different description (expected changed=false) (CHECK MODE)
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         description: "{{ec2_group_description}}CHANGED"
         state: present
@@ -106,7 +106,7 @@
 
     # ============================================================
     - name: test state=present different description (expected changed=false)
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         description: "{{ec2_group_description}}CHANGED"
         state: present
@@ -121,7 +121,7 @@
 
     # ============================================================
     - name: test state=present (expected changed=false)
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         description: "{{ec2_group_description}}"
         state: present
@@ -142,7 +142,7 @@
       block:
         # ============================================================
         - name: test state=present (expected changed=true) (CHECK MODE)
-          ec2_security_group:
+          amazon.aws.ec2_security_group:
             name: "{{ ec2_group_name }}-2"
             description: "{{ ec2_group_description }}-2"
             state: present
@@ -157,7 +157,7 @@
 
         # ============================================================
         - name: test state=present (expected changed=true)
-          ec2_security_group:
+          amazon.aws.ec2_security_group:
             name: "{{ ec2_group_name }}-2"
             description: "{{ ec2_group_description }}-2"
             state: present
@@ -172,7 +172,7 @@
 
         # ============================================================
         - name: test state=present for ipv6 (expected changed=true) (CHECK MODE)
-          ec2_security_group:
+          amazon.aws.ec2_security_group:
             name: "{{ ec2_group_name }}-2"
             description: "{{ ec2_group_description }}-2"
             state: present
@@ -192,7 +192,7 @@
 
         # ============================================================
         - name: test state=present for ipv6 (expected changed=true)
-          ec2_security_group:
+          amazon.aws.ec2_security_group:
             name: "{{ ec2_group_name }}-2"
             description: "{{ ec2_group_description }}-2"
             state: present
@@ -212,7 +212,7 @@
 
         # ============================================================
         - name: test state=present for ipv6 (expected changed=false) (CHECK MODE)
-          ec2_security_group:
+          amazon.aws.ec2_security_group:
             name: "{{ ec2_group_name }}-2"
             description: "{{ ec2_group_description }}-2"
             state: present
@@ -232,7 +232,7 @@
 
         # ============================================================
         - name: test state=present for ipv6 (expected changed=false)
-          ec2_security_group:
+          amazon.aws.ec2_security_group:
             name: "{{ ec2_group_name }}-2"
             description: "{{ ec2_group_description }}-2"
             state: present
@@ -251,7 +251,7 @@
 
         # ============================================================
         - name: test rules_egress state=present for ipv6 (expected changed=true) (CHECK MODE)
-          ec2_security_group:
+          amazon.aws.ec2_security_group:
             name: "{{ ec2_group_name }}-2"
             description: "{{ ec2_group_description }}-2"
             state: present
@@ -279,7 +279,7 @@
 
         # ============================================================
         - name: test rules_egress state=present for ipv6 (expected changed=true)
-          ec2_security_group:
+          amazon.aws.ec2_security_group:
             name: "{{ ec2_group_name }}-2"
             description: "{{ ec2_group_description }}-2"
             state: present
@@ -304,7 +304,7 @@
 
         # ============================================================
         - name: test state=absent (expected changed=true) (CHECK MODE)
-          ec2_security_group:
+          amazon.aws.ec2_security_group:
             name: "{{ ec2_group_name }}-2"
             description: "{{ ec2_group_description }}-2"
             state: absent
@@ -321,7 +321,7 @@
 
         # ============================================================
         - name: test state=absent (expected changed=true)
-          ec2_security_group:
+          amazon.aws.ec2_security_group:
             name: "{{ ec2_group_name }}-2"
             description: "{{ ec2_group_description }}-2"
             state: absent
@@ -335,7 +335,7 @@
 
     # ============================================================
     - name: test state=present for ipv4 (expected changed=true) (CHECK MODE)
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         description: "{{ec2_group_description}}"
         rules:
@@ -353,7 +353,7 @@
 
     # ============================================================
     - name: test state=present for ipv4 (expected changed=true)
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         description: "{{ec2_group_description}}"
         rules:
@@ -373,7 +373,7 @@
 
     # ============================================================
     - name: add same rule to the existing group  (expected changed=false) (CHECK MODE)
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         description: "{{ec2_group_description}}"
         state: present
@@ -393,7 +393,7 @@
 
     # ============================================================
     - name: add same rule to the existing group  (expected changed=false)
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         description: "{{ec2_group_description}}"
         state: present
@@ -417,7 +417,7 @@
 
     # ============================================================
     - name: add a rule that auto creates another security group (CHECK MODE)
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         description: "{{ec2_group_description}}"
         state: present
@@ -437,7 +437,7 @@
 
     # ============================================================
     - name: add a rule that auto creates another security group
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         description: "{{ec2_group_description}}"
         state: present
@@ -460,7 +460,7 @@
 
     # ============================================================
     - name: test ip rules convert port numbers from string to int (expected changed=true) (CHECK MODE)
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         description: "{{ec2_group_description}}"
         state: present
@@ -484,7 +484,7 @@
 
     # ============================================================
     - name: test ip rules convert port numbers from string to int (expected changed=true)
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         description: "{{ec2_group_description}}"
         state: present
@@ -510,7 +510,7 @@
 
     # ============================================================
     - name: test group rules convert port numbers from string to int (expected changed=true) (CHECK MODE)
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         description: "{{ec2_group_description}}"
         state: present
@@ -534,7 +534,7 @@
 
     # ============================================================
     - name: test group rules convert port numbers from string to int (expected changed=true)
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         description: "{{ec2_group_description}}"
         state: present
@@ -559,7 +559,7 @@
 
     # ============================================================
     - name: test adding a range of ports and ports given as strings (expected changed=true) (CHECK MODE)
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         description: "{{ec2_group_description}}"
         state: present
@@ -581,7 +581,7 @@
 
     # ============================================================
     - name: test adding a range of ports and ports given as strings (expected changed=true)
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         description: "{{ec2_group_description}}"
         state: present
@@ -603,7 +603,7 @@
 
     # ============================================================
     - name: test adding a rule with a IPv4 CIDR with host bits set (expected changed=true) (CHECK MODE)
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         description: "{{ec2_group_description}}"
         state: present
@@ -624,7 +624,7 @@
 
     # ============================================================
     - name: test adding a rule with a IPv4 CIDR with host bits set (expected changed=true)
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         description: "{{ec2_group_description}}"
         state: present
@@ -645,7 +645,7 @@
 
     # ============================================================
     - name: test adding the same rule with a IPv4 CIDR with host bits set (expected changed=false) (CHECK MODE)
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         description: "{{ec2_group_description}}"
         state: present
@@ -661,7 +661,7 @@
 
     # ============================================================
     - name: test adding the same rule with a IPv4 CIDR with host bits set (expected changed=false and a warning)
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         description: "{{ec2_group_description}}"
         state: present
@@ -690,7 +690,7 @@
     - name: test using the default VPC
       block:
         - name: test adding a rule with a IPv6 CIDR with host bits set (expected changed=true) (CHECK MODE)
-          ec2_security_group:
+          amazon.aws.ec2_security_group:
             name: "{{ec2_group_name}}"
             description: "{{ec2_group_description}}"
             state: present
@@ -711,7 +711,7 @@
 
         # ============================================================
         - name: test adding a rule with a IPv6 CIDR with host bits set (expected changed=true)
-          ec2_security_group:
+          amazon.aws.ec2_security_group:
             name: "{{ec2_group_name}}"
             description: "{{ec2_group_description}}"
             state: present
@@ -733,7 +733,7 @@
         # ============================================================
 
         - name: test adding a rule again with a IPv6 CIDR with host bits set (expected changed=false and a warning)
-          ec2_security_group:
+          amazon.aws.ec2_security_group:
             name: "{{ec2_group_name}}"
             description: "{{ec2_group_description}}"
             state: present
@@ -757,7 +757,7 @@
 
     # ============================================================
     - name: test state=absent (expected changed=true) (CHECK MODE)
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         state: absent
       check_mode: true
@@ -770,7 +770,7 @@
 
     # ============================================================
     - name: test state=absent (expected changed=true)
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         state: absent
       register: result
@@ -783,7 +783,7 @@
 
     # ============================================================
     - name: create security group in the VPC (CHECK MODE)
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         description: "{{ec2_group_description}}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -803,7 +803,7 @@
 
     # ============================================================
     - name: create security group in the VPC
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         description: "{{ec2_group_description}}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -824,7 +824,7 @@
 
     # ============================================================
     - name: test adding tags (expected changed=true) (CHECK MODE)
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         description: "{{ec2_group_description}}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -851,7 +851,7 @@
 
     # ============================================================
     - name: test adding tags (expected changed=true)
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         description: "{{ec2_group_description}}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -874,7 +874,7 @@
 
     # ============================================================
     - name: test that tags are present (expected changed=False) (CHECK MODE)
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         description: "{{ec2_group_description}}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -898,7 +898,7 @@
 
     # ============================================================
     - name: test that tags are present (expected changed=False)
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         description: "{{ec2_group_description}}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -922,7 +922,7 @@
 
     # ============================================================
     - name: test purging tags (expected changed=True) (CHECK MODE)
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         description: "{{ec2_group_description}}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -944,7 +944,7 @@
 
     # ============================================================
     - name: test purging tags (expected changed=True)
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         description: "{{ec2_group_description}}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -967,7 +967,7 @@
     # ============================================================
 
     - name: assert that tags are left as-is if not specified (expected changed=False)
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         description: "{{ec2_group_description}}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -988,7 +988,7 @@
     # ============================================================
 
     - name: test purging all tags (expected changed=True)
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         description: "{{ec2_group_description}}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -1009,7 +1009,7 @@
 
     # ============================================================
     - name: test adding a rule and egress rule descriptions (expected changed=true) (CHECK MODE)
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         description: "{{ec2_group_description}}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -1039,7 +1039,7 @@
 
     # =========================================================================================
     - name: add rules without descriptions ready for adding descriptions to existing rules
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         description: "{{ec2_group_description}}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -1061,7 +1061,7 @@
 
     # ============================================================
     - name: test adding a rule and egress rule descriptions (expected changed=true)
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         description: "{{ec2_group_description}}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -1092,7 +1092,7 @@
 
     # ============================================================
     - name: test modifying rule and egress rule descriptions (expected changed=true) (CHECK MODE)
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         description: "{{ec2_group_description}}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -1122,7 +1122,7 @@
 
     # ============================================================
     - name: test modifying rule and egress rule descriptions (expected changed=true)
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         description: "{{ec2_group_description}}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -1153,7 +1153,7 @@
     # ============================================================
 
     - name: test creating rule in default vpc with egress rule (expected changed=true)
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}-default-vpc"
         description: "{{ec2_group_description}} default VPC"
         purge_rules_egress: true
@@ -1180,7 +1180,7 @@
 
     # ============================================================
     - name: test that keeping the same rule descriptions (expected changed=false) (CHECK MODE)
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         description: "{{ec2_group_description}}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -1209,7 +1209,7 @@
 
     # ============================================================
     - name: test that keeping the same rule descriptions (expected changed=false)
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         description: "{{ec2_group_description}}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -1239,7 +1239,7 @@
 
     # ============================================================
     - name: test removing rule descriptions (expected changed=true) (CHECK MODE)
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         description: "{{ec2_group_description}}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -1268,7 +1268,7 @@
 
     # ============================================================
     - name: test removing rule descriptions (expected changed=true)
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         description: "{{ec2_group_description}}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -1299,7 +1299,7 @@
     # ============================================================
 
     - name: test state=absent (expected changed=true)
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}"
         state: absent
       register: result
@@ -1314,7 +1314,7 @@
     # Describe state of remaining resources
 
     - name: Retrieve security group info based on SG VPC
-      ec2_security_group_info:
+      amazon.aws.ec2_security_group_info:
         filters:
           vpc-id: "{{ vpc_result.vpc.id }}"
       register: remaining_groups
@@ -1335,7 +1335,7 @@
     # Delete all remaining SGs
 
     - name: Delete rules from remaining SGs
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ item.group_name }}"
         group_id: "{{ item.group_id }}"
         description: "{{ item.description }}"
@@ -1345,7 +1345,7 @@
       ignore_errors: true
 
     - name: Delete remaining SGs
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         state: absent
         group_id: "{{ item.group_id }}"
       loop: "{{ remaining_groups.security_groups }}"
