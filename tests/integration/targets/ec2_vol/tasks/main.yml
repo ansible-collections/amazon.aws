@@ -685,7 +685,7 @@
       ansible.builtin.assert:
         that:
           - not delete_volume_result_idem.changed
-          - "Volume "+ volume2.volume_id +" does not exist" in delete_volume_result_idem.msg
+          - '"Volume "+ volume2.volume_id +" does not exist" in delete_volume_result_idem.msg'
 
     # Originally from ec2_vol_info
 

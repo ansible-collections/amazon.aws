@@ -120,4 +120,4 @@
       - '"msg" in bad_endpoint'
       - '"Could not connect to the endpoint URL" in bad_endpoint.msg'
       - '"Fail JSON AWS" in bad_endpoint.msg'
-      - "junk."+aws_region+".amazonaws.com" in bad_endpoint.msg
+      - '"junk."+aws_region+".amazonaws.com" in bad_endpoint.msg'
