@@ -2422,6 +2422,34 @@ releases:
     - ec2_region.yml
     - release-summary.yml
     release_date: '2023-10-03'
+  6.5.1:
+    changes:
+      bugfixes:
+      - ec2_instance - retry API call if we get ``InvalidInstanceID.NotFound`` error
+        (https://github.com/ansible-collections/amazon.aws/pull/1650).
+      - ec2_vpc_subnet - cleanly handle failure when subnet isn't created in time
+        (https://github.com/ansible-collections/amazon.aws/pull/1848).
+      - s3_object - Fix typo that caused false deprecation warning when setting `overwrite=latest`
+        (https://github.com/ansible-collections/amazon.aws/pull/1847).
+      - s3_object - fixed ``NoSuchTagSet`` error when S3 endpoint doesn't support
+        tags (https://github.com/ansible-collections/amazon.aws/issues/1607).
+      - s3_object - when doing a put and specifying ``Content-Type`` in metadata,
+        this module (since 6.0.0) erroneously set the ``Content-Type`` to ``None``
+        causing the put to fail. Fix now correctly honours the specified ``Content-Type``
+        (https://github.com/ansible-collections/amazon.aws/issues/1881).
+      minor_changes:
+      - ec2_vpc_subnet - use ``wait_timeout`` to also control maximum time to wait
+        for initial creation of subnets (https://github.com/ansible-collections/amazon.aws/pull/1848).
+      release_summary: This release includes several bugfixes.
+    fragments:
+    - 1607-NoSuchTagSet.yml
+    - 1650-fix-invalidinstanceid-notfound.yml
+    - 1799-s3_object-bucket.yml
+    - 1847-s3_object-fix-false-deprecation-warning.yml
+    - 1848-ec2_vpc_subnet-wait-creation.yml
+    - 1881-allow-s3_object-to-specify-content-type-in-metadata.yml
+    - release_summary.yml
+    release_date: '2023-12-07'
   7.0.0:
     changes:
       breaking_changes:
