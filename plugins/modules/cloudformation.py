@@ -598,7 +598,7 @@ def check_mode_changeset(module, stack_params, cfn):
         for _i in range(60):  # total time 5 min
             # check stack is ready to have a change set created 
             stack = get_stack_facts(module, cfn, stack_params['StackName'], raise_errors=True)
-            if stack["StackStatus"] == "UPDATE_COMPLETE":
+            if stack["StackStatus"].endswith('_COMPLETE'):
                 break
             time.sleep(5)
         change_set = cfn.create_change_set(aws_retry=True, **stack_params)
