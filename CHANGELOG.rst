@@ -5,6 +5,28 @@ amazon.aws Release Notes
 .. contents:: Topics
 
 
+v6.5.1
+======
+
+Release Summary
+---------------
+
+This release includes several bugfixes.
+
+Minor Changes
+-------------
+
+- ec2_vpc_subnet - use ``wait_timeout`` to also control maximum time to wait for initial creation of subnets (https://github.com/ansible-collections/amazon.aws/pull/1848).
+
+Bugfixes
+--------
+
+- ec2_instance - retry API call if we get ``InvalidInstanceID.NotFound`` error (https://github.com/ansible-collections/amazon.aws/pull/1650).
+- ec2_vpc_subnet - cleanly handle failure when subnet isn't created in time (https://github.com/ansible-collections/amazon.aws/pull/1848).
+- s3_object - Fix typo that caused false deprecation warning when setting `overwrite=latest` (https://github.com/ansible-collections/amazon.aws/pull/1847).
+- s3_object - fixed ``NoSuchTagSet`` error when S3 endpoint doesn't support tags (https://github.com/ansible-collections/amazon.aws/issues/1607).
+- s3_object - when doing a put and specifying ``Content-Type`` in metadata, this module (since 6.0.0) erroneously set the ``Content-Type`` to ``None`` causing the put to fail. Fix now correctly honours the specified ``Content-Type`` (https://github.com/ansible-collections/amazon.aws/issues/1881).
+
 v6.5.0
 ======
 
