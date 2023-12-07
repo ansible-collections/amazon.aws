@@ -1,0 +1,4 @@
+minor_changes:
+- iam_user - add ``boundary`` parameter to support managing boundary policy on users.
+- iam_user - add ``path`` parameter to support managing user path.
+- iam_user - refactored code to reduce complexity.

@@ -1,0 +1,162 @@
+---
+# ===========================================
+# Test Boundary Policy management
+#
+# Use a couple of benign policies for testing:
+# - AWSDenyAll
+# - ServiceQuotasReadOnlyAccess
+#
+- name: Attach boundary policy to user (check mode)
+  amazon.aws.iam_user:
+    name: "{{ test_user }}"
+    state: present
+    boundary: arn:aws:iam::aws:policy/AWSDenyAll
+  register: iam_user
+  check_mode: true
+- name: Assert that the user is changed
+  ansible.builtin.assert:
+    that:
+      - iam_user is changed
+
+- name: Attach boundary policy to user
+  amazon.aws.iam_user:
+    name: "{{ test_user }}"
+    state: present
+    boundary: arn:aws:iam::aws:policy/AWSDenyAll
+  register: iam_user
+- name: Assert that the user is changed
+  ansible.builtin.assert:
+    that:
+      - iam_user is changed
+
+- name: Ensure boundary policy is attached to user (no change - check mode)
+  amazon.aws.iam_user:
+    name: "{{ test_user }}"
+    state: present
+    boundary: arn:aws:iam::aws:policy/AWSDenyAll
+  register: iam_user
+  check_mode: true
+- name: Assert that the user hasn't changed
+  ansible.builtin.assert:
+    that:
+      - iam_user is not changed
+
+- name: Ensure boundary policy is attached to user (no change)
+  amazon.aws.iam_user:
+    name: "{{ test_user }}"
+    state: present
+    boundary: arn:aws:iam::aws:policy/AWSDenyAll
+  register: iam_user
+- name: Assert that the user hasn't changed
+  ansible.builtin.assert:
+    that:
+      - iam_user is not changed
+
+# ------------------------------------------------------------------------------------------
+
+- name: Check that policy doesn't require full ARN path
+  amazon.aws.iam_user:
+    name: "{{ test_user }}"
+    state: present
+    boundary: AWSDenyAll
+  register: iam_user
+- name: Assert that the user hasn't changed
+  ansible.builtin.assert:
+    that:
+      - iam_user is not changed
+
+# ------------------------------------------------------------------------------------------
+
+- name: Attach different boundary policy to user (check mode)
+  check_mode: true
+  amazon.aws.iam_user:
+    name: "{{ test_user }}"
+    state: present
+    boundary: arn:aws:iam::aws:policy/ServiceQuotasReadOnlyAccess
+  register: iam_user
+- name: Assert that the user changed
+  ansible.builtin.assert:
+    that:
+      - iam_user is changed
+
+- name: Attach different boundary policy to user
+  amazon.aws.iam_user:
+    name: "{{ test_user }}"
+    state: present
+    boundary: arn:aws:iam::aws:policy/ServiceQuotasReadOnlyAccess
+  register: iam_user
+- name: Assert that the user changed
+  ansible.builtin.assert:
+    that:
+      - iam_user is changed
+
+- name: Attach different boundary policy to user (no change - check mode)
+  amazon.aws.iam_user:
+    name: "{{ test_user }}"
+    state: present
+    boundary: arn:aws:iam::aws:policy/ServiceQuotasReadOnlyAccess
+  register: iam_user
+  check_mode: true
+- name: Assert that the user hasn't changed
+  ansible.builtin.assert:
+    that:
+      - iam_user is not changed
+
+- name: Check first policy wasn't purged
+  amazon.aws.iam_user:
+    name: "{{ test_user }}"
+    state: present
+    boundary: arn:aws:iam::aws:policy/ServiceQuotasReadOnlyAccess
+  register: iam_user
+- name: Assert that the user hasn't changed
+  ansible.builtin.assert:
+    that:
+      - iam_user is not changed
+
+# ------------------------------------------------------------------------------------------
+
+- name: Remove the boundary policy (check mode)
+  check_mode: true
+  amazon.aws.iam_user:
+    name: "{{ test_user }}"
+    state: present
+    boundary: ""
+  register: iam_user
+- name: Assert that the user changed
+  ansible.builtin.assert:
+    that:
+      - iam_user is changed
+
+- name: Remove the boundary policy
+  amazon.aws.iam_user:
+    name: "{{ test_user }}"
+    state: present
+    boundary: ""
+  register: iam_user
+- name: Assert that the user changed
+  ansible.builtin.assert:
+    that:
+      - iam_user is changed
+
+- name: Remove the boundary policy (no change) (check mode)
+  amazon.aws.iam_user:
+    name: "{{ test_user }}"
+    state: present
+    boundary: ""
+  register: iam_user
+  check_mode: true
+- name: Assert that the user hasn't changed
+  ansible.builtin.assert:
+    that:
+      - iam_user is not changed
+
+- name: Remove the boundary policy (no change)
+  amazon.aws.iam_user:
+    name: "{{ test_user }}"
+    state: present
+    boundary: ""
+  register: iam_user
+- name: Assert that the user hasn't changed
+  ansible.builtin.assert:
+    that:
+      - iam_user is not changed
