@@ -1,0 +1,6 @@
+---
+minor_changes:
+  - iam_user - add ``boundary`` parameter to support managing boundary policy on users (https://github.com/ansible-collections/amazon.aws/pull/1912).
+  - iam_user - add ``path`` parameter to support managing user path (https://github.com/ansible-collections/amazon.aws/pull/1912).
+  - iam_user - added ``attached_policies`` to return value (https://github.com/ansible-collections/amazon.aws/pull/1912).
+  - iam_user - refactored code to reduce complexity (https://github.com/ansible-collections/amazon.aws/pull/1912).
