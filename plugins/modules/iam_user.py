@@ -233,9 +233,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
 
-global debug_info
-debug_info = []
-
 
 def normalize_user(user):
     tags = boto3_tag_list_to_ansible_dict(user["User"].pop("Tags", []))
@@ -466,14 +463,6 @@ def ensure_permissions_boundary(connection, check_mode, user, user_name, boundar
     if current_boundary:
         current_boundary = current_boundary.get("permissions_boundary_arn")
 
-    debug_info.append(
-        {
-            "new_boundary": boundary,
-            "old_boundary": current_boundary,
-            "user": user,
-        }
-    )
-
     if boundary == current_boundary:
         return False
 
@@ -512,14 +501,6 @@ def ensure_path(connection, check_mode, user, user_name, path):
         return False
 
     current_path = user.get("user", {}).get("path", "")
-
-    debug_info.append(
-        {
-            "new_path": path,
-            "old_path": current_path,
-            "user": user,
-        }
-    )
 
     if path == current_path:
         return False
@@ -620,7 +601,7 @@ def create_or_update_user(connection, module):
     )
 
     if module.check_mode:
-        module.exit_json(changed=changed, debug=debug_info)
+        module.exit_json(changed=changed)
 
     # Get the user again
     user = get_user(connection, user_name)
