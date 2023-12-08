@@ -18,7 +18,7 @@
           - "result.msg == 'missing required arguments: name'"
 
     - name: ensure launch configs exist
-      autoscaling_launch_config:
+      community.aws.autoscaling_launch_config:
         name: "{{ item }}"
         assign_public_ip: true
         image_id: "{{ ec2_ami_id }}"

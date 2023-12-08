@@ -45,7 +45,7 @@
   ignore_errors: true
   retries: 10
 - name: remove launch configs
-  autoscaling_launch_config:
+  community.aws.autoscaling_launch_config:
     name: "{{ item }}"
     state: absent
   register: removed

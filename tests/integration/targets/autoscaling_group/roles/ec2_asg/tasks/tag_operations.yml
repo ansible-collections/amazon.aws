@@ -3,7 +3,7 @@
   block:
     #----------------------------------------------------------------------
     - name: create a launch configuration
-      autoscaling_launch_config:
+      community.aws.autoscaling_launch_config:
         name: "{{ resource_prefix }}-lc-tag-test"
         image_id: "{{ ec2_ami_id }}"
         region: "{{ aws_region }}"
@@ -328,7 +328,7 @@
       ignore_errors: true
       retries: 10
     - name: remove launch config created in this test
-      autoscaling_launch_config:
+      community.aws.autoscaling_launch_config:
         name: "{{ resource_prefix }}-lc-tag-test"
         state: absent
       register: removed

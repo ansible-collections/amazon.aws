@@ -3,7 +3,7 @@
   block:
     #----------------------------------------------------------------------
     - name: create a launch configuration
-      autoscaling_launch_config:
+      community.aws.autoscaling_launch_config:
         name: "{{ resource_prefix }}-lc-detach-test"
         image_id: "{{ ec2_ami_id }}"
         region: "{{ aws_region }}"
@@ -240,7 +240,7 @@
           - '"autoscaling:DeleteAutoScalingGroup" not in removed.resource_actions'
 
     - name: remove launch config created in this test
-      autoscaling_launch_config:
+      community.aws.autoscaling_launch_config:
         name: "{{ resource_prefix }}-lc-detach-test"
         state: absent
       register: removed

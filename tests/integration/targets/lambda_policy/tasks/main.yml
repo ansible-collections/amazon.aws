@@ -79,7 +79,7 @@
         src: endpoint-test-swagger-api.yml.j2
         dest: "{{output_dir}}/endpoint-test-swagger-api.yml.j2"
     - name: deploy new API
-      api_gateway:
+      community.aws.api_gateway:
         api_file: "{{output_dir}}/endpoint-test-swagger-api.yml.j2"
         stage: lambdabased
       register: create_result
@@ -124,7 +124,7 @@
         that:
           - uri_result
     - name: deploy new API
-      api_gateway:
+      community.aws.api_gateway:
         api_file: "{{output_dir}}/endpoint-test-swagger-api.yml.j2"
         stage: lambdabased
       register: create_result
@@ -137,7 +137,7 @@
       register: result
       ignore_errors: true
     - name: destroy API for test cleanup if created
-      api_gateway:
+      community.aws.api_gateway:
         state: absent
         api_id: "{{api_id}}"
       register: destroy_result
