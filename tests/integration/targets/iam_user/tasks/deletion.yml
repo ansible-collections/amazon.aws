@@ -1,0 +1,101 @@
+---
+# ------------------------------------------------------------------------------------------
+- name: Remove user with attached policy (check mode)
+  amazon.aws.iam_user:
+    name: "{{ test_user }}"
+    state: absent
+  register: iam_user
+  check_mode: true
+- name: Get info on IAM user(s) after deleting in check mode
+  amazon.aws.iam_user_info:
+    name: "{{ test_user }}"
+  register: iam_user_info
+- name: Assert user was not removed in check mode
+  ansible.builtin.assert:
+    that:
+      - iam_user.changed
+      - iam_user_info.iam_users | length == 1
+
+- name: Remove user with attached policy
+  amazon.aws.iam_user:
+    name: "{{ test_user }}"
+    state: absent
+  register: iam_user
+- name: Get info on IAM user(s) after deleting
+  amazon.aws.iam_user_info:
+    name: "{{ test_user }}"
+  register: iam_user_info
+- name: Assert user was removed
+  ansible.builtin.assert:
+    that:
+      - iam_user.changed
+      - iam_user_info.iam_users | length == 0
+
+- name: Remove user with attached policy (idempotent - check mode)
+  amazon.aws.iam_user:
+    name: "{{ test_user }}"
+    state: absent
+  register: iam_user
+  check_mode: true
+- name: Assert no change
+  ansible.builtin.assert:
+    that:
+      - not iam_user.changed
+
+- name: Remove user with attached policy (idempotent)
+  amazon.aws.iam_user:
+    name: "{{ test_user }}"
+    state: absent
+  register: iam_user
+- name: Assert no change
+  ansible.builtin.assert:
+    that:
+      - not iam_user.changed
+
+# ------------------------------------------------------------------------------------------
+## Test user password removal
+- name: Delete IAM password (check mode)
+  amazon.aws.iam_user:
+    name: "{{ test_user3 }}"
+    remove_password: true
+    state: present
+  register: iam_user_password_removal
+  check_mode: true
+- name: Assert would change
+  ansible.builtin.assert:
+    that:
+      - iam_user_password_removal is changed
+
+- name: Delete IAM password
+  amazon.aws.iam_user:
+    name: "{{ test_user3 }}"
+    remove_password: true
+    state: present
+  register: iam_user_password_removal
+- name: Assert changed
+  ansible.builtin.assert:
+    that:
+      - iam_user_password_removal is changed
+
+- name: Delete IAM password again (check mode)
+  amazon.aws.iam_user:
+    name: "{{ test_user3 }}"
+    remove_password: true
+    state: present
+  register: iam_user_password_removal
+  check_mode: true
+- name: Assert no change
+  ansible.builtin.assert:
+    that:
+      - iam_user_password_removal is not changed
+
+- name: Delete IAM password again
+  amazon.aws.iam_user:
+    name: "{{ test_user3 }}"
+    remove_password: true
+    state: present
+  register: iam_user_password_removal
+- name: Assert no change
+  ansible.builtin.assert:
+    that:
+      - iam_user_password_removal is not changed
