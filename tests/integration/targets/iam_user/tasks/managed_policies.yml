@@ -30,6 +30,14 @@
   ansible.builtin.assert:
     that:
       - iam_user is changed
+      - '"user" in iam_user'
+      - '"attached_policies" in iam_user.user'
+      - iam_user.user.attached_policies | length == 1
+      - '"AWSDenyAll" in attached_policy_names'
+      - '"arn:aws:iam::aws:policy/AWSDenyAll" in attached_policy_arns'
+  vars:
+    attached_policy_arns: "{{ iam_user.user.attached_policies | map(attribute='policy_arn') }}"
+    attached_policy_names: "{{ iam_user.user.attached_policies | map(attribute='policy_name') }}"
 
 - name: Ensure managed policy is attached to user (no change - check mode)
   amazon.aws.iam_user:
@@ -55,6 +63,14 @@
   ansible.builtin.assert:
     that:
       - iam_user is not changed
+      - '"user" in iam_user'
+      - '"attached_policies" in iam_user.user'
+      - iam_user.user.attached_policies | length == 1
+      - '"AWSDenyAll" in attached_policy_names'
+      - '"arn:aws:iam::aws:policy/AWSDenyAll" in attached_policy_arns'
+  vars:
+    attached_policy_arns: "{{ iam_user.user.attached_policies | map(attribute='policy_arn') }}"
+    attached_policy_names: "{{ iam_user.user.attached_policies | map(attribute='policy_name') }}"
 
 # ------------------------------------------------------------------------------------------
 
@@ -84,6 +100,16 @@
   ansible.builtin.assert:
     that:
       - iam_user is changed
+      - '"user" in iam_user'
+      - '"attached_policies" in iam_user.user'
+      - iam_user.user.attached_policies | length == 2
+      - '"AWSDenyAll" in attached_policy_names'
+      - '"ServiceQuotasReadOnlyAccess" in attached_policy_names'
+      - '"arn:aws:iam::aws:policy/AWSDenyAll" in attached_policy_arns'
+      - '"arn:aws:iam::aws:policy/ServiceQuotasReadOnlyAccess" in attached_policy_arns'
+  vars:
+    attached_policy_arns: "{{ iam_user.user.attached_policies | map(attribute='policy_arn') }}"
+    attached_policy_names: "{{ iam_user.user.attached_policies | map(attribute='policy_name') }}"
 
 - name: Attach different managed policy to user (no change - check mode)
   amazon.aws.iam_user:
@@ -112,6 +138,16 @@
   ansible.builtin.assert:
     that:
       - iam_user is not changed
+      - '"user" in iam_user'
+      - '"attached_policies" in iam_user.user'
+      - iam_user.user.attached_policies | length == 2
+      - '"AWSDenyAll" in attached_policy_names'
+      - '"ServiceQuotasReadOnlyAccess" in attached_policy_names'
+      - '"arn:aws:iam::aws:policy/AWSDenyAll" in attached_policy_arns'
+      - '"arn:aws:iam::aws:policy/ServiceQuotasReadOnlyAccess" in attached_policy_arns'
+  vars:
+    attached_policy_arns: "{{ iam_user.user.attached_policies | map(attribute='policy_arn') }}"
+    attached_policy_names: "{{ iam_user.user.attached_policies | map(attribute='policy_name') }}"
 
 - name: Check that managed policy order doesn't matter
   amazon.aws.iam_user:
@@ -126,6 +162,16 @@
   ansible.builtin.assert:
     that:
       - iam_user is not changed
+      - '"user" in iam_user'
+      - '"attached_policies" in iam_user.user'
+      - iam_user.user.attached_policies | length == 2
+      - '"AWSDenyAll" in attached_policy_names'
+      - '"ServiceQuotasReadOnlyAccess" in attached_policy_names'
+      - '"arn:aws:iam::aws:policy/AWSDenyAll" in attached_policy_arns'
+      - '"arn:aws:iam::aws:policy/ServiceQuotasReadOnlyAccess" in attached_policy_arns'
+  vars:
+    attached_policy_arns: "{{ iam_user.user.attached_policies | map(attribute='policy_arn') }}"
+    attached_policy_names: "{{ iam_user.user.attached_policies | map(attribute='policy_name') }}"
 
 - name: Check that policy doesn't require full ARN path
   amazon.aws.iam_user:
@@ -140,6 +186,16 @@
   ansible.builtin.assert:
     that:
       - iam_user is not changed
+      - '"user" in iam_user'
+      - '"attached_policies" in iam_user.user'
+      - iam_user.user.attached_policies | length == 2
+      - '"AWSDenyAll" in attached_policy_names'
+      - '"ServiceQuotasReadOnlyAccess" in attached_policy_names'
+      - '"arn:aws:iam::aws:policy/AWSDenyAll" in attached_policy_arns'
+      - '"arn:aws:iam::aws:policy/ServiceQuotasReadOnlyAccess" in attached_policy_arns'
+  vars:
+    attached_policy_arns: "{{ iam_user.user.attached_policies | map(attribute='policy_arn') }}"
+    attached_policy_names: "{{ iam_user.user.attached_policies | map(attribute='policy_name') }}"
 
 # ------------------------------------------------------------------------------------------
 
@@ -169,6 +225,14 @@
   ansible.builtin.assert:
     that:
       - iam_user is changed
+      - '"user" in iam_user'
+      - '"attached_policies" in iam_user.user'
+      - iam_user.user.attached_policies | length == 1
+      - '"ServiceQuotasReadOnlyAccess" in attached_policy_names'
+      - '"arn:aws:iam::aws:policy/ServiceQuotasReadOnlyAccess" in attached_policy_arns'
+  vars:
+    attached_policy_arns: "{{ iam_user.user.attached_policies | map(attribute='policy_arn') }}"
+    attached_policy_names: "{{ iam_user.user.attached_policies | map(attribute='policy_name') }}"
 
 - name: Remove one of the managed policies - with purge (no change - check mode)
   amazon.aws.iam_user:
@@ -196,3 +260,11 @@
   ansible.builtin.assert:
     that:
       - iam_user is not changed
+      - '"user" in iam_user'
+      - '"attached_policies" in iam_user.user'
+      - iam_user.user.attached_policies | length == 1
+      - '"ServiceQuotasReadOnlyAccess" in attached_policy_names'
+      - '"arn:aws:iam::aws:policy/ServiceQuotasReadOnlyAccess" in attached_policy_arns'
+  vars:
+    attached_policy_arns: "{{ iam_user.user.attached_policies | map(attribute='policy_arn') }}"
+    attached_policy_names: "{{ iam_user.user.attached_policies | map(attribute='policy_name') }}"

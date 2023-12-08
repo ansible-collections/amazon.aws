@@ -631,6 +631,16 @@ def create_or_update_user(connection, module):
             "PasswordResetRequired", False
         )
 
+    try:
+        # (camel_dict_to_snake_dict doesn't handle lists, so do this as a merge of two dictionaries)
+        policies = {"attached_policies": _list_attached_policies(connection, user_name)}
+        user["user"].update(camel_dict_to_snake_dict(policies))
+    except AnsibleIAMError as e:
+        module.warn(
+            f"Failed to list attached policies - {str(e.exception)}",
+        )
+        pass
+
     module.exit_json(changed=changed, iam_user=user, user=user["user"])
 
 
