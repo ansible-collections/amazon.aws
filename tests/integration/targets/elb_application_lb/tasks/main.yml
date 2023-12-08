@@ -145,7 +145,7 @@
             DefaultActions:
               - Type: forward
                 TargetGroupName: "{{ tg_name }}"
-      ignore_errors: true  # noqa: ignore-errors
+      ignore_errors: true # noqa: ignore-errors
       register: alb
     - ansible.builtin.assert:
         that:
@@ -160,7 +160,7 @@
         state: present
         listeners:
           - Port: 80
-      ignore_errors: true  # noqa: ignore-errors
+      ignore_errors: true # noqa: ignore-errors
       register: alb
     - ansible.builtin.assert:
         that:
@@ -179,7 +179,7 @@
             DefaultActions:
               - Type: forward
                 TargetGroupName: "{{ tg_name }}"
-      ignore_errors: true  # noqa: ignore-errors
+      ignore_errors: true # noqa: ignore-errors
       register: alb
     - ansible.builtin.assert:
         that:
@@ -199,7 +199,7 @@
               - Type: forward
                 TargetGroupName: "{{ tg_name }}"
         ip_address_type: ip_addr_v4_v6
-      ignore_errors: true  # noqa: ignore-errors
+      ignore_errors: true # noqa: ignore-errors
       register: alb
     - ansible.builtin.assert:
         that:
@@ -1552,14 +1552,14 @@
         state: absent
         wait: true
         wait_timeout: 600
-      ignore_errors: true  # noqa: ignore-errors
+      ignore_errors: true # noqa: ignore-errors
     - name: Destroy ALB 2
       amazon.aws.elb_application_lb:
         name: "{{ alb_2_name }}"
         state: absent
         wait: true
         wait_timeout: 600
-      ignore_errors: true  # noqa: ignore-errors
+      ignore_errors: true # noqa: ignore-errors
     - name: Destroy target group if it was created
       community.aws.elb_target_group:
         name: "{{ tg_name }}"
@@ -1574,7 +1574,7 @@
       delay: 3
       until: remove_tg is success
       when: tg is defined
-      ignore_errors: true  # noqa: ignore-errors
+      ignore_errors: true # noqa: ignore-errors
     - name: Destroy target group 2 if it was created
       community.aws.elb_target_group:
         name: "{{ tg_2_name }}"
@@ -1589,7 +1589,7 @@
       delay: 3
       until: remove_tg_2 is success
       when: tg_2 is defined
-      ignore_errors: true  # noqa: ignore-errors
+      ignore_errors: true # noqa: ignore-errors
     - name: Destroy sec groups
       amazon.aws.ec2_security_group:
         name: "{{ item }}"
@@ -1600,7 +1600,7 @@
       retries: 10
       delay: 5
       until: remove_sg is success
-      ignore_errors: true  # noqa: ignore-errors
+      ignore_errors: true # noqa: ignore-errors
       with_items:
         - "{{ resource_prefix }}"
         - "{{ resource_prefix }}-2"
@@ -1615,7 +1615,7 @@
       retries: 10
       delay: 5
       until: remove_rt is success
-      ignore_errors: true  # noqa: ignore-errors
+      ignore_errors: true # noqa: ignore-errors
     - name: Destroy subnets
       amazon.aws.ec2_vpc_subnet:
         cidr: "{{ item }}"
@@ -1630,7 +1630,7 @@
         - "{{ private_subnet_cidr_2 }}"
         - "{{ public_subnet_cidr_1 }}"
         - "{{ public_subnet_cidr_2 }}"
-      ignore_errors: true  # noqa: ignore-errors
+      ignore_errors: true # noqa: ignore-errors
     - name: Destroy internet gateway
       amazon.aws.ec2_vpc_igw:
         vpc_id: "{{ vpc_id }}"
@@ -1641,7 +1641,7 @@
       retries: 10
       delay: 5
       until: remove_igw is success
-      ignore_errors: true  # noqa: ignore-errors
+      ignore_errors: true # noqa: ignore-errors
     - name: Destroy VPC
       amazon.aws.ec2_vpc_net:
         cidr_block: "{{ vpc_cidr }}"
@@ -1651,7 +1651,7 @@
       retries: 10
       delay: 5
       until: remove_vpc is success
-      ignore_errors: true  # noqa: ignore-errors
+      ignore_errors: true # noqa: ignore-errors
     - name: Destroy ELB acccess log test file
       amazon.aws.s3_object:
         bucket: "{{ s3_bucket_name }}"

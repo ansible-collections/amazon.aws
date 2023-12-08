@@ -1,7 +1,8 @@
+---
 # defaults file for lambda integration test
 # IAM role names have to be less than 64 characters
 # we hash the resource_prefix to get a shorter, unique string
-lambda_function_name: 'test-lambda-{{ tiny_prefix }}'
+lambda_function_name: test-lambda-{{ tiny_prefix }}
 lambda_role_name: ansible-test-{{ tiny_prefix }}-lambda
 
 dynamodb_table_name: ansible-test-{{ tiny_prefix }}

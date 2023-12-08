@@ -2,73 +2,73 @@
 ##################################################################################
 # Tests using profiles instead of directly consuming credentials
 
-- name: 'Test basic operation using profile (simple-parameters)'
+- name: Test basic operation using profile (simple-parameters)
   example_module:
-    profile: 'test_profile'
+    profile: test_profile
   register: profile_result
 
-- assert:
+- ansible.builtin.assert:
     that:
-    - profile_result is successful
+      - profile_result is successful
 
-- name: 'Test basic operation using profile (aws-parameters)'
+- name: Test basic operation using profile (aws-parameters)
   example_module:
-    aws_profile: 'test_profile'
+    aws_profile: test_profile
   register: profile_result
 
-- assert:
+- ansible.builtin.assert:
     that:
-    - profile_result is successful
+      - profile_result is successful
 
-- name: 'Test basic operation using profile (aws-environment)'
-  example_module:
-  environment:
-    AWS_PROFILE: 'test_profile'
-  register: profile_result
-
-- assert:
-    that:
-    - profile_result is successful
-
-- name: 'Test basic operation using profile (aws2-environment)'
+- name: Test basic operation using profile (aws-environment)
   example_module:
   environment:
-    AWS_DEFAULT_PROFILE: 'test_profile'
+    AWS_PROFILE: test_profile
   register: profile_result
 
-- assert:
+- ansible.builtin.assert:
     that:
-    - profile_result is successful
+      - profile_result is successful
+
+- name: Test basic operation using profile (aws2-environment)
+  example_module:
+  environment:
+    AWS_DEFAULT_PROFILE: test_profile
+  register: profile_result
+
+- ansible.builtin.assert:
+    that:
+      - profile_result is successful
 
 ##################################################################################
 # Tests with bad profile
 
-- name: 'Test with bad profile'
+- name: Test with bad profile
   example_module:
-    profile: 'junk-profile'
+    profile: junk-profile
   register: bad_profile
-  ignore_errors: True
+  ignore_errors: true
 
-- assert:
+- ansible.builtin.assert:
     that:
-    - bad_profile is failed
-    - '"msg" in bad_profile'
-    - '"junk-profile" in bad_profile.msg'
-    - '"could not be found" in bad_profile.msg'
+      - bad_profile is failed
+      - '"msg" in bad_profile'
+      - '"junk-profile" in bad_profile.msg'
+      - '"could not be found" in bad_profile.msg'
 
-- name: 'Test with profile and credentials (should error)'
+- name: Test with profile and credentials (should error)
   example_module:
-    profile: 'test_profile'
-    aws_region: '{{ aws_region }}'
-    aws_access_key: '{{ aws_access_key }}'
-    aws_secret_key: '{{ aws_secret_key }}'
-    aws_security_token: '{{ security_token }}'
+    profile: test_profile
+    aws_region: "{{ aws_region }}"
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    aws_security_token: "{{ security_token }}"
   register: bad_profile
-  ignore_errors: True
+  ignore_errors: true
 
-- assert:
+- ansible.builtin.assert:
     that:
-    - bad_profile is failed
-    - '"msg" in bad_profile'
-    - '"Passing both" in bad_profile.msg'
-    - '"not supported" in bad_profile.msg'
+      - bad_profile is failed
+      - '"msg" in bad_profile'
+      - '"Passing both" in bad_profile.msg'
+      - '"not supported" in bad_profile.msg'

@@ -1,7 +1,7 @@
 ---
 # ============================================================
 - name: add two implicit secondary IPs (check mode)
-  ec2_eni:
+  amazon.aws.ec2_eni:
     device_index: 1
     private_ip_address: "{{ ip_1 }}"
     subnet_id: "{{ vpc_subnet_id }}"
@@ -10,23 +10,23 @@
   check_mode: true
   register: result_check_mode
 
-- assert:
+- ansible.builtin.assert:
     that:
       - result_check_mode.changed
 
 - name: add two implicit secondary IPs
-  ec2_eni:
+  amazon.aws.ec2_eni:
     device_index: 1
     private_ip_address: "{{ ip_1 }}"
     subnet_id: "{{ vpc_subnet_id }}"
     state: present
     secondary_private_ip_address_count: 2
   register: result
-- ec2_eni_info:
-    eni_id: '{{ eni_id_1 }}'
+- amazon.aws.ec2_eni_info:
+    eni_id: "{{ eni_id_1 }}"
   register: eni_info
 
-- assert:
+- ansible.builtin.assert:
     that:
       - result.changed
       - result.interface.id == eni_id_1
@@ -34,10 +34,10 @@
       - _interface_0.private_ip_addresses | length == 3
       - ip_1 in ( eni_info.network_interfaces | map(attribute='private_ip_addresses') | flatten | map(attribute='private_ip_address') | list )
   vars:
-    _interface_0: '{{ eni_info.network_interfaces[0] }}'
+    _interface_0: "{{ eni_info.network_interfaces[0] }}"
 
 - name: test idempotence with two implicit secondary IPs (check mode)
-  ec2_eni:
+  amazon.aws.ec2_eni:
     device_index: 1
     private_ip_address: "{{ ip_1 }}"
     subnet_id: "{{ vpc_subnet_id }}"
@@ -46,23 +46,23 @@
   check_mode: true
   register: result_check_mode
 
-- assert:
+- ansible.builtin.assert:
     that:
       - not result_check_mode.changed
 
 - name: test idempotence with two implicit secondary IPs
-  ec2_eni:
+  amazon.aws.ec2_eni:
     device_index: 1
     private_ip_address: "{{ ip_1 }}"
     subnet_id: "{{ vpc_subnet_id }}"
     state: present
     secondary_private_ip_address_count: 2
   register: result
-- ec2_eni_info:
-    eni_id: '{{ eni_id_1 }}'
+- amazon.aws.ec2_eni_info:
+    eni_id: "{{ eni_id_1 }}"
   register: eni_info
 
-- assert:
+- ansible.builtin.assert:
     that:
       - not result.changed
       - result.interface.id == eni_id_1
@@ -70,11 +70,11 @@
       - _interface_0.private_ip_addresses | length == 3
       - ip_1 in ( eni_info.network_interfaces | map(attribute='private_ip_addresses') | flatten | map(attribute='private_ip_address') | list )
   vars:
-    _interface_0: '{{ eni_info.network_interfaces[0] }}'
+    _interface_0: "{{ eni_info.network_interfaces[0] }}"
 
 # ============================================================
 - name: ensure secondary addresses are only removed if purge is set to true
-  ec2_eni:
+  amazon.aws.ec2_eni:
     purge_secondary_private_ip_addresses: false
     device_index: 1
     private_ip_address: "{{ ip_1 }}"
@@ -82,11 +82,11 @@
     state: present
     secondary_private_ip_addresses: []
   register: result
-- ec2_eni_info:
-    eni_id: '{{ eni_id_1 }}'
+- amazon.aws.ec2_eni_info:
+    eni_id: "{{ eni_id_1 }}"
   register: eni_info
 
-- assert:
+- ansible.builtin.assert:
     that:
       - not result.changed
       - result.interface.id == eni_id_1
@@ -94,7 +94,7 @@
       - _interface_0.private_ip_addresses | length == 3
       - ip_1 in ( eni_info.network_interfaces | map(attribute='private_ip_addresses') | flatten | map(attribute='private_ip_address') | list )
   vars:
-    _interface_0: '{{ eni_info.network_interfaces[0] }}'
+    _interface_0: "{{ eni_info.network_interfaces[0] }}"
 
 # ============================================================
 
@@ -102,15 +102,15 @@
 # For the following test, first find an IP that has not been used yet
 
 - name: save the list of private IPs in use
-  set_fact:
+  ansible.builtin.set_fact:
     current_private_ips: "{{ result.interface | json_query('private_ip_addresses[*].private_ip_address') | list }}"
 
 - name: set new_secondary_ip to an IP that has not been used
-  set_fact:
+  ansible.builtin.set_fact:
     new_secondary_ip: "{{ [ip_2, ip_3, ip_4] | difference(current_private_ips) | first }}"
 
 - name: add an explicit secondary address without purging the ones added implicitly
-  ec2_eni:
+  amazon.aws.ec2_eni:
     purge_secondary_private_ip_addresses: false
     device_index: 1
     private_ip_address: "{{ ip_1 }}"
@@ -119,11 +119,11 @@
     secondary_private_ip_addresses:
       - "{{ new_secondary_ip }}"
   register: result
-- ec2_eni_info:
-    eni_id: '{{ eni_id_1 }}'
+- amazon.aws.ec2_eni_info:
+    eni_id: "{{ eni_id_1 }}"
   register: eni_info
 
-- assert:
+- ansible.builtin.assert:
     that:
       - result.changed
       - result.interface.id == eni_id_1
@@ -133,12 +133,12 @@
       - ip_1 in _private_ips
       - new_secondary_ip in _private_ips
   vars:
-    _interface_0: '{{ eni_info.network_interfaces[0] }}'
+    _interface_0: "{{ eni_info.network_interfaces[0] }}"
     _private_ips: "{{ eni_info.network_interfaces | map(attribute='private_ip_addresses') | flatten | map(attribute='private_ip_address') | list }}"
 
 # ============================================================
 - name: remove secondary address (check mode)
-  ec2_eni:
+  amazon.aws.ec2_eni:
     purge_secondary_private_ip_addresses: true
     device_index: 1
     private_ip_address: "{{ ip_1 }}"
@@ -148,12 +148,12 @@
   check_mode: true
   register: result_check_mode
 
-- assert:
+- ansible.builtin.assert:
     that:
       - result_check_mode.changed
 
 - name: remove secondary address
-  ec2_eni:
+  amazon.aws.ec2_eni:
     purge_secondary_private_ip_addresses: true
     device_index: 1
     private_ip_address: "{{ ip_1 }}"
@@ -161,11 +161,11 @@
     state: present
     secondary_private_ip_addresses: []
   register: result
-- ec2_eni_info:
-    eni_id: '{{ eni_id_1 }}'
+- amazon.aws.ec2_eni_info:
+    eni_id: "{{ eni_id_1 }}"
   register: eni_info
 
-- assert:
+- ansible.builtin.assert:
     that:
       - result.changed
       - result.interface.id == eni_id_1
@@ -173,10 +173,10 @@
       - _interface_0.private_ip_addresses | length == 1
       - ip_1 in ( eni_info.network_interfaces | map(attribute='private_ip_addresses') | flatten | map(attribute='private_ip_address') | list )
   vars:
-    _interface_0: '{{ eni_info.network_interfaces[0] }}'
+    _interface_0: "{{ eni_info.network_interfaces[0] }}"
 
 - name: test idempotent behavior purging secondary addresses (check mode)
-  ec2_eni:
+  amazon.aws.ec2_eni:
     purge_secondary_private_ip_addresses: true
     device_index: 1
     private_ip_address: "{{ ip_1 }}"
@@ -186,12 +186,12 @@
   check_mode: true
   register: result_check_mode
 
-- assert:
+- ansible.builtin.assert:
     that:
       - not result_check_mode.changed
 
 - name: test idempotent behavior purging secondary addresses
-  ec2_eni:
+  amazon.aws.ec2_eni:
     purge_secondary_private_ip_addresses: true
     device_index: 1
     private_ip_address: "{{ ip_1 }}"
@@ -199,11 +199,11 @@
     state: present
     secondary_private_ip_addresses: []
   register: result
-- ec2_eni_info:
-    eni_id: '{{ eni_id_1 }}'
+- amazon.aws.ec2_eni_info:
+    eni_id: "{{ eni_id_1 }}"
   register: eni_info
 
-- assert:
+- ansible.builtin.assert:
     that:
       - not result.changed
       - result.interface.id == eni_id_1
@@ -212,12 +212,12 @@
       - _interface_0.private_ip_addresses | length == 1
       - ip_1 in ( eni_info.network_interfaces | map(attribute='private_ip_addresses') | flatten | map(attribute='private_ip_address') | list )
   vars:
-    _interface_0: '{{ eni_info.network_interfaces[0] }}'
+    _interface_0: "{{ eni_info.network_interfaces[0] }}"
 
 # ============================================================
 
 - name: Assign secondary IP addess to second ENI
-  ec2_eni:
+  amazon.aws.ec2_eni:
     device_index: 1
     private_ip_address: "{{ ip_5 }}"
     subnet_id: "{{ vpc_subnet_id }}"
@@ -225,11 +225,11 @@
     secondary_private_ip_addresses:
       - "{{ ip_4 }}"
   register: result
-- ec2_eni_info:
-    eni_id: '{{ eni_id_2 }}'
+- amazon.aws.ec2_eni_info:
+    eni_id: "{{ eni_id_2 }}"
   register: eni_info
 
-- assert:
+- ansible.builtin.assert:
     that:
       - result.changed
       - result.interface.id == eni_id_2
@@ -238,10 +238,10 @@
       - ip_5 in ( eni_info.network_interfaces | map(attribute='private_ip_addresses') | flatten | map(attribute='private_ip_address') | list )
       - ip_4 in ( eni_info.network_interfaces | map(attribute='private_ip_addresses') | flatten | map(attribute='private_ip_address') | list )
   vars:
-    _interface_0: '{{ eni_info.network_interfaces[0] }}'
+    _interface_0: "{{ eni_info.network_interfaces[0] }}"
 
 - name: test that reassignment of an IP already in use fails when not explcitly allowed (default for allow_reassignment == False)
-  ec2_eni:
+  amazon.aws.ec2_eni:
     device_index: 1
     private_ip_address: "{{ ip_1 }}"
     subnet_id: "{{ vpc_subnet_id }}"
@@ -251,16 +251,16 @@
       - "{{ ip_3 }}"
       - "{{ ip_4 }}"
   register: result
-  ignore_errors: yes
+  ignore_errors: true
 
-- assert:
+- ansible.builtin.assert:
     that:
       - result.failed
       - '"move is not allowed" in result.msg'
 
 # ============================================================
 - name: allow reassignment to add the list of secondary addresses
-  ec2_eni:
+  amazon.aws.ec2_eni:
     allow_reassignment: true
     device_index: 1
     private_ip_address: "{{ ip_1 }}"
@@ -272,14 +272,14 @@
       - "{{ ip_4 }}"
   register: result
 
-- assert:
+- ansible.builtin.assert:
     that:
       - result.changed
       - result.interface.id == eni_id_1
       - result.interface.private_ip_addresses | length == 4
 
 - name: test reassigment is idempotent
-  ec2_eni:
+  amazon.aws.ec2_eni:
     allow_reassignment: true
     device_index: 1
     private_ip_address: "{{ ip_1 }}"
@@ -291,7 +291,7 @@
       - "{{ ip_4 }}"
   register: result
 
-- assert:
+- ansible.builtin.assert:
     that:
       - not result.changed
       - result.interface.id == eni_id_1
@@ -299,7 +299,7 @@
 # ============================================================
 
 - name: purge all the secondary addresses
-  ec2_eni:
+  amazon.aws.ec2_eni:
     purge_secondary_private_ip_addresses: true
     device_index: 1
     private_ip_address: "{{ ip_1 }}"
@@ -307,19 +307,19 @@
     state: present
     secondary_private_ip_addresses: []
   register: result
-- ec2_eni_info:
-    eni_id: '{{ eni_id_1 }}'
+- amazon.aws.ec2_eni_info:
+    eni_id: "{{ eni_id_1 }}"
   register: eni_info
   until: _interface_0.private_ip_addresses | length == 1
   retries: 5
   delay: 2
   vars:
-    _interface_0: '{{ eni_info.network_interfaces[0] }}'
+    _interface_0: "{{ eni_info.network_interfaces[0] }}"
 
-- assert:
+- ansible.builtin.assert:
     that:
       - result.changed
       - _interface_0.private_ip_addresses | length == 1
       - ip_1 in ( eni_info.network_interfaces | map(attribute='private_ip_addresses') | flatten | map(attribute='private_ip_address') | list )
   vars:
-    _interface_0: '{{ eni_info.network_interfaces[0] }}'
+    _interface_0: "{{ eni_info.network_interfaces[0] }}"

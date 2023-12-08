@@ -1,3 +1,4 @@
+---
 - module_defaults:
     group/aws:
       region: "{{ aws_region }}"
@@ -40,7 +41,7 @@
     - name: Create a read replica cluster for global database
       amazon.aws.rds_cluster:
         db_cluster_identifier: "{{ secondary_cluster_id }}"
-        region: "eu-north-1"
+        region: eu-north-1
         engine: "{{ engine }}"
         engine_version: "{{ engine_version }}"
         global_cluster_identifier: "{{ global_cluster_id }}"
@@ -61,7 +62,7 @@
     - name: Get secondary cluster info
       amazon.aws.rds_cluster_info:
         db_cluster_identifier: "{{ secondary_cluster_id }}"
-        region: "eu-north-1"
+        region: eu-north-1
       register: secondary_cluster_info_result
 
     - name: Assert that the primary and secondary clusters are members of the global cluster
@@ -75,10 +76,10 @@
     - name: Delete secondary cluster without creating a final snapshot
       amazon.aws.rds_cluster:
         cluster_id: "{{ secondary_cluster_id }}"
-        region: "eu-north-1"
+        region: eu-north-1
         global_cluster_identifier: "{{  global_cluster_id }}"
         remove_from_global_db: true
-        skip_final_snapshot: True
+        skip_final_snapshot: true
         state: absent
       ignore_errors: true
 
@@ -95,7 +96,7 @@
       amazon.aws.rds_cluster:
         cluster_id: "{{ primary_cluster_id }}"
         global_cluster_identifier: "{{  global_cluster_id }}"
-        skip_final_snapshot: True
+        skip_final_snapshot: true
         region: "{{ aws_region }}"
         state: absent
       ignore_errors: true

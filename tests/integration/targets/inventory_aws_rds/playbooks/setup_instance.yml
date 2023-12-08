@@ -1,7 +1,7 @@
 ---
 - hosts: 127.0.0.1
   connection: local
-  gather_facts: no
+  gather_facts: false
 
   environment: "{{ ansible_test.environment }}"
 
@@ -14,10 +14,10 @@
 
   module_defaults:
     group/aws:
-      access_key: '{{ aws_access_key }}'
-      secret_key: '{{ aws_secret_key }}'
-      session_token: '{{ security_token | default(omit) }}'
-      region: '{{ aws_region }}'
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
 
   tasks:
-    - include_tasks: 'tasks/rds_instance_{{ operation }}.yml'
+    - ansible.builtin.include_tasks: tasks/rds_instance_{{ operation }}.yml

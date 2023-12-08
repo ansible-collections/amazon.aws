@@ -7,7 +7,6 @@
       region: "{{ aws_region }}"
 
   block:
-
   # ============================================================
   #   Setup
   # ============================================================
@@ -16,10 +15,10 @@
       community.aws.iam_role:
         name: "{{ backup_iam_role_name }}"
         assume_role_policy_document: '{{ lookup("file", "backup-policy.json") }}'
-        create_instance_profile: no
-        description: "Ansible AWS Backup Role"
+        create_instance_profile: false
+        description: Ansible AWS Backup Role
         managed_policy:
-          - "arn:aws:iam::aws:policy/service-role/AWSBackupServiceRolePolicyForBackup"
+          - arn:aws:iam::aws:policy/service-role/AWSBackupServiceRolePolicyForBackup
         wait: true
       register: iam_role
 
@@ -43,7 +42,7 @@
         rules:
           - rule_name: DailyBackups
             target_backup_vault_name: "{{ backup_vault_name }}"
-            schedule_expression: "cron(0 5 ? * * *)"
+            schedule_expression: cron(0 5 ? * * *)
             start_window_minutes: 60
             completion_window_minutes: 1440
         tags:
@@ -54,17 +53,17 @@
       ansible.builtin.set_fact:
         backup_plan_id: "{{ _result_create_backup_plan.backup_plan_id }}"
 
-  # ============================================================
-  #   Create Selection Tests
-  # ============================================================
+    # ============================================================
+    #   Create Selection Tests
+    # ============================================================
 
-  #  Create selection with all options
-  # ------------------------------------------------------------
+    #  Create selection with all options
+    # ------------------------------------------------------------
 
     - name: Set input variable for create selection with all options tests
       ansible.builtin.set_fact:
         create_with_all_options_input:
-          selection_name: "all-options-{{ backup_selection_name }}"
+          selection_name: all-options-{{ backup_selection_name }}
           backup_plan_name: "{{ backup_plan_name }}"
           iam_role_arn: "{{ iam_role.iam_role.arn }}"
           resources:
@@ -72,26 +71,25 @@
           not_resources:
             - arn:aws:s3:::another-bucket
           list_of_tags:
-            - condition_type: "STRINGEQUALS"
-              condition_key: "backup"
-              condition_value: "daily"
+            - condition_type: STRINGEQUALS
+              condition_key: backup
+              condition_value: daily
           conditions:
             string_equals:
-              - condition_key: "aws:ResourceTag/environment"
-                condition_value: "prod"
+              - condition_key: aws:ResourceTag/environment
+                condition_value: prod
             string_like:
-              - condition_key: "aws:ResourceTag/environment"
-                condition_value: "prod*"
+              - condition_key: aws:ResourceTag/environment
+                condition_value: prod*
             string_not_equals:
-              - condition_key: "aws:ResourceTag/environment"
-                condition_value: "test"
+              - condition_key: aws:ResourceTag/environment
+                condition_value: test
             string_not_like:
-              - condition_key: "aws:ResourceTag/environment"
-                condition_value: "test*"
+              - condition_key: aws:ResourceTag/environment
+                condition_value: test*
 
     - name: Create an AWS Backup selection with all options (check_mode)
-      amazon.aws.backup_selection:
-        "{{ create_with_all_options_input }}"
+      amazon.aws.backup_selection: "{{ create_with_all_options_input }}"
       check_mode: true
       register: _result_create_selection_with_all_options_check_mode
 
@@ -104,7 +102,7 @@
       amazon.aws.backup_selection_info:
         backup_plan_name: "{{ backup_plan_name }}"
         selection_names:
-          - "all-options-{{ backup_selection_name }}"
+          - all-options-{{ backup_selection_name }}
       register: _result_backup_selection_info
 
     - name: Verify backup selection was not created in check mode
@@ -113,8 +111,7 @@
           - _result_backup_selection_info.backup_selections | length == 0
 
     - name: Create an AWS Backup selection with all options
-      amazon.aws.backup_selection:
-        "{{ create_with_all_options_input }}"
+      amazon.aws.backup_selection: "{{ create_with_all_options_input }}"
       register: _result_create_selection_with_all_options
 
     - name: Verify result
@@ -126,8 +123,7 @@
           - _result_create_selection_with_all_options.backup_selection.selection_name == "all-options-"+backup_selection_name
 
     - name: Create an AWS Backup selection with all options (idempotency)
-      amazon.aws.backup_selection:
-        "{{ create_with_all_options_input }}"
+      amazon.aws.backup_selection: "{{ create_with_all_options_input }}"
       register: _result_create_selection_with_all_options_idempotency
 
     - name: Verify result
@@ -142,7 +138,7 @@
       amazon.aws.backup_selection_info:
         backup_plan_name: "{{ backup_plan_name }}"
         selection_names:
-          - "all-options-{{ backup_selection_name }}"
+          - all-options-{{ backup_selection_name }}
       register: _result_backup_selection_info
 
     - name: Verify selection was created with all options
@@ -159,8 +155,8 @@
           - _result_backup_selection_info.backup_selections[0].conditions.string_not_equals | length == 1
           - _result_backup_selection_info.backup_selections[0].conditions.string_not_like | length == 1
 
-  #  Create selection with minimal options
-  # ------------------------------------------------------------
+    #  Create selection with minimal options
+    # ------------------------------------------------------------
 
     - name: Set input variable for create selection with minimal options tests
       ansible.builtin.set_fact:
@@ -172,8 +168,7 @@
             - arn:aws:s3:::a-bucket
 
     - name: Create an AWS Backup selection with minimal options (check_mode)
-      amazon.aws.backup_selection:
-        "{{ create_with_minimal_options_input }}"
+      amazon.aws.backup_selection: "{{ create_with_minimal_options_input }}"
       check_mode: true
       register: _result_create_selection_with_minimal_options_check_mode
 
@@ -195,8 +190,7 @@
           - _result_backup_selection_info.backup_selections | length == 0
 
     - name: Create an AWS Backup selection with minimal options
-      amazon.aws.backup_selection:
-        "{{ create_with_minimal_options_input }}"
+      amazon.aws.backup_selection: "{{ create_with_minimal_options_input }}"
       register: _result_create_selection_with_minimal_options
 
     - name: Verify result
@@ -208,8 +202,7 @@
           - _result_create_selection_with_minimal_options.backup_selection.selection_name == backup_selection_name
 
     - name: Create an AWS Backup selection with minimal options (idempotency)
-      amazon.aws.backup_selection:
-        "{{ create_with_minimal_options_input }}"
+      amazon.aws.backup_selection: "{{ create_with_minimal_options_input }}"
       register: _result_create_selection_with_minimal_options_idempotency
 
     - name: Verify result
@@ -241,12 +234,12 @@
           - _result_backup_selection_info.backup_selections[0].conditions.string_not_equals | length == 0
           - _result_backup_selection_info.backup_selections[0].conditions.string_not_like | length == 0
 
-  # ============================================================
-  #   Update Selection Tests
-  # ============================================================
+    # ============================================================
+    #   Update Selection Tests
+    # ============================================================
 
-  #  Add list_of_tags
-  # ------------------------------------------------------------
+    #  Add list_of_tags
+    # ------------------------------------------------------------
 
     - name: Set input variable for add list_of_tags tests
       ansible.builtin.set_fact:
@@ -257,13 +250,12 @@
           resources:
             - arn:aws:s3:::a-bucket
           list_of_tags:
-            - condition_type: "STRINGEQUALS"
-              condition_key: "backup"
-              condition_value: "weekly"
+            - condition_type: STRINGEQUALS
+              condition_key: backup
+              condition_value: weekly
 
     - name: Modify an AWS Backup selection - add list_of_tags (check_mode)
-      amazon.aws.backup_selection:
-        "{{ add_list_of_tags_input }}"
+      amazon.aws.backup_selection: "{{ add_list_of_tags_input }}"
       check_mode: true
       register: _result_add_list_of_tags_check_mode
 
@@ -286,8 +278,7 @@
           - _result_backup_selection_info.backup_selections[0].list_of_tags == []
 
     - name: Modify an AWS Backup selection - add list_of_tags
-      amazon.aws.backup_selection:
-        "{{ add_list_of_tags_input }}"
+      amazon.aws.backup_selection: "{{ add_list_of_tags_input }}"
       register: _result_add_list_of_tags
 
     - name: Verify result
@@ -296,8 +287,7 @@
           - _result_add_list_of_tags.changed
 
     - name: Modify an AWS Backup selection - add list_of_tags (idempotency)
-      amazon.aws.backup_selection:
-        "{{ add_list_of_tags_input }}"
+      amazon.aws.backup_selection: "{{ add_list_of_tags_input }}"
       register: _result_add_list_of_tags_idempotency
 
     - name: Verify result
@@ -322,8 +312,8 @@
           - _result_backup_selection_info.backup_selections[0].list_of_tags[0].condition_value == "weekly"
           - _result_backup_selection_info.backup_selections[0].conditions.string_not_equals == []
 
-  #  Add conditions
-  # ------------------------------------------------------------
+    #  Add conditions
+    # ------------------------------------------------------------
 
     - name: Set input variable for add conditions tests
       ansible.builtin.set_fact:
@@ -334,17 +324,16 @@
           resources:
             - arn:aws:s3:::a-bucket
           list_of_tags:
-            - condition_type: "STRINGEQUALS"
-              condition_key: "backup"
-              condition_value: "weekly"
+            - condition_type: STRINGEQUALS
+              condition_key: backup
+              condition_value: weekly
           conditions:
             string_not_equals:
-              - condition_key: "aws:ResourceTag/environment"
-                condition_value: "dev"
+              - condition_key: aws:ResourceTag/environment
+                condition_value: dev
 
     - name: Modify an AWS Backup selection - add conditions (check_mode)
-      amazon.aws.backup_selection:
-        "{{ add_conditions_input }}"
+      amazon.aws.backup_selection: "{{ add_conditions_input }}"
       check_mode: true
       register: _result_add_conditions_check_mode
 
@@ -367,8 +356,7 @@
           - _result_backup_selection_info.backup_selections[0].conditions.string_not_equals == []
 
     - name: Modify an AWS Backup selection - add conditions
-      amazon.aws.backup_selection:
-        "{{ add_conditions_input }}"
+      amazon.aws.backup_selection: "{{ add_conditions_input }}"
       register: _result_add_conditions
 
     - name: Verify result
@@ -377,8 +365,7 @@
           - _result_add_conditions.changed
 
     - name: Modify an AWS Backup selection - add conditions (idempotency)
-      amazon.aws.backup_selection:
-        "{{ add_conditions_input }}"
+      amazon.aws.backup_selection: "{{ add_conditions_input }}"
       register: _result_add_conditions_idempotency
 
     - name: Verify result
@@ -403,8 +390,8 @@
           - _result_backup_selection_info.backup_selections[0].list_of_tags[0].condition_value == "weekly"
           - _result_backup_selection_info.backup_selections[0].conditions.string_not_equals[0].condition_value == "dev"
 
-  #  Update all options
-  # ------------------------------------------------------------
+    #  Update all options
+    # ------------------------------------------------------------
 
     - name: Set input variable for update all options tests
       ansible.builtin.set_fact:
@@ -417,17 +404,16 @@
           not_resources:
             - arn:aws:s3:::a-bucket
           list_of_tags:
-            - condition_type: "STRINGEQUALS"
-              condition_key: "backup"
-              condition_value: "daily"
+            - condition_type: STRINGEQUALS
+              condition_key: backup
+              condition_value: daily
           conditions:
             string_not_equals:
-              - condition_key: "aws:ResourceTag/environment"
-                condition_value: "test"
+              - condition_key: aws:ResourceTag/environment
+                condition_value: test
 
     - name: Modify an AWS Backup selection - update all options (check_mode)
-      amazon.aws.backup_selection:
-        "{{ update_all_options_input }}"
+      amazon.aws.backup_selection: "{{ update_all_options_input }}"
       check_mode: true
       register: _result_update_all_options_check_mode
 
@@ -453,8 +439,7 @@
           - _result_backup_selection_info.backup_selections[0].conditions.string_not_equals[0].condition_value == "dev"
 
     - name: Modify an AWS Backup selection - update all options
-      amazon.aws.backup_selection:
-        "{{ update_all_options_input }}"
+      amazon.aws.backup_selection: "{{ update_all_options_input }}"
       register: _result_update_all_options
 
     - name: Verify result
@@ -463,8 +448,7 @@
           - _result_update_all_options.changed
 
     - name: Modify an AWS Backup selection - update_all_options (idempotency)
-      amazon.aws.backup_selection:
-        "{{ update_all_options_input }}"
+      amazon.aws.backup_selection: "{{ update_all_options_input }}"
       register: _result_update_all_options_idempotency
 
     - name: Verify result
@@ -489,8 +473,8 @@
           - _result_backup_selection_info.backup_selections[0].list_of_tags[0].condition_value == "daily"
           - _result_backup_selection_info.backup_selections[0].conditions.string_not_equals[0].condition_value == "test"
 
-  #  Remove list_of_tags
-  # ------------------------------------------------------------
+    #  Remove list_of_tags
+    # ------------------------------------------------------------
 
     - name: Set input variable for remove list_of_tags tests
       ansible.builtin.set_fact:
@@ -504,12 +488,11 @@
             - arn:aws:s3:::a-bucket
           conditions:
             string_not_equals:
-              - condition_key: "aws:ResourceTag/environment"
-                condition_value: "test"
+              - condition_key: aws:ResourceTag/environment
+                condition_value: test
 
     - name: Modify an AWS Backup selection - remove list_of_tags (check_mode)
-      amazon.aws.backup_selection:
-        "{{ remove_list_of_tags_input }}"
+      amazon.aws.backup_selection: "{{ remove_list_of_tags_input }}"
       check_mode: true
       register: _result_remove_list_of_tags_check_mode
 
@@ -535,8 +518,7 @@
           - _result_backup_selection_info.backup_selections[0].conditions.string_not_equals[0].condition_value == "test"
 
     - name: Modify an AWS Backup selection - remove list_of_tags
-      amazon.aws.backup_selection:
-        "{{ remove_list_of_tags_input }}"
+      amazon.aws.backup_selection: "{{ remove_list_of_tags_input }}"
       register: _result_remove_list_of_tags
 
     - name: Verify result
@@ -545,8 +527,7 @@
           - _result_remove_list_of_tags.changed
 
     - name: Modify an AWS Backup selection - remove list_of_tags (idempotency)
-      amazon.aws.backup_selection:
-        "{{ remove_list_of_tags_input }}"
+      amazon.aws.backup_selection: "{{ remove_list_of_tags_input }}"
       register: _result_remove_list_of_tags_idempotency
 
     - name: Verify result
@@ -571,8 +552,8 @@
           - _result_backup_selection_info.backup_selections[0].list_of_tags == []
           - _result_backup_selection_info.backup_selections[0].conditions.string_not_equals[0].condition_value == "test"
 
-  #  Remove conditions
-  # ------------------------------------------------------------
+    #  Remove conditions
+    # ------------------------------------------------------------
 
     - name: Set input variable for remove conditions tests
       ansible.builtin.set_fact:
@@ -586,8 +567,7 @@
             - arn:aws:s3:::a-bucket
 
     - name: Modify an AWS Backup selection - remove conditions (check_mode)
-      amazon.aws.backup_selection:
-        "{{ remove_conditions_input }}"
+      amazon.aws.backup_selection: "{{ remove_conditions_input }}"
       check_mode: true
       register: _result_remove_conditions_check_mode
 
@@ -613,8 +593,7 @@
           - _result_backup_selection_info.backup_selections[0].conditions.string_not_equals[0].condition_value == "test"
 
     - name: Modify an AWS Backup selection - remove conditions
-      amazon.aws.backup_selection:
-        "{{ remove_conditions_input }}"
+      amazon.aws.backup_selection: "{{ remove_conditions_input }}"
       register: _result_remove_conditions
 
     - name: Verify result
@@ -623,8 +602,7 @@
           - _result_remove_conditions.changed
 
     - name: Modify an AWS Backup selection - remove conditions (idempotency)
-      amazon.aws.backup_selection:
-        "{{ remove_conditions_input }}"
+      amazon.aws.backup_selection: "{{ remove_conditions_input }}"
       register: _result_remove_conditions_idempotency
 
     - name: Verify result
@@ -649,9 +627,9 @@
           - _result_backup_selection_info.backup_selections[0].list_of_tags == []
           - _result_backup_selection_info.backup_selections[0].conditions.string_not_equals == []
 
-  # ============================================================
-  #   List Selection Tests
-  # ============================================================
+    # ============================================================
+    #   List Selection Tests
+    # ============================================================
 
     - name: List all AWS Backup selections
       amazon.aws.backup_selection_info:
@@ -664,9 +642,9 @@
           - "'backup_selections' in _result_backup_selection_list"
           - _result_backup_selection_list.backup_selections | length == 2
 
-  # ============================================================
-  #   Delete Selection Tests
-  # ============================================================
+    # ============================================================
+    #   Delete Selection Tests
+    # ============================================================
 
     - name: Set input variable for delete selection tests
       ansible.builtin.set_fact:
@@ -676,8 +654,7 @@
           state: absent
 
     - name: Delete AWS Backup selection (check_mode)
-      amazon.aws.backup_selection:
-        "{{ delete_selection_input }}"
+      amazon.aws.backup_selection: "{{ delete_selection_input }}"
       check_mode: true
       register: _delete_result_backup_selection_check_mode
 
@@ -703,8 +680,7 @@
           - _result_backup_selection_info.backup_selections[0].selection_name == backup_selection_name
 
     - name: Delete AWS Backup selection
-      amazon.aws.backup_selection:
-        "{{ delete_selection_input }}"
+      amazon.aws.backup_selection: "{{ delete_selection_input }}"
       register: _delete_result_backup_selection
 
     - name: Verify result
@@ -727,8 +703,7 @@
           - _deleted_backup_selection_info.backup_selections | length == 0
 
     - name: Delete AWS Backup selection (idempotency)
-      amazon.aws.backup_selection:
-        "{{ delete_selection_input }}"
+      amazon.aws.backup_selection: "{{ delete_selection_input }}"
       register: _delete_result_backup_selection_idempotency
 
     - name: Verify result
@@ -738,9 +713,9 @@
           - not _delete_result_backup_selection_idempotency.exists
           - "'backup_selection' in _delete_result_backup_selection_idempotency"
 
-# ============================================================
-#   Teardown
-# ============================================================
+  # ============================================================
+  #   Teardown
+  # ============================================================
 
   always:
     - name: Delete minimal AWS Backup selection created during this test
@@ -752,7 +727,7 @@
 
     - name: Delete all options AWS Backup selection created during this test
       amazon.aws.backup_selection:
-        backup_selection_name: "all-options-{{ backup_selection_name }}"
+        backup_selection_name: all-options-{{ backup_selection_name }}
         backup_plan_name: "{{ backup_plan_name }}"
         state: absent
       ignore_errors: true

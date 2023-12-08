@@ -15,52 +15,52 @@
       when: (lookup('env', 'HOME'))
 
     - name: get ARN of calling user
-      aws_caller_info:
+      amazon.aws.aws_caller_info:
       register: aws_caller_info
 
     - name: register account id
-      set_fact:
+      ansible.builtin.set_fact:
         aws_account: "{{ aws_caller_info.account }}"
 
     - name: check that temp directory was made
-      assert:
+      ansible.builtin.assert:
         that:
-        - remote_tmp_dir is defined
+          - remote_tmp_dir is defined
 
     - name: Create content
-      set_fact:
+      ansible.builtin.set_fact:
         content: "{{ lookup('password', '/dev/null chars=ascii_letters,digits,hexdigits,punctuation') }}"
 
     - name: test create bucket
-      s3_bucket:
+      amazon.aws.s3_bucket:
         name: "{{ bucket_name }}"
         state: present
       register: result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is changed
 
     - name: make a bucket with the bucket-owner-full-control ACL
-      s3_bucket:
+      amazon.aws.s3_bucket:
         name: "{{ bucket_name_acl }}"
         state: present
         policy: "{{ lookup('template', 'policy.json.j2') }}"
       register: bucket_with_policy
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - bucket_with_policy is changed
 
     - name: Create local upload.txt
-      copy:
+      ansible.builtin.copy:
         content: "{{ content }}"
         dest: "{{ remote_tmp_dir }}/upload.txt"
 
     - name: stat the file
-      stat:
+      ansible.builtin.stat:
         path: "{{ remote_tmp_dir }}/upload.txt"
-        get_checksum: yes
+        get_checksum: true
       register: upload_file
 
     - name: test putting an object in the bucket
@@ -70,13 +70,13 @@
         src: "{{ remote_tmp_dir }}/upload.txt"
         object: delete.txt
         tags:
-            "lowercase spaced": "hello cruel world"
-            "Title Case": "Hello Cruel World"
+          lowercase spaced: hello cruel world
+          Title Case: Hello Cruel World
       retries: 3
       delay: 3
       register: result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is changed
           - result.msg == "PUT operation complete"
@@ -92,7 +92,7 @@
         object_name: "{{ list_keys_result.s3_keys[0] }}"
       register: info_result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - info_result is not failed
           - info_result is not changed
@@ -121,7 +121,7 @@
             - ObjectParts
       register: info_detail_result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - info_detail_result is not failed
           - info_detail_result is not changed
@@ -149,7 +149,7 @@
       poll: 0
 
     - name: ensure it completed
-      async_status:
+      ansible.builtin.async_status:
         jid: "{{ test_async.ansible_job_id }}"
       register: status
       until: status is finished
@@ -165,7 +165,7 @@
       delay: 3
       register: result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is not changed
 
@@ -179,7 +179,7 @@
       delay: 3
       register: result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is changed
           - result.msg == "PUT operation complete"
@@ -198,7 +198,7 @@
       delay: 3
       register: result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is changed
           - result.msg == "PUT operation complete"
@@ -214,7 +214,7 @@
       delay: 3
       register: result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is not changed
 
@@ -229,7 +229,7 @@
       delay: 3
       register: result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is changed
 
@@ -244,7 +244,7 @@
       delay: 3
       register: result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is changed
 
@@ -257,15 +257,15 @@
       retries: 3
       delay: 3
       register: result
-      until: "result.msg == 'GET operation complete'"
+      until: result.msg == 'GET operation complete'
 
     - name: stat the file so we can compare the checksums
-      stat:
+      ansible.builtin.stat:
         path: "{{ remote_tmp_dir }}/download.txt"
-        get_checksum: yes
+        get_checksum: true
       register: download_file
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - upload_file.stat.checksum == download_file.stat.checksum
 
@@ -278,15 +278,15 @@
       retries: 3
       delay: 3
       register: result
-      until: "result.msg == 'GET operation complete'"
+      until: result.msg == 'GET operation complete'
 
     - name: stat the file so we can compare the checksums
-      stat:
+      ansible.builtin.stat:
         path: "{{ remote_tmp_dir }}/download-2.txt"
-        get_checksum: yes
+        get_checksum: true
       register: download_file
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - upload_file.stat.checksum == download_file.stat.checksum
 
@@ -300,12 +300,12 @@
       delay: 3
       register: result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is not changed
 
     - name: modify destination
-      copy:
+      ansible.builtin.copy:
         dest: "{{ remote_tmp_dir }}/download.txt"
         src: hello.txt
 
@@ -320,7 +320,7 @@
       delay: 3
       register: result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is not changed
 
@@ -334,7 +334,7 @@
       delay: 3
       register: result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is changed
 
@@ -349,7 +349,7 @@
       delay: 3
       register: result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is changed
 
@@ -364,13 +364,12 @@
       delay: 3
       register: result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is not changed
 
     - name: modify mtime for local file to past
-      shell: touch -mt 197001010900.00 "{{ remote_tmp_dir }}/download.txt"
-
+      ansible.builtin.shell: touch -mt 197001010900.00 "{{ remote_tmp_dir }}/download.txt"
     - name: test get with overwrite=latest and files that mtimes are different
       s3_object:
         bucket: "{{ bucket_name }}"
@@ -382,7 +381,7 @@
       delay: 3
       register: result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is changed
 
@@ -396,7 +395,7 @@
       register: result
       until: result is changed
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - "'Download url:' in result.msg"
           - result is changed
@@ -412,7 +411,7 @@
       register: result
       until: result is changed
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - "'Download url:' in result.msg"
           - result is changed
@@ -426,7 +425,7 @@
       delay: 3
       register: result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result.msg == "GET operation complete"
           - result.contents == content
@@ -439,7 +438,7 @@
       delay: 3
       register: result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - "'delete.txt' in result.s3_keys"
           - result.msg == "LIST operation complete"
@@ -453,7 +452,7 @@
       delay: 3
       register: result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - "'Object deleted from bucket' in result.msg"
           - result is changed
@@ -463,16 +462,16 @@
         bucket: "{{ bucket_name }}"
         mode: put
         src: "{{ remote_tmp_dir }}/upload.txt"
-        metadata: "Content-Type=text/plain"
+        metadata: Content-Type=text/plain
         object: delete_meta.txt
         tags:
-            "lowercase spaced": "hello cruel world"
-            "Title Case": "Hello Cruel World"
+          lowercase spaced: hello cruel world
+          Title Case: Hello Cruel World
       retries: 3
       delay: 3
       register: result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is changed
           - result.msg == "PUT operation complete"
@@ -491,13 +490,13 @@
         bucket: "{{ bucket_name }}"
         mode: put
         src: "{{ remote_tmp_dir }}/upload.txt"
-        encrypt: yes
+        encrypt: true
         object: delete_encrypt.txt
       retries: 3
       delay: 3
       register: result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is changed
           - result.msg == "PUT operation complete"
@@ -511,15 +510,15 @@
       retries: 3
       delay: 3
       register: result
-      until: "result.msg == 'GET operation complete'"
+      until: result.msg == 'GET operation complete'
 
     - name: stat the file so we can compare the checksums
-      stat:
+      ansible.builtin.stat:
         path: "{{ remote_tmp_dir }}/download_encrypted.txt"
-        get_checksum: yes
+        get_checksum: true
       register: download_file
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - upload_file.stat.checksum == download_file.stat.checksum
 
@@ -536,14 +535,14 @@
         bucket: "{{ bucket_name }}"
         mode: put
         src: "{{ remote_tmp_dir }}/upload.txt"
-        encrypt: yes
+        encrypt: true
         encryption_mode: aws:kms
         object: delete_encrypt_kms.txt
       retries: 3
       delay: 3
       register: result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is changed
           - result.msg == "PUT operation complete"
@@ -557,19 +556,19 @@
       retries: 3
       delay: 3
       register: result
-      until: "result.msg == 'GET operation complete'"
+      until: result.msg == 'GET operation complete'
 
     - name: get the stat of the file so we can compare the checksums
-      stat:
+      ansible.builtin.stat:
         path: "{{ remote_tmp_dir }}/download_kms.txt"
-        get_checksum: yes
+        get_checksum: true
       register: download_file
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - upload_file.stat.checksum == download_file.stat.checksum
 
-      # FIXME - could use a test that checks uploaded file is *actually* aws:kms encrypted
+    # FIXME - could use a test that checks uploaded file is *actually* aws:kms encrypted
 
     - name: delete KMS encrypted file
       s3_object:
@@ -592,7 +591,7 @@
       delay: 3
       register: result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - "'Virtual directory foo/bar/baz/ created' in result.msg"
           - result is changed
@@ -606,7 +605,7 @@
       delay: 3
 
     - name: test delete bucket
-      s3_bucket:
+      amazon.aws.s3_bucket:
         name: "{{ bucket_name }}"
         state: absent
       register: result
@@ -614,12 +613,12 @@
       delay: 3
       until: result is changed
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is changed
 
     - name: Restore the bucket for later use
-      s3_bucket:
+      amazon.aws.s3_bucket:
         name: "{{ bucket_name }}"
         state: present
 
@@ -628,13 +627,13 @@
         - ansible_system == 'Linux' or ansible_distribution == 'MacOSX'
       block:
         - name: make tempfile 4 GB for OSX
-          command:
-            _raw_params: "dd if=/dev/zero of={{ remote_tmp_dir }}/largefile bs=1m count=4096"
+          ansible.builtin.command:
+            _raw_params: dd if=/dev/zero of={{ remote_tmp_dir }}/largefile bs=1m count=4096
           when: ansible_distribution == 'MacOSX'
 
         - name: make tempfile 4 GB for linux
-          command:
-            _raw_params: "dd if=/dev/zero of={{ remote_tmp_dir }}/largefile bs=1M count=4096"
+          ansible.builtin.command:
+            _raw_params: dd if=/dev/zero of={{ remote_tmp_dir }}/largefile bs=1M count=4096
           when: ansible_system == 'Linux'
 
         - name: upload the file to the bucket
@@ -653,10 +652,10 @@
             overwrite: different
           retries: 3
           delay: 3
-          until: "result.msg == 'GET operation complete'"
+          until: result.msg == 'GET operation complete'
           register: result
 
-        - assert:
+        - ansible.builtin.assert:
             that:
               - result is changed
 
@@ -669,7 +668,7 @@
             overwrite: different
           register: result
 
-        - assert:
+        - ansible.builtin.assert:
             that:
               - result is not changed
 
@@ -681,11 +680,11 @@
         src: "{{ remote_tmp_dir }}/upload.txt"
         object: file-with-permissions.txt
         permission: public-read
-        ignore_nonexistent_bucket: True
+        ignore_nonexistent_bucket: true
       register: upload_private
-      ignore_errors: True
+      ignore_errors: true
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - upload_private is failed
 
@@ -696,10 +695,10 @@
         src: "{{ remote_tmp_dir }}/upload.txt"
         object: file-with-permissions.txt
         permission: bucket-owner-full-control
-        ignore_nonexistent_bucket: True
+        ignore_nonexistent_bucket: true
       register: upload_owner
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - upload_owner is changed
 
@@ -712,7 +711,7 @@
           test content
       register: result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is changed
 
@@ -725,7 +724,7 @@
           test content
       register: result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is not changed
 
@@ -736,11 +735,11 @@
         object: put-content.txt
       register: result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result.contents == "test content"
 
-    - set_fact:
+    - ansible.builtin.set_fact:
         put_template_text: test template
 
     - name: create an object from a template
@@ -751,7 +750,7 @@
         content: "{{ lookup('template', 'templates/put-template.txt.j2')|replace('\n', '') }}"
       register: result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is changed
 
@@ -763,7 +762,7 @@
         content: "{{ lookup('template', 'templates/put-template.txt.j2')|replace('\n', '') }}"
       register: result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is not changed
 
@@ -774,12 +773,12 @@
         object: put-template.txt
       register: result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result.contents == "template:test template"
 
     # at present, there is no lookup that can process binary data, so we use slurp instead
-    - slurp:
+    - ansible.builtin.slurp:
         src: "{{ role_path }}/files/test.png"
       register: put_binary
 
@@ -791,7 +790,7 @@
         content_base64: "{{ put_binary.content }}"
       register: result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is changed
 
@@ -803,7 +802,7 @@
         content_base64: "{{ put_binary.content }}"
       register: result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is not changed
 
@@ -816,261 +815,256 @@
       register: result
 
     - name: stat the files so we can compare the checksums
-      stat:
+      ansible.builtin.stat:
         path: "{{ item }}"
-        get_checksum: yes
+        get_checksum: true
       loop:
-      - "{{ role_path }}/files/test.png"
-      - "{{ remote_tmp_dir }}/download_binary.bin"
+        - "{{ role_path }}/files/test.png"
+        - "{{ remote_tmp_dir }}/download_binary.bin"
       register: binary_files
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - binary_files.results[0].stat.checksum == binary_files.results[1].stat.checksum
 
-    - include_tasks: copy_object.yml
-
-    - include_tasks: copy_object_acl_disabled_bucket.yml
-
-    # ============================================================
-    - name: 'Run tagging tests'
+    - ansible.builtin.include_tasks: copy_object.yml
+    - ansible.builtin.include_tasks: copy_object_acl_disabled_bucket.yml
+    - name: Run tagging tests
       block:
-    # ============================================================
-      - name: create an object from static content
-        s3_object:
-          bucket: "{{ bucket_name }}"
-          object: put-content.txt
-          mode: put
-          content: >-
-            test content
-          tags:
-            tag_one: '{{ resource_prefix }} One'
-            "Tag Two": 'two {{ resource_prefix }}'
-        register: result
+        # ============================================================
+        - name: create an object from static content
+          s3_object:
+            bucket: "{{ bucket_name }}"
+            object: put-content.txt
+            mode: put
+            content: >-
+              test content
+            tags:
+              tag_one: "{{ resource_prefix }} One"
+              Tag Two: two {{ resource_prefix }}
+          register: result
 
-      - assert:
-          that:
-            - result is changed
-            - "'tags' in result"
-            - (result.tags | length) == 2
-            - result.tags["tag_one"] == '{{ resource_prefix }} One'
-            - result.tags["Tag Two"] == 'two {{ resource_prefix }}'
+        - ansible.builtin.assert:
+            that:
+              - result is changed
+              - "'tags' in result"
+              - (result.tags | length) == 2
+              - result.tags["tag_one"] == '{{ resource_prefix }} One'
+              - result.tags["Tag Two"] == 'two {{ resource_prefix }}'
 
-      - name: ensure idempotency on static content
-        s3_object:
-          bucket: "{{ bucket_name }}"
-          object: put-content.txt
-          mode: put
-          content: >-
-            test content
-          tags:
-            tag_one: '{{ resource_prefix }} One'
-            "Tag Two": 'two {{ resource_prefix }}'
-        register: result
+        - name: ensure idempotency on static content
+          s3_object:
+            bucket: "{{ bucket_name }}"
+            object: put-content.txt
+            mode: put
+            content: >-
+              test content
+            tags:
+              tag_one: "{{ resource_prefix }} One"
+              Tag Two: two {{ resource_prefix }}
+          register: result
 
-      - assert:
-          that:
-            - result is not changed
-            - "'tags' in result"
-            - (result.tags | length) == 2
-            - result.tags["tag_one"] == '{{ resource_prefix }} One'
-            - result.tags["Tag Two"] == 'two {{ resource_prefix }}'
+        - ansible.builtin.assert:
+            that:
+              - result is not changed
+              - "'tags' in result"
+              - (result.tags | length) == 2
+              - result.tags["tag_one"] == '{{ resource_prefix }} One'
+              - result.tags["Tag Two"] == 'two {{ resource_prefix }}'
 
-      - name: Remove a tag from an S3 object
-        s3_object:
-          bucket: "{{ bucket_name }}"
-          object: put-content.txt
-          mode: put
-          content: >-
-            test content
-          tags:
-            tag_one: '{{ resource_prefix }} One'
-        register: result
+        - name: Remove a tag from an S3 object
+          s3_object:
+            bucket: "{{ bucket_name }}"
+            object: put-content.txt
+            mode: put
+            content: >-
+              test content
+            tags:
+              tag_one: "{{ resource_prefix }} One"
+          register: result
 
-      - assert:
-          that:
-            - result is changed
-            - "'tags' in result"
-            - (result.tags | length) == 1
-            - result.tags["tag_one"] == resource_prefix+" One"
-            - "'Tag Two' not in result.tags"
+        - ansible.builtin.assert:
+            that:
+              - result is changed
+              - "'tags' in result"
+              - (result.tags | length) == 1
+              - result.tags["tag_one"] == resource_prefix+" One"
+              - "'Tag Two' not in result.tags"
 
-      - name: Remove the tag from an S3 object (idempotency)
-        s3_object:
-          bucket: "{{ bucket_name }}"
-          object: put-content.txt
-          mode: put
-          content: >-
-            test content
-          tags:
-            tag_one: '{{ resource_prefix }} One'
-        register: result
+        - name: Remove the tag from an S3 object (idempotency)
+          s3_object:
+            bucket: "{{ bucket_name }}"
+            object: put-content.txt
+            mode: put
+            content: >-
+              test content
+            tags:
+              tag_one: "{{ resource_prefix }} One"
+          register: result
 
-      - assert:
-          that:
-            - result is not changed
-            - "'tags' in result"
-            - (result.tags | length) == 1
-            - result.tags["tag_one"] == resource_prefix+" One"
-            - "'Tag Two' not in result.tags"
+        - ansible.builtin.assert:
+            that:
+              - result is not changed
+              - "'tags' in result"
+              - (result.tags | length) == 1
+              - result.tags["tag_one"] == resource_prefix+" One"
+              - "'Tag Two' not in result.tags"
 
-      - name: Add a tag for an S3 object with purge_tags False
-        s3_object:
-          bucket: "{{ bucket_name }}"
-          object: put-content.txt
-          mode: put
-          content: >-
-            test content
-          tags:
-            tag_three: '{{ resource_prefix }} Three'
-          purge_tags: false
-        register: result
+        - name: Add a tag for an S3 object with purge_tags False
+          s3_object:
+            bucket: "{{ bucket_name }}"
+            object: put-content.txt
+            mode: put
+            content: >-
+              test content
+            tags:
+              tag_three: "{{ resource_prefix }} Three"
+            purge_tags: false
+          register: result
 
-      - assert:
-          that:
-            - result is changed
-            - "'tags' in result"
-            - (result.tags | length) == 2
-            - result.tags["tag_three"] == '{{ resource_prefix }} Three'
-            - result.tags["tag_one"] == '{{ resource_prefix }} One'
+        - ansible.builtin.assert:
+            that:
+              - result is changed
+              - "'tags' in result"
+              - (result.tags | length) == 2
+              - result.tags["tag_three"] == '{{ resource_prefix }} Three'
+              - result.tags["tag_one"] == '{{ resource_prefix }} One'
 
-      - name: Add a tag for an S3 object with purge_tags False (idempotency)
-        s3_object:
-          bucket: "{{ bucket_name }}"
-          object: put-content.txt
-          mode: put
-          content: >-
-            test content
-          tags:
-            tag_three: '{{ resource_prefix }} Three'
-          purge_tags: false
-        register: result
+        - name: Add a tag for an S3 object with purge_tags False (idempotency)
+          s3_object:
+            bucket: "{{ bucket_name }}"
+            object: put-content.txt
+            mode: put
+            content: >-
+              test content
+            tags:
+              tag_three: "{{ resource_prefix }} Three"
+            purge_tags: false
+          register: result
 
-      - assert:
-          that:
-            - result is not changed
-            - "'tags' in result"
-            - (result.tags | length) == 2
-            - result.tags["tag_three"] == '{{ resource_prefix }} Three'
-            - result.tags["tag_one"] == '{{ resource_prefix }} One'
+        - ansible.builtin.assert:
+            that:
+              - result is not changed
+              - "'tags' in result"
+              - (result.tags | length) == 2
+              - result.tags["tag_three"] == '{{ resource_prefix }} Three'
+              - result.tags["tag_one"] == '{{ resource_prefix }} One'
 
-      - name: Update tags for an S3 object with purge_tags False
-        s3_object:
-          bucket: "{{ bucket_name }}"
-          object: put-content.txt
-          mode: put
-          content: >-
-            test content
-          tags:
-            "TagFour": '{{ resource_prefix }} tag_four'
-          purge_tags: false
-        register: result
+        - name: Update tags for an S3 object with purge_tags False
+          s3_object:
+            bucket: "{{ bucket_name }}"
+            object: put-content.txt
+            mode: put
+            content: >-
+              test content
+            tags:
+              TagFour: "{{ resource_prefix }} tag_four"
+            purge_tags: false
+          register: result
 
-      - assert:
-          that:
-            - result is changed
-            - "'tags' in result"
-            - (result.tags | length) == 3
-            - result.tags["tag_one"] == '{{ resource_prefix }} One'
-            - result.tags["tag_three"] == '{{ resource_prefix }} Three'
-            - result.tags["TagFour"] == '{{ resource_prefix }} tag_four'
+        - ansible.builtin.assert:
+            that:
+              - result is changed
+              - "'tags' in result"
+              - (result.tags | length) == 3
+              - result.tags["tag_one"] == '{{ resource_prefix }} One'
+              - result.tags["tag_three"] == '{{ resource_prefix }} Three'
+              - result.tags["TagFour"] == '{{ resource_prefix }} tag_four'
 
-      - name:  Update tags for an S3 object with purge_tags False (idempotency)
-        s3_object:
-          bucket: "{{ bucket_name }}"
-          object: put-content.txt
-          mode: put
-          content: >-
-            test content
-          tags:
-            "TagFour": '{{ resource_prefix }} tag_four'
-          purge_tags: false
-        register: result
+        - name: Update tags for an S3 object with purge_tags False (idempotency)
+          s3_object:
+            bucket: "{{ bucket_name }}"
+            object: put-content.txt
+            mode: put
+            content: >-
+              test content
+            tags:
+              TagFour: "{{ resource_prefix }} tag_four"
+            purge_tags: false
+          register: result
 
-      - assert:
-          that:
-            - result is not changed
-            - "'tags' in result"
-            - (result.tags | length) == 3
-            - result.tags["tag_one"] == '{{ resource_prefix }} One'
-            - result.tags["tag_three"] == '{{ resource_prefix }} Three'
-            - result.tags["TagFour"] == '{{ resource_prefix }} tag_four'
+        - ansible.builtin.assert:
+            that:
+              - result is not changed
+              - "'tags' in result"
+              - (result.tags | length) == 3
+              - result.tags["tag_one"] == '{{ resource_prefix }} One'
+              - result.tags["tag_three"] == '{{ resource_prefix }} Three'
+              - result.tags["TagFour"] == '{{ resource_prefix }} tag_four'
 
-      - name: Specify empty tags for an S3 object with purge_tags False
-        s3_object:
-          bucket: "{{ bucket_name }}"
-          object: put-content.txt
-          mode: put
-          content: >-
-            test content
-          tags: {}
-          purge_tags: false
-        register: result
+        - name: Specify empty tags for an S3 object with purge_tags False
+          s3_object:
+            bucket: "{{ bucket_name }}"
+            object: put-content.txt
+            mode: put
+            content: >-
+              test content
+            tags: {}
+            purge_tags: false
+          register: result
 
-      - assert:
-          that:
-            - result is not changed
-            - "'tags' in result"
-            - (result.tags | length) == 3
-            - result.tags["tag_one"] == '{{ resource_prefix }} One'
-            - result.tags["tag_three"] == '{{ resource_prefix }} Three'
-            - result.tags["TagFour"] == '{{ resource_prefix }} tag_four'
+        - ansible.builtin.assert:
+            that:
+              - result is not changed
+              - "'tags' in result"
+              - (result.tags | length) == 3
+              - result.tags["tag_one"] == '{{ resource_prefix }} One'
+              - result.tags["tag_three"] == '{{ resource_prefix }} Three'
+              - result.tags["TagFour"] == '{{ resource_prefix }} tag_four'
 
-      - name: Do not specify any tag to ensure previous tags are not removed
-        s3_object:
-          bucket: "{{ bucket_name }}"
-          object: put-content.txt
-          mode: put
-          content: >-
-            test content
-        register: result
+        - name: Do not specify any tag to ensure previous tags are not removed
+          s3_object:
+            bucket: "{{ bucket_name }}"
+            object: put-content.txt
+            mode: put
+            content: >-
+              test content
+          register: result
 
-      - assert:
-          that:
-            - result is not changed
-            - "'tags' in result"
-            - (result.tags | length) == 3
-            - result.tags["tag_one"] == '{{ resource_prefix }} One'
-            - result.tags["tag_three"] == '{{ resource_prefix }} Three'
-            - result.tags["TagFour"] == '{{ resource_prefix }} tag_four'
+        - ansible.builtin.assert:
+            that:
+              - result is not changed
+              - "'tags' in result"
+              - (result.tags | length) == 3
+              - result.tags["tag_one"] == '{{ resource_prefix }} One'
+              - result.tags["tag_three"] == '{{ resource_prefix }} Three'
+              - result.tags["TagFour"] == '{{ resource_prefix }} tag_four'
 
-      - name: Remove all tags
-        s3_object:
-          bucket: "{{ bucket_name }}"
-          object: put-content.txt
-          mode: put
-          overwrite: different
-          content: >-
-            test content
-          tags: {}
-        register: result
+        - name: Remove all tags
+          s3_object:
+            bucket: "{{ bucket_name }}"
+            object: put-content.txt
+            mode: put
+            overwrite: different
+            content: >-
+              test content
+            tags: {}
+          register: result
 
-      - assert:
-          that:
-            - result is changed
-            - "'tags' in result"
-            - (result.tags | length) == 0
+        - ansible.builtin.assert:
+            that:
+              - result is changed
+              - "'tags' in result"
+              - (result.tags | length) == 0
 
-      - name: Remove all tags (idempotency)
-        s3_object:
-          bucket: "{{ bucket_name }}"
-          object: put-content.txt
-          mode: put
-          content: >-
-            test content
-          tags: {}
-        register: result
+        - name: Remove all tags (idempotency)
+          s3_object:
+            bucket: "{{ bucket_name }}"
+            object: put-content.txt
+            mode: put
+            content: >-
+              test content
+            tags: {}
+          register: result
 
-      - assert:
-          that:
-            - result is not changed
-            - "'tags' in result"
-            - (result.tags | length) == 0
+        - ansible.builtin.assert:
+            that:
+              - result is not changed
+              - "'tags' in result"
+              - (result.tags | length) == 0
 
-      - include_tasks: copy_recursively.yml
-
+        - ansible.builtin.include_tasks: copy_recursively.yml
   always:
-
     - name: delete temporary files
       file:
         state: absent

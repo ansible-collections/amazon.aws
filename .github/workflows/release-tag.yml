@@ -1,3 +1,4 @@
+---
 name: Generate GitHub Release
 concurrency:
   group: release-${{ github.head_ref }}
@@ -5,7 +6,7 @@ concurrency:
 on:
   push:
     tags:
-      - '*'
+      - "*"
 
 jobs:
   generate-release-log:

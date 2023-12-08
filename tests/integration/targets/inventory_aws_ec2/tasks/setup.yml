@@ -4,63 +4,63 @@
     filters:
       architecture: x86_64
       # CentOS Community Platform Engineering (CPE)
-      owner-id: '125523088429'
+      owner-id: "125523088429"
       virtualization-type: hvm
       root-device-type: ebs
-      name: 'Fedora-Cloud-Base-37-1.2.x86_64*'
+      name: Fedora-Cloud-Base-37-1.2.x86_64*
   register: fedora_images
 
 - name: Set image id, vpc cidr and subnet cidr
   ansible.builtin.set_fact:
-    image_id: '{{ fedora_images.images.0.image_id }}'
-    vpc_cidr: '10.{{ 256 | random(seed=resource_prefix) }}.0.0/16'
-    subnet_cidr: '10.{{ 256 | random(seed=resource_prefix) }}.0.0/24'
+    image_id: "{{ fedora_images.images.0.image_id }}"
+    vpc_cidr: 10.{{ 256 | random(seed=resource_prefix) }}.0.0/16
+    subnet_cidr: 10.{{ 256 | random(seed=resource_prefix) }}.0.0/24
 
 - name: create a VPC to work in
   amazon.aws.ec2_vpc_net:
-    cidr_block: '{{ vpc_cidr }}'
+    cidr_block: "{{ vpc_cidr }}"
     state: present
-    name: '{{ resource_prefix }}_setup'
+    name: "{{ resource_prefix }}_setup"
     resource_tags:
-      Name: '{{ resource_prefix }}_setup'
+      Name: "{{ resource_prefix }}_setup"
   register: setup_vpc
 
 - name: Set vpc id
   ansible.builtin.set_fact:
-    vpc_id: '{{ setup_vpc.vpc.id }}'
+    vpc_id: "{{ setup_vpc.vpc.id }}"
 
 - name: create a subnet to use for creating an ec2 instance
   amazon.aws.ec2_vpc_subnet:
-    az: '{{ aws_region }}a'
-    vpc_id: '{{ setup_vpc.vpc.id }}'
-    cidr: '{{ subnet_cidr }}'
+    az: "{{ aws_region }}a"
+    vpc_id: "{{ setup_vpc.vpc.id }}"
+    cidr: "{{ subnet_cidr }}"
     state: present
     resource_tags:
-      Name: '{{ resource_prefix }}_setup'
+      Name: "{{ resource_prefix }}_setup"
   register: setup_subnet
 
 - name: Set subnet id
   ansible.builtin.set_fact:
-    subnet_id: '{{ setup_subnet.subnet.id }}'
+    subnet_id: "{{ setup_subnet.subnet.id }}"
 
 - name: create a security group to use for creating an ec2 instance
   ec2_security_group:
-    name: '{{ resource_prefix }}_setup'
-    description: 'created by Ansible integration tests'
+    name: "{{ resource_prefix }}_setup"
+    description: created by Ansible integration tests
     state: present
-    vpc_id: '{{ setup_vpc.vpc.id }}'
+    vpc_id: "{{ setup_vpc.vpc.id }}"
   register: setup_sg
 
 - name: Set sg id
   ansible.builtin.set_fact:
-    sg_id: '{{ setup_sg.group_id }}'
+    sg_id: "{{ setup_sg.group_id }}"
 
 - name: Create ec2 instance
-  ec2_instance:
-    image_id: '{{ image_id }}'
-    name: '{{ resource_prefix }}'
+  amazon.aws.ec2_instance:
+    image_id: "{{ image_id }}"
+    name: "{{ resource_prefix }}"
     instance_type: t2.micro
-    security_groups: '{{ sg_id }}'
-    vpc_subnet_id: '{{ subnet_id }}'
+    security_groups: "{{ sg_id }}"
+    vpc_subnet_id: "{{ subnet_id }}"
     wait: false
   register: setup_instance

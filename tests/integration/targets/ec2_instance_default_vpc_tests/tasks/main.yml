@@ -1,3 +1,4 @@
+---
 - module_defaults:
     group/aws:
       access_key: "{{ aws_access_key }}"
@@ -5,59 +6,59 @@
       session_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
   block:
-  - name: "Make instance in a default subnet of the VPC"
-    ec2_instance:
-      state: present
-      name: "{{ resource_prefix }}-test-default-vpc"
-      image_id: "{{ ec2_ami_id }}"
-      tags:
-        TestId: "{{ ec2_instance_tag_TestId }}"
-      security_group: "default"
-      instance_type: "{{ ec2_instance_type }}"
-      wait: false
-    register: in_default_vpc
+    - name: Make instance in a default subnet of the VPC
+      amazon.aws.ec2_instance:
+        state: present
+        name: "{{ resource_prefix }}-test-default-vpc"
+        image_id: "{{ ec2_ami_id }}"
+        tags:
+          TestId: "{{ ec2_instance_tag_TestId }}"
+        security_group: default
+        instance_type: "{{ ec2_instance_type }}"
+        wait: false
+      register: in_default_vpc
 
-  - name: "Make instance in a default subnet of the VPC(check mode)"
-    ec2_instance:
-      state: present
-      name: "{{ resource_prefix }}-test-default-vpc-checkmode"
-      image_id: "{{ ec2_ami_id }}"
-      tags:
-        TestId: "{{ ec2_instance_tag_TestId }}"
-      security_group: "default"
-      instance_type: "{{ ec2_instance_type }}"
-    check_mode: yes
+    - name: Make instance in a default subnet of the VPC(check mode)
+      amazon.aws.ec2_instance:
+        state: present
+        name: "{{ resource_prefix }}-test-default-vpc-checkmode"
+        image_id: "{{ ec2_ami_id }}"
+        tags:
+          TestId: "{{ ec2_instance_tag_TestId }}"
+        security_group: default
+        instance_type: "{{ ec2_instance_type }}"
+      check_mode: true
 
-  - name: "fact presented ec2 instance"
-    ec2_instance_info:
-      filters:
-        "tag:Name": "{{ resource_prefix }}-test-default-vpc"
-    register: presented_instance_fact
+    - name: fact presented ec2 instance
+      amazon.aws.ec2_instance_info:
+        filters:
+          tag:Name: "{{ resource_prefix }}-test-default-vpc"
+      register: presented_instance_fact
 
-  - name: "fact checkmode ec2 instance"
-    ec2_instance_info:
-      filters:
-        "tag:Name": "{{ resource_prefix }}-test-default-vpc-checkmode"
-    register: checkmode_instance_fact
+    - name: fact checkmode ec2 instance
+      amazon.aws.ec2_instance_info:
+        filters:
+          tag:Name: "{{ resource_prefix }}-test-default-vpc-checkmode"
+      register: checkmode_instance_fact
 
-  - name: "Confirm whether the check mode is working normally."
-    assert:
-      that:
-        - presented_instance_fact.instances | length > 0
-        - checkmode_instance_fact.instances | length == 0
+    - name: Confirm whether the check mode is working normally.
+      ansible.builtin.assert:
+        that:
+          - presented_instance_fact.instances | length > 0
+          - checkmode_instance_fact.instances | length == 0
 
-  - name: "Terminate instances"
-    ec2_instance:
-      state: absent
-      instance_ids: "{{ in_default_vpc.instance_ids }}"
-      tags:
-        TestId: "{{ ec2_instance_tag_TestId }}"
+    - name: Terminate instances
+      amazon.aws.ec2_instance:
+        state: absent
+        instance_ids: "{{ in_default_vpc.instance_ids }}"
+        tags:
+          TestId: "{{ ec2_instance_tag_TestId }}"
 
   always:
-  - name: "Terminate vpc_tests instances"
-    ec2_instance:
-      state: absent
-      filters:
-        "tag:TestId": "{{ ec2_instance_tag_TestId }}"
-      wait: yes
-    ignore_errors: yes
+    - name: Terminate vpc_tests instances
+      amazon.aws.ec2_instance:
+        state: absent
+        filters:
+          tag:TestId: "{{ ec2_instance_tag_TestId }}"
+        wait: true
+      ignore_errors: true

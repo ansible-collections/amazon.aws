@@ -2,122 +2,122 @@
 ##################################################################################
 # Tests using Endpoints
 
-- name: 'Test basic operation using standard endpoint (aws-parameters)'
+- name: Test basic operation using standard endpoint (aws-parameters)
   example_module:
-    region: '{{ aws_region }}'
-    aws_endpoint_url: 'https://ec2.{{ aws_region }}.amazonaws.com'
-    aws_access_key: '{{ aws_access_key }}'
-    aws_secret_key: '{{ aws_secret_key }}'
-    aws_security_token: '{{ security_token }}'
+    region: "{{ aws_region }}"
+    aws_endpoint_url: https://ec2.{{ aws_region }}.amazonaws.com
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    aws_security_token: "{{ security_token }}"
   register: standard_endpoint_result
 
-- name: 'Check that we connected to the standard endpoint'
-  assert:
+- name: Check that we connected to the standard endpoint
+  ansible.builtin.assert:
     that:
-    - standard_endpoint_result is successful
-    - '"ec2:DescribeImages" in standard_endpoint_result.resource_actions'
+      - standard_endpoint_result is successful
+      - '"ec2:DescribeImages" in standard_endpoint_result.resource_actions'
 
 # The FIPS endpoints aren't available in every region, this will trigger errors
 # outside of: [ us-east-1, us-east-2, us-west-1, us-west-2 ]
 
-- name: 'Test basic operation using FIPS endpoint (aws-parameters)'
+- name: Test basic operation using FIPS endpoint (aws-parameters)
   example_module:
-    region: '{{ aws_region }}'
-    aws_endpoint_url: 'https://ec2-fips.us-east-1.amazonaws.com'
-    aws_access_key: '{{ aws_access_key }}'
-    aws_secret_key: '{{ aws_secret_key }}'
-    aws_security_token: '{{ security_token }}'
+    region: "{{ aws_region }}"
+    aws_endpoint_url: https://ec2-fips.us-east-1.amazonaws.com
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    aws_security_token: "{{ security_token }}"
   register: fips_endpoint_result
 
-- name: 'Check that we connected to the FIPS endpoint'
-  assert:
+- name: Check that we connected to the FIPS endpoint
+  ansible.builtin.assert:
     that:
-    - fips_endpoint_result is successful
-    - '"ec2-fips:DescribeImages" in fips_endpoint_result.resource_actions'
+      - fips_endpoint_result is successful
+      - '"ec2-fips:DescribeImages" in fips_endpoint_result.resource_actions'
 
-- name: 'Test basic operation using FIPS endpoint (aws-parameters)'
+- name: Test basic operation using FIPS endpoint (aws-parameters)
   example_module:
-    region: '{{ aws_region }}'
-    endpoint_url: 'https://ec2-fips.us-east-1.amazonaws.com'
-    aws_access_key: '{{ aws_access_key }}'
-    aws_secret_key: '{{ aws_secret_key }}'
-    aws_security_token: '{{ security_token }}'
+    region: "{{ aws_region }}"
+    endpoint_url: https://ec2-fips.us-east-1.amazonaws.com
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    aws_security_token: "{{ security_token }}"
   register: fips_endpoint_result
 
-- name: 'Check that we connected to the FIPS endpoint'
-  assert:
+- name: Check that we connected to the FIPS endpoint
+  ansible.builtin.assert:
     that:
-    - fips_endpoint_result is successful
-    - '"ec2-fips:DescribeImages" in fips_endpoint_result.resource_actions'
+      - fips_endpoint_result is successful
+      - '"ec2-fips:DescribeImages" in fips_endpoint_result.resource_actions'
 
-- name: 'Test basic operation using FIPS endpoint (aws-parameters)'
+- name: Test basic operation using FIPS endpoint (aws-parameters)
   example_module:
-    region: '{{ aws_region }}'
-    ec2_url: 'https://ec2-fips.us-east-1.amazonaws.com'
-    aws_access_key: '{{ aws_access_key }}'
-    aws_secret_key: '{{ aws_secret_key }}'
-    aws_security_token: '{{ security_token }}'
+    region: "{{ aws_region }}"
+    ec2_url: https://ec2-fips.us-east-1.amazonaws.com
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    aws_security_token: "{{ security_token }}"
   register: fips_endpoint_result
 
-- name: 'Check that we connected to the FIPS endpoint'
-  assert:
+- name: Check that we connected to the FIPS endpoint
+  ansible.builtin.assert:
     that:
-    - fips_endpoint_result is successful
-    - '"ec2-fips:DescribeImages" in fips_endpoint_result.resource_actions'
+      - fips_endpoint_result is successful
+      - '"ec2-fips:DescribeImages" in fips_endpoint_result.resource_actions'
 
 ##################################################################################
 # Tests using environment variables
 
-- name: 'Test basic operation using FIPS endpoint (aws-environment)'
+- name: Test basic operation using FIPS endpoint (aws-environment)
   example_module:
-    region: '{{ aws_region }}'
-    aws_access_key: '{{ aws_access_key }}'
-    aws_secret_key: '{{ aws_secret_key }}'
-    aws_security_token: '{{ security_token }}'
+    region: "{{ aws_region }}"
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    aws_security_token: "{{ security_token }}"
   environment:
-    AWS_URL: 'https://ec2-fips.us-east-1.amazonaws.com'
+    AWS_URL: https://ec2-fips.us-east-1.amazonaws.com
   register: fips_endpoint_result
 
-- name: 'Check that we connected to the FIPS endpoint'
-  assert:
+- name: Check that we connected to the FIPS endpoint
+  ansible.builtin.assert:
     that:
-    - fips_endpoint_result is successful
-    - '"ec2-fips:DescribeImages" in fips_endpoint_result.resource_actions'
+      - fips_endpoint_result is successful
+      - '"ec2-fips:DescribeImages" in fips_endpoint_result.resource_actions'
 
-- name: 'Test basic operation using FIPS endpoint (ec2-environment)'
+- name: Test basic operation using FIPS endpoint (ec2-environment)
   example_module:
-    region: '{{ aws_region }}'
-    aws_access_key: '{{ aws_access_key }}'
-    aws_secret_key: '{{ aws_secret_key }}'
-    aws_security_token: '{{ security_token }}'
+    region: "{{ aws_region }}"
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    aws_security_token: "{{ security_token }}"
   environment:
-    EC2_URL: 'https://ec2-fips.us-east-1.amazonaws.com'
+    EC2_URL: https://ec2-fips.us-east-1.amazonaws.com
   register: fips_endpoint_result
 
-- name: 'Check that we connected to the FIPS endpoint'
-  assert:
+- name: Check that we connected to the FIPS endpoint
+  ansible.builtin.assert:
     that:
-    - fips_endpoint_result is successful
-    - '"ec2-fips:DescribeImages" in fips_endpoint_result.resource_actions'
+      - fips_endpoint_result is successful
+      - '"ec2-fips:DescribeImages" in fips_endpoint_result.resource_actions'
 
 ##################################################################################
 # Tests using a bad endpoint URL
 #   - This demonstrates that endpoint_url overrode region
 
-- name: 'Test with bad endpoint URL'
+- name: Test with bad endpoint URL
   example_module:
-    region: '{{ aws_region }}'
-    endpoint_url: 'https://junk.{{ aws_region }}.amazonaws.com'
-    access_key: '{{ aws_access_key }}'
-    secret_key: '{{ aws_secret_key }}'
-    security_token: '{{ security_token }}'
+    region: "{{ aws_region }}"
+    endpoint_url: https://junk.{{ aws_region }}.amazonaws.com
+    access_key: "{{ aws_access_key }}"
+    secret_key: "{{ aws_secret_key }}"
+    security_token: "{{ security_token }}"
   register: bad_endpoint
-  ignore_errors: True
+  ignore_errors: true
 
-- assert:
+- ansible.builtin.assert:
     that:
-    - bad_endpoint is failed
-    - '"msg" in bad_endpoint'
-    - '"Could not connect to the endpoint URL" in bad_endpoint.msg'
-    - '"Fail JSON AWS" in bad_endpoint.msg'
-    - '"junk.{{ aws_region }}.amazonaws.com" in bad_endpoint.msg'
+      - bad_endpoint is failed
+      - '"msg" in bad_endpoint'
+      - '"Could not connect to the endpoint URL" in bad_endpoint.msg'
+      - '"Fail JSON AWS" in bad_endpoint.msg'
+      - '"junk.{{ aws_region }}.amazonaws.com" in bad_endpoint.msg'

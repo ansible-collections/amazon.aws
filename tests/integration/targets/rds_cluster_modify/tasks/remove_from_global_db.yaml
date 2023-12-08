@@ -1,7 +1,6 @@
 ---
 - name: Run tests for testing remove cluster from global db
   block:
-
     # Create global db -------------------------------------------------------------------------------
 
     - name: Create rds global database
@@ -9,7 +8,7 @@
         global_cluster_identifier: "{{ test_global_cluster_name }}"
         engine: "{{ test_engine }}"
         engine_version: "{{ test_engine_version }}"
-        region:  "{{ test_primary_cluster_region }}"
+        region: "{{ test_primary_cluster_region }}"
         state: present
       register: create_global_result
 
@@ -41,7 +40,7 @@
       register: primary_cluster_info_result
 
     - name: Get global db info
-      command: 'aws rds describe-global-clusters --global-cluster-identifier {{ test_global_cluster_name }}'
+      ansible.builtin.command: aws rds describe-global-clusters --global-cluster-identifier {{ test_global_cluster_name }}
       environment:
         AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
         AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
@@ -50,11 +49,11 @@
       register: global_cluster_info_result
 
     - name: convert it to an object
-      set_fact:
+      ansible.builtin.set_fact:
         global_cluster_info: "{{ global_cluster_info_result.stdout | from_json }}"
 
     - name: Assert that primary cluster is a part of global db
-      assert:
+      ansible.builtin.assert:
         that:
           - global_cluster_info.GlobalClusters[0].GlobalClusterMembers[0].DBClusterArn == primary_cluster_info_result.clusters[0].db_cluster_arn
 
@@ -76,7 +75,7 @@
       register: replica_cluster_info_result
 
     - name: Get global db info
-      command: 'aws rds describe-global-clusters --global-cluster-identifier {{ test_global_cluster_name }}'
+      ansible.builtin.command: aws rds describe-global-clusters --global-cluster-identifier {{ test_global_cluster_name }}
       environment:
         AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
         AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
@@ -85,11 +84,11 @@
       register: global_cluster_info_result
 
     - name: convert it to an object
-      set_fact:
+      ansible.builtin.set_fact:
         global_cluster_info: "{{ global_cluster_info_result.stdout | from_json }}"
 
     - name: Assert that replica cluster is a part of global db
-      assert:
+      ansible.builtin.assert:
         that:
           - global_cluster_info.GlobalClusters[0].GlobalClusterMembers[1].DBClusterArn == replica_cluster_info_result.clusters[0].db_cluster_arn
 
@@ -106,7 +105,7 @@
       ignore_errors: true
 
     - name: Assert that deletion failed due to cluster being part of global db
-      assert:
+      ansible.builtin.assert:
         that:
           - delete_replica_cluster_result is failed
           - delete_replica_cluster_result is not changed
@@ -130,14 +129,14 @@
         region: "{{ test_replica_cluster_region }}"
       register: replica_cluster_info_result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - modify_port_result is not failed
           - modify_port_result is changed
           - replica_cluster_info_result.clusters[0].port == 3389
 
     - name: Get global db info
-      command: 'aws rds describe-global-clusters --global-cluster-identifier {{ test_global_cluster_name }}'
+      ansible.builtin.command: aws rds describe-global-clusters --global-cluster-identifier {{ test_global_cluster_name }}
       environment:
         AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
         AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
@@ -146,11 +145,11 @@
       register: global_cluster_info_result
 
     - name: convert it to an object
-      set_fact:
+      ansible.builtin.set_fact:
         global_cluster_info: "{{ global_cluster_info_result.stdout | from_json }}"
 
     - name: Assert that replica cluster is NOT a part of global db
-      assert:
+      ansible.builtin.assert:
         that:
           - global_cluster_info.GlobalClusters[0].GlobalClusterMembers | length == 1
           - global_cluster_info.GlobalClusters[0].GlobalClusterMembers[0].DBClusterArn != replica_cluster_info_result.clusters[0].db_cluster_arn
@@ -167,7 +166,7 @@
       register: delete_replica_cluster_result
 
     - name: Assert that replica cluster deletion succeeded
-      assert:
+      ansible.builtin.assert:
         that:
           - delete_replica_cluster_result is not failed
           - delete_replica_cluster_result is changed
@@ -175,13 +174,13 @@
     # Test remove primary cluster from global db------------------------------------------------------------
     - name: Remove primary cluster from global db
       amazon.aws.rds_cluster:
-        global_cluster_identifier: '{{ test_global_cluster_name }}'
-        db_cluster_identifier: '{{ test_primary_cluster_name }}'
+        global_cluster_identifier: "{{ test_global_cluster_name }}"
+        db_cluster_identifier: "{{ test_primary_cluster_name }}"
         region: "{{ test_primary_cluster_region }}"
         remove_from_global_db: true
 
     - name: Get global db info
-      command: 'aws rds describe-global-clusters --global-cluster-identifier {{ test_global_cluster_name }}'
+      ansible.builtin.command: aws rds describe-global-clusters --global-cluster-identifier {{ test_global_cluster_name }}
       environment:
         AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
         AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
@@ -190,13 +189,13 @@
       register: global_cluster_info_result
 
     - name: convert it to an object
-      set_fact:
+      ansible.builtin.set_fact:
         global_cluster_info: "{{ global_cluster_info_result.stdout | from_json }}"
 
     - name: Assert that primary cluster is NOT a part of global db
-      assert:
+      ansible.builtin.assert:
         that:
-           - global_cluster_info.GlobalClusters[0].GlobalClusterMembers | length == 0
+          - global_cluster_info.GlobalClusters[0].GlobalClusterMembers | length == 0
 
   # Cleanup starts------------------------------------------------------------
 
@@ -230,7 +229,7 @@
         username: "{{ username }}"
         password: "{{ password }}"
         skip_final_snapshot: true
-        region:  "{{ test_primary_cluster_region }}"
+        region: "{{ test_primary_cluster_region }}"
         state: absent
       ignore_errors: true
 

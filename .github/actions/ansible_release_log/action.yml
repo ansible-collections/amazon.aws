@@ -1,13 +1,14 @@
-name: "Ansible GitHub Release Logs"
-author: "Mark Chappell (tremble)"
+---
+name: Ansible GitHub Release Logs
+author: Mark Chappell (tremble)
 branding:
-  icon: "git-branch"
-  color: "gray-dark"
-description: "Generate Changelog entries for a GitHub release"
+  icon: git-branch
+  color: gray-dark
+description: Generate Changelog entries for a GitHub release
 
 inputs:
   release:
-    description: "The release version to publish"
+    description: The release version to publish
     required: true
 
 runs:

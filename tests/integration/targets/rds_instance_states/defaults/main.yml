@@ -1,3 +1,4 @@
+---
 instance_id: ansible-test-{{ tiny_prefix }}
 username: test
 password: test12345678

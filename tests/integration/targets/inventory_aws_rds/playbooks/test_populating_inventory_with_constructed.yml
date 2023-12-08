@@ -1,7 +1,7 @@
 ---
 - hosts: 127.0.0.1
   connection: local
-  gather_facts: no
+  gather_facts: false
 
   environment: "{{ ansible_test.environment }}"
 
@@ -14,35 +14,34 @@
 
   module_defaults:
     group/aws:
-      access_key: '{{ aws_access_key }}'
-      secret_key: '{{ aws_secret_key }}'
-      session_token: '{{ security_token | default(omit) }}'
-      region: '{{ aws_region }}'
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
 
   tasks:
-
     - name: Get RDS instance info
-      rds_instance_info:
-        db_instance_identifier: '{{ instance_id }}'
+      amazon.aws.rds_instance_info:
+        db_instance_identifier: "{{ instance_id }}"
       register: db_info
 
-    - debug:
+    - ansible.builtin.debug:
         var: groups
 
-    - name: 'generate expected group name based off the db parameter groups'
+    - name: generate expected group name based off the db parameter groups
       vars:
-        parameter_group_name: '{{ db_info.instances[0].db_parameter_groups[0].db_parameter_group_name }}'
-      set_fact:
-        parameter_group_key: 'rds_parameter_group_{{ parameter_group_name | replace(".", "_") }}'
+        parameter_group_name: "{{ db_info.instances[0].db_parameter_groups[0].db_parameter_group_name }}"
+      ansible.builtin.set_fact:
+        parameter_group_key: rds_parameter_group_{{ parameter_group_name | replace(".", "_") }}
 
     - name: assert the keyed groups from constructed config were added to inventory
-      assert:
+      ansible.builtin.assert:
         that:
           # There are 6 groups: all, ungrouped, aws_rds, tag keyed group, engine keyed group, parameter group keyed group
-          - "groups | length == 6"
+          - groups | length == 6
           - '"all" in groups'
           - '"ungrouped" in groups'
           - '"aws_rds" in groups'
           - '"tag_workload_type_other" in groups'
           - '"rds_mariadb" in groups'
-          - 'parameter_group_key in groups'
+          - parameter_group_key in groups

@@ -1,55 +1,53 @@
 ---
 - block:
-    - name: 'Ensure bucket_name contains a .'
-      set_fact:
+    - name: Ensure bucket_name contains a .
+      ansible.builtin.set_fact:
         local_bucket_name: "{{ bucket_name | hash('md5')}}.dotted"
-
 
     # ============================================================
     #
-    - name: 'Create bucket with dot in name'
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
+    - name: Create bucket with dot in name
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
         state: present
       register: output
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - output is changed
           - output.name == '{{ local_bucket_name }}'
 
-
     # ============================================================
 
-    - name: 'Pause to help with s3 bucket eventual consistency'
-      wait_for:
+    - name: Pause to help with s3 bucket eventual consistency
+      ansible.builtin.wait_for:
         timeout: 10
       delegate_to: localhost
 
-    - name: 'Delete s3_bucket with dot in name'
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
+    - name: Delete s3_bucket with dot in name
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
         state: absent
       register: output
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - output is changed
 
-    - name: 'Re-delete s3_bucket with dot in name'
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
+    - name: Re-delete s3_bucket with dot in name
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
         state: absent
       register: output
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - output is not changed
 
   # ============================================================
   always:
-    - name: 'Ensure all buckets are deleted'
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
+    - name: Ensure all buckets are deleted
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
         state: absent
-      ignore_errors: yes
+      ignore_errors: true

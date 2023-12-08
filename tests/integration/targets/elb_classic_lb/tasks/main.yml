@@ -24,35 +24,28 @@
     - community.aws
     - community.crypto
   block:
-
-    - include_tasks: missing_params.yml
-
-    - include_tasks: describe_region.yml
-    - include_tasks: setup_vpc.yml
-    - include_tasks: setup_instances.yml
-    - include_tasks: setup_s3.yml
-
-    - include_tasks: basic_public.yml
-    - include_tasks: basic_internal.yml
-    - include_tasks: schema_change.yml
-
-    - include_tasks: https_listeners.yml
-
-    - include_tasks: simple_changes.yml
-    - include_tasks: complex_changes.yml
-
+    - ansible.builtin.include_tasks: missing_params.yml
+    - ansible.builtin.include_tasks: describe_region.yml
+    - ansible.builtin.include_tasks: setup_vpc.yml
+    - ansible.builtin.include_tasks: setup_instances.yml
+    - ansible.builtin.include_tasks: setup_s3.yml
+    - ansible.builtin.include_tasks: basic_public.yml
+    - ansible.builtin.include_tasks: basic_internal.yml
+    - ansible.builtin.include_tasks: schema_change.yml
+    - ansible.builtin.include_tasks: https_listeners.yml
+    - ansible.builtin.include_tasks: simple_changes.yml
+    - ansible.builtin.include_tasks: complex_changes.yml
   always:
-
     # ============================================================
     # ELB should already be gone, but double-check
     - name: remove the test load balancer
-      elb_classic_lb:
+      amazon.aws.elb_classic_lb:
         name: "{{ elb_name }}"
         state: absent
         wait: true
       register: result
       ignore_errors: true
 
-    - include_tasks: cleanup_s3.yml
-    - include_tasks: cleanup_instances.yml
-    - include_tasks: cleanup_vpc.yml
+    - ansible.builtin.include_tasks: cleanup_s3.yml
+    - ansible.builtin.include_tasks: cleanup_instances.yml
+    - ansible.builtin.include_tasks: cleanup_vpc.yml

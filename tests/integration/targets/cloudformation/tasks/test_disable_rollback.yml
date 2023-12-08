@@ -1,7 +1,6 @@
 ---
 - name: Run cloudformation tests for `disable_rollback` parameter
   block:
-
     # disable rollback to true
     - name: create a cloudformation stack (disable_rollback=true) (check mode)
       amazon.aws.cloudformation:
@@ -10,14 +9,14 @@
         disable_rollback: true
         template_body: "{{ lookup('file','cf_template.json') }}"
         template_parameters:
-          InstanceType: "t3.nano"
+          InstanceType: t3.nano
           ImageId: "{{ ec2_ami_id }}"
           SubnetId: "{{ testing_subnet.subnet.id }}"
       register: cf_stack
-      check_mode: yes
+      check_mode: true
 
     - name: check task return attributes
-      assert:
+      ansible.builtin.assert:
         that:
           - cf_stack.changed
           - "'msg' in cf_stack and 'New stack would be created' in cf_stack.msg"
@@ -29,18 +28,18 @@
         disable_rollback: true
         template_body: "{{ lookup('file','cf_template.json') }}"
         template_parameters:
-          InstanceType: "t3.nano"
+          InstanceType: t3.nano
           ImageId: "{{ ec2_ami_id }}"
           SubnetId: "{{ testing_subnet.subnet.id }}"
       register: cf_stack
 
     - name: get stack details
-      cloudformation_info:
+      amazon.aws.cloudformation_info:
         stack_name: "{{ stack_name_disable_rollback_true }}"
       register: stack_info
 
     - name: assert stack info
-      assert:
+      ansible.builtin.assert:
         that:
           - "'cloudformation' in stack_info"
           - stack_info.cloudformation | length == 1
@@ -54,14 +53,14 @@
         disable_rollback: false
         template_body: "{{ lookup('file','cf_template.json') }}"
         template_parameters:
-          InstanceType: "t3.nano"
+          InstanceType: t3.nano
           ImageId: "{{ ec2_ami_id }}"
           SubnetId: "{{ testing_subnet.subnet.id }}"
       register: cf_stack
-      check_mode: yes
+      check_mode: true
 
     - name: check task return attributes
-      assert:
+      ansible.builtin.assert:
         that:
           - cf_stack.changed
           - "'msg' in cf_stack and 'New stack would be created' in cf_stack.msg"
@@ -73,22 +72,22 @@
         disable_rollback: false
         template_body: "{{ lookup('file','cf_template.json') }}"
         template_parameters:
-          InstanceType: "t3.nano"
+          InstanceType: t3.nano
           ImageId: "{{ ec2_ami_id }}"
           SubnetId: "{{ testing_subnet.subnet.id }}"
       register: cf_stack
 
     - name: get stack details
-      cloudformation_info:
+      amazon.aws.cloudformation_info:
         stack_name: "{{ stack_name_disable_rollback_false }}"
       register: stack_info
 
     - name: assert stack info
-      assert:
+      ansible.builtin.assert:
         that:
           - "'cloudformation' in stack_info"
-          - "stack_info.cloudformation | length == 1"
-          - "stack_info.cloudformation[stack_name_disable_rollback_false].stack_description.disable_rollback == false"
+          - stack_info.cloudformation | length == 1
+          - stack_info.cloudformation[stack_name_disable_rollback_false].stack_description.disable_rollback == false
 
     # disable rollback not set
     - name: create a cloudformation stack (disable_rollback not set) (check mode)
@@ -97,14 +96,14 @@
         state: present
         template_body: "{{ lookup('file','cf_template.json') }}"
         template_parameters:
-          InstanceType: "t3.nano"
+          InstanceType: t3.nano
           ImageId: "{{ ec2_ami_id }}"
           SubnetId: "{{ testing_subnet.subnet.id }}"
       register: cf_stack
-      check_mode: yes
+      check_mode: true
 
     - name: check task return attributes
-      assert:
+      ansible.builtin.assert:
         that:
           - cf_stack.changed
           - "'msg' in cf_stack and 'New stack would be created' in cf_stack.msg"
@@ -115,22 +114,22 @@
         state: present
         template_body: "{{ lookup('file','cf_template.json') }}"
         template_parameters:
-          InstanceType: "t3.nano"
+          InstanceType: t3.nano
           ImageId: "{{ ec2_ami_id }}"
           SubnetId: "{{ testing_subnet.subnet.id }}"
       register: cf_stack
 
     - name: get stack details
-      cloudformation_info:
+      amazon.aws.cloudformation_info:
         stack_name: "{{ stack_name }}"
       register: stack_info
 
     - name: assert stack info
-      assert:
+      ansible.builtin.assert:
         that:
           - "'cloudformation' in stack_info"
-          - "stack_info.cloudformation | length == 1"
-          - "stack_info.cloudformation[stack_name].stack_description.disable_rollback == false"
+          - stack_info.cloudformation | length == 1
+          - stack_info.cloudformation[stack_name].stack_description.disable_rollback == false
 
     # =============================================================================================
     # Test Scenario
@@ -147,20 +146,20 @@
         template_body: "{{ lookup('file','cf_template.json') }}"
         disable_rollback: false
         template_parameters:
-          InstanceType: "t3.nano"
+          InstanceType: t3.nano
           ImageId: "{{ ec2_ami_id }}"
           SubnetId: "{{ testing_subnet.subnet.id }}"
       register: cf_stack
       ignore_errors: true
 
-    - name:  Update the cloudformation stack with wrong ami (fails, does not delete failed as disable_rollback=true)
+    - name: Update the cloudformation stack with wrong ami (fails, does not delete failed as disable_rollback=true)
       amazon.aws.cloudformation:
         stack_name: "{{ stack_name }}-failtest"
         state: present
         template_body: "{{ lookup('file','cf_template.json') }}"
         disable_rollback: true
         template_parameters:
-          InstanceType: "t3.nano"
+          InstanceType: t3.nano
           ImageId: "{{ ec2_ami_id }}1" # wrong ami provided
           SubnetId: "{{ testing_subnet.subnet.id }}"
       register: cf_stack
@@ -174,7 +173,7 @@
         template_body: "{{ lookup('file','cf_template.json') }}"
         disable_rollback: false
         template_parameters:
-          InstanceType: "t3.nano"
+          InstanceType: t3.nano
           ImageId: "{{ ec2_ami_id }}"
           SubnetId: "{{ testing_subnet.subnet.id }}"
       register: cf_stack
@@ -187,27 +186,26 @@
         template_body: "{{ lookup('file','cf_template.json') }}"
         disable_rollback: true
         template_parameters:
-          InstanceType: "t3.nano"
+          InstanceType: t3.nano
           ImageId: "{{ ec2_ami_id }}"
           SubnetId: "{{ testing_subnet.subnet.id }}"
       register: cf_stack
 
     - name: get stack details
-      cloudformation_info:
+      amazon.aws.cloudformation_info:
         stack_name: "{{ stack_name }}-failtest"
       register: stack_info
 
     - name: Assert that update was successful
-      assert:
+      ansible.builtin.assert:
         that:
           - cf_stack.changed
           - cf_stack.output == "Stack UPDATE complete"
           - stack_info.cloudformation[stack_name+"-failtest"].stack_description.stack_status == "UPDATE_COMPLETE"
 
   always:
-
     - name: delete stack
-      cloudformation:
+      amazon.aws.cloudformation:
         stack_name: "{{ item }}"
         state: absent
       ignore_errors: true
