@@ -6,6 +6,8 @@
 
 from unittest.mock import MagicMock
 
+import pytest
+
 from ansible_collections.amazon.aws.plugins.module_utils import elbv2
 
 one_action = [
@@ -159,3 +161,138 @@ class TestElBV2Utils:
         actual_elb_attributes = self.elbv2obj.get_elb_attributes()
         # Assert we got the expected result
         assert actual_elb_attributes == expected_elb_attributes
+
+
+class TestELBListeners:
+    DEFAULT_PORT = 80
+    DEFAULT_PROTOCOL = "TCP"
+
+    def createListener(self, **kwargs):
+        result = {"Port": self.DEFAULT_PORT, "Protocol": self.DEFAULT_PROTOCOL}
+        if kwargs.get("port"):
+            result["Port"] = kwargs.get("port")
+        if kwargs.get("protocol"):
+            result["Protocol"] = kwargs.get("protocol")
+        if kwargs.get("certificate_arn") and kwargs.get("protocol") in ("TLS", "HTTPS"):
+            result["Certificates"] = [{"CertificateArn": kwargs.get("certificate_arn")}]
+        if kwargs.get("sslPolicy") and kwargs.get("protocol") in ("TLS", "HTTPS"):
+            result["SslPolicy"] = kwargs.get("sslPolicy")
+        if kwargs.get("alpnPolicy") and kwargs.get("protocol") == "TLS":
+            result["AlpnPolicy"] = kwargs.get("alpnPolicy")
+        return result
+
+    @pytest.mark.parametrize("current_protocol", ["TCP", "TLS", "UDP"])
+    @pytest.mark.parametrize(
+        "current_alpn,new_alpn",
+        [
+            (None, "None"),
+            (None, "HTTP1Only"),
+            ("HTTP1Only", "HTTP2Only"),
+            ("HTTP1Only", "HTTP1Only"),
+        ],
+    )
+    def test__compare_listener_alpn_policy(self, current_protocol, current_alpn, new_alpn):
+        current_listener = self.createListener(protocol=current_protocol, alpnPolicy=[current_alpn])
+        new_listener = self.createListener(protocol="TLS", alpnPolicy=[new_alpn])
+        result = None
+        if current_protocol != "TLS":
+            result = {"Protocol": "TLS"}
+        if new_alpn and any((current_protocol != "TLS", not current_alpn, current_alpn and current_alpn != new_alpn)):
+            result = result or {}
+            result["AlpnPolicy"] = [new_alpn]
+
+        assert result == elbv2.ELBListeners._compare_listener(current_listener, new_listener)
+
+    @pytest.mark.parametrize(
+        "current_protocol,new_protocol",
+        [
+            ("TCP", "TCP"),
+            ("TLS", "HTTPS"),
+            ("HTTPS", "HTTPS"),
+            ("TLS", "TLS"),
+            ("HTTPS", "TLS"),
+            ("HTTPS", "TCP"),
+            ("TLS", "TCP"),
+        ],
+    )
+    @pytest.mark.parametrize(
+        "current_ssl,new_ssl",
+        [
+            (None, "ELBSecurityPolicy-TLS-1-0-2015-04"),
+            ("ELBSecurityPolicy-TLS13-1-2-Ext2-2021-06", "ELBSecurityPolicy-TLS-1-0-2015-04"),
+            ("ELBSecurityPolicy-TLS-1-0-2015-04", None),
+            ("ELBSecurityPolicy-TLS-1-0-2015-04", "ELBSecurityPolicy-TLS-1-0-2015-04"),
+        ],
+    )
+    def test__compare_listener_sslpolicy(self, current_protocol, new_protocol, current_ssl, new_ssl):
+        current_listener = self.createListener(protocol=current_protocol, sslPolicy=current_ssl)
+
+        new_listener = self.createListener(protocol=new_protocol, sslPolicy=new_ssl)
+
+        expected = None
+        if new_protocol != current_protocol:
+            expected = {"Protocol": new_protocol}
+        if new_protocol in ("HTTPS", "TLS") and new_ssl and new_ssl != current_ssl:
+            expected = expected or {}
+            expected["SslPolicy"] = new_ssl
+        assert expected == elbv2.ELBListeners._compare_listener(current_listener, new_listener)
+
+    @pytest.mark.parametrize(
+        "current_protocol,new_protocol",
+        [
+            ("TCP", "TCP"),
+            ("TLS", "HTTPS"),
+            ("HTTPS", "HTTPS"),
+            ("TLS", "TLS"),
+            ("HTTPS", "TLS"),
+            ("HTTPS", "TCP"),
+            ("TLS", "TCP"),
+        ],
+    )
+    @pytest.mark.parametrize(
+        "current_certificate,new_certificate",
+        [
+            (None, "arn:aws:iam::012345678901:server-certificate/ansible-test-1"),
+            (
+                "arn:aws:iam::012345678901:server-certificate/ansible-test-1",
+                "arn:aws:iam::012345678901:server-certificate/ansible-test-2",
+            ),
+            ("arn:aws:iam::012345678901:server-certificate/ansible-test-1", None),
+            (
+                "arn:aws:iam::012345678901:server-certificate/ansible-test-1",
+                "arn:aws:iam::012345678901:server-certificate/ansible-test-1",
+            ),
+        ],
+    )
+    def test__compare_listener_certificates(self, current_protocol, new_protocol, current_certificate, new_certificate):
+        current_listener = self.createListener(protocol=current_protocol, certificate_arn=current_certificate)
+
+        new_listener = self.createListener(protocol=new_protocol, certificate_arn=new_certificate)
+
+        expected = None
+        if new_protocol != current_protocol:
+            expected = {"Protocol": new_protocol}
+        if new_protocol in ("HTTPS", "TLS") and new_certificate and new_certificate != current_certificate:
+            expected = expected or {}
+            expected["Certificates"] = [{"CertificateArn": new_certificate}]
+        assert expected == elbv2.ELBListeners._compare_listener(current_listener, new_listener)
+
+    @pytest.mark.parametrize(
+        "are_equals",
+        [True, False],
+    )
+    def test__compare_listener_port(self, are_equals):
+        current_listener = self.createListener()
+        new_port = MagicMock() if not are_equals else None
+        new_listener = self.createListener(port=new_port)
+
+        result = elbv2.ELBListeners._compare_listener(current_listener, new_listener)
+        expected = None
+        if not are_equals:
+            expected = {"Port": new_port}
+        assert result == expected
+
+    def test_ensure_listeners_alpn_policy(self):
+        listeners = [{"Port": self.DEFAULT_PORT, "AlpnPolicy": "HTTP2Optional"}]
+        expected = [{"Port": self.DEFAULT_PORT, "AlpnPolicy": ["HTTP2Optional"]}]
+        assert expected == elbv2.ELBListeners._ensure_listeners_alpn_policy(listeners)
