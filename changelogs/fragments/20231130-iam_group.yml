@@ -1,5 +1,0 @@
----
-minor_changes:
-  - iam_group - add support for setting group path (https://github.com/ansible-collections/amazon.aws/pull/1892).
-  - iam_group - adds attached_policies return value (https://github.com/ansible-collections/amazon.aws/pull/1892).
-  - iam_group - code refactored to avoid single long function (https://github.com/ansible-collections/amazon.aws/pull/1892).
