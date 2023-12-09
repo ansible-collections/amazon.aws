@@ -7,7 +7,7 @@
       region: "{{ aws_region }}"
   block:
     - name: create a key
-      kms_key:
+      amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
         state: present
         enabled: true
@@ -252,7 +252,7 @@
       ignore_errors: true
 
     - name: finish off by deleting keys
-      kms_key:
+      amazon.aws.kms_key:
         state: absent
         alias: "{{ kms_key_alias }}"
         pending_window: 7

@@ -25,7 +25,7 @@
       secret_key: "{{ aws_secret_key }}"
       session_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
-    iam_role:
+    amazon.aws.iam_role:
       assume_role_policy_document: '{{ lookup("file", "deny-assume.json") }}'
   collections:
     - community.general

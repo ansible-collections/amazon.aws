@@ -2,7 +2,7 @@
 - block:
     # For creation test some basic behaviour
     - module_defaults:
-        elb_classic_lb:
+        amazon.aws.elb_classic_lb:
           # zones: ['{{ availability_zone_a }}', '{{ availability_zone_b }}']
           listeners: "{{ default_listeners }}"
           wait: true

@@ -1,7 +1,7 @@
 ---
 - block:
     - name: Create a group with only the default rule
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}-egress-tests"
         vpc_id: "{{ vpc_result.vpc.id }}"
         description: "{{ec2_group_description}}"
@@ -17,7 +17,7 @@
           - result.ip_permissions_egress[0].ip_ranges[0].cidr_ip == '0.0.0.0/0'
 
     - name: Create a group with only the default rule
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}-egress-tests"
         vpc_id: "{{ vpc_result.vpc.id }}"
         description: "{{ec2_group_description}}"
@@ -34,7 +34,7 @@
           - result.ip_permissions_egress[0].ip_ranges[0].cidr_ip == '0.0.0.0/0'
 
     - name: Pass empty egress rules without purging, should leave default rule in place
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}-egress-tests"
         description: "{{ec2_group_description}}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -52,7 +52,7 @@
           - result.ip_permissions_egress[0].ip_ranges[0].cidr_ip == '0.0.0.0/0'
 
     - name: Purge rules, including the default
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}-egress-tests"
         description: "{{ec2_group_description}}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -69,7 +69,7 @@
           - result.ip_permissions_egress|length == 0
 
     - name: Add a custom egress rule
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}-egress-tests"
         description: "{{ec2_group_description}}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -87,7 +87,7 @@
           - result.ip_permissions_egress|length == 1
 
     - name: Add a second custom egress rule
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}-egress-tests"
         description: "{{ec2_group_description}}"
         purge_rules_egress: false
@@ -106,7 +106,7 @@
           - result.ip_permissions_egress|length == 2
 
     - name: Purge the second rule (CHECK MODE) (DIFF MODE)
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}-egress-tests"
         description: "{{ec2_group_description}}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -128,7 +128,7 @@
           - result.diff.0.after.ip_permissions_egress[0].ip_ranges[0].cidr_ip == '10.2.1.2/32'
 
     - name: Purge the second rule
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}-egress-tests"
         description: "{{ec2_group_description}}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -147,7 +147,7 @@
           - result.ip_permissions_egress[0].ip_ranges[0].cidr_ip == '10.2.1.2/32'
 
     - name: add a rule for all TCP ports
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}-egress-tests"
         description: "{{ec2_group_description}}"
         rules_egress:
@@ -159,7 +159,7 @@
       register: result
 
     - name: Re-add the default rule
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}-egress-tests"
         description: "{{ec2_group_description}}"
         rules_egress:
@@ -170,7 +170,7 @@
       register: result
   always:
     - name: tidy up egress rule test security group
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}-egress-tests"
         state: absent
         vpc_id: "{{ vpc_result.vpc.id }}"

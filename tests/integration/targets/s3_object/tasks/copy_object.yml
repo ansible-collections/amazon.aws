@@ -21,7 +21,7 @@
         content: "{{ lookup('password', '/dev/null chars=ascii_letters,digits,hexdigits,punctuation') }}"
 
     - name: Put a content in the source bucket
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ copy_bucket.src }}"
         mode: put
         content: "{{ content }}"
@@ -37,7 +37,7 @@
       ignore_errors: true
 
     - name: Copy the content of the source bucket into dest bucket
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ copy_bucket.dst }}"
         mode: copy
         object: destination.txt
@@ -52,7 +52,7 @@
       ignore_errors: true
 
     - name: Get the content copied into {{ copy_bucket.dst }}
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ copy_bucket.dst }}"
         mode: getstr
         object: destination.txt
@@ -64,7 +64,7 @@
           - content == copy_content.contents
 
     - name: Get the download url for object copied into {{ copy_bucket.dst }}
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ copy_bucket.dst }}"
         mode: geturl
         object: destination.txt
@@ -76,7 +76,7 @@
           - put_result.tags == copy_url.tags
 
     - name: Copy the same content from the source bucket into dest bucket (idempotency)
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ copy_bucket.dst }}"
         mode: copy
         object: destination.txt
@@ -92,7 +92,7 @@
           - copy_idempotency.msg == 'ETag from source and destination are the same'
 
     - name: Copy object with tags
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ copy_bucket.dst }}"
         mode: copy
         object: destination.txt
@@ -110,7 +110,7 @@
           - copy_result.tags['ansible_release'] == '2.0.1'
 
     - name: Copy object with tags (idempotency)
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ copy_bucket.dst }}"
         mode: copy
         object: destination.txt
@@ -127,7 +127,7 @@
           - copy_result is not changed
 
     - name: Copy from unexisting key should not succeed
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ copy_bucket.dst }}"
         mode: copy
         object: missing_key.txt

@@ -18,7 +18,7 @@
       register: remaining_enis
 
     - name: (VPC Cleanup) Retrieve security group info based on VPC ID
-      ec2_security_group_info:
+      amazon.aws.ec2_security_group_info:
         filters:
           vpc-id: "{{ vpc_id }}"
       register: remaining_groups
@@ -59,7 +59,7 @@
     # Cross-dependencies between rules in the SGs can cause us problems if we don't clear the rules
     # first
     - name: (VPC Cleanup) Delete rules from remaining SGs
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ item.group_name }}"
         group_id: "{{ item.group_id }}"
         description: "{{ item.description }}"
@@ -69,7 +69,7 @@
       ignore_errors: true
 
     - name: (VPC Cleanup) Delete remaining SGs
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         state: absent
         group_id: "{{ item.group_id }}"
       loop: "{{ remaining_groups.security_groups }}"

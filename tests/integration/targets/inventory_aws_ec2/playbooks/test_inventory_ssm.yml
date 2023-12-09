@@ -73,7 +73,7 @@
             instances_ids: "{{ [instance_output.instance_ids[0]] }}"
 
         - name: Get ssm inventory information
-          ssm_inventory_info:
+          community.aws.ssm_inventory_info:
             instance_id: "{{ instance_output.instance_ids[0] }}"
           register: result
           until: result.ssm_inventory != {}

@@ -9,7 +9,7 @@
     # ------------------------------------------------------------------------------------------
     # Create DB cluster
     - name: Ensure the resource doesn't exist
-      rds_cluster:
+      amazon.aws.rds_cluster:
         id: "{{ cluster_id }}"
         state: absent
         engine: "{{ engine}}"
@@ -24,7 +24,7 @@
       ignore_errors: true
 
     - name: Create an Aurora-PostgreSQL DB cluster
-      rds_cluster:
+      amazon.aws.rds_cluster:
         id: "{{ cluster_id }}"
         state: present
         engine: aurora-postgresql
@@ -157,7 +157,7 @@
     # ------------------------------------------------------------------------------------------
     # Give errors for MySql DB cluster
     - name: Ensure the resource doesn't exist
-      rds_cluster:
+      amazon.aws.rds_cluster:
         id: "{{ mysql_cluster_id }}"
         state: absent
         engine: "{{ mysql_engine }}"
@@ -172,7 +172,7 @@
       ignore_errors: true
 
     - name: Create an MySql DB cluster
-      rds_cluster:
+      amazon.aws.rds_cluster:
         id: "{{ mysql_cluster_id }}"
         state: present
         engine: "{{ mysql_engine }}"
@@ -226,14 +226,14 @@
     # ------------------------------------------------------------------------------------------
     # Cleanup starts here
     - name: Delete MySql db cluster without creating a final snapshot
-      rds_cluster:
+      amazon.aws.rds_cluster:
         state: absent
         cluster_id: "{{ mysql_cluster_id }}"
         skip_final_snapshot: true
       ignore_errors: true
 
     - name: Delete Aurora-PostgreSql db cluster without creating a final snapshot
-      rds_cluster:
+      amazon.aws.rds_cluster:
         state: absent
         cluster_id: "{{ cluster_id }}"
         skip_final_snapshot: true
