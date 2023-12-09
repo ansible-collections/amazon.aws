@@ -10,7 +10,7 @@
         - "{{ bucket_dst }}"
 
     - name: Create object into bucket
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_src }}"
         mode: put
         content: "{{ item.content }}"
@@ -18,7 +18,7 @@
       with_items: "{{ s3_objects }}"
 
     - name: Copy all objects from source bucket into destination bucket
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_dst }}"
         mode: copy
         copy_src:
@@ -26,7 +26,7 @@
       check_mode: true
 
     - name: list objects from bucket
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_dst }}"
         mode: list
       register: _objects
@@ -38,7 +38,7 @@
 
     # Test: Copy all objects using prefix
     - name: copy object using prefix
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_dst }}"
         mode: copy
         copy_src:
@@ -47,7 +47,7 @@
       register: _copy_with_prefix
 
     - name: list objects from bucket
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_dst }}"
         mode: list
       register: _objects
@@ -63,7 +63,7 @@
 
     # Test: Copy all objects using prefix (idempotency)
     - name: copy object using prefix (idempotency)
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_dst }}"
         mode: copy
         copy_src:
@@ -72,7 +72,7 @@
       register: _copy_with_prefix_idempotency
 
     - name: list objects from bucket
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_dst }}"
         mode: list
       register: _objects
@@ -88,7 +88,7 @@
 
     # Test: Copy all objects from source bucket
     - name: copy all objects from source bucket
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_dst }}"
         mode: copy
         copy_src:
@@ -96,7 +96,7 @@
       register: _copy_all
 
     - name: list objects from bucket
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_dst }}"
         mode: list
       register: _objects
@@ -109,7 +109,7 @@
 
     # Test: Copy all objects from source bucket (idempotency)
     - name: copy all objects from source bucket (idempotency)
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_dst }}"
         mode: copy
         copy_src:
@@ -117,7 +117,7 @@
       register: _copy_all_idempotency
 
     - name: list objects from bucket
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_dst }}"
         mode: list
       register: _objects

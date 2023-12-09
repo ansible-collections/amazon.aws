@@ -9,7 +9,7 @@
       amazon.aws.aws_caller_info:
       register: aws_caller_info
     - name: create a key
-      kms_key:
+      amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
         tags:
           Hello: World
@@ -42,7 +42,7 @@
     # ------------------------------------------------------------------------------------------
 
     - name: Tag encryption key
-      kms_key:
+      amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
         state: present
         tags:
@@ -78,7 +78,7 @@
       ansible.builtin.wait_for:
         timeout: 45
     - name: Modify tags - check mode
-      kms_key:
+      amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
         state: present
         purge_tags: true
@@ -92,7 +92,7 @@
           - key.changed
 
     - name: Modify tags
-      kms_key:
+      amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
         state: present
         purge_tags: true
@@ -130,7 +130,7 @@
       ansible.builtin.wait_for:
         timeout: 45
     - name: Modify tags (idempotence) - check mode
-      kms_key:
+      amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
         state: present
         purge_tags: true
@@ -144,7 +144,7 @@
           - not key.changed
 
     - name: Modify tags (idempotence)
-      kms_key:
+      amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
         state: present
         purge_tags: true
@@ -181,7 +181,7 @@
     # ============================================================
     #   CLEAN-UP
     - name: finish off by deleting keys
-      kms_key:
+      amazon.aws.kms_key:
         state: absent
         alias: "{{ kms_key_alias }}"
         pending_window: 7

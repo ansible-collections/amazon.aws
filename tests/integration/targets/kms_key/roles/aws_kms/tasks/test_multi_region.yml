@@ -9,10 +9,10 @@
       amazon.aws.aws_caller_info:
       register: aws_caller_info
     - name: See whether key exists and its current state
-      kms_key_info:
+      amazon.aws.kms_key_info:
         alias: "{{ kms_key_alias }}"
     - name: create a multi region key - check mode
-      kms_key:
+      amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}-check"
         tags:
           Hello: World
@@ -22,7 +22,7 @@
       register: key_check
       check_mode: true
     - name: find facts about the check mode key
-      kms_key_info:
+      amazon.aws.kms_key_info:
         alias: "{{ kms_key_alias }}-check"
       register: check_key
     - name: ensure that check mode worked as expected
@@ -32,7 +32,7 @@
           - key_check is changed
 
     - name: create a multi region key
-      kms_key:
+      amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
         tags:
           Hello: World
@@ -69,7 +69,7 @@
         timeout: 45
 
     - name: create a key (expect failure)
-      kms_key:
+      amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
         tags:
           Hello: World
@@ -90,7 +90,7 @@
     # ============================================================
     #   CLEAN-UP
     - name: finish off by deleting keys
-      kms_key:
+      amazon.aws.kms_key:
         state: absent
         alias: "{{ item }}"
         pending_window: 7

@@ -44,7 +44,7 @@
           - result.tags.Created_by == 'Ansible rds_instance tests'
 
     - name: Create a snapshot
-      rds_instance_snapshot:
+      amazon.aws.rds_instance_snapshot:
         instance_id: "{{ instance_id }}"
         snapshot_id: "{{ snapshot_id }}"
         state: present
@@ -204,7 +204,7 @@
 
   always:
     - name: Remove snapshots
-      rds_instance_snapshot:
+      amazon.aws.rds_instance_snapshot:
         db_snapshot_identifier: "{{ item }}"
         state: absent
         wait: false

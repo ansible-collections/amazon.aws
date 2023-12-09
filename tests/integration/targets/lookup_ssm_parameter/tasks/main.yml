@@ -66,7 +66,7 @@
           - lookup_value | list | length == 0
 
     - name: Create key/value pair in aws parameter store
-      ssm_parameter:
+      community.aws.ssm_parameter:
         name: "{{ simple_name }}"
         description: "{{ simple_description }}"
         value: "{{ simple_value }}"
@@ -79,7 +79,7 @@
           - lookup_value == simple_value
 
     - name: Create key/value pair in aws parameter store
-      ssm_parameter:
+      community.aws.ssm_parameter:
         name: "{{ simple_name }}"
         description: "{{ simple_description }}"
         value: "{{ simple_value }}"
@@ -92,7 +92,7 @@
           - lookup_value == simple_value
 
     - name: Update key/value pair in aws parameter store
-      ssm_parameter:
+      community.aws.ssm_parameter:
         name: "{{ simple_name }}"
         description: "{{ simple_description }}"
         value: "{{ updated_value }}"
@@ -114,19 +114,19 @@
     # ============================================================
 
     - name: Create nested key/value pair in aws parameter store (1)
-      ssm_parameter:
+      community.aws.ssm_parameter:
         name: "{{ path_name_a }}"
         description: "{{ path_description }}"
         value: "{{ path_value_a }}"
 
     - name: Create nested key/value pair in aws parameter store (2)
-      ssm_parameter:
+      community.aws.ssm_parameter:
         name: "{{ path_name_b }}"
         description: "{{ path_description }}"
         value: "{{ path_value_b }}"
 
     - name: Create nested key/value pair in aws parameter store (3)
-      ssm_parameter:
+      community.aws.ssm_parameter:
         name: "{{ path_name_c }}"
         description: "{{ path_description }}"
         value: "{{ path_value_c }}"
@@ -264,7 +264,7 @@
   always:
   # ============================================================
     - name: Delete remaining key/value pairs in aws parameter store
-      ssm_parameter:
+      community.aws.ssm_parameter:
         name: "{{item}}"
         state: absent
       ignore_errors: true

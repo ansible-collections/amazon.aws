@@ -36,7 +36,7 @@
     # ===================================================================
 
     - name: Create minimal Instance Profile (CHECK)
-      iam_instance_profile:
+      amazon.aws.iam_instance_profile:
         name: "{{ test_profile }}"
       check_mode: true
       register: profile_result
@@ -46,7 +46,7 @@
           - profile_result is changed
 
     - name: Create minimal Instance Profile
-      iam_instance_profile:
+      amazon.aws.iam_instance_profile:
         name: "{{ test_profile }}"
       register: profile_result
 
@@ -55,7 +55,7 @@
           - profile_result is changed
 
     - name: Create minimal Instance Profile - Idempotent (CHECK)
-      iam_instance_profile:
+      amazon.aws.iam_instance_profile:
         name: "{{ test_profile }}"
       check_mode: true
       register: profile_result
@@ -65,7 +65,7 @@
           - profile_result is not changed
 
     - name: Create minimal Instance Profile - Idempotent
-      iam_instance_profile:
+      amazon.aws.iam_instance_profile:
         name: "{{ test_profile }}"
       register: profile_result
 
@@ -77,7 +77,7 @@
 
     - ansible.builtin.include_tasks: tags.yml
     - name: Add role to Instance Profile (CHECK)
-      iam_instance_profile:
+      amazon.aws.iam_instance_profile:
         name: "{{ test_profile }}"
         role: "{{ test_role }}"
       check_mode: true
@@ -88,7 +88,7 @@
           - profile_result is changed
 
     - name: Add role to Instance Profile
-      iam_instance_profile:
+      amazon.aws.iam_instance_profile:
         name: "{{ test_profile }}"
         role: "{{ test_role }}"
       register: profile_result
@@ -98,7 +98,7 @@
           - profile_result is changed
 
     - name: Add role to Instance Profile - Idempotent (CHECK)
-      iam_instance_profile:
+      amazon.aws.iam_instance_profile:
         name: "{{ test_profile }}"
         role: "{{ test_role }}"
       check_mode: true
@@ -109,7 +109,7 @@
           - profile_result is not changed
 
     - name: Add role to Instance Profile - Idempotent
-      iam_instance_profile:
+      amazon.aws.iam_instance_profile:
         name: "{{ test_profile }}"
         role: "{{ test_role }}"
       register: profile_result
@@ -121,7 +121,7 @@
     # =====
 
     - name: Replace role on Instance Profile (CHECK)
-      iam_instance_profile:
+      amazon.aws.iam_instance_profile:
         name: "{{ test_profile }}"
         role: "{{ test_role }}-2"
       check_mode: true
@@ -132,7 +132,7 @@
           - profile_result is changed
 
     - name: Replace role on Instance Profile
-      iam_instance_profile:
+      amazon.aws.iam_instance_profile:
         name: "{{ test_profile }}"
         role: "{{ test_role }}-2"
       register: profile_result
@@ -142,7 +142,7 @@
           - profile_result is changed
 
     - name: Replace role on Instance Profile - Idempotent (CHECK)
-      iam_instance_profile:
+      amazon.aws.iam_instance_profile:
         name: "{{ test_profile }}"
         role: "{{ test_role }}-2"
       check_mode: true
@@ -153,7 +153,7 @@
           - profile_result is not changed
 
     - name: Replace role on Instance Profile - Idempotent
-      iam_instance_profile:
+      amazon.aws.iam_instance_profile:
         name: "{{ test_profile }}"
         role: "{{ test_role }}-2"
       register: profile_result
@@ -165,7 +165,7 @@
     # =====
 
     - name: Remove role from Instance Profile (CHECK)
-      iam_instance_profile:
+      amazon.aws.iam_instance_profile:
         name: "{{ test_profile }}"
         role: ""
       check_mode: true
@@ -176,7 +176,7 @@
           - profile_result is changed
 
     - name: Remove role from Instance Profile
-      iam_instance_profile:
+      amazon.aws.iam_instance_profile:
         name: "{{ test_profile }}"
         role: ""
       register: profile_result
@@ -186,7 +186,7 @@
           - profile_result is changed
 
     - name: Remove role from Instance Profile - Idempotent (CHECK)
-      iam_instance_profile:
+      amazon.aws.iam_instance_profile:
         name: "{{ test_profile }}"
         role: ""
       check_mode: true
@@ -197,7 +197,7 @@
           - profile_result is not changed
 
     - name: Remove role from Instance Profile - Idempotent
-      iam_instance_profile:
+      amazon.aws.iam_instance_profile:
         name: "{{ test_profile }}"
         role: ""
       register: profile_result
@@ -209,7 +209,7 @@
     # ===================================================================
 
     - name: Create complex Instance Profile (CHECK)
-      iam_instance_profile:
+      amazon.aws.iam_instance_profile:
         name: "{{ test_profile_complex }}"
         role: "{{ test_role }}-2"
         path: "{{ test_path }}"
@@ -222,7 +222,7 @@
           - profile_result is changed
 
     - name: Create complex Instance Profile
-      iam_instance_profile:
+      amazon.aws.iam_instance_profile:
         name: "{{ test_profile_complex }}"
         role: "{{ test_role }}-2"
         path: "{{ test_path }}"
@@ -234,7 +234,7 @@
           - profile_result is changed
 
     - name: Create complex Instance Profile - Idempotent (CHECK)
-      iam_instance_profile:
+      amazon.aws.iam_instance_profile:
         name: "{{ test_profile_complex }}"
         role: "{{ test_role }}-2"
         path: "{{ test_path }}"
@@ -247,7 +247,7 @@
           - profile_result is not changed
 
     - name: Create complex Instance Profile - Idempotent
-      iam_instance_profile:
+      amazon.aws.iam_instance_profile:
         name: "{{ test_profile_complex }}"
         role: "{{ test_role }}-2"
         path: "{{ test_path }}"
@@ -261,7 +261,7 @@
     # ===================================================================
 
     - name: List all Instance Profiles (no filter)
-      iam_instance_profile_info:
+      amazon.aws.iam_instance_profile_info:
       register: profile_info
 
     - ansible.builtin.assert:
@@ -294,7 +294,7 @@
         complex_profile: '{{ profile_info.iam_instance_profiles | selectattr("instance_profile_name", "match", test_profile_complex) | first}}'
 
     - name: List all Instance Profiles (filter by path)
-      iam_instance_profile_info:
+      amazon.aws.iam_instance_profile_info:
         path: "{{ test_path }}"
       register: profile_info
 
@@ -327,7 +327,7 @@
         complex_profile: '{{ profile_info.iam_instance_profiles | selectattr("instance_profile_name", "match", test_profile_complex) | first}}'
 
     - name: List all Instance Profiles (filter by name - complex)
-      iam_instance_profile_info:
+      amazon.aws.iam_instance_profile_info:
         name: "{{ test_profile_complex }}"
       register: profile_info
 
@@ -362,7 +362,7 @@
         complex_profile: '{{ profile_info.iam_instance_profiles | selectattr("instance_profile_name", "match", test_profile_complex) | first}}'
 
     - name: List an Instance Profile (filter by name)
-      iam_instance_profile_info:
+      amazon.aws.iam_instance_profile_info:
         name: "{{ test_profile }}"
       register: profile_info
 
@@ -386,7 +386,7 @@
     # ===================================================================
 
     - name: Delete minimal Instance Profile (CHECK)
-      iam_instance_profile:
+      amazon.aws.iam_instance_profile:
         state: absent
         name: "{{ test_profile }}"
       check_mode: true
@@ -397,7 +397,7 @@
           - profile_result is changed
 
     - name: Delete minimal Instance Profile
-      iam_instance_profile:
+      amazon.aws.iam_instance_profile:
         state: absent
         name: "{{ test_profile }}"
       register: profile_result
@@ -407,7 +407,7 @@
           - profile_result is changed
 
     - name: Delete minimal Instance Profile - Idempotent (CHECK)
-      iam_instance_profile:
+      amazon.aws.iam_instance_profile:
         state: absent
         name: "{{ test_profile }}"
       check_mode: true
@@ -418,7 +418,7 @@
           - profile_result is not changed
 
     - name: Delete minimal Instance Profile - Idempotent
-      iam_instance_profile:
+      amazon.aws.iam_instance_profile:
         state: absent
         name: "{{ test_profile }}"
       register: profile_result
@@ -430,7 +430,7 @@
     # ===================================================================
 
     - name: Delete complex Instance Profile (CHECK)
-      iam_instance_profile:
+      amazon.aws.iam_instance_profile:
         state: absent
         name: "{{ test_profile_complex }}"
       check_mode: true
@@ -441,7 +441,7 @@
           - profile_result is changed
 
     - name: Delete complex Instance Profile
-      iam_instance_profile:
+      amazon.aws.iam_instance_profile:
         state: absent
         name: "{{ test_profile_complex }}"
       register: profile_result
@@ -451,7 +451,7 @@
           - profile_result is changed
 
     - name: Delete complex Instance Profile - Idempotent (CHECK)
-      iam_instance_profile:
+      amazon.aws.iam_instance_profile:
         state: absent
         name: "{{ test_profile_complex }}"
       check_mode: true
@@ -462,7 +462,7 @@
           - profile_result is not changed
 
     - name: Delete complex Instance Profile - Idempotent
-      iam_instance_profile:
+      amazon.aws.iam_instance_profile:
         state: absent
         name: "{{ test_profile_complex }}"
       register: profile_result
@@ -476,11 +476,11 @@
     # Cleanup
 
     #    - name: "iam_instance_profile_info after Role deletion"
-    #      iam_instance_profile_info:
+    #      amazon.aws.iam_instance_profile_info:
     #      ignore_errors: true
 
     - name: Delete Instance Profiles
-      iam_instance_profile:
+      amazon.aws.iam_instance_profile:
         state: absent
         name: "{{ item }}"
       ignore_errors: true
@@ -502,6 +502,6 @@
         - "{{ test_role }}-2"
 
 #    - name: "iam_role_info after Role deletion"
-#      iam_role_info:
+#      amazon.aws.iam_role_info:
 #        path: "{{ test_path }}"
 #      ignore_errors: true

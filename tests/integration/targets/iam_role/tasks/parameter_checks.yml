@@ -27,7 +27,7 @@
       - '"ARN" in iam_role.msg'
 
 - name: Friendly message when "present" without assume_role_policy_document
-  module_defaults: { iam_role: {}}
+  module_defaults: { amazon.aws.iam_role: {}}
   community.aws.iam_role:
     name: "{{ test_role }}"
   register: iam_role

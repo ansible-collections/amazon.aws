@@ -1,12 +1,12 @@
 ---
 # Tests for EC2 Snapshot
 #
-# Tests ec2_snapshot:
+# Tests amazon.aws.ec2_snapshot:
 # - Snapshot creation
 # - Create with last_snapshot_min_age
 # - Snapshot deletion
 #
-# Tests ec2_snapshot_info:
+# Tests amazon.aws.ec2_snapshot_info:
 # - Listing snapshots for filter: tag
 #
 - name: Integration testing for ec2_snapshot

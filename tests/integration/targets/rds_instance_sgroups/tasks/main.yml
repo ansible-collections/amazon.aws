@@ -35,7 +35,7 @@
         - { cidr: 10.122.122.160/28, zone: "{{ aws_region }}c" }
 
     - name: Create security groups
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ item }}"
         description: created by rds_instance integration tests
         state: present
@@ -274,7 +274,7 @@
       ignore_errors: true
 
     - name: Remove security groups
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ item }}"
         description: created by rds_instance integration tests
         state: absent

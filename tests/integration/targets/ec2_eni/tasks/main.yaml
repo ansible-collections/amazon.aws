@@ -35,7 +35,7 @@
       register: vpc_subnet_result
 
     - name: create a security group
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ resource_prefix }}-sg"
         description: Created by {{ resource_prefix }}
         rules: []
@@ -121,7 +121,7 @@
       when: instance_id_1 is defined and instance_id_2 is defined
 
     - name: remove the security group
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ resource_prefix }}-sg"
         description: "{{ resource_prefix }}"
         rules: []

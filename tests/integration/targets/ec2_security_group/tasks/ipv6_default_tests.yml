@@ -1,7 +1,7 @@
 ---
 # ============================================================
 - name: test state=present for ipv6 (expected changed=true) (CHECK MODE)
-  ec2_security_group:
+  amazon.aws.ec2_security_group:
     name: "{{ec2_group_name}}"
     description: "{{ec2_group_description}}"
     state: present
@@ -20,7 +20,7 @@
 
 # ============================================================
 - name: test state=present for ipv6 (expected changed=true)
-  ec2_security_group:
+  amazon.aws.ec2_security_group:
     name: "{{ec2_group_name}}"
     description: "{{ec2_group_description}}"
     state: present
@@ -39,7 +39,7 @@
 
 # ============================================================
 - name: test rules_egress state=present for ipv6 (expected changed=true) (CHECK MODE)
-  ec2_security_group:
+  amazon.aws.ec2_security_group:
     name: "{{ec2_group_name}}"
     description: "{{ec2_group_description}}"
     state: present
@@ -63,7 +63,7 @@
 
 # ============================================================
 - name: test rules_egress state=present for ipv6 (expected changed=true)
-  ec2_security_group:
+  amazon.aws.ec2_security_group:
     name: "{{ec2_group_name}}"
     description: "{{ec2_group_description}}"
     state: present
@@ -85,6 +85,6 @@
       - result.changed
       - result.group_id.startswith("sg-")
 - name: delete it
-  ec2_security_group:
+  amazon.aws.ec2_security_group:
     name: "{{ec2_group_name}}"
     state: absent

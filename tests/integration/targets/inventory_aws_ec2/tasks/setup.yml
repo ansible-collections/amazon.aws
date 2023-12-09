@@ -44,7 +44,7 @@
     subnet_id: "{{ setup_subnet.subnet.id }}"
 
 - name: create a security group to use for creating an ec2 instance
-  ec2_security_group:
+  amazon.aws.ec2_security_group:
     name: "{{ resource_prefix }}_setup"
     description: created by Ansible integration tests
     state: present

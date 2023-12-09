@@ -7,7 +7,7 @@
       session_token: "{{ security_token | default(omit) }}"
   block:
     - name: Ensure the resource doesn't exist
-      rds_cluster:
+      amazon.aws.rds_cluster:
         id: "{{ cluster_id }}"
         state: absent
         engine: "{{ engine}}"
@@ -27,7 +27,7 @@
         region_dest: "{{ aws_region }}"
 
     - name: Create a source DB cluster
-      rds_cluster:
+      amazon.aws.rds_cluster:
         cluster_id: "{{ cluster_id }}"
         state: present
         engine: "{{ engine}}"
@@ -69,7 +69,7 @@
           - "'vpc_security_groups' in _result_create_src_db_cluster"
 
     - name: Get info on DB cluster
-      rds_cluster_info:
+      amazon.aws.rds_cluster_info:
         db_cluster_identifier: "{{ cluster_id }}"
       register: _result_cluster_info
 
@@ -82,7 +82,7 @@
         src_db_cluster_arn: "{{ _result_cluster_info.clusters[0].db_cluster_arn}}"
 
     - name: Create a DB cluster read replica in a different region
-      rds_cluster:
+      amazon.aws.rds_cluster:
         id: "{{ cluster_id }}-replica"
         state: present
         replication_source_identifier: "{{ src_db_cluster_arn }}"
@@ -124,7 +124,7 @@
           - "'vpc_security_groups' in _result_create_replica_db_cluster"
 
     - name: Test idempotence with a DB cluster read replica
-      rds_cluster:
+      amazon.aws.rds_cluster:
         id: "{{ cluster_id }}-replica"
         state: present
         replication_source_identifier: "{{ src_db_cluster_arn }}"
@@ -140,7 +140,7 @@
           - not _result_create_replica_db_cluster.changed
 
     - name: Get info of existing DB cluster
-      rds_cluster_info:
+      amazon.aws.rds_cluster_info:
         db_cluster_identifier: "{{ cluster_id }}-replica"
         region: "{{ region_dest }}"
       register: _result_cluster_info
@@ -151,7 +151,7 @@
     # - _result_cluster_info.clusters | length == 0
 
     - name: Promote the DB cluster read replica
-      rds_cluster:
+      amazon.aws.rds_cluster:
         cluster_id: "{{ cluster_id }}-replica"
         state: present
         promote: true
@@ -163,7 +163,7 @@
           - _result_promote_replica_db_cluster.changed
 
     - name: Promote the DB cluster read replica (idempotence)
-      rds_cluster:
+      amazon.aws.rds_cluster:
         cluster_id: "{{ cluster_id }}-replica"
         state: present
         promote: true
@@ -176,7 +176,7 @@
 
   always:
     - name: Remove the DB cluster
-      rds_cluster:
+      amazon.aws.rds_cluster:
         id: "{{ cluster_id }}"
         state: absent
         skip_final_snapshot: true
@@ -184,7 +184,7 @@
       ignore_errors: true
 
     - name: Remove the DB cluster read replica
-      rds_cluster:
+      amazon.aws.rds_cluster:
         id: "{{ cluster_id }}-replica"
         state: absent
         skip_final_snapshot: true

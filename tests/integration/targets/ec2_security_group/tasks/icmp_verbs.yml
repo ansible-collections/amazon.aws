@@ -2,7 +2,7 @@
 - block:
     # ============================================================
     - name: Create simple rule using icmp verbs
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}-icmp-1"
         vpc_id: "{{ vpc_result.vpc.id }}"
         description: "{{ec2_group_description}}"
@@ -17,7 +17,7 @@
       register: result
 
     - name: Retrieve security group info
-      ec2_security_group_info:
+      amazon.aws.ec2_security_group_info:
         filters:
           group-name: "{{ ec2_group_name }}-icmp-1"
       register: result_1
@@ -30,7 +30,7 @@
           - (result_1.security_groups|first).ip_permissions[0].ip_protocol == "icmp"
 
     - name: Create ipv6 rule using icmp verbs
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}-icmp-2"
         vpc_id: "{{ vpc_result.vpc.id }}"
         description: "{{ec2_group_description}}"
@@ -43,7 +43,7 @@
       register: result
 
     - name: Retrieve security group info
-      ec2_security_group_info:
+      amazon.aws.ec2_security_group_info:
         filters:
           group-name: "{{ ec2_group_name }}-icmp-2"
       register: result_1
@@ -56,7 +56,7 @@
           - (result_1.security_groups|first).ip_permissions[0].ip_protocol == "icmpv6"
 
     - name: Create rule using security group referencing
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}-icmp-3"
         vpc_id: "{{ vpc_result.vpc.id }}"
         description: "{{ec2_group_description}}"
@@ -70,7 +70,7 @@
       register: result
 
     - name: Retrieve security group info
-      ec2_security_group_info:
+      amazon.aws.ec2_security_group_info:
         filters:
           group-name: "{{ ec2_group_name }}-icmp-3"
       register: result_1
@@ -81,7 +81,7 @@
           - (result_1.security_groups | first).ip_permissions[0].user_id_group_pairs is defined
 
     - name: Create list rule using 0 as icmp_type
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}-icmp-4"
         vpc_id: "{{ vpc_result.vpc.id }}"
         description: "{{ec2_group_description}}"
@@ -100,7 +100,7 @@
       register: result
 
     - name: Retrieve security group info
-      ec2_security_group_info:
+      amazon.aws.ec2_security_group_info:
         filters:
           group-name: "{{ ec2_group_name }}-icmp-4"
       register: result_1
@@ -113,7 +113,7 @@
 
     # ============================================================
     - name: Create a group with non-ICMP protocol
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}-icmp-4"
         vpc_id: "{{ vpc_result.vpc.id }}"
         description: "{{ec2_group_description}}"
@@ -134,7 +134,7 @@
           - result is failed
 
     - name: Create a group with conflicting parameters
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}-icmp-4"
         vpc_id: "{{ vpc_result.vpc.id }}"
         description: "{{ec2_group_description}}"
@@ -157,7 +157,7 @@
           - result is failed
 
     - name: Create a group with missing icmp parameters
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}-icmp-4"
         vpc_id: "{{ vpc_result.vpc.id }}"
         description: "{{ec2_group_description}}"
@@ -178,7 +178,7 @@
 
   always:
     - name: tidy up egress rule test security group rules
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}-auto-create-2"
         description: sg-group-referencing
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -187,7 +187,7 @@
       ignore_errors: true
 
     - name: tidy up egress rule test security group rules
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}-icmp-{{ item }}"
         description: "{{ec2_group_description}}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -201,14 +201,14 @@
         - 4
 
     - name: tidy up egress rule test security group rules
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}-auto-create-2"
         state: absent
         vpc_id: "{{ vpc_result.vpc.id }}"
       ignore_errors: true
 
     - name: tidy up egress rule test security group
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ec2_group_name}}-icmp-{{ item }}"
         state: absent
         vpc_id: "{{ vpc_result.vpc.id }}"

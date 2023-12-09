@@ -64,7 +64,7 @@
       register: upload_file
 
     - name: test putting an object in the bucket
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: put
         src: "{{ remote_tmp_dir }}/upload.txt"
@@ -139,7 +139,7 @@
           - '"content_type" in info_result.object_info[0].object_data'
 
     - name: test using s3_object with async
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: put
         src: "{{ remote_tmp_dir }}/upload.txt"
@@ -156,7 +156,7 @@
       retries: 30
 
     - name: test put with overwrite=different and unmodified object
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: put
         src: "{{ remote_tmp_dir }}/upload.txt"
@@ -170,7 +170,7 @@
           - result is not changed
 
     - name: check that roles file lookups work as expected
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: put
         src: hello.txt
@@ -188,7 +188,7 @@
     # 'file' lookup path or a remote path.  Keeping this working is dependent on
     # having a redirect for both the module and the action plugin
     - name: check that roles file lookups work as expected when using old name
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: put
         src: hello.txt
@@ -204,7 +204,7 @@
           - result.msg == "PUT operation complete"
 
     - name: test put with overwrite=never
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: put
         src: "{{ remote_tmp_dir }}/upload.txt"
@@ -219,7 +219,7 @@
           - result is not changed
 
     - name: test put with overwrite=different and modified object
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: put
         src: "{{ remote_tmp_dir }}/upload.txt"
@@ -234,7 +234,7 @@
           - result is changed
 
     - name: test put with overwrite=always
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: put
         src: "{{ remote_tmp_dir }}/upload.txt"
@@ -249,7 +249,7 @@
           - result is changed
 
     - name: test get object
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: get
         dest: "{{ remote_tmp_dir }}/download.txt"
@@ -270,7 +270,7 @@
           - upload_file.stat.checksum == download_file.stat.checksum
 
     - name: test get object (absolute path)
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: get
         dest: "{{ remote_tmp_dir }}/download-2.txt"
@@ -291,7 +291,7 @@
           - upload_file.stat.checksum == download_file.stat.checksum
 
     - name: test get with overwrite=different and identical files
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: get
         dest: "{{ remote_tmp_dir }}/download.txt"
@@ -310,7 +310,7 @@
         src: hello.txt
 
     - name: test get with overwrite=never
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: get
         dest: "{{ remote_tmp_dir }}/download.txt"
@@ -325,7 +325,7 @@
           - result is not changed
 
     - name: test get with overwrite=different and modified file
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: get
         dest: "{{ remote_tmp_dir }}/download.txt"
@@ -339,7 +339,7 @@
           - result is changed
 
     - name: test get with overwrite=always
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: get
         dest: "{{ remote_tmp_dir }}/download.txt"
@@ -354,7 +354,7 @@
           - result is changed
 
     - name: test get with overwrite=latest and identical files
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: get
         dest: "{{ remote_tmp_dir }}/download.txt"
@@ -371,7 +371,7 @@
     - name: modify mtime for local file to past
       ansible.builtin.shell: touch -mt 197001010900.00 "{{ remote_tmp_dir }}/download.txt"
     - name: test get with overwrite=latest and files that mtimes are different
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: get
         dest: "{{ remote_tmp_dir }}/download.txt"
@@ -386,7 +386,7 @@
           - result is changed
 
     - name: test geturl of the object
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: geturl
         object: delete.txt
@@ -401,7 +401,7 @@
           - result is changed
 
     - name: test geturl of the object with sigv4
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: geturl
         sig_v4: true
@@ -417,7 +417,7 @@
           - result is changed
 
     - name: test getstr of the object
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: getstr
         object: delete.txt
@@ -431,7 +431,7 @@
           - result.contents == content
 
     - name: test list to get all objects in the bucket
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: list
       retries: 3
@@ -444,7 +444,7 @@
           - result.msg == "LIST operation complete"
 
     - name: test delobj to just delete an object in the bucket
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: delobj
         object: delete.txt
@@ -458,7 +458,7 @@
           - result is changed
 
     - name: test putting an object in the bucket with metadata set
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: put
         src: "{{ remote_tmp_dir }}/upload.txt"
@@ -477,7 +477,7 @@
           - result.msg == "PUT operation complete"
 
     - name: test delobj to just delete an object in the bucket
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: delobj
         object: delete_meta.txt
@@ -486,7 +486,7 @@
       register: result
 
     - name: test putting an encrypted object in the bucket
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: put
         src: "{{ remote_tmp_dir }}/upload.txt"
@@ -502,7 +502,7 @@
           - result.msg == "PUT operation complete"
 
     - name: test get encrypted object
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: get
         dest: "{{ remote_tmp_dir }}/download_encrypted.txt"
@@ -523,7 +523,7 @@
           - upload_file.stat.checksum == download_file.stat.checksum
 
     - name: delete encrypted file
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: delobj
         object: delete_encrypt.txt
@@ -531,7 +531,7 @@
       delay: 3
 
     - name: test putting an aws:kms encrypted object in the bucket
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: put
         src: "{{ remote_tmp_dir }}/upload.txt"
@@ -548,7 +548,7 @@
           - result.msg == "PUT operation complete"
 
     - name: test get KMS encrypted object
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: get
         dest: "{{ remote_tmp_dir }}/download_kms.txt"
@@ -571,7 +571,7 @@
     # FIXME - could use a test that checks uploaded file is *actually* aws:kms encrypted
 
     - name: delete KMS encrypted file
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: delobj
         object: delete_encrypt_kms.txt
@@ -583,7 +583,7 @@
     #        PRs exist for that, but propose deferring until after merge.
 
     - name: test creation of empty path
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: create
         object: foo/bar/baz/
@@ -597,7 +597,7 @@
           - result is changed
 
     - name: test deletion of empty path
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: delobj
         object: foo/bar/baz/
@@ -637,14 +637,14 @@
           when: ansible_system == 'Linux'
 
         - name: upload the file to the bucket
-          s3_object:
+          amazon.aws.s3_object:
             bucket: "{{ bucket_name }}"
             mode: put
             src: "{{ remote_tmp_dir }}/largefile"
             object: multipart.txt
 
         - name: download file once
-          s3_object:
+          amazon.aws.s3_object:
             bucket: "{{ bucket_name }}"
             mode: get
             dest: "{{ remote_tmp_dir }}/download.txt"
@@ -660,7 +660,7 @@
               - result is changed
 
         - name: download file again
-          s3_object:
+          amazon.aws.s3_object:
             bucket: "{{ bucket_name }}"
             mode: get
             dest: "{{ remote_tmp_dir }}/download.txt"
@@ -674,7 +674,7 @@
 
     # Public objects aren't allowed by default
     - name: fail to upload the file to the bucket with an ACL
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_name_acl }}"
         mode: put
         src: "{{ remote_tmp_dir }}/upload.txt"
@@ -689,7 +689,7 @@
           - upload_private is failed
 
     - name: upload the file to the bucket with an ACL
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_name_acl }}"
         mode: put
         src: "{{ remote_tmp_dir }}/upload.txt"
@@ -703,7 +703,7 @@
           - upload_owner is changed
 
     - name: create an object from static content
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         object: put-content.txt
         mode: put
@@ -716,7 +716,7 @@
           - result is changed
 
     - name: ensure idempotency on static content
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         object: put-content.txt
         mode: put
@@ -729,7 +729,7 @@
           - result is not changed
 
     - name: fetch test content
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: getstr
         object: put-content.txt
@@ -743,7 +743,7 @@
         put_template_text: test template
 
     - name: create an object from a template
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         object: put-template.txt
         mode: put
@@ -755,7 +755,7 @@
           - result is changed
 
     - name: create an object from a template (idempotency)
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         object: put-template.txt
         mode: put
@@ -767,7 +767,7 @@
           - result is not changed
 
     - name: fetch template content
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: getstr
         object: put-template.txt
@@ -783,7 +783,7 @@
       register: put_binary
 
     - name: create an object from binary data
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         object: put-binary.bin
         mode: put
@@ -795,7 +795,7 @@
           - result is changed
 
     - name: create an object from binary data (idempotency)
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         object: put-binary.bin
         mode: put
@@ -807,7 +807,7 @@
           - result is not changed
 
     - name: fetch binary content
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: get
         dest: "{{ remote_tmp_dir }}/download_binary.bin"
@@ -833,7 +833,7 @@
       block:
         # ============================================================
         - name: create an object from static content
-          s3_object:
+          amazon.aws.s3_object:
             bucket: "{{ bucket_name }}"
             object: put-content.txt
             mode: put
@@ -853,7 +853,7 @@
               - result.tags["Tag Two"] == 'two {{ resource_prefix }}'
 
         - name: ensure idempotency on static content
-          s3_object:
+          amazon.aws.s3_object:
             bucket: "{{ bucket_name }}"
             object: put-content.txt
             mode: put
@@ -873,7 +873,7 @@
               - result.tags["Tag Two"] == 'two {{ resource_prefix }}'
 
         - name: Remove a tag from an S3 object
-          s3_object:
+          amazon.aws.s3_object:
             bucket: "{{ bucket_name }}"
             object: put-content.txt
             mode: put
@@ -892,7 +892,7 @@
               - "'Tag Two' not in result.tags"
 
         - name: Remove the tag from an S3 object (idempotency)
-          s3_object:
+          amazon.aws.s3_object:
             bucket: "{{ bucket_name }}"
             object: put-content.txt
             mode: put
@@ -911,7 +911,7 @@
               - "'Tag Two' not in result.tags"
 
         - name: Add a tag for an S3 object with purge_tags False
-          s3_object:
+          amazon.aws.s3_object:
             bucket: "{{ bucket_name }}"
             object: put-content.txt
             mode: put
@@ -931,7 +931,7 @@
               - result.tags["tag_one"] == '{{ resource_prefix }} One'
 
         - name: Add a tag for an S3 object with purge_tags False (idempotency)
-          s3_object:
+          amazon.aws.s3_object:
             bucket: "{{ bucket_name }}"
             object: put-content.txt
             mode: put
@@ -951,7 +951,7 @@
               - result.tags["tag_one"] == '{{ resource_prefix }} One'
 
         - name: Update tags for an S3 object with purge_tags False
-          s3_object:
+          amazon.aws.s3_object:
             bucket: "{{ bucket_name }}"
             object: put-content.txt
             mode: put
@@ -972,7 +972,7 @@
               - result.tags["TagFour"] == '{{ resource_prefix }} tag_four'
 
         - name: Update tags for an S3 object with purge_tags False (idempotency)
-          s3_object:
+          amazon.aws.s3_object:
             bucket: "{{ bucket_name }}"
             object: put-content.txt
             mode: put
@@ -993,7 +993,7 @@
               - result.tags["TagFour"] == '{{ resource_prefix }} tag_four'
 
         - name: Specify empty tags for an S3 object with purge_tags False
-          s3_object:
+          amazon.aws.s3_object:
             bucket: "{{ bucket_name }}"
             object: put-content.txt
             mode: put
@@ -1013,7 +1013,7 @@
               - result.tags["TagFour"] == '{{ resource_prefix }} tag_four'
 
         - name: Do not specify any tag to ensure previous tags are not removed
-          s3_object:
+          amazon.aws.s3_object:
             bucket: "{{ bucket_name }}"
             object: put-content.txt
             mode: put
@@ -1031,7 +1031,7 @@
               - result.tags["TagFour"] == '{{ resource_prefix }} tag_four'
 
         - name: Remove all tags
-          s3_object:
+          amazon.aws.s3_object:
             bucket: "{{ bucket_name }}"
             object: put-content.txt
             mode: put
@@ -1048,7 +1048,7 @@
               - (result.tags | length) == 0
 
         - name: Remove all tags (idempotency)
-          s3_object:
+          amazon.aws.s3_object:
             bucket: "{{ bucket_name }}"
             object: put-content.txt
             mode: put

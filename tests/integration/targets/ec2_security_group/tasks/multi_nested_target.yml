@@ -2,7 +2,7 @@
 # ============================================================
 
 - name: test state=present for multiple ipv6 and ipv4 targets (expected changed=true) (CHECK MODE)
-  ec2_security_group:
+  amazon.aws.ec2_security_group:
     name: "{{ ec2_group_name }}"
     description: "{{ ec2_group_description }}"
     state: present
@@ -28,7 +28,7 @@
       - result.changed
 
 - name: test state=present for multiple ipv6 and ipv4 targets (expected changed=true)
-  ec2_security_group:
+  amazon.aws.ec2_security_group:
     name: "{{ ec2_group_name }}"
     description: "{{ ec2_group_description }}"
     state: present
@@ -56,7 +56,7 @@
       - result.ip_permissions[0].ipv6_ranges | length == 2 or result.ip_permissions[1].ipv6_ranges | length == 2
 
 - name: test state=present for multiple ipv6 and ipv4 targets (expected changed=false) (CHECK MODE)
-  ec2_security_group:
+  amazon.aws.ec2_security_group:
     name: "{{ ec2_group_name }}"
     description: "{{ ec2_group_description }}"
     state: present
@@ -82,7 +82,7 @@
       - not result.changed
 
 - name: test state=present for multiple ipv6 and ipv4 targets (expected changed=false)
-  ec2_security_group:
+  amazon.aws.ec2_security_group:
     name: "{{ ec2_group_name }}"
     description: "{{ ec2_group_description }}"
     state: present
@@ -107,7 +107,7 @@
       - not result.changed
 
 - name: test state=present purging a nested ipv4 target (expected changed=true) (CHECK MODE)
-  ec2_security_group:
+  amazon.aws.ec2_security_group:
     name: "{{ ec2_group_name }}"
     description: "{{ ec2_group_description }}"
     state: present
@@ -132,7 +132,7 @@
       - result.changed
 
 - name: test state=present purging a nested ipv4 target (expected changed=true)
-  ec2_security_group:
+  amazon.aws.ec2_security_group:
     name: "{{ ec2_group_name }}"
     description: "{{ ec2_group_description }}"
     state: present
@@ -158,7 +158,7 @@
       - result.ip_permissions[0].ipv6_ranges | length == 2 or result.ip_permissions[1].ipv6_ranges | length == 2
 
 - name: test state=present with both associated ipv6 targets nested (expected changed=false)
-  ec2_security_group:
+  amazon.aws.ec2_security_group:
     name: "{{ ec2_group_name }}"
     description: "{{ ec2_group_description }}"
     state: present
@@ -181,7 +181,7 @@
       - not result.changed
 
 - name: test state=present add another nested ipv6 target (expected changed=true)
-  ec2_security_group:
+  amazon.aws.ec2_security_group:
     name: "{{ ec2_group_name }}"
     description: "{{ ec2_group_description }}"
     state: present
@@ -208,6 +208,6 @@
       - result.ip_permissions[0].ipv6_ranges | length == 3 or result.ip_permissions[1].ipv6_ranges | length == 3
 
 - name: delete it
-  ec2_security_group:
+  amazon.aws.ec2_security_group:
     name: "{{ ec2_group_name }}"
     state: absent
