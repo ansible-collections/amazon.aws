@@ -1,0 +1,120 @@
+---
+# Path management
+
+- name: Set path (check_mode)
+  amazon.aws.iam_user:
+    name: "{{ test_user }}"
+    path: "{{ test_path2 }}"
+    state: present
+  register: iam_user
+  check_mode: true
+
+- name: Assert would change
+  ansible.builtin.assert:
+    that:
+      - iam_user is changed
+
+- name: Set path
+  amazon.aws.iam_user:
+    name: "{{ test_user }}"
+    path: "{{ test_path2 }}"
+    state: present
+  register: iam_user
+
+- name: Assert path updated
+  ansible.builtin.assert:
+    that:
+      - iam_user is changed
+      - "'user' in iam_user.iam_user"
+      - iam_user.iam_user.user.user_name == test_user
+      - iam_user.iam_user.user.path == test_path2
+
+- name: Retry set path (check_mode)
+  amazon.aws.iam_user:
+    name: "{{ test_user }}"
+    path: "{{ test_path2 }}"
+    state: present
+  register: iam_user
+  check_mode: true
+
+- name: Assert would not change
+  ansible.builtin.assert:
+    that:
+      - iam_user is not changed
+
+- name: Retry set path
+  amazon.aws.iam_user:
+    name: "{{ test_user }}"
+    path: "{{ test_path2 }}"
+    state: present
+  register: iam_user
+
+- name: Assert no change
+  ansible.builtin.assert:
+    that:
+      - iam_user is not changed
+      - "'user' in iam_user.iam_user"
+      - iam_user.iam_user.user.user_name == test_user
+      - iam_user.iam_user.user.path == test_path2
+
+# Re-Set Path
+
+- name: Set path (check_mode)
+  amazon.aws.iam_user:
+    name: "{{ test_user }}"
+    path: "{{ test_path }}"
+    state: present
+  register: iam_user
+  check_mode: true
+
+- name: Assert would change
+  ansible.builtin.assert:
+    that:
+      - iam_user is changed
+
+- name: Set path
+  amazon.aws.iam_user:
+    name: "{{ test_user }}"
+    path: "{{ test_path }}"
+    state: present
+  register: iam_user
+
+- name: Assert path changed
+  ansible.builtin.assert:
+    that:
+      - iam_user is changed
+      - "'user' in iam_user.iam_user"
+      - iam_user.iam_user.user.user_name == test_user
+      - iam_user.iam_user.user.path == test_path
+
+- name: Retry set path (check_mode)
+  amazon.aws.iam_user:
+    name: "{{ test_user }}"
+    path: "{{ test_path }}"
+    state: present
+  register: iam_user
+  check_mode: true
+
+- name: Assert no change
+  ansible.builtin.assert:
+    that:
+      - iam_user is not changed
+
+- name: Retry set path
+  amazon.aws.iam_user:
+    name: "{{ test_user }}"
+    path: "{{ test_path }}"
+    state: present
+  register: iam_user
+
+- name: Assert no change
+  ansible.builtin.assert:
+    that:
+      - iam_user is not changed
+      - "'user' in iam_user.iam_user"
+      - iam_user.iam_user.user.user_name == test_user
+      - iam_user.iam_user.user.path == test_path
+
+# /end Path management
+
+# /end Path management
