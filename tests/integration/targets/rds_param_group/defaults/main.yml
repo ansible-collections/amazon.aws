@@ -1,5 +1,5 @@
 ---
-amazon.aws.rds_param_group:
+rds_param_group:
   name: "{{ resource_prefix}}rds-param-group"
   description: Test group for rds_param_group Ansible module
   engine: postgres9.6

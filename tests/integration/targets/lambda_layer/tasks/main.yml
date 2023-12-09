@@ -88,7 +88,7 @@
         name: "{{ layer_name }}"
         description: "{{ resource_prefix }} lambda layer second version"
         content:
-          amazon.aws.s3_bucket: "{{ s3_bucket_name }}"
+          s3_bucket: "{{ s3_bucket_name }}"
           s3_key: "{{ s3_bucket_object }}"
         compatible_runtimes:
           - python3.7
@@ -193,7 +193,7 @@
         name: "{{ layer_name }}"
         description: "{{ resource_prefix }} lambda layer version compatible with python3.{{ item }}"
         content:
-          amazon.aws.s3_bucket: "{{ s3_bucket_name }}"
+          s3_bucket: "{{ s3_bucket_name }}"
           s3_key: "{{ s3_bucket_object }}"
         compatible_runtimes:
           - python3.{{ item }}
