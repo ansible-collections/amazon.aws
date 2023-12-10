@@ -57,7 +57,7 @@
     ## https://docs.aws.amazon.com/AmazonS3/latest/userguide/default-encryption-faq.html
     ##
     ## - name: Disable encryption from bucket
-    ##   s3_bucket:
+    ##   amazon.aws.s3_bucket:
     ##     name: "{{ local_bucket_name }}"
     ##     encryption: none
     ##     bucket_key_enabled: false
@@ -70,7 +70,7 @@
     ##       - not output.encryption
     ##
     ## - name: Disable encryption from bucket (idempotent)
-    ##   s3_bucket:
+    ##   amazon.aws.s3_bucket:
     ##     name: "{{ local_bucket_name }}"
     ##     bucket_key_enabled: true
     ##   register: output

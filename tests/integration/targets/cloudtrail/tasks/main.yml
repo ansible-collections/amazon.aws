@@ -37,7 +37,7 @@
   #   Argument Tests
   # ============================================================
     - name: S3 Bucket required when state is "present"
-      module_defaults: { cloudtrail: {}}
+      module_defaults: { amazon.aws.cloudtrail: {}}
       amazon.aws.cloudtrail:
         state: present
         name: "{{ cloudtrail_name }}"
@@ -74,7 +74,7 @@
           - '"cloudwatch_logs_role_arn" in output.msg'
 
     #- name: 'Global Logging must be enabled when enabling Multi-region'
-    #  cloudtrail:
+    #  amazon.aws.cloudtrail:
     #    state: present
     #    name: '{{ cloudtrail_name }}'
     #    include_global_events: no
@@ -126,14 +126,14 @@
         policy: "{{ lookup('template', 'sns-policy.j2') | to_json }}"
 
     - name: Create KMS Key
-      kms_key:
+      amazon.aws.kms_key:
         state: present
         alias: "{{ kms_alias }}"
         enabled: true
         policy: "{{ lookup('template', 'kms-policy.j2') | to_json }}"
       register: kms_key
     - name: Create second KMS Key
-      kms_key:
+      amazon.aws.kms_key:
         state: present
         alias: "{{ kms_alias }}-2"
         enabled: true
@@ -236,7 +236,7 @@
           - output.trail.tags | length == 0
 
     - name: Get the trail info
-      cloudtrail_info:
+      amazon.aws.cloudtrail_info:
       register: info
 
     - name: Get the trail name from the cloud trail info
@@ -301,7 +301,7 @@
           - output.trail.s3_key_prefix == cloudtrail_prefix
 
     - name: Get the trail info
-      cloudtrail_info:
+      amazon.aws.cloudtrail_info:
         trail_names:
           - "{{ trail_arn }}"
       register: info
@@ -347,7 +347,7 @@
           - output.trail.s3_key_prefix ==  cloudtrail_prefix+"-2"
 
     - name: Get the trail info after updating S3 prefix
-      cloudtrail_info:
+      amazon.aws.cloudtrail_info:
         trail_names:
           - "{{ trail_arn }}"
       register: info
@@ -393,7 +393,7 @@
           - output.trail.s3_key_prefix is none
 
     - name: Get the trail info after removing S3 prefix
-      cloudtrail_info:
+      amazon.aws.cloudtrail_info:
         trail_names:
           - "{{ trail_arn }}"
       register: info
@@ -453,7 +453,7 @@
           - output.trail.sns_topic_name == sns_topic
 
     - name: Get the trail info with SNS topic
-      cloudtrail_info:
+      amazon.aws.cloudtrail_info:
         trail_names:
           - "{{ trail_arn }}"
       register: info
@@ -499,7 +499,7 @@
           - output.trail.sns_topic_name ==  sns_topic+"-2"
 
     - name: Get the trail info with SNS topic after update
-      cloudtrail_info:
+      amazon.aws.cloudtrail_info:
         trail_names:
           - "{{ trail_arn }}"
       register: info
@@ -510,7 +510,7 @@
           - info.trail_list[0].sns_topic_name == sns_topic+"-2"
 
     #- name: 'Remove SNS Topic (CHECK MODE)'
-    #  cloudtrail:
+    #  amazon.aws.cloudtrail:
     #    state: present
     #    name: '{{ cloudtrail_name }}'
     #    sns_topic_name: ''
@@ -521,7 +521,7 @@
     #    - output is changed
 
     #- name: 'Remove SNS Topic'
-    #  cloudtrail:
+    #  amazon.aws.cloudtrail:
     #    state: present
     #    name: '{{ cloudtrail_name }}'
     #    sns_topic_name: ''
@@ -533,7 +533,7 @@
     #    - output.trail.sns_topic_name is none
 
     #- name: 'Remove SNS Topic (no change)'
-    #  cloudtrail:
+    #  amazon.aws.cloudtrail:
     #    state: present
     #    name: '{{ cloudtrail_name }}'
     #    sns_topic_name: ''
@@ -599,7 +599,7 @@
           - output.trail.cloud_watch_logs_role_arn == output_cloudwatch_role.arn
 
     - name: Get the trail info with CloudWatch Log Group
-      cloudtrail_info:
+      amazon.aws.cloudtrail_info:
         trail_names:
           - "{{ trail_arn }}"
       register: info
@@ -653,7 +653,7 @@
           - output.trail.cloud_watch_logs_role_arn == output_cloudwatch_role.arn
 
     - name: Get the trail info with CloudWatch Log Group after update
-      cloudtrail_info:
+      amazon.aws.cloudtrail_info:
         trail_names:
           - "{{ trail_arn }}"
       register: info
@@ -665,7 +665,7 @@
           - info.trail_list[0].cloud_watch_logs_role_arn == output_cloudwatch_role.arn
 
     #- name: 'Remove CloudWatch Log Group (CHECK MODE)'
-    #  cloudtrail:
+    #  amazon.aws.cloudtrail:
     #    state: present
     #    name: '{{ cloudtrail_name }}'
     #    cloudwatch_logs_log_group_arn: ''
@@ -680,7 +680,7 @@
     #    - output.trail.cloud_watch_logs_role_arn is none
 
     #- name: 'Remove CloudWatch Log Group'
-    #  cloudtrail:
+    #  amazon.aws.cloudtrail:
     #    state: present
     #    name: '{{ cloudtrail_name }}'
     #    cloudwatch_logs_log_group_arn: ''
@@ -694,7 +694,7 @@
     #    - output.trail.cloud_watch_logs_role_arn is none
 
     #- name: 'Remove CloudWatch Log Group (no change)'
-    #  cloudtrail:
+    #  amazon.aws.cloudtrail:
     #    state: present
     #    name: '{{ cloudtrail_name }}'
     #    cloudwatch_logs_log_group_arn: ''
@@ -745,7 +745,7 @@
           - output.trail.s3_bucket_name ==  s3_bucket_name+"-2"
 
     - name: Get the trail info with S3 bucket name
-      cloudtrail_info:
+      amazon.aws.cloudtrail_info:
         trail_names:
           - "{{ trail_arn }}"
       register: info
@@ -803,7 +803,7 @@
           - output.trail.is_logging == False
 
     - name: Get the trail info to check the logging state
-      cloudtrail_info:
+      amazon.aws.cloudtrail_info:
         trail_names:
           - "{{ trail_arn }}"
       register: info
@@ -851,7 +851,7 @@
           - output.trail.is_logging == True
 
     - name: Get the trail info to check the logging state
-      cloudtrail_info:
+      amazon.aws.cloudtrail_info:
         trail_names:
           - "{{ trail_arn }}"
       register: info
@@ -899,7 +899,7 @@
           - output.trail.include_global_service_events == False
 
     - name: Get the trail info to check the global logging state
-      cloudtrail_info:
+      amazon.aws.cloudtrail_info:
         trail_names:
           - "{{ trail_arn }}"
       register: info
@@ -947,7 +947,7 @@
           - output.trail.include_global_service_events == True
 
     - name: Get the trail info to check the global logging state (default)
-      cloudtrail_info:
+      amazon.aws.cloudtrail_info:
         trail_names:
           - "{{ trail_arn }}"
       register: info
@@ -995,7 +995,7 @@
           - output.trail.is_multi_region_trail == True
 
     - name: Get the trail info to check the multi-region logging state (default)
-      cloudtrail_info:
+      amazon.aws.cloudtrail_info:
         trail_names:
           - "{{ trail_arn }}"
       register: info
@@ -1043,7 +1043,7 @@
           - output.trail.is_multi_region_trail == False
 
     - name: Get the trail info to check the multi-region logging state (default)
-      cloudtrail_info:
+      amazon.aws.cloudtrail_info:
         trail_names:
           - "{{ trail_arn }}"
       register: info
@@ -1102,7 +1102,7 @@
           - output.trail.log_file_validation_enabled == True
 
     - name: Get the trail info to check the log file validation
-      cloudtrail_info:
+      amazon.aws.cloudtrail_info:
         trail_names:
           - "{{ trail_arn }}"
       register: info
@@ -1148,7 +1148,7 @@
           - output.trail.log_file_validation_enabled == False
 
     - name: Get the trail info to check the log file validation
-      cloudtrail_info:
+      amazon.aws.cloudtrail_info:
         trail_names:
           - "{{ trail_arn }}"
       register: info
@@ -1216,7 +1216,7 @@
           - output.trail.kms_key_id == kms_key.key_arn
 
     - name: Get the trail info to check the logging encryption
-      cloudtrail_info:
+      amazon.aws.cloudtrail_info:
         trail_names:
           - "{{ trail_arn }}"
       register: info
@@ -1260,7 +1260,7 @@
           - output.trail.kms_key_id == kms_key2.key_arn
 
     - name: Get the trail info to check the logging key encryption
-      cloudtrail_info:
+      amazon.aws.cloudtrail_info:
         trail_names:
           - "{{ trail_arn }}"
       register: info
@@ -1319,7 +1319,7 @@
         msg: "{{ output }}"
 
     - name: Get the trail info to check the logging key encryption after update
-      cloudtrail_info:
+      amazon.aws.cloudtrail_info:
         trail_names:
           - "{{ trail_arn }}"
       register: info
@@ -1389,7 +1389,7 @@
     # ============================================================
 
     - name: Delete a trail without providing bucket_name (CHECK MODE)
-      module_defaults: { cloudtrail: {}}
+      module_defaults: { amazon.aws.cloudtrail: {}}
       amazon.aws.cloudtrail:
         state: absent
         name: "{{ cloudtrail_name }}"
@@ -1492,7 +1492,7 @@
           - output.trail.tags | length == 0
 
     - name: Get the trail info of the created trail
-      cloudtrail_info:
+      amazon.aws.cloudtrail_info:
         trail_names:
           - "{{ trail_arn }}"
       register: info
@@ -1535,12 +1535,12 @@
         force: true
       ignore_errors: true
     - name: Delete KMS Key
-      kms_key:
+      amazon.aws.kms_key:
         state: absent
         alias: "{{ kms_alias }}"
       ignore_errors: true
     - name: Delete second KMS Key
-      kms_key:
+      amazon.aws.kms_key:
         state: absent
         alias: "{{ kms_alias }}-2"
       ignore_errors: true

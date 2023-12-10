@@ -5,7 +5,7 @@
         group_tmp_name: "{{ec2_group_name}}-numbered-protos"
 
     - name: Create a group with numbered protocol (GRE)
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ group_tmp_name }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         description: "{{ ec2_group_description }}"
@@ -21,7 +21,7 @@
       register: result
 
     - name: Create a group with a quoted proto
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ group_tmp_name }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         description: "{{ ec2_group_description }}"
@@ -39,14 +39,14 @@
         that:
           - result is not changed
     - name: Add a tag with a numeric value
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ group_tmp_name }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         description: "{{ ec2_group_description }}"
         tags:
           foo: 1
     - name: Read a tag with a numeric value
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ group_tmp_name }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         description: "{{ ec2_group_description }}"
@@ -59,7 +59,7 @@
 
   always:
     - name: tidy up egress rule test security group
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{group_tmp_name}}"
         state: absent
         vpc_id: "{{ vpc_result.vpc.id }}"

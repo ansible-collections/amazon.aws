@@ -2,7 +2,7 @@
 - block:
     # For creation test some basic behaviour
     - module_defaults:
-        elb_classic_lb:
+        amazon.aws.elb_classic_lb:
           zones: ["{{ availability_zone_a }}", "{{ availability_zone_b }}"]
           listeners: "{{ default_listeners }}"
           wait: true
@@ -22,7 +22,7 @@
               - result.elb.scheme == 'internet-facing'
 
     - module_defaults:
-        elb_classic_lb:
+        amazon.aws.elb_classic_lb:
           # zones: ['{{ availability_zone_a }}', '{{ availability_zone_b }}']
           listeners: "{{ default_listeners }}"
           wait: true
@@ -99,7 +99,7 @@
 
     # For creation test some basic behaviour
     - module_defaults:
-        elb_classic_lb:
+        amazon.aws.elb_classic_lb:
           zones: ["{{ availability_zone_a }}", "{{ availability_zone_b }}"]
           listeners: "{{ default_listeners }}"
           health_check: "{{ default_health_check }}"
@@ -178,7 +178,7 @@
   always:
     # ============================================================
     - name: remove the test load balancer
-      elb_classic_lb:
+      amazon.aws.elb_classic_lb:
         name: "{{ elb_name }}"
         state: absent
         wait: true

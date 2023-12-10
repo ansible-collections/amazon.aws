@@ -26,7 +26,7 @@
         peer_owner_id: "{{ caller_facts.account }}"
         peer_region: "{{ aws_region }}"
     - name: Create group in second VPC
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ ec2_group_name }}-external"
         description: "{{ ec2_group_description }}"
         vpc_id: "{{ vpc_result_2.vpc.id }}"
@@ -39,7 +39,7 @@
             rule_desc: http whoo
       register: external
     - name: Create group in internal VPC
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ ec2_group_name }}-internal"
         description: "{{ ec2_group_description }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -50,7 +50,7 @@
             ports:
               - 80
     - name: Re-make same rule, expecting changed=false in internal VPC
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ ec2_group_name }}-internal"
         description: "{{ ec2_group_description }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -65,7 +65,7 @@
         that:
           - out is not changed
     - name: Try again with a bad group_id group in internal VPC
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ ec2_group_name }}-internal"
         description: "{{ ec2_group_description }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -101,14 +101,14 @@
         peer_region: "{{ aws_region }}"
       ignore_errors: true
     - name: Clean up group in second VPC
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ ec2_group_name }}-external"
         description: "{{ ec2_group_description }}"
         state: absent
         vpc_id: "{{ vpc_result_2.vpc.id }}"
       ignore_errors: true
     - name: Clean up group in second VPC
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ ec2_group_name }}-internal"
         description: "{{ ec2_group_description }}"
         state: absent

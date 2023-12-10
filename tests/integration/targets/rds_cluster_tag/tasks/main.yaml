@@ -7,7 +7,7 @@
       session_token: "{{ security_token | default(omit) }}"
   block:
     - name: Ensure the resource doesn't exist
-      rds_cluster:
+      amazon.aws.rds_cluster:
         id: "{{ cluster_id }}"
         state: absent
         engine: "{{ engine}}"
@@ -22,7 +22,7 @@
       ignore_errors: true
 
     - name: Create a DB cluster
-      rds_cluster:
+      amazon.aws.rds_cluster:
         engine: "{{ engine }}"
         username: "{{ username }}"
         password: "{{ password }}"
@@ -62,7 +62,7 @@
           - "'vpc_security_groups' in _result_create_db_cluster"
 
     - name: Test tags are not purged if purge_tags is False
-      rds_cluster:
+      amazon.aws.rds_cluster:
         engine: "{{ engine }}"
         username: "{{ username }}"
         password: "{{ new_password }}"
@@ -103,7 +103,7 @@
           - "'vpc_security_groups' in _result_tag_db_cluster"
 
     - name: Add a tag and remove a tag (purge_tags is True)
-      rds_cluster:
+      amazon.aws.rds_cluster:
         cluster_id: "{{ cluster_id }}"
         state: present
         tags: "{{ tags_patch }}"
@@ -140,7 +140,7 @@
           - "'vpc_security_groups' in _result_tag_db_cluster"
 
     - name: Purge a tag from the cluster (CHECK MODE)
-      rds_cluster:
+      amazon.aws.rds_cluster:
         engine: "{{ engine }}"
         username: "{{ username }}"
         password: "{{ password }}"
@@ -155,7 +155,7 @@
           - _result_tag_db_cluster.changed
 
     - name: Purge a tag from the cluster
-      rds_cluster:
+      amazon.aws.rds_cluster:
         engine: "{{ engine }}"
         username: "{{ username }}"
         password: "{{ password }}"
@@ -195,7 +195,7 @@
           - "'vpc_security_groups' in _result_tag_db_cluster"
 
     - name: Add a tag to the cluster (CHECK MODE)
-      rds_cluster:
+      amazon.aws.rds_cluster:
         engine: "{{ engine }}"
         username: "{{ username }}"
         password: "{{ password }}"
@@ -211,7 +211,7 @@
           - _result_tag_db_cluster.changed
 
     - name: Add a tag to the cluster
-      rds_cluster:
+      amazon.aws.rds_cluster:
         engine: "{{ engine }}"
         username: "{{ username }}"
         password: "{{ password }}"
@@ -250,7 +250,7 @@
           - _result_tag_db_cluster.tags["Name"] == "{{ tags_create["Name"]}}"
           - "'vpc_security_groups' in _result_tag_db_cluster"
     - name: Remove all tags
-      rds_cluster:
+      amazon.aws.rds_cluster:
         engine: "{{ engine }}"
         username: "{{ username }}"
         password: "{{ password }}"
@@ -288,7 +288,7 @@
           - "'vpc_security_groups' in _result_tag_db_cluster"
   always:
     - name: Delete DB cluster without creating a final snapshot
-      rds_cluster:
+      amazon.aws.rds_cluster:
         state: absent
         cluster_id: "{{ cluster_id }}"
         skip_final_snapshot: true

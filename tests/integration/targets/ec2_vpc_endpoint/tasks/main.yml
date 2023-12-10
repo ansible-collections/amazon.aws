@@ -400,7 +400,7 @@
     # # Endpoint modifications are not yet supported by the module
     #  # A Change the route table for the endpoint
     #  - name: Change the route table for the endpoint (check_mode)
-    #    ec2_vpc_endpoint:
+    #    amazon.aws.ec2_vpc_endpoint:
     #      state: present
     #      vpc_id: '{{ vpc_id }}'
     #      vpc_endpoint_id: "{{ rtb_endpoint_id }}"
@@ -416,7 +416,7 @@
     #        - check_two_rtbs_endpoint.changed
     #
     #  - name: Change the route table for the endpoint
-    #    ec2_vpc_endpoint:
+    #    amazon.aws.ec2_vpc_endpoint:
     #      state: present
     #      vpc_id: '{{ vpc_id }}'
     #      vpc_endpoint_id: "{{ rtb_endpoint_id }}"
@@ -433,7 +433,7 @@
     #        - two_rtbs_endpoint.result.route_table_ids[0] == '{{ rtb_igw_id }}'
     #
     #  - name: Change the route table for the endpoint - idempotency (check_mode)
-    #    ec2_vpc_endpoint:
+    #    amazon.aws.ec2_vpc_endpoint:
     #      state: present
     #      vpc_id: '{{ vpc_id }}'
     #      vpc_endpoint_id: "{{ rtb_endpoint_id }}"
@@ -449,7 +449,7 @@
     #        - not check_two_rtbs_endpoint.changed
     #
     #  - name: Change the route table for the endpoint - idempotency
-    #    ec2_vpc_endpoint:
+    #    amazon.aws.ec2_vpc_endpoint:
     #      state: present
     #      vpc_id: '{{ vpc_id }}'
     #      vpc_endpoint_id: "{{ rtb_endpoint_id }}"
@@ -721,7 +721,7 @@
       register: interface_endpoint_create_subnet_check
 
     - name: Create a security group
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: securitygroup-prodext
         description: security group for Ansible interface endpoint
         state: present

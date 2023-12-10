@@ -12,7 +12,7 @@
   #   import_tasks: remove_from_global_db.yaml
 
     - name: Ensure the resource doesn't exist
-      rds_cluster:
+      amazon.aws.rds_cluster:
         id: "{{ cluster_id }}"
         state: absent
         engine: "{{ engine}}"
@@ -30,7 +30,7 @@
     # avoid the following error when we try to adjust the port:
     # You currently can't modify EndpointPort with Aurora Serverless.
     - name: Create an Aurora-MySQL DB cluster
-      rds_cluster:
+      amazon.aws.rds_cluster:
         id: "{{ cluster_id }}"
         state: present
         engine: aurora-mysql
@@ -67,7 +67,7 @@
           - "'vpc_security_groups' in _result_create_source_db_cluster"
 
     - name: Modify DB cluster password
-      rds_cluster:
+      amazon.aws.rds_cluster:
         id: "{{ cluster_id }}"
         state: present
         password: "{{ new_password }}"
@@ -102,7 +102,7 @@
           - "'vpc_security_groups' in _result_modify_password"
 
     - name: Modify DB cluster port
-      rds_cluster:
+      amazon.aws.rds_cluster:
         id: "{{ cluster_id }}"
         state: present
         port: "{{ new_port }}"
@@ -135,7 +135,7 @@
           - "'vpc_security_groups' in _result_modify_port"
 
     - name: Modify DB cluster identifier
-      rds_cluster:
+      amazon.aws.rds_cluster:
         id: "{{ cluster_id }}"
         state: present
         purge_tags: false
@@ -192,7 +192,7 @@
       when: _result_check_db_parameter_group.rc != 0
 
     - name: Modify DB cluster parameter group
-      rds_cluster:
+      amazon.aws.rds_cluster:
         id: "{{ new_cluster_id }}"
         state: present
         db_cluster_parameter_group_name: "{{ new_db_parameter_group_name }}"
@@ -226,7 +226,7 @@
           - "'vpc_security_groups' in _result_modify_db_parameter_group_name"
 
     - name: Delete DB cluster without creating a final snapshot (CHECK MODE)
-      rds_cluster:
+      amazon.aws.rds_cluster:
         state: absent
         cluster_id: "{{ new_cluster_id }}"
         skip_final_snapshot: true
@@ -238,7 +238,7 @@
           - _result_delete_cluster.changed
 
     - name: Delete DB cluster without creating a final snapshot
-      rds_cluster:
+      amazon.aws.rds_cluster:
         state: absent
         cluster_id: "{{ new_cluster_id }}"
         skip_final_snapshot: true
@@ -249,7 +249,7 @@
           - _result_delete_cluster.changed
 
     - name: Delete DB cluster without creating a final snapshot (idempotence)
-      rds_cluster:
+      amazon.aws.rds_cluster:
         state: absent
         cluster_id: "{{ new_cluster_id }}"
         skip_final_snapshot: true
@@ -261,7 +261,7 @@
 
   always:
     - name: Delete DB cluster without creating a final snapshot
-      rds_cluster:
+      amazon.aws.rds_cluster:
         state: absent
         cluster_id: "{{ cluster_id }}"
         skip_final_snapshot: true

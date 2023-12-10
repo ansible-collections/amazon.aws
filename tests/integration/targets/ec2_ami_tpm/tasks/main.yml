@@ -39,7 +39,7 @@
       register: setup_subnet
 
     - name: create a security group to use for creating an ec2 instance
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ ec2_ami_name }}_setup"
         description: created by Ansible integration tests
         state: present
@@ -154,7 +154,7 @@
       ignore_errors: true
 
     - name: remove setup security group
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ ec2_ami_name }}_setup"
         description: created by Ansible integration tests
         state: absent

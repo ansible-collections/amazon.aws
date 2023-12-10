@@ -75,7 +75,7 @@
           - result is changed
 
     - name: assert that key pair was not created
-      ec2_key_info:
+      amazon.aws.ec2_key_info:
         names:
           - "{{ ec2_key_name }}"
       register: aws_keypair
@@ -111,14 +111,14 @@
           - result.key.tags['spaced key'] == 'Spaced value'
 
     - name: assert that key pair was created
-      ec2_key_info:
+      amazon.aws.ec2_key_info:
         names:
           - "{{ ec2_key_name }}"
       register: aws_keypair
       failed_when: aws_keypair.keypairs | length == 0
 
     - name: Gather info about the key pair
-      ec2_key_info:
+      amazon.aws.ec2_key_info:
         names: "{{ ec2_key_name }}"
       register: key_info
 
@@ -196,7 +196,7 @@
           - result is changed
 
     - name: assert that key pair was not created
-      ec2_key_info:
+      amazon.aws.ec2_key_info:
         names:
           - "{{ ec2_key_name_rsa }}"
       register: aws_keypair
@@ -239,7 +239,7 @@
           - result.key.tags['spaced key'] == 'Spaced value'
 
     - name: assert that key pair was created
-      ec2_key_info:
+      amazon.aws.ec2_key_info:
         names:
           - "{{ ec2_key_name_rsa }}"
       register: aws_keypair
@@ -331,7 +331,7 @@
           - result.key.tags['newKey'] == 'Another value'
 
     - name: Gather info about the updated tags
-      ec2_key_info:
+      amazon.aws.ec2_key_info:
         names: "{{ ec2_key_name }}"
       register: key_info
 
@@ -493,7 +493,7 @@
           - result is changed
 
     - name: assert using check_mode did not removed key pair
-      ec2_key_info:
+      amazon.aws.ec2_key_info:
         names:
           - "{{ ec2_key_name }}"
       register: keys
@@ -513,7 +513,7 @@
           - result.key == None
 
     - name: assert that key pair was removed
-      ec2_key_info:
+      amazon.aws.ec2_key_info:
         names:
           - "{{ ec2_key_name }}"
       register: keys
@@ -541,7 +541,7 @@
           - result.key.fingerprint == "{{fingerprint}}"
 
     - name: Gather key info with fingerprint
-      ec2_key_info:
+      amazon.aws.ec2_key_info:
         filters:
           fingerprint: "{{ fingerprint }}"
       register: key_info

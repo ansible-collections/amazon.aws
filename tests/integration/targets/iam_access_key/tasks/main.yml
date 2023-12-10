@@ -28,7 +28,7 @@
     # ==================================================================================
 
     - name: Fetch IAM key info (no keys)
-      iam_access_key_info:
+      amazon.aws.iam_access_key_info:
         user_name: "{{ test_user }}"
       register: access_key_info
     - ansible.builtin.assert:
@@ -40,7 +40,7 @@
     # ==================================================================================
 
     - name: Create a key (check_mode)
-      iam_access_key:
+      amazon.aws.iam_access_key:
         user_name: "{{ test_user }}"
         state: present
       register: create_key_1
@@ -51,7 +51,7 @@
           - create_key_1 is changed
 
     - name: Create a key
-      iam_access_key:
+      amazon.aws.iam_access_key:
         user_name: "{{ test_user }}"
         state: present
         no_log: true
@@ -71,7 +71,7 @@
           - create_key_1.access_key.status == 'Active'
 
     - name: Fetch IAM key info (1 key)
-      iam_access_key_info:
+      amazon.aws.iam_access_key_info:
         user_name: "{{ test_user }}"
       register: access_key_info
     - ansible.builtin.assert:
@@ -90,7 +90,7 @@
       vars:
         access_key_1: "{{ access_key_info.access_keys[0] }}"
     - name: Create a second key (check_mode)
-      iam_access_key:
+      amazon.aws.iam_access_key:
         user_name: "{{ test_user }}"
         state: present
       register: create_key_2
@@ -101,7 +101,7 @@
           - create_key_2 is changed
 
     - name: Create a second key
-      iam_access_key:
+      amazon.aws.iam_access_key:
         user_name: "{{ test_user }}"
         state: present
         no_log: true
@@ -121,7 +121,7 @@
           - create_key_2.access_key.status == 'Active'
 
     - name: Fetch IAM key info (2 keys)
-      iam_access_key_info:
+      amazon.aws.iam_access_key_info:
         user_name: "{{ test_user }}"
       register: access_key_info
     - ansible.builtin.assert:
@@ -149,7 +149,7 @@
         access_key_1: "{{ access_key_info.access_keys[0] }}"
         access_key_2: "{{ access_key_info.access_keys[1] }}"
     - name: Create a third key without rotation
-      iam_access_key:
+      amazon.aws.iam_access_key:
         user_name: "{{ test_user }}"
         state: present
         no_log: true
@@ -161,7 +161,7 @@
           - create_key_3 is failed
 
     - name: Fetch IAM key info (2 keys - not changed)
-      iam_access_key_info:
+      amazon.aws.iam_access_key_info:
         user_name: "{{ test_user }}"
       register: access_key_info
     - ansible.builtin.assert:
@@ -189,7 +189,7 @@
         access_key_1: "{{ access_key_info.access_keys[0] }}"
         access_key_2: "{{ access_key_info.access_keys[1] }}"
     - name: Create a third key - rotation enabled (check_mode)
-      iam_access_key:
+      amazon.aws.iam_access_key:
         user_name: "{{ test_user }}"
         state: present
         rotate_keys: true
@@ -203,7 +203,7 @@
           - create_key_3.deleted_access_key_id == create_key_1.access_key.access_key_id
 
     - name: Create a second key
-      iam_access_key:
+      amazon.aws.iam_access_key:
         user_name: "{{ test_user }}"
         state: present
         rotate_keys: true
@@ -225,7 +225,7 @@
           - create_key_3.access_key.status == 'Active'
 
     - name: Fetch IAM key info (2 keys - oldest rotated)
-      iam_access_key_info:
+      amazon.aws.iam_access_key_info:
         user_name: "{{ test_user }}"
       register: access_key_info
     - ansible.builtin.assert:
@@ -253,7 +253,7 @@
         access_key_1: "{{ access_key_info.access_keys[0] }}"
         access_key_2: "{{ access_key_info.access_keys[1] }}"
     - name: Disable third key (check_mode)
-      iam_access_key:
+      amazon.aws.iam_access_key:
         user_name: "{{ test_user }}"
         id: "{{ create_key_3.access_key.access_key_id }}"
         enabled: false
@@ -265,7 +265,7 @@
           - disable_key is changed
 
     - name: Disable third key
-      iam_access_key:
+      amazon.aws.iam_access_key:
         user_name: "{{ test_user }}"
         id: "{{ create_key_3.access_key.access_key_id }}"
         enabled: false
@@ -285,7 +285,7 @@
           - disable_key.access_key.status == 'Inactive'
 
     - name: Disable third key - idempotency (check_mode)
-      iam_access_key:
+      amazon.aws.iam_access_key:
         user_name: "{{ test_user }}"
         id: "{{ create_key_3.access_key.access_key_id }}"
         enabled: false
@@ -297,7 +297,7 @@
           - disable_key is not changed
 
     - name: Disable third key - idempotency
-      iam_access_key:
+      amazon.aws.iam_access_key:
         user_name: "{{ test_user }}"
         id: "{{ create_key_3.access_key.access_key_id }}"
         enabled: false
@@ -317,7 +317,7 @@
           - disable_key.access_key.status == 'Inactive'
 
     - name: Fetch IAM key info (2 keys - 1 disabled)
-      iam_access_key_info:
+      amazon.aws.iam_access_key_info:
         user_name: "{{ test_user }}"
       register: access_key_info
     - ansible.builtin.assert:
@@ -345,7 +345,7 @@
         access_key_1: "{{ access_key_info.access_keys[0] }}"
         access_key_2: "{{ access_key_info.access_keys[1] }}"
     - name: Touch third key - no change (check_mode)
-      iam_access_key:
+      amazon.aws.iam_access_key:
         user_name: "{{ test_user }}"
         id: "{{ create_key_3.access_key.access_key_id }}"
       register: touch_key
@@ -356,7 +356,7 @@
           - touch_key is not changed
 
     - name: Touch third key - no change
-      iam_access_key:
+      amazon.aws.iam_access_key:
         user_name: "{{ test_user }}"
         id: "{{ create_key_3.access_key.access_key_id }}"
       register: touch_key
@@ -377,7 +377,7 @@
     # ==================================================================================
 
     - name: Enable third key (check_mode)
-      iam_access_key:
+      amazon.aws.iam_access_key:
         user_name: "{{ test_user }}"
         id: "{{ create_key_3.access_key.access_key_id }}"
         enabled: true
@@ -389,7 +389,7 @@
           - enable_key is changed
 
     - name: Enable third key
-      iam_access_key:
+      amazon.aws.iam_access_key:
         user_name: "{{ test_user }}"
         id: "{{ create_key_3.access_key.access_key_id }}"
         enabled: true
@@ -409,7 +409,7 @@
           - enable_key.access_key.status == 'Active'
 
     - name: Enable third key - idempotency (check_mode)
-      iam_access_key:
+      amazon.aws.iam_access_key:
         user_name: "{{ test_user }}"
         id: "{{ create_key_3.access_key.access_key_id }}"
         enabled: true
@@ -421,7 +421,7 @@
           - enable_key is not changed
 
     - name: Enable third key - idempotency
-      iam_access_key:
+      amazon.aws.iam_access_key:
         user_name: "{{ test_user }}"
         id: "{{ create_key_3.access_key.access_key_id }}"
         enabled: true
@@ -443,7 +443,7 @@
     # ==================================================================================
 
     - name: Touch third key again - no change (check_mode)
-      iam_access_key:
+      amazon.aws.iam_access_key:
         user_name: "{{ test_user }}"
         id: "{{ create_key_3.access_key.access_key_id }}"
       register: touch_key
@@ -454,7 +454,7 @@
           - touch_key is not changed
 
     - name: Touch third key again - no change
-      iam_access_key:
+      amazon.aws.iam_access_key:
         user_name: "{{ test_user }}"
         id: "{{ create_key_3.access_key.access_key_id }}"
       register: touch_key
@@ -475,7 +475,7 @@
     # ==================================================================================
 
     - name: Re-Disable third key
-      iam_access_key:
+      amazon.aws.iam_access_key:
         user_name: "{{ test_user }}"
         id: "{{ create_key_3.access_key.access_key_id }}"
         enabled: false
@@ -526,7 +526,7 @@
     # ==================================================================================
 
     - name: Delete active key (check_mode)
-      iam_access_key:
+      amazon.aws.iam_access_key:
         user_name: "{{ test_user }}"
         id: "{{ create_key_2.access_key.access_key_id }}"
         state: absent
@@ -538,7 +538,7 @@
           - delete_active_key is changed
 
     - name: Delete active key
-      iam_access_key:
+      amazon.aws.iam_access_key:
         user_name: "{{ test_user }}"
         id: "{{ create_key_2.access_key.access_key_id }}"
         state: absent
@@ -549,7 +549,7 @@
           - delete_active_key is changed
 
     - name: Delete active key - idempotency (check_mode)
-      iam_access_key:
+      amazon.aws.iam_access_key:
         user_name: "{{ test_user }}"
         id: "{{ create_key_2.access_key.access_key_id }}"
         state: absent
@@ -561,7 +561,7 @@
           - delete_active_key is not changed
 
     - name: Delete active key - idempotency
-      iam_access_key:
+      amazon.aws.iam_access_key:
         user_name: "{{ test_user }}"
         id: "{{ create_key_2.access_key.access_key_id }}"
         state: absent
@@ -574,7 +574,7 @@
     # ==================================================================================
 
     - name: Delete inactive key (check_mode)
-      iam_access_key:
+      amazon.aws.iam_access_key:
         user_name: "{{ test_user }}"
         id: "{{ create_key_3.access_key.access_key_id }}"
         state: absent
@@ -586,7 +586,7 @@
           - delete_inactive_key is changed
 
     - name: Delete inactive key
-      iam_access_key:
+      amazon.aws.iam_access_key:
         user_name: "{{ test_user }}"
         id: "{{ create_key_3.access_key.access_key_id }}"
         state: absent
@@ -597,7 +597,7 @@
           - delete_inactive_key is changed
 
     - name: Delete inactive key - idempotency (check_mode)
-      iam_access_key:
+      amazon.aws.iam_access_key:
         user_name: "{{ test_user }}"
         id: "{{ create_key_3.access_key.access_key_id }}"
         state: absent
@@ -609,7 +609,7 @@
           - delete_inactive_key is not changed
 
     - name: Delete inactive key - idempotency
-      iam_access_key:
+      amazon.aws.iam_access_key:
         user_name: "{{ test_user }}"
         id: "{{ create_key_3.access_key.access_key_id }}"
         state: absent
@@ -622,7 +622,7 @@
     # ==================================================================================
 
     - name: Fetch IAM key info (no keys)
-      iam_access_key_info:
+      amazon.aws.iam_access_key_info:
         user_name: "{{ test_user }}"
       register: access_key_info
     - ansible.builtin.assert:
@@ -634,7 +634,7 @@
     # ==================================================================================
 
     - name: Create an inactive key (check_mode)
-      iam_access_key:
+      amazon.aws.iam_access_key:
         user_name: "{{ test_user }}"
         state: present
         enabled: false
@@ -646,7 +646,7 @@
           - create_key_4 is changed
 
     - name: Create a key
-      iam_access_key:
+      amazon.aws.iam_access_key:
         user_name: "{{ test_user }}"
         state: present
         enabled: false
@@ -667,7 +667,7 @@
           - create_key_4.access_key.status == 'Inactive'
 
     - name: Fetch IAM key info (1 inactive key)
-      iam_access_key_info:
+      amazon.aws.iam_access_key_info:
         user_name: "{{ test_user }}"
       register: access_key_info
     - ansible.builtin.assert:
@@ -686,7 +686,7 @@
       vars:
         access_key_1: "{{ access_key_info.access_keys[0] }}"
     - name: Disable new key
-      iam_access_key:
+      amazon.aws.iam_access_key:
         user_name: "{{ test_user }}"
         id: "{{ create_key_4.access_key.access_key_id }}"
         enabled: false
@@ -701,7 +701,7 @@
     # Cleanup
 
     - name: Delete new key
-      iam_access_key:
+      amazon.aws.iam_access_key:
         user_name: "{{ test_user }}"
         id: "{{ create_key_4.access_key.access_key_id }}"
         state: absent

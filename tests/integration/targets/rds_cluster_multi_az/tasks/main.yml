@@ -10,7 +10,7 @@
 
   block:
     - name: Ensure the resource doesn't exist
-      rds_cluster:
+      amazon.aws.rds_cluster:
         id: "{{ cluster_id }}"
         state: absent
         engine: mysql
@@ -25,7 +25,7 @@
       ignore_errors: true
 
     - name: Create a source DB cluster (CHECK_MODE)
-      rds_cluster:
+      amazon.aws.rds_cluster:
         id: "{{ cluster_id }}"
         state: present
         engine: mysql
@@ -45,7 +45,7 @@
           - _result_create_source_db_cluster.changed
 
     - name: Create a source DB cluster
-      rds_cluster:
+      amazon.aws.rds_cluster:
         id: "{{ cluster_id }}"
         state: present
         engine: mysql
@@ -65,7 +65,7 @@
 
   always:
     - name: Delete DB cluster without creating a final snapshot
-      rds_cluster:
+      amazon.aws.rds_cluster:
         state: absent
         cluster_id: "{{ item }}"
         skip_final_snapshot: true

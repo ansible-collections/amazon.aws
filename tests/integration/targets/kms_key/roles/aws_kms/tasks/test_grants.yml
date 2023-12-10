@@ -16,7 +16,7 @@
           "Deny"} }'
       register: iam_role_result
     - name: create a key
-      kms_key:
+      amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
         tags:
           Hello: World
@@ -49,7 +49,7 @@
     # ------------------------------------------------------------------------------------------
 
     - name: Add grant - check mode
-      kms_key:
+      amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
         state: present
         purge_grants: true
@@ -75,7 +75,7 @@
     - ansible.builtin.wait_for:
         timeout: 20
     - name: Add grant
-      kms_key:
+      amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
         state: present
         purge_grants: true
@@ -117,7 +117,7 @@
       ansible.builtin.wait_for:
         timeout: 45
     - name: Add grant (idempotence) - check mode
-      kms_key:
+      amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
         state: present
         purge_grants: true
@@ -139,7 +139,7 @@
           - not key.changed
 
     - name: Add grant (idempotence)
-      kms_key:
+      amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
         state: present
         purge_grants: true
@@ -177,7 +177,7 @@
           - key.description == ''
 
     - name: Add a second grant
-      kms_key:
+      amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
         state: present
         grants:
@@ -218,7 +218,7 @@
       ansible.builtin.wait_for:
         timeout: 45
     - name: Add a second grant again
-      kms_key:
+      amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
         state: present
         grants:
@@ -256,7 +256,7 @@
           - key.description == ''
 
     - name: Update the grants with purge_grants set
-      kms_key:
+      amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
         state: present
         purge_grants: true
@@ -295,7 +295,7 @@
           - key.description == ''
 
     - name: Update third grant to change encryption context equals to subset
-      kms_key:
+      amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
         state: present
         grants:
@@ -338,7 +338,7 @@
     # ============================================================
     #   CLEAN-UP
     - name: finish off by deleting keys
-      kms_key:
+      amazon.aws.kms_key:
         state: absent
         alias: "{{ kms_key_alias }}"
         pending_window: 7

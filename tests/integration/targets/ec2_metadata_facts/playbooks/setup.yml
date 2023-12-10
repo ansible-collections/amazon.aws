@@ -81,7 +81,7 @@
       register: public_route_table
 
     - name: create a security group
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ resource_prefix }}-sg"
         description: Created by {{ resource_prefix }}
         rules:

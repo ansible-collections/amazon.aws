@@ -29,7 +29,7 @@
         state: absent
 
     - name: remove setup security group
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ resource_prefix }}_setup"
         description: created by Ansible integration tests
         state: absent

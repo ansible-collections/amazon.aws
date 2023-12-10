@@ -25,7 +25,7 @@
   retries: 10
 
 - name: remove the security group
-  ec2_security_group:
+  amazon.aws.ec2_security_group:
     name: "{{ resource_prefix }}-sg"
     description: a security group for ansible tests
     vpc_id: "{{ testing_vpc.vpc.id }}"

@@ -31,12 +31,12 @@
       register: ec2_instance_results
 
     - name: ensure alarm doesn't exist for a clean test
-      cloudwatch_metric_alarm:
+      amazon.aws.cloudwatch_metric_alarm:
         state: absent
         name: "{{ alarm_full_name }}"
 
     - name: create ec2 metric alarm on ec2 instance (check mode)
-      cloudwatch_metric_alarm:
+      amazon.aws.cloudwatch_metric_alarm:
         dimensions:
           InstanceId: "{{ ec2_instance_results.instances[0].instance_id }}"
         state: present
@@ -68,7 +68,7 @@
           - alarm_info_check.metric_alarms | length == 0
 
     - name: create ec2 metric alarm on ec2 instance
-      cloudwatch_metric_alarm:
+      amazon.aws.cloudwatch_metric_alarm:
         dimensions:
           InstanceId: "{{ ec2_instance_results.instances[0].instance_id }}"
         state: present
@@ -109,7 +109,7 @@
           - ec2_instance_metric_alarm.treat_missing_data == alarm_info.metric_alarms[0].treat_missing_data
 
     - name: create ec2 metric alarm on ec2 instance (idempotent) (check mode)
-      cloudwatch_metric_alarm:
+      amazon.aws.cloudwatch_metric_alarm:
         dimensions:
           InstanceId: "{{ ec2_instance_results.instances[0].instance_id }}"
         state: present
@@ -157,7 +157,7 @@
         - treat_missing_data
 
     - name: create ec2 metric alarm on ec2 instance (idempotent)
-      cloudwatch_metric_alarm:
+      amazon.aws.cloudwatch_metric_alarm:
         dimensions:
           InstanceId: "{{ ec2_instance_results.instances[0].instance_id }}"
         state: present
@@ -204,7 +204,7 @@
         - treat_missing_data
 
     - name: update alarm (check mode)
-      cloudwatch_metric_alarm:
+      amazon.aws.cloudwatch_metric_alarm:
         dimensions:
           InstanceId: "{{ ec2_instance_results.instances[0].instance_id }}"
         state: present
@@ -244,7 +244,7 @@
           - ec2_instance_metric_alarm_update_check.treat_missing_data == alarm_info.metric_alarms[0].treat_missing_data
 
     - name: update alarm
-      cloudwatch_metric_alarm:
+      amazon.aws.cloudwatch_metric_alarm:
         dimensions:
           InstanceId: "{{ ec2_instance_results.instances[0].instance_id }}"
         state: present
@@ -283,7 +283,7 @@
           - ec2_instance_metric_alarm_update.treat_missing_data == alarm_info.metric_alarms[0].treat_missing_data
 
     - name: try to remove the alarm (check mode)
-      cloudwatch_metric_alarm:
+      amazon.aws.cloudwatch_metric_alarm:
         state: absent
         name: "{{ alarm_full_name }}"
       check_mode: true
@@ -306,7 +306,7 @@
           - alarm_info.metric_alarms | length > 0
 
     - name: try to remove the alarm
-      cloudwatch_metric_alarm:
+      amazon.aws.cloudwatch_metric_alarm:
         state: absent
         name: "{{ alarm_full_name }}"
       register: ec2_instance_metric_alarm_deletion
@@ -328,7 +328,7 @@
           - alarm_info.metric_alarms | length == 0
 
     - name: create ec2 metric alarm with no unit on ec2 instance
-      cloudwatch_metric_alarm:
+      amazon.aws.cloudwatch_metric_alarm:
         dimensions:
           InstanceId: "{{ ec2_instance_results.instances[0].instance_id }}"
         state: present
@@ -368,7 +368,7 @@
           - ec2_instance_metric_alarm_no_unit.treat_missing_data == alarm_info_no_unit.metric_alarms[0].treat_missing_data
 
     - name: try to remove the alarm
-      cloudwatch_metric_alarm:
+      amazon.aws.cloudwatch_metric_alarm:
         state: absent
         name: "{{ alarm_full_name }}"
       register: ec2_instance_metric_alarm_deletion
@@ -390,7 +390,7 @@
           - alarm_info.metric_alarms | length == 0
 
     - name: create ec2 metric alarm with metrics
-      cloudwatch_metric_alarm:
+      amazon.aws.cloudwatch_metric_alarm:
         state: present
         name: "{{ alarm_full_name }}"
         treat_missing_data: missing
@@ -435,7 +435,7 @@
           - ec2_instance_metric_alarm_metrics.metrics[0].return_data == alarm_info_metrics.metric_alarms[0].metrics[0].return_data
 
     - name: try to remove the alarm
-      cloudwatch_metric_alarm:
+      amazon.aws.cloudwatch_metric_alarm:
         state: absent
         name: "{{ alarm_full_name }}"
       register: ec2_instance_metric_alarm_deletion_no_unit
@@ -457,7 +457,7 @@
           - alarm_info_no_unit.metric_alarms | length == 0
 
     - name: create ec2 metric alarm by providing mutually exclusive values
-      cloudwatch_metric_alarm:
+      amazon.aws.cloudwatch_metric_alarm:
         dimensions:
           InstanceId: "{{ ec2_instance_results.instances[0].instance_id }}"
         state: present
@@ -494,7 +494,7 @@
 
   always:
     - name: try to delete the alarm
-      cloudwatch_metric_alarm:
+      amazon.aws.cloudwatch_metric_alarm:
         state: absent
         name: "{{ alarm_full_name }}"
       ignore_errors: true

@@ -176,7 +176,7 @@
     #  ###
     #
     #  - name: test that cloudtrail_info returns the tags
-    #    cloudtrail_info:
+    #    amazon.aws.cloudtrail_info:
     #    register: tag_info
     #  - name: assert tags present
     #    assert:

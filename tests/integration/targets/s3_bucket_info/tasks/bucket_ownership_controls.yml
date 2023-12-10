@@ -1,6 +1,6 @@
 ---
 - name: Get S3 bucket ownership controls
-  s3_bucket_info:
+  amazon.aws.s3_bucket_info:
     name_filter: "{{ name_pattern }}"
     bucket_facts:
       bucket_ownership_controls: true
@@ -15,7 +15,7 @@
   loop_control:
     label: "{{ item.name }}"
 - name: Get complex S3 bucket list (including ownership controls)
-  s3_bucket_info:
+  amazon.aws.s3_bucket_info:
     name_filter: "{{ name_pattern }}"
     bucket_facts:
       bucket_accelerate_configuration: true
