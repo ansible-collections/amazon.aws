@@ -708,6 +708,14 @@ reader_endpoint:
   returned: always
   type: str
   sample: rds-cluster-demo.cluster-ro-cvlrtwiennww.us-east-1.rds.amazonaws.com
+serverless_v2_scaling_configuration:
+  description: The scaling configuration for an Aurora Serverless v2 DB cluster.
+  returned: when configured
+  type: dict
+  sample: {
+      "max_capacity": 4.5,
+      "min_capacity": 2.5
+  }
 status:
   description: The status of the DB cluster.
   returned: always
