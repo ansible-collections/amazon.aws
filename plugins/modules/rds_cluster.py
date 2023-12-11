@@ -367,7 +367,7 @@ options:
               - ACU values can be specified in in half-step increments, such as C(40), C(40.5), C(41), and so on.
               - The largest possible value is C(128).
             type: float
-        version_added: 7.1.0
+        version_added: 7.2.0
     skip_final_snapshot:
         description:
           - Whether a final DB cluster snapshot is created before the DB cluster is deleted.
