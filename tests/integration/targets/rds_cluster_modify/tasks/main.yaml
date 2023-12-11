@@ -15,7 +15,7 @@
       import_tasks: create_update_cluster_serverless_v2_scaling_configuration.yaml
 
     - name: Ensure the resource doesn't exist
-      rds_cluster:
+      amazon.aws.rds_cluster:
         id: "{{ cluster_id }}"
         state: absent
         engine: "{{ engine}}"
