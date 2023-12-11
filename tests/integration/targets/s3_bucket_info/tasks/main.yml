@@ -11,6 +11,7 @@
       amazon.aws.s3_bucket:
         name: "{{ item }}"
         state: present
+        versioning: true
         tags:
           lowercase spaced: hello cruel world
           Title Case: Hello Cruel World

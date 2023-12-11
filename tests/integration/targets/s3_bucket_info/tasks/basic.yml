@@ -27,6 +27,7 @@
       bucket_tagging: true
       bucket_website: true
       public_access_block: true
+      bucket_versioning: true
     transform_location: true
   register: bucket_list
 - name: Assert that buckets list contains requested bucket facts
@@ -48,6 +49,7 @@
       - item.bucket_tagging is defined
       - item.bucket_website is defined
       - item.public_access_block is defined
+      - item.bucket_versioning is defined
   loop: "{{ bucket_list.buckets }}"
   loop_control:
     label: "{{ item.name }}"
@@ -64,6 +66,8 @@
       - item.bucket_tagging["lowercase spaced"] == 'hello cruel world'
       - item.bucket_tagging["Title Case"] == 'Hello Cruel World'
       - item.bucket_location.LocationConstraint == aws_region
+      - item.bucket_versioning.Status is defined
+      - item.bucket_versioning.MFADelete is undefined
   loop: "{{ bucket_list.buckets }}"
   loop_control:
     label: "{{ item.name }}"
