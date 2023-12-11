@@ -716,6 +716,7 @@ serverless_v2_scaling_configuration:
       "max_capacity": 4.5,
       "min_capacity": 2.5
   }
+  version_added: 7.2.0
 status:
   description: The status of the DB cluster.
   returned: always
