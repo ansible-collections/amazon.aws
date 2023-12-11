@@ -1,14 +1,15 @@
 ---
-- block:
+- name: Run tests related to tagging keys
+  block:
     # ============================================================
     #   PREPARATION
     #
     # Get some information about who we are before starting our tests
     # we'll need this as soon as we start working on the policies
-    - name: get ARN of calling user
+    - name: Get ARN of calling user
       amazon.aws.aws_caller_info:
       register: aws_caller_info
-    - name: create a key
+    - name: Create a key
       amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
         tags:
@@ -17,7 +18,7 @@
         enabled: true
         enable_key_rotation: false
       register: key
-    - name: assert that state is enabled
+    - name: Assert that state is enabled
       ansible.builtin.assert:
         that:
           - key is changed
@@ -87,7 +88,8 @@
           Tag Three: "{{ resource_prefix }}"
       register: key
       check_mode: true
-    - ansible.builtin.assert:
+    - name: Assert that change is expected
+      ansible.builtin.assert:
         that:
           - key.changed
 
@@ -139,7 +141,8 @@
           Tag Three: "{{ resource_prefix }}"
       register: key
       check_mode: true
-    - ansible.builtin.assert:
+    - name: Assert that no change is expected
+      ansible.builtin.assert:
         that:
           - not key.changed
 
@@ -152,7 +155,8 @@
           tag_two: tag_two_updated
           Tag Three: "{{ resource_prefix }}"
       register: key
-    - ansible.builtin.assert:
+    - name: Assert that no change occurred
+      ansible.builtin.assert:
         that:
           - not key.changed
           - '"key_id" in key'
@@ -180,9 +184,9 @@
   always:
     # ============================================================
     #   CLEAN-UP
-    - name: finish off by deleting keys
+    - name: Finish off by deleting keys
       amazon.aws.kms_key:
         state: absent
         alias: "{{ kms_key_alias }}"
         pending_window: 7
-      ignore_errors: true
+      ignore_errors: true # noqa: ignore-errors
