@@ -1,3 +1,0 @@
-plugins/modules/iam_policy.py pylint:ansible-deprecated-no-version
-plugins/modules/route53.py validate-modules:parameter-state-invalid-choice # route53_info needs improvements before we can deprecate this
-plugins/modules/iam_user.py pylint:ansible-deprecated-no-version
