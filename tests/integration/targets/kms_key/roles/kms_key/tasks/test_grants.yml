@@ -1,21 +1,27 @@
 ---
-- block:
+- name: Run tests related to grants
+  block:
     # ============================================================
     #   PREPARATION
     #
     # Get some information about who we are before starting our tests
     # we'll need this as soon as we start working on the policies
-    - name: get ARN of calling user
+    - name: Get ARN of calling user
       amazon.aws.aws_caller_info:
       register: aws_caller_info
-    - name: create an IAM role that can do nothing
+    - name: Create an IAM role that can do nothing
       community.aws.iam_role:
         name: "{{ kms_key_alias }}"
         state: present
-        assume_role_policy_document: '{"Version": "2012-10-17", "Statement": {"Action": "sts:AssumeRole", "Principal": {"Service": "ec2.amazonaws.com"}, "Effect":
-          "Deny"} }'
+        assume_role_policy_document:
+          Version: "2012-10-17"
+          Statement:
+            Action: "sts:AssumeRole"
+            Principal:
+              Service: "ec2.amazonaws.com"
+            Effect: "Deny"
       register: iam_role_result
-    - name: create a key
+    - name: Create a key
       amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
         tags:
@@ -24,7 +30,7 @@
         enabled: true
         enable_key_rotation: false
       register: key
-    - name: assert that state is enabled
+    - name: Assert that state is enabled
       ansible.builtin.assert:
         that:
           - key is changed
@@ -66,13 +72,14 @@
               - RetireGrant
       register: key
       check_mode: true
-    - name: assert grant would have been added
+    - name: Assert grant would have been added
       ansible.builtin.assert:
         that:
           - key.changed
 
     # Roles can take a little while to get ready, pause briefly to give it chance
-    - ansible.builtin.wait_for:
+    - name: Pause for role creation to fully propagate
+      ansible.builtin.wait_for:
         timeout: 20
     - name: Add grant
       amazon.aws.kms_key:
@@ -91,7 +98,7 @@
               - Decrypt
               - RetireGrant
       register: key
-    - name: assert grant added
+    - name: Assert grant added
       ansible.builtin.assert:
         that:
           - key.changed
@@ -134,7 +141,8 @@
               - RetireGrant
       register: key
       check_mode: true
-    - ansible.builtin.assert:
+    - name: Assert no changes expected
+      ansible.builtin.assert:
         that:
           - not key.changed
 
@@ -155,7 +163,8 @@
               - Decrypt
               - RetireGrant
       register: key
-    - ansible.builtin.assert:
+    - name: Assert no changes made
+      ansible.builtin.assert:
         that:
           - not key.changed
           - '"key_id" in key'
@@ -337,14 +346,14 @@
   always:
     # ============================================================
     #   CLEAN-UP
-    - name: finish off by deleting keys
+    - name: Finish off by deleting keys
       amazon.aws.kms_key:
         state: absent
         alias: "{{ kms_key_alias }}"
         pending_window: 7
-      ignore_errors: true
-    - name: remove the IAM role
+      ignore_errors: true # noqa: ignore-errors
+    - name: Remove the IAM role
       community.aws.iam_role:
         name: "{{ kms_key_alias }}"
         state: absent
-      ignore_errors: true
+      ignore_errors: true # noqa: ignore-errors
