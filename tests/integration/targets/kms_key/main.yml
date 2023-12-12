@@ -3,8 +3,9 @@
 # To add new tests you'll need to add a new host to the inventory and a matching
 # '{{ inventory_hostname }}'.yml file in roles/aws_kms/tasks/
 
-- hosts: all
+- name: Run integrationtests for kms_key in parallel
+  hosts: all
   gather_facts: false
-  strategy: free
+  strategy: ansible.builtin.free # noqa: run-once[play]
   roles:
-    - aws_kms
+    - kms_key
