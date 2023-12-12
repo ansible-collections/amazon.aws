@@ -1,21 +1,27 @@
 ---
-- block:
+- name: Run tests related to basic key modification
+  block:
     # ============================================================
     #   PREPARATION
     #
     # Get some information about who we are before starting our tests
     # we'll need this as soon as we start working on the policies
-    - name: get ARN of calling user
+    - name: Get ARN of calling user
       amazon.aws.aws_caller_info:
       register: aws_caller_info
-    - name: create an IAM role that can do nothing
+    - name: Create an IAM role that can do nothing
       community.aws.iam_role:
         name: "{{ kms_key_alias }}"
         state: present
-        assume_role_policy_document: '{"Version": "2012-10-17", "Statement": {"Action": "sts:AssumeRole", "Principal": {"Service": "ec2.amazonaws.com"}, "Effect":
-          "Deny"} }'
+        assume_role_policy_document:
+          Version: "2012-10-17"
+          Statement:
+            Action: "sts:AssumeRole"
+            Principal:
+              Service: "ec2.amazonaws.com"
+            Effect: "Deny"
       register: iam_role_result
-    - name: create a key
+    - name: Create a key
       amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
         tags:
@@ -24,7 +30,7 @@
         enabled: true
         enable_key_rotation: false
       register: key
-    - name: assert that state is enabled
+    - name: Assert that state is enabled
       ansible.builtin.assert:
         that:
           - key is changed
@@ -52,11 +58,11 @@
       ansible.builtin.set_fact:
         kms_key_id: "{{ key.key_id }}"
         kms_key_arn: "{{ key.key_arn }}"
-    - name: find facts about the key (by ID)
+    - name: Find facts about the key (by ID)
       amazon.aws.kms_key_info:
         key_id: "{{ kms_key_id }}"
       register: new_key
-    - name: check that a key was found
+    - name: Check that a key was found
       ansible.builtin.assert:
         that:
           - '"key_id" in new_key.kms_keys[0]'
@@ -83,7 +89,8 @@
         policy: "{{ lookup('template', 'console-policy.j2') }}"
       register: key
       check_mode: true
-    - ansible.builtin.assert:
+    - name: Assert that change is expected
+      ansible.builtin.assert:
         that:
           - key is changed
 
@@ -123,7 +130,8 @@
         policy: "{{ lookup('template', 'console-policy.j2') }}"
       register: key
       check_mode: true
-    - ansible.builtin.assert:
+    - name: Assert no change expected
+      ansible.builtin.assert:
         that:
           - not key.changed
 
@@ -132,7 +140,8 @@
         alias: alias/{{ kms_key_alias }}
         policy: "{{ lookup('template', 'console-policy.j2') }}"
       register: key
-    - ansible.builtin.assert:
+    - name: Assert that no changes occurred
+      ansible.builtin.assert:
         that:
           - not key.changed
           - '"key_id" in key'
@@ -162,7 +171,8 @@
         description: test key for testing
       register: key
       check_mode: true
-    - ansible.builtin.assert:
+    - name: Assert change expected
+      ansible.builtin.assert:
         that:
           - key.changed
 
@@ -172,7 +182,8 @@
         state: present
         description: test key for testing
       register: key
-    - ansible.builtin.assert:
+    - name: Assert that description changed
+      ansible.builtin.assert:
         that:
           - key.changed
           - '"key_id" in key'
@@ -203,7 +214,8 @@
         description: test key for testing
       register: key
       check_mode: true
-    - ansible.builtin.assert:
+    - name: Assert that no change was expected
+      ansible.builtin.assert:
         that:
           - not key.changed
 
@@ -213,7 +225,8 @@
         state: present
         description: test key for testing
       register: key
-    - ansible.builtin.assert:
+    - name: Assert no change occurred
+      ansible.builtin.assert:
         that:
           - not key.changed
           - '"key_id" in key'
@@ -236,12 +249,13 @@
 
     # ------------------------------------------------------------------------------------------
 
-    - name: update policy to remove access to key rotation status
+    - name: Update policy to remove access to key rotation status
       amazon.aws.kms_key:
         alias: alias/{{ kms_key_alias }}
         policy: "{{ lookup('template', 'console-policy-no-key-rotation.j2') }}"
       register: key
-    - ansible.builtin.assert:
+    - name: Assert that policy was updated
+      ansible.builtin.assert:
         that:
           - '"key_id" in key'
           - key.key_id | length >= 36
@@ -265,14 +279,14 @@
   always:
     # ============================================================
     #   CLEAN-UP
-    - name: finish off by deleting keys
+    - name: Finish off by deleting keys
       amazon.aws.kms_key:
         state: absent
         alias: "{{ kms_key_alias }}"
         pending_window: 7
-      ignore_errors: true
-    - name: remove the IAM role
+      ignore_errors: true # noqa: ignore-errors
+    - name: Remove the IAM role
       community.aws.iam_role:
         name: "{{ kms_key_alias }}"
         state: absent
-      ignore_errors: true
+      ignore_errors: true # noqa: ignore-errors

@@ -1,5 +1,5 @@
 ---
-- name: kms_key integration tests
+- name: Integration tests for kms_key
   collections:
     - community.aws
   module_defaults:
@@ -9,4 +9,5 @@
       session_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
   block:
-    - ansible.builtin.include_tasks: ./test_{{ inventory_hostname }}.yml
+    - name: Run test suite
+      ansible.builtin.include_tasks: ./test_{{ inventory_hostname }}.yml
