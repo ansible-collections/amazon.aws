@@ -343,13 +343,13 @@ EXAMPLES = r"""
 
 - amazon.aws.autoscaling_group:
     name: special
-    load_balancers: [ 'lb1', 'lb2' ]
-    availability_zones: [ 'eu-west-1a', 'eu-west-1b' ]
+    load_balancers: ['lb1', 'lb2']
+    availability_zones: ['eu-west-1a', 'eu-west-1b']
     launch_config_name: 'lc-1'
     min_size: 1
     max_size: 10
     desired_capacity: 5
-    vpc_zone_identifier: [ 'subnet-abcd1234', 'subnet-1a2b3c4d' ]
+    vpc_zone_identifier: ['subnet-abcd1234', 'subnet-1a2b3c4d']
     tags:
       - environment: production
         propagate_at_launch: false
@@ -396,8 +396,8 @@ EXAMPLES = r"""
     health_check_period: 60
     health_check_type: ELB
     replace_instances:
-    - i-b345231
-    - i-24c2931
+      - i-b345231
+      - i-24c2931
     min_size: 5
     max_size: 5
     desired_capacity: 5
@@ -407,16 +407,16 @@ EXAMPLES = r"""
 
 - amazon.aws.autoscaling_group:
     name: special
-    load_balancers: [ 'lb1', 'lb2' ]
-    availability_zones: [ 'eu-west-1a', 'eu-west-1b' ]
+    load_balancers: ['lb1', 'lb2']
+    availability_zones: ['eu-west-1a', 'eu-west-1b']
     launch_template:
-        version: '1'
-        launch_template_name: 'lt-example'
-        launch_template_id: 'lt-123456'
+      version: '1'
+      launch_template_name: 'lt-example'
+      launch_template_id: 'lt-123456'
     min_size: 1
     max_size: 10
     desired_capacity: 5
-    vpc_zone_identifier: [ 'subnet-abcd1234', 'subnet-1a2b3c4d' ]
+    vpc_zone_identifier: ['subnet-abcd1234', 'subnet-1a2b3c4d']
     tags:
       - environment: production
         propagate_at_launch: false
@@ -425,24 +425,24 @@ EXAMPLES = r"""
 
 - amazon.aws.autoscaling_group:
     name: special
-    load_balancers: [ 'lb1', 'lb2' ]
-    availability_zones: [ 'eu-west-1a', 'eu-west-1b' ]
+    load_balancers: ['lb1', 'lb2']
+    availability_zones: ['eu-west-1a', 'eu-west-1b']
     launch_template:
-        version: '1'
-        launch_template_name: 'lt-example'
-        launch_template_id: 'lt-123456'
+      version: '1'
+      launch_template_name: 'lt-example'
+      launch_template_id: 'lt-123456'
     mixed_instances_policy:
-        instance_types:
-            - t3a.large
-            - t3.large
-            - t2.large
-        instances_distribution:
-            on_demand_percentage_above_base_capacity: 0
-            spot_allocation_strategy: capacity-optimized
+      instance_types:
+        - t3a.large
+        - t3.large
+        - t2.large
+      instances_distribution:
+        on_demand_percentage_above_base_capacity: 0
+        spot_allocation_strategy: capacity-optimized
     min_size: 1
     max_size: 10
     desired_capacity: 5
-    vpc_zone_identifier: [ 'subnet-abcd1234', 'subnet-1a2b3c4d' ]
+    vpc_zone_identifier: ['subnet-abcd1234', 'subnet-1a2b3c4d']
     tags:
       - environment: production
         propagate_at_launch: false

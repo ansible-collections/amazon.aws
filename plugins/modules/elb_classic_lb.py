@@ -302,7 +302,7 @@ EXAMPLES = r"""
       - protocol: http # options are http, https, ssl, tcp
         load_balancer_port: 80
         instance_port: 80
-        proxy_protocol: True
+        proxy_protocol: true
       - protocol: https
         load_balancer_port: 443
         instance_protocol: http # optional, defaults to value of protocol setting
@@ -338,17 +338,17 @@ EXAMPLES = r"""
         load_balancer_port: 80
         instance_port: 80
     health_check:
-        ping_protocol: http # options are http, https, ssl, tcp
-        ping_port: 80
-        ping_path: "/index.html" # not required for tcp or ssl
-        response_timeout: 5 # seconds
-        interval: 30 # seconds
-        unhealthy_threshold: 2
-        healthy_threshold: 10
+      ping_protocol: http # options are http, https, ssl, tcp
+      ping_port: 80
+      ping_path: "/index.html" # not required for tcp or ssl
+      response_timeout: 5 # seconds
+      interval: 30 # seconds
+      unhealthy_threshold: 2
+      healthy_threshold: 10
     access_logs:
-        interval: 5 # minutes (defaults to 60)
-        s3_location: "my-bucket" # This value is required if access_logs is set
-        s3_prefix: "logs"
+      interval: 5 # minutes (defaults to 60)
+      s3_location: "my-bucket" # This value is required if access_logs is set
+      s3_prefix: "logs"
 
 # Ensure ELB is gone
 - amazon.aws.elb_classic_lb:

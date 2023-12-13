@@ -175,19 +175,18 @@ EXAMPLES = r"""
     domain_name: "foo.example.com"
     region: us-east-1
     dns_servers:
-        - 10.0.0.1
-        - 10.0.1.1
+      - 10.0.0.1
+      - 10.0.1.1
     ntp_servers:
-        - 10.0.0.2
-        - 10.0.1.2
+      - 10.0.0.2
+      - 10.0.1.2
     netbios_name_servers:
-        - 10.0.0.1
-        - 10.0.1.1
+      - 10.0.0.1
+      - 10.0.1.1
     netbios_node_type: 2
     vpc_id: vpc-123456
-    delete_old: True
-    inherit_existing: False
-
+    delete_old: true
+    inherit_existing: false
 
 # Ensure the DHCP option set for the VPC has 10.0.0.4 and 10.0.1.4 as the specified DNS servers, but
 # keep any other existing settings. Also, keep the old DHCP option set around.
@@ -197,9 +196,8 @@ EXAMPLES = r"""
       - "{{groups['dns-primary']}}"
       - "{{groups['dns-secondary']}}"
     vpc_id: vpc-123456
-    inherit_existing: True
-    delete_old: False
-
+    inherit_existing: true
+    delete_old: false
 
 ## Create a DHCP option set with 4.4.4.4 and 8.8.8.8 as the specified DNS servers, with tags
 ## but do not assign to a VPC

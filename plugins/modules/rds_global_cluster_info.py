@@ -40,7 +40,6 @@ EXAMPLES = r"""
   amazon.aws.rds_global_cluster_info:
     global_cluster_identifier: "{{ cluster_id }}"
   register: _result_global_cluster_info
-
 """
 
 RETURN = r"""

@@ -21,16 +21,10 @@ example: >
     [defaults]
     callback_whitelist = aws_resource_actions
 sample output: >
-#
-# AWS ACTIONS: ['s3:PutBucketAcl', 's3:HeadObject', 's3:DeleteObject', 's3:PutObjectAcl', 's3:CreateMultipartUpload',
-#               's3:DeleteBucket', 's3:GetObject', 's3:DeleteObjects', 's3:CreateBucket', 's3:CompleteMultipartUpload',
-#               's3:ListObjectsV2', 's3:HeadBucket', 's3:UploadPart', 's3:PutObject']
-#
-sample output: >
-#
-# AWS ACTIONS: ['ec2:DescribeVpcAttribute', 'ec2:DescribeVpcClassicLink', 'ec2:ModifyVpcAttribute', 'ec2:CreateTags',
-#               'sts:GetCallerIdentity', 'ec2:DescribeSecurityGroups', 'ec2:DescribeTags', 'ec2:DescribeVpcs', 'ec2:CreateVpc']
-#
+  #
+  # AWS ACTIONS: ['s3:PutBucketAcl', 's3:HeadObject', 's3:DeleteObject', 's3:PutObjectAcl', 's3:CreateMultipartUpload',
+  #               's3:DeleteBucket', 's3:GetObject', 's3:DeleteObjects', 's3:CreateBucket', 's3:CompleteMultipartUpload',
+  #               's3:ListObjectsV2', 's3:HeadBucket', 's3:UploadPart', 's3:PutObject']
 """
 
 from ansible.module_utils._text import to_native

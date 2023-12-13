@@ -244,59 +244,59 @@ extends_documentation_fragment:
 RETURN = r""" # """
 
 EXAMPLES = r"""
-  - name: create alarm
-    amazon.aws.cloudwatch_metric_alarm:
-      state: present
-      region: ap-southeast-2
-      name: "cpu-low"
-      metric_name: "CPUUtilization"
-      namespace: "AWS/EC2"
-      statistic: Average
-      comparison: "LessThanOrEqualToThreshold"
-      threshold: 5.0
-      period: 300
-      evaluation_periods: 3
-      unit: "Percent"
-      description: "This will alarm when a instance's CPU usage average is lower than 5% for 15 minutes"
-      dimensions: {'InstanceId':'i-XXX'}
-      alarm_actions: ["action1","action2"]
+- name: create alarm
+  amazon.aws.cloudwatch_metric_alarm:
+    state: present
+    region: ap-southeast-2
+    name: "cpu-low"
+    metric_name: "CPUUtilization"
+    namespace: "AWS/EC2"
+    statistic: Average
+    comparison: "LessThanOrEqualToThreshold"
+    threshold: 5.0
+    period: 300
+    evaluation_periods: 3
+    unit: "Percent"
+    description: "This will alarm when a instance's CPU usage average is lower than 5% for 15 minutes"
+    dimensions: {'InstanceId': 'i-XXX'}
+    alarm_actions: ["action1", "action2"]
 
-  - name: create alarm with metrics
-    amazon.aws.cloudwatch_metric_alarm:
-      state: present
-      region: ap-southeast-2
-      name: "cpu-low"
-      metrics:
-        - id: 'CPU'
-          metric_stat:
-              metric:
-                  dimensions:
-                      name: "InstanceId"
-                      value: "i-xx"
-                  metric_name: "CPUUtilization"
-                  namespace: "AWS/EC2"
-              period: "300"
-              stat: "Average"
-              unit: "Percent"
-          return_data: False
-      alarm_actions: ["action1","action2"]
+- name: create alarm with metrics
+  amazon.aws.cloudwatch_metric_alarm:
+    state: present
+    region: ap-southeast-2
+    name: "cpu-low"
+    metrics:
+      - id: 'CPU'
+        metric_stat:
+          metric:
+            dimensions:
+              name: "InstanceId"
+              value: "i-xx"
+            metric_name: "CPUUtilization"
+            namespace: "AWS/EC2"
+          period: "300"
+          stat: "Average"
+          unit: "Percent"
+        return_data: false
+    alarm_actions: ["action1", "action2"]
 
-  - name: Create an alarm to recover a failed instance
-    amazon.aws.cloudwatch_metric_alarm:
-      state: present
-      region: us-west-1
-      name: "recover-instance"
-      metric: "StatusCheckFailed_System"
-      namespace: "AWS/EC2"
-      statistic: "Minimum"
-      comparison: "GreaterThanOrEqualToThreshold"
-      threshold: 1.0
-      period: 60
-      evaluation_periods: 2
-      unit: "Count"
-      description: "This will recover an instance when it fails"
-      dimensions: {"InstanceId":'i-XXX'}
-      alarm_actions: ["arn:aws:automate:us-west-1:ec2:recover"]
+- name: Create an alarm to recover a failed instance
+  amazon.aws.cloudwatch_metric_alarm:
+    state: present
+    region: us-west-1
+    name: "recover-instance"
+    metric: "StatusCheckFailed_System"
+    namespace: "AWS/EC2"
+    statistic: "Minimum"
+    comparison: "GreaterThanOrEqualToThreshold"
+    threshold: 1.0
+    period: 60
+    evaluation_periods: 2
+    unit: "Count"
+    description: "This will recover an instance when it fails"
+    dimensions: {"InstanceId":'i-XXX'}
+    alarm_actions: ["arn:aws:automate:us-west-1:ec2:recover"]
 """
 
 try:
