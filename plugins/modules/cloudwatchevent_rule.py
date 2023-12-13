@@ -212,11 +212,6 @@ def _validate_json(s):
         return False
 
 
-def _snakify(dict):
-    """Converts camel case to snake case"""
-    return camel_dict_to_snake_dict(dict)
-
-
 class CloudWatchEventRule:
     def __init__(
         self, module, name, client, schedule_expression=None, event_pattern=None, description=None, role_arn=None
@@ -241,7 +236,7 @@ class CloudWatchEventRule:
             botocore.exceptions.ClientError,
         ) as e:  # pylint: disable=duplicate-except
             self.module.fail_json_aws(e, msg=f"Could not describe rule {self.name}")
-        return _snakify(rule_info)
+        return camel_dict_to_snake_dict(rule_info)
 
     def put(self, enabled=True):
         """Creates or updates the rule in AWS"""
@@ -304,7 +299,7 @@ class CloudWatchEventRule:
             botocore.exceptions.ClientError,
         ) as e:  # pylint: disable=duplicate-except
             self.module.fail_json_aws(e, msg=f"Could not find target for rule {self.name}")
-        return _snakify(targets)["targets"]
+        return camel_dict_to_snake_dict(targets)["targets"]
 
     def put_targets(self, targets):
         """Creates or updates the provided targets on the rule in AWS"""
@@ -461,7 +456,7 @@ class CloudWatchEventRuleManager:
         self.targets = temp
         # remote_targets is snakified output of client.list_targets_by_rule()
         # therefore snakified version of t should be compared to avoid wrong result of below conditional
-        return [t for t in self.targets if _snakify(t) not in remote_targets]
+        return [t for t in self.targets if camel_dict_to_snake_dict(t) not in remote_targets]
 
     def _remote_target_ids_to_remove(self):
         """Returns a list of targets that need to be removed remotely"""
