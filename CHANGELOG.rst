@@ -23,7 +23,7 @@ Bugfixes
 
 - ec2_instance - retry API call if we get ``InvalidInstanceID.NotFound`` error (https://github.com/ansible-collections/amazon.aws/pull/1650).
 - ec2_vpc_subnet - cleanly handle failure when subnet isn't created in time (https://github.com/ansible-collections/amazon.aws/pull/1848).
-- s3_object - Fix typo that caused false deprecation warning when setting `overwrite=latest` (https://github.com/ansible-collections/amazon.aws/pull/1847).
+- s3_object - Fix typo that caused false deprecation warning when setting ``overwrite=latest`` (https://github.com/ansible-collections/amazon.aws/pull/1847).
 - s3_object - fixed ``NoSuchTagSet`` error when S3 endpoint doesn't support tags (https://github.com/ansible-collections/amazon.aws/issues/1607).
 - s3_object - when doing a put and specifying ``Content-Type`` in metadata, this module (since 6.0.0) erroneously set the ``Content-Type`` to ``None`` causing the put to fail. Fix now correctly honours the specified ``Content-Type`` (https://github.com/ansible-collections/amazon.aws/issues/1881).
 
