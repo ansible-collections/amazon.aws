@@ -768,7 +768,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http</span><span class="w"> </span><span class="c1"># options are http, https, ssl, tcp</span>
 <span class="w">        </span><span class="nt">load_balancer_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">80</span>
 <span class="w">        </span><span class="nt">instance_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">80</span>
-<span class="w">        </span><span class="nt">proxy_protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span>
+<span class="w">        </span><span class="nt">proxy_protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https</span>
 <span class="w">        </span><span class="nt">load_balancer_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">443</span>
 <span class="w">        </span><span class="nt">instance_protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http</span><span class="w"> </span><span class="c1"># optional, defaults to value of protocol setting</span>
@@ -804,17 +804,17 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 <span class="w">        </span><span class="nt">load_balancer_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">80</span>
 <span class="w">        </span><span class="nt">instance_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">80</span>
 <span class="w">    </span><span class="nt">health_check</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">ping_protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http</span><span class="w"> </span><span class="c1"># options are http, https, ssl, tcp</span>
-<span class="w">        </span><span class="nt">ping_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">80</span>
-<span class="w">        </span><span class="nt">ping_path</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;/index.html&quot;</span><span class="w"> </span><span class="c1"># not required for tcp or ssl</span>
-<span class="w">        </span><span class="nt">response_timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span><span class="w"> </span><span class="c1"># seconds</span>
-<span class="w">        </span><span class="nt">interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30</span><span class="w"> </span><span class="c1"># seconds</span>
-<span class="w">        </span><span class="nt">unhealthy_threshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
-<span class="w">        </span><span class="nt">healthy_threshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+<span class="w">      </span><span class="nt">ping_protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http</span><span class="w"> </span><span class="c1"># options are http, https, ssl, tcp</span>
+<span class="w">      </span><span class="nt">ping_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">80</span>
+<span class="w">      </span><span class="nt">ping_path</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;/index.html&quot;</span><span class="w"> </span><span class="c1"># not required for tcp or ssl</span>
+<span class="w">      </span><span class="nt">response_timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span><span class="w"> </span><span class="c1"># seconds</span>
+<span class="w">      </span><span class="nt">interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30</span><span class="w"> </span><span class="c1"># seconds</span>
+<span class="w">      </span><span class="nt">unhealthy_threshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<span class="w">      </span><span class="nt">healthy_threshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
 <span class="w">    </span><span class="nt">access_logs</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span><span class="w"> </span><span class="c1"># minutes (defaults to 60)</span>
-<span class="w">        </span><span class="nt">s3_location</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;my-bucket&quot;</span><span class="w"> </span><span class="c1"># This value is required if access_logs is set</span>
-<span class="w">        </span><span class="nt">s3_prefix</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;logs&quot;</span>
+<span class="w">      </span><span class="nt">interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span><span class="w"> </span><span class="c1"># minutes (defaults to 60)</span>
+<span class="w">      </span><span class="nt">s3_location</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;my-bucket&quot;</span><span class="w"> </span><span class="c1"># This value is required if access_logs is set</span>
+<span class="w">      </span><span class="nt">s3_prefix</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;logs&quot;</span>
 
 <span class="c1"># Ensure ELB is gone</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.elb_classic_lb</span><span class="p">:</span>

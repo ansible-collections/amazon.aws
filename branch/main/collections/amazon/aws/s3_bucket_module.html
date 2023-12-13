@@ -713,11 +713,11 @@ pass the <em>public_access</em> parameter to enable public access ACLs.</p>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mys3bucket</span>
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
 <span class="w">    </span><span class="nt">public_access</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">block_public_acls</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<span class="w">        </span><span class="nt">ignore_public_acls</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<span class="w">        </span><span class="c1">## keys == &#39;false&#39; can be omitted, undefined keys defaults to &#39;false&#39;</span>
-<span class="w">        </span><span class="c1"># block_public_policy: false</span>
-<span class="w">        </span><span class="c1"># restrict_public_buckets: false</span>
+<span class="w">      </span><span class="nt">block_public_acls</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">      </span><span class="nt">ignore_public_acls</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">      </span><span class="c1">## keys == &#39;false&#39; can be omitted, undefined keys defaults to &#39;false&#39;</span>
+<span class="w">      </span><span class="c1"># block_public_policy: false</span>
+<span class="w">      </span><span class="c1"># restrict_public_buckets: false</span>
 
 <span class="c1"># Delete public policy block from bucket</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.s3_bucket</span><span class="p">:</span>

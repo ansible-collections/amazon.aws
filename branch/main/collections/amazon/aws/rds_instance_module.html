@@ -225,7 +225,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <div class="ansibleOptionAnchor" id="parameter-apply_immediately"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-apply-immediately"><strong>apply_immediately</strong></p>
 <a class="ansibleOptionLink" href="#parameter-apply_immediately" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>A value that specifies whether modifying an instance with <em>new_db_instance_identifier</em> and <em>master_user_password</em> should be applied as soon as possible, regardless of the <em>preferred_maintenance_window</em> setting. If false, changes are applied during the next maintenance window.</p>
+<td><div class="ansible-option-cell"><p>A value that specifies whether modifying an instance with <em>new_db_instance_identifier</em> and <em>master_user_password</em> should be applied as soon as possible, regardless of the <em>preferred_maintenance_window</em> setting. If <code class="docutils literal notranslate"><span class="pre">false</span></code>, changes are applied during the next maintenance window.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -298,7 +298,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <div class="ansibleOptionAnchor" id="parameter-copy_tags_to_snapshot"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-copy-tags-to-snapshot"><strong>copy_tags_to_snapshot</strong></p>
 <a class="ansibleOptionLink" href="#parameter-copy_tags_to_snapshot" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Whether or not to copy all tags from the DB instance to snapshots of the instance. When initially creating a DB instance the RDS API defaults this to false if unspecified.</p>
+<td><div class="ansible-option-cell"><p>Whether or not to copy all tags from the DB instance to snapshots of the instance. When initially creating a DB instance the RDS API defaults this to <code class="docutils literal notranslate"><span class="pre">false</span></code> if unspecified.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
@@ -441,7 +441,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <div class="ansibleOptionAnchor" id="parameter-enable_iam_database_authentication"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-enable-iam-database-authentication"><strong>enable_iam_database_authentication</strong></p>
 <a class="ansibleOptionLink" href="#parameter-enable_iam_database_authentication" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Enable mapping of AWS Identity and Access Management (IAM) accounts to database accounts. If this option is omitted when creating the instance, Amazon RDS sets this to False.</p>
+<td><div class="ansible-option-cell"><p>Enable mapping of AWS Identity and Access Management (IAM) accounts to database accounts. If this option is omitted when creating the instance, Amazon RDS sets this to <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
@@ -503,7 +503,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <div class="ansibleOptionAnchor" id="parameter-engine_version"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-engine-version"><strong>engine_version</strong></p>
 <a class="ansibleOptionLink" href="#parameter-engine_version" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>The version number of the database engine to use. For Aurora MySQL that could be 5.6.10a , 5.7.12. Aurora PostgreSQL example, 9.6.3</p>
+<td><div class="ansible-option-cell"><p>The version number of the database engine to use. For Aurora MySQL that could be <code class="docutils literal notranslate"><span class="pre">5.6.10a</span></code> , <code class="docutils literal notranslate"><span class="pre">5.7.12</span></code>. Aurora PostgreSQL example, <code class="docutils literal notranslate"><span class="pre">9.6.3</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -512,14 +512,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <a class="ansibleOptionLink" href="#parameter-final_db_snapshot_identifier" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: final_snapshot_identifier</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>The DB instance snapshot identifier of the new DB instance snapshot created when <em>skip_final_snapshot</em> is false.</p>
+<td><div class="ansible-option-cell"><p>The DB instance snapshot identifier of the new DB instance snapshot created when <em>skip_final_snapshot</em> is <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-force_failover"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-force-failover"><strong>force_failover</strong></p>
 <a class="ansibleOptionLink" href="#parameter-force_failover" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Set to true to conduct the reboot through a MultiAZ failover.</p>
+<td><div class="ansible-option-cell"><p>Set to <code class="docutils literal notranslate"><span class="pre">true</span></code> to conduct the reboot through a MultiAZ failover.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
@@ -531,7 +531,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <div class="ansibleOptionAnchor" id="parameter-force_update_password"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-force-update-password"><strong>force_update_password</strong></p>
 <a class="ansibleOptionLink" href="#parameter-force_update_password" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Set to <code class="docutils literal notranslate"><span class="pre">True</span></code> to update your instance password with <em>master_user_password</em>. Since comparing passwords to determine if it needs to be updated is not possible this is set to False by default to allow idempotence.</p>
+<td><div class="ansible-option-cell"><p>Set to <code class="docutils literal notranslate"><span class="pre">true</span></code> to update your instance password with <em>master_user_password</em>. Since comparing passwords to determine if it needs to be updated is not possible this is set to c(false) by default to allow idempotence.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -573,7 +573,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <a class="ansibleOptionLink" href="#parameter-kms_key_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The ARN of the AWS KMS key identifier for an encrypted DB instance. If you are creating a DB instance with the same AWS account that owns the KMS encryption key used to encrypt the new DB instance, then you can use the KMS key alias instead of the ARN for the KM encryption key.</p>
-<p>If <em>storage_encrypted</em> is true and and this option is not provided, the default encryption key is used.</p>
+<p>If <em>storage_encrypted</em> is <code class="docutils literal notranslate"><span class="pre">true</span></code> and and this option is not provided, the default encryption key is used.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -614,7 +614,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <div class="ansibleOptionAnchor" id="parameter-monitoring_interval"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-monitoring-interval"><strong>monitoring_interval</strong></p>
 <a class="ansibleOptionLink" href="#parameter-monitoring_interval" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>The interval, in seconds, when Enhanced Monitoring metrics are collected for the DB instance. To disable collecting metrics, specify 0. Amazon RDS defaults this to 0 if omitted when initially creating a DB instance.</p>
+<td><div class="ansible-option-cell"><p>The interval, in seconds, when Enhanced Monitoring metrics are collected for the DB instance. To disable collecting metrics, specify <code class="docutils literal notranslate"><span class="pre">0</span></code>. Amazon RDS defaults this to 0 if omitted when initially creating a DB instance.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -736,7 +736,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <div class="ansibleOptionAnchor" id="parameter-publicly_accessible"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-publicly-accessible"><strong>publicly_accessible</strong></p>
 <a class="ansibleOptionLink" href="#parameter-publicly_accessible" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Specifies the accessibility options for the DB instance. A value of true specifies an Internet-facing instance with a publicly resolvable DNS name, which resolves to a public IP address. A value of false specifies an internal instance with a DNS name that resolves to a private IP address.</p>
+<td><div class="ansible-option-cell"><p>Specifies the accessibility options for the DB instance. A value of <code class="docutils literal notranslate"><span class="pre">true</span></code> specifies an Internet-facing instance with a publicly resolvable DNS name, which resolves to a public IP address. A value of <code class="docutils literal notranslate"><span class="pre">false</span></code> specifies an internal instance with a DNS name that resolves to a private IP address.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
@@ -748,7 +748,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <div class="ansibleOptionAnchor" id="parameter-purge_cloudwatch_logs_exports"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-purge-cloudwatch-logs-exports"><strong>purge_cloudwatch_logs_exports</strong></p>
 <a class="ansibleOptionLink" href="#parameter-purge_cloudwatch_logs_exports" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Set to False to retain any enabled cloudwatch logs that aren’t specified in the task and are associated with the instance.</p>
+<td><div class="ansible-option-cell"><p>Set to <code class="docutils literal notranslate"><span class="pre">false</span></code> to retain any enabled cloudwatch logs that aren’t specified in the task and are associated with the instance.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
@@ -761,7 +761,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <a class="ansibleOptionLink" href="#parameter-purge_iam_roles" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 <p><em class="ansible-option-versionadded">added in community.aws 3.3.0</em></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Set to <code class="docutils literal notranslate"><span class="pre">True</span></code> to remove any IAM roles that aren’t specified in the task and are associated with the instance.</p>
+<td><div class="ansible-option-cell"><p>Set to <code class="docutils literal notranslate"><span class="pre">true</span></code> to remove any IAM roles that aren’t specified in the task and are associated with the instance.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -774,7 +774,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <a class="ansibleOptionLink" href="#parameter-purge_security_groups" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 <p><em class="ansible-option-versionadded">added in community.aws 1.5.0</em></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Set to False to retain any enabled security groups that aren’t specified in the task and are associated with the instance.</p>
+<td><div class="ansible-option-cell"><p>Set to <code class="docutils literal notranslate"><span class="pre">false</span></code> to retain any enabled security groups that aren’t specified in the task and are associated with the instance.</p>
 <p>Can be applied to <em>vpc_security_group_ids</em> and <em>db_security_groups</em></p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
@@ -801,7 +801,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <div class="ansibleOptionAnchor" id="parameter-read_replica"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-read-replica"><strong>read_replica</strong></p>
 <a class="ansibleOptionLink" href="#parameter-read_replica" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Set to <code class="docutils literal notranslate"><span class="pre">False</span></code> to promote a read replica instance or true to create one. When creating a read replica <code class="docutils literal notranslate"><span class="pre">creation_source</span></code> should be set to ‘instance’ or not provided. <code class="docutils literal notranslate"><span class="pre">source_db_instance_identifier</span></code> must be provided with this option.</p>
+<td><div class="ansible-option-cell"><p>Set to <code class="docutils literal notranslate"><span class="pre">false</span></code> to promote a read replica instance or <code class="docutils literal notranslate"><span class="pre">true</span></code> to create one. When creating a read replica <code class="docutils literal notranslate"><span class="pre">creation_source</span></code> should be set to ‘instance’ or not provided. <code class="docutils literal notranslate"><span class="pre">source_db_instance_identifier</span></code> must be provided with this option.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
@@ -829,7 +829,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <a class="ansibleOptionLink" href="#parameter-restore_time" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>If using <em>creation_source=instance</em> this indicates the UTC date and time to restore from the source instance. For example, “2009-09-07T23:45:00Z”.</p>
-<p>May alternatively set <em>use_latest_restore_time=True</em>.</p>
+<p>May alternatively set <em>use_latest_restore_time=true</em>.</p>
 <p>Only one of <em>use_latest_restorable_time</em> and <em>restore_time</em> may be provided.</p>
 </div></td>
 </tr>
@@ -893,7 +893,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <div class="ansibleOptionAnchor" id="parameter-skip_final_snapshot"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-skip-final-snapshot"><strong>skip_final_snapshot</strong></p>
 <a class="ansibleOptionLink" href="#parameter-skip_final_snapshot" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Whether a final DB instance snapshot is created before the DB instance is deleted. If this is false <em>final_db_snapshot_identifier</em> must be provided.</p>
+<td><div class="ansible-option-cell"><p>Whether a final DB instance snapshot is created before the DB instance is deleted. If this is <code class="docutils literal notranslate"><span class="pre">false</span></code> <em>final_db_snapshot_identifier</em> must be provided.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -1064,7 +1064,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <div class="ansibleOptionAnchor" id="parameter-wait"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-wait"><strong>wait</strong></p>
 <a class="ansibleOptionLink" href="#parameter-wait" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Whether to wait for the instance to be available, stopped, or deleted. At a later time a <em>wait_timeout</em> option may be added. Following each API call to create/modify/delete the instance a waiter is used with a 60 second delay 30 times until the instance reaches the expected state (available/stopped/deleted). The total task time may also be influenced by AWSRetry which helps stabilize if the instance is in an invalid state to operate on to begin with (such as if you try to stop it when it is in the process of rebooting). If setting this to False task retries and delays may make your playbook execution better handle timeouts for major modifications.</p>
+<td><div class="ansible-option-cell"><p>Whether to wait for the instance to be available, stopped, or deleted. At a later time a <em>wait_timeout</em> option may be added. Following each API call to create/modify/delete the instance a waiter is used with a 60 second delay 30 times until the instance reaches the expected state (available/stopped/deleted). The total task time may also be influenced by AWSRetry which helps stabilize if the instance is in an invalid state to operate on to begin with (such as if you try to stop it when it is in the process of rebooting). If setting this to <code class="docutils literal notranslate"><span class="pre">false</span></code> task retries and delays may make your playbook execution better handle timeouts for major modifications.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
@@ -1102,7 +1102,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <span class="w">    </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test-encrypted-db</span>
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
 <span class="w">    </span><span class="nt">engine</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mariadb</span>
-<span class="w">    </span><span class="nt">storage_encrypted</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span>
+<span class="w">    </span><span class="nt">storage_encrypted</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 <span class="w">    </span><span class="nt">db_instance_class</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">db.t2.medium</span>
 <span class="w">    </span><span class="nt">username</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">username</span> <span class="cp">}}</span><span class="s">&quot;</span>
 <span class="w">    </span><span class="nt">password</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">password</span> <span class="cp">}}</span><span class="s">&quot;</span>
@@ -1112,7 +1112,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <span class="w">  </span><span class="nt">amazon.aws.rds_instance</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">instance_id</span> <span class="cp">}}</span><span class="s">&quot;</span>
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">absent</span>
-<span class="w">    </span><span class="nt">skip_final_snapshot</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span>
+<span class="w">    </span><span class="nt">skip_final_snapshot</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">remove the DB instance with a final snapshot</span>
 <span class="w">  </span><span class="nt">amazon.aws.rds_instance</span><span class="p">:</span>
@@ -1440,7 +1440,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <a class="ansibleOptionLink" href="#return-deletion_protection" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 <p><em class="ansible-option-versionadded">added in community.aws 3.3.0</em></p>
 </div></td>
-<td><div class="ansible-option-cell"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if the DB instance has deletion protection enabled, <code class="docutils literal notranslate"><span class="pre">False</span></code> if not.</p>
+<td><div class="ansible-option-cell"><p><code class="docutils literal notranslate"><span class="pre">true</span></code> if the DB instance has deletion protection enabled, <code class="docutils literal notranslate"><span class="pre">False</span></code> if not.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">false</span></code></p>
 </div></td>
@@ -1626,7 +1626,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <div class="ansibleOptionAnchor" id="return-performance_insights_enabled"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-return-performance-insights-enabled"><strong>performance_insights_enabled</strong></p>
 <a class="ansibleOptionLink" href="#return-performance_insights_enabled" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>True if Performance Insights is enabled for the DB instance, and otherwise false.</p>
+<td><div class="ansible-option-cell"><p>true if Performance Insights is enabled for the DB instance, and otherwise false.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">false</span></code></p>
 </div></td>
@@ -1653,7 +1653,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <div class="ansibleOptionAnchor" id="return-publicly_accessible"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-return-publicly-accessible"><strong>publicly_accessible</strong></p>
 <a class="ansibleOptionLink" href="#return-publicly_accessible" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>True for an Internet-facing instance with a publicly resolvable DNS name, False to indicate an internal instance with a DNS name that resolves to a private IP address.</p>
+<td><div class="ansible-option-cell"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> for an Internet-facing instance with a publicly resolvable DNS name, <code class="docutils literal notranslate"><span class="pre">False</span></code> to indicate an internal instance with a DNS name that resolves to a private IP address.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">true</span></code></p>
 </div></td>

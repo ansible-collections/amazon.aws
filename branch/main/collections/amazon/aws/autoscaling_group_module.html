@@ -760,13 +760,13 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.autoscaling_group</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">special</span>
-<span class="w">    </span><span class="nt">load_balancers</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="w"> </span><span class="s">&#39;lb1&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;lb2&#39;</span><span class="w"> </span><span class="p p-Indicator">]</span>
-<span class="w">    </span><span class="nt">availability_zones</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="w"> </span><span class="s">&#39;eu-west-1a&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;eu-west-1b&#39;</span><span class="w"> </span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">load_balancers</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;lb1&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;lb2&#39;</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">availability_zones</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;eu-west-1a&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;eu-west-1b&#39;</span><span class="p p-Indicator">]</span>
 <span class="w">    </span><span class="nt">launch_config_name</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;lc-1&#39;</span>
 <span class="w">    </span><span class="nt">min_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
 <span class="w">    </span><span class="nt">max_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
 <span class="w">    </span><span class="nt">desired_capacity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
-<span class="w">    </span><span class="nt">vpc_zone_identifier</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="w"> </span><span class="s">&#39;subnet-abcd1234&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;subnet-1a2b3c4d&#39;</span><span class="w"> </span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">vpc_zone_identifier</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;subnet-abcd1234&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;subnet-1a2b3c4d&#39;</span><span class="p p-Indicator">]</span>
 <span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">environment</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">production</span>
 <span class="w">        </span><span class="nt">propagate_at_launch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
@@ -813,8 +813,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <span class="w">    </span><span class="nt">health_check_period</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">60</span>
 <span class="w">    </span><span class="nt">health_check_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ELB</span>
 <span class="w">    </span><span class="nt">replace_instances</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">i-b345231</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">i-24c2931</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">i-b345231</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">i-24c2931</span>
 <span class="w">    </span><span class="nt">min_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
 <span class="w">    </span><span class="nt">max_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
 <span class="w">    </span><span class="nt">desired_capacity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
@@ -824,16 +824,16 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.autoscaling_group</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">special</span>
-<span class="w">    </span><span class="nt">load_balancers</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="w"> </span><span class="s">&#39;lb1&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;lb2&#39;</span><span class="w"> </span><span class="p p-Indicator">]</span>
-<span class="w">    </span><span class="nt">availability_zones</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="w"> </span><span class="s">&#39;eu-west-1a&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;eu-west-1b&#39;</span><span class="w"> </span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">load_balancers</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;lb1&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;lb2&#39;</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">availability_zones</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;eu-west-1a&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;eu-west-1b&#39;</span><span class="p p-Indicator">]</span>
 <span class="w">    </span><span class="nt">launch_template</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;1&#39;</span>
-<span class="w">        </span><span class="nt">launch_template_name</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;lt-example&#39;</span>
-<span class="w">        </span><span class="nt">launch_template_id</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;lt-123456&#39;</span>
+<span class="w">      </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;1&#39;</span>
+<span class="w">      </span><span class="nt">launch_template_name</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;lt-example&#39;</span>
+<span class="w">      </span><span class="nt">launch_template_id</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;lt-123456&#39;</span>
 <span class="w">    </span><span class="nt">min_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
 <span class="w">    </span><span class="nt">max_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
 <span class="w">    </span><span class="nt">desired_capacity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
-<span class="w">    </span><span class="nt">vpc_zone_identifier</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="w"> </span><span class="s">&#39;subnet-abcd1234&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;subnet-1a2b3c4d&#39;</span><span class="w"> </span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">vpc_zone_identifier</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;subnet-abcd1234&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;subnet-1a2b3c4d&#39;</span><span class="p p-Indicator">]</span>
 <span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">environment</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">production</span>
 <span class="w">        </span><span class="nt">propagate_at_launch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
@@ -842,24 +842,24 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.autoscaling_group</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">special</span>
-<span class="w">    </span><span class="nt">load_balancers</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="w"> </span><span class="s">&#39;lb1&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;lb2&#39;</span><span class="w"> </span><span class="p p-Indicator">]</span>
-<span class="w">    </span><span class="nt">availability_zones</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="w"> </span><span class="s">&#39;eu-west-1a&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;eu-west-1b&#39;</span><span class="w"> </span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">load_balancers</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;lb1&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;lb2&#39;</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">availability_zones</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;eu-west-1a&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;eu-west-1b&#39;</span><span class="p p-Indicator">]</span>
 <span class="w">    </span><span class="nt">launch_template</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;1&#39;</span>
-<span class="w">        </span><span class="nt">launch_template_name</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;lt-example&#39;</span>
-<span class="w">        </span><span class="nt">launch_template_id</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;lt-123456&#39;</span>
+<span class="w">      </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;1&#39;</span>
+<span class="w">      </span><span class="nt">launch_template_name</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;lt-example&#39;</span>
+<span class="w">      </span><span class="nt">launch_template_id</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;lt-123456&#39;</span>
 <span class="w">    </span><span class="nt">mixed_instances_policy</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">instance_types</span><span class="p">:</span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">t3a.large</span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">t3.large</span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">t2.large</span>
-<span class="w">        </span><span class="nt">instances_distribution</span><span class="p">:</span>
-<span class="w">            </span><span class="nt">on_demand_percentage_above_base_capacity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
-<span class="w">            </span><span class="nt">spot_allocation_strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">capacity-optimized</span>
+<span class="w">      </span><span class="nt">instance_types</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">t3a.large</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">t3.large</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">t2.large</span>
+<span class="w">      </span><span class="nt">instances_distribution</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">on_demand_percentage_above_base_capacity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
+<span class="w">        </span><span class="nt">spot_allocation_strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">capacity-optimized</span>
 <span class="w">    </span><span class="nt">min_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
 <span class="w">    </span><span class="nt">max_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
 <span class="w">    </span><span class="nt">desired_capacity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
-<span class="w">    </span><span class="nt">vpc_zone_identifier</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="w"> </span><span class="s">&#39;subnet-abcd1234&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;subnet-1a2b3c4d&#39;</span><span class="w"> </span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">vpc_zone_identifier</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;subnet-abcd1234&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;subnet-1a2b3c4d&#39;</span><span class="p p-Indicator">]</span>
 <span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">environment</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">production</span>
 <span class="w">        </span><span class="nt">propagate_at_launch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
