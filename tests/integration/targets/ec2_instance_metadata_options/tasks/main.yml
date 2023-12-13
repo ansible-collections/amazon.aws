@@ -66,4 +66,4 @@
           - presented_instance_fact.instances.0.state.name in ['running','pending']
           - presented_instance_fact.instances.0.metadata_options.http_endpoint == 'enabled'
           - presented_instance_fact.instances.0.metadata_options.http_tokens == 'optional'
-          - presented_instance_fact.instances.0.metadata_options.http_put_response_hop_limit == 4s
+          - presented_instance_fact.instances.0.metadata_options.http_put_response_hop_limit == 4
