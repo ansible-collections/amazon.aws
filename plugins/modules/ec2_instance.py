@@ -1636,7 +1636,11 @@ def change_instance_metadata_options(instance, params):
     existing_metadata_options = camel_dict_to_snake_dict(instance.get("MetadataOptions"))
     metadata_options_to_apply = params.get("metadata_options")
 
-    changes_to_apply = {key:  metadata_options_to_apply[key] for key in set(existing_metadata_options) & set(metadata_options_to_apply) if existing_metadata_options[key] != metadata_options_to_apply[key]}
+    changes_to_apply = {
+        key: metadata_options_to_apply[key]
+        for key in set(existing_metadata_options) & set(metadata_options_to_apply)
+        if existing_metadata_options[key] != metadata_options_to_apply[key]
+    }
 
     if changes_to_apply:
         request_args = {
@@ -1659,6 +1663,7 @@ def change_instance_metadata_options(instance, params):
                 )
 
     return changed
+
 
 def change_network_attachments(instance, params):
     if (params.get("network") or {}).get("interfaces") is not None:
