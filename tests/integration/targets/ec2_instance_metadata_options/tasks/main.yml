@@ -20,6 +20,7 @@
           http_endpoint: enabled
           http_tokens: required
           instance_metadata_tags: enabled
+          http_put_response_hop_limit: 2
         wait: false
       register: instance_creation
 
@@ -31,6 +32,7 @@
           - instance_creation.spec.MetadataOptions.HttpEndpoint == 'enabled'
           - instance_creation.spec.MetadataOptions.HttpTokens == 'required'
           - instance_creation.spec.MetadataOptions.InstanceMetadataTags == 'enabled'
+          - instance_creation.spec.MetadataOptions.HttpPutResponseHopLimit == 2"
 
     - name: modify metadata_options on existing instance
       amazon.aws.ec2_instance:
@@ -44,6 +46,7 @@
         metadata_options:
           http_endpoint: enabled
           http_tokens: optional
+          http_put_response_hop_limit: 4
         wait: false
       register: metadata_options_update
       ignore_errors: true
@@ -54,7 +57,7 @@
           tag:Name: "{{ resource_prefix }}-test-t3nano-enabled-required"
       register: presented_instance_fact
 
-    - name: modify metadata_options has no effect on existing instance
+    - name: Assert that instance metadata options have been modified successfully
       ansible.builtin.assert:
         that:
           - metadata_options_update is success
@@ -62,4 +65,5 @@
           - presented_instance_fact.instances | length > 0
           - presented_instance_fact.instances.0.state.name in ['running','pending']
           - presented_instance_fact.instances.0.metadata_options.http_endpoint == 'enabled'
-          - presented_instance_fact.instances.0.metadata_options.http_tokens == 'required'
+          - presented_instance_fact.instances.0.metadata_options.http_tokens == 'optional'
+          - presented_instance_fact.instances.0.metadata_options.http_put_response_hop_limit == 4s
