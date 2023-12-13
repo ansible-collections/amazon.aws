@@ -313,22 +313,22 @@ EXAMPLES = r"""
       block_device_mappings:
         - device_name: /dev/sdb
           ebs:
-            delete_on_termination: True
+            delete_on_termination: true
             volume_type: gp3
             volume_size: 5
         - device_name: /dev/sdc
           ebs:
-            delete_on_termination: True
+            delete_on_termination: true
             volume_type: io2
             volume_size: 30
       network_interfaces:
-        - associate_public_ip_address: False
-          delete_on_termination: True
+        - associate_public_ip_address: false
+          delete_on_termination: true
           device_index: 0
       placement:
         availability_zone: us-west-2a
       monitoring:
-        enabled: False
+        enabled: false
     spot_price: 0.002
     tags:
       Environment: Testing

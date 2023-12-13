@@ -180,8 +180,8 @@ EXAMPLES = r"""
     allocation_id: eipalloc-12345678
     region: ap-southeast-2
     tags:
-        Tag1: tag1
-        Tag2: tag2
+      Tag1: tag1
+      Tag2: tag2
   register: new_nat_gateway
 
 - name: Update tags without purge
@@ -191,7 +191,7 @@ EXAMPLES = r"""
     region: ap-southeast-2
     purge_tags: false
     tags:
-        Tag3: tag3
+      Tag3: tag3
     wait: true
   register: update_tags_nat_gateway
 """

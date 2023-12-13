@@ -173,8 +173,8 @@ EXAMPLES = r"""
     disk_containers:
       - format: raw
         user_bucket:
-            s3_bucket: "clone-vm-s3-bucket"
-            s3_key: "clone-vm-s3-bucket/ubuntu-vm-clone.raw"
+          s3_bucket: "clone-vm-s3-bucket"
+          s3_key: "clone-vm-s3-bucket/ubuntu-vm-clone.raw"
 
 - name: Cancel an import image task
   amazon.aws.ec2_import_image:

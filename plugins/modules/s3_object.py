@@ -358,16 +358,16 @@ EXAMPLES = r"""
     object: /my/desired/key.txt
     mode: copy
     copy_src:
-        bucket: srcbucket
-        object: /source/key.txt
+      bucket: srcbucket
+      object: /source/key.txt
 
 - name: Copy all the objects with name starting with 'ansible_'
   amazon.aws.s3_object:
     bucket: mybucket
     mode: copy
     copy_src:
-        bucket: srcbucket
-        prefix: 'ansible_'
+      bucket: srcbucket
+      prefix: 'ansible_'
 """
 
 RETURN = r"""

@@ -295,7 +295,7 @@ EXAMPLES = r"""
     rules:
       - proto: tcp
         ports:
-        - 80
+          - 80
         cidr_ip: 0.0.0.0/0
         rule_desc: allow all on port 80
 
@@ -344,7 +344,7 @@ EXAMPLES = r"""
         group_id: sg-12345678
       - proto: icmp
         from_port: 8 # icmp type, -1 = any type
-        to_port:  -1 # icmp subtype, -1 = any subtype
+        to_port: -1 # icmp subtype, -1 = any subtype
         cidr_ip: 10.0.0.0/8
       - proto: all
         # the containing group name may be specified here
@@ -404,7 +404,7 @@ EXAMPLES = r"""
           - 64:ff9b::/96
         group_id:
           - sg-edcd9784
-  diff: True
+  diff: true
 
 - name: "Delete group by its id"
   amazon.aws.ec2_security_group:
