@@ -119,8 +119,8 @@ EXAMPLES = r"""
   amazon.aws.iam_group:
     name: testgroup1
     state: absent
-
 """
+
 RETURN = r"""
 iam_group:
     description: dictionary containing all the group information including group membership

@@ -78,39 +78,39 @@ extends_documentation_fragment:
 """
 
 EXAMPLES = r"""
- - name: lookup secretsmanager secret in the current region
-   debug: msg="{{ lookup('amazon.aws.aws_secret', '/path/to/secrets', bypath=true) }}"
+- name: lookup secretsmanager secret in the current region
+  debug: msg="{{ lookup('amazon.aws.aws_secret', '/path/to/secrets', bypath=true) }}"
 
- - name: Create RDS instance with aws_secret lookup for password param
-   rds:
-     command: create
-     instance_name: app-db
-     db_engine: MySQL
-     size: 10
-     instance_type: db.m1.small
-     username: dbadmin
-     password: "{{ lookup('amazon.aws.aws_secret', 'DbSecret') }}"
-     tags:
-       Environment: staging
+- name: Create RDS instance with aws_secret lookup for password param
+  rds:
+    command: create
+    instance_name: app-db
+    db_engine: MySQL
+    size: 10
+    instance_type: db.m1.small
+    username: dbadmin
+    password: "{{ lookup('amazon.aws.aws_secret', 'DbSecret') }}"
+    tags:
+      Environment: staging
 
- - name: skip if secret does not exist
-   debug: msg="{{ lookup('amazon.aws.aws_secret', 'secret-not-exist', on_missing='skip')}}"
+- name: skip if secret does not exist
+  debug: msg="{{ lookup('amazon.aws.aws_secret', 'secret-not-exist', on_missing='skip')}}"
 
- - name: warn if access to the secret is denied
-   debug: msg="{{ lookup('amazon.aws.aws_secret', 'secret-denied', on_denied='warn')}}"
+- name: warn if access to the secret is denied
+  debug: msg="{{ lookup('amazon.aws.aws_secret', 'secret-denied', on_denied='warn')}}"
 
- - name: lookup secretsmanager secret in the current region using the nested feature
-   debug: msg="{{ lookup('amazon.aws.aws_secret', 'secrets.environments.production.password', nested=true) }}"
-   # The secret can be queried using the following syntax: `aws_secret_object_name.key1.key2.key3`.
-   # If an object is of the form `{"key1":{"key2":{"key3":1}}}` the query would return the value `1`.
- - name: lookup secretsmanager secret in a specific region using specified region and aws profile using nested feature
-   debug: >
-    msg="{{ lookup('amazon.aws.aws_secret', 'secrets.environments.production.password', region=region, profile=aws_profile,
-    access_key=aws_access_key, secret_key=aws_secret_key, nested=true) }}"
-   # The secret can be queried using the following syntax: `aws_secret_object_name.key1.key2.key3`.
-   # If an object is of the form `{"key1":{"key2":{"key3":1}}}` the query would return the value `1`.
-   # Region is the AWS region where the AWS secret is stored.
-   # AWS_profile is the aws profile to use, that has access to the AWS secret.
+- name: lookup secretsmanager secret in the current region using the nested feature
+  debug: msg="{{ lookup('amazon.aws.aws_secret', 'secrets.environments.production.password', nested=true) }}"
+  # The secret can be queried using the following syntax: `aws_secret_object_name.key1.key2.key3`.
+  # If an object is of the form `{"key1":{"key2":{"key3":1}}}` the query would return the value `1`.
+- name: lookup secretsmanager secret in a specific region using specified region and aws profile using nested feature
+  debug: >
+   msg="{{ lookup('amazon.aws.aws_secret', 'secrets.environments.production.password', region=region, profile=aws_profile,
+   access_key=aws_access_key, secret_key=aws_secret_key, nested=true) }}"
+  # The secret can be queried using the following syntax: `aws_secret_object_name.key1.key2.key3`.
+  # If an object is of the form `{"key1":{"key2":{"key3":1}}}` the query would return the value `1`.
+  # Region is the AWS region where the AWS secret is stored.
+  # AWS_profile is the aws profile to use, that has access to the AWS secret.
 """
 
 RETURN = r"""

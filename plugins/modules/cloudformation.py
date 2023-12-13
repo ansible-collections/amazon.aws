@@ -241,10 +241,10 @@ EXAMPLES = r"""
     template: "files/cloudformation-example.json"
     template_parameters:
       DBSnapshotIdentifier:
-        use_previous_value: True
+        use_previous_value: true
         value: arn:aws:rds:es-east-1:123456789012:snapshot:rds:my-db-snapshot
       DBName:
-        use_previous_value: True
+        use_previous_value: true
     tags:
       Stack: "ansible-cloudformation"
 
