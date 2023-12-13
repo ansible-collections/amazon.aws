@@ -38,10 +38,10 @@
         that:
           - event_rule_input_transformer_output.changed
 
-    # - name: Assert that event rule is created with a valid json value for input_template
-    #   ansible.builtin.assert:
-    #     that:
-    #       - event_rule_input_transformer_output.targets[0].input_transformer.input_template == ''
+    - name: Assert that event rule is created with a valid json value for input_template
+      ansible.builtin.assert:
+        that:
+          - event_rule_input_transformer_output.targets[0].input_transformer.input_template | from_json
 
     - name: Create cloudwatch event rule with input transformer (idempotent)
       amazon.aws.cloudwatchevent_rule:
