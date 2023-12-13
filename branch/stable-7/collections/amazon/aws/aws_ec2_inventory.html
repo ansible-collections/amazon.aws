@@ -780,6 +780,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <span class="nt">regions</span><span class="p">:</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-1</span>
 
+<span class="nn">---</span>
+
 <span class="c1"># Example using filters, ignoring permission errors, and specifying the hostname precedence</span>
 <span class="nt">plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">amazon.aws.aws_ec2</span>
 <span class="c1"># The values for profile, access key, secret key and token can be hardcoded like:</span>
@@ -791,15 +793,16 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-1</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-2</span>
 <span class="nt">filters</span><span class="p">:</span>
-<span class="w">  </span><span class="c1"># All instances with their `Environment` tag set to `dev`</span>
-<span class="w">  </span><span class="nt">tag:Environment</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dev</span>
+<span class="w">  </span><span class="c1">## All instances with their `Environment` tag set to `dev`</span>
+<span class="w">  </span><span class="c1"># tag:Environment: dev</span>
+
 <span class="w">  </span><span class="c1"># All dev and QA hosts</span>
 <span class="w">  </span><span class="nt">tag:Environment</span><span class="p">:</span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dev</span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">qa</span>
 <span class="w">  </span><span class="nt">instance.group-id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sg-xxxxxxxx</span>
 <span class="c1"># Ignores 403 errors rather than failing</span>
-<span class="nt">strict_permissions</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span>
+<span class="nt">strict_permissions</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
 <span class="c1"># Note: I(hostnames) sets the inventory_hostname. To modify ansible_host without modifying</span>
 <span class="c1"># inventory_hostname use compose (see example below).</span>
 <span class="nt">hostnames</span><span class="p">:</span>
@@ -815,7 +818,9 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <span class="w">    </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;aws&#39;</span>
 
 <span class="c1"># Returns all the hostnames for a given instance</span>
-<span class="nt">allow_duplicated_hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span>
+<span class="nt">allow_duplicated_hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+
+<span class="nn">---</span>
 
 <span class="c1"># Example using constructed features to create groups and set ansible_host</span>
 <span class="nt">plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">amazon.aws.aws_ec2</span>
@@ -823,7 +828,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-1</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-west-1</span>
 <span class="c1"># keyed_groups may be used to create custom groups</span>
-<span class="nt">strict</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span>
+<span class="nt">strict</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
 <span class="nt">keyed_groups</span><span class="p">:</span>
 <span class="w">  </span><span class="c1"># Add e.g. x86_64 hosts to an arch_x86_64 group</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arch</span>
@@ -853,19 +858,23 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <span class="w">  </span><span class="c1"># (note: this does not modify inventory_hostname, which is set via I(hostnames))</span>
 <span class="w">  </span><span class="nt">ansible_host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">private_ip_address</span>
 
+<span class="nn">---</span>
+
 <span class="c1"># Example using include_filters and exclude_filters to compose the inventory.</span>
 <span class="nt">plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">amazon.aws.aws_ec2</span>
 <span class="nt">regions</span><span class="p">:</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-1</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-west-1</span>
 <span class="nt">include_filters</span><span class="p">:</span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">tag:Name</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;my_second_tag&#39;</span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">tag:Name</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;my_third_tag&#39;</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">tag:Name</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;my_second_tag&#39;</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">tag:Name</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;my_third_tag&#39;</span>
 <span class="nt">exclude_filters</span><span class="p">:</span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">tag:Name</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;my_first_tag&#39;</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">tag:Name</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;my_first_tag&#39;</span>
+
+<span class="nn">---</span>
 
 <span class="c1"># Example using groups to assign the running hosts to a group based on vpc_id</span>
 <span class="nt">plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">amazon.aws.aws_ec2</span>
@@ -883,6 +892,9 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <span class="w">  </span><span class="nt">ansible_host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">public_dns_name</span>
 <span class="nt">groups</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">libvpc</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vpc_id == &#39;vpc-####&#39;</span>
+
+<span class="nn">---</span>
+
 <span class="c1"># Define prefix and suffix for host variables coming from AWS.</span>
 <span class="nt">plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">amazon.aws.aws_ec2</span>
 <span class="nt">regions</span><span class="p">:</span>

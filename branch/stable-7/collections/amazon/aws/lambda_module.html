@@ -575,11 +575,11 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <span class="w">    </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;arn:aws:iam::123456789012:role/lambda_basic_execution&#39;</span>
 <span class="w">    </span><span class="nt">handler</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;hello_python.my_handler&#39;</span>
 <span class="w">    </span><span class="nt">vpc_subnet_ids</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-123abcde</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-edcba321</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-123abcde</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-edcba321</span>
 <span class="w">    </span><span class="nt">vpc_security_group_ids</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sg-123abcde</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sg-edcba321</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sg-123abcde</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sg-edcba321</span>
 <span class="w">    </span><span class="nt">environment_variables</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;</span><span class="cp">{{</span> <span class="nv">item.env_vars</span> <span class="cp">}}</span><span class="s">&#39;</span>
 <span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">key1</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;value1&#39;</span>
@@ -625,7 +625,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <span class="w">    </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;arn:aws:iam::123456789012:role/lambda_basic_execution&#39;</span>
 <span class="w">    </span><span class="nt">handler</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;hello_python.my_handler&#39;</span>
 <span class="w">    </span><span class="nt">layers</span><span class="p">:</span>
-<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">layer_version_arn</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;arn:aws:lambda:us-east-1:123456789012:layer:python27-env:7&#39;</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">layer_version_arn</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;arn:aws:lambda:us-east-1:123456789012:layer:python27-env:7&#39;</span>
 </pre></div>
 </div>
 </section>

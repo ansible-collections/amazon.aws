@@ -353,7 +353,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">List all EIP addresses for a VM.</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_eip_info</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">filters</span><span class="p">:</span>
-<span class="w">       </span><span class="nt">instance-id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">i-123456789</span>
+<span class="w">      </span><span class="nt">instance-id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">i-123456789</span>
 <span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_vm_eips</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">ansible.builtin.debug</span><span class="p">:</span>
@@ -362,9 +362,9 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">List all EIP addresses for several VMs.</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_eip_info</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">filters</span><span class="p">:</span>
-<span class="w">       </span><span class="nt">instance-id</span><span class="p">:</span>
-<span class="w">         </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">i-123456789</span>
-<span class="w">         </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">i-987654321</span>
+<span class="w">      </span><span class="nt">instance-id</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">i-123456789</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">i-987654321</span>
 <span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_vms_eips</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">List all EIP addresses using the &#39;Name&#39; tag as a filter.</span>

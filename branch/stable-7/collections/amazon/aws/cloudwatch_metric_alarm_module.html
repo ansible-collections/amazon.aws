@@ -663,8 +663,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 <span class="w">    </span><span class="nt">evaluation_periods</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
 <span class="w">    </span><span class="nt">unit</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Percent&quot;</span>
 <span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;This</span><span class="nv"> </span><span class="s">will</span><span class="nv"> </span><span class="s">alarm</span><span class="nv"> </span><span class="s">when</span><span class="nv"> </span><span class="s">a</span><span class="nv"> </span><span class="s">instance&#39;s</span><span class="nv"> </span><span class="s">CPU</span><span class="nv"> </span><span class="s">usage</span><span class="nv"> </span><span class="s">average</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">lower</span><span class="nv"> </span><span class="s">than</span><span class="nv"> </span><span class="s">5%</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">15</span><span class="nv"> </span><span class="s">minutes&quot;</span>
-<span class="w">    </span><span class="nt">dimensions</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="s">&#39;InstanceId&#39;</span><span class="p p-Indicator">:</span><span class="s">&#39;i-XXX&#39;</span><span class="p p-Indicator">}</span>
-<span class="w">    </span><span class="nt">alarm_actions</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;action1&quot;</span><span class="p p-Indicator">,</span><span class="s">&quot;action2&quot;</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">dimensions</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="s">&#39;InstanceId&#39;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&#39;i-XXX&#39;</span><span class="p p-Indicator">}</span>
+<span class="w">    </span><span class="nt">alarm_actions</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;action1&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;action2&quot;</span><span class="p p-Indicator">]</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">create alarm with metrics</span>
 <span class="w">  </span><span class="nt">amazon.aws.cloudwatch_metric_alarm</span><span class="p">:</span>
@@ -674,17 +674,17 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 <span class="w">    </span><span class="nt">metrics</span><span class="p">:</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;CPU&#39;</span>
 <span class="w">        </span><span class="nt">metric_stat</span><span class="p">:</span>
-<span class="w">            </span><span class="nt">metric</span><span class="p">:</span>
-<span class="w">                </span><span class="nt">dimensions</span><span class="p">:</span>
-<span class="w">                    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;InstanceId&quot;</span>
-<span class="w">                    </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;i-xx&quot;</span>
-<span class="w">                </span><span class="nt">metric_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;CPUUtilization&quot;</span>
-<span class="w">                </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;AWS/EC2&quot;</span>
-<span class="w">            </span><span class="nt">period</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;300&quot;</span>
-<span class="w">            </span><span class="nt">stat</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Average&quot;</span>
-<span class="w">            </span><span class="nt">unit</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Percent&quot;</span>
-<span class="w">        </span><span class="nt">return_data</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span>
-<span class="w">    </span><span class="nt">alarm_actions</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;action1&quot;</span><span class="p p-Indicator">,</span><span class="s">&quot;action2&quot;</span><span class="p p-Indicator">]</span>
+<span class="w">          </span><span class="nt">metric</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">dimensions</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;InstanceId&quot;</span>
+<span class="w">              </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;i-xx&quot;</span>
+<span class="w">            </span><span class="nt">metric_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;CPUUtilization&quot;</span>
+<span class="w">            </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;AWS/EC2&quot;</span>
+<span class="w">          </span><span class="nt">period</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;300&quot;</span>
+<span class="w">          </span><span class="nt">stat</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Average&quot;</span>
+<span class="w">          </span><span class="nt">unit</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Percent&quot;</span>
+<span class="w">        </span><span class="nt">return_data</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">    </span><span class="nt">alarm_actions</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;action1&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;action2&quot;</span><span class="p p-Indicator">]</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create an alarm to recover a failed instance</span>
 <span class="w">  </span><span class="nt">amazon.aws.cloudwatch_metric_alarm</span><span class="p">:</span>

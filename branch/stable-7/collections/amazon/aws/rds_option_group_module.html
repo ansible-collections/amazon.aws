@@ -557,15 +557,15 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-opti
 <span class="w">    </span><span class="nt">option_group_description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test mysql option group</span>
 <span class="w">    </span><span class="nt">apply_immediately</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 <span class="w">    </span><span class="nt">options</span><span class="p">:</span>
-<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">option_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MEMCACHED</span>
-<span class="w">          </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">11211</span>
-<span class="w">          </span><span class="nt">vpc_security_group_memberships</span><span class="p">:</span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;sg-d188c123&quot;</span>
-<span class="w">          </span><span class="nt">option_settings</span><span class="p">:</span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MAX_SIMULTANEOUS_CONNECTIONS</span>
-<span class="w">              </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;20&quot;</span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CHUNK_SIZE_GROWTH_FACTOR</span>
-<span class="w">              </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1.25&quot;</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">option_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MEMCACHED</span>
+<span class="w">        </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">11211</span>
+<span class="w">        </span><span class="nt">vpc_security_group_memberships</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;sg-d188c123&quot;</span>
+<span class="w">        </span><span class="nt">option_settings</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MAX_SIMULTANEOUS_CONNECTIONS</span>
+<span class="w">            </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;20&quot;</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CHUNK_SIZE_GROWTH_FACTOR</span>
+<span class="w">            </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1.25&quot;</span>
 <span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">new_rds_mysql_option_group</span>
 
 <span class="c1"># Remove currently configured options for an option group by removing options argument</span>
@@ -588,8 +588,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-opti
 <span class="w">    </span><span class="nt">option_group_description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test mysql option group</span>
 <span class="w">    </span><span class="nt">apply_immediately</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 <span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">Tag1</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tag1</span>
-<span class="w">        </span><span class="nt">Tag2</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tag2</span>
+<span class="w">      </span><span class="nt">Tag1</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tag1</span>
+<span class="w">      </span><span class="nt">Tag2</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tag2</span>
 <span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rds_mysql_option_group</span>
 
 <span class="c1"># Delete an RDS Mysql Option group</span>
