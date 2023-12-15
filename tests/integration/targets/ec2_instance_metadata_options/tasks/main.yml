@@ -32,7 +32,7 @@
           - instance_creation.spec.MetadataOptions.HttpEndpoint == 'enabled'
           - instance_creation.spec.MetadataOptions.HttpTokens == 'required'
           - instance_creation.spec.MetadataOptions.InstanceMetadataTags == 'enabled'
-          - instance_creation.spec.MetadataOptions.HttpPutResponseHopLimit == 2"
+          - instance_creation.spec.MetadataOptions.HttpPutResponseHopLimit == 2
 
     - name: modify metadata_options on existing instance
       amazon.aws.ec2_instance:
