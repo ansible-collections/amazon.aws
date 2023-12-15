@@ -11,6 +11,9 @@
   # - name: Run tests for testing remove cluster from global db
   #   import_tasks: remove_from_global_db.yaml
 
+    - name: Run tests for testing serverless v2 scaling configuration
+      import_tasks: create_update_cluster_serverless_v2_scaling_configuration.yaml
+
     - name: Ensure the resource doesn't exist
       amazon.aws.rds_cluster:
         id: "{{ cluster_id }}"
