@@ -37,6 +37,16 @@
         state: present
       register: result
 
+    - name: list objects from empty bucket
+      amazon.aws.s3_object_info:
+        bucket_name: "{{ bucket_name }}"
+      register: objects
+
+    - name: Ensure the bucket is empty
+      ansible.builtin.assert:
+        that:
+          - objects.s3_keys | length == 0
+
     - ansible.builtin.assert:
         that:
           - result is changed
