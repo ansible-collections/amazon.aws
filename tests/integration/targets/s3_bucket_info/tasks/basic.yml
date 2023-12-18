@@ -67,6 +67,7 @@
       - item.bucket_tagging["Title Case"] == 'Hello Cruel World'
       - item.bucket_location.LocationConstraint == aws_region
       - item.bucket_versioning.Status is defined
+      - item.bucket_versioning.Status
       - item.bucket_versioning.MFADelete is undefined
   loop: "{{ bucket_list.buckets }}"
   loop_control:
