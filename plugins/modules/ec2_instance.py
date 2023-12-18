@@ -1649,7 +1649,7 @@ def change_instance_metadata_options(instance, params):
             "HttpPutResponseHopLimit": changes_to_apply.get("http_put_response_hop_limit", ""),
             "HttpEndpoint": changes_to_apply.get("http_endpoint", ""),
             "HttpProtocolIpv6": changes_to_apply.get("http_protocol_ipv6", ""),
-            "InstanceMetadataTags": changes_to_apply.get("instance_metadata_tags", "")
+            "InstanceMetadataTags": changes_to_apply.get("instance_metadata_tags", ""),
         }
         request_args = {k: v for k, v in request_args.items() if v}
 
