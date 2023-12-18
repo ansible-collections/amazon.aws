@@ -406,7 +406,7 @@ bucket_list:
     bucket_versioning:
       description:
         - The versioning state of the bucket.
-        - This will also specifies whether MFA delete is enabled in the bucket versioning configuration.
+        - This will also specify whether MFA delete is enabled in the bucket versioning configuration.
           if only the bucket has been configured with MFA delete.
       returned: when I(bucket_facts=true) and I(bucket_versioning=true)
       type: dict
