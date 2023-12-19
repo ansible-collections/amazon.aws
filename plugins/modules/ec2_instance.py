@@ -2000,8 +2000,7 @@ def handle_existing(existing_matches, state, filters):
     for instance in existing_matches:
         changed |= ensure_ec2_tags(client, module, instance["InstanceId"], tags=tags, purge_tags=purge_tags)
 
-        if module.params.get("metadata_options"):
-            changed |= change_instance_metadata_options(instance, module.params)
+        changed |= change_instance_metadata_options(instance, module.params)
 
         changes = diff_instance_and_params(instance, module.params)
         for c in changes:
