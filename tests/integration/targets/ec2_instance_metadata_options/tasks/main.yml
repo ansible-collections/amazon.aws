@@ -49,7 +49,6 @@
           http_put_response_hop_limit: 4
         wait: false
       register: metadata_options_update
-      ignore_errors: true
 
     - name: fact presented ec2 instance
       amazon.aws.ec2_instance_info:
