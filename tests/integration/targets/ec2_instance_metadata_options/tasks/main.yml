@@ -61,7 +61,7 @@
       ansible.builtin.assert:
         that:
           - metadata_options_update is success
-          - metadata_options_update is not changed
+          - metadata_options_update is changed
           - presented_instance_fact.instances | length > 0
           - presented_instance_fact.instances.0.state.name in ['running','pending']
           - presented_instance_fact.instances.0.metadata_options.http_endpoint == 'enabled'
