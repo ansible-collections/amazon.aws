@@ -22,6 +22,7 @@
           instance_metadata_tags: enabled
           http_put_response_hop_limit: 2
         wait: true
+        wait_timeout: 1200
       register: instance_creation
 
     - name: instance with metadata_options created with the right options
