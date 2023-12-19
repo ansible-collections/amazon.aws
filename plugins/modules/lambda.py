@@ -162,11 +162,11 @@ EXAMPLES = r"""
     role: 'arn:aws:iam::123456789012:role/lambda_basic_execution'
     handler: 'hello_python.my_handler'
     vpc_subnet_ids:
-    - subnet-123abcde
-    - subnet-edcba321
+      - subnet-123abcde
+      - subnet-edcba321
     vpc_security_group_ids:
-    - sg-123abcde
-    - sg-edcba321
+      - sg-123abcde
+      - sg-edcba321
     environment_variables: '{{ item.env_vars }}'
     tags:
       key1: 'value1'
@@ -212,7 +212,7 @@ EXAMPLES = r"""
     role: 'arn:aws:iam::123456789012:role/lambda_basic_execution'
     handler: 'hello_python.my_handler'
     layers:
-        - layer_version_arn: 'arn:aws:lambda:us-east-1:123456789012:layer:python27-env:7'
+      - layer_version_arn: 'arn:aws:lambda:us-east-1:123456789012:layer:python27-env:7'
 """
 
 RETURN = r"""

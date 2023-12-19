@@ -63,7 +63,7 @@ EXAMPLES = r"""
 
 - name: Ensure all volumes are tagged
   amazon.aws.ec2_tag:
-    region:  eu-west-1
+    region: eu-west-1
     resource: '{{ item.id }}'
     state: present
     tags:
@@ -92,7 +92,7 @@ EXAMPLES = r"""
     region: eu-west-1
     resource: i-xxxxxxxxxxxxxxxxx
     tags:
-        Name: ''
+      Name: ''
     state: absent
     purge_tags: true
 """

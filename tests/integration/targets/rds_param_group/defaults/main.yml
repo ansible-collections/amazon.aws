@@ -1,30 +1,31 @@
+---
 rds_param_group:
-  name: '{{ resource_prefix}}rds-param-group'
+  name: "{{ resource_prefix}}rds-param-group"
   description: Test group for rds_param_group Ansible module
   engine: postgres9.6
   engine_to_modify_to: postgres10
 
 rds_long_param_list:
   application_name: Test
-  logging_collector: on
+  logging_collector: true
   log_directory: /var/log/postgresql
   log_filename: postgresql.log.%Y-%m-%d-%H
-  log_file_mode: 0600
+  log_file_mode: "0600"
   event_source: RDS
   log_min_messages: INFO
   log_min_duration_statement: 500
   log_rotation_age: 60
-  debug_print_parse: on
-  debug_print_rewritten: on
-  debug_print_plan: on
-  debug_pretty_print: on
-  log_checkpoints: on
-  log_connections: on
-  log_disconnections: on
-  log_duration: on
+  debug_print_parse: true
+  debug_print_rewritten: true
+  debug_print_plan: true
+  debug_pretty_print: true
+  log_checkpoints: true
+  log_connections: true
+  log_disconnections: true
+  log_duration: true
   log_error_verbosity: VERBOSE
-  log_lock_waits: on
+  log_lock_waits: true
   log_temp_files: 10K
   log_timezone: UTC
   log_statement: all
-  log_replication_commands: on
+  log_replication_commands: true

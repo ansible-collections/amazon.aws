@@ -1,4 +1,4 @@
 ---
 # defaults file for test_ec2_key
-ec2_key_name: '{{resource_prefix}}'
-ec2_key_name_rsa: '{{resource_prefix}}-rsa'
+ec2_key_name: "{{resource_prefix}}"
+ec2_key_name_rsa: "{{resource_prefix}}-rsa"

@@ -216,7 +216,7 @@ EXAMPLES = r"""
 - name: Basic AMI Creation, without waiting
   amazon.aws.ec2_ami:
     instance_id: i-xxxxxx
-    wait: no
+    wait: false
     name: newtest
 
 - name: AMI Registration from EBS Snapshot
@@ -238,26 +238,26 @@ EXAMPLES = r"""
     instance_id: i-xxxxxx
     name: newtest
     device_mapping:
-        - device_name: /dev/sda1
-          size: XXX
-          delete_on_termination: true
-          volume_type: gp2
-        - device_name: /dev/sdb
-          size: YYY
-          delete_on_termination: false
-          volume_type: gp2
+      - device_name: /dev/sda1
+        size: XXX
+        delete_on_termination: true
+        volume_type: gp2
+      - device_name: /dev/sdb
+        size: YYY
+        delete_on_termination: false
+        volume_type: gp2
 
 - name: AMI Creation, excluding a volume attached at /dev/sdb
   amazon.aws.ec2_ami:
     instance_id: i-xxxxxx
     name: newtest
     device_mapping:
-        - device_name: /dev/sda1
-          size: XXX
-          delete_on_termination: true
-          volume_type: gp2
-        - device_name: /dev/sdb
-          no_device: true
+      - device_name: /dev/sda1
+        size: XXX
+        delete_on_termination: true
+        volume_type: gp2
+      - device_name: /dev/sdb
+        no_device: true
 
 - name: AMI Creation with boot_mode and tpm_support
   amazon.aws.ec2_ami:
@@ -267,9 +267,9 @@ EXAMPLES = r"""
     virtualization_type: hvm
     root_device_name: /dev/sda1
     device_mapping:
-        - device_name: /dev/sda1
-          snapshot_id: "{{ snapshot_id }}"
-    wait: yes
+      - device_name: /dev/sda1
+        snapshot_id: "{{ snapshot_id }}"
+    wait: true
     region: us-east-1
     boot_mode: uefi
     uefi_data: data_file.bin
@@ -278,13 +278,13 @@ EXAMPLES = r"""
 - name: Deregister/Delete AMI (keep associated snapshots)
   amazon.aws.ec2_ami:
     image_id: "{{ instance.image_id }}"
-    delete_snapshot: False
+    delete_snapshot: false
     state: absent
 
 - name: Deregister AMI (delete associated snapshots too)
   amazon.aws.ec2_ami:
     image_id: "{{ instance.image_id }}"
-    delete_snapshot: True
+    delete_snapshot: true
     state: absent
 
 - name: Update AMI Launch Permissions, making it public

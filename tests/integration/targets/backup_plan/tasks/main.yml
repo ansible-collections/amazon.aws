@@ -88,7 +88,7 @@
         rules:
           - rule_name: hourly
             target_backup_vault_name: "{{ backup_vault_name }}"
-            schedule_expression: "cron(0 * ? * * *)"
+            schedule_expression: cron(0 * ? * * *)
         tags:
           Environment: Dev
       check_mode: true
@@ -108,7 +108,7 @@
         rules:
           - rule_name: hourly
             target_backup_vault_name: "{{ backup_vault_name }}"
-            schedule_expression: "cron(0 * ? * * *)"
+            schedule_expression: cron(0 * ? * * *)
             start_window_minutes: 60
             completion_window_minutes: 150
             lifecycle:
@@ -149,7 +149,7 @@
         rules:
           - rule_name: hourly
             target_backup_vault_name: "{{ backup_vault_name }}"
-            schedule_expression: "cron(0 * ? * * *)"
+            schedule_expression: cron(0 * ? * * *)
             start_window_minutes: 60
             completion_window_minutes: 150
             lifecycle:
@@ -189,7 +189,7 @@
         rules:
           - rule_name: hourly
             target_backup_vault_name: "{{ backup_vault_name }}"
-            schedule_expression: "cron(0 * ? * * *)"
+            schedule_expression: cron(0 * ? * * *)
             start_window_minutes: 60
             completion_window_minutes: 150
             lifecycle:
@@ -237,7 +237,7 @@
         rules:
           - rule_name: hourly
             target_backup_vault_name: "{{ backup_vault_name }}"
-            schedule_expression: "cron(0 * ? * * *)"
+            schedule_expression: cron(0 * ? * * *)
             start_window_minutes: 60
             completion_window_minutes: 150
             lifecycle:

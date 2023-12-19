@@ -28,14 +28,13 @@ EXAMPLES = r"""
 vars:
   ec2_ranges: "{{ lookup('aws_service_ip_ranges', region='ap-southeast-2', service='EC2', wantlist=True) }}"
 tasks:
+  - name: "use list return option and iterate as a loop"
+    debug: msg="{% for cidr in ec2_ranges %}{{ cidr }} {% endfor %}"
+  # "52.62.0.0/15 52.64.0.0/17 52.64.128.0/17 52.65.0.0/16 52.95.241.0/24 52.95.255.16/28 54.66.0.0/16 "
 
-- name: "use list return option and iterate as a loop"
-  debug: msg="{% for cidr in ec2_ranges %}{{ cidr }} {% endfor %}"
-# "52.62.0.0/15 52.64.0.0/17 52.64.128.0/17 52.65.0.0/16 52.95.241.0/24 52.95.255.16/28 54.66.0.0/16 "
-
-- name: "Pull S3 IP ranges, and print the default return style"
-  debug: msg="{{ lookup('aws_service_ip_ranges', region='us-east-1', service='S3') }}"
-# "52.92.16.0/20,52.216.0.0/15,54.231.0.0/17"
+  - name: "Pull S3 IP ranges, and print the default return style"
+    debug: msg="{{ lookup('aws_service_ip_ranges', region='us-east-1', service='S3') }}"
+  # "52.92.16.0/20,52.216.0.0/15,54.231.0.0/17"
 """
 
 RETURN = r"""

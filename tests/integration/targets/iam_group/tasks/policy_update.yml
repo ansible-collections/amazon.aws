@@ -1,0 +1,184 @@
+---
+- name: Add Managed Policy (CHECK MODE)
+  amazon.aws.iam_group:
+    name: "{{ test_group }}"
+    state: present
+    purge_policies: false
+    managed_policy:
+      - "{{ safe_managed_policy }}"
+  check_mode: true
+  register: iam_group
+- ansible.builtin.assert:
+    that:
+      - iam_group is changed
+
+- name: Add Managed Policy
+  amazon.aws.iam_group:
+    name: "{{ test_group }}"
+    state: present
+    purge_policies: false
+    managed_policy:
+      - "{{ safe_managed_policy }}"
+  register: iam_group
+- ansible.builtin.assert:
+    that:
+      - iam_group is changed
+      - iam_group.iam_group.group.group_name == test_group
+      - iam_group.iam_group.attached_policies | length == 1
+      - iam_group.iam_group.attached_policies[0].policy_name == safe_managed_policy
+
+- name: Add Managed Policy (no change) - check mode
+  amazon.aws.iam_group:
+    name: "{{ test_group }}"
+    state: present
+    purge_policies: false
+    managed_policy:
+      - "{{ safe_managed_policy }}"
+  register: iam_group
+  check_mode: true
+- ansible.builtin.assert:
+    that:
+      - iam_group is not changed
+
+- name: Add Managed Policy (no change)
+  amazon.aws.iam_group:
+    name: "{{ test_group }}"
+    state: present
+    purge_policies: false
+    managed_policy:
+      - "{{ safe_managed_policy }}"
+  register: iam_group
+- ansible.builtin.assert:
+    that:
+      - iam_group is not changed
+      - iam_group.iam_group.group.group_name == test_group
+      - iam_group.iam_group.attached_policies | length == 1
+      - iam_group.iam_group.attached_policies[0].policy_name == safe_managed_policy
+
+# ------------------------------------------------------------------------------------------
+
+- name: Update Managed Policy without purge (CHECK MODE)
+  amazon.aws.iam_group:
+    name: "{{ test_group }}"
+    state: present
+    purge_policies: false
+    managed_policy:
+      - "{{ custom_policy_name }}"
+  check_mode: true
+  register: iam_group
+- ansible.builtin.assert:
+    that:
+      - iam_group is changed
+
+- name: Update Managed Policy without purge
+  amazon.aws.iam_group:
+    name: "{{ test_group }}"
+    state: present
+    purge_policies: false
+    managed_policy:
+      - "{{ custom_policy_name }}"
+  register: iam_group
+- ansible.builtin.assert:
+    that:
+      - iam_group is changed
+      - iam_group.iam_group.group.group_name == test_group
+      - iam_group.iam_group.attached_policies | length == 2
+      - custom_policy_name in attached_policy_names
+      - safe_managed_policy in attached_policy_names
+  vars:
+    attached_policy_names: "{{ iam_group.iam_group.attached_policies | map(attribute='policy_name') }}"
+
+- name: Update Managed Policy without purge (no change) - check mode
+  amazon.aws.iam_group:
+    name: "{{ test_group }}"
+    state: present
+    purge_policies: false
+    managed_policy:
+      - "{{ custom_policy_name }}"
+  register: iam_group
+  check_mode: true
+- ansible.builtin.assert:
+    that:
+      - iam_group is not changed
+
+- name: Update Managed Policy without purge (no change)
+  amazon.aws.iam_group:
+    name: "{{ test_group }}"
+    state: present
+    purge_policies: false
+    managed_policy:
+      - "{{ custom_policy_name }}"
+  register: iam_group
+- ansible.builtin.assert:
+    that:
+      - iam_group is not changed
+      - iam_group.iam_group.group.group_name == test_group
+      - iam_group.iam_group.attached_policies | length == 2
+      - custom_policy_name in attached_policy_names
+      - safe_managed_policy in attached_policy_names
+  vars:
+    attached_policy_names: "{{ iam_group.iam_group.attached_policies | map(attribute='policy_name') }}"
+
+# ------------------------------------------------------------------------------------------
+
+- name: Update Managed Policy with purge (CHECK MODE)
+  amazon.aws.iam_group:
+    name: "{{ test_group }}"
+    state: present
+    managed_policy:
+      - "{{ custom_policy_name }}"
+    purge_policies: true
+  check_mode: true
+  register: iam_group
+- ansible.builtin.assert:
+    that:
+      - iam_group is changed
+
+- name: Update Managed Policy with purge
+  amazon.aws.iam_group:
+    name: "{{ test_group }}"
+    state: present
+    managed_policy:
+      - "{{ custom_policy_name }}"
+    purge_policies: true
+  register: iam_group
+- ansible.builtin.assert:
+    that:
+      - iam_group is changed
+      - iam_group.iam_group.group.group_name == test_group
+      - iam_group.iam_group.attached_policies | length == 1
+      - custom_policy_name in attached_policy_names
+      - safe_managed_policy not in attached_policy_names
+  vars:
+    attached_policy_names: "{{ iam_group.iam_group.attached_policies | map(attribute='policy_name') }}"
+
+- name: Update Managed Policy with purge (no change) - check mode
+  amazon.aws.iam_group:
+    name: "{{ test_group }}"
+    state: present
+    managed_policy:
+      - "{{ custom_policy_name }}"
+    purge_policies: true
+  register: iam_group
+  check_mode: true
+- ansible.builtin.assert:
+    that:
+      - iam_group is not changed
+
+- name: Update Managed Policy with purge (no change)
+  amazon.aws.iam_group:
+    name: "{{ test_group }}"
+    state: present
+    managed_policy:
+      - "{{ custom_policy_name }}"
+    purge_policies: true
+  register: iam_group
+- ansible.builtin.assert:
+    that:
+      - iam_group is not changed
+      - iam_group.iam_group.group.group_name == test_group
+      - iam_group.iam_group.attached_policies | length == 1
+      - custom_policy_name in attached_policy_names
+      - safe_managed_policy not in attached_policy_names
+  vars:
+    attached_policy_names: "{{ iam_group.iam_group.attached_policies | map(attribute='policy_name') }}"

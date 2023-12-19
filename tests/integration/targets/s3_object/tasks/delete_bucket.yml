@@ -1,13 +1,14 @@
+---
 - name: delete bucket at the end of Integration tests
   block:
     - name: list bucket object
-      s3_object_info:
+      amazon.aws.s3_object_info:
         bucket_name: "{{ item }}"
       register: objects
       ignore_errors: true
 
     - name: remove objects from bucket
-      s3_object:
+      amazon.aws.s3_object:
         bucket: "{{ item }}"
         mode: delobj
         object: "{{ obj }}"
@@ -18,7 +19,7 @@
       ignore_errors: true
 
     - name: delete the bucket
-      s3_bucket:
+      amazon.aws.s3_bucket:
         name: "{{ item }}"
         state: absent
       ignore_errors: true

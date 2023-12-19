@@ -1,5 +1,5 @@
 ---
-requires_ansible: '>=2.13.0'
+requires_ansible: ">=2.13.0"
 action_groups:
   aws:
     - autoscaling_group

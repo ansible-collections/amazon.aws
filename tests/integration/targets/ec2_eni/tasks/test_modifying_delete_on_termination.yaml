@@ -1,94 +1,95 @@
+---
 # ============================================================
 
 - name: ensure delete_on_termination defaults to False
-  ec2_eni:
+  amazon.aws.ec2_eni:
     instance_id: "{{ instance_id_2 }}"
     device_index: 1
     private_ip_address: "{{ ip_1 }}"
     subnet_id: "{{ vpc_subnet_result.subnet.id }}"
     state: present
-    attached: True
+    attached: true
   register: result
-- ec2_eni_info:
+- amazon.aws.ec2_eni_info:
     eni_id: "{{ eni_id_1 }}"
   register: eni_info
 
-- assert:
+- ansible.builtin.assert:
     that:
       - result is successful
       - result.interface.attachment.delete_on_termination == false
       - _interface_0.attachment.delete_on_termination == False
   vars:
-    _interface_0: '{{ eni_info.network_interfaces[0] }}'
+    _interface_0: "{{ eni_info.network_interfaces[0] }}"
 
 # ============================================================
 
 - name: enable delete_on_termination (check mode)
-  ec2_eni:
+  amazon.aws.ec2_eni:
     instance_id: "{{ instance_id_2 }}"
     device_index: 1
     private_ip_address: "{{ ip_1 }}"
     subnet_id: "{{ vpc_subnet_result.subnet.id }}"
     state: present
-    attached: True
-    delete_on_termination: True
+    attached: true
+    delete_on_termination: true
   check_mode: true
   register: result_check_mode
 
-- assert:
+- ansible.builtin.assert:
     that:
       - result_check_mode.changed
 
 - name: enable delete_on_termination
-  ec2_eni:
+  amazon.aws.ec2_eni:
     instance_id: "{{ instance_id_2 }}"
     device_index: 1
     private_ip_address: "{{ ip_1 }}"
     subnet_id: "{{ vpc_subnet_result.subnet.id }}"
     state: present
-    attached: True
-    delete_on_termination: True
+    attached: true
+    delete_on_termination: true
   register: result
-- ec2_eni_info:
+- amazon.aws.ec2_eni_info:
     eni_id: "{{ eni_id_1 }}"
   register: eni_info
 
-- assert:
+- ansible.builtin.assert:
     that:
       - result.changed
       - result.interface.attachment.delete_on_termination == true
       - _interface_0.attachment.delete_on_termination == True
   vars:
-    _interface_0: '{{ eni_info.network_interfaces[0] }}'
+    _interface_0: "{{ eni_info.network_interfaces[0] }}"
 
 - name: test idempotent behavior enabling delete_on_termination (check mode)
-  ec2_eni:
+  amazon.aws.ec2_eni:
     instance_id: "{{ instance_id_2 }}"
     device_index: 1
     private_ip_address: "{{ ip_1 }}"
     subnet_id: "{{ vpc_subnet_result.subnet.id }}"
     state: present
-    attached: True
-    delete_on_termination: True
+    attached: true
+    delete_on_termination: true
   check_mode: true
   register: result_check_mode
 
-- assert:
+- ansible.builtin.assert:
     that:
       - not result_check_mode.changed
 
 - name: test idempotent behavior enabling delete_on_termination
-  ec2_eni:
+  amazon.aws.ec2_eni:
     instance_id: "{{ instance_id_2 }}"
     device_index: 1
     private_ip_address: "{{ ip_1 }}"
     subnet_id: "{{ vpc_subnet_result.subnet.id }}"
     state: present
-    attached: True
-    delete_on_termination: True
+    attached: true
+    delete_on_termination: true
   register: result
 
-- assert:
+- ansible.builtin.assert:
     that:
       - not result.changed
       - result.interface.attachment.delete_on_termination == true
@@ -96,59 +97,59 @@
 # ============================================================
 
 - name: disable delete_on_termination (check mode)
-  ec2_eni:
+  amazon.aws.ec2_eni:
     instance_id: "{{ instance_id_2 }}"
     device_index: 1
     private_ip_address: "{{ ip_1 }}"
     subnet_id: "{{ vpc_subnet_result.subnet.id }}"
     state: present
-    attached: True
-    delete_on_termination: False
+    attached: true
+    delete_on_termination: false
   check_mode: true
   register: result_check_mode
 
-- assert:
+- ansible.builtin.assert:
     that:
       - result_check_mode.changed
 
 - name: disable delete_on_termination
-  ec2_eni:
+  amazon.aws.ec2_eni:
     instance_id: "{{ instance_id_2 }}"
     device_index: 1
     private_ip_address: "{{ ip_1 }}"
     subnet_id: "{{ vpc_subnet_result.subnet.id }}"
     state: present
-    attached: True
-    delete_on_termination: False
+    attached: true
+    delete_on_termination: false
   register: result
-- ec2_eni_info:
+- amazon.aws.ec2_eni_info:
     eni_id: "{{ eni_id_1 }}"
   register: eni_info
 
-- assert:
+- ansible.builtin.assert:
     that:
       - result.changed
       - result.interface.attachment.delete_on_termination == false
       - _interface_0.attachment.delete_on_termination == False
   vars:
-    _interface_0: '{{ eni_info.network_interfaces[0] }}'
+    _interface_0: "{{ eni_info.network_interfaces[0] }}"
 
 # ============================================================
 
 - name: terminate the instance to make sure the attached ENI remains
-  ec2_instance:
+  amazon.aws.ec2_instance:
     state: absent
     instance_ids:
       - "{{ instance_id_2 }}"
-    wait: True
+    wait: true
 
 - name: verify the eni still exists
-  ec2_eni:
+  amazon.aws.ec2_eni:
     eni_id: "{{ eni_id_1 }}"
     state: present
   register: result
 
-- assert:
+- ansible.builtin.assert:
     that:
       - not result.changed
       - result.interface.id == eni_id_1
@@ -157,42 +158,42 @@
 # ============================================================
 
 - name: ensure the network interface is attached
-  ec2_eni:
+  amazon.aws.ec2_eni:
     instance_id: "{{ instance_id_1 }}"
     device_index: 1
     private_ip_address: "{{ ip_1 }}"
     subnet_id: "{{ vpc_subnet_id }}"
     state: present
-    attached: True
+    attached: true
   register: result
 
 - name: ensure delete_on_termination is true
-  ec2_eni:
+  amazon.aws.ec2_eni:
     instance_id: "{{ instance_id_1 }}"
     device_index: 1
     private_ip_address: "{{ ip_1 }}"
     subnet_id: "{{ vpc_subnet_id }}"
     state: present
-    attached: True
-    delete_on_termination: True
+    attached: true
+    delete_on_termination: true
   register: result
 
 - name: test terminating the instance after setting delete_on_termination to true
-  ec2_instance:
+  amazon.aws.ec2_instance:
     state: absent
     instance_ids:
       - "{{ instance_id_1 }}"
-    wait: True
+    wait: true
 
 - name: verify the eni was also removed
-  ec2_eni:
+  amazon.aws.ec2_eni:
     eni_id: "{{ eni_id_1 }}"
     state: absent
   register: result
-- ec2_eni_info:
+- amazon.aws.ec2_eni_info:
   register: eni_info
 
-- assert:
+- ansible.builtin.assert:
     that:
       - not result.changed
       - '"network_interfaces" in eni_info'
@@ -203,12 +204,12 @@
 # ============================================================
 
 - name: recreate the network interface
-  ec2_eni:
+  amazon.aws.ec2_eni:
     device_index: 1
     private_ip_address: "{{ ip_1 }}"
     subnet_id: "{{ vpc_subnet_id }}"
     state: present
   register: result
 
-- set_fact:
+- ansible.builtin.set_fact:
     eni_id_1: "{{ result.interface.id }}"

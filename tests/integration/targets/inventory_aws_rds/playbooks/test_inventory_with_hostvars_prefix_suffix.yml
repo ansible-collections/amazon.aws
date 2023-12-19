@@ -1,7 +1,7 @@
 ---
 - hosts: 127.0.0.1
   connection: local
-  gather_facts: no
+  gather_facts: false
 
   environment: "{{ ansible_test.environment }}"
 
@@ -14,19 +14,18 @@
 
   module_defaults:
     group/aws:
-      access_key: '{{ aws_access_key }}'
-      secret_key: '{{ aws_secret_key }}'
-      session_token: '{{ security_token | default(omit) }}'
-      region: '{{ aws_region }}'
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
 
   tasks:
-
     - name: assert the hostvars are defined with prefix and/or suffix
-      assert:
+      ansible.builtin.assert:
         that:
-          - "hostvars[instance_id].{{ vars_prefix }}db_instance_class{{ vars_suffix }} == 'db.t2.micro'"
-          - "hostvars[instance_id].{{ vars_prefix }}engine{{ vars_suffix }} == '{{ instance_engine }}'"
-          - "hostvars[instance_id].{{ vars_prefix }}db_instance_status{{ vars_suffix }} in ('available', 'creating')"
+          - hostvars[instance_id].{{ vars_prefix }}db_instance_class{{ vars_suffix }} == 'db.t2.micro'
+          - hostvars[instance_id].{{ vars_prefix }}engine{{ vars_suffix }} == '{{ instance_engine }}'
+          - hostvars[instance_id].{{ vars_prefix }}db_instance_status{{ vars_suffix }} in ('available', 'creating')
           - "'db_instance_class' not in hostvars[instance_id]"
           - "'engine' not in hostvars[instance_id]"
           - "'db_instance_status' not in hostvars[instance_id]"

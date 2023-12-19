@@ -40,7 +40,7 @@ EXAMPLES = r"""
 - name: List all EIP addresses for a VM.
   amazon.aws.ec2_eip_info:
     filters:
-       instance-id: i-123456789
+      instance-id: i-123456789
   register: my_vm_eips
 
 - ansible.builtin.debug:
@@ -49,9 +49,9 @@ EXAMPLES = r"""
 - name: List all EIP addresses for several VMs.
   amazon.aws.ec2_eip_info:
     filters:
-       instance-id:
-         - i-123456789
-         - i-987654321
+      instance-id:
+        - i-123456789
+        - i-987654321
   register: my_vms_eips
 
 - name: List all EIP addresses using the 'Name' tag as a filter.

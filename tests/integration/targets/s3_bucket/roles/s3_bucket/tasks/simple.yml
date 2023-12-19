@@ -1,18 +1,18 @@
 ---
-- name: 'Run simple tests'
+- name: Run simple tests
   block:
-    - set_fact:
+    - ansible.builtin.set_fact:
         local_bucket_name: "{{ bucket_name | hash('md5')}}-simple"
     # Note: s3_bucket doesn't support check_mode
 
     # ============================================================
-    - name: 'Create a simple s3_bucket'
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
+    - name: Create a simple s3_bucket
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
         state: present
       register: output
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - output is success
           - output is changed
@@ -21,13 +21,13 @@
           - output.public_access is undefined
 
     # ============================================================
-    - name: 'Try to update the simple bucket with the same values'
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
+    - name: Try to update the simple bucket with the same values
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
         state: present
       register: output
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - output is success
           - output is not changed
@@ -35,33 +35,33 @@
           - not output.requester_pays
 
     # ============================================================
-    - name: 'Delete the simple s3_bucket'
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
+    - name: Delete the simple s3_bucket
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
         state: absent
       register: output
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - output is success
           - output is changed
 
     # ============================================================
-    - name: 'Re-delete the simple s3_bucket (idempotency)'
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
+    - name: Re-delete the simple s3_bucket (idempotency)
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
         state: absent
       register: output
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - output is success
           - output is not changed
 
   # ============================================================
   always:
-    - name: 'Ensure all buckets are deleted'
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
+    - name: Ensure all buckets are deleted
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
         state: absent
-      ignore_errors: yes
+      ignore_errors: true

@@ -310,7 +310,7 @@ options:
           - If set to C(true), the cluster will be removed from global DB.
           - Parameters I(global_cluster_identifier), I(db_cluster_identifier) must be specified when I(remove_from_global_db=true).
         type: bool
-        required: False
+        required: false
         version_added: 6.5.0
     replication_source_identifier:
         description:
@@ -350,6 +350,24 @@ options:
           - The prefix for all of the file names that contain the data used to create the Amazon Aurora DB cluster.
           - If you do not specify a SourceS3Prefix value, then the Amazon Aurora DB cluster is created by using all of the files in the Amazon S3 bucket.
         type: str
+    serverless_v2_scaling_configuration:
+        description:
+          - Contains the scaling configuration of an Aurora Serverless v2 DB cluster.
+        type: dict
+        suboptions:
+          min_capacity:
+            description:
+              - The minimum number of Aurora capacity units (ACUs) for a DB instance in an Aurora Serverless v2 cluster.
+              - ACU values can be specified in in half-step increments, such as C(8), C(8.5), C(9), and so on.
+              - The smallest possible value is C(0.5).
+            type: float
+          max_capacity:
+            description:
+              - The maximum number of Aurora capacity units (ACUs) for a DB instance in an Aurora Serverless v2 cluster.
+              - ACU values can be specified in in half-step increments, such as C(40), C(40.5), C(41), and so on.
+              - The largest possible value is C(128).
+            type: float
+        version_added: 7.2.0
     skip_final_snapshot:
         description:
           - Whether a final DB cluster snapshot is created before the DB cluster is deleted.
@@ -440,7 +458,7 @@ EXAMPLES = r"""
     password: "{{ password }}"
     username: "{{ username }}"
     cluster_id: "{{ cluster_id }}"
-    skip_final_snapshot: True
+    skip_final_snapshot: true
     tags:
       Name: "cluster-{{ resource_prefix }}"
       Created_By: "Ansible_rds_cluster_integration_test"
@@ -690,6 +708,15 @@ reader_endpoint:
   returned: always
   type: str
   sample: rds-cluster-demo.cluster-ro-cvlrtwiennww.us-east-1.rds.amazonaws.com
+serverless_v2_scaling_configuration:
+  description: The scaling configuration for an Aurora Serverless v2 DB cluster.
+  returned: when configured
+  type: dict
+  sample: {
+      "max_capacity": 4.5,
+      "min_capacity": 2.5
+  }
+  version_added: 7.2.0
 status:
   description: The status of the DB cluster.
   returned: always
@@ -821,6 +848,7 @@ def get_create_options(params_dict):
         "StorageType",
         "Iops",
         "EngineMode",
+        "ServerlessV2ScalingConfiguration",
     ]
 
     return dict((k, v) for k, v in params_dict.items() if k in options and v is not None)
@@ -855,6 +883,7 @@ def get_modify_options(params_dict, force_update_password):
         "StorageType",
         "Iops",
         "EngineMode",
+        "ServerlessV2ScalingConfiguration",
     ]
     modify_options = dict((k, v) for k, v in params_dict.items() if k in options and v is not None)
     if not force_update_password:
@@ -1232,6 +1261,13 @@ def main():
         s3_bucket_name=dict(),
         s3_ingestion_role_arn=dict(),
         s3_prefix=dict(),
+        serverless_v2_scaling_configuration=dict(
+            type="dict",
+            options=dict(
+                min_capacity=dict(type="float"),
+                max_capacity=dict(type="float"),
+            ),
+        ),
         skip_final_snapshot=dict(type="bool", default=False),
         snapshot_identifier=dict(),
         source_db_cluster_identifier=dict(),

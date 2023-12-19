@@ -1,2 +1,2 @@
 ---
-bucket_name: '{{ resource_prefix }}'
+bucket_name: "{{ resource_prefix }}"

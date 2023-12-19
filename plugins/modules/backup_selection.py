@@ -158,7 +158,7 @@ EXAMPLES = r"""
     backup_plan_name: 1111f877-1ecf-4d79-9718-a861cd09df3b
     iam_role_arn: arn:aws:iam::111122223333:role/system-backup
     resources:
-    - arn:aws:elasticfilesystem:*:*:file-system/*
+      - arn:aws:elasticfilesystem:*:*:file-system/*
 """
 
 

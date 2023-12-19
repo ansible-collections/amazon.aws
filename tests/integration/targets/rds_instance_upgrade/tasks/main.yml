@@ -1,97 +1,97 @@
+---
 - name: rds_instance / upgrade integration tests
   collections:
-  - community.aws
+    - community.aws
   module_defaults:
     group/aws:
-      access_key: '{{ aws_access_key }}'
-      secret_key: '{{ aws_secret_key }}'
-      session_token: '{{ security_token | default(omit) }}'
-      region: '{{ aws_region }}'
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
   block:
-  - name: Ensure the resource doesn't exist
-    rds_instance:
-      id: '{{ instance_id }}'
-      state: absent
-      skip_final_snapshot: true
-    register: result
+    - name: Ensure the resource doesn't exist
+      amazon.aws.rds_instance:
+        id: "{{ instance_id }}"
+        state: absent
+        skip_final_snapshot: true
+      register: result
 
-  - assert:
-      that:
-      - not result.changed
-    ignore_errors: yes
+    - ansible.builtin.assert:
+        that:
+          - not result.changed
+      ignore_errors: true
 
-  - name: Create a mariadb instance
-    rds_instance:
-      id: '{{ instance_id }}'
-      state: present
-      engine: mariadb
-      engine_version: '{{ mariadb_engine_version }}'
-      allow_major_version_upgrade: true
-      username: '{{ username }}'
-      password: '{{ password }}'
-      db_instance_class: '{{ db_instance_class }}'
-      allocated_storage: '{{ allocated_storage }}'
-    register: result
+    - name: Create a mariadb instance
+      amazon.aws.rds_instance:
+        id: "{{ instance_id }}"
+        state: present
+        engine: mariadb
+        engine_version: "{{ mariadb_engine_version }}"
+        allow_major_version_upgrade: true
+        username: "{{ username }}"
+        password: "{{ password }}"
+        db_instance_class: "{{ db_instance_class }}"
+        allocated_storage: "{{ allocated_storage }}"
+      register: result
 
-  - assert:
-      that:
-      - result.changed
-      - result.db_instance_identifier == '{{ instance_id }}'
+    - ansible.builtin.assert:
+        that:
+          - result.changed
+          - result.db_instance_identifier == '{{ instance_id }}'
 
     # Test upgrade of DB instance
 
-  - name: Upgrade a mariadb instance - check_mode
-    rds_instance:
-      id: '{{ instance_id }}'
-      state: present
-      engine: mariadb
-      engine_version: '{{ mariadb_engine_version_2 }}'
-      allow_major_version_upgrade: true
-      username: '{{ username }}'
-      password: '{{ password }}'
-      db_instance_class: '{{ db_instance_class }}'
-      allocated_storage: '{{ allocated_storage }}'
-      apply_immediately: true
-    register: result
-    check_mode: yes
+    - name: Upgrade a mariadb instance - check_mode
+      amazon.aws.rds_instance:
+        id: "{{ instance_id }}"
+        state: present
+        engine: mariadb
+        engine_version: "{{ mariadb_engine_version_2 }}"
+        allow_major_version_upgrade: true
+        username: "{{ username }}"
+        password: "{{ password }}"
+        db_instance_class: "{{ db_instance_class }}"
+        allocated_storage: "{{ allocated_storage }}"
+        apply_immediately: true
+      register: result
+      check_mode: true
 
-  - assert:
-      that:
-      - result.changed
+    - ansible.builtin.assert:
+        that:
+          - result.changed
 
-  - name: Upgrade a mariadb instance
-    rds_instance:
-      id: '{{ instance_id }}'
-      state: present
-      engine: mariadb
-      engine_version: '{{ mariadb_engine_version_2 }}'
-      allow_major_version_upgrade: true
-      username: '{{ username }}'
-      password: '{{ password }}'
-      db_instance_class: '{{ db_instance_class }}'
-      allocated_storage: '{{ allocated_storage }}'
-      apply_immediately: true
-    register: result
+    - name: Upgrade a mariadb instance
+      amazon.aws.rds_instance:
+        id: "{{ instance_id }}"
+        state: present
+        engine: mariadb
+        engine_version: "{{ mariadb_engine_version_2 }}"
+        allow_major_version_upgrade: true
+        username: "{{ username }}"
+        password: "{{ password }}"
+        db_instance_class: "{{ db_instance_class }}"
+        allocated_storage: "{{ allocated_storage }}"
+        apply_immediately: true
+      register: result
 
-  - assert:
-      that:
-      - result.changed
-      - '"engine_version" in result.pending_modified_values or result.engine_version
-        == mariadb_engine_version_2'
+    - ansible.builtin.assert:
+        that:
+          - result.changed
+          - '"engine_version" in result.pending_modified_values or result.engine_version == mariadb_engine_version_2'
 
-  - name: Idempotence upgrading a mariadb instance - check_mode
-    rds_instance:
-      id: '{{ instance_id }}'
-      state: present
-      engine: mariadb
-      engine_version: '{{ mariadb_engine_version_2 }}'
-      allow_major_version_upgrade: true
-      username: '{{ username }}'
-      password: '{{ password }}'
-      db_instance_class: '{{ db_instance_class }}'
-      allocated_storage: '{{ allocated_storage }}'
-    register: result
-    check_mode: yes
+    - name: Idempotence upgrading a mariadb instance - check_mode
+      amazon.aws.rds_instance:
+        id: "{{ instance_id }}"
+        state: present
+        engine: mariadb
+        engine_version: "{{ mariadb_engine_version_2 }}"
+        allow_major_version_upgrade: true
+        username: "{{ username }}"
+        password: "{{ password }}"
+        db_instance_class: "{{ db_instance_class }}"
+        allocated_storage: "{{ allocated_storage }}"
+      register: result
+      check_mode: true
 
     ### Specifying allow_major_version_upgrade with check_mode will always result in changed=True
     ### since it's not returned in describe_db_instances api call
@@ -99,30 +99,29 @@
     #     that:
     #       - not result.changed
 
-  - name: Idempotence upgrading a mariadb instance
-    rds_instance:
-      id: '{{ instance_id }}'
-      state: present
-      engine: mariadb
-      engine_version: '{{ mariadb_engine_version_2 }}'
-      allow_major_version_upgrade: true
-      username: '{{ username }}'
-      password: '{{ password }}'
-      db_instance_class: '{{ db_instance_class }}'
-      allocated_storage: '{{ allocated_storage }}'
-    register: result
+    - name: Idempotence upgrading a mariadb instance
+      amazon.aws.rds_instance:
+        id: "{{ instance_id }}"
+        state: present
+        engine: mariadb
+        engine_version: "{{ mariadb_engine_version_2 }}"
+        allow_major_version_upgrade: true
+        username: "{{ username }}"
+        password: "{{ password }}"
+        db_instance_class: "{{ db_instance_class }}"
+        allocated_storage: "{{ allocated_storage }}"
+      register: result
 
-  - assert:
-      that:
-      - not result.changed
-      - '"engine_version" in result.pending_modified_values or result.engine_version
-        == mariadb_engine_version_2'
+    - ansible.builtin.assert:
+        that:
+          - not result.changed
+          - '"engine_version" in result.pending_modified_values or result.engine_version == mariadb_engine_version_2'
 
   always:
-  - name: Delete the instance
-    rds_instance:
-      id: '{{ instance_id }}'
-      state: absent
-      skip_final_snapshot: true
-      wait: false
-    ignore_errors: yes
+    - name: Delete the instance
+      amazon.aws.rds_instance:
+        id: "{{ instance_id }}"
+        state: absent
+        skip_final_snapshot: true
+        wait: false
+      ignore_errors: true

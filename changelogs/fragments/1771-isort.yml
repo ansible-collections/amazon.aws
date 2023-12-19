@@ -1,2 +1,0 @@
-minor_changes:
-- amazon.aws collection - apply isort code formatting to ensure consistent formatting of code (https://github.com/ansible-collections/amazon.aws/pull/1771).

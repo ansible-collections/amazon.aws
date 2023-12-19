@@ -1,7 +1,7 @@
 ---
 # ============================================================
 - name: create a network interface (check mode)
-  ec2_eni:
+  amazon.aws.ec2_eni:
     device_index: 1
     private_ip_address: "{{ ip_1 }}"
     subnet_id: "{{ vpc_subnet_id }}"
@@ -9,35 +9,35 @@
   check_mode: true
   register: result_check_mode
 
-- assert:
+- ansible.builtin.assert:
     that:
       - result_check_mode.changed
 
 - name: create a network interface
-  ec2_eni:
+  amazon.aws.ec2_eni:
     device_index: 1
     private_ip_address: "{{ ip_1 }}"
     subnet_id: "{{ vpc_subnet_id }}"
     state: present
   register: result
 
-- assert:
+- ansible.builtin.assert:
     that:
       - result.changed
       - result.interface.private_ip_addresses | length == 1
 
-- set_fact:
+- ansible.builtin.set_fact:
     eni_id_1: "{{ result.interface.id }}"
 
 - name: Fetch ENI info (by ID)
-  ec2_eni_info:
-    eni_id: '{{ eni_id_1 }}'
+  amazon.aws.ec2_eni_info:
+    eni_id: "{{ eni_id_1 }}"
   register: eni_info
 
 - name: Assert that ec2_eni_info returns all the values we expect
   vars:
-    _interface_0: '{{ eni_info.network_interfaces[0] }}'
-  assert:
+    _interface_0: "{{ eni_info.network_interfaces[0] }}"
+  ansible.builtin.assert:
     that:
       - '"network_interfaces" in eni_info'
       - eni_info.network_interfaces | length == 1
@@ -91,7 +91,7 @@
       - _interface_0.vpc_id == vpc_id
 
 - name: test idempotence by using the same private_ip_address (check mode)
-  ec2_eni:
+  amazon.aws.ec2_eni:
     device_index: 1
     private_ip_address: "{{ ip_1 }}"
     subnet_id: "{{ vpc_subnet_id }}"
@@ -99,19 +99,19 @@
   check_mode: true
   register: result_check_mode
 
-- assert:
+- ansible.builtin.assert:
     that:
       - not result_check_mode.changed
 
 - name: test idempotence by using the same private_ip_address
-  ec2_eni:
+  amazon.aws.ec2_eni:
     device_index: 1
     private_ip_address: "{{ ip_1 }}"
     subnet_id: "{{ vpc_subnet_id }}"
     state: present
   register: result
 
-- assert:
+- ansible.builtin.assert:
     that:
       - not result.changed
       - result.interface.id == eni_id_1
@@ -120,32 +120,32 @@
 # ============================================================
 
 - name: create a second network interface to test IP reassignment
-  ec2_eni:
+  amazon.aws.ec2_eni:
     device_index: 1
     private_ip_address: "{{ ip_5 }}"
     subnet_id: "{{ vpc_subnet_id }}"
     state: present
   register: result
 
-- assert:
+- ansible.builtin.assert:
     that:
       - result.changed
       - result.interface.id != eni_id_1
 
 - name: save the second network interface ID for cleanup
-  set_fact:
+  ansible.builtin.set_fact:
     eni_id_2: "{{ result.interface.id }}"
 
 - name: Fetch ENI info (using filter)
-  ec2_eni_info:
+  amazon.aws.ec2_eni_info:
     filters:
-      network-interface-id: '{{ eni_id_2 }}'
+      network-interface-id: "{{ eni_id_2 }}"
   register: eni_info
 
 - name: Assert that ec2_eni_info returns all the values we expect
   vars:
-    _interface_0: '{{ eni_info.network_interfaces[0] }}'
-  assert:
+    _interface_0: "{{ eni_info.network_interfaces[0] }}"
+  ansible.builtin.assert:
     that:
       - '"network_interfaces" in eni_info'
       - eni_info.network_interfaces | length == 1
@@ -199,11 +199,11 @@
       - _interface_0.vpc_id == vpc_id
 
 - name: Fetch ENI info without filter
-  ec2_eni_info:
+  amazon.aws.ec2_eni_info:
   register: eni_info
 
 - name: Assert that ec2_eni_info contains at least the two interfaces we expect
-  assert:
+  ansible.builtin.assert:
     that:
       - '"network_interfaces" in eni_info'
       - eni_info.network_interfaces | length >= 2
@@ -214,14 +214,14 @@
 # Run some VPC filter based tests of ec2_eni_info
 
 - name: Fetch ENI info with VPC filters - Available
-  ec2_eni_info:
+  amazon.aws.ec2_eni_info:
     filters:
-      vpc-id: '{{ vpc_id }}'
-      status: 'available'
+      vpc-id: "{{ vpc_id }}"
+      status: available
   register: eni_info
 
 - name: Assert that ec2_eni_info contains at least the two interfaces we expect
-  assert:
+  ansible.builtin.assert:
     that:
       - '"network_interfaces" in eni_info'
       - eni_info.network_interfaces | length == 2
@@ -229,13 +229,13 @@
       - eni_id_2 in ( eni_info.network_interfaces | selectattr('id') | map(attribute='id') | list )
 
 - name: Fetch ENI info with VPC filters - VPC
-  ec2_eni_info:
+  amazon.aws.ec2_eni_info:
     filters:
-      vpc-id: '{{ vpc_id }}'
+      vpc-id: "{{ vpc_id }}"
   register: eni_info
 
 - name: Assert that ec2_eni_info contains at least the two interfaces we expect
-  assert:
+  ansible.builtin.assert:
     that:
       - '"network_interfaces" in eni_info'
       - eni_info.network_interfaces | length == 4
@@ -244,20 +244,19 @@
       - ec2_ips[0] in ( eni_info.network_interfaces | map(attribute='private_ip_addresses') | flatten | map(attribute='private_ip_address') | list )
       - ec2_ips[1] in ( eni_info.network_interfaces | map(attribute='private_ip_addresses') | flatten | map(attribute='private_ip_address') | list )
 
-
 # =========================================================
 
 - name: create another network interface without private_ip_address
-  ec2_eni:
+  amazon.aws.ec2_eni:
     device_index: 1
     subnet_id: "{{ vpc_subnet_id }}"
     state: present
   register: result_no_private_ip
 
-- assert:
+- ansible.builtin.assert:
     that:
       - result_no_private_ip.changed
 
 - name: save the third network interface ID for cleanup
-  set_fact:
+  ansible.builtin.set_fact:
     eni_id_3: "{{ result_no_private_ip.interface.id }}"

@@ -6,13 +6,13 @@
       session_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
   block:
-    - set_fact:
+    - ansible.builtin.set_fact:
         local_bucket_name: "{{ bucket_name | hash('md5')}}-public"
     # ============================================================
 
-    - name: 'Create a simple bucket with public access block configuration'
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
+    - name: Create a simple bucket with public access block configuration
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
         state: present
         public_access:
           block_public_acls: true
@@ -21,7 +21,7 @@
           restrict_public_buckets: true
       register: output
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - output.changed
           - output.public_access_block
@@ -30,9 +30,9 @@
           - output.public_access_block.IgnorePublicAcls
           - output.public_access_block.RestrictPublicBuckets
 
-    - name: 'Re-configure public access block configuration'
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
+    - name: Re-configure public access block configuration
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
         state: present
         public_access:
           block_public_acls: true
@@ -41,7 +41,7 @@
           restrict_public_buckets: false
       register: output
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - output.changed
           - output.public_access_block
@@ -50,9 +50,9 @@
           - output.public_access_block.IgnorePublicAcls
           - not output.public_access_block.RestrictPublicBuckets
 
-    - name: 'Re-configure public access block configuration (idempotency)'
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
+    - name: Re-configure public access block configuration (idempotency)
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
         state: present
         public_access:
           block_public_acls: true
@@ -61,7 +61,7 @@
           restrict_public_buckets: false
       register: output
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - output is not changed
           - output.public_access_block
@@ -70,26 +70,26 @@
           - output.public_access_block.IgnorePublicAcls
           - not output.public_access_block.RestrictPublicBuckets
 
-    - name: 'Delete public access block configuration'
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
+    - name: Delete public access block configuration
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
         state: present
         delete_public_access: true
       register: output
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - output is changed
           - not output.public_access_block|bool
 
-    - name: 'Delete public access block configuration (idempotency)'
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
+    - name: Delete public access block configuration (idempotency)
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
         state: present
         delete_public_access: true
       register: output
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - output is not changed
           - not output.public_access_block|bool
@@ -97,19 +97,19 @@
     # ============================================================
 
     - name: Delete testing s3 bucket
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
         state: absent
       register: output
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - output.changed
 
   # ============================================================
   always:
     - name: Ensure all buckets are deleted
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
         state: absent
-      ignore_errors: yes
+      ignore_errors: true

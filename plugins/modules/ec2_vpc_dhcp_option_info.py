@@ -50,7 +50,7 @@ EXAMPLES = r"""
     region: ap-southeast-2
     profile: production
     filters:
-        "tag:Name": "abc-123"
+      "tag:Name": "abc-123"
   register: dhcp_info
 
 - name: Gather information about a specific DHCP Option set by DhcpOptionId

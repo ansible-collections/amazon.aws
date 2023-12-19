@@ -1,24 +1,24 @@
 ---
 # defaults file for ec2_instance tests
-ec2_instance_test_name: 'ec2_instance'
+ec2_instance_test_name: ec2_instance
 
-ec2_instance_owner: 'integration-run-{{ ec2_instance_test_name }}'
-ec2_instance_type: 't3.micro'
-ec2_instance_tag_TestId: '{{ resource_prefix }}-{{ ec2_instance_test_name }}'
+ec2_instance_owner: integration-run-{{ ec2_instance_test_name }}
+ec2_instance_type: t3.micro
+ec2_instance_tag_TestId: "{{ resource_prefix }}-{{ ec2_instance_test_name }}"
 
-vpc_name: '{{ resource_prefix }}-{{ ec2_instance_test_name }}'
-vpc_seed: '{{ resource_prefix }}-{{ ec2_instance_test_name }}'
+vpc_name: "{{ resource_prefix }}-{{ ec2_instance_test_name }}"
+vpc_seed: "{{ resource_prefix }}-{{ ec2_instance_test_name }}"
 
-vpc_cidr: '10.{{ 256 | random(seed=vpc_seed) }}.0.0/16'
+vpc_cidr: 10.{{ 256 | random(seed=vpc_seed) }}.0.0/16
 
-subnet_a_az: '{{ ec2_availability_zone_names[0] }}'
-subnet_a_cidr: '10.{{ 256 | random(seed=vpc_seed) }}.32.0/24'
-subnet_a_startswith: '10.{{ 256 | random(seed=vpc_seed) }}.32.'
-subnet_a_name: '{{ resource_prefix }}-{{ ec2_instance_test_name }}-a'
-subnet_b_az: '{{ ec2_availability_zone_names[1] }}'
-subnet_b_cidr: '10.{{ 256 | random(seed=vpc_seed) }}.33.0/24'
-subnet_b_startswith: '10.{{ 256 | random(seed=vpc_seed) }}.33.'
-subnet_b_name: '{{ resource_prefix }}-{{ ec2_instance_test_name }}-b'
+subnet_a_az: "{{ ec2_availability_zone_names[0] }}"
+subnet_a_cidr: 10.{{ 256 | random(seed=vpc_seed) }}.32.0/24
+subnet_a_startswith: 10.{{ 256 | random(seed=vpc_seed) }}.32.
+subnet_a_name: "{{ resource_prefix }}-{{ ec2_instance_test_name }}-a"
+subnet_b_az: "{{ ec2_availability_zone_names[1] }}"
+subnet_b_cidr: 10.{{ 256 | random(seed=vpc_seed) }}.33.0/24
+subnet_b_startswith: 10.{{ 256 | random(seed=vpc_seed) }}.33.
+subnet_b_name: "{{ resource_prefix }}-{{ ec2_instance_test_name }}-b"
 
-security_group_name_1: '{{ resource_prefix }}-{{ ec2_instance_test_name }}-1'
-security_group_name_2: '{{ resource_prefix }}-{{ ec2_instance_test_name }}-2'
+security_group_name_1: "{{ resource_prefix }}-{{ ec2_instance_test_name }}-1"
+security_group_name_2: "{{ resource_prefix }}-{{ ec2_instance_test_name }}-2"

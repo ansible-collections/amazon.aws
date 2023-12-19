@@ -71,9 +71,9 @@ EXAMPLES = r"""
     filter_pattern: '{($.value = *) && ($.hostname = "box")}'
     state: present
     metric_transformation:
-        metric_name: box_free_space
-        metric_namespace: fluentd_metrics
-        metric_value: "$.value"
+      metric_name: box_free_space
+      metric_namespace: fluentd_metrics
+      metric_value: "$.value"
 
 - name: delete metric filter on log group /fluentd/testcase
   amazon.aws.cloudwatchlogs_log_group_metric_filter:

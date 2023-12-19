@@ -71,8 +71,8 @@ EXAMPLES = r"""
     vpc_id: vpc-abcdefgh
     state: present
     tags:
-        Tag1: tag1
-        Tag2: tag2
+      Tag1: tag1
+      Tag2: tag2
   register: igw
 
 - name: Create a detached gateway
@@ -106,7 +106,6 @@ EXAMPLES = r"""
     internet_gateway_id: igw-abcdefgh
     vpc_id: vpc-abcdefgh
   register: vpc_igw_delete
-
 """
 
 RETURN = r"""
@@ -148,6 +147,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_t
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
 
@@ -311,7 +311,10 @@ class AnsibleEc2Igw:
                 self.get_matching_vpc(vpc_id)
 
             try:
-                response = self._connection.create_internet_gateway(aws_retry=True)
+                create_params = {}
+                if tags:
+                    create_params["TagSpecifications"] = boto3_tag_specifications(tags, types="internet-gateway")
+                response = self._connection.create_internet_gateway(aws_retry=True, **create_params)
 
                 # Ensure the gateway exists before trying to attach it or add tags
                 waiter = get_waiter(self._connection, "internet_gateway_exists")

@@ -1,2 +1,3 @@
-- name: 'Delete ec2_instance environment'
-  include_tasks: cleanup.yml
+---
+- name: Delete ec2_instance environment
+  ansible.builtin.include_tasks: cleanup.yml

@@ -1,6 +1,6 @@
 ---
 # defaults file for backup_selection integration tests
-backup_iam_role_name: 'ansible-test-{{ tiny_prefix }}-backup-iam-role'
-backup_vault_name: '{{ tiny_prefix }}-backup-vault'
-backup_plan_name: '{{ tiny_prefix }}-backup-plan'
-backup_selection_name: '{{ tiny_prefix }}-backup-selection'
+backup_iam_role_name: ansible-test-{{ tiny_prefix }}-backup-iam-role
+backup_vault_name: "{{ tiny_prefix }}-backup-vault"
+backup_plan_name: "{{ tiny_prefix }}-backup-plan"
+backup_selection_name: "{{ tiny_prefix }}-backup-selection"

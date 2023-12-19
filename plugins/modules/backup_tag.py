@@ -65,15 +65,15 @@ EXAMPLES = r"""
     resource: "{{ backup_resource_arn }}"
     state: absent
     tags:
-        CamelCaseKey: CamelCaseValue
+      CamelCaseKey: CamelCaseValue
 
 - name: Remove all tags except for specified tags
   amazon.aws.backup_tag:
     resource: "{{ backup_resource_arn }}"
     state: absent
     tags:
-        test_tag_key_1: tag_tag_value_1
-        test_tag_key_2: tag_tag_value_2
+      test_tag_key_1: tag_tag_value_1
+      test_tag_key_2: tag_tag_value_2
     purge_tags: true
 
 - name: Update value of tag key on a resource
@@ -81,7 +81,7 @@ EXAMPLES = r"""
     resource: "{{ backup_resource_arn }}"
     state: present
     tags:
-        test_tag_key_1: tag_tag_value_NEW_1
+      test_tag_key_1: tag_tag_value_NEW_1
 
 - name: Remove all of the tags on a resource
   amazon.aws.backup_tag:

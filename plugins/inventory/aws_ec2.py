@@ -154,6 +154,8 @@ plugin: amazon.aws.aws_ec2
 regions:
   - us-east-1
 
+---
+
 # Example using filters, ignoring permission errors, and specifying the hostname precedence
 plugin: amazon.aws.aws_ec2
 # The values for profile, access key, secret key and token can be hardcoded like:
@@ -165,15 +167,16 @@ regions:
   - us-east-1
   - us-east-2
 filters:
-  # All instances with their `Environment` tag set to `dev`
-  tag:Environment: dev
+  ## All instances with their `Environment` tag set to `dev`
+  # tag:Environment: dev
+
   # All dev and QA hosts
   tag:Environment:
     - dev
     - qa
   instance.group-id: sg-xxxxxxxx
 # Ignores 403 errors rather than failing
-strict_permissions: False
+strict_permissions: false
 # Note: I(hostnames) sets the inventory_hostname. To modify ansible_host without modifying
 # inventory_hostname use compose (see example below).
 hostnames:
@@ -189,7 +192,9 @@ hostnames:
     prefix: 'aws'
 
 # Returns all the hostnames for a given instance
-allow_duplicated_hosts: False
+allow_duplicated_hosts: false
+
+---
 
 # Example using constructed features to create groups and set ansible_host
 plugin: amazon.aws.aws_ec2
@@ -197,7 +202,7 @@ regions:
   - us-east-1
   - us-west-1
 # keyed_groups may be used to create custom groups
-strict: False
+strict: false
 keyed_groups:
   # Add e.g. x86_64 hosts to an arch_x86_64 group
   - prefix: arch
@@ -227,19 +232,23 @@ compose:
   # (note: this does not modify inventory_hostname, which is set via I(hostnames))
   ansible_host: private_ip_address
 
+---
+
 # Example using include_filters and exclude_filters to compose the inventory.
 plugin: amazon.aws.aws_ec2
 regions:
   - us-east-1
   - us-west-1
 include_filters:
-- tag:Name:
-  - 'my_second_tag'
-- tag:Name:
-  - 'my_third_tag'
+  - tag:Name:
+      - 'my_second_tag'
+  - tag:Name:
+      - 'my_third_tag'
 exclude_filters:
-- tag:Name:
-  - 'my_first_tag'
+  - tag:Name:
+      - 'my_first_tag'
+
+---
 
 # Example using groups to assign the running hosts to a group based on vpc_id
 plugin: amazon.aws.aws_ec2
@@ -257,6 +266,9 @@ compose:
   ansible_host: public_dns_name
 groups:
   libvpc: vpc_id == 'vpc-####'
+
+---
+
 # Define prefix and suffix for host variables coming from AWS.
 plugin: amazon.aws.aws_ec2
 regions:

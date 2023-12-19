@@ -18,9 +18,34 @@ author:
 options:
   name:
     description:
-      - The name of the user to create.
+      - The name of the user.
+      - >-
+        Note: user names are unique within an account.  Paths (I(path)) do B(not) affect
+        the uniqueness requirements of I(name).  For example it is not permitted to have both
+        C(/Path1/MyUser) and C(/Path2/MyUser) in the same account.
     required: true
     type: str
+  path:
+    description:
+      - The path for the user name.
+      - For more information about IAM paths, see the AWS IAM identifiers documentation
+        U(https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html).
+    aliases: ['prefix', 'path_prefix']
+    required: false
+    type: str
+    version_added: 7.2.0
+  boundary:
+    description:
+      - The ARN of an IAM managed policy to apply as a boundary policy for this user.
+      - Boundary policies can be used to restrict the permissions a user can excercise, but does not
+        grant any policies in and of itself.
+      - For more information on boundaries, see
+        U(https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_boundaries.html).
+      - Set to the empty string C("") to remove the boundary policy.
+    aliases: ["boundary_policy_arn", "permissions_boundary"]
+    required: false
+    type: str
+    version_added: 7.2.0
   password:
     description:
       - The password to apply to the user.
@@ -30,7 +55,8 @@ options:
     version_added_collection: community.aws
   password_reset_required:
     description:
-      - Defines if the user is required to set a new password after login.
+      - Defines if the user is required to set a new password when they log in.
+      - Ignored unless a new password is set.
     required: false
     type: bool
     default: false
@@ -59,8 +85,8 @@ options:
       - To embed an inline policy, use M(community.aws.iam_policy).
     required: false
     type: list
-    elements: str
     default: []
+    elements: str
     aliases: ['managed_policy']
   state:
     description:
@@ -173,6 +199,22 @@ user:
             type: dict
             returned: always
             sample: {"Env": "Prod"}
+        attached_policies:
+            version_added: 7.2.0
+            description:
+                - list containing basic information about managed policies attached to the group.
+            returned: success
+            type: complex
+            contains:
+                policy_arn:
+                    description: the Amazon Resource Name (ARN) specifying the managed policy.
+                    type: str
+                    sample: "arn:aws:iam::123456789012:policy/test_policy"
+                policy_name:
+                    description: the friendly name that identifies the policy.
+                    type: str
+                    sample: test_policy
+
 """
 
 try:
@@ -182,49 +224,27 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.arn import validate_aws_arn
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.iam import AnsibleIAMError
+from ansible_collections.amazon.aws.plugins.module_utils.iam import convert_managed_policy_names_to_arns
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
 
 
-def compare_attached_policies(current_attached_policies, new_attached_policies):
-    # If new_attached_policies is None it means we want to remove all policies
-    if len(current_attached_policies) > 0 and new_attached_policies is None:
-        return False
-
-    current_attached_policies_arn_list = []
-    for policy in current_attached_policies:
-        current_attached_policies_arn_list.append(policy["PolicyArn"])
-
-    if not set(current_attached_policies_arn_list).symmetric_difference(set(new_attached_policies)):
-        return True
-    else:
-        return False
-
-
-def convert_friendly_names_to_arns(connection, module, policy_names):
-    # List comprehension that looks for any policy in the 'policy_names' list
-    # that does not begin with 'arn'. If there aren't any, short circuit.
-    # If there are, translate friendly name to the full arn
-    if all(validate_aws_arn(policy, service="iam") for policy in policy_names if policy is not None):
-        return policy_names
-    allpolicies = {}
-    paginator = connection.get_paginator("list_policies")
-    policies = paginator.paginate().build_full_result()["Policies"]
-
-    for policy in policies:
-        allpolicies[policy["PolicyName"]] = policy["Arn"]
-        allpolicies[policy["Arn"]] = policy["Arn"]
-    try:
-        return [allpolicies[policy] for policy in policy_names if policy is not None]
-    except KeyError as e:
-        module.fail_json(msg="Couldn't find policy: " + str(e))
+def normalize_user(user):
+    tags = boto3_tag_list_to_ansible_dict(user["User"].pop("Tags", []))
+    user = camel_dict_to_snake_dict(user)
+    user["user"]["tags"] = tags
+    return user
 
 
 def wait_iam_exists(connection, module):
+    if not module.params.get("wait"):
+        return
+
     user_name = module.params.get("name")
     wait_timeout = module.params.get("wait_timeout")
 
@@ -243,160 +263,364 @@ def wait_iam_exists(connection, module):
         module.fail_json_aws(e, msg="Failed while waiting on IAM user creation")
 
 
-def create_or_update_login_profile(connection, module):
-    # Apply new password / update password for the user
-    user_params = dict()
-    user_params["UserName"] = module.params.get("name")
-    user_params["Password"] = module.params.get("password")
-    user_params["PasswordResetRequired"] = module.params.get("password_reset_required")
-    retval = {}
+def create_user(connection, module, user_name, path, boundary, tags):
+    params = {"UserName": user_name}
+    if path:
+        params["Path"] = path
+    if boundary:
+        params["PermissionsBoundary"] = boundary
+    if tags:
+        params["Tags"] = ansible_dict_to_boto3_tag_list(tags)
+
+    if module.check_mode:
+        module.exit_json(changed=True, create_params=params)
 
     try:
-        retval = connection.update_login_profile(**user_params)
-    except is_boto3_error_code("NoSuchEntity"):
-        # Login profile does not yet exist - create it
-        try:
-            retval = connection.create_login_profile(**user_params)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Unable to create user login profile")
+        user = connection.create_user(aws_retry=True, **params)
     except (
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
     ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Unable to update user login profile")
+        raise AnsibleIAMError(message=f"Unable to create user {user_name}", exception=e)
 
-    return True, retval
+    return normalize_user(user)
 
 
-def delete_login_profile(connection, module):
-    """
-    Deletes a users login profile.
-        Parameters:
-            connection: IAM client
-            module: AWSModule
-        Returns:
-            (bool): True if login profile deleted, False if no login profile found to delete
-    """
-    user_params = dict()
-    user_params["UserName"] = module.params.get("name")
+def _create_or_update_login_profile(connection, name, password, reset):
+    # Apply new password / update password for the user
+    user_params = {
+        "UserName": name,
+        "Password": password,
+        "PasswordResetRequired": reset,
+    }
 
-    # User does not have login profile - nothing to delete
-    if not user_has_login_profile(connection, module, user_params["UserName"]):
+    try:
+        retval = connection.update_login_profile(aws_retry=True, **user_params)
+    except is_boto3_error_code("NoSuchEntity"):
+        # Login profile does not yet exist - create it
+        try:
+            retval = connection.create_login_profile(aws_retry=True, **user_params)
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            raise AnsibleIAMError(message="Unable to create user login profile", exception=e)
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
+        raise AnsibleIAMError(message="Unable to update user login profile", exception=e)
+
+    return retval
+
+
+def ensure_login_profile(connection, check_mode, user_name, password, update, reset, new_user):
+    if password is None:
+        return False, None
+    if update == "on_create" and not new_user:
+        return False, None
+
+    if check_mode:
+        return True, None
+
+    return True, _create_or_update_login_profile(connection, user_name, password, reset)
+
+
+def _get_login_profile(connection, name):
+    try:
+        profile = connection.get_login_profile(aws_retry=True, UserName=name).get("LoginProfile")
+    except is_boto3_error_code("NoSuchEntity"):
+        return None
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:
+        raise AnsibleIAMError(message=f"Unable to get login profile for user {name}", exception=e)
+    return profile
+
+
+def _delete_login_profile(connection, name):
+    try:
+        connection.delete_login_profile(aws_retry=True, UserName=name)
+    except is_boto3_error_code("NoSuchEntityException"):
+        return
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
+        raise AnsibleIAMError(message="Unable to delete user login profile", exception=e)
+
+
+def remove_login_profile(connection, check_mode, user_name, remove_password, new_user):
+    if new_user:
+        return False
+    if not remove_password:
         return False
 
-    if not module.check_mode:
+    # In theory we could skip this check outside check_mode
+    login_profile = _get_login_profile(connection, user_name)
+    if not login_profile:
+        return False
+
+    if check_mode:
+        return True
+
+    _delete_login_profile(connection, user_name)
+    return True
+
+
+def _list_attached_policies(connection, user_name):
+    try:
+        return connection.list_attached_user_policies(UserName=user_name)["AttachedPolicies"]
+    except is_boto3_error_code("NoSuchEntity"):
+        return []
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
+        raise AnsibleIAMError(message=f"Unable to get policies for user {user_name}", exception=e)
+
+
+def attach_policies(connection, user_name, policies):
+    for policy_arn in policies:
         try:
-            connection.delete_login_profile(**user_params)
-        except (
-            botocore.exceptions.ClientError,
-            botocore.exceptions.BotoCoreError,
-        ) as e:  # pylint: disable=duplicate-except
-            module.fail_json_aws(e, msg="Unable to delete user login profile")
+            connection.attach_user_policy(UserName=user_name, PolicyArn=policy_arn)
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            raise AnsibleIAMError(
+                message=f"Unable to attach policy {policy_arn} to user {user_name}",
+                exception=e,
+            )
+
+
+def detach_policies(connection, user_name, policies):
+    for policy_arn in policies:
+        try:
+            connection.detach_user_policy(UserName=user_name, PolicyArn=policy_arn)
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            raise AnsibleIAMError(
+                message=f"Unable to detach policy {policy_arn} from user {user_name}",
+                exception=e,
+            )
+
+
+def ensure_managed_policies(connection, check_mode, user_name, managed_policies, purge_policies):
+    if managed_policies is None:
+        return False
+
+    managed_policies = convert_managed_policy_names_to_arns(connection, managed_policies)
+
+    # Manage managed policies
+    attached_policies_desc = _list_attached_policies(connection, user_name)
+    current_attached_policies = [policy["PolicyArn"] for policy in attached_policies_desc]
+
+    policies_to_add = list(set(managed_policies) - set(current_attached_policies))
+    policies_to_remove = []
+    if purge_policies:
+        policies_to_remove = list(set(current_attached_policies) - set(managed_policies))
+
+    if not policies_to_add and not policies_to_remove:
+        return False
+
+    if check_mode:
+        return True
+
+    detach_policies(connection, user_name, policies_to_remove)
+    attach_policies(connection, user_name, policies_to_add)
+
+    return True
+
+
+def ensure_user_tags(connection, check_mode, user, user_name, new_tags, purge_tags):
+    if new_tags is None:
+        return False
+
+    existing_tags = user["user"]["tags"]
+
+    tags_to_add, tags_to_remove = compare_aws_tags(existing_tags, new_tags, purge_tags=purge_tags)
+
+    if not tags_to_remove and not tags_to_add:
+        return False
+
+    if check_mode:
+        return True
+
+    try:
+        if tags_to_remove:
+            connection.untag_user(UserName=user_name, TagKeys=tags_to_remove)
+        if tags_to_add:
+            connection.tag_user(UserName=user_name, Tags=ansible_dict_to_boto3_tag_list(tags_to_add))
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        raise AnsibleIAMError(
+            message=f"Unable to set tags for user {user_name}",
+            exception=e,
+        )
+
+    return True
+
+
+def ensure_permissions_boundary(connection, check_mode, user, user_name, boundary):
+    if boundary is None:
+        return False
+
+    current_boundary = user.get("user", {}).get("permissions_boundary", "")
+    if current_boundary:
+        current_boundary = current_boundary.get("permissions_boundary_arn")
+
+    if boundary == current_boundary:
+        return False
+
+    if check_mode:
+        return True
+
+    if boundary == "":
+        try:
+            connection.delete_user_permissions_boundary(
+                aws_retry=True,
+                UserName=user_name,
+            )
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            raise AnsibleIAMError(
+                message=f"Unable to remove permissions boundary for user {user_name}",
+                exception=e,
+            )
+    else:
+        try:
+            connection.put_user_permissions_boundary(
+                aws_retry=True,
+                UserName=user_name,
+                PermissionsBoundary=boundary,
+            )
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            raise AnsibleIAMError(
+                message=f"Unable to set permissions boundary for user {user_name}",
+                exception=e,
+            )
+
+    return True
+
+
+def ensure_path(connection, check_mode, user, user_name, path):
+    if path is None:
+        return False
+
+    current_path = user.get("user", {}).get("path", "")
+
+    if path == current_path:
+        return False
+
+    if check_mode:
+        return True
+
+    try:
+        connection.update_user(
+            aws_retry=True,
+            UserName=user_name,
+            NewPath=path,
+        )
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        raise AnsibleIAMError(
+            message=f"Unable to set path for user {user_name}",
+            exception=e,
+        )
 
     return True
 
 
 def create_or_update_user(connection, module):
-    params = dict()
-    params["UserName"] = module.params.get("name")
-    managed_policies = module.params.get("managed_policies")
-    purge_policies = module.params.get("purge_policies")
-
-    if module.params.get("tags") is not None:
-        params["Tags"] = ansible_dict_to_boto3_tag_list(module.params.get("tags"))
+    user_name = module.params.get("name")
 
     changed = False
+    new_user = False
+    user = get_user(connection, user_name)
 
-    if managed_policies:
-        managed_policies = convert_friendly_names_to_arns(connection, module, managed_policies)
+    boundary = module.params.get("boundary")
+    if boundary:
+        boundary = convert_managed_policy_names_to_arns(connection, [module.params.get("boundary")])[0]
 
-    # Get user
-    user = get_user(connection, module, params["UserName"])
-
-    # If user is None, create it
-    new_login_profile = False
     if user is None:
-        # Check mode means we would create the user
-        if module.check_mode:
-            module.exit_json(changed=True)
-
-        try:
-            connection.create_user(**params)
-            changed = True
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Unable to create user")
-
+        user = create_user(
+            connection,
+            module,
+            user_name,
+            module.params.get("path"),
+            boundary,
+            module.params.get("tags"),
+        )
+        changed = True
         # Wait for user to be fully available before continuing
-        if module.params.get("wait"):
-            wait_iam_exists(connection, module)
+        wait_iam_exists(connection, module)
+        new_user = True
 
-        if module.params.get("password") is not None:
-            login_profile_result, login_profile_data = create_or_update_login_profile(connection, module)
+    profile_changed, login_profile = ensure_login_profile(
+        connection,
+        module.check_mode,
+        user_name,
+        module.params.get("password"),
+        module.params.get("update_password"),
+        module.params.get("password_reset_required"),
+        new_user,
+    )
+    changed |= profile_changed
 
-            if login_profile_data.get("LoginProfile", {}).get("PasswordResetRequired", False):
-                new_login_profile = True
-    else:
-        login_profile_result = None
-        update_result = update_user_tags(connection, module, params, user)
+    changed |= remove_login_profile(
+        connection,
+        module.check_mode,
+        user_name,
+        module.params.get("remove_password"),
+        new_user,
+    )
 
-        if module.params["update_password"] == "always" and module.params.get("password") is not None:
-            # Can't compare passwords, so just return changed on check mode runs
-            if module.check_mode:
-                module.exit_json(changed=True)
-            login_profile_result, login_profile_data = create_or_update_login_profile(connection, module)
+    changed |= ensure_permissions_boundary(
+        connection,
+        module.check_mode,
+        user,
+        user_name,
+        boundary,
+    )
 
-            if login_profile_data.get("LoginProfile", {}).get("PasswordResetRequired", False):
-                new_login_profile = True
+    changed |= ensure_path(
+        connection,
+        module.check_mode,
+        user,
+        user_name,
+        module.params.get("path"),
+    )
 
-        elif module.params.get("remove_password"):
-            login_profile_result = delete_login_profile(connection, module)
+    changed |= ensure_managed_policies(
+        connection,
+        module.check_mode,
+        user_name,
+        module.params.get("managed_policies"),
+        module.params.get("purge_policies"),
+    )
 
-        changed = bool(update_result) or bool(login_profile_result)
-
-    # Manage managed policies
-    current_attached_policies = get_attached_policy_list(connection, module, params["UserName"])
-    if not compare_attached_policies(current_attached_policies, managed_policies):
-        current_attached_policies_arn_list = []
-        for policy in current_attached_policies:
-            current_attached_policies_arn_list.append(policy["PolicyArn"])
-
-        # If managed_policies has a single empty element we want to remove all attached policies
-        if purge_policies:
-            # Detach policies not present
-            for policy_arn in list(set(current_attached_policies_arn_list) - set(managed_policies)):
-                changed = True
-                if not module.check_mode:
-                    try:
-                        connection.detach_user_policy(UserName=params["UserName"], PolicyArn=policy_arn)
-                    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                        module.fail_json_aws(
-                            e, msg=f"Unable to detach policy {policy_arn} from user {params['UserName']}"
-                        )
-
-        # If there are policies to adjust that aren't in the current list, then things have changed
-        # Otherwise the only changes were in purging above
-        if set(managed_policies).difference(set(current_attached_policies_arn_list)):
-            changed = True
-            # If there are policies in managed_policies attach each policy
-            if managed_policies != [None] and not module.check_mode:
-                for policy_arn in managed_policies:
-                    try:
-                        connection.attach_user_policy(UserName=params["UserName"], PolicyArn=policy_arn)
-                    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                        module.fail_json_aws(
-                            e, msg=f"Unable to attach policy {policy_arn} to user {params['UserName']}"
-                        )
+    changed |= ensure_user_tags(
+        connection,
+        module.check_mode,
+        user,
+        user_name,
+        module.params.get("tags"),
+        module.params.get("purge_tags"),
+    )
 
     if module.check_mode:
         module.exit_json(changed=changed)
 
     # Get the user again
-    user = get_user(connection, module, params["UserName"])
-    if changed and new_login_profile:
+    user = get_user(connection, user_name)
+
+    if changed and login_profile:
         # `LoginProfile` is only returned on `create_login_profile` method
-        user["user"]["password_reset_required"] = login_profile_data.get("LoginProfile", {}).get(
+        user["user"]["password_reset_required"] = login_profile.get("LoginProfile", {}).get(
             "PasswordResetRequired", False
         )
+
+    try:
+        # (camel_dict_to_snake_dict doesn't handle lists, so do this as a merge of two dictionaries)
+        policies = {"attached_policies": _list_attached_policies(connection, user_name)}
+        user["user"].update(camel_dict_to_snake_dict(policies))
+    except AnsibleIAMError as e:
+        module.warn(
+            f"Failed to list attached policies - {str(e.exception)}",
+        )
+        pass
 
     module.exit_json(changed=changed, iam_user=user, user=user["user"])
 
@@ -404,7 +628,7 @@ def create_or_update_user(connection, module):
 def destroy_user(connection, module):
     user_name = module.params.get("name")
 
-    user = get_user(connection, module, user_name)
+    user = get_user(connection, user_name)
     # User is not present
     if not user:
         module.exit_json(changed=False)
@@ -413,33 +637,45 @@ def destroy_user(connection, module):
     if module.check_mode:
         module.exit_json(changed=True)
 
-    # Remove any attached policies otherwise deletion fails
-    try:
-        for policy in get_attached_policy_list(connection, module, user_name):
-            connection.detach_user_policy(UserName=user_name, PolicyArn=policy["PolicyArn"])
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg=f"Unable to delete user {user_name}")
+    # Prior to removing the user we need to remove all of the related resources, or deletion will
+    # fail.
+    # Because policies (direct and indrect) can contain Deny rules, order is important here in case
+    # we fail during deletion: lock out the user first *then* start removing policies...
+    # - Prevent the user from creating new sessions
+    #   - Login profile
+    #   - Access keys
+    #   - SSH keys
+    #   - Service Credentials
+    #   - Certificates
+    #   - MFA Token (last so we don't end up in a state where it's possible still use password/keys)
+    # - Remove policies and group membership
+    #   - Managed policies
+    #   - Inline policies
+    #   - Group membership
 
     try:
-        # Remove user's access keys
-        access_keys = connection.list_access_keys(UserName=user_name)["AccessKeyMetadata"]
-        for access_key in access_keys:
-            connection.delete_access_key(UserName=user_name, AccessKeyId=access_key["AccessKeyId"])
-
         # Remove user's login profile (console password)
-        delete_login_profile(connection, module)
+        remove_login_profile(connection, module.check_mode, user_name, True, False)
+
+        # Remove user's access keys
+        access_keys = connection.list_access_keys(aws_retry=True, UserName=user_name)["AccessKeyMetadata"]
+        for access_key in access_keys:
+            connection.delete_access_key(aws_retry=True, UserName=user_name, AccessKeyId=access_key["AccessKeyId"])
 
         # Remove user's ssh public keys
         ssh_public_keys = connection.list_ssh_public_keys(UserName=user_name)["SSHPublicKeys"]
         for ssh_public_key in ssh_public_keys:
-            connection.delete_ssh_public_key(UserName=user_name, SSHPublicKeyId=ssh_public_key["SSHPublicKeyId"])
+            connection.delete_ssh_public_key(
+                aws_retry=True, UserName=user_name, SSHPublicKeyId=ssh_public_key["SSHPublicKeyId"]
+            )
 
         # Remove user's service specific credentials
-        service_credentials = connection.list_service_specific_credentials(UserName=user_name)[
+        service_credentials = connection.list_service_specific_credentials(aws_retry=True, UserName=user_name)[
             "ServiceSpecificCredentials"
         ]
         for service_specific_credential in service_credentials:
             connection.delete_service_specific_credential(
+                aws_retry=True,
                 UserName=user_name,
                 ServiceSpecificCredentialId=service_specific_credential["ServiceSpecificCredentialId"],
             )
@@ -448,32 +684,39 @@ def destroy_user(connection, module):
         signing_certificates = connection.list_signing_certificates(UserName=user_name)["Certificates"]
         for signing_certificate in signing_certificates:
             connection.delete_signing_certificate(
-                UserName=user_name, CertificateId=signing_certificate["CertificateId"]
+                aws_retry=True, UserName=user_name, CertificateId=signing_certificate["CertificateId"]
             )
 
         # Remove user's MFA devices
-        mfa_devices = connection.list_mfa_devices(UserName=user_name)["MFADevices"]
+        mfa_devices = connection.list_mfa_devices(aws_retry=True, UserName=user_name)["MFADevices"]
         for mfa_device in mfa_devices:
-            connection.deactivate_mfa_device(UserName=user_name, SerialNumber=mfa_device["SerialNumber"])
+            connection.deactivate_mfa_device(
+                aws_retry=True, UserName=user_name, SerialNumber=mfa_device["SerialNumber"]
+            )
+
+        # Remove any attached policies
+        attached_policies_desc = _list_attached_policies(connection, user_name)
+        current_attached_policies = [policy["PolicyArn"] for policy in attached_policies_desc]
+        detach_policies(connection, user_name, current_attached_policies)
 
         # Remove user's inline policies
-        inline_policies = connection.list_user_policies(UserName=user_name)["PolicyNames"]
+        inline_policies = connection.list_user_policies(aws_retry=True, UserName=user_name)["PolicyNames"]
         for policy_name in inline_policies:
-            connection.delete_user_policy(UserName=user_name, PolicyName=policy_name)
+            connection.delete_user_policy(aws_retry=True, UserName=user_name, PolicyName=policy_name)
 
         # Remove user's group membership
-        user_groups = connection.list_groups_for_user(UserName=user_name)["Groups"]
+        user_groups = connection.list_groups_for_user(aws_retry=True, UserName=user_name)["Groups"]
         for group in user_groups:
-            connection.remove_user_from_group(UserName=user_name, GroupName=group["GroupName"])
+            connection.remove_user_from_group(aws_retry=True, UserName=user_name, GroupName=group["GroupName"])
 
-        connection.delete_user(UserName=user_name)
+        connection.delete_user(aws_retry=True, UserName=user_name)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg=f"Unable to delete user {user_name}")
 
     module.exit_json(changed=True)
 
 
-def get_user(connection, module, name):
+def get_user(connection, name):
     params = dict()
     params["UserName"] = name
 
@@ -485,76 +728,16 @@ def get_user(connection, module, name):
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
     ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg=f"Unable to get user {name}")
+        raise AnsibleIAMError(message=f"Unable to get user {name}", exception=e)
 
-    tags = boto3_tag_list_to_ansible_dict(user["User"].pop("Tags", []))
-    user = camel_dict_to_snake_dict(user)
-    user["user"]["tags"] = tags
-    return user
-
-
-def get_attached_policy_list(connection, module, name):
-    try:
-        return connection.list_attached_user_policies(UserName=name)["AttachedPolicies"]
-    except is_boto3_error_code("NoSuchEntity"):
-        return None
-    except (
-        botocore.exceptions.ClientError,
-        botocore.exceptions.BotoCoreError,
-    ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg=f"Unable to get policies for user {name}")
-
-
-def user_has_login_profile(connection, module, name):
-    """
-    Returns whether or not given user has a login profile.
-        Parameters:
-            connection: IAM client
-            module: AWSModule
-            name (str): Username of user
-        Returns:
-            (bool): True if user had login profile, False if not
-    """
-    try:
-        connection.get_login_profile(UserName=name)
-    except is_boto3_error_code("NoSuchEntity"):
-        return False
-    except (
-        botocore.exceptions.ClientError,
-        botocore.exceptions.BotoCoreError,
-    ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg=f"Unable to get login profile for user {name}")
-    return True
-
-
-def update_user_tags(connection, module, params, user):
-    user_name = params["UserName"]
-    existing_tags = user["user"]["tags"]
-    new_tags = params.get("Tags")
-    if new_tags is None:
-        return False
-    new_tags = boto3_tag_list_to_ansible_dict(new_tags)
-
-    purge_tags = module.params.get("purge_tags")
-
-    tags_to_add, tags_to_remove = compare_aws_tags(existing_tags, new_tags, purge_tags=purge_tags)
-
-    if not module.check_mode:
-        try:
-            if tags_to_remove:
-                connection.untag_user(UserName=user_name, TagKeys=tags_to_remove)
-            if tags_to_add:
-                connection.tag_user(UserName=user_name, Tags=ansible_dict_to_boto3_tag_list(tags_to_add))
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg=f"Unable to set tags for user {user_name}")
-
-    changed = bool(tags_to_add) or bool(tags_to_remove)
-    return changed
+    return normalize_user(user)
 
 
 def main():
     argument_spec = dict(
         name=dict(required=True, type="str"),
+        path=dict(type="str", aliases=["prefix", "path_prefix"]),
+        boundary=dict(type="str", aliases=["boundary_policy_arn", "permissions_boundary"]),
         password=dict(type="str", no_log=True),
         password_reset_required=dict(type="bool", default=False, no_log=False),
         update_password=dict(default="always", choices=["always", "on_create"], no_log=False),
@@ -580,14 +763,20 @@ def main():
         collection_name="amazon.aws",
     )
 
-    connection = module.client("iam")
+    retry_decorator = AWSRetry.jittered_backoff(catch_extra_error_codes=["EntityTemporarilyUnmodifiable"])
+    connection = module.client("iam", retry_decorator=retry_decorator)
 
     state = module.params.get("state")
 
-    if state == "present":
-        create_or_update_user(connection, module)
-    else:
-        destroy_user(connection, module)
+    try:
+        if state == "present":
+            create_or_update_user(connection, module)
+        else:
+            destroy_user(connection, module)
+    except AnsibleIAMError as e:
+        if e.exception:
+            module.fail_json_aws(e.exception, msg=e.message)
+        module.fail_json(msg=e.message)
 
 
 if __name__ == "__main__":
