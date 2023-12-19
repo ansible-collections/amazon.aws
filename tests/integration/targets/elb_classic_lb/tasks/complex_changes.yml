@@ -1,57 +1,57 @@
 ---
 - block:
     - name: Create ELB for testing complex updates (CHECK)
-      elb_classic_lb:
+      amazon.aws.elb_classic_lb:
         name: "{{ elb_name }}"
         state: present
         # zones: ['{{ availability_zone_a }}', '{{ availability_zone_b }}']
-        listeners: '{{ default_listeners }}'
-        health_check: '{{ default_health_check }}'
+        listeners: "{{ default_listeners }}"
+        health_check: "{{ default_health_check }}"
         wait: true
-        scheme: 'internal'
-        subnets: ['{{ subnet_a }}', '{{ subnet_b }}']
-        security_group_names: ['{{ resource_prefix }}-a', '{{ resource_prefix }}-b']
-        tags: '{{ default_tags }}'
-        cross_az_load_balancing: True
-        idle_timeout: '{{ default_idle_timeout }}'
-        connection_draining_timeout: '{{ default_drain_timeout }}'
+        scheme: internal
+        subnets: ["{{ subnet_a }}", "{{ subnet_b }}"]
+        security_group_names: ["{{ resource_prefix }}-a", "{{ resource_prefix }}-b"]
+        tags: "{{ default_tags }}"
+        cross_az_load_balancing: true
+        idle_timeout: "{{ default_idle_timeout }}"
+        connection_draining_timeout: "{{ default_drain_timeout }}"
         access_logs:
-          interval: '{{ default_logging_interval }}'
-          s3_location: '{{ s3_logging_bucket_a }}'
-          s3_prefix: '{{ default_logging_prefix }}'
+          interval: "{{ default_logging_interval }}"
+          s3_location: "{{ s3_logging_bucket_a }}"
+          s3_prefix: "{{ default_logging_prefix }}"
           enabled: true
       register: result
-      check_mode: True
+      check_mode: true
 
     - name: Verify that we expect to change
-      assert:
+      ansible.builtin.assert:
         that:
           - result is changed
 
     - name: Create ELB for testing complex updates
-      elb_classic_lb:
+      amazon.aws.elb_classic_lb:
         name: "{{ elb_name }}"
         state: present
         # zones: ['{{ availability_zone_a }}', '{{ availability_zone_b }}']
-        listeners: '{{ default_listeners }}'
-        health_check: '{{ default_health_check }}'
+        listeners: "{{ default_listeners }}"
+        health_check: "{{ default_health_check }}"
         wait: true
-        scheme: 'internal'
-        subnets: ['{{ subnet_a }}', '{{ subnet_b }}']
-        security_group_names: ['{{ resource_prefix }}-a', '{{ resource_prefix }}-b']
-        tags: '{{ default_tags }}'
-        cross_az_load_balancing: True
-        idle_timeout: '{{ default_idle_timeout }}'
-        connection_draining_timeout: '{{ default_drain_timeout }}'
+        scheme: internal
+        subnets: ["{{ subnet_a }}", "{{ subnet_b }}"]
+        security_group_names: ["{{ resource_prefix }}-a", "{{ resource_prefix }}-b"]
+        tags: "{{ default_tags }}"
+        cross_az_load_balancing: true
+        idle_timeout: "{{ default_idle_timeout }}"
+        connection_draining_timeout: "{{ default_drain_timeout }}"
         access_logs:
-          interval: '{{ default_logging_interval }}'
-          s3_location: '{{ s3_logging_bucket_a }}'
-          s3_prefix: '{{ default_logging_prefix }}'
+          interval: "{{ default_logging_interval }}"
+          s3_location: "{{ s3_logging_bucket_a }}"
+          s3_prefix: "{{ default_logging_prefix }}"
           enabled: true
       register: result
 
     - name: Verify that simple parameters were set
-      assert:
+      ansible.builtin.assert:
         that:
           - result is changed
           - result.elb.status == "created"
@@ -80,57 +80,57 @@
           - result.load_balancer.load_balancer_attributes.access_log.enabled == True
 
     - name: Create ELB for testing complex updates - idempotency (CHECK)
-      elb_classic_lb:
+      amazon.aws.elb_classic_lb:
         name: "{{ elb_name }}"
         state: present
         # zones: ['{{ availability_zone_a }}', '{{ availability_zone_b }}']
-        listeners: '{{ default_listeners }}'
-        health_check: '{{ default_health_check }}'
+        listeners: "{{ default_listeners }}"
+        health_check: "{{ default_health_check }}"
         wait: true
-        scheme: 'internal'
-        subnets: ['{{ subnet_a }}', '{{ subnet_b }}']
-        security_group_names: ['{{ resource_prefix }}-a', '{{ resource_prefix }}-b']
-        tags: '{{ default_tags }}'
-        cross_az_load_balancing: True
-        idle_timeout: '{{ default_idle_timeout }}'
-        connection_draining_timeout: '{{ default_drain_timeout }}'
+        scheme: internal
+        subnets: ["{{ subnet_a }}", "{{ subnet_b }}"]
+        security_group_names: ["{{ resource_prefix }}-a", "{{ resource_prefix }}-b"]
+        tags: "{{ default_tags }}"
+        cross_az_load_balancing: true
+        idle_timeout: "{{ default_idle_timeout }}"
+        connection_draining_timeout: "{{ default_drain_timeout }}"
         access_logs:
-          interval: '{{ default_logging_interval }}'
-          s3_location: '{{ s3_logging_bucket_a }}'
-          s3_prefix: '{{ default_logging_prefix }}'
+          interval: "{{ default_logging_interval }}"
+          s3_location: "{{ s3_logging_bucket_a }}"
+          s3_prefix: "{{ default_logging_prefix }}"
           enabled: true
       register: result
-      check_mode: True
+      check_mode: true
 
     - name: Verify that we expect to not change
-      assert:
+      ansible.builtin.assert:
         that:
           - result is not changed
 
     - name: Create ELB for testing complex updates - idempotency
-      elb_classic_lb:
+      amazon.aws.elb_classic_lb:
         name: "{{ elb_name }}"
         state: present
         # zones: ['{{ availability_zone_a }}', '{{ availability_zone_b }}']
-        listeners: '{{ default_listeners }}'
-        health_check: '{{ default_health_check }}'
+        listeners: "{{ default_listeners }}"
+        health_check: "{{ default_health_check }}"
         wait: true
-        scheme: 'internal'
-        subnets: ['{{ subnet_a }}', '{{ subnet_b }}']
-        security_group_names: ['{{ resource_prefix }}-a', '{{ resource_prefix }}-b']
-        tags: '{{ default_tags }}'
-        cross_az_load_balancing: True
-        idle_timeout: '{{ default_idle_timeout }}'
-        connection_draining_timeout: '{{ default_drain_timeout }}'
+        scheme: internal
+        subnets: ["{{ subnet_a }}", "{{ subnet_b }}"]
+        security_group_names: ["{{ resource_prefix }}-a", "{{ resource_prefix }}-b"]
+        tags: "{{ default_tags }}"
+        cross_az_load_balancing: true
+        idle_timeout: "{{ default_idle_timeout }}"
+        connection_draining_timeout: "{{ default_drain_timeout }}"
         access_logs:
-          interval: '{{ default_logging_interval }}'
-          s3_location: '{{ s3_logging_bucket_a }}'
-          s3_prefix: '{{ default_logging_prefix }}'
+          interval: "{{ default_logging_interval }}"
+          s3_location: "{{ s3_logging_bucket_a }}"
+          s3_prefix: "{{ default_logging_prefix }}"
           enabled: true
       register: result
 
     - name: Verify that simple parameters were set
-      assert:
+      ansible.builtin.assert:
         that:
           - result is not changed
           - result.elb.status == "exists"
@@ -161,57 +161,57 @@
     ###
 
     - name: Perform complex update (CHECK)
-      elb_classic_lb:
+      amazon.aws.elb_classic_lb:
         name: "{{ elb_name }}"
         state: present
         # zones: ['{{ availability_zone_a }}', '{{ availability_zone_b }}']
-        listeners: '{{ updated_listeners }}'
-        health_check: '{{ updated_health_check }}'
+        listeners: "{{ updated_listeners }}"
+        health_check: "{{ updated_health_check }}"
         wait: true
-        scheme: 'internal'
-        subnets: ['{{ subnet_a }}', '{{ subnet_b }}']
-        security_group_names: ['{{ resource_prefix }}-c', '{{ resource_prefix }}-b']
-        tags: '{{ updated_tags }}'
-        cross_az_load_balancing: False
-        idle_timeout: '{{ updated_idle_timeout }}'
-        connection_draining_timeout: '{{ default_drain_timeout }}'
+        scheme: internal
+        subnets: ["{{ subnet_a }}", "{{ subnet_b }}"]
+        security_group_names: ["{{ resource_prefix }}-c", "{{ resource_prefix }}-b"]
+        tags: "{{ updated_tags }}"
+        cross_az_load_balancing: false
+        idle_timeout: "{{ updated_idle_timeout }}"
+        connection_draining_timeout: "{{ default_drain_timeout }}"
         access_logs:
-          interval: '{{ updated_logging_interval }}'
-          s3_location: '{{ s3_logging_bucket_a }}'
-          s3_prefix: '{{ default_logging_prefix }}'
+          interval: "{{ updated_logging_interval }}"
+          s3_location: "{{ s3_logging_bucket_a }}"
+          s3_prefix: "{{ default_logging_prefix }}"
           enabled: true
       register: result
-      check_mode: True
+      check_mode: true
 
     - name: Verify that we expect to change
-      assert:
+      ansible.builtin.assert:
         that:
           - result is changed
 
     - name: Perform complex update
-      elb_classic_lb:
+      amazon.aws.elb_classic_lb:
         name: "{{ elb_name }}"
         state: present
         # zones: ['{{ availability_zone_a }}', '{{ availability_zone_b }}']
-        listeners: '{{ updated_listeners }}'
-        health_check: '{{ updated_health_check }}'
+        listeners: "{{ updated_listeners }}"
+        health_check: "{{ updated_health_check }}"
         wait: true
-        scheme: 'internal'
-        subnets: ['{{ subnet_a }}', '{{ subnet_b }}']
-        security_group_names: ['{{ resource_prefix }}-c', '{{ resource_prefix }}-b']
-        tags: '{{ updated_tags }}'
-        cross_az_load_balancing: False
-        idle_timeout: '{{ updated_idle_timeout }}'
-        connection_draining_timeout: '{{ default_drain_timeout }}'
+        scheme: internal
+        subnets: ["{{ subnet_a }}", "{{ subnet_b }}"]
+        security_group_names: ["{{ resource_prefix }}-c", "{{ resource_prefix }}-b"]
+        tags: "{{ updated_tags }}"
+        cross_az_load_balancing: false
+        idle_timeout: "{{ updated_idle_timeout }}"
+        connection_draining_timeout: "{{ default_drain_timeout }}"
         access_logs:
-          interval: '{{ updated_logging_interval }}'
-          s3_location: '{{ s3_logging_bucket_a }}'
-          s3_prefix: '{{ default_logging_prefix }}'
+          interval: "{{ updated_logging_interval }}"
+          s3_location: "{{ s3_logging_bucket_a }}"
+          s3_prefix: "{{ default_logging_prefix }}"
           enabled: true
       register: result
 
     - name: Verify that simple parameters were set
-      assert:
+      ansible.builtin.assert:
         that:
           - result is changed
           - result.elb.status == "exists"
@@ -240,57 +240,57 @@
           - result.load_balancer.load_balancer_attributes.access_log.enabled == True
 
     - name: Perform complex update idempotency (CHECK)
-      elb_classic_lb:
+      amazon.aws.elb_classic_lb:
         name: "{{ elb_name }}"
         state: present
         # zones: ['{{ availability_zone_a }}', '{{ availability_zone_b }}']
-        listeners: '{{ updated_listeners }}'
-        health_check: '{{ updated_health_check }}'
+        listeners: "{{ updated_listeners }}"
+        health_check: "{{ updated_health_check }}"
         wait: true
-        scheme: 'internal'
-        subnets: ['{{ subnet_a }}', '{{ subnet_b }}']
-        security_group_names: ['{{ resource_prefix }}-c', '{{ resource_prefix }}-b']
-        tags: '{{ updated_tags }}'
-        cross_az_load_balancing: False
-        idle_timeout: '{{ updated_idle_timeout }}'
-        connection_draining_timeout: '{{ default_drain_timeout }}'
+        scheme: internal
+        subnets: ["{{ subnet_a }}", "{{ subnet_b }}"]
+        security_group_names: ["{{ resource_prefix }}-c", "{{ resource_prefix }}-b"]
+        tags: "{{ updated_tags }}"
+        cross_az_load_balancing: false
+        idle_timeout: "{{ updated_idle_timeout }}"
+        connection_draining_timeout: "{{ default_drain_timeout }}"
         access_logs:
-          interval: '{{ updated_logging_interval }}'
-          s3_location: '{{ s3_logging_bucket_a }}'
-          s3_prefix: '{{ default_logging_prefix }}'
+          interval: "{{ updated_logging_interval }}"
+          s3_location: "{{ s3_logging_bucket_a }}"
+          s3_prefix: "{{ default_logging_prefix }}"
           enabled: true
       register: result
-      check_mode: True
+      check_mode: true
 
     - name: Verify we expect to not change
-      assert:
+      ansible.builtin.assert:
         that:
           - result is not changed
 
     - name: Perform complex update - idempotency
-      elb_classic_lb:
+      amazon.aws.elb_classic_lb:
         name: "{{ elb_name }}"
         state: present
         # zones: ['{{ availability_zone_a }}', '{{ availability_zone_b }}']
-        listeners: '{{ updated_listeners }}'
-        health_check: '{{ updated_health_check }}'
+        listeners: "{{ updated_listeners }}"
+        health_check: "{{ updated_health_check }}"
         wait: true
-        scheme: 'internal'
-        subnets: ['{{ subnet_a }}', '{{ subnet_b }}']
-        security_group_names: ['{{ resource_prefix }}-c', '{{ resource_prefix }}-b']
-        tags: '{{ updated_tags }}'
-        cross_az_load_balancing: False
-        idle_timeout: '{{ updated_idle_timeout }}'
-        connection_draining_timeout: '{{ default_drain_timeout }}'
+        scheme: internal
+        subnets: ["{{ subnet_a }}", "{{ subnet_b }}"]
+        security_group_names: ["{{ resource_prefix }}-c", "{{ resource_prefix }}-b"]
+        tags: "{{ updated_tags }}"
+        cross_az_load_balancing: false
+        idle_timeout: "{{ updated_idle_timeout }}"
+        connection_draining_timeout: "{{ default_drain_timeout }}"
         access_logs:
-          interval: '{{ updated_logging_interval }}'
-          s3_location: '{{ s3_logging_bucket_a }}'
-          s3_prefix: '{{ default_logging_prefix }}'
+          interval: "{{ updated_logging_interval }}"
+          s3_location: "{{ s3_logging_bucket_a }}"
+          s3_prefix: "{{ default_logging_prefix }}"
           enabled: true
       register: result
 
     - name: Verify that simple parameters were set
-      assert:
+      ansible.builtin.assert:
         that:
           - result is not changed
           - result.elb.status == "exists"
@@ -319,10 +319,9 @@
           - result.load_balancer.load_balancer_attributes.access_log.enabled == True
 
   always:
-
     # ============================================================
     - name: remove the test load balancer
-      elb_classic_lb:
+      amazon.aws.elb_classic_lb:
         name: "{{ elb_name }}"
         state: absent
         wait: true

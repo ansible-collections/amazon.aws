@@ -72,8 +72,6 @@ options:
       - Ignored unless I(wait=True).
     default: 300
     type: int
-  tags:
-    default: {}
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
@@ -212,14 +210,15 @@ try:
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
-from ansible.module_utils._text import to_text
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.arn import is_outpost_arn
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_tag_filter_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
 
@@ -268,7 +267,7 @@ def handle_waiter(conn, module, waiter_name, params, start_time):
         module.fail_json_aws(e, "An exception happened while trying to wait for updates")
 
 
-def create_subnet(conn, module, vpc_id, cidr, ipv6_cidr=None, outpost_arn=None, az=None, start_time=None):
+def create_subnet(conn, module, vpc_id, cidr, tags, ipv6_cidr=None, outpost_arn=None, az=None, start_time=None):
     wait = module.params["wait"]
 
     params = dict(VpcId=vpc_id, CidrBlock=cidr)
@@ -278,6 +277,9 @@ def create_subnet(conn, module, vpc_id, cidr, ipv6_cidr=None, outpost_arn=None, 
 
     if az:
         params["AvailabilityZone"] = az
+
+    if tags:
+        params["TagSpecifications"] = boto3_tag_specifications(tags, types="subnet")
 
     if outpost_arn:
         if is_outpost_arn(outpost_arn):
@@ -312,9 +314,12 @@ def ensure_tags(conn, module, subnet, tags, purge_tags, start_time):
         retry_codes=["InvalidSubnetID.NotFound"],
     )
 
+    if not changed:
+        return changed
+
     if module.params["wait"] and not module.check_mode:
         # Wait for tags to be updated
-        filters = [{"Name": f"tag:{k}", "Values": [v]} for k, v in tags.items()]
+        filters = ansible_dict_to_boto3_filter_list(ansible_dict_to_tag_filter_dict(tags))
         handle_waiter(conn, module, "subnet_exists", {"SubnetIds": [subnet["id"]], "Filters": filters}, start_time)
 
     return changed
@@ -420,8 +425,12 @@ def ensure_ipv6_cidr_block(conn, module, subnet, ipv6_cidr, check_mode, start_ti
     return changed
 
 
+def _matching_subnet_filters(vpc_id, cidr):
+    return ansible_dict_to_boto3_filter_list({"vpc-id": vpc_id, "cidr-block": cidr})
+
+
 def get_matching_subnet(conn, module, vpc_id, cidr):
-    filters = ansible_dict_to_boto3_filter_list({"vpc-id": vpc_id, "cidr-block": cidr})
+    filters = _matching_subnet_filters(vpc_id, cidr)
     try:
         _subnets = conn.describe_subnets(aws_retry=True, Filters=filters)
         subnets = get_subnet_info(_subnets)
@@ -448,6 +457,7 @@ def ensure_subnet_present(conn, module):
                 module,
                 module.params["vpc_id"],
                 module.params["cidr"],
+                module.params["tags"],
                 ipv6_cidr=module.params["ipv6_cidr"],
                 outpost_arn=module.params["outpost_arn"],
                 az=module.params["az"],
@@ -474,18 +484,16 @@ def ensure_subnet_present(conn, module):
         )
         changed = True
 
-    if module.params["tags"] != subnet["tags"]:
-        stringified_tags_dict = dict((to_text(k), to_text(v)) for k, v in module.params["tags"].items())
-        if ensure_tags(conn, module, subnet, stringified_tags_dict, module.params["purge_tags"], start_time):
-            changed = True
+    if ensure_tags(conn, module, subnet, module.params["tags"], module.params["purge_tags"], start_time):
+        changed = True
 
     subnet = get_matching_subnet(conn, module, module.params["vpc_id"], module.params["cidr"])
     if not module.check_mode and module.params["wait"]:
-        for _rewait in range(0, 5):
-            if subnet:
-                break
-            time.sleep(2)
-            subnet = get_matching_subnet(conn, module, module.params["vpc_id"], module.params["cidr"])
+        subnet_filter = _matching_subnet_filters(module.params["vpc_id"], module.params["cidr"])
+        handle_waiter(conn, module, "subnet_exists", {"Filters": subnet_filter}, start_time)
+        subnet = get_matching_subnet(conn, module, module.params["vpc_id"], module.params["cidr"])
+        if not subnet:
+            module.fail_json("Failed to describe newly created subnet")
         # GET calls are not monotonic for map_public_ip_on_launch and assign_ipv6_address_on_creation
         # so we only wait for those if necessary just before returning the subnet
         subnet = ensure_final_subnet(conn, module, subnet, start_time)
@@ -545,7 +553,7 @@ def main():
         ipv6_cidr=dict(default="", required=False),
         outpost_arn=dict(default="", type="str", required=False),
         state=dict(default="present", choices=["present", "absent"]),
-        tags=dict(default={}, required=False, type="dict", aliases=["resource_tags"]),
+        tags=dict(required=False, type="dict", aliases=["resource_tags"]),
         vpc_id=dict(required=True),
         map_public=dict(default=False, required=False, type="bool"),
         assign_instances_ipv6=dict(default=False, required=False, type="bool"),

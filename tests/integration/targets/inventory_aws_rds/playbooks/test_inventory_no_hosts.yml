@@ -1,14 +1,14 @@
 ---
 - hosts: 127.0.0.1
   connection: local
-  gather_facts: no
+  gather_facts: false
   environment: "{{ ansible_test.environment }}"
   collections:
     - amazon.aws
     - community.aws
   tasks:
     - name: assert group was populated with inventory but is empty
-      assert:
+      ansible.builtin.assert:
         that:
           - "'aws_rds' in groups"
-          - "not groups.aws_rds"
+          - not groups.aws_rds

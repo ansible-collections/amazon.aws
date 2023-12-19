@@ -51,7 +51,7 @@ EXAMPLES = r"""
     region: ap-southeast-2
     profile: production
     filters:
-        "tag:Name": "igw-123"
+      "tag:Name": "igw-123"
   register: igw_info
 
 - name: Gather information about a specific internet gateway by InternetGatewayId

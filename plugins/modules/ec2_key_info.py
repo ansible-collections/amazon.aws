@@ -56,13 +56,12 @@ EXAMPLES = r"""
 - name: Gather information about a specific key pair
   amazon.aws.ec2_key_info:
     names:
-    - my-sample-key
+      - my-sample-key
 
 - name: Retrieve EC2 key pair by fingerprint
   amazon.aws.ec2_key_info:
     filters:
       fingerprint: "1bSd8jVye3In5oF4zZI4o8BcXfdbYN+daCt9O1fh3Qk="
-
 """
 
 RETURN = r"""

@@ -1,1 +1,2 @@
-test_user: '{{ resource_prefix }}'
+---
+test_user: "{{ resource_prefix }}"

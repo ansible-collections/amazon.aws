@@ -13,6 +13,6 @@ documentation: https://ansible-collections.github.io/amazon.aws/branch/main/coll
 homepage: https://github.com/ansible-collections/amazon.aws
 issues: https://github.com/ansible-collections/amazon.aws/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc
 build_ignore:
-  - '*cloud-config-aws.ini'
-  - '*cloud-config-aws.yml'
-  - 'changelogs/.plugin-cache.yaml'
+  - "*cloud-config-aws.ini"
+  - "*cloud-config-aws.yml"
+  - changelogs/.plugin-cache.yaml

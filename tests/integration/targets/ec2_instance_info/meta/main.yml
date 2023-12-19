@@ -1,4 +1,5 @@
+---
 # this just makes sure they're in the right place
 dependencies:
-- role: setup_ec2_facts
-- role: setup_ec2_instance_env
+  - role: setup_ec2_facts
+  - role: setup_ec2_instance_env

@@ -1,6 +1,6 @@
 ---
 instance_id: "{{ resource_prefix }}-mariadb"
-instance_engine: "mariadb"
+instance_engine: mariadb
 resource_tags:
   workload_type: other
 aws_inventory_cache_dir: ""

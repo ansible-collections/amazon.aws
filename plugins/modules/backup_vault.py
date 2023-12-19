@@ -54,7 +54,6 @@ EXAMPLES = r"""
     tags:
       environment: dev
       Name: default
-
 """
 
 RETURN = r"""

@@ -1,2 +1,3 @@
-- name: 'Delete temporary pip environment'
-  include_tasks: cleanup.yml
+---
+- name: Delete temporary pip environment
+  ansible.builtin.include_tasks: cleanup.yml

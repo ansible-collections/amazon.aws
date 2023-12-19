@@ -1,0 +1,42 @@
+---
+- name: Remove group (check_mode)
+  amazon.aws.iam_group:
+    name: "{{ test_group }}"
+    state: absent
+  register: iam_group
+  check_mode: true
+
+- ansible.builtin.assert:
+    that:
+      - iam_group is changed
+
+- name: Remove group
+  amazon.aws.iam_group:
+    name: "{{ test_group }}"
+    state: absent
+  register: iam_group
+
+- ansible.builtin.assert:
+    that:
+      - iam_group is changed
+
+- name: Re-remove group (check_mode)
+  amazon.aws.iam_group:
+    name: "{{ test_group }}"
+    state: absent
+  register: iam_group
+  check_mode: true
+
+- ansible.builtin.assert:
+    that:
+      - iam_group is not changed
+
+- name: Re-remove group
+  amazon.aws.iam_group:
+    name: "{{ test_group }}"
+    state: absent
+  register: iam_group
+
+- ansible.builtin.assert:
+    that:
+      - iam_group is not changed

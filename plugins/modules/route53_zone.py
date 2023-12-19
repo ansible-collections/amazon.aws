@@ -113,14 +113,14 @@ EXAMPLES = r"""
     zone: example.com
     comment: this is an example
     tags:
-        Owner: Ansible Team
+      Owner: Ansible Team
 
 - name: modify a public zone, removing all previous tags and adding a new one
   amazon.aws.route53_zone:
     zone: example.com
     comment: this is an example
     tags:
-        Support: Ansible Community
+      Support: Ansible Community
     purge_tags: true
 """
 

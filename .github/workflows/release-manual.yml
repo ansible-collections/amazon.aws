@@ -1,3 +1,4 @@
+---
 name: Generate GitHub Release (manual trigger)
 concurrency:
   group: release-${{ github.head_ref }}
@@ -7,7 +8,7 @@ on:
     inputs:
       release:
         required: true
-        description: 'Release to generate'
+        description: Release to generate
         type: string
 
 jobs:

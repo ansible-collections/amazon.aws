@@ -1,6 +1,7 @@
-vpc_name: '{{ resource_prefix }}-vpc'
-vpc_seed: '{{ resource_prefix }}'
+---
+vpc_name: "{{ resource_prefix }}-vpc"
+vpc_seed: "{{ resource_prefix }}"
 vpc_cidr: 10.{{ 256 | random(seed=vpc_seed) }}.0.0/16
-vpc_name_2: '{{ tiny_prefix }}-vpc-2'
-vpc_seed_2: '{{ tiny_prefix }}'
+vpc_name_2: "{{ tiny_prefix }}-vpc-2"
+vpc_seed_2: "{{ tiny_prefix }}"
 vpc_cidr_2: 10.{{ 256 | random(seed=vpc_seed_2) }}.0.0/16

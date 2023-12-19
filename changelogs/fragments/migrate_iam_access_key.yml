@@ -1,7 +1,0 @@
-major_changes:
-- iam_access_key - The module has been migrated from the ``community.aws`` collection.
-  Playbooks using the Fully Qualified Collection Name for this module should be updated
-  to use ``amazon.aws.iam_access_key``.
-- iam_access_key_info - The module has been migrated from the ``community.aws`` collection.
-  Playbooks using the Fully Qualified Collection Name for this module should be updated
-  to use ``amazon.aws.iam_access_key_info``.

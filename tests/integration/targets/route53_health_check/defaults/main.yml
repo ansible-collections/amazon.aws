@@ -10,11 +10,11 @@
 # - request_interval
 
 #ip_address: We allocate an EIP due to route53 restrictions
-fqdn: '{{ tiny_prefix }}.route53-health.ansible.test'
-fqdn_1: '{{ tiny_prefix }}-1.route53-health.ansible.test'
+fqdn: "{{ tiny_prefix }}.route53-health.ansible.test"
+fqdn_1: "{{ tiny_prefix }}-1.route53-health.ansible.test"
 port: 8080
 updated_port: 8181
-type: 'TCP'
+type: TCP
 request_interval: 30
 
 # modifiable
@@ -27,11 +27,11 @@ failure_threshold_updated: 1
 
 # For resource_path we need an HTTP/HTTPS type check
 # for string_match we need an _STR_MATCH type
-type_https_match: 'HTTPS_STR_MATCH'
-type_http_match: 'HTTP_STR_MATCH'
-type_http: 'HTTP'
-resource_path: '/health.php'
-resource_path_1: '/new-health.php'
-resource_path_updated: '/healthz'
-string_match: 'Hello'
-string_match_updated: 'Hello World'
+type_https_match: HTTPS_STR_MATCH
+type_http_match: HTTP_STR_MATCH
+type_http: HTTP
+resource_path: /health.php
+resource_path_1: /new-health.php
+resource_path_updated: /healthz
+string_match: Hello
+string_match_updated: Hello World

@@ -2,13 +2,13 @@
 # defaults file for rds_instance_snapshot
 
 # Create RDS instance
-instance_id: '{{ resource_prefix }}-instance'
-username: 'testrdsusername'
+instance_id: "{{ resource_prefix }}-instance"
+username: testrdsusername
 password: "{{ lookup('password', '/dev/null') }}"
 db_instance_class: db.t3.micro
 allocated_storage: 10
-engine: 'mariadb'
+engine: mariadb
 mariadb_engine_version: 10.6.10
 
 # Create snapshot
-snapshot_id: '{{ instance_id }}-snapshot'
+snapshot_id: "{{ instance_id }}-snapshot"

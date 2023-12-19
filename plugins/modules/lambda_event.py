@@ -102,7 +102,7 @@ EXAMPLES = r"""
     alias: Dev
     source_params:
       source_arn: arn:aws:dynamodb:us-east-1:123456789012:table/tableName/stream/2016-03-19T19:51:37.457
-      enabled: True
+      enabled: true
       batch_size: 100
       starting_position: TRIM_HORIZON
   register: event
@@ -115,7 +115,7 @@ EXAMPLES = r"""
     function_name: "{{ function_name }}"
     source_params:
       source_arn: arn:aws:dynamodb:us-east-1:123456789012:table/tableName/stream/2016-03-19T19:51:37.457
-      enabled: True
+      enabled: true
       batch_size: 100
       starting_position: LATEST
       function_response_types:

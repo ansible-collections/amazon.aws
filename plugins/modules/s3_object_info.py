@@ -642,7 +642,7 @@ def list_bucket_objects(connection, module, bucket_name):
 
     if len(list_objects_response) != 0:
         # convert to snake_case
-        for response_list_item in list_objects_response["Contents"]:
+        for response_list_item in list_objects_response.get("Contents", []):
             result.append(response_list_item["Key"])
 
     return result

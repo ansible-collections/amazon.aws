@@ -65,8 +65,8 @@ EXAMPLES = r"""
     name: "{{ item }}"
     state: present
   loop:
-     - Mario
-     - Luigi
+    - Mario
+    - Luigi
   register: new_groups
 
 - name: Apply READ-ONLY policy to new groups that have been recently created

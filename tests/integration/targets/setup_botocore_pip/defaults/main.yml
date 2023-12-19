@@ -1,2 +1,3 @@
+---
 default_botocore_version: "{{ lookup('amazon.aws.aws_collection_constants', 'MINIMUM_BOTOCORE_VERSION') }}"
 default_boto3_version: "{{ lookup('amazon.aws.aws_collection_constants', 'MINIMUM_BOTO3_VERSION') }}"

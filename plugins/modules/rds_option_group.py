@@ -139,15 +139,15 @@ EXAMPLES = r"""
     option_group_description: test mysql option group
     apply_immediately: true
     options:
-        - option_name: MEMCACHED
-          port: 11211
-          vpc_security_group_memberships:
-            - "sg-d188c123"
-          option_settings:
-            - name: MAX_SIMULTANEOUS_CONNECTIONS
-              value: "20"
-            - name: CHUNK_SIZE_GROWTH_FACTOR
-              value: "1.25"
+      - option_name: MEMCACHED
+        port: 11211
+        vpc_security_group_memberships:
+          - "sg-d188c123"
+        option_settings:
+          - name: MAX_SIMULTANEOUS_CONNECTIONS
+            value: "20"
+          - name: CHUNK_SIZE_GROWTH_FACTOR
+            value: "1.25"
   register: new_rds_mysql_option_group
 
 # Remove currently configured options for an option group by removing options argument
@@ -170,8 +170,8 @@ EXAMPLES = r"""
     option_group_description: test mysql option group
     apply_immediately: true
     tags:
-        Tag1: tag1
-        Tag2: tag2
+      Tag1: tag1
+      Tag2: tag2
   register: rds_mysql_option_group
 
 # Delete an RDS Mysql Option group

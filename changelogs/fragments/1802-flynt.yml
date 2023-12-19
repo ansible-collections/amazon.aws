@@ -1,3 +1,0 @@
-minor_changes:
-- ec2_metadata_facts - use fstrings where appropriate (https://github.com/ansible-collections/amazon.aws/pull/1802).
-- s3_object - use fstrings where appropriate (https://github.com/ansible-collections/amazon.aws/pull/1802).

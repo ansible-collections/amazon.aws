@@ -39,7 +39,6 @@ vars:
   account_details: "{{ lookup('aws_account_attribute', wantlist='true') }}"
   # {'default-vpc': ['vpc-xxxxxxxx'], 'max-elastic-ips': ['5'], 'max-instances': ['20'],
   #  'supported-platforms': ['VPC', 'EC2'], 'vpc-max-elastic-ips': ['5'], 'vpc-max-security-groups-per-interface': ['5']}
-
 """
 
 RETURN = r"""

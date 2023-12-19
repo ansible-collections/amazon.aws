@@ -1,6 +1,7 @@
+---
 # this just makes sure they're in the right place
 dependencies:
-- role: setup_ec2_facts
-- role: setup_ec2_instance_env
-  vars:
-    ec2_instance_test_name: state_config_updates
+  - role: setup_ec2_facts
+  - role: setup_ec2_instance_env
+    vars:
+      ec2_instance_test_name: state_config_updates

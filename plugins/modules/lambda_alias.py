@@ -65,55 +65,55 @@ EXAMPLES = r"""
     account: 123456789012
     production_version: 5
   tasks:
-  - name: AWS Lambda Function
-    amazon.aws.lambda:
-      state: "{{ state | default('present') }}"
-      name: myLambdaFunction
-      publish: True
-      description: lambda function description
-      code_s3_bucket: package-bucket
-      code_s3_key: "lambda/{{ deployment_package }}"
-      local_path: "{{ project_folder }}/{{ deployment_package }}"
-      runtime: python2.7
-      timeout: 5
-      handler: lambda.handler
-      memory_size: 128
-      role: "arn:aws:iam::{{ account }}:role/API2LambdaExecRole"
+    - name: AWS Lambda Function
+      amazon.aws.lambda:
+        state: "{{ state | default('present') }}"
+        name: myLambdaFunction
+        publish: true
+        description: lambda function description
+        code_s3_bucket: package-bucket
+        code_s3_key: "lambda/{{ deployment_package }}"
+        local_path: "{{ project_folder }}/{{ deployment_package }}"
+        runtime: python2.7
+        timeout: 5
+        handler: lambda.handler
+        memory_size: 128
+        role: "arn:aws:iam::{{ account }}:role/API2LambdaExecRole"
 
-  - name: Get information
-    amazon.aws.lambda_info:
-      name: myLambdaFunction
-    register: lambda_info
-  - name: show results
-    ansible.builtin.debug:
-      msg: "{{ lambda_info['lambda_facts'] }}"
+    - name: Get information
+      amazon.aws.lambda_info:
+        name: myLambdaFunction
+      register: lambda_info
+    - name: show results
+      ansible.builtin.debug:
+        msg: "{{ lambda_info['lambda_facts'] }}"
 
-# The following will set the Dev alias to the latest version ($LATEST) since version is omitted (or = 0)
-  - name: "alias 'Dev' for function {{ lambda_info.lambda_facts.FunctionName }} "
-    amazon.aws.lambda_alias:
-      state: "{{ state | default('present') }}"
-      function_name: "{{ lambda_info.lambda_facts.FunctionName }}"
-      name: Dev
-      description: Development is $LATEST version
+    # The following will set the Dev alias to the latest version ($LATEST) since version is omitted (or = 0)
+    - name: "alias 'Dev' for function {{ lambda_info.lambda_facts.FunctionName }} "
+      amazon.aws.lambda_alias:
+        state: "{{ state | default('present') }}"
+        function_name: "{{ lambda_info.lambda_facts.FunctionName }}"
+        name: Dev
+        description: Development is $LATEST version
 
-# The QA alias will only be created when a new version is published (i.e. not = '$LATEST')
-  - name: "alias 'QA' for function {{ lambda_info.lambda_facts.FunctionName }} "
-    amazon.aws.lambda_alias:
-      state: "{{ state | default('present') }}"
-      function_name: "{{ lambda_info.lambda_facts.FunctionName }}"
-      name: QA
-      version: "{{ lambda_info.lambda_facts.Version }}"
-      description: "QA is version {{ lambda_info.lambda_facts.Version }}"
-    when: lambda_info.lambda_facts.Version != "$LATEST"
+    # The QA alias will only be created when a new version is published (i.e. not = '$LATEST')
+    - name: "alias 'QA' for function {{ lambda_info.lambda_facts.FunctionName }} "
+      amazon.aws.lambda_alias:
+        state: "{{ state | default('present') }}"
+        function_name: "{{ lambda_info.lambda_facts.FunctionName }}"
+        name: QA
+        version: "{{ lambda_info.lambda_facts.Version }}"
+        description: "QA is version {{ lambda_info.lambda_facts.Version }}"
+      when: lambda_info.lambda_facts.Version != "$LATEST"
 
-# The Prod alias will have a fixed version based on a variable
-  - name: "alias 'Prod' for function {{ lambda_info.lambda_facts.FunctionName }} "
-    amazon.aws.lambda_alias:
-      state: "{{ state | default('present') }}"
-      function_name: "{{ lambda_info.lambda_facts.FunctionName }}"
-      name: Prod
-      version: "{{ production_version }}"
-      description: "Production is version {{ production_version }}"
+    # The Prod alias will have a fixed version based on a variable
+    - name: "alias 'Prod' for function {{ lambda_info.lambda_facts.FunctionName }} "
+      amazon.aws.lambda_alias:
+        state: "{{ state | default('present') }}"
+        function_name: "{{ lambda_info.lambda_facts.FunctionName }}"
+        name: Prod
+        version: "{{ production_version }}"
+        description: "Production is version {{ production_version }}"
 """
 
 RETURN = r"""

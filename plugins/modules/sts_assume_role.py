@@ -99,7 +99,6 @@ EXAMPLES = r"""
     state: present
     tags:
       MyNewTag: value
-
 """
 
 try:

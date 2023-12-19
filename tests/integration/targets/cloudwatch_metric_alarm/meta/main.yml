@@ -1,2 +1,3 @@
+---
 dependencies:
-- setup_ec2_facts
+  - setup_ec2_facts

@@ -126,8 +126,8 @@ EXAMPLES = r"""
     name: mynewrole
     assume_role_policy_document: "{{ lookup('file', 'policy.json') }}"
     state: absent
-
 """
+
 RETURN = r"""
 iam_role:
     description: dictionary containing the IAM Role data

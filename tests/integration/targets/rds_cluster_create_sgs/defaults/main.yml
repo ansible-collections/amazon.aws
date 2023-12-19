@@ -1,3 +1,4 @@
+---
 # defaults file for rds_cluster
 
 # Create cluster
@@ -11,12 +12,12 @@ port: 3306
 vpc_name: ansible-test-vpc-{{ tiny_prefix }}
 vpc_cidr: 10.{{ 256 | random(seed=tiny_prefix) }}.0.0/16
 subnets:
-- {cidr: '10.{{ 256 | random(seed=tiny_prefix) }}.1.0/24', zone: '{{ aws_region }}a'}
-- {cidr: '10.{{ 256 | random(seed=tiny_prefix) }}.2.0/24', zone: '{{ aws_region }}b'}
-- {cidr: '10.{{ 256 | random(seed=tiny_prefix) }}.3.0/24', zone: '{{ aws_region }}c'}
-- {cidr: '10.{{ 256 | random(seed=tiny_prefix) }}.4.0/24', zone: '{{ aws_region }}d'}
+  - { cidr: "10.{{ 256 | random(seed=tiny_prefix) }}.1.0/24", zone: "{{ aws_region }}a" }
+  - { cidr: "10.{{ 256 | random(seed=tiny_prefix) }}.2.0/24", zone: "{{ aws_region }}b" }
+  - { cidr: "10.{{ 256 | random(seed=tiny_prefix) }}.3.0/24", zone: "{{ aws_region }}c" }
+  - { cidr: "10.{{ 256 | random(seed=tiny_prefix) }}.4.0/24", zone: "{{ aws_region }}d" }
 
 security_groups:
-- '{{ tiny_prefix }}-sg-1'
-- '{{ tiny_prefix }}-sg-2'
-- '{{ tiny_prefix }}-sg-3'
+  - "{{ tiny_prefix }}-sg-1"
+  - "{{ tiny_prefix }}-sg-2"
+  - "{{ tiny_prefix }}-sg-3"

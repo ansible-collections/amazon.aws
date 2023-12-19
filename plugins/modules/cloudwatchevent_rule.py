@@ -204,6 +204,14 @@ def _format_json(json_string):
         return str(json.dumps(json_string))
 
 
+def _validate_json(s):
+    try:
+        json.loads(s)
+        return True
+    except json.JSONDecodeError:
+        return False
+
+
 class CloudWatchEventRule:
     def __init__(
         self, module, name, client, schedule_expression=None, event_pattern=None, description=None, role_arn=None
@@ -228,7 +236,7 @@ class CloudWatchEventRule:
             botocore.exceptions.ClientError,
         ) as e:  # pylint: disable=duplicate-except
             self.module.fail_json_aws(e, msg=f"Could not describe rule {self.name}")
-        return self._snakify(rule_info)
+        return camel_dict_to_snake_dict(rule_info)
 
     def put(self, enabled=True):
         """Creates or updates the rule in AWS"""
@@ -291,7 +299,7 @@ class CloudWatchEventRule:
             botocore.exceptions.ClientError,
         ) as e:  # pylint: disable=duplicate-except
             self.module.fail_json_aws(e, msg=f"Could not find target for rule {self.name}")
-        return self._snakify(targets)["targets"]
+        return camel_dict_to_snake_dict(targets)["targets"]
 
     def put_targets(self, targets):
         """Creates or updates the provided targets on the rule in AWS"""
@@ -341,10 +349,6 @@ class CloudWatchEventRule:
                     target_request["InputTransformer"]["InputPathsMap"] = target["input_transformer"]["input_paths_map"]
             targets_request.append(target_request)
         return targets_request
-
-    def _snakify(self, dict):
-        """Converts camel case to snake case"""
-        return camel_dict_to_snake_dict(dict)
 
 
 class CloudWatchEventRuleManager:
@@ -441,11 +445,18 @@ class CloudWatchEventRuleManager:
                 # The remote_targets contain quotes, so add
                 # quotes to temp
                 val = t["input_transformer"]["input_template"]
-                t["input_transformer"]["input_template"] = '"' + val + '"'
+                # list_targets_by_rule return input_template as string
+                # if existing value is string "<instance> is in state <state>", it returns '"<instance> is in state <state>"'
+                # if existing value is <JSON>, it returns '<JSON>'
+                # therefore add quotes to provided input_template value only if it is not a JSON
+                valid_json = _validate_json(val)
+                if not valid_json:
+                    t["input_transformer"]["input_template"] = '"' + val + '"'
             temp.append(scrub_none_parameters(t))
         self.targets = temp
-
-        return [t for t in self.targets if t not in remote_targets]
+        # remote_targets is snakified output of client.list_targets_by_rule()
+        # therefore snakified version of t should be compared to avoid wrong result of below conditional
+        return [t for t in self.targets if camel_dict_to_snake_dict(t) not in remote_targets]
 
     def _remote_target_ids_to_remove(self):
         """Returns a list of targets that need to be removed remotely"""

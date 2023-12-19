@@ -72,12 +72,16 @@ EXAMPLES = r"""
 - amazon.aws.cloudwatchlogs_log_group:
     state: present
     log_group_name: test-log-group
-    tags: { "Name": "test-log-group", "Env" : "QA" }
+    tags:
+      Name: "test-log-group"
+      Env: "QA"
 
 - amazon.aws.cloudwatchlogs_log_group:
     state: present
     log_group_name: test-log-group
-    tags: { "Name": "test-log-group", "Env" : "QA" }
+    tags:
+      Name: "test-log-group"
+      Env: QA
     kms_key_id: arn:aws:kms:region:account-id:key/key-id
 
 - amazon.aws.cloudwatchlogs_log_group:

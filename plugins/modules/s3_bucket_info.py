@@ -36,70 +36,77 @@ options:
       - You can limit buckets by using the I(name) or I(name_filter) option.
     suboptions:
       bucket_accelerate_configuration:
-        description: Retrive S3 accelerate configuration.
+        description: Retrieve S3 accelerate configuration.
         type: bool
         default: False
       bucket_location:
-        description: Retrive S3 bucket location.
+        description: Retrieve S3 bucket location.
         type: bool
         default: False
       bucket_replication:
-        description: Retrive S3 bucket replication.
+        description: Retrieve S3 bucket replication.
         type: bool
         default: False
       bucket_acl:
-        description: Retrive S3 bucket ACLs.
+        description: Retrieve S3 bucket ACLs.
         type: bool
         default: False
       bucket_logging:
-        description: Retrive S3 bucket logging.
+        description: Retrieve S3 bucket logging.
         type: bool
         default: False
       bucket_request_payment:
-        description: Retrive S3 bucket request payment.
+        description: Retrieve S3 bucket request payment.
         type: bool
         default: False
       bucket_tagging:
-        description: Retrive S3 bucket tagging.
+        description: Retrieve S3 bucket tagging.
         type: bool
         default: False
       bucket_cors:
-        description: Retrive S3 bucket CORS configuration.
+        description: Retrieve S3 bucket CORS configuration.
         type: bool
         default: False
       bucket_notification_configuration:
-        description: Retrive S3 bucket notification configuration.
+        description: Retrieve S3 bucket notification configuration.
         type: bool
         default: False
       bucket_encryption:
-        description: Retrive S3 bucket encryption.
+        description: Retrieve S3 bucket encryption.
         type: bool
         default: False
       bucket_ownership_controls:
         description:
-        - Retrive S3 ownership controls.
+        - Retrieve S3 ownership controls.
         type: bool
         default: False
       bucket_website:
-        description: Retrive S3 bucket website.
+        description: Retrieve S3 bucket website.
         type: bool
         default: False
       bucket_policy:
-        description: Retrive S3 bucket policy.
+        description: Retrieve S3 bucket policy.
         type: bool
         default: False
       bucket_policy_status:
-        description: Retrive S3 bucket policy status.
+        description: Retrieve S3 bucket policy status.
         type: bool
         default: False
       bucket_lifecycle_configuration:
-        description: Retrive S3 bucket lifecycle configuration.
+        description: Retrieve S3 bucket lifecycle configuration.
         type: bool
         default: False
       public_access_block:
-        description: Retrive S3 bucket public access block.
+        description: Retrieve S3 bucket public access block.
         type: bool
         default: False
+      bucket_versioning:
+        description:
+          - Retrieve the versioning state of a bucket.
+          - To retrieve the versioning state of a bucket, you must be the bucket owner.
+        type: bool
+        default: False
+        version_added: 7.2.0
     type: dict
     version_added: 1.4.0
   transform_location:
@@ -396,6 +403,15 @@ bucket_list:
               returned: always
               type: str
               sample: https
+    bucket_versioning:
+      description:
+        - The versioning state of the bucket.
+        - This will also specify whether MFA delete is enabled in the bucket versioning configuration.
+          if only the bucket has been configured with MFA delete.
+      returned: when I(bucket_facts=true) and I(bucket_versioning=true)
+      type: dict
+      sample: { 'Status': 'Enabled' }
+      version_added: 7.2.0
 """
 
 try:
@@ -448,10 +464,10 @@ def get_bucket_list(module, connection, name="", name_filter=""):
 
 def get_buckets_facts(connection, buckets, requested_facts, transform_location):
     """
-    Retrive additional information about S3 buckets
+    Retrieve additional information about S3 buckets
     """
     full_bucket_list = []
-    # Iterate over all buckets and append retrived facts to bucket
+    # Iterate over all buckets and append Retrieved facts to bucket
     for bucket in buckets:
         bucket.update(get_bucket_details(connection, bucket["name"], requested_facts, transform_location))
         full_bucket_list.append(bucket)
@@ -568,6 +584,7 @@ def main():
                 bucket_tagging=dict(type="bool", default=False),
                 bucket_website=dict(type="bool", default=False),
                 public_access_block=dict(type="bool", default=False),
+                bucket_versioning=dict(type="bool", default=False),
             ),
         ),
         transform_location=dict(type="bool", default=False),

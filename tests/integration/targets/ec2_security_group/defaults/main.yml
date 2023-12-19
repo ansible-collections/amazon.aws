@@ -1,7 +1,7 @@
 ---
 # defaults file for test_ec2_group
-ec2_group_name: '{{resource_prefix}}'
-ec2_group_description: 'Created by ansible integration tests'
+ec2_group_name: "{{resource_prefix}}"
+ec2_group_description: Created by ansible integration tests
 
-vpc_cidr: '10.{{ 256 | random(seed=resource_prefix) }}.0.0/16'
-subnet_cidr: '10.{{ 256 | random(seed=resource_prefix) }}.1.0/24'
+vpc_cidr: 10.{{ 256 | random(seed=resource_prefix) }}.0.0/16
+subnet_cidr: 10.{{ 256 | random(seed=resource_prefix) }}.1.0/24

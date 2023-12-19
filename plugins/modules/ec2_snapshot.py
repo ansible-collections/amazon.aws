@@ -127,8 +127,8 @@ EXAMPLES = r"""
     instance_id: i-12345678
     device_name: /dev/sdb1
     snapshot_tags:
-        frequency: hourly
-        source: /data
+      frequency: hourly
+      source: /data
 
 # Remove a snapshot
 - amazon.aws.ec2_snapshot:
