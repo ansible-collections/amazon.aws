@@ -59,9 +59,9 @@
     - ansible.builtin.assert:
         that:
           - result.changed
-          - result.db_instance_identifier == '{{ instance_id }}'
+          - result.db_instance_identifier == instance_id
           - result.tags | length == 2
-          - result.tags.Name == '{{ instance_id }}'
+          - result.tags.Name == instance_id
           - result.tags.Created_by == 'Ansible rds_instance tests'
           - result.deletion_protection == True
 
@@ -103,9 +103,9 @@
     - ansible.builtin.assert:
         that:
           - not result.changed
-          - result.db_instance_identifier == '{{ instance_id }}'
+          - result.db_instance_identifier == instance_id
           - result.tags | length == 2
-          - result.tags.Name == '{{ instance_id }}'
+          - result.tags.Name == instance_id
           - result.tags.Created_by == 'Ansible rds_instance tests'
           - result.deletion_protection == True
 

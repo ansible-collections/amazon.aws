@@ -16,7 +16,7 @@
         that:
           - output is success
           - output is changed
-          - output.name == '{{ local_bucket_name }}'
+          - output.name == local_bucket_name
           - not output.requester_pays
           - output.public_access is undefined
 
@@ -31,7 +31,7 @@
         that:
           - output is success
           - output is not changed
-          - output.name == '{{ local_bucket_name }}'
+          - output.name == local_bucket_name
           - not output.requester_pays
 
     # ============================================================

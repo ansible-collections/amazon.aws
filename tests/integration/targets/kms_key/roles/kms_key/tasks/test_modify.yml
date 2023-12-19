@@ -274,7 +274,7 @@
           - key.key_policies | length == 1
           - key.key_policies[0].Id == 'key-consolepolicy-3'
           - key.description == 'test key for testing'
-          - "'Disable access to key rotation status' in {{ key.key_policies[0].Statement | map(attribute='Sid') }}"
+          - "'Disable access to key rotation status' in (key.key_policies[0].Statement | map(attribute='Sid'))"
 
   always:
     # ============================================================

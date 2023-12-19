@@ -537,8 +537,8 @@
           - '"private_key" not in result.key'
           - '"id" in result.key'
           - '"tags" in result.key'
-          - result.key.name == "{{ec2_key_name}}"
-          - result.key.fingerprint == "{{fingerprint}}"
+          - result.key.name == ec2_key_name
+          - result.key.fingerprint == fingerprint
 
     - name: Gather key info with fingerprint
       amazon.aws.ec2_key_info:
@@ -553,8 +553,8 @@
           - '"private_key" not in key_info.keypairs[0]'
           - '"key_pair_id" in key_info.keypairs[0]'
           - '"tags" in key_info.keypairs[0]'
-          - key_info.keypairs[0].key_name == "{{ec2_key_name}}"
-          - key_info.keypairs[0].key_fingerprint == "{{fingerprint}}"
+          - key_info.keypairs[0].key_name == ec2_key_name
+          - key_info.keypairs[0].key_fingerprint == fingerprint
     # ============================================================
     - name: test state=present with key_material (idempotency)
       amazon.aws.ec2_key:
@@ -573,8 +573,8 @@
           - '"private_key" not in result.key'
           - '"id" in result.key'
           - '"tags" in result.key'
-          - result.key.name == "{{ec2_key_name}}"
-          - result.key.fingerprint == "{{fingerprint}}"
+          - result.key.name == ec2_key_name
+          - result.key.fingerprint == fingerprint
           - result.msg == "key pair already exists"
 
     # ============================================================

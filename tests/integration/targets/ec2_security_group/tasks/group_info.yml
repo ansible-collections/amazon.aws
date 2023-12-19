@@ -49,7 +49,7 @@
       ansible.builtin.assert:
         that:
           - result_1.security_groups is defined
-          - (result_1.security_groups|first).group_name == '{{ ec2_group_name }}-info-2'
+          - (result_1.security_groups|first).group_name == ec2_group_name+"-info-2"
 
     - name: Retrieve security group info based on SG VPC
       amazon.aws.ec2_security_group_info:

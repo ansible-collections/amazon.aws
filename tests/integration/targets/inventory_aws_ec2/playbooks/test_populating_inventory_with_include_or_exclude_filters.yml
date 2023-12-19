@@ -53,6 +53,6 @@
             that:
               # There are 9 groups: all, ungrouped, aws_ec2, sg keyed group, 3 tag keyed group (one per tag), arch keyed group, constructed group
               - groups['all'] | length == 2
-              - "'{{ resource_prefix }}_1' in groups['all']"
-              - "'{{ resource_prefix }}_2' in groups['all']"
-              - not ('{{ resource_prefix }}_3' in groups['all'])
+              - resource_prefix+'_1' in groups['all']
+              - resource_prefix+'_2' in groups['all']
+              - not (resource_prefix+'_3' in groups['all'])

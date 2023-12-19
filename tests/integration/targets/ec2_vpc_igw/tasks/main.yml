@@ -99,8 +99,8 @@
           - vpc_igw_create.vpc_id == vpc_result.vpc.id
           - '"tags" in vpc_igw_create'
           - vpc_igw_create.tags | length == 2
-          - vpc_igw_create.tags["tag_one"] == '{{ resource_prefix }} One'
-          - vpc_igw_create.tags["Tag Two"] == 'two {{ resource_prefix }}'
+          - vpc_igw_create.tags["tag_one"] == resource_prefix+' One'
+          - vpc_igw_create.tags["Tag Two"] == 'two '+resource_prefix
           - '"gateway_id" in vpc_igw_create'
 
     # ============================================================
@@ -167,8 +167,8 @@
           - current_igw.tags | length == 2
           - '"tag_one" in current_igw.tags'
           - '"Tag Two" in current_igw.tags'
-          - current_igw.tags["tag_one"] == '{{ resource_prefix }} One'
-          - current_igw.tags["Tag Two"] == 'two {{ resource_prefix }}'
+          - current_igw.tags["tag_one"] == resource_prefix +' One'
+          - current_igw.tags["Tag Two"] == 'two '+ resource_prefix
       vars:
         current_igw: "{{ igw_info.internet_gateways[0] }}"
 
@@ -210,8 +210,8 @@
           - vpc_igw_recreate.vpc_id == vpc_id
           - '"tags" in vpc_igw_create'
           - vpc_igw_create.tags | length == 2
-          - vpc_igw_create.tags["tag_one"] == '{{ resource_prefix }} One'
-          - vpc_igw_create.tags["Tag Two"] == 'two {{ resource_prefix }}'
+          - vpc_igw_create.tags["tag_one"] == resource_prefix +' One'
+          - vpc_igw_create.tags["Tag Two"] == 'two '+ resource_prefix
 
     - name: Attempt to recreate internet gateway on VPC (expected changed=false)
       amazon.aws.ec2_vpc_igw:
@@ -227,8 +227,8 @@
           - vpc_igw_recreate.vpc_id == vpc_id
           - '"tags" in vpc_igw_create'
           - vpc_igw_create.tags | length == 2
-          - vpc_igw_create.tags["tag_one"] == '{{ resource_prefix }} One'
-          - vpc_igw_create.tags["Tag Two"] == 'two {{ resource_prefix }}'
+          - vpc_igw_create.tags["tag_one"] == resource_prefix +' One'
+          - vpc_igw_create.tags["Tag Two"] == 'two '+ resource_prefix
 
     # ============================================================
     - name: Update the tags (no change) - CHECK_MODE
@@ -249,8 +249,8 @@
           - vpc_igw_recreate.vpc_id == vpc_id
           - '"tags" in vpc_igw_recreate'
           - vpc_igw_recreate.tags | length == 2
-          - vpc_igw_recreate.tags["tag_one"] == '{{ resource_prefix }} One'
-          - vpc_igw_recreate.tags["Tag Two"] == 'two {{ resource_prefix }}'
+          - vpc_igw_recreate.tags["tag_one"] == resource_prefix +' One'
+          - vpc_igw_recreate.tags["Tag Two"] == 'two '+ resource_prefix
 
     - name: Update the tags (no change)
       amazon.aws.ec2_vpc_igw:
@@ -269,8 +269,8 @@
           - vpc_igw_recreate.vpc_id == vpc_id
           - '"tags" in vpc_igw_recreate'
           - vpc_igw_recreate.tags | length == 2
-          - vpc_igw_recreate.tags["tag_one"] == '{{ resource_prefix }} One'
-          - vpc_igw_recreate.tags["Tag Two"] == 'two {{ resource_prefix }}'
+          - vpc_igw_recreate.tags["tag_one"] == resource_prefix +' One'
+          - vpc_igw_recreate.tags["Tag Two"] == 'two '+ resource_prefix
 
     # ============================================================
     - name: Update the tags (remove and add) - CHECK_MODE
@@ -309,8 +309,8 @@
           - vpc_igw_update.vpc_id == vpc_id
           - '"tags" in vpc_igw_update'
           - vpc_igw_update.tags | length == 2
-          - vpc_igw_update.tags["tag_three"] == '{{ resource_prefix }} Three'
-          - vpc_igw_update.tags["Tag Two"] == 'two {{ resource_prefix }}'
+          - vpc_igw_update.tags["tag_three"] == resource_prefix +' Three'
+          - vpc_igw_update.tags["Tag Two"] == 'two '+ resource_prefix
 
     # ============================================================
     - name: Update the tags add without purge - CHECK_MODE
@@ -348,9 +348,9 @@
           - vpc_igw_update.vpc_id == vpc_id
           - '"tags" in vpc_igw_update'
           - vpc_igw_update.tags | length == 3
-          - vpc_igw_update.tags["tag_one"] == '{{ resource_prefix }} One'
-          - vpc_igw_update.tags["tag_three"] == '{{ resource_prefix }} Three'
-          - vpc_igw_update.tags["Tag Two"] == 'two {{ resource_prefix }}'
+          - vpc_igw_update.tags["tag_one"] == resource_prefix +' One'
+          - vpc_igw_update.tags["tag_three"] == resource_prefix +' Three'
+          - vpc_igw_update.tags["Tag Two"] == 'two '+ resource_prefix
 
     # ============================================================
     - name: Update with CamelCase tags - CHECK_MODE
@@ -409,7 +409,7 @@
         that:
           - igw_info is successful
           - '"internet_gateways" in igw_info'
-          - igw_info.internet_gateways | selectattr("internet_gateway_id",'equalto',"{{ igw_id }}")
+          - igw_info.internet_gateways | selectattr("internet_gateway_id","equalto",igw_id)
 
     - name: Gather information about a filtered list of Internet Gateways using tags - CHECK_MODE
       amazon.aws.ec2_vpc_igw_info:
@@ -423,7 +423,7 @@
         that:
           - igw_info is successful
           - '"internet_gateways" in igw_info'
-          - igw_info.internet_gateways | selectattr("internet_gateway_id",'equalto',"{{ igw_id }}")
+          - igw_info.internet_gateways | selectattr("internet_gateway_id","equalto",igw_id)
 
     # ============================================================
     - name: Gather information about a filtered list of Internet Gateways using tags (no match)

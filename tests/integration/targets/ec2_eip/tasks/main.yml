@@ -847,7 +847,7 @@
         that:
           - instance_eip is changed
           - eip_info.addresses[0].allocation_id is defined
-          - eip_info.addresses[0].instance_id == '{{ create_ec2_instance_result.instance_ids[0] }}'
+          - eip_info.addresses[0].instance_id == create_ec2_instance_result.instance_ids[0] 
 
     - name: Attach EIP to an EC2 instance (idempotence) - check_mode
       amazon.aws.ec2_eip:
@@ -877,7 +877,7 @@
         that:
           - instance_eip is not changed
           - eip_info.addresses[0].allocation_id is defined
-          - eip_info.addresses[0].instance_id == '{{ create_ec2_instance_result.instance_ids[0] }}'
+          - eip_info.addresses[0].instance_id == create_ec2_instance_result.instance_ids[0] 
 
     # ------------------------------------------------------------------------------------------
 
@@ -976,7 +976,7 @@
         that:
           - instance_eip is changed
           - eip_info.addresses[0].allocation_id is defined
-          - eip_info.addresses[0].instance_id == '{{ create_ec2_instance_result.instance_ids[0] }}'
+          - eip_info.addresses[0].instance_id == create_ec2_instance_result.instance_ids[0] 
 
     - name: Attach EIP to an EC2 instance with private Ip specified (idempotence) - check_mode
       amazon.aws.ec2_eip:
@@ -1008,7 +1008,7 @@
         that:
           - instance_eip is not changed
           - eip_info.addresses[0].allocation_id is defined
-          - eip_info.addresses[0].instance_id == '{{ create_ec2_instance_result.instance_ids[0] }}'
+          - eip_info.addresses[0].instance_id == create_ec2_instance_result.instance_ids[0] 
 
     # ------------------------------------------------------------------------------------------
 

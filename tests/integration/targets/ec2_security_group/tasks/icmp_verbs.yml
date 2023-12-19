@@ -26,7 +26,7 @@
         that:
           - result is changed
           - result_1.security_groups is defined
-          - (result_1.security_groups|first).group_name == '{{ ec2_group_name }}-icmp-1'
+          - (result_1.security_groups|first).group_name == ec2_group_name+"-icmp-1"
           - (result_1.security_groups|first).ip_permissions[0].ip_protocol == "icmp"
 
     - name: Create ipv6 rule using icmp verbs
@@ -52,7 +52,7 @@
         that:
           - result is changed
           - result_1.security_groups is defined
-          - (result_1.security_groups|first).group_name == '{{ ec2_group_name }}-icmp-2'
+          - (result_1.security_groups|first).group_name == ec2_group_name+"-icmp-2"
           - (result_1.security_groups|first).ip_permissions[0].ip_protocol == "icmpv6"
 
     - name: Create rule using security group referencing
