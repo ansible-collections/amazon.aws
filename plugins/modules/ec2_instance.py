@@ -1650,11 +1650,11 @@ def change_instance_metadata_options(instance, params):
 
     request_args = {
         "InstanceId": instance["InstanceId"],
-        "HttpTokens": changes_to_apply.get("http_tokens", None),
-        "HttpPutResponseHopLimit": changes_to_apply.get("http_put_response_hop_limit", None),
-        "HttpEndpoint": changes_to_apply.get("http_endpoint", None),
-        "HttpProtocolIpv6": changes_to_apply.get("http_protocol_ipv6", None),
-        "InstanceMetadataTags": changes_to_apply.get("instance_metadata_tags", None),
+        "HttpTokens": changes_to_apply.get("http_tokens"),
+        "HttpPutResponseHopLimit": changes_to_apply.get("http_put_response_hop_limit"),
+        "HttpEndpoint": changes_to_apply.get("http_endpoint"),
+        "HttpProtocolIpv6": changes_to_apply.get("http_protocol_ipv6"),
+        "InstanceMetadataTags": changes_to_apply.get("instance_metadata_tags"),
     }
 
     request_args = scrub_none_parameters(request_args)
