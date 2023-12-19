@@ -1095,6 +1095,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_ta
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
 from ansible_collections.amazon.aws.plugins.module_utils.tower import tower_callback_script
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
+from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
 
 module = None
 
@@ -1631,10 +1632,12 @@ def diff_instance_and_params(instance, params, skip=None):
 
 
 def change_instance_metadata_options(instance, params):
-    changed = False
+    metadata_options_to_apply = params.get("metadata_options")
+
+    if metadata_options_to_apply is None:
+        return False
 
     existing_metadata_options = camel_dict_to_snake_dict(instance.get("MetadataOptions"))
-    metadata_options_to_apply = params.get("metadata_options")
 
     changes_to_apply = {
         key: metadata_options_to_apply[key]
@@ -1642,27 +1645,29 @@ def change_instance_metadata_options(instance, params):
         if existing_metadata_options[key] != metadata_options_to_apply[key]
     }
 
-    if changes_to_apply:
-        request_args = {
-            "InstanceId": instance["InstanceId"],
-            "HttpTokens": changes_to_apply.get("http_tokens", ""),
-            "HttpPutResponseHopLimit": changes_to_apply.get("http_put_response_hop_limit", ""),
-            "HttpEndpoint": changes_to_apply.get("http_endpoint", ""),
-            "HttpProtocolIpv6": changes_to_apply.get("http_protocol_ipv6", ""),
-            "InstanceMetadataTags": changes_to_apply.get("instance_metadata_tags", ""),
-        }
-        request_args = {k: v for k, v in request_args.items() if v}
+    if not changes_to_apply:
+        return False
 
-        if not module.check_mode:
-            try:
-                client.modify_instance_metadata_options(aws_retry=True, **request_args)
-                changed = True
-            except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-                module.fail_json_aws(
-                    e, msg=f"Failed to update instance metadata options for instance ID: {instance['InstanceId']}"
-                )
+    request_args = {
+        "InstanceId": instance["InstanceId"],
+        "HttpTokens": changes_to_apply.get("http_tokens", ""),
+        "HttpPutResponseHopLimit": changes_to_apply.get("http_put_response_hop_limit", ""),
+        "HttpEndpoint": changes_to_apply.get("http_endpoint", ""),
+        "HttpProtocolIpv6": changes_to_apply.get("http_protocol_ipv6", ""),
+        "InstanceMetadataTags": changes_to_apply.get("instance_metadata_tags", ""),
+    }
 
-    return changed
+    request_args = scrub_none_parameters(request_args)
+
+    if module.check_mode:
+        return True
+    try:
+        client.modify_instance_metadata_options(aws_retry=True, **request_args)
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        module.fail_json_aws(
+            e, msg=f"Failed to update instance metadata options for instance ID: {instance['InstanceId']}"
+        )
+    return True
 
 
 def change_network_attachments(instance, params):
