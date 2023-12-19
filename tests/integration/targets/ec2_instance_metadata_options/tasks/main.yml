@@ -24,6 +24,12 @@
         wait: false
       register: instance_creation
 
+    - name: Wait for instance to start
+      amazon.aws.ec2_instance:
+        state: running
+        instance_ids: "{{ instance_creation.instance_ids }}"
+        wait: true
+
     - name: instance with metadata_options created with the right options
       ansible.builtin.assert:
         that:
