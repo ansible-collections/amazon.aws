@@ -7,22 +7,21 @@
       session_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
   block:
-    - name: create t3.nano instance with metadata_options
+
+    - name: Create a new instance
       amazon.aws.ec2_instance:
-        state: present
-        name: "{{ resource_prefix }}-test-t3nano-enabled-required"
+        state: running
+        name: "{{ resource_prefix }}-test-basic"
+        instance_type: "{{ ec2_instance_type }}"
         image_id: "{{ ec2_ami_id }}"
         tags:
           TestId: "{{ ec2_instance_tag_TestId }}"
-        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
-        instance_type: t3.nano
         metadata_options:
           http_endpoint: enabled
           http_tokens: required
           instance_metadata_tags: enabled
           http_put_response_hop_limit: 2
         wait: true
-        wait_timeout: 1200
       register: instance_creation
 
     - name: instance with metadata_options created with the right options
