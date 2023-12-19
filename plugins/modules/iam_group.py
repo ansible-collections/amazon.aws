@@ -23,7 +23,9 @@ options:
         Note: group names are unique within an account.  Paths (I(path)) do B(not) affect
         the uniqueness requirements of I(name).  For example it is not permitted to have both
         C(/Path1/MyGroup) and C(/Path2/MyGroup) in the same account.
+      - The alias C(group_name) was added in release 7.2.0.
     required: true
+    aliases: ['group_name']
     type: str
   path:
     description:
@@ -444,7 +446,7 @@ def list_all_policies(connection, module):
 
 def main():
     argument_spec = dict(
-        name=dict(required=True),
+        name=dict(aliases=["group_name"], required=True),
         path=dict(aliases=["prefix", "path_prefix"]),
         managed_policies=dict(default=[], type="list", aliases=["managed_policy"], elements="str"),
         users=dict(default=[], type="list", elements="str"),

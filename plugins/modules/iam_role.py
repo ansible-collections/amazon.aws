@@ -18,13 +18,16 @@ options:
   path:
     description:
       - The path to the role. For more information about paths, see U(https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html).
-    default: "/"
+      - C(path_prefix) and C(prefix) were added as aliases in release 7.2.0.
     type: str
+    aliases: ["prefix", "path_prefix"]
   name:
     description:
       - The name of the role to create.
+      - C(role_name) was added as an alias in release 7.2.0.
     required: true
     type: str
+    aliases: ["role_name"]
   description:
     description:
       - Provides a description of the role.
@@ -330,7 +333,7 @@ def remove_inline_policies(module, client, role_name):
 
 def generate_create_params(module):
     params = dict()
-    params["Path"] = module.params.get("path")
+    params["Path"] = module.params.get("path") or "/"
     params["RoleName"] = module.params.get("name")
     params["AssumeRolePolicyDocument"] = module.params.get("assume_role_policy_document")
     if module.params.get("description") is not None:
@@ -535,6 +538,7 @@ def create_or_update_role(module, client):
 
 
 def create_instance_profiles(module, client, role_name, path):
+    path = path or "/"
     # Fetch existing Profiles
     try:
         instance_profiles = client.list_instance_profiles_for_role(RoleName=role_name, aws_retry=True)[
@@ -705,8 +709,8 @@ def update_role_tags(module, client, role_name, new_tags, purge_tags):
 
 def main():
     argument_spec = dict(
-        name=dict(type="str", required=True),
-        path=dict(type="str", default="/"),
+        name=dict(type="str", aliases=["role_name"], required=True),
+        path=dict(type="str", aliases=["path_prefix", "prefix"]),
         assume_role_policy_document=dict(type="json"),
         managed_policies=dict(type="list", aliases=["managed_policy"], elements="str"),
         max_session_duration=dict(type="int"),

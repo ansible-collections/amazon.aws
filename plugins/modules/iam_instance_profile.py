@@ -23,16 +23,15 @@ options:
   name:
     description:
       - Name of an instance profile.
-    aliases:
-      - instance_profile_name
+    aliases: ["instance_profile_name"]
     type: str
     required: True
-  prefix:
+  path:
     description:
       - The path prefix for filtering the results.
-    aliases: ["path_prefix", "path"]
+      - The parameter was renamed from C(prefix) to C(path) in release 7.2.0.
+    aliases: ["path_prefix", "prefix"]
     type: str
-    default: "/"
   role:
     description:
       - The name of the role to attach to the instance profile.
@@ -277,7 +276,7 @@ def main():
     """
     argument_spec = dict(
         name=dict(aliases=["instance_profile_name"], required=True),
-        prefix=dict(aliases=["path_prefix", "path"], default="/"),
+        path=dict(aliases=["path_prefix", "prefix"]),
         state=dict(choices=["absent", "present"], default="present"),
         tags=dict(aliases=["resource_tags"], type="dict"),
         purge_tags=dict(type="bool", default=True),
@@ -289,21 +288,21 @@ def main():
         supports_check_mode=True,
     )
 
+    name = module.params.get("name")
+    state = module.params.get("state")
+    path = module.params.get("path")
+
+
     client = module.client("iam", retry_decorator=AWSRetry.jittered_backoff())
-
     try:
-        name = module.params["name"]
-        prefix = module.params["prefix"]
-        state = module.params["state"]
-
-        original_profile = describe_iam_instance_profile(client, name, prefix)
+        original_profile = describe_iam_instance_profile(client, name, path)
 
         if state == "absent":
             changed = ensure_absent(
                 original_profile,
                 client,
                 name,
-                prefix,
+                path,
                 module.check_mode,
             )
             final_profile = None
@@ -312,7 +311,7 @@ def main():
                 original_profile,
                 client,
                 name,
-                prefix,
+                path,
                 module.params["tags"],
                 module.params["purge_tags"],
                 module.params["role"],
@@ -320,7 +319,7 @@ def main():
             )
 
         if not module.check_mode:
-            final_profile = describe_iam_instance_profile(client, name, prefix)
+            final_profile = describe_iam_instance_profile(client, name, path)
 
     except AnsibleIAMError as e:
         if e.exception:

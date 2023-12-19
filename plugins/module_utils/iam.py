@@ -166,6 +166,7 @@ def get_aws_account_info(module):
 
 def create_iam_instance_profile(client, name, path, tags):
     boto3_tags = ansible_dict_to_boto3_tag_list(tags or {})
+    path = path or "/"
     try:
         result = _create_instance_profile(client, InstanceProfileName=name, Path=path, Tags=boto3_tags)
     except (

@@ -17,7 +17,7 @@
       ansible.builtin.assert:
         that:
           - iam_user_info_path_group is failed
-          - 'iam_user_info_path_group.msg == "parameters are mutually exclusive: group|path"'
+          - iam_user_info_path_group.msg.startswith("parameters are mutually exclusive")
 
     - name: Create test user (check mode)
       amazon.aws.iam_user:

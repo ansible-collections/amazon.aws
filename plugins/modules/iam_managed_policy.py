@@ -13,15 +13,19 @@ short_description: Manage User Managed IAM policies
 description:
   - Allows creating and removing managed IAM policies
 options:
-  policy_name:
+  name:
     description:
       - The name of the managed policy.
+      - The parameter was renamed from C(policy_name) to C(name) in release 7.2.0.
     required: true
     type: str
-  policy_description:
+    aliases: ["policy_name"]
+  description:
     description:
       - A helpful description of this policy, this value is immutable and only set when creating a new policy.
+      - The parameter was renamed from C(policy_description) to C(description) in release 7.2.0.
     default: ''
+    aliases: ["policy_description"]
     type: str
   policy:
     description:
@@ -271,8 +275,8 @@ def detach_all_entities(policy, **kwargs):
 
 
 def create_or_update_policy(existing_policy):
-    name = module.params.get("policy_name")
-    description = module.params.get("policy_description")
+    name = module.params.get("name")
+    description = module.params.get("description")
     default = module.params.get("make_default")
     only = module.params.get("only_version")
 
@@ -345,8 +349,8 @@ def main():
     global client
 
     argument_spec = dict(
-        policy_name=dict(required=True),
-        policy_description=dict(default=""),
+        name=dict(required=True, aliases=["policy_name"]),
+        description=dict(default="", aliases=["policy_description"]),
         policy=dict(type="json"),
         make_default=dict(type="bool", default=True),
         only_version=dict(type="bool", default=False),
@@ -359,7 +363,7 @@ def main():
         supports_check_mode=True,
     )
 
-    name = module.params.get("policy_name")
+    name = module.params.get("name")
     state = module.params.get("state")
 
     try:

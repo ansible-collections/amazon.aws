@@ -23,8 +23,10 @@ options:
         Note: user names are unique within an account.  Paths (I(path)) do B(not) affect
         the uniqueness requirements of I(name).  For example it is not permitted to have both
         C(/Path1/MyUser) and C(/Path2/MyUser) in the same account.
+      - C(user_name) was added as an alias in release 7.2.0.
     required: true
     type: str
+    aliases: ['user_name']
   path:
     description:
       - The path for the user name.
@@ -735,7 +737,7 @@ def get_user(connection, name):
 
 def main():
     argument_spec = dict(
-        name=dict(required=True, type="str"),
+        name=dict(required=True, type="str", aliases=["user_name"]),
         path=dict(type="str", aliases=["prefix", "path_prefix"]),
         boundary=dict(type="str", aliases=["boundary_policy_arn", "permissions_boundary"]),
         password=dict(type="str", no_log=True),
