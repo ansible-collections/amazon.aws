@@ -51,14 +51,14 @@
           - "'master_username' in _result_create_db_cluster"
           - _result_create_db_cluster.master_username == username
           - "'port' in _result_create_db_cluster"
-          - _result_create_db_cluster.port == {{ port }}
+          - _result_create_db_cluster.port == port
           - "'status' in _result_create_db_cluster"
           - _result_create_db_cluster.status == 'available'
           - _result_create_db_cluster.storage_encrypted == false
           - "'tags' in _result_create_db_cluster"
           - _result_create_db_cluster.tags | length == 2
-          - _result_create_db_cluster.tags["Created_By"] == "{{ tags_create["Created_By"] }}"
-          - _result_create_db_cluster.tags["Name"] == "{{ tags_create["Name"]}}"
+          - _result_create_db_cluster.tags["Created_By"] == tags_create["Created_By"]
+          - _result_create_db_cluster.tags["Name"] == tags_create["Name"]
           - "'vpc_security_groups' in _result_create_db_cluster"
 
     - name: Test tags are not purged if purge_tags is False
@@ -92,13 +92,13 @@
           - "'master_username' in _result_tag_db_cluster"
           - _result_tag_db_cluster.master_username == username
           - "'port' in _result_tag_db_cluster"
-          - _result_tag_db_cluster.port == {{ port }}
+          - _result_tag_db_cluster.port == port
           - "'status' in _result_tag_db_cluster"
           - _result_tag_db_cluster.status == 'available'
           - _result_tag_db_cluster.storage_encrypted == false
           - "'tags' in _result_tag_db_cluster"
           - _result_tag_db_cluster.tags | length == 2
-          - _result_tag_db_cluster.tags["Created_By"] == "{{ tags_create["Created_By"] }}"
+          - _result_tag_db_cluster.tags["Created_By"] == tags_create["Created_By"]
           - _result_tag_db_cluster.tags["Name"] == tags_create["Name"]
           - "'vpc_security_groups' in _result_tag_db_cluster"
 
@@ -130,7 +130,7 @@
           - "'master_username' in _result_tag_db_cluster"
           - _result_tag_db_cluster.master_username == username
           - "'port' in _result_tag_db_cluster"
-          - _result_tag_db_cluster.port == {{ port }}
+          - _result_tag_db_cluster.port == port
           - "'status' in _result_tag_db_cluster"
           - _result_tag_db_cluster.status == 'available'
           - _result_tag_db_cluster.storage_encrypted == false
@@ -185,7 +185,7 @@
           - "'master_username' in _result_tag_db_cluster"
           - _result_tag_db_cluster.master_username == username
           - "'port' in _result_tag_db_cluster"
-          - _result_tag_db_cluster.port == {{ port }}
+          - _result_tag_db_cluster.port == port
           - "'status' in _result_tag_db_cluster"
           - _result_tag_db_cluster.status == 'available'
           - _result_tag_db_cluster.storage_encrypted == false
@@ -240,14 +240,14 @@
           - "'master_username' in _result_tag_db_cluster"
           - _result_tag_db_cluster.master_username == username
           - "'port' in _result_tag_db_cluster"
-          - _result_tag_db_cluster.port == {{ port }}
+          - _result_tag_db_cluster.port == port
           - "'status' in _result_tag_db_cluster"
           - _result_tag_db_cluster.status == 'available'
           - _result_tag_db_cluster.storage_encrypted == false
           - "'tags' in _result_tag_db_cluster"
           - _result_tag_db_cluster.tags | length == 2
-          - _result_tag_db_cluster.tags["Created_By"] == "{{ tags_create["Created_By"]}}"
-          - _result_tag_db_cluster.tags["Name"] == "{{ tags_create["Name"]}}"
+          - _result_tag_db_cluster.tags["Created_By"] == tags_create["Created_By"]
+          - _result_tag_db_cluster.tags["Name"] == tags_create["Name"]
           - "'vpc_security_groups' in _result_tag_db_cluster"
     - name: Remove all tags
       amazon.aws.rds_cluster:
@@ -279,7 +279,7 @@
           - "'master_username' in _result_tag_db_cluster"
           - _result_tag_db_cluster.master_username == username
           - "'port' in _result_tag_db_cluster"
-          - _result_tag_db_cluster.port == {{ port }}
+          - _result_tag_db_cluster.port == port
           - "'status' in _result_tag_db_cluster"
           - _result_tag_db_cluster.status == 'available'
           - _result_tag_db_cluster.storage_encrypted == false

@@ -14,4 +14,4 @@
         that:
           - "'aws_rds' in groups"
           - groups.aws_rds | length == 1
-          - groups.aws_rds.0 == '{{ instance_id }}'
+          - groups.aws_rds.0 == instance_id

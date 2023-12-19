@@ -376,8 +376,8 @@
       - subnet_ids[1] in result.subnet_group.subnet_ids
       - '"tags" in result.subnet_group'
       - result.subnet_group.tags | length == 2
-      - result.subnet_group.tags["tag_one"] == '{{ resource_prefix }} One'
-      - result.subnet_group.tags["Tag Two"] == 'two {{ resource_prefix }}'
+      - result.subnet_group.tags["tag_one"] == resource_prefix +' One'
+      - result.subnet_group.tags["Tag Two"] == 'two '+ resource_prefix
 
 - name: Update subnet with tags (idempotency) - CHECK_MODE
   amazon.aws.rds_subnet_group:
@@ -421,8 +421,8 @@
       - subnet_ids[1] in result.subnet_group.subnet_ids
       - '"tags" in result.subnet_group'
       - result.subnet_group.tags | length == 2
-      - result.subnet_group.tags["tag_one"] == '{{ resource_prefix }} One'
-      - result.subnet_group.tags["Tag Two"] == 'two {{ resource_prefix }}'
+      - result.subnet_group.tags["tag_one"] == resource_prefix +' One'
+      - result.subnet_group.tags["Tag Two"] == 'two '+ resource_prefix
 
 - name: Update (add/remove) tags - CHECK_MODE
   amazon.aws.rds_subnet_group:
@@ -466,8 +466,8 @@
       - subnet_ids[1] in result.subnet_group.subnet_ids
       - '"tags" in result.subnet_group'
       - result.subnet_group.tags | length == 2
-      - result.subnet_group.tags["tag_three"] == '{{ resource_prefix }} Three'
-      - result.subnet_group.tags["Tag Two"] == 'two {{ resource_prefix }}'
+      - result.subnet_group.tags["tag_three"] == resource_prefix +' Three'
+      - result.subnet_group.tags["Tag Two"] == 'two '+ resource_prefix
 
 - name: Update tags without purge - CHECK_MODE
   amazon.aws.rds_subnet_group:
@@ -511,9 +511,9 @@
       - subnet_ids[1] in result.subnet_group.subnet_ids
       - '"tags" in result.subnet_group'
       - result.subnet_group.tags | length == 3
-      - result.subnet_group.tags["tag_three"] == '{{ resource_prefix }} Three'
-      - result.subnet_group.tags["Tag Two"] == 'two {{ resource_prefix }}'
-      - result.subnet_group.tags["tag_one"] == '{{ resource_prefix }} One'
+      - result.subnet_group.tags["tag_three"] == resource_prefix +' Three'
+      - result.subnet_group.tags["Tag Two"] == 'two '+ resource_prefix
+      - result.subnet_group.tags["tag_one"] == resource_prefix +' One'
 
 - name: Remove all the tags - CHECK_MODE
   amazon.aws.rds_subnet_group:

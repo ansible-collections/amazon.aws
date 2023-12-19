@@ -15,7 +15,7 @@
     - ansible.builtin.assert:
         that:
           - output is changed
-          - output.name == '{{ local_bucket_name }}'
+          - output.name == local_bucket_name
 
     # ============================================================
 

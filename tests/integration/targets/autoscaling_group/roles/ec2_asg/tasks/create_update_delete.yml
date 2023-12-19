@@ -281,7 +281,7 @@
       register: output
     - ansible.builtin.assert:
         that:
-          - item.value.launch_config_name == '{{ resource_prefix }}-lc-2'
+          - item.value.launch_config_name == resource_prefix+"-lc-2"
       loop: "{{ output.instance_facts | dict2items }}"
     - ansible.builtin.assert:
         that:
@@ -308,7 +308,7 @@
       register: output
     - ansible.builtin.assert:
         that:
-          - item.value.launch_config_name == '{{ resource_prefix }}-lc'
+          - item.value.launch_config_name == resource_prefix+"-lc"
       loop: "{{ output.instance_facts | dict2items }}"
     - ansible.builtin.assert:
         that:

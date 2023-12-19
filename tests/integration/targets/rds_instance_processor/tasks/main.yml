@@ -74,8 +74,8 @@
     - ansible.builtin.assert:
         that:
           - result.changed
-          - result.pending_modified_values.processor_features.coreCount == "{{ modified_processor_features.coreCount }}"
-          - result.pending_modified_values.processor_features.threadsPerCore == "{{ modified_processor_features.threadsPerCore }}"
+          - result.pending_modified_values.processor_features.coreCount | int == modified_processor_features.coreCount
+          - result.pending_modified_values.processor_features.threadsPerCore | int == modified_processor_features.threadsPerCore
 
     - name: Modify the processor features (idempotence) - check_mode
       amazon.aws.rds_instance:
@@ -114,11 +114,10 @@
     - ansible.builtin.assert:
         that:
           - not result.changed
-          - (result.pending_modified_values.processor_features.coreCount is defined and result.pending_modified_values.processor_features.coreCount == "{{ modified_processor_features.coreCount
-            }}") or (result.processor_features.coreCount is defined and result.processor_features.coreCount == "{{ modified_processor_features.coreCount }}")
-          - (result.pending_modified_values.processor_features.threadsPerCore is defined and result.pending_modified_values.processor_features.threadsPerCore == "{{
-            modified_processor_features.threadsPerCore }}") or (result.processor_features.threadsPerCore is defined and result.processor_features.threadsPerCore ==
-            "{{ modified_processor_features.threadsPerCore }}")
+          - (result.pending_modified_values.processor_features.coreCount is defined and result.pending_modified_values.processor_features.coreCount | int == modified_processor_features.coreCount) or 
+            (result.processor_features.coreCount is defined and result.processor_features.coreCount | int == modified_processor_features.coreCount)
+          - (result.pending_modified_values.processor_features.threadsPerCore is defined and result.pending_modified_values.processor_features.threadsPerCore | int == modified_processor_features.threadsPerCore) or 
+            (result.processor_features.threadsPerCore is defined and result.processor_features.threadsPerCore | int == modified_processor_features.threadsPerCore)
 
   always:
     - name: Delete the DB instance

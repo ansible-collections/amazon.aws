@@ -37,7 +37,7 @@
     - ansible.builtin.assert:
         that:
           - result.changed
-          - result.db_instance_identifier == '{{ instance_id }}'
+          - result.db_instance_identifier == instance_id
 
     # Test upgrade of DB instance
 

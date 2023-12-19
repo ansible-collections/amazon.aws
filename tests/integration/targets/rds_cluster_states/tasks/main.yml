@@ -41,7 +41,7 @@
           - "'cluster_create_time' in _result_create_source_db_cluster"
           - _result_create_source_db_cluster.copy_tags_to_snapshot == false
           - "'db_cluster_arn' in _result_create_source_db_cluster"
-          - _result_create_source_db_cluster.db_cluster_identifier == '{{ cluster_id }}'
+          - _result_create_source_db_cluster.db_cluster_identifier == cluster_id
           - "'db_cluster_parameter_group' in _result_create_source_db_cluster"
           - "'db_cluster_resource_id' in _result_create_source_db_cluster"
           - "'endpoint' in _result_create_source_db_cluster"

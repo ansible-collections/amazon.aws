@@ -38,9 +38,9 @@
     - ansible.builtin.assert:
         that:
           - result.changed
-          - result.db_instance_identifier == '{{ instance_id }}'
+          - result.db_instance_identifier == instance_id
           - result.tags | length == 2
-          - result.tags.Name == '{{ instance_id }}'
+          - result.tags.Name == instance_id
           - result.tags.Created_by == 'Ansible rds_instance tests'
 
     - name: Create a snapshot
@@ -158,7 +158,7 @@
     - ansible.builtin.assert:
         that:
           - result.changed
-          - result.final_snapshot.db_instance_identifier == '{{ instance_id }}'
+          - result.final_snapshot.db_instance_identifier == instance_id
 
     - name: Check that snapshot exists
       amazon.aws.rds_snapshot_info:

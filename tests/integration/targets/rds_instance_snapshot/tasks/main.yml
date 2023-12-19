@@ -288,7 +288,7 @@
           - "'tags' in _result_instance_snapshot"
           - _result_instance_snapshot.tags | length == 2
           - _result_instance_snapshot.tags["tag_one"] == snapshot_id+"-b One"
-          - _result_instance_snapshot.tags["Tag Two"] == "two {{ snapshot_id }}-b"
+          - _result_instance_snapshot.tags["Tag Two"] == "two "+snapshot_id +"-b"
           - "'vpc_id' in _result_instance_snapshot"
 
     - name: Attempt to take another snapshot of the existing RDS instance and assign tags (idempotence)
@@ -348,7 +348,7 @@
           - "'tags' in _result_instance_snapshot"
           - _result_instance_snapshot.tags | length == 2
           - _result_instance_snapshot.tags["tag_three"] == snapshot_id+"-b Three"
-          - _result_instance_snapshot.tags["Tag Two"] == "two {{ snapshot_id }}-b"
+          - _result_instance_snapshot.tags["Tag Two"] == "two "+snapshot_id +"-b"
           - "'vpc_id' in _result_instance_snapshot"
 
     - name: Take another snapshot of the existing RDS instance and update tags without purge
@@ -393,7 +393,7 @@
           - "'tags' in _result_instance_snapshot"
           - _result_instance_snapshot.tags | length == 3
           - _result_instance_snapshot.tags["tag_one"] == snapshot_id+"-b One"
-          - _result_instance_snapshot.tags["Tag Two"] == "two {{ snapshot_id }}-b"
+          - _result_instance_snapshot.tags["Tag Two"] == "two "+snapshot_id +"-b"
           - _result_instance_snapshot.tags["tag_three"] == snapshot_id+"-b Three"
           - "'vpc_id' in _result_instance_snapshot"
 
@@ -446,7 +446,7 @@
           - "'tags' in _result_instance_snapshot"
           - _result_instance_snapshot.tags | length == 3
           - _result_instance_snapshot.tags["tag_one"] == snapshot_id+"-b One"
-          - _result_instance_snapshot.tags["Tag Two"] == "two {{ snapshot_id }}-b"
+          - _result_instance_snapshot.tags["Tag Two"] == "two "+snapshot_id +"-b"
           - _result_instance_snapshot.tags["tag_three"] == snapshot_id+"-b Three"
 
     - name: Copy a snapshot (idempotence - check mode)
@@ -479,7 +479,7 @@
           - "'tags' in _result_instance_snapshot"
           - _result_instance_snapshot.tags | length == 3
           - _result_instance_snapshot.tags["tag_one"] == snapshot_id+"-b One"
-          - _result_instance_snapshot.tags["Tag Two"] == "two {{ snapshot_id }}-b"
+          - _result_instance_snapshot.tags["Tag Two"] == "two "+snapshot_id +"-b"
           - _result_instance_snapshot.tags["tag_three"] == snapshot_id+"-b Three"
 
   always:

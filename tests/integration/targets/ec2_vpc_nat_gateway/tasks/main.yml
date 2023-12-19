@@ -543,8 +543,8 @@
           - create_ngw.subnet_id == subnet_id
           - '"tags" in create_ngw'
           - create_ngw.tags | length == 2
-          - create_ngw.tags["tag_one"] == '{{ resource_prefix }} One'
-          - create_ngw.tags["Tag Two"] == 'two {{ resource_prefix }}'
+          - create_ngw.tags["tag_one"] == resource_prefix +' One'
+          - create_ngw.tags["Tag Two"] == 'two '+ resource_prefix
           - '"vpc_id" in create_ngw'
           - create_ngw.vpc_id == vpc_id
           - create_ngw.connectivity_type == 'public'
@@ -575,8 +575,8 @@
           - update_tags_ngw.subnet_id == subnet_id
           - '"tags" in update_tags_ngw'
           - update_tags_ngw.tags | length == 2
-          - update_tags_ngw.tags["tag_one"] == '{{ resource_prefix }} One'
-          - update_tags_ngw.tags["Tag Two"] == 'two {{ resource_prefix }}'
+          - update_tags_ngw.tags["tag_one"] == resource_prefix +' One'
+          - update_tags_ngw.tags["Tag Two"] == 'two '+ resource_prefix
           - '"vpc_id" in update_tags_ngw'
           - update_tags_ngw.vpc_id == vpc_id
 
@@ -600,8 +600,8 @@
           - update_tags_ngw.subnet_id == subnet_id
           - '"tags" in update_tags_ngw'
           - update_tags_ngw.tags | length == 2
-          - update_tags_ngw.tags["tag_one"] == '{{ resource_prefix }} One'
-          - update_tags_ngw.tags["Tag Two"] == 'two {{ resource_prefix }}'
+          - update_tags_ngw.tags["tag_one"] == resource_prefix +' One'
+          - update_tags_ngw.tags["Tag Two"] == 'two '+ resource_prefix
           - '"vpc_id" in update_tags_ngw'
           - update_tags_ngw.vpc_id == vpc_id
 
@@ -631,8 +631,8 @@
           - second_ngw.tags | length == 2
           - '"tag_one" in second_ngw.tags'
           - '"Tag Two" in second_ngw.tags'
-          - second_ngw.tags["tag_one"] == '{{ resource_prefix }} One'
-          - second_ngw.tags["Tag Two"] == 'two {{ resource_prefix }}'
+          - second_ngw.tags["tag_one"] == resource_prefix +' One'
+          - second_ngw.tags["Tag Two"] == 'two '+ resource_prefix
           - '"vpc_id" in second_ngw'
           - second_ngw.vpc_id == vpc_id
       vars:
@@ -662,8 +662,8 @@
           - second_ngw.tags | length == 2
           - '"tag_one" in second_ngw.tags'
           - '"Tag Two" in second_ngw.tags'
-          - second_ngw.tags["tag_one"] == '{{ resource_prefix }} One'
-          - second_ngw.tags["Tag Two"] == 'two {{ resource_prefix }}'
+          - second_ngw.tags["tag_one"] == resource_prefix +' One'
+          - second_ngw.tags["Tag Two"] == 'two '+ resource_prefix
           - '"vpc_id" in second_ngw'
           - second_ngw.vpc_id == vpc_id
       vars:
@@ -713,8 +713,8 @@
           - update_tags_ngw.subnet_id == subnet_id
           - '"tags" in update_tags_ngw'
           - update_tags_ngw.tags | length == 2
-          - update_tags_ngw.tags["tag_three"] == '{{ resource_prefix }} Three'
-          - update_tags_ngw.tags["Tag Two"] == 'two {{ resource_prefix }}'
+          - update_tags_ngw.tags["tag_three"] == resource_prefix +' Three'
+          - update_tags_ngw.tags["Tag Two"] == 'two '+ resource_prefix
           - '"vpc_id" in update_tags_ngw'
           - update_tags_ngw.vpc_id == vpc_id
 
@@ -792,9 +792,9 @@
           - update_tags_ngw.subnet_id == subnet_id
           - '"tags" in update_tags_ngw'
           - update_tags_ngw.tags | length == 3
-          - update_tags_ngw.tags["tag_one"] == '{{ resource_prefix }} One'
-          - update_tags_ngw.tags["tag_three"] == '{{ resource_prefix }} Three'
-          - update_tags_ngw.tags["Tag Two"] == 'two {{ resource_prefix }}'
+          - update_tags_ngw.tags["tag_one"] == resource_prefix +' One'
+          - update_tags_ngw.tags["tag_three"] == resource_prefix +' Three'
+          - update_tags_ngw.tags["Tag Two"] == 'two '+ resource_prefix
           - '"vpc_id" in update_tags_ngw'
           - update_tags_ngw.vpc_id == vpc_id
 

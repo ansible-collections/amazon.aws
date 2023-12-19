@@ -849,8 +849,8 @@
               - result is changed
               - "'tags' in result"
               - (result.tags | length) == 2
-              - result.tags["tag_one"] == '{{ resource_prefix }} One'
-              - result.tags["Tag Two"] == 'two {{ resource_prefix }}'
+              - result.tags["tag_one"] == resource_prefix +' One'
+              - result.tags["Tag Two"] == 'two '+ resource_prefix
 
         - name: ensure idempotency on static content
           amazon.aws.s3_object:
@@ -869,8 +869,8 @@
               - result is not changed
               - "'tags' in result"
               - (result.tags | length) == 2
-              - result.tags["tag_one"] == '{{ resource_prefix }} One'
-              - result.tags["Tag Two"] == 'two {{ resource_prefix }}'
+              - result.tags["tag_one"] == resource_prefix +' One'
+              - result.tags["Tag Two"] == 'two '+ resource_prefix
 
         - name: Remove a tag from an S3 object
           amazon.aws.s3_object:
@@ -927,8 +927,8 @@
               - result is changed
               - "'tags' in result"
               - (result.tags | length) == 2
-              - result.tags["tag_three"] == '{{ resource_prefix }} Three'
-              - result.tags["tag_one"] == '{{ resource_prefix }} One'
+              - result.tags["tag_three"] == resource_prefix +' Three'
+              - result.tags["tag_one"] == resource_prefix +' One'
 
         - name: Add a tag for an S3 object with purge_tags False (idempotency)
           amazon.aws.s3_object:
@@ -947,8 +947,8 @@
               - result is not changed
               - "'tags' in result"
               - (result.tags | length) == 2
-              - result.tags["tag_three"] == '{{ resource_prefix }} Three'
-              - result.tags["tag_one"] == '{{ resource_prefix }} One'
+              - result.tags["tag_three"] == resource_prefix +' Three'
+              - result.tags["tag_one"] == resource_prefix +' One'
 
         - name: Update tags for an S3 object with purge_tags False
           amazon.aws.s3_object:
@@ -967,9 +967,9 @@
               - result is changed
               - "'tags' in result"
               - (result.tags | length) == 3
-              - result.tags["tag_one"] == '{{ resource_prefix }} One'
-              - result.tags["tag_three"] == '{{ resource_prefix }} Three'
-              - result.tags["TagFour"] == '{{ resource_prefix }} tag_four'
+              - result.tags["tag_one"] == resource_prefix +' One'
+              - result.tags["tag_three"] == resource_prefix +' Three'
+              - result.tags["TagFour"] == resource_prefix +' tag_four'
 
         - name: Update tags for an S3 object with purge_tags False (idempotency)
           amazon.aws.s3_object:
@@ -988,9 +988,9 @@
               - result is not changed
               - "'tags' in result"
               - (result.tags | length) == 3
-              - result.tags["tag_one"] == '{{ resource_prefix }} One'
-              - result.tags["tag_three"] == '{{ resource_prefix }} Three'
-              - result.tags["TagFour"] == '{{ resource_prefix }} tag_four'
+              - result.tags["tag_one"] == resource_prefix +' One'
+              - result.tags["tag_three"] == resource_prefix +' Three'
+              - result.tags["TagFour"] == resource_prefix +' tag_four'
 
         - name: Specify empty tags for an S3 object with purge_tags False
           amazon.aws.s3_object:
@@ -1008,9 +1008,9 @@
               - result is not changed
               - "'tags' in result"
               - (result.tags | length) == 3
-              - result.tags["tag_one"] == '{{ resource_prefix }} One'
-              - result.tags["tag_three"] == '{{ resource_prefix }} Three'
-              - result.tags["TagFour"] == '{{ resource_prefix }} tag_four'
+              - result.tags["tag_one"] == resource_prefix +' One'
+              - result.tags["tag_three"] == resource_prefix +' Three'
+              - result.tags["TagFour"] == resource_prefix +' tag_four'
 
         - name: Do not specify any tag to ensure previous tags are not removed
           amazon.aws.s3_object:
@@ -1026,9 +1026,9 @@
               - result is not changed
               - "'tags' in result"
               - (result.tags | length) == 3
-              - result.tags["tag_one"] == '{{ resource_prefix }} One'
-              - result.tags["tag_three"] == '{{ resource_prefix }} Three'
-              - result.tags["TagFour"] == '{{ resource_prefix }} tag_four'
+              - result.tags["tag_one"] == resource_prefix +' One'
+              - result.tags["tag_three"] == resource_prefix +' Three'
+              - result.tags["TagFour"] == resource_prefix +' tag_four'
 
         - name: Remove all tags
           amazon.aws.s3_object:
