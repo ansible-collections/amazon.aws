@@ -20,7 +20,7 @@ options:
     description:
       - The name of the group.
       - >-
-        Note: group names are unique within an account.  Paths (I(path)) do B(not) affect
+        Note: Group names are unique within an account.  Paths (I(path)) do B(not) affect
         the uniqueness requirements of I(name).  For example it is not permitted to have both
         C(/Path1/MyGroup) and C(/Path2/MyGroup) in the same account.
       - The alias C(group_name) was added in release 7.2.0.

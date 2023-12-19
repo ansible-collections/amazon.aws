@@ -29,7 +29,7 @@ options:
     aliases: ['user_name']
   path:
     description:
-      - The path for the user name.
+      - The path for the user.
       - For more information about IAM paths, see the AWS IAM identifiers documentation
         U(https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html).
     aliases: ['prefix', 'path_prefix']

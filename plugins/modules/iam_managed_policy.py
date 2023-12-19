@@ -16,6 +16,10 @@ options:
   name:
     description:
       - The name of the managed policy.
+      - >-
+        Note: Policy names are unique within an account.  Paths (I(path)) do B(not) affect
+        the uniqueness requirements of I(name).  For example it is not permitted to have both
+        C(/Path1/MyPolicy) and C(/Path2/MyPolicy) in the same account.
       - The parameter was renamed from C(policy_name) to C(name) in release 7.2.0.
     required: true
     type: str

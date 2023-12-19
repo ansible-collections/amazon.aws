@@ -17,7 +17,9 @@ author:
 options:
   path:
     description:
-      - The path to the role. For more information about paths, see U(https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html).
+      - The path of the role.
+      - For more information about IAM paths, see the AWS IAM identifiers documentation
+        U(https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html).
       - Updating the path on an existing role is not currently supported and will result in a
         warning.
       - C(path_prefix) and C(prefix) were added as aliases in release 7.2.0.
@@ -25,7 +27,11 @@ options:
     aliases: ["prefix", "path_prefix"]
   name:
     description:
-      - The name of the role to create.
+      - The name of the role.
+      - >-
+        Note: Role names are unique within an account.  Paths (I(path)) do B(not) affect
+        the uniqueness requirements of I(name).  For example it is not permitted to have both
+        C(/Path1/MyRole) and C(/Path2/MyRole) in the same account.
       - C(role_name) was added as an alias in release 7.2.0.
     required: true
     type: str

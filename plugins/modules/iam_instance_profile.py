@@ -22,13 +22,19 @@ options:
     default: "present"
   name:
     description:
-      - Name of an instance profile.
+      - Name of the instance profile.
+      - >-
+        Note: Profile names are unique within an account.  Paths (I(path)) do B(not) affect
+        the uniqueness requirements of I(name).  For example it is not permitted to have both
+        C(/Path1/MyProfile) and C(/Path2/MyProfile) in the same account.
     aliases: ["instance_profile_name"]
     type: str
     required: True
   path:
     description:
-      - The path prefix for filtering the results.
+      - The instance profile path.
+      - For more information about IAM paths, see the AWS IAM identifiers documentation
+        U(https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html).
       - Updating the path on an existing profile is not currently supported and will result in a
         warning.
       - The parameter was renamed from C(prefix) to C(path) in release 7.2.0.
@@ -48,19 +54,32 @@ extends_documentation_fragment:
 """
 
 EXAMPLES = r"""
-- name: Find all existing IAM instance profiles
+- name: Create Instance Profile
+  amazon.aws.iam_instance_profile:
+    name: "ExampleInstanceProfile"
+    role: "/OurExamples/MyExampleRole"
+    path: "/OurExamples/"
+    tags:
+      ExampleTag: Example Value
+  register: profile_result
+
+- name: Create second Instance Profile with default path
+  amazon.aws.iam_instance_profile:
+    name: "ExampleInstanceProfile2"
+    role: "/OurExamples/MyExampleRole"
+    tags:
+      ExampleTag: Another Example Value
+  register: profile_result
+
+- name: Find all IAM instance profiles starting with /OurExamples/
   amazon.aws.iam_instance_profile_info:
+    path_prefix: /OurExamples/
   register: result
 
-- name: Describe a single instance profile
-  amazon.aws.iam_instance_profile_info:
-    name: MyIAMProfile
-  register: result
-
-- name: Find all IAM instance profiles starting with /some/path/
-  amazon.aws.iam_instance_profile_info:
-    prefile: /some/path/
-  register: result
+- name: Delete second Instance Profile
+  amazon.aws.iam_instance_profile:
+    name: "ExampleInstanceProfile2"
+    state: absent
 """
 
 RETURN = r"""
