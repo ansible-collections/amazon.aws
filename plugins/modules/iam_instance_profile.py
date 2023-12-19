@@ -29,6 +29,8 @@ options:
   path:
     description:
       - The path prefix for filtering the results.
+      - Updating the path on an existing profile is not currently supported and will result in a
+        warning.
       - The parameter was renamed from C(prefix) to C(path) in release 7.2.0.
     aliases: ["path_prefix", "prefix"]
     type: str
@@ -311,6 +313,13 @@ def main():
             )
             final_profile = None
         else:
+            # As of botocore 1.34.3, the APIs don't support updating the Name or Path
+            if original_profile and path and original_profile.get("path") != path:
+                module.warn(
+                    "iam_instance_profile doesn't support updating the path: "
+                    f"current path '{original_profile.get('path')}', requested path '{path}'"
+                )
+
             changed, final_profile = ensure_present(
                 original_profile,
                 client,

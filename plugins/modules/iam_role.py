@@ -18,6 +18,8 @@ options:
   path:
     description:
       - The path to the role. For more information about paths, see U(https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html).
+      - Updating the path on an existing role is not currently supported and will result in a
+        warning.
       - C(path_prefix) and C(prefix) were added as aliases in release 7.2.0.
     type: str
     aliases: ["prefix", "path_prefix"]
@@ -506,6 +508,13 @@ def create_or_update_role(module, client):
         current_description = role.get("Description")
         current_duration = role.get("MaxSessionDuration")
         current_permissions_boundary = role.get("PermissionsBoundary", {}).get("PermissionsBoundaryArn", "")
+
+        # As of botocore 1.34.3, the APIs don't support updating the Name or Path
+        if path is not None and role.get("Path") != path:
+            module.warn(
+                "iam_role doesn't support updating the path: "
+                f"current path '{role.get('Path')}', requested path '{path}'"
+            )
 
         # Update attributes
         changed |= update_role_tags(module, client, role_name, tags, purge_tags)
