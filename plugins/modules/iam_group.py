@@ -206,6 +206,7 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.iam import AnsibleIAMError
 from ansible_collections.amazon.aws.plugins.module_utils.iam import convert_managed_policy_names_to_arns
+from ansible_collections.amazon.aws.plugins.module_utils.iam import validate_iam_identifiers
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 
@@ -459,6 +460,12 @@ def main():
         argument_spec=argument_spec,
         supports_check_mode=True,
     )
+
+    identifier_problem = validate_iam_identifiers(
+        "group", name=module.params.get("name"), path=module.params.get("path")
+    )
+    if identifier_problem:
+        module.fail_json(msg=identifier_problem)
 
     connection = module.client("iam", retry_decorator=AWSRetry.jittered_backoff())
 

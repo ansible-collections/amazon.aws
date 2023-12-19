@@ -3,6 +3,7 @@
 # Copyright (c) 2017 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+import re
 from copy import deepcopy
 
 try:
@@ -310,3 +311,41 @@ def untag_iam_instance_profile(client, name, tags):
         botocore.exceptions.ClientError,
     ) as e:  # pylint: disable=duplicate-except
         raise AnsibleIAMError(message="Unable to untag instance profile", exception=e)
+
+
+def _validate_iam_name(resource_type, name=None):
+    if name is None:
+        return None
+    LENGTHS = {"role": 64, "user": 64}
+    regex = r"[\w+=,.@-]+"
+    max_length = LENGTHS.get(resource_type, 128)
+    if len(name) > max_length:
+        return f"Length of {resource_type} name may not exceed {max_length}"
+    if not re.fullmatch(regex, name):
+        return f"{resource_type} name must match pattern {regex}"
+    return None
+
+
+def _validate_iam_path(resource_type, path=None):
+    if path is None:
+        return None
+    regex = r"(\u002F)|(\u002F[\u0021-\u007E]+\u002F)"
+    max_length = 512
+    if len(path) > max_length:
+        return f"Length of {resource_type} path may not exceed {max_length}"
+    if not path.endswith("/") or not path.startswith("/"):
+        return f"{resource_type} path must begin and end with /"
+    if not re.fullmatch(regex, path):
+        return f"{resource_type} path must match pattern {regex}"
+    return None
+
+
+def validate_iam_identifiers(resource_type, name=None, path=None):
+    name_problem = _validate_iam_name(resource_type, name)
+    if name_problem:
+        return name_problem
+    path_problem = _validate_iam_path(resource_type, path)
+    if path_problem:
+        return path_problem
+
+    return None

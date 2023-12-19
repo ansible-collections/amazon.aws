@@ -138,6 +138,7 @@ from ansible.module_utils._text import to_native
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.iam import validate_iam_identifiers
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.policy import compare_policies
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
@@ -365,6 +366,10 @@ def main():
 
     name = module.params.get("name")
     state = module.params.get("state")
+
+    identifier_problem = validate_iam_identifiers("policy", name=name)
+    if identifier_problem:
+        module.fail_json(msg=identifier_problem)
 
     try:
         client = module.client("iam", retry_decorator=AWSRetry.jittered_backoff())

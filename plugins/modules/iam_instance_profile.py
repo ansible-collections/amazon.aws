@@ -115,6 +115,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.iam import normalize_ia
 from ansible_collections.amazon.aws.plugins.module_utils.iam import remove_role_from_iam_instance_profile
 from ansible_collections.amazon.aws.plugins.module_utils.iam import tag_iam_instance_profile
 from ansible_collections.amazon.aws.plugins.module_utils.iam import untag_iam_instance_profile
+from ansible_collections.amazon.aws.plugins.module_utils.iam import validate_iam_identifiers
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
@@ -292,6 +293,9 @@ def main():
     state = module.params.get("state")
     path = module.params.get("path")
 
+    identifier_problem = validate_iam_identifiers("instance profile", name=name, path=path)
+    if identifier_problem:
+        module.fail_json(msg=identifier_problem)
 
     client = module.client("iam", retry_decorator=AWSRetry.jittered_backoff())
     try:

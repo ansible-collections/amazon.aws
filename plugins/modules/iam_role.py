@@ -230,6 +230,7 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 
 from ansible_collections.amazon.aws.plugins.module_utils.arn import validate_aws_arn
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.iam import validate_iam_identifiers
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.policy import compare_policies
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
@@ -757,10 +758,12 @@ def main():
         max_session_duration = module.params.get("max_session_duration")
         if max_session_duration < 3600 or max_session_duration > 43200:
             module.fail_json(msg="max_session_duration must be between 1 and 12 hours (3600 and 43200 seconds)")
-    if module.params.get("path"):
-        path = module.params.get("path")
-        if not path.endswith("/") or not path.startswith("/"):
-            module.fail_json(msg="path must begin and end with /")
+
+    identifier_problem = validate_iam_identifiers(
+        "role", name=module.params.get("name"), path=module.params.get("path")
+    )
+    if identifier_problem:
+        module.fail_json(msg=identifier_problem)
 
     client = module.client("iam", retry_decorator=AWSRetry.jittered_backoff())
 
