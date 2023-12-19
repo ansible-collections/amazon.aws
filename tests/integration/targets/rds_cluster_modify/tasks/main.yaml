@@ -51,7 +51,7 @@
           - "'cluster_create_time' in _result_create_source_db_cluster"
           - _result_create_source_db_cluster.copy_tags_to_snapshot == false
           - "'db_cluster_arn' in _result_create_source_db_cluster"
-          - _result_create_source_db_cluster.db_cluster_identifier == '{{ cluster_id }}'
+          - _result_create_source_db_cluster.db_cluster_identifier == cluster_id
           - "'db_cluster_parameter_group' in _result_create_source_db_cluster"
           - "'db_cluster_resource_id' in _result_create_source_db_cluster"
           - "'endpoint' in _result_create_source_db_cluster"
@@ -63,7 +63,7 @@
           - "'master_username' in _result_create_source_db_cluster"
           - _result_create_source_db_cluster.master_username == username
           - "'port' in _result_create_source_db_cluster"
-          - _result_create_source_db_cluster.port == {{ port }}
+          - _result_create_source_db_cluster.port == port
           - "'status' in _result_create_source_db_cluster"
           - _result_create_source_db_cluster.status == "available"
           - "'tags' in _result_create_source_db_cluster"
@@ -86,7 +86,7 @@
           - "'cluster_create_time' in _result_modify_password"
           - _result_modify_password.copy_tags_to_snapshot == false
           - "'db_cluster_arn' in _result_modify_password"
-          - _result_modify_password.db_cluster_identifier == '{{ cluster_id }}'
+          - _result_modify_password.db_cluster_identifier == cluster_id
           - "'db_cluster_parameter_group' in _result_modify_password"
           - "'db_cluster_resource_id' in _result_modify_password"
           - "'endpoint' in _result_modify_password"
@@ -98,7 +98,7 @@
           - "'master_username' in _result_modify_password"
           - _result_modify_password.master_username == username
           - "'port' in _result_create_source_db_cluster"
-          - _result_modify_password.port == {{ port }}
+          - _result_modify_password.port == port
           - "'status' in _result_modify_password"
           - _result_modify_password.status == "available"
           - "'tags' in _result_modify_password"
@@ -119,7 +119,7 @@
           - "'cluster_create_time' in _result_modify_port"
           - _result_modify_port.copy_tags_to_snapshot == false
           - "'db_cluster_arn' in _result_modify_port"
-          - _result_modify_port.db_cluster_identifier == '{{ cluster_id }}'
+          - _result_modify_port.db_cluster_identifier == cluster_id
           - "'db_cluster_parameter_group' in _result_modify_port"
           - "'db_cluster_resource_id' in _result_modify_port"
           - "'endpoint' in _result_modify_port"
@@ -131,7 +131,7 @@
           - "'master_username' in _result_modify_port"
           - _result_modify_port.master_username == username
           - "'port' in _result_modify_port"
-          - _result_modify_port.port == {{ new_port }}
+          - _result_modify_port.port == new_port
           - "'status' in _result_modify_port"
           - _result_modify_port.status == "available"
           - "'tags' in _result_modify_port"
@@ -154,7 +154,7 @@
           - "'cluster_create_time' in _result_modify_id"
           - _result_modify_id.copy_tags_to_snapshot == false
           - "'db_cluster_arn' in _result_modify_id"
-          - _result_modify_id.db_cluster_identifier == '{{ new_cluster_id }}'
+          - _result_modify_id.db_cluster_identifier == new_cluster_id
           - "'db_cluster_parameter_group' in _result_modify_id"
           - "'db_cluster_resource_id' in _result_modify_id"
           - "'endpoint' in _result_modify_id"
@@ -166,7 +166,7 @@
           - "'master_username' in _result_modify_id"
           - _result_modify_id.master_username == username
           - "'port' in _result_modify_id"
-          - _result_modify_id.port == {{ new_port }}
+          - _result_modify_id.port == new_port
           - "'status' in _result_modify_id"
           - _result_modify_id.status == "available"
           - "'tags' in _result_modify_id"
@@ -210,7 +210,7 @@
           - "'cluster_create_time' in _result_modify_db_parameter_group_name"
           - _result_modify_db_parameter_group_name.copy_tags_to_snapshot == false
           - "'db_cluster_arn' in _result_modify_db_parameter_group_name"
-          - _result_modify_db_parameter_group_name.db_cluster_identifier == '{{ new_cluster_id }}'
+          - _result_modify_db_parameter_group_name.db_cluster_identifier == new_cluster_id
           - "'db_cluster_parameter_group' in _result_modify_db_parameter_group_name"
           - "'db_cluster_resource_id' in _result_modify_db_parameter_group_name"
           - "'endpoint' in _result_modify_db_parameter_group_name"
@@ -222,7 +222,7 @@
           - "'master_username' in _result_modify_db_parameter_group_name"
           - _result_modify_db_parameter_group_name.master_username == username
           - "'port' in _result_modify_db_parameter_group_name"
-          - _result_modify_db_parameter_group_name.db_cluster_parameter_group == "{{ new_db_parameter_group_name }}"
+          - _result_modify_db_parameter_group_name.db_cluster_parameter_group == new_db_parameter_group_name
           - "'status' in _result_modify_db_parameter_group_name"
           - _result_modify_db_parameter_group_name.status == "available"
           - "'tags' in _result_modify_db_parameter_group_name"

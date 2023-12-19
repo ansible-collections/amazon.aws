@@ -70,9 +70,9 @@
           - test_iam_user.arn.startswith("arn:aws:iam")
           - test_iam_user.arn.endswith("user/" + test_user )
           - test_iam_user.create_date is not none
-          - test_iam_user.path == '{{ test_path }}'
+          - test_iam_user.path == test_path
           - test_iam_user.user_id is not none
-          - test_iam_user.user_name == '{{ test_user }}'
+          - test_iam_user.user_name == test_user
           - test_iam_user.tags | length == 0
 
     - name: Get info on IAM user(s)

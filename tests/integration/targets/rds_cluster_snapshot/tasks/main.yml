@@ -141,7 +141,7 @@
           - "'cluster_create_time' in _result_create_source_db_cluster"
           - _result_create_source_db_cluster.copy_tags_to_snapshot == false
           - "'db_cluster_arn' in _result_create_source_db_cluster"
-          - _result_create_source_db_cluster.db_cluster_identifier == "{{ cluster_id }}-b"
+          - _result_create_source_db_cluster.db_cluster_identifier == cluster_id+"-b"
           - "'db_cluster_parameter_group' in _result_create_source_db_cluster"
           - "'db_cluster_resource_id' in _result_create_source_db_cluster"
           - "'endpoint' in _result_create_source_db_cluster"
@@ -173,9 +173,9 @@
           - "'allocated_storage' in _result_cluster_snapshot"
           - "'cluster_create_time' in _result_cluster_snapshot"
           - "'db_cluster_identifier' in _result_cluster_snapshot"
-          - _result_cluster_snapshot.db_cluster_identifier == "{{ cluster_id }}-b"
+          - _result_cluster_snapshot.db_cluster_identifier == cluster_id+"-b"
           - "'db_cluster_snapshot_identifier' in _result_cluster_snapshot"
-          - _result_cluster_snapshot.db_cluster_snapshot_identifier == "{{ snapshot_id }}-b"
+          - _result_cluster_snapshot.db_cluster_snapshot_identifier == snapshot_id+"-b"
           - "'db_cluster_snapshot_arn' in _result_cluster_snapshot"
           - "'engine' in _result_cluster_snapshot"
           - _result_cluster_snapshot.engine == engine
@@ -253,7 +253,7 @@
           - "'db_cluster_identifier' in _result_cluster_snapshot"
           - _result_cluster_snapshot.db_cluster_identifier == cluster_id
           - "'db_cluster_snapshot_identifier' in _result_cluster_snapshot"
-          - _result_cluster_snapshot.db_cluster_snapshot_identifier == "{{ snapshot_id }}-b"
+          - _result_cluster_snapshot.db_cluster_snapshot_identifier == snapshot_id+"-b"
           - "'db_cluster_snapshot_arn' in _result_cluster_snapshot"
           - "'engine' in _result_cluster_snapshot"
           - _result_cluster_snapshot.engine == engine
@@ -271,8 +271,8 @@
           - "'storage_encrypted' in _result_cluster_snapshot"
           - "'tags' in _result_cluster_snapshot"
           - _result_cluster_snapshot.tags | length == 2
-          - _result_cluster_snapshot.tags["tag_one"] == "{{ snapshot_id }}-b One"
-          - _result_cluster_snapshot.tags["Tag Two"] == "two {{ snapshot_id }}-b"
+          - _result_cluster_snapshot.tags["tag_one"] == snapshot_id +"-b One"
+          - _result_cluster_snapshot.tags["Tag Two"] == "two "+snapshot_id+"-b"
           - "'vpc_id' in _result_cluster_snapshot"
 
     - name: Attempt to take another snapshot of the existing DB cluster and assign tags (idempotence)
@@ -308,7 +308,7 @@
           - "'db_cluster_identifier' in _result_cluster_snapshot"
           - _result_cluster_snapshot.db_cluster_identifier == cluster_id
           - "'db_cluster_snapshot_identifier' in _result_cluster_snapshot"
-          - _result_cluster_snapshot.db_cluster_snapshot_identifier == "{{ snapshot_id }}-b"
+          - _result_cluster_snapshot.db_cluster_snapshot_identifier == snapshot_id+"-b"
           - "'db_cluster_snapshot_arn' in _result_cluster_snapshot"
           - "'engine' in _result_cluster_snapshot"
           - _result_cluster_snapshot.engine == engine
@@ -326,8 +326,8 @@
           - "'storage_encrypted' in _result_cluster_snapshot"
           - "'tags' in _result_cluster_snapshot"
           - _result_cluster_snapshot.tags | length == 2
-          - _result_cluster_snapshot.tags["tag_three"] == "{{ snapshot_id }}-b Three"
-          - _result_cluster_snapshot.tags["Tag Two"] == "two {{ snapshot_id }}-b"
+          - _result_cluster_snapshot.tags["tag_three"] == snapshot_id+"-b Three"
+          - _result_cluster_snapshot.tags["Tag Two"] == "two "+snapshot_id+"-b"
           - "'vpc_id' in _result_cluster_snapshot"
 
     - name: Take another snapshot of the existing DB cluster and update tags without purge
@@ -348,7 +348,7 @@
           - "'db_cluster_identifier' in _result_cluster_snapshot"
           - _result_cluster_snapshot.db_cluster_identifier == cluster_id
           - "'db_cluster_snapshot_identifier' in _result_cluster_snapshot"
-          - _result_cluster_snapshot.db_cluster_snapshot_identifier == "{{ snapshot_id }}-b"
+          - _result_cluster_snapshot.db_cluster_snapshot_identifier == snapshot_id+"-b"
           - "'db_cluster_snapshot_arn' in _result_cluster_snapshot"
           - "'engine' in _result_cluster_snapshot"
           - _result_cluster_snapshot.engine == engine
@@ -366,9 +366,9 @@
           - "'storage_encrypted' in _result_cluster_snapshot"
           - "'tags' in _result_cluster_snapshot"
           - _result_cluster_snapshot.tags | length == 3
-          - _result_cluster_snapshot.tags["tag_one"] == "{{ snapshot_id }}-b One"
-          - _result_cluster_snapshot.tags["Tag Two"] == "two {{ snapshot_id }}-b"
-          - _result_cluster_snapshot.tags["tag_three"] == "{{ snapshot_id }}-b Three"
+          - _result_cluster_snapshot.tags["tag_one"] == snapshot_id+"-b One"
+          - _result_cluster_snapshot.tags["Tag Two"] == "two "+snapshot_id+"-b"
+          - _result_cluster_snapshot.tags["tag_three"] == snapshot_id+"-b Three"
           - "'vpc_id' in _result_cluster_snapshot"
 
     - name: Take another snapshot of the existing DB cluster and do not specify any tag to ensure previous tags are not removed
@@ -415,12 +415,12 @@
           - _result_cluster_copy_snapshot.changed
           - _result_cluster_copy_snapshot.db_cluster_identifier == cluster_id
           - _result_cluster_copy_snapshot.source_db_cluster_snapshot_arn == _snapshot_arn
-          - _result_cluster_copy_snapshot.db_cluster_snapshot_identifier == "{{ snapshot_id }}-copy"
+          - _result_cluster_copy_snapshot.db_cluster_snapshot_identifier == snapshot_id+"-copy"
           - "'tags' in _result_cluster_copy_snapshot"
           - _result_cluster_copy_snapshot.tags | length == 3
-          - _result_cluster_copy_snapshot.tags["tag_one"] == "{{ snapshot_id }}-b One"
-          - _result_cluster_copy_snapshot.tags["Tag Two"] == "two {{ snapshot_id }}-b"
-          - _result_cluster_copy_snapshot.tags["tag_three"] == "{{ snapshot_id }}-b Three"
+          - _result_cluster_copy_snapshot.tags["tag_one"] == snapshot_id+"-b One"
+          - _result_cluster_copy_snapshot.tags["Tag Two"] == "two "+snapshot_id+"-b"
+          - _result_cluster_copy_snapshot.tags["tag_three"] == snapshot_id+"-b Three"
 
     - name: Copy a DB cluster snapshot (idempotence - check mode)
       amazon.aws.rds_cluster_snapshot:
@@ -448,12 +448,12 @@
           - not _result_cluster_copy_snapshot.changed
           - _result_cluster_copy_snapshot.db_cluster_identifier == cluster_id
           - _result_cluster_copy_snapshot.source_db_cluster_snapshot_arn == _snapshot_arn
-          - _result_cluster_copy_snapshot.db_cluster_snapshot_identifier == "{{ snapshot_id }}-copy"
+          - _result_cluster_copy_snapshot.db_cluster_snapshot_identifier == snapshot_id+"-copy"
           - "'tags' in _result_cluster_copy_snapshot"
           - _result_cluster_copy_snapshot.tags | length == 3
-          - _result_cluster_copy_snapshot.tags["tag_one"] == "{{ snapshot_id }}-b One"
-          - _result_cluster_copy_snapshot.tags["Tag Two"] == "two {{ snapshot_id }}-b"
-          - _result_cluster_copy_snapshot.tags["tag_three"] == "{{ snapshot_id }}-b Three"
+          - _result_cluster_copy_snapshot.tags["tag_one"] == snapshot_id+"-b One"
+          - _result_cluster_copy_snapshot.tags["Tag Two"] == "two "+snapshot_id+"-b"
+          - _result_cluster_copy_snapshot.tags["tag_three"] == snapshot_id+"-b Three"
 
   always:
     - name: Delete the existing DB cluster snapshots

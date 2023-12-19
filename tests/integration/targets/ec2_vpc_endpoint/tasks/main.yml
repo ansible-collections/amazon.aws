@@ -350,7 +350,7 @@
           - '"private_dns_enabled" in create_rtb_endpoint.result'
           - '"route_table_ids" in create_rtb_endpoint.result'
           - create_rtb_endpoint.result.route_table_ids | length == 1
-          - create_rtb_endpoint.result.route_table_ids[0] == '{{ rtb_empty_id }}'
+          - create_rtb_endpoint.result.route_table_ids[0] == rtb_empty_id
           - create_rtb_endpoint.result.private_dns_enabled == False
           - '"requester_managed" in create_rtb_endpoint.result'
           - create_rtb_endpoint.result.requester_managed == False

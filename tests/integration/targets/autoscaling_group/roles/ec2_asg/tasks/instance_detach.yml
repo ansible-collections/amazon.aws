@@ -78,9 +78,9 @@
     - ansible.builtin.assert:
         that:
           - asg_info.results[0].instances | length == 3
-          - "'{{ instances_info.instances[0].state.name }}' == 'running'"
-          - "'{{ instances_info.instances[1].state.name }}' == 'running'"
-          - "'{{ instances_info.instances[2].state.name }}' == 'running'"
+          - instances_info.instances[0].state.name == "running"
+          - instances_info.instances[1].state.name == "running"
+          - instances_info.instances[2].state.name == "running"
 
     #----------------------------------------------------------------------
 

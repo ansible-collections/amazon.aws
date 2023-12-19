@@ -48,7 +48,7 @@
         that:
           - result.changed
           - '"db_parameter_group_arn" in result'
-          - "'{{ result.db_parameter_group_name | lower }}' == '{{ rds_param_group.name | lower }}'"
+          - (result.db_parameter_group_name | lower) == (rds_param_group.name | lower)
           - '"description" in result'
           - result.tags == {}
 
@@ -113,7 +113,7 @@
         that:
           - result.changed
           - '"db_parameter_group_arn" in result'
-          - "'{{ result.db_parameter_group_name | lower }}' == '{{ rds_param_group.name | lower }}'"
+          - (result.db_parameter_group_name | lower) == ( rds_param_group.name | lower )
           - '"description" in result'
           - '"tags" in result'
           - result.tags | length == 2
@@ -176,7 +176,7 @@
         that:
           - result.changed
           - '"db_parameter_group_arn" in result'
-          - "'{{ result.db_parameter_group_name | lower }}' == '{{ rds_param_group.name | lower }}'"
+          - (result.db_parameter_group_name | lower) == ( rds_param_group.name | lower )
           - '"description" in result'
           - '"tags" in result'
           - result.tags | length == 3
@@ -203,7 +203,7 @@
         that:
           - not result.changed
           - '"db_parameter_group_arn" in result'
-          - "'{{ result.db_parameter_group_name | lower }}' == '{{ rds_param_group.name | lower }}'"
+          - (result.db_parameter_group_name | lower) == ( rds_param_group.name | lower )
           - '"description" in result'
           - '"tags" in result'
           - result.tags | length == 3
@@ -228,7 +228,7 @@
         that:
           - not result.changed
           - '"db_parameter_group_arn" in result'
-          - "'{{ result.db_parameter_group_name | lower }}' == '{{ rds_param_group.name | lower }}'"
+          - (result.db_parameter_group_name | lower) == ( rds_param_group.name | lower )
           - '"description" in result'
           - '"tags" in result'
           - result.tags | length == 3
@@ -269,7 +269,7 @@
         that:
           - result.changed
           - '"db_parameter_group_arn" in result'
-          - "'{{ result.db_parameter_group_name | lower }}' == '{{ rds_param_group.name | lower }}'"
+          - (result.db_parameter_group_name | lower) == ( rds_param_group.name | lower )
           - '"description" in result'
           - '"tags" in result'
           - result.tags | length == 1
@@ -345,7 +345,7 @@
         that:
           - result.changed
           - '"db_parameter_group_arn" in result'
-          - "'{{ result.db_parameter_group_name | lower }}' == '{{ rds_param_group.name | lower }}'"
+          - (result.db_parameter_group_name | lower) == ( rds_param_group.name | lower )
           - '"description" in result'
           - '"tags" in result'
           - result.tags | length == 2
@@ -397,7 +397,7 @@
         that:
           - not result.changed
           - '"db_parameter_group_arn" in result'
-          - "'{{ result.db_parameter_group_name | lower }}' == '{{ rds_param_group.name | lower }}'"
+          - (result.db_parameter_group_name | lower) == ( rds_param_group.name | lower )
           - '"description" in result'
           - '"tags" in result'
           - result.tags | length == 2

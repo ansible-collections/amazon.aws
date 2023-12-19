@@ -83,7 +83,7 @@
           - "'master_username' in _result_create_db_cluster"
           - _result_create_db_cluster.master_username == username
           - "'port' in _result_create_db_cluster"
-          - _result_create_db_cluster.port == {{ port }}
+          - _result_create_db_cluster.port == port
           - "'status' in _result_create_db_cluster"
           - _result_create_db_cluster.status == 'available'
           - _result_create_db_cluster.storage_encrypted == false
@@ -137,7 +137,7 @@
           - "'master_username' in _result_create_db_cluster"
           - _result_create_db_cluster.master_username == username
           - "'port' in _result_create_db_cluster"
-          - _result_create_db_cluster.port == {{ port }}
+          - _result_create_db_cluster.port == port
           - "'status' in _result_create_db_cluster"
           - _result_create_db_cluster.status == 'available'
           - _result_create_db_cluster.storage_encrypted == false
@@ -171,7 +171,7 @@
     - ansible.builtin.assert:
         that:
           - _result_create_db_cluster.changed
-          - _result_create_db_cluster.db_cluster_identifier == '{{ cluster_id }}'
+          - _result_create_db_cluster.db_cluster_identifier == cluster_id
           - _result_create_db_cluster.vpc_security_groups | selectattr('status', 'in', ['active', 'adding']) | list | length == 1
 
   always:

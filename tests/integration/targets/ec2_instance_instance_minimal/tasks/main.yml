@@ -298,7 +298,7 @@
           - '"instance_ids" in create_instance'
           - create_instance.instance_ids | length == 1
           - create_instance.instance_ids[0].startswith("i-")
-          - info_result.instances[0].placement.availability_zone == '{{ aws_region }}a'
+          - info_result.instances[0].placement.availability_zone == aws_region+"a"
 
     - name: Create a new instance in AZ {{ aws_region }}b
       amazon.aws.ec2_instance:
@@ -331,7 +331,7 @@
           - '"instance_ids" in create_instance'
           - create_instance.instance_ids | length == 1
           - create_instance.instance_ids[0].startswith("i-")
-          - info_result.instances[0].placement.availability_zone == '{{ aws_region }}b'
+          - info_result.instances[0].placement.availability_zone == aws_region+"b"
 
     ################################################################
 

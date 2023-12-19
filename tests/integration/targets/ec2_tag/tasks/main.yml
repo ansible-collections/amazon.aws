@@ -23,7 +23,7 @@
     - ansible.builtin.assert:
         that:
           - result_info.tags | length == 1
-          - result_info.tags.Name == '{{ resource_prefix }} ec2_tag volume'
+          - result_info.tags.Name == resource_prefix+" ec2_tag volume"
 
     - name: Set some new tags on the volume
       amazon.aws.ec2_tag:
@@ -44,12 +44,12 @@
           - result is changed
           - result.tags | length == 4
           - result.added_tags | length == 3
-          - result.tags.Name == '{{ resource_prefix }} ec2_tag volume'
+          - result.tags.Name == resource_prefix +" ec2_tag volume"
           - result.tags.foo == 'foo'
           - result.tags.bar == 'baz'
           - result.tags.baz == 'also baz'
           - result_info.tags | length == 4
-          - result_info.tags.Name == '{{ resource_prefix }} ec2_tag volume'
+          - result_info.tags.Name == resource_prefix +' ec2_tag volume'
           - result_info.tags.foo == 'foo'
           - result_info.tags.bar == 'baz'
           - result_info.tags.baz == 'also baz'
@@ -94,7 +94,7 @@
           - result.tags | length == 2
           - "'added_tags' not in result"
           - result.removed_tags | length == 1
-          - result.tags.Name == '{{ resource_prefix }} ec2_tag volume'
+          - result.tags.Name == resource_prefix +' ec2_tag volume'
           - result.tags.bar == 'baz'
 
     - name: Set an exclusive tag

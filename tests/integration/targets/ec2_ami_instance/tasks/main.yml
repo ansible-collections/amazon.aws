@@ -241,7 +241,7 @@
     - name: assert that the right image was found
       ansible.builtin.assert:
         that:
-          - ami_info_result.images[0].image_id == '{{ ec2_region_images[ec2_region] }}'
+          - ami_info_result.images[0].image_id == ec2_region_images[ec2_region]
 
     # ============================================================
 
@@ -256,7 +256,7 @@
     - name: assert that the right image was found
       ansible.builtin.assert:
         that:
-          - ami_info_result.images[0].image_id == '{{ ec2_region_images[ec2_region] }}'
+          - ami_info_result.images[0].image_id == ec2_region_images[ec2_region]
 
     # ============================================================
 
@@ -272,7 +272,7 @@
     - name: assert that the right image was found
       ansible.builtin.assert:
         that:
-          - ami_info_result.images[0].image_id == '{{ ec2_region_images[ec2_region] }}'
+          - ami_info_result.images[0].image_id == ec2_region_images[ec2_region]
 
     # ============================================================
 
@@ -287,7 +287,7 @@
     - name: assert that the right image was found
       ansible.builtin.assert:
         that:
-          - ami_info_result.images[0].image_id == '{{ ec2_region_images[ec2_region] }}'
+          - ami_info_result.images[0].image_id == ec2_region_images[ec2_region]
 
     # ec2_ami_info filtering tests ends
     # ============================================================
