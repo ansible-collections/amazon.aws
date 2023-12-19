@@ -1095,7 +1095,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_ta
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
 from ansible_collections.amazon.aws.plugins.module_utils.tower import tower_callback_script
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
-from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
 
 module = None
 
