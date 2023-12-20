@@ -7,20 +7,21 @@
       session_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
   block:
-    - name: create t3.nano instance with metadata_options
+
+    - name: Create a new instance
       amazon.aws.ec2_instance:
-        state: present
-        name: "{{ resource_prefix }}-test-t3nano-enabled-required"
+        state: running
+        name: "{{ resource_prefix }}-test-basic"
+        instance_type: "{{ ec2_instance_type }}"
         image_id: "{{ ec2_ami_id }}"
         tags:
           TestId: "{{ ec2_instance_tag_TestId }}"
-        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
-        instance_type: t3.nano
         metadata_options:
           http_endpoint: enabled
           http_tokens: required
           instance_metadata_tags: enabled
-        wait: false
+          http_put_response_hop_limit: 2
+        wait: true
       register: instance_creation
 
     - name: instance with metadata_options created with the right options
@@ -31,6 +32,7 @@
           - instance_creation.spec.MetadataOptions.HttpEndpoint == 'enabled'
           - instance_creation.spec.MetadataOptions.HttpTokens == 'required'
           - instance_creation.spec.MetadataOptions.InstanceMetadataTags == 'enabled'
+          - instance_creation.spec.MetadataOptions.HttpPutResponseHopLimit == 2
 
     - name: modify metadata_options on existing instance
       amazon.aws.ec2_instance:
@@ -44,9 +46,9 @@
         metadata_options:
           http_endpoint: enabled
           http_tokens: optional
+          http_put_response_hop_limit: 4
         wait: false
       register: metadata_options_update
-      ignore_errors: true
 
     - name: fact presented ec2 instance
       amazon.aws.ec2_instance_info:
@@ -54,12 +56,13 @@
           tag:Name: "{{ resource_prefix }}-test-t3nano-enabled-required"
       register: presented_instance_fact
 
-    - name: modify metadata_options has no effect on existing instance
+    - name: Assert that instance metadata options have been modified successfully
       ansible.builtin.assert:
         that:
           - metadata_options_update is success
-          - metadata_options_update is not changed
+          - metadata_options_update is changed
           - presented_instance_fact.instances | length > 0
           - presented_instance_fact.instances.0.state.name in ['running','pending']
           - presented_instance_fact.instances.0.metadata_options.http_endpoint == 'enabled'
-          - presented_instance_fact.instances.0.metadata_options.http_tokens == 'required'
+          - presented_instance_fact.instances.0.metadata_options.http_tokens == 'optional'
+          - presented_instance_fact.instances.0.metadata_options.http_put_response_hop_limit == 4
