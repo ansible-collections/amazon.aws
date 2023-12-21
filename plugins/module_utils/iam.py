@@ -329,7 +329,7 @@ def _validate_iam_name(resource_type, name=None):
 def _validate_iam_path(resource_type, path=None):
     if path is None:
         return None
-    regex = r"(\u002F)|(\u002F[\u0021-\u007E]+\u002F)"
+    regex = r"\/([\w+=,.@-]+\/)*"
     max_length = 512
     if len(path) > max_length:
         return f"Length of {resource_type} path may not exceed {max_length}"
