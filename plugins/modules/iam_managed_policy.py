@@ -206,14 +206,16 @@ def get_policy_by_name(name):
 def delete_oldest_non_default_version(policy):
     try:
         versions = [
-            v for v in client.list_policy_versions(PolicyArn=policy["Arn"])["Versions"] if not v["IsDefaultVersion"]
+            v
+            for v in client.list_policy_versions(aws_retry=True, PolicyArn=policy["Arn"])["Versions"]
+            if not v["IsDefaultVersion"]
         ]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Couldn't list policy versions")
     versions.sort(key=lambda v: v["CreateDate"], reverse=True)
     for v in versions[-1:]:
         try:
-            client.delete_policy_version(PolicyArn=policy["Arn"], VersionId=v["VersionId"])
+            client.delete_policy_version(aws_retry=True, PolicyArn=policy["Arn"], VersionId=v["VersionId"])
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg="Couldn't delete policy version")
 
@@ -221,15 +223,15 @@ def delete_oldest_non_default_version(policy):
 # This needs to return policy_version, changed
 def get_or_create_policy_version(policy, policy_document):
     try:
-        versions = client.list_policy_versions(PolicyArn=policy["Arn"])["Versions"]
+        versions = client.list_policy_versions(aws_retry=True, PolicyArn=policy["Arn"])["Versions"]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Couldn't list policy versions")
 
     for v in versions:
         try:
-            document = client.get_policy_version(PolicyArn=policy["Arn"], VersionId=v["VersionId"])["PolicyVersion"][
-                "Document"
-            ]
+            document = client.get_policy_version(aws_retry=True, PolicyArn=policy["Arn"], VersionId=v["VersionId"])[
+                "PolicyVersion"
+            ]["Document"]
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg=f"Couldn't get policy version {v['VersionId']}")
 
@@ -247,14 +249,16 @@ def get_or_create_policy_version(policy, policy_document):
     # and if that doesn't work, delete the oldest non default policy version
     # and try again.
     try:
-        version = client.create_policy_version(PolicyArn=policy["Arn"], PolicyDocument=policy_document)["PolicyVersion"]
+        version = client.create_policy_version(aws_retry=True, PolicyArn=policy["Arn"], PolicyDocument=policy_document)[
+            "PolicyVersion"
+        ]
         return version, True
     except is_boto3_error_code("LimitExceeded"):
         delete_oldest_non_default_version(policy)
         try:
-            version = client.create_policy_version(PolicyArn=policy["Arn"], PolicyDocument=policy_document)[
-                "PolicyVersion"
-            ]
+            version = client.create_policy_version(
+                aws_retry=True, PolicyArn=policy["Arn"], PolicyDocument=policy_document
+            )["PolicyVersion"]
             return version, True
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as second_e:
             module.fail_json_aws(second_e, msg="Couldn't create policy version")
@@ -268,7 +272,9 @@ def get_or_create_policy_version(policy, policy_document):
 def set_if_default(policy, policy_version, is_default):
     if is_default and not policy_version["IsDefaultVersion"]:
         try:
-            client.set_default_policy_version(PolicyArn=policy["Arn"], VersionId=policy_version["VersionId"])
+            client.set_default_policy_version(
+                aws_retry=True, PolicyArn=policy["Arn"], VersionId=policy_version["VersionId"]
+            )
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg="Couldn't set default policy version")
         return True
@@ -279,13 +285,15 @@ def set_if_only(policy, policy_version, is_only):
     if is_only:
         try:
             versions = [
-                v for v in client.list_policy_versions(PolicyArn=policy["Arn"])["Versions"] if not v["IsDefaultVersion"]
+                v
+                for v in client.list_policy_versions(aws_retry=True, PolicyArn=policy["Arn"])["Versions"]
+                if not v["IsDefaultVersion"]
             ]
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg="Couldn't list policy versions")
         for v in versions:
             try:
-                client.delete_policy_version(PolicyArn=policy["Arn"], VersionId=v["VersionId"])
+                client.delete_policy_version(aws_retry=True, PolicyArn=policy["Arn"], VersionId=v["VersionId"])
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                 module.fail_json_aws(e, msg="Couldn't delete policy version")
         return len(versions) > 0
@@ -294,23 +302,23 @@ def set_if_only(policy, policy_version, is_only):
 
 def detach_all_entities(policy, **kwargs):
     try:
-        entities = client.list_entities_for_policy(PolicyArn=policy["Arn"], **kwargs)
+        entities = client.list_entities_for_policy(aws_retry=True, PolicyArn=policy["Arn"], **kwargs)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg=f"Couldn't detach list entities for policy {policy['PolicyName']}")
 
     for g in entities["PolicyGroups"]:
         try:
-            client.detach_group_policy(PolicyArn=policy["Arn"], GroupName=g["GroupName"])
+            client.detach_group_policy(aws_retry=True, PolicyArn=policy["Arn"], GroupName=g["GroupName"])
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg=f"Couldn't detach group policy {g['GroupName']}")
     for u in entities["PolicyUsers"]:
         try:
-            client.detach_user_policy(PolicyArn=policy["Arn"], UserName=u["UserName"])
+            client.detach_user_policy(aws_retry=True, PolicyArn=policy["Arn"], UserName=u["UserName"])
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg=f"Couldn't detach user policy {u['UserName']}")
     for r in entities["PolicyRoles"]:
         try:
-            client.detach_role_policy(PolicyArn=policy["Arn"], RoleName=r["RoleName"])
+            client.detach_role_policy(aws_retry=True, PolicyArn=policy["Arn"], RoleName=r["RoleName"])
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg=f"Couldn't detach role policy {r['RoleName']}")
     if entities["IsTruncated"]:
@@ -366,18 +374,20 @@ def delete_policy(existing_policy):
         detach_all_entities(existing_policy)
         # Delete Versions
         try:
-            versions = client.list_policy_versions(PolicyArn=existing_policy["Arn"])["Versions"]
+            versions = client.list_policy_versions(aws_retry=True, PolicyArn=existing_policy["Arn"])["Versions"]
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg="Couldn't list policy versions")
         for v in versions:
             if not v["IsDefaultVersion"]:
                 try:
-                    client.delete_policy_version(PolicyArn=existing_policy["Arn"], VersionId=v["VersionId"])
+                    client.delete_policy_version(
+                        aws_retry=True, PolicyArn=existing_policy["Arn"], VersionId=v["VersionId"]
+                    )
                 except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                     module.fail_json_aws(e, msg=f"Couldn't delete policy version {v['VersionId']}")
         # Delete policy
         try:
-            client.delete_policy(PolicyArn=existing_policy["Arn"])
+            client.delete_policy(aws_retry=True, PolicyArn=existing_policy["Arn"])
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg=f"Couldn't delete policy {existing_policy['PolicyName']}")
 
