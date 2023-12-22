@@ -192,7 +192,7 @@ def list_policies_with_backoff():
     return paginator.paginate(Scope="Local").build_full_result()
 
 
-def get_policy_by_name(name):
+def find_policy_by_name(name):
     try:
         response = list_policies_with_backoff()
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
@@ -201,6 +201,22 @@ def get_policy_by_name(name):
         if policy["PolicyName"] == name:
             return policy
     return None
+
+
+def get_policy_by_arn(arn):
+    try:
+        policy = client.get_policy(aws_retry=True, PolicyArn=arn)["Policy"]
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json(msg="Couldn't get policy")
+    return policy
+
+
+def get_policy_by_name(name):
+    # get_policy() requires an ARN, and list_policies() doesn't return all fields, so we need to do both :(
+    policy = find_policy_by_name(name)
+    if policy is None:
+        return None
+    return get_policy_by_arn(policy["Arn"])
 
 
 def delete_oldest_non_default_version(policy):
