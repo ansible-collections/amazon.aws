@@ -11,7 +11,7 @@
   block:
     ## Test policy creation
     - name: Create IAM managed policy - check mode
-      community.aws.iam_managed_policy:
+      amazon.aws.iam_managed_policy:
         policy_name: "{{ policy_name }}"
         policy:
           Version: "2012-10-17"
@@ -29,7 +29,7 @@
           - result.changed
 
     - name: Create IAM managed policy
-      community.aws.iam_managed_policy:
+      amazon.aws.iam_managed_policy:
         policy_name: "{{ policy_name }}"
         policy:
           Version: "2012-10-17"
@@ -44,10 +44,28 @@
       ansible.builtin.assert:
         that:
           - result.changed
+          - '"arn" in result.policy'
+          - '"attachment_count" in result.policy'
+          - '"create_date" in result.policy'
+          - '"default_version_id" in result.policy'
+          # - '"description" in result.policy'
+          - '"is_attachable" in result.policy'
+          - '"path" in result.policy'
+          - '"permissions_boundary_usage_count" in result.policy'
+          - '"policy_id" in result.policy'
+          - '"policy_name" in result.policy'
+          - '"tags" in result.policy'
+          - '"update_date" in result.policy'
           - result.policy.policy_name == policy_name
+          # - result.policy.description == ""
+          - result.policy.path == "/"
+
+    - name: store policy_id
+      set_fact:
+        managed_policy_id: '{{ result.policy.policy_id }}'
 
     - name: Create IAM managed policy - idempotency check
-      community.aws.iam_managed_policy:
+      amazon.aws.iam_managed_policy:
         policy_name: "{{ policy_name }}"
         policy:
           Version: "2012-10-17"
@@ -62,10 +80,26 @@
       ansible.builtin.assert:
         that:
           - not result.changed
+          - '"arn" in result.policy'
+          - '"attachment_count" in result.policy'
+          - '"create_date" in result.policy'
+          - '"default_version_id" in result.policy'
+          # - '"description" in result.policy'
+          - '"is_attachable" in result.policy'
+          - '"path" in result.policy'
+          - '"permissions_boundary_usage_count" in result.policy'
+          - '"policy_id" in result.policy'
+          - '"policy_name" in result.policy'
+          - '"tags" in result.policy'
+          - '"update_date" in result.policy'
+          - result.policy.policy_name == policy_name
+          # - result.policy.description == ""
+          - result.policy.path == "/"
+          - result.policy.policy_id == managed_policy_id
 
     ## Test policy update
     - name: Update IAM managed policy - check mode
-      community.aws.iam_managed_policy:
+      amazon.aws.iam_managed_policy:
         policy_name: "{{ policy_name }}"
         policy:
           Version: "2012-10-17"
@@ -83,7 +117,7 @@
           - result.changed
 
     - name: Update IAM managed policy
-      community.aws.iam_managed_policy:
+      amazon.aws.iam_managed_policy:
         policy_name: "{{ policy_name }}"
         policy:
           Version: "2012-10-17"
@@ -98,10 +132,25 @@
       ansible.builtin.assert:
         that:
           - result.changed
+          - '"arn" in result.policy'
+          - '"attachment_count" in result.policy'
+          - '"create_date" in result.policy'
+          - '"default_version_id" in result.policy'
+          # - '"description" in result.policy'
+          - '"is_attachable" in result.policy'
+          - '"path" in result.policy'
+          - '"permissions_boundary_usage_count" in result.policy'
+          - '"policy_id" in result.policy'
+          - '"policy_name" in result.policy'
+          - '"tags" in result.policy'
+          - '"update_date" in result.policy'
           - result.policy.policy_name == policy_name
+          # - result.policy.description == ""
+          - result.policy.path == "/"
+          - result.policy.policy_id == managed_policy_id
 
     - name: Update IAM managed policy - idempotency check
-      community.aws.iam_managed_policy:
+      amazon.aws.iam_managed_policy:
         policy_name: "{{ policy_name }}"
         policy:
           Version: "2012-10-17"
@@ -116,10 +165,84 @@
       ansible.builtin.assert:
         that:
           - not result.changed
+          - '"arn" in result.policy'
+          - '"attachment_count" in result.policy'
+          - '"create_date" in result.policy'
+          - '"default_version_id" in result.policy'
+          # - '"description" in result.policy'
+          - '"is_attachable" in result.policy'
+          - '"path" in result.policy'
+          - '"permissions_boundary_usage_count" in result.policy'
+          - '"policy_id" in result.policy'
+          - '"policy_name" in result.policy'
+          - '"tags" in result.policy'
+          - '"update_date" in result.policy'
+          - result.policy.policy_name == policy_name
+          # - result.policy.description == ""
+          - result.policy.path == "/"
+          - result.policy.policy_id == managed_policy_id
+
+    ## Test updating description (not supported)
+    - name: Update IAM managed policy description - idempotency check
+      amazon.aws.iam_managed_policy:
+        name: "{{ policy_name }}"
+        description: "{{ policy_description }}"
+        state: present
+      register: result
+
+    - name: Update IAM managed policy description - idempotency check
+      ansible.builtin.assert:
+        that:
+          - result is not changed
+          - '"arn" in result.policy'
+          - '"attachment_count" in result.policy'
+          - '"create_date" in result.policy'
+          - '"default_version_id" in result.policy'
+          # - '"description" in result.policy'
+          - '"is_attachable" in result.policy'
+          - '"path" in result.policy'
+          - '"permissions_boundary_usage_count" in result.policy'
+          - '"policy_id" in result.policy'
+          - '"policy_name" in result.policy'
+          - '"tags" in result.policy'
+          - '"update_date" in result.policy'
+          - result.policy.policy_name == policy_name
+          # - result.policy.description == ""
+          - result.policy.path == "/"
+          - result.policy.policy_id == managed_policy_id
+
+    ## Test updating path (not supported)
+    - name: Update IAM managed policy path - idempotency check
+      amazon.aws.iam_managed_policy:
+        name: "{{ policy_name }}"
+        path: "{{ policy_path }}"
+        state: present
+      register: result
+
+    - name: Update IAM managed policy path - idempotency check
+      ansible.builtin.assert:
+        that:
+          - result is not changed
+          - '"arn" in result.policy'
+          - '"attachment_count" in result.policy'
+          - '"create_date" in result.policy'
+          - '"default_version_id" in result.policy'
+          # - '"description" in result.policy'
+          - '"is_attachable" in result.policy'
+          - '"path" in result.policy'
+          - '"permissions_boundary_usage_count" in result.policy'
+          - '"policy_id" in result.policy'
+          - '"policy_name" in result.policy'
+          - '"tags" in result.policy'
+          - '"update_date" in result.policy'
+          - result.policy.policy_name == policy_name
+          # - result.policy.description == ""
+          - result.policy.path == "/"
+          - result.policy.policy_id == managed_policy_id
 
     ## Test policy deletion
     - name: Delete IAM managed policy - check mode
-      community.aws.iam_managed_policy:
+      amazon.aws.iam_managed_policy:
         policy_name: "{{ policy_name }}"
         state: absent
       register: result
@@ -131,7 +254,7 @@
           - result.changed
 
     - name: Delete IAM managed policy
-      community.aws.iam_managed_policy:
+      amazon.aws.iam_managed_policy:
         policy_name: "{{ policy_name }}"
         state: absent
       register: result
@@ -140,9 +263,25 @@
       ansible.builtin.assert:
         that:
           - result.changed
+          - '"arn" in result.policy'
+          - '"attachment_count" in result.policy'
+          - '"create_date" in result.policy'
+          - '"default_version_id" in result.policy'
+          # - '"description" in result.policy'
+          - '"is_attachable" in result.policy'
+          - '"path" in result.policy'
+          - '"permissions_boundary_usage_count" in result.policy'
+          - '"policy_id" in result.policy'
+          - '"policy_name" in result.policy'
+          - '"tags" in result.policy'
+          - '"update_date" in result.policy'
+          - result.policy.policy_name == policy_name
+          # - result.policy.description == ""
+          - result.policy.path == "/"
+          - result.policy.policy_id == managed_policy_id
 
     - name: Delete IAM managed policy - idempotency check
-      community.aws.iam_managed_policy:
+      amazon.aws.iam_managed_policy:
         policy_name: "{{ policy_name }}"
         state: absent
       register: result
@@ -151,10 +290,126 @@
       ansible.builtin.assert:
         that:
           - not result.changed
+          - result.policy is none
+
+    ## Test more complex creation example
+    - name: Create complex IAM managed policy - check mode
+      amazon.aws.iam_managed_policy:
+        name: "{{ policy_name }}"
+        path: "{{ policy_path }}"
+        description: "{{ policy_description }}"
+        policy:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Deny
+              Action: logs:CreateLogGroup
+              Resource: "*"
+        state: present
+      register: result
+      check_mode: true
+
+    - name: Create complex IAM managed policy - check mode
+      ansible.builtin.assert:
+        that:
+          - result.changed
+
+    - name: Create complex IAM managed policy
+      amazon.aws.iam_managed_policy:
+        name: "{{ policy_name }}"
+        path: "{{ policy_path }}"
+        description: "{{ policy_description }}"
+        policy:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Deny
+              Action: logs:CreateLogGroup
+              Resource: "*"
+        state: present
+      register: result
+
+    - name: Create complex IAM managed policy
+      ansible.builtin.assert:
+        that:
+          - result.changed
+          - '"arn" in result.policy'
+          - '"attachment_count" in result.policy'
+          - '"create_date" in result.policy'
+          - '"default_version_id" in result.policy'
+          - '"description" in result.policy'
+          - '"is_attachable" in result.policy'
+          - '"path" in result.policy'
+          - '"permissions_boundary_usage_count" in result.policy'
+          - '"policy_id" in result.policy'
+          - '"policy_name" in result.policy'
+          - '"tags" in result.policy'
+          - '"update_date" in result.policy'
+          - result.policy.policy_name == policy_name
+          - result.policy.description == policy_description
+          - result.policy.path == policy_path
+          - result.policy.policy_id != managed_policy_id
+
+    - name: store new policy_id
+      set_fact:
+        managed_policy_id: '{{ result.policy.policy_id }}'
+
+    - name: Create complex IAM managed policy - idempotency check - check mode
+      amazon.aws.iam_managed_policy:
+        name: "{{ policy_name }}"
+        path: "{{ policy_path }}"
+        description: "{{ policy_description }}"
+        policy:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Deny
+              Action: logs:CreateLogGroup
+              Resource: "*"
+        state: present
+      register: result
+      check_mode: True
+
+    - name: Create complex IAM managed policy - idempotency check - check mode
+      ansible.builtin.assert:
+        that:
+          - not result.changed
+
+    - name: Create complex IAM managed policy - idempotency check
+      amazon.aws.iam_managed_policy:
+        name: "{{ policy_name }}"
+        path: "{{ policy_path }}"
+        description: "{{ policy_description }}"
+        policy:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Deny
+              Action: logs:CreateLogGroup
+              Resource: "*"
+        state: present
+      register: result
+
+    - name: Create complex IAM managed policy - idempotency check
+      ansible.builtin.assert:
+        that:
+          - not result.changed
+          - '"arn" in result.policy'
+          - '"attachment_count" in result.policy'
+          - '"create_date" in result.policy'
+          - '"default_version_id" in result.policy'
+          - '"description" in result.policy'
+          - '"is_attachable" in result.policy'
+          - '"path" in result.policy'
+          - '"permissions_boundary_usage_count" in result.policy'
+          - '"policy_id" in result.policy'
+          - '"policy_name" in result.policy'
+          - '"tags" in result.policy'
+          - '"update_date" in result.policy'
+          - result.policy.policy_name == policy_name
+          - result.policy.description == policy_description
+          - result.policy.path == policy_path
+          - result.policy.policy_id == managed_policy_id
 
   always:
     - name: Delete IAM managed policy
-      community.aws.iam_managed_policy:
+      amazon.aws.iam_managed_policy:
         policy_name: "{{ policy_name }}"
         state: absent
       ignore_errors: true
