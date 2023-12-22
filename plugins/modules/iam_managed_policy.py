@@ -28,7 +28,6 @@ options:
     description:
       - A helpful description of this policy, this value is immutable and only set when creating a new policy.
       - The parameter was renamed from C(policy_description) to C(description) in release 7.2.0.
-    default: ''
     aliases: ["policy_description"]
     type: str
   policy:
@@ -352,6 +351,61 @@ def detach_all_entities(policy, **kwargs):
         detach_all_entities(policy, marker=entities["Marker"])
 
 
+def create_managed_policy(name, policy, description):
+    if module.check_mode:
+        module.exit_json(changed=True)
+    if policy is None:
+        module.fail_json("Managed policy would be created but policy parameter is missing")
+
+    params = {"PolicyName": name, "PolicyDocument": policy}
+
+    if description:
+        params["Description"] = description
+
+    try:
+        rvalue = client.create_policy(aws_retry=True, **params)
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg=f"Couldn't create policy {name}")
+    # rvalue is incomplete
+    new_policy = get_policy_by_arn(rvalue["Policy"]["Arn"])
+
+    module.exit_json(changed=True, policy=normalize_policy(new_policy))
+
+
+def ensure_description(existing_policy, description):
+    if description is None:
+        return False
+
+    existing_description = existing_policy.get("Description", "")
+    if existing_description == description:
+        return False
+
+    # As of botocore 1.34.3, the APIs don't support updating the Description
+    module.warn(f"Unable to update description from '{existing_description}' to '{description}'")
+    return False
+
+
+def ensure_policy_document(existing_policy, policy, default, only):
+    if policy is None:
+        return False
+    policy_version, changed = get_or_create_policy_version(existing_policy, policy)
+    changed |= set_if_default(existing_policy, policy_version, default)
+    changed |= set_if_only(existing_policy, policy_version, only)
+    return changed
+
+
+def update_managed_policy(existing_policy, policy, description, default, only):
+    changed |= ensure_description(existing_policy, description)
+    changed |= ensure_policy_document(existing_policy, policy, default, only)
+
+    if not changed:
+        module.exit_json(changed=changed, policy=normalize_policy(existing_policy))
+
+    # If anything has changed we need to refresh the policy
+    updated_policy = get_policy_by_arn(existing_policy["Arn"])
+    module.exit_json(changed=changed, policy=normalize_policy(updated_policy))
+
+
 def create_or_update_policy(existing_policy):
     name = module.params.get("name")
     description = module.params.get("description")
@@ -364,31 +418,9 @@ def create_or_update_policy(existing_policy):
         policy = json.dumps(json.loads(module.params.get("policy")))
 
     if existing_policy is None:
-        if module.check_mode:
-            module.exit_json(changed=True)
-
-        # Create policy when none already exists
-        try:
-            rvalue = client.create_policy(PolicyName=name, Path="/", PolicyDocument=policy, Description=description)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg=f"Couldn't create policy {name}")
-
-        module.exit_json(changed=True, policy=normalize_policy(rvalue["Policy"]))
+        create_managed_policy(name, policy, description)
     else:
-        policy_version, changed = get_or_create_policy_version(existing_policy, policy)
-        changed = set_if_default(existing_policy, policy_version, default) or changed
-        changed = set_if_only(existing_policy, policy_version, only) or changed
-
-        # If anything has changed we need to refresh the policy
-        if changed:
-            try:
-                updated_policy = client.get_policy(PolicyArn=existing_policy["Arn"])["Policy"]
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                module.fail_json(msg="Couldn't get policy")
-
-            module.exit_json(changed=changed, policy=normalize_policy(updated_policy))
-        else:
-            module.exit_json(changed=changed, policy=normalize_policy(existing_policy))
+        update_managed_policy(existing_policy, policy, description, default, only)
 
 
 def delete_policy(existing_policy):
@@ -430,7 +462,7 @@ def main():
 
     argument_spec = dict(
         name=dict(required=True, aliases=["policy_name"]),
-        description=dict(default="", aliases=["policy_description"]),
+        description=dict(aliases=["policy_description"]),
         policy=dict(type="json"),
         make_default=dict(type="bool", default=True),
         only_version=dict(type="bool", default=False),
@@ -439,7 +471,6 @@ def main():
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
-        required_if=[["state", "present", ["policy"]]],
         supports_check_mode=True,
     )
 
