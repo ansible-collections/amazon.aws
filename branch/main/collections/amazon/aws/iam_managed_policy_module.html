@@ -231,6 +231,17 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-mana
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-description"></div>
+<div class="ansibleOptionAnchor" id="parameter-policy_description"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-managed-policy-module-parameter-policy-description"><span id="ansible-collections-amazon-aws-iam-managed-policy-module-parameter-description"></span><strong>description</strong></p>
+<a class="ansibleOptionLink" href="#parameter-description" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: policy_description</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>A helpful description of this policy, this value is immutable and only set when creating a new policy.</p>
+<p>The parameter was renamed from <code class="docutils literal notranslate"><span class="pre">policy_description</span></code> to <code class="docutils literal notranslate"><span class="pre">description</span></code> in release 7.2.0.</p>
+<p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-endpoint_url"></div>
 <div class="ansibleOptionAnchor" id="parameter-ec2_url"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_endpoint_url"></div>
@@ -244,7 +255,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-mana
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_URL</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-make_default"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-managed-policy-module-parameter-make-default"><strong>make_default</strong></p>
 <a class="ansibleOptionLink" href="#parameter-make_default" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -254,6 +265,17 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-mana
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">true</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 </ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-name"></div>
+<div class="ansibleOptionAnchor" id="parameter-policy_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-managed-policy-module-parameter-policy-name"><span id="ansible-collections-amazon-aws-iam-managed-policy-module-parameter-name"></span><strong>name</strong></p>
+<a class="ansibleOptionLink" href="#parameter-name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: policy_name</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The name of the managed policy.</p>
+<p>Note: Policy names are unique within an account.  Paths (<em>path</em>) do <strong>not</strong> affect the uniqueness requirements of <em>name</em>.  For example it is not permitted to have both <code class="docutils literal notranslate"><span class="pre">/Path1/MyPolicy</span></code> and <code class="docutils literal notranslate"><span class="pre">/Path2/MyPolicy</span></code> in the same account.</p>
+<p>The parameter was renamed from <code class="docutils literal notranslate"><span class="pre">policy_name</span></code> to <code class="docutils literal notranslate"><span class="pre">name</span></code> in release 7.2.0.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -273,21 +295,6 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-mana
 <a class="ansibleOptionLink" href="#parameter-policy" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">json</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A properly json formatted policy</p>
-</div></td>
-</tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-policy_description"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-managed-policy-module-parameter-policy-description"><strong>policy_description</strong></p>
-<a class="ansibleOptionLink" href="#parameter-policy_description" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-</div></td>
-<td><div class="ansible-option-cell"><p>A helpful description of this policy, this value is immutable and only set when creating a new policy.</p>
-<p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
-</div></td>
-</tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-policy_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-managed-policy-module-parameter-policy-name"><strong>policy_name</strong></p>
-<a class="ansibleOptionLink" href="#parameter-policy_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
-</div></td>
-<td><div class="ansible-option-cell"><p>The name of the managed policy.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">

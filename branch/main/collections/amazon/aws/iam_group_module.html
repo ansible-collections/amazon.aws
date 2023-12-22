@@ -257,11 +257,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-grou
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-group-module-parameter-name"><strong>name</strong></p>
-<a class="ansibleOptionLink" href="#parameter-name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
+<div class="ansibleOptionAnchor" id="parameter-name"></div>
+<div class="ansibleOptionAnchor" id="parameter-group_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-group-module-parameter-name"><span id="ansible-collections-amazon-aws-iam-group-module-parameter-group-name"></span><strong>name</strong></p>
+<a class="ansibleOptionLink" href="#parameter-name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: group_name</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The name of the group.</p>
-<p>Note: group names are unique within an account.  Paths (<em>path</em>) do <strong>not</strong> affect the uniqueness requirements of <em>name</em>.  For example it is not permitted to have both <code class="docutils literal notranslate"><span class="pre">/Path1/MyGroup</span></code> and <code class="docutils literal notranslate"><span class="pre">/Path2/MyGroup</span></code> in the same account.</p>
+<p>Note: Group names are unique within an account.  Paths (<em>path</em>) do <strong>not</strong> affect the uniqueness requirements of <em>name</em>.  For example it is not permitted to have both <code class="docutils literal notranslate"><span class="pre">/Path1/MyGroup</span></code> and <code class="docutils literal notranslate"><span class="pre">/Path2/MyGroup</span></code> in the same account.</p>
+<p>The alias <code class="docutils literal notranslate"><span class="pre">group_name</span></code> was added in release 7.2.0.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
