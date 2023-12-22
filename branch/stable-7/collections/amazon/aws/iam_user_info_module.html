@@ -246,22 +246,31 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-user
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-group"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-user-info-module-parameter-group"><strong>group</strong></p>
-<a class="ansibleOptionLink" href="#parameter-group" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<div class="ansibleOptionAnchor" id="parameter-group"></div>
+<div class="ansibleOptionAnchor" id="parameter-group_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-user-info-module-parameter-group-name"><span id="ansible-collections-amazon-aws-iam-user-info-module-parameter-group"></span><strong>group</strong></p>
+<a class="ansibleOptionLink" href="#parameter-group" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: group_name</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The group name name of the IAM user to look for. Mutually exclusive with <code class="docutils literal notranslate"><span class="pre">path</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">group_name</span></code> was added as an alias in release 7.2.0.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-user-info-module-parameter-name"><strong>name</strong></p>
-<a class="ansibleOptionLink" href="#parameter-name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<div class="ansibleOptionAnchor" id="parameter-name"></div>
+<div class="ansibleOptionAnchor" id="parameter-user_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-user-info-module-parameter-user-name"><span id="ansible-collections-amazon-aws-iam-user-info-module-parameter-name"></span><strong>name</strong></p>
+<a class="ansibleOptionLink" href="#parameter-name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: user_name</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The name of the IAM user to look for.</p>
+<p><code class="docutils literal notranslate"><span class="pre">user_name</span></code> was added as an alias in release 7.2.0.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-path"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-user-info-module-parameter-path"><strong>path</strong></p>
-<a class="ansibleOptionLink" href="#parameter-path" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<div class="ansibleOptionAnchor" id="parameter-path_prefix"></div>
+<div class="ansibleOptionAnchor" id="parameter-path"></div>
+<div class="ansibleOptionAnchor" id="parameter-prefix"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-user-info-module-parameter-prefix"><span id="ansible-collections-amazon-aws-iam-user-info-module-parameter-path-prefix"></span><span id="ansible-collections-amazon-aws-iam-user-info-module-parameter-path"></span><strong>path_prefix</strong></p>
+<a class="ansibleOptionLink" href="#parameter-path_prefix" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: path, prefix</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The path to the IAM user. Mutually exclusive with <code class="docutils literal notranslate"><span class="pre">group</span></code>.</p>
 <p>If specified, then would get all user names whose path starts with user provided value.</p>

@@ -316,18 +316,27 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-role
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-role-module-parameter-name"><strong>name</strong></p>
-<a class="ansibleOptionLink" href="#parameter-name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
+<div class="ansibleOptionAnchor" id="parameter-name"></div>
+<div class="ansibleOptionAnchor" id="parameter-role_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-role-module-parameter-role-name"><span id="ansible-collections-amazon-aws-iam-role-module-parameter-name"></span><strong>name</strong></p>
+<a class="ansibleOptionLink" href="#parameter-name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: role_name</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>The name of the role to create.</p>
+<td><div class="ansible-option-cell"><p>The name of the role.</p>
+<p>Note: Role names are unique within an account.  Paths (<em>path</em>) do <strong>not</strong> affect the uniqueness requirements of <em>name</em>.  For example it is not permitted to have both <code class="docutils literal notranslate"><span class="pre">/Path1/MyRole</span></code> and <code class="docutils literal notranslate"><span class="pre">/Path2/MyRole</span></code> in the same account.</p>
+<p><code class="docutils literal notranslate"><span class="pre">role_name</span></code> was added as an alias in release 7.2.0.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-path"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-role-module-parameter-path"><strong>path</strong></p>
-<a class="ansibleOptionLink" href="#parameter-path" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<div class="ansibleOptionAnchor" id="parameter-path"></div>
+<div class="ansibleOptionAnchor" id="parameter-prefix"></div>
+<div class="ansibleOptionAnchor" id="parameter-path_prefix"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-role-module-parameter-prefix"><span id="ansible-collections-amazon-aws-iam-role-module-parameter-path-prefix"></span><span id="ansible-collections-amazon-aws-iam-role-module-parameter-path"></span><strong>path</strong></p>
+<a class="ansibleOptionLink" href="#parameter-path" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: prefix, path_prefix</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>The path to the role. For more information about paths, see <a class="reference external" href="https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html">https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html</a>.</p>
-<p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;/&quot;</span></code></p>
+<td><div class="ansible-option-cell"><p>The path of the role.</p>
+<p>For more information about IAM paths, see the AWS IAM identifiers documentation <a class="reference external" href="https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html">https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html</a>.</p>
+<p>Updating the path on an existing role is not currently supported and will result in a warning.</p>
+<p><code class="docutils literal notranslate"><span class="pre">path_prefix</span></code> and <code class="docutils literal notranslate"><span class="pre">prefix</span></code> were added as aliases in release 7.2.0.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
