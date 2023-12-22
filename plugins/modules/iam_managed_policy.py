@@ -59,12 +59,15 @@ options:
     default: present
     choices: [ "present", "absent" ]
     type: str
+notes:
+  - Support for I(tags) and I(purge_tags) was added in release 7.2.0.
 
 author:
   - "Dan Kozlowski (@dkhenry)"
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
+  - amazon.aws.tags.modules
   - amazon.aws.boto3
 """
 
@@ -192,9 +195,9 @@ from ansible_collections.amazon.aws.plugins.module_utils.iam import validate_iam
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.policy import compare_policies
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
-
-# from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
 
 
 def normalize_policy(policy):
@@ -360,7 +363,7 @@ def detach_all_entities(policy, **kwargs):
         detach_all_entities(policy, marker=entities["Marker"])
 
 
-def create_managed_policy(name, path, policy, description):
+def create_managed_policy(name, path, policy, description, tags):
     if module.check_mode:
         module.exit_json(changed=True)
     if policy is None:
@@ -372,6 +375,8 @@ def create_managed_policy(name, path, policy, description):
         params["Path"] = path
     if description:
         params["Description"] = description
+    if tags:
+        params["Tags"] = ansible_dict_to_boto3_tag_list(tags)
 
     try:
         rvalue = client.create_policy(aws_retry=True, **params)
@@ -418,10 +423,39 @@ def ensure_policy_document(existing_policy, policy, default, only):
     return changed
 
 
-def update_managed_policy(existing_policy, path, policy, description, default, only):
+def ensure_tags(existing_policy, tags, purge_tags):
+    if tags is None:
+        return False
+
+    original_tags = boto3_tag_list_to_ansible_dict(existing_policy.get("Tags") or [])
+
+    tags_to_set, tag_keys_to_unset = compare_aws_tags(original_tags, tags, purge_tags)
+    if not tags_to_set and not tag_keys_to_unset:
+        return False
+
+    if module.check_mode:
+        return True
+
+    if tag_keys_to_unset:
+        try:
+            client.untag_policy(aws_retry=True, PolicyArn=existing_policy["Arn"], TagKeys=tag_keys_to_unset)
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            module.fail_json_aws(e, msg="Couldn't untag policy")
+    if tags_to_set:
+        tag_list = ansible_dict_to_boto3_tag_list(tags_to_set)
+        try:
+            client.tag_policy(aws_retry=True, PolicyArn=existing_policy["Arn"], Tags=tag_list)
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            module.fail_json_aws(e, msg="Couldn't tag policy")
+
+    return True
+
+
+def update_managed_policy(existing_policy, path, policy, description, default, only, tags, purge_tags):
     changed = ensure_path(existing_policy, path)
     changed |= ensure_description(existing_policy, description)
     changed |= ensure_policy_document(existing_policy, policy, default, only)
+    changed |= ensure_tags(existing_policy, tags, purge_tags)
 
     if not changed:
         module.exit_json(changed=changed, policy=normalize_policy(existing_policy))
@@ -437,6 +471,8 @@ def create_or_update_policy(existing_policy):
     description = module.params.get("description")
     default = module.params.get("make_default")
     only = module.params.get("only_version")
+    tags = module.params.get("tags")
+    purge_tags = module.params.get("purge_tags")
 
     policy = None
 
@@ -444,9 +480,9 @@ def create_or_update_policy(existing_policy):
         policy = json.dumps(json.loads(module.params.get("policy")))
 
     if existing_policy is None:
-        create_managed_policy(name, path, policy, description)
+        create_managed_policy(name, path, policy, description, tags)
     else:
-        update_managed_policy(existing_policy, path, policy, description, default, only)
+        update_managed_policy(existing_policy, path, policy, description, default, only, tags, purge_tags)
 
 
 def delete_policy(existing_policy):
@@ -494,6 +530,8 @@ def main():
         make_default=dict(type="bool", default=True),
         only_version=dict(type="bool", default=False),
         state=dict(default="present", choices=["present", "absent"]),
+        tags=dict(type="dict", aliases=["resource_tags"]),
+        purge_tags=dict(type="bool", default=True),
     )
 
     module = AnsibleAWSModule(
