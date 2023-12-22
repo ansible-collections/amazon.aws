@@ -13,15 +13,23 @@ short_description: Manage User Managed IAM policies
 description:
   - Allows creating and removing managed IAM policies
 options:
-  policy_name:
+  name:
     description:
       - The name of the managed policy.
+      - >-
+        Note: Policy names are unique within an account.  Paths (I(path)) do B(not) affect
+        the uniqueness requirements of I(name).  For example it is not permitted to have both
+        C(/Path1/MyPolicy) and C(/Path2/MyPolicy) in the same account.
+      - The parameter was renamed from C(policy_name) to C(name) in release 7.2.0.
     required: true
     type: str
-  policy_description:
+    aliases: ["policy_name"]
+  description:
     description:
       - A helpful description of this policy, this value is immutable and only set when creating a new policy.
+      - The parameter was renamed from C(policy_description) to C(description) in release 7.2.0.
     default: ''
+    aliases: ["policy_description"]
     type: str
   policy:
     description:
@@ -134,6 +142,7 @@ from ansible.module_utils._text import to_native
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.iam import validate_iam_identifiers
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.policy import compare_policies
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
@@ -271,8 +280,8 @@ def detach_all_entities(policy, **kwargs):
 
 
 def create_or_update_policy(existing_policy):
-    name = module.params.get("policy_name")
-    description = module.params.get("policy_description")
+    name = module.params.get("name")
+    description = module.params.get("description")
     default = module.params.get("make_default")
     only = module.params.get("only_version")
 
@@ -345,8 +354,8 @@ def main():
     global client
 
     argument_spec = dict(
-        policy_name=dict(required=True),
-        policy_description=dict(default=""),
+        name=dict(required=True, aliases=["policy_name"]),
+        description=dict(default="", aliases=["policy_description"]),
         policy=dict(type="json"),
         make_default=dict(type="bool", default=True),
         only_version=dict(type="bool", default=False),
@@ -359,8 +368,12 @@ def main():
         supports_check_mode=True,
     )
 
-    name = module.params.get("policy_name")
+    name = module.params.get("name")
     state = module.params.get("state")
+
+    identifier_problem = validate_iam_identifiers("policy", name=name)
+    if identifier_problem:
+        module.fail_json(msg=identifier_problem)
 
     try:
         client = module.client("iam", retry_decorator=AWSRetry.jittered_backoff())

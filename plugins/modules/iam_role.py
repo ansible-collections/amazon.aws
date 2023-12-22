@@ -17,14 +17,25 @@ author:
 options:
   path:
     description:
-      - The path to the role. For more information about paths, see U(https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html).
-    default: "/"
+      - The path of the role.
+      - For more information about IAM paths, see the AWS IAM identifiers documentation
+        U(https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html).
+      - Updating the path on an existing role is not currently supported and will result in a
+        warning.
+      - C(path_prefix) and C(prefix) were added as aliases in release 7.2.0.
     type: str
+    aliases: ["prefix", "path_prefix"]
   name:
     description:
-      - The name of the role to create.
+      - The name of the role.
+      - >-
+        Note: Role names are unique within an account.  Paths (I(path)) do B(not) affect
+        the uniqueness requirements of I(name).  For example it is not permitted to have both
+        C(/Path1/MyRole) and C(/Path2/MyRole) in the same account.
+      - C(role_name) was added as an alias in release 7.2.0.
     required: true
     type: str
+    aliases: ["role_name"]
   description:
     description:
       - Provides a description of the role.
@@ -227,6 +238,7 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 
 from ansible_collections.amazon.aws.plugins.module_utils.arn import validate_aws_arn
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.iam import validate_iam_identifiers
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.policy import compare_policies
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
@@ -330,7 +342,7 @@ def remove_inline_policies(module, client, role_name):
 
 def generate_create_params(module):
     params = dict()
-    params["Path"] = module.params.get("path")
+    params["Path"] = module.params.get("path") or "/"
     params["RoleName"] = module.params.get("name")
     params["AssumeRolePolicyDocument"] = module.params.get("assume_role_policy_document")
     if module.params.get("description") is not None:
@@ -503,6 +515,13 @@ def create_or_update_role(module, client):
         current_duration = role.get("MaxSessionDuration")
         current_permissions_boundary = role.get("PermissionsBoundary", {}).get("PermissionsBoundaryArn", "")
 
+        # As of botocore 1.34.3, the APIs don't support updating the Name or Path
+        if path is not None and role.get("Path") != path:
+            module.warn(
+                "iam_role doesn't support updating the path: "
+                f"current path '{role.get('Path')}', requested path '{path}'"
+            )
+
         # Update attributes
         changed |= update_role_tags(module, client, role_name, tags, purge_tags)
         changed |= update_role_assumed_policy(module, client, role_name, assumed_policy, current_assumed_policy)
@@ -535,6 +554,7 @@ def create_or_update_role(module, client):
 
 
 def create_instance_profiles(module, client, role_name, path):
+    path = path or "/"
     # Fetch existing Profiles
     try:
         instance_profiles = client.list_instance_profiles_for_role(RoleName=role_name, aws_retry=True)[
@@ -705,8 +725,8 @@ def update_role_tags(module, client, role_name, new_tags, purge_tags):
 
 def main():
     argument_spec = dict(
-        name=dict(type="str", required=True),
-        path=dict(type="str", default="/"),
+        name=dict(type="str", aliases=["role_name"], required=True),
+        path=dict(type="str", aliases=["path_prefix", "prefix"]),
         assume_role_policy_document=dict(type="json"),
         managed_policies=dict(type="list", aliases=["managed_policy"], elements="str"),
         max_session_duration=dict(type="int"),
@@ -753,10 +773,12 @@ def main():
         max_session_duration = module.params.get("max_session_duration")
         if max_session_duration < 3600 or max_session_duration > 43200:
             module.fail_json(msg="max_session_duration must be between 1 and 12 hours (3600 and 43200 seconds)")
-    if module.params.get("path"):
-        path = module.params.get("path")
-        if not path.endswith("/") or not path.startswith("/"):
-            module.fail_json(msg="path must begin and end with /")
+
+    identifier_problem = validate_iam_identifiers(
+        "role", name=module.params.get("name"), path=module.params.get("path")
+    )
+    if identifier_problem:
+        module.fail_json(msg=identifier_problem)
 
     client = module.client("iam", retry_decorator=AWSRetry.jittered_backoff())
 
