@@ -23,11 +23,13 @@ options:
         Note: user names are unique within an account.  Paths (I(path)) do B(not) affect
         the uniqueness requirements of I(name).  For example it is not permitted to have both
         C(/Path1/MyUser) and C(/Path2/MyUser) in the same account.
+      - C(user_name) was added as an alias in release 7.2.0.
     required: true
     type: str
+    aliases: ['user_name']
   path:
     description:
-      - The path for the user name.
+      - The path for the user.
       - For more information about IAM paths, see the AWS IAM identifiers documentation
         U(https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html).
     aliases: ['prefix', 'path_prefix']
@@ -227,6 +229,7 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.iam import AnsibleIAMError
 from ansible_collections.amazon.aws.plugins.module_utils.iam import convert_managed_policy_names_to_arns
+from ansible_collections.amazon.aws.plugins.module_utils.iam import validate_iam_identifiers
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
@@ -735,7 +738,7 @@ def get_user(connection, name):
 
 def main():
     argument_spec = dict(
-        name=dict(required=True, type="str"),
+        name=dict(required=True, type="str", aliases=["user_name"]),
         path=dict(type="str", aliases=["prefix", "path_prefix"]),
         boundary=dict(type="str", aliases=["boundary_policy_arn", "permissions_boundary"]),
         password=dict(type="str", no_log=True),
@@ -762,6 +765,12 @@ def main():
         date="2024-05-01",
         collection_name="amazon.aws",
     )
+
+    identifier_problem = validate_iam_identifiers(
+        "user", name=module.params.get("name"), path=module.params.get("path")
+    )
+    if identifier_problem:
+        module.fail_json(msg=identifier_problem)
 
     retry_decorator = AWSRetry.jittered_backoff(catch_extra_error_codes=["EntityTemporarilyUnmodifiable"])
     connection = module.client("iam", retry_decorator=retry_decorator)
