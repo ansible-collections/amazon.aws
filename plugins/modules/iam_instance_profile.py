@@ -22,17 +22,24 @@ options:
     default: "present"
   name:
     description:
-      - Name of an instance profile.
-    aliases:
-      - instance_profile_name
+      - Name of the instance profile.
+      - >-
+        Note: Profile names are unique within an account.  Paths (I(path)) do B(not) affect
+        the uniqueness requirements of I(name).  For example it is not permitted to have both
+        C(/Path1/MyProfile) and C(/Path2/MyProfile) in the same account.
+    aliases: ["instance_profile_name"]
     type: str
     required: True
-  prefix:
+  path:
     description:
-      - The path prefix for filtering the results.
-    aliases: ["path_prefix", "path"]
+      - The instance profile path.
+      - For more information about IAM paths, see the AWS IAM identifiers documentation
+        U(https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html).
+      - Updating the path on an existing profile is not currently supported and will result in a
+        warning.
+      - The parameter was renamed from C(prefix) to C(path) in release 7.2.0.
+    aliases: ["path_prefix", "prefix"]
     type: str
-    default: "/"
   role:
     description:
       - The name of the role to attach to the instance profile.
@@ -47,19 +54,32 @@ extends_documentation_fragment:
 """
 
 EXAMPLES = r"""
-- name: Find all existing IAM instance profiles
+- name: Create Instance Profile
+  amazon.aws.iam_instance_profile:
+    name: "ExampleInstanceProfile"
+    role: "/OurExamples/MyExampleRole"
+    path: "/OurExamples/"
+    tags:
+      ExampleTag: Example Value
+  register: profile_result
+
+- name: Create second Instance Profile with default path
+  amazon.aws.iam_instance_profile:
+    name: "ExampleInstanceProfile2"
+    role: "/OurExamples/MyExampleRole"
+    tags:
+      ExampleTag: Another Example Value
+  register: profile_result
+
+- name: Find all IAM instance profiles starting with /OurExamples/
   amazon.aws.iam_instance_profile_info:
+    path_prefix: /OurExamples/
   register: result
 
-- name: Describe a single instance profile
-  amazon.aws.iam_instance_profile_info:
-    name: MyIAMProfile
-  register: result
-
-- name: Find all IAM instance profiles starting with /some/path/
-  amazon.aws.iam_instance_profile_info:
-    prefile: /some/path/
-  register: result
+- name: Delete second Instance Profile
+  amazon.aws.iam_instance_profile:
+    name: "ExampleInstanceProfile2"
+    state: absent
 """
 
 RETURN = r"""
@@ -116,6 +136,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.iam import normalize_ia
 from ansible_collections.amazon.aws.plugins.module_utils.iam import remove_role_from_iam_instance_profile
 from ansible_collections.amazon.aws.plugins.module_utils.iam import tag_iam_instance_profile
 from ansible_collections.amazon.aws.plugins.module_utils.iam import untag_iam_instance_profile
+from ansible_collections.amazon.aws.plugins.module_utils.iam import validate_iam_identifiers
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
@@ -277,7 +298,7 @@ def main():
     """
     argument_spec = dict(
         name=dict(aliases=["instance_profile_name"], required=True),
-        prefix=dict(aliases=["path_prefix", "path"], default="/"),
+        path=dict(aliases=["path_prefix", "prefix"]),
         state=dict(choices=["absent", "present"], default="present"),
         tags=dict(aliases=["resource_tags"], type="dict"),
         purge_tags=dict(type="bool", default=True),
@@ -289,30 +310,40 @@ def main():
         supports_check_mode=True,
     )
 
+    name = module.params.get("name")
+    state = module.params.get("state")
+    path = module.params.get("path")
+
+    identifier_problem = validate_iam_identifiers("instance profile", name=name, path=path)
+    if identifier_problem:
+        module.fail_json(msg=identifier_problem)
+
     client = module.client("iam", retry_decorator=AWSRetry.jittered_backoff())
-
     try:
-        name = module.params["name"]
-        prefix = module.params["prefix"]
-        state = module.params["state"]
-
-        original_profile = describe_iam_instance_profile(client, name, prefix)
+        original_profile = describe_iam_instance_profile(client, name, path)
 
         if state == "absent":
             changed = ensure_absent(
                 original_profile,
                 client,
                 name,
-                prefix,
+                path,
                 module.check_mode,
             )
             final_profile = None
         else:
+            # As of botocore 1.34.3, the APIs don't support updating the Name or Path
+            if original_profile and path and original_profile.get("path") != path:
+                module.warn(
+                    "iam_instance_profile doesn't support updating the path: "
+                    f"current path '{original_profile.get('path')}', requested path '{path}'"
+                )
+
             changed, final_profile = ensure_present(
                 original_profile,
                 client,
                 name,
-                prefix,
+                path,
                 module.params["tags"],
                 module.params["purge_tags"],
                 module.params["role"],
@@ -320,7 +351,7 @@ def main():
             )
 
         if not module.check_mode:
-            final_profile = describe_iam_instance_profile(client, name, prefix)
+            final_profile = describe_iam_instance_profile(client, name, path)
 
     except AnsibleIAMError as e:
         if e.exception:
