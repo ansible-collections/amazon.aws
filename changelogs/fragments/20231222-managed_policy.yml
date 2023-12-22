@@ -1,0 +1,8 @@
+---
+minor_changes:
+  - iam_managed_policy - ``policy`` is no longer a required parameter ().
+  - iam_managed_policy - ``description`` attempting to update the description now results in a warning, previously it was simply ignored ().
+  - iam_managed_policy - support for setting ``path`` ().
+  - iam_managed_policy - more consistently perform retries on rate limiting errors ().
+bugfixes:
+  - iam_managed_policy - fixed an issue where only partial results were returned ().
