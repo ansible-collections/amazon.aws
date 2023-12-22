@@ -185,6 +185,17 @@ from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleA
 from ansible_collections.amazon.aws.plugins.module_utils.policy import compare_policies
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 
+# from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+
+
+def normalize_policy(policy):
+    if not policy:
+        return policy
+    camel_policy = camel_dict_to_snake_dict(policy)
+    camel_policy["tags"] = boto3_tag_list_to_ansible_dict(policy.get("Tags", []))
+    return camel_policy
+
 
 @AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
 def list_policies_with_backoff():
@@ -362,7 +373,7 @@ def create_or_update_policy(existing_policy):
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg=f"Couldn't create policy {name}")
 
-        module.exit_json(changed=True, policy=camel_dict_to_snake_dict(rvalue["Policy"]))
+        module.exit_json(changed=True, policy=normalize_policy(rvalue["Policy"]))
     else:
         policy_version, changed = get_or_create_policy_version(existing_policy, policy)
         changed = set_if_default(existing_policy, policy_version, default) or changed
@@ -375,9 +386,9 @@ def create_or_update_policy(existing_policy):
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                 module.fail_json(msg="Couldn't get policy")
 
-            module.exit_json(changed=changed, policy=camel_dict_to_snake_dict(updated_policy))
+            module.exit_json(changed=changed, policy=normalize_policy(updated_policy))
         else:
-            module.exit_json(changed=changed, policy=camel_dict_to_snake_dict(existing_policy))
+            module.exit_json(changed=changed, policy=normalize_policy(existing_policy))
 
 
 def delete_policy(existing_policy):
@@ -408,7 +419,7 @@ def delete_policy(existing_policy):
             module.fail_json_aws(e, msg=f"Couldn't delete policy {existing_policy['PolicyName']}")
 
         # This is the one case where we will return the old policy
-        module.exit_json(changed=True, policy=camel_dict_to_snake_dict(existing_policy))
+        module.exit_json(changed=True, policy=normalize_policy(existing_policy))
     else:
         module.exit_json(changed=False, policy=None)
 
