@@ -24,6 +24,15 @@ options:
     required: true
     type: str
     aliases: ["policy_name"]
+  path:
+    description:
+      - The path for the managed policy.
+      - For more information about IAM paths, see the AWS IAM identifiers documentation
+        U(https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html).
+    aliases: ['prefix', 'path_prefix']
+    required: false
+    type: str
+    version_added: 7.2.0
   description:
     description:
       - A helpful description of this policy, this value is immutable and only set when creating a new policy.
@@ -351,7 +360,7 @@ def detach_all_entities(policy, **kwargs):
         detach_all_entities(policy, marker=entities["Marker"])
 
 
-def create_managed_policy(name, policy, description):
+def create_managed_policy(name, path, policy, description):
     if module.check_mode:
         module.exit_json(changed=True)
     if policy is None:
@@ -359,6 +368,8 @@ def create_managed_policy(name, policy, description):
 
     params = {"PolicyName": name, "PolicyDocument": policy}
 
+    if path:
+        params["Path"] = path
     if description:
         params["Description"] = description
 
@@ -370,6 +381,19 @@ def create_managed_policy(name, policy, description):
     new_policy = get_policy_by_arn(rvalue["Policy"]["Arn"])
 
     module.exit_json(changed=True, policy=normalize_policy(new_policy))
+
+
+def ensure_path(existing_policy, path):
+    if path is None:
+        return False
+
+    existing_path = existing_policy["Path"]
+    if existing_path == path:
+        return False
+
+    # As of botocore 1.34.3, the APIs don't support updating the Name or Path
+    module.warn(f"Unable to update path from '{existing_path}' to '{path}'")
+    return False
 
 
 def ensure_description(existing_policy, description):
@@ -394,7 +418,8 @@ def ensure_policy_document(existing_policy, policy, default, only):
     return changed
 
 
-def update_managed_policy(existing_policy, policy, description, default, only):
+def update_managed_policy(existing_policy, path, policy, description, default, only):
+    changed = ensure_path(existing_policy, path)
     changed |= ensure_description(existing_policy, description)
     changed |= ensure_policy_document(existing_policy, policy, default, only)
 
@@ -408,6 +433,7 @@ def update_managed_policy(existing_policy, policy, description, default, only):
 
 def create_or_update_policy(existing_policy):
     name = module.params.get("name")
+    path = module.params.get("path")
     description = module.params.get("description")
     default = module.params.get("make_default")
     only = module.params.get("only_version")
@@ -418,9 +444,9 @@ def create_or_update_policy(existing_policy):
         policy = json.dumps(json.loads(module.params.get("policy")))
 
     if existing_policy is None:
-        create_managed_policy(name, policy, description)
+        create_managed_policy(name, path, policy, description)
     else:
-        update_managed_policy(existing_policy, policy, description, default, only)
+        update_managed_policy(existing_policy, path, policy, description, default, only)
 
 
 def delete_policy(existing_policy):
@@ -462,6 +488,7 @@ def main():
 
     argument_spec = dict(
         name=dict(required=True, aliases=["policy_name"]),
+        path=dict(aliases=["prefix", "path_prefix"]),
         description=dict(aliases=["policy_description"]),
         policy=dict(type="json"),
         make_default=dict(type="bool", default=True),
