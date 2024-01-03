@@ -25,8 +25,9 @@ notes:
   - Files sent via S3 will be named in S3 with the EC2 host ID (e.g. C(i-123abc/)) as the prefix.
   - The files in S3 will be deleted by the end of the playbook run. If the play is terminated ungracefully, the files may remain in the bucket.
     If the bucket has versioning enabled, the files will remain in version history. If your tasks involve sending secrets to/from the remote instance
-    (e.g. within a C(shell) command, or a SQL password in the C(community.postgresql.postgresql_query) module) then those passwords will be included in plaintext in those files in S3 indefinitely,
-    visible to anyone with access to that bucket. Therefore it is recommended to use a bucket with versioning disabled/suspended.
+    (e.g. within a C(shell) command, or a SQL password in the C(community.postgresql.postgresql_query) module) then those passwords will be included in
+    plaintext in those files in S3 indefinitely, visible to anyone with access to that bucket. Therefore it is recommended to use a bucket with versioning
+    disabled/suspended.
   - The files in S3 will be deleted even if the C(keep_remote_files) setting is C(true).
 
 requirements:
@@ -144,7 +145,6 @@ options:
 """
 
 EXAMPLES = r"""
-
 # Wait for SSM Agent to be available on the Instance
 - name: Wait for connection to be available
   vars:
