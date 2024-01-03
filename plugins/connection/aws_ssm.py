@@ -20,12 +20,26 @@ notes:
     ``ansible_user`` variables to configure the remote user.  The ``become_user`` parameter should
     be used to configure which user to run commands as.  Remote commands will often default to
     running as the ``ssm-agent`` user, however this will also depend on how SSM has been configured.
+  - This plugin requires an S3 bucket to send files to/from the remote instance. This is required even for modules
+    which do not explicitly send files (such as the C(shell) or C(command) modules), because Ansible sends over the C(.py) files of the module itself, via S3.
+  - Files sent via S3 will be named in S3 with the EC2 host ID (e.g. C(i-123abc/)) as the prefix.
+  - The files in S3 will be deleted by the end of the playbook run. If the play is terminated ungracefully, the files may remain in the bucket.
+    If the bucket has versioning enabled, the files will remain in version history. If your tasks involve sending secrets to/from the remote instance
+    (e.g. within a C(shell) command, or a SQL password in the C(community.postgresql.postgresql_query) module) then those passwords will be included in plaintext in those files in S3 indefinitely,
+    visible to anyone with access to that bucket. Therefore it is recommended to use a bucket with versioning disabled/suspended.
+  - The files in S3 will be deleted even if the C(keep_remote_files) setting is C(true).
+
 requirements:
   - The remote EC2 instance must be running the AWS Systems Manager Agent (SSM Agent).
     U(https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-getting-started.html)
   - The control machine must have the AWS session manager plugin installed.
     U(https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html)
   - The remote EC2 Linux instance must have curl installed.
+  - The remote EC2 Linux instance and the controller both need network connectivity to S3.
+  - The remote instance does not require IAM credentials for S3. This module will generate a presigned URL for S3 from the controller,
+    and then will pass that URL to the target over SSM, telling the target to download/upload from S3 with C(curl).
+  - The controller requires IAM permissions to upload, download and delete files from the specified S3 bucket. This includes
+    `s3:GetObject`, `s3:PutObject`, `s3:ListBucket`, `s3:DeleteObject` and `s3:GetBucketLocation`.
 
 options:
   access_key_id:
