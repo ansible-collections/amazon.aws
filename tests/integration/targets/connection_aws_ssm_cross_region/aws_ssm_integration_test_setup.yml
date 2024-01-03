@@ -2,7 +2,7 @@
   roles:
     - role: ../setup_connection_aws_ssm
       vars:
-        target_os: fedora
+        target_os: centos
         s3_bucket_region: 'eu-central-1'
         # Post 2019 regions behave differently from other regions
         # they're worth testing but it's not possible in CI today.

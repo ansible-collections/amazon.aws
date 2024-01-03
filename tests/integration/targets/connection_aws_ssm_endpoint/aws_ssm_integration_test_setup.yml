@@ -2,6 +2,6 @@
   roles:
     - role: ../setup_connection_aws_ssm
       vars:
-        target_os: fedora
+        target_os: centos
         test_suffix: endpoint
         endpoint_url: 'https://s3.dualstack.{{ aws_region }}.amazonaws.com'

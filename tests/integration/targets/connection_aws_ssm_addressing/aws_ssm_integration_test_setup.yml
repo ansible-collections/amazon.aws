@@ -2,7 +2,7 @@
   roles:
     - role: ../setup_connection_aws_ssm
       vars:
-        target_os: fedora
+        target_os: centos
         encrypted_bucket: False
         s3_bucket_region: 'eu-central-1'
         s3_addressing_style: virtual

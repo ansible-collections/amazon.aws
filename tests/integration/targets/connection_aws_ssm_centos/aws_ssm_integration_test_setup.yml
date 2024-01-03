@@ -2,4 +2,4 @@
   roles:
     - role: ../setup_connection_aws_ssm
       vars:
-        target_os: fedora
+        target_os: centos
