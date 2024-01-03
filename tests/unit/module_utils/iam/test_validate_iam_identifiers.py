@@ -20,9 +20,9 @@ validate_test_data = [
         "path must begin and end with /",
     ),
     (dict(path="/12345abcd/"), None, None, None),
-    (dict(path=f"/{'12345abcd0'*51}/"), None, None, None),  # Max length 512 chars
+    (dict(path=f"/{'12345abcd0' * 51}/"), None, None, None),  # Max length 512 chars
     (
-        dict(path=f"/{'12345abcd/'*51}a/"),
+        dict(path=f"/{'12345abcd/' * 51}a/"),
         "path may not exceed 512",
         "path may not exceed 512",
         "path may not exceed 512",
@@ -32,11 +32,11 @@ validate_test_data = [
     (dict(path="/12345:abcd/"), "path must match pattern", "path must match pattern", "path must match pattern"),
     # Name tests
     (dict(name="12345abcd"), None, None, None),
-    (dict(name=f"{'12345abcd0'*6}1234"), None, None, None),  # Max length
-    (dict(name=f"{'12345abcd0'*6}12345"), "name may not exceed 64", "name may not exceed 64", None),
-    (dict(name=f"{'12345abcd0'*12}12345678"), "name may not exceed 64", "name may not exceed 64", None),
+    (dict(name=f"{'12345abcd0' * 6}1234"), None, None, None),  # Max length
+    (dict(name=f"{'12345abcd0' * 6}12345"), "name may not exceed 64", "name may not exceed 64", None),
+    (dict(name=f"{'12345abcd0' * 12}12345678"), "name may not exceed 64", "name may not exceed 64", None),
     (
-        dict(name=f"{'12345abcd0'*12}123456789"),
+        dict(name=f"{'12345abcd0' * 12}123456789"),
         "name may not exceed 64",
         "name may not exceed 64",
         "name may not exceed 128",

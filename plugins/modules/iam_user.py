@@ -216,7 +216,6 @@ user:
                     description: the friendly name that identifies the policy.
                     type: str
                     sample: test_policy
-
 """
 
 try:
