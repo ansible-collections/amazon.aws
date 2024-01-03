@@ -4,7 +4,15 @@ instance_type: t3.micro
 ami_details:
     fedora:
         owner: 125523088429
-        name: Fedora-Cloud-Base-34-1.2.x86_64*
+        name: 'Fedora-Cloud-Base-41-1.2.x86_64*'
+        user_data: |
+            #!/bin/sh
+            sudo dnf install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
+            sudo systemctl start amazon-ssm-agent
+        os_type: linux
+    centos:
+        owner: 125523088429
+        name: 'CentOS Stream 9 x86_64*'
         user_data: |
             #!/bin/sh
             sudo dnf install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
