@@ -229,7 +229,7 @@ def get_policy_by_arn(arn):
     try:
         policy = client.get_policy(aws_retry=True, PolicyArn=arn)["Policy"]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json(msg="Couldn't get policy")
+        module.fail_json_aws(e, msg="Couldn't get policy")
     return policy
 
 
