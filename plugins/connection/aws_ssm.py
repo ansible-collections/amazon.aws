@@ -627,7 +627,7 @@ class Connection(ConnectionBase):
         disable_prompt_complete = None
         end_mark = "".join([random.choice(string.ascii_letters) for i in xrange(self.MARK_LENGTH)])
         disable_prompt_cmd = to_bytes(
-            "PS1='' ; printf '\\n%s\\n' '" + end_mark + "'\n",
+            "PS1='' ; bind 'set enable-bracketed-paste off'; printf '\\n%s\\n' '" + end_mark + "'\n",
             errors="surrogate_or_strict",
         )
         disable_prompt_reply = re.compile(r"\r\r\n" + re.escape(end_mark) + r"\r\r\n", re.MULTILINE)
