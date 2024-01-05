@@ -1,0 +1,3 @@
+---
+minor_changes:
+  - lambda - added support for using ECR images for the function (https://github.com/ansible-collections/amazon.aws/pull/1939).
