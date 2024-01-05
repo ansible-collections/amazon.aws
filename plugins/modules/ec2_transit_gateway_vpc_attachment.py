@@ -109,13 +109,13 @@ EXAMPLES = r"""
     transit_gateway: 'tgw-123456789abcdef01'
     name: AnsibleTest-1
     subnets:
-    - subnet-00000000000000000
-    - subnet-11111111111111111
-    - subnet-22222222222222222
-    ipv6_support: True
-    purge_subnets: True
-    dns_support: True
-    appliance_mode_support: True
+      - subnet-00000000000000000
+      - subnet-11111111111111111
+      - subnet-22222222222222222
+    ipv6_support: true
+    purge_subnets: true
+    dns_support: true
+    appliance_mode_support: true
     tags:
       TestTag: changed data in Test Tag
 
@@ -124,10 +124,10 @@ EXAMPLES = r"""
     state: present
     id: 'tgw-attach-0c0c5fd0b0f01d1c9'
     name: AnsibleTest-1
-    ipv6_support: True
-    purge_subnets: False
-    dns_support: False
-    appliance_mode_support: True
+    ipv6_support: true
+    purge_subnets: false
+    dns_support: false
+    appliance_mode_support: true
 
 # Delete the transit gateway
 - community.aws.ec2_transit_gateway_vpc_attachment:
