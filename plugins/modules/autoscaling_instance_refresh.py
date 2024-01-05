@@ -84,7 +84,6 @@ EXAMPLES = r"""
     preferences:
       min_healthy_percentage: 91
       instance_warmup: 60
-
 """
 
 RETURN = r"""
