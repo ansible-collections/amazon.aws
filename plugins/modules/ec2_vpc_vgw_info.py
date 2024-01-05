@@ -45,7 +45,7 @@ EXAMPLES = r"""
     region: ap-southeast-2
     profile: production
     filters:
-        "tag:Name": "main-virt-gateway"
+      "tag:Name": "main-virt-gateway"
   register: vgw_info
 
 - name: Gather information about a specific virtual gateway by VpnGatewayIds
