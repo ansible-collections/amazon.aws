@@ -83,7 +83,6 @@ extends_documentation_fragment:
 """
 
 EXAMPLES = r"""
-
 # Complete example to create and delete a network ACL
 # that allows SSH, HTTP and ICMP in, and all traffic out.
 - name: "Create and associate production DMZ network ACL with DMZ subnets"
@@ -97,16 +96,16 @@ EXAMPLES = r"""
       Project: phoenix
       Description: production DMZ
     ingress:
-        # rule no, protocol, allow/deny, cidr, icmp_type, icmp_code,
-        #                                             port from, port to
-        - [100, 'tcp', 'allow', '0.0.0.0/0', null, null, 22, 22]
-        - [200, 'tcp', 'allow', '0.0.0.0/0', null, null, 80, 80]
-        - [205, 'tcp', 'allow', '::/0', null, null, 80, 80]
-        - [300, 'icmp', 'allow', '0.0.0.0/0', 0, 8]
-        - [305, 'ipv6-icmp', 'allow', '::/0', 0, 8]
+      # rule no, protocol, allow/deny, cidr, icmp_type, icmp_code,
+      #                                             port from, port to
+      - [100, 'tcp', 'allow', '0.0.0.0/0', null, null, 22, 22]
+      - [200, 'tcp', 'allow', '0.0.0.0/0', null, null, 80, 80]
+      - [205, 'tcp', 'allow', '::/0', null, null, 80, 80]
+      - [300, 'icmp', 'allow', '0.0.0.0/0', 0, 8]
+      - [305, 'ipv6-icmp', 'allow', '::/0', 0, 8]
     egress:
-        - [100, 'all', 'allow', '0.0.0.0/0', null, null, null, null]
-        - [105, 'all', 'allow', '::/0', null, null, null, null]
+      - [100, 'all', 'allow', '0.0.0.0/0', null, null, null, null]
+      - [105, 'all', 'allow', '::/0', null, null, null, null]
     state: 'present'
 
 - name: "Remove the ingress and egress rules - defaults to deny all"
@@ -141,6 +140,7 @@ EXAMPLES = r"""
     nacl_id: acl-33b4ee5b
     state: absent
 """
+
 RETURN = r"""
 task:
   description: The result of the create, or delete action.
