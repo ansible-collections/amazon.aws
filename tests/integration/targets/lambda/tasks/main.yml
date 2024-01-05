@@ -62,10 +62,9 @@
           - result.failed
           - 'result.msg.startswith("missing required arguments: name")'
 
-    - name: test with no role or handler
+    - name: test with no role
       amazon.aws.lambda:
         name: ansible-testing-fake-should-not-be-created
-        runtime: "{{ lambda_python_runtime }}"
       register: result
       ignore_errors: true
     - name: assert failure when called with no parameters
@@ -73,8 +72,21 @@
         that:
           - result.failed
           - 'result.msg.startswith("state is present but all of the following are missing: ")'
-          - '"handler" in result.msg'
           - '"role" in result.msg'
+
+    - name: test with no handler/image_uri
+      amazon.aws.lambda:
+        name: ansible-testing-fake-should-not-be-created
+        role: "{{ lambda_role_name }}"
+      register: result
+      ignore_errors: true
+    - name: assert failure when called with no parameters
+      ansible.builtin.assert:
+        that:
+          - result.failed
+          - 'result.msg.startswith("state is present but any of the following are missing: ")'
+          - '"runtime" in result.msg'
+          - '"image_uri" in result.msg'
 
     - name: test execute lambda with no function arn or name
       amazon.aws.lambda_execute:
