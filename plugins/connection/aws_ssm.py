@@ -145,6 +145,7 @@ options:
 """
 
 EXAMPLES = r"""
+---
 # Wait for SSM Agent to be available on the Instance
 - name: Wait for connection to be available
   vars:
@@ -197,17 +198,19 @@ EXAMPLES = r"""
         path: C:\Windows\temp
         state: directory
 
+---
+
 # Making use of Dynamic Inventory Plugin
 # =======================================
-# aws_ec2.yml (Dynamic Inventory - Linux)
-# This will return the Instance IDs matching the filter
-#plugin: aws_ec2
-#regions:
-#    - us-east-1
-#hostnames:
-#    - instance-id
-#filters:
-#    tag:SSMTag: ssmlinux
+# # aws_ec2.yml (Dynamic Inventory - Linux)
+# plugin: aws_ec2
+# regions:
+#   - us-east-1
+# hostnames:
+#   - instance-id
+# # This will return the Instances with the tag "SSMTag" set to "ssmlinux"
+# filters:
+#   tag:SSMTag: ssmlinux
 # -----------------------
 - name: install aws-cli
   hosts: all
@@ -217,20 +220,23 @@ EXAMPLES = r"""
     ansible_aws_ssm_bucket_name: nameofthebucket
     ansible_aws_ssm_region: us-east-1
   tasks:
-  - name: aws-cli
-    raw: yum install -y awscli
-    tags: aws-cli
+    - name: aws-cli
+      raw: yum install -y awscli
+      tags: aws-cli
+
+---
+
 # Execution: ansible-playbook linux.yaml -i aws_ec2.yml
-# The playbook tasks will get executed on the instance ids returned from the dynamic inventory plugin using ssm connection.
 # =====================================================
-# aws_ec2.yml (Dynamic Inventory - Windows)
-#plugin: aws_ec2
-#regions:
-#    - us-east-1
-#hostnames:
-#    - instance-id
-#filters:
-#    tag:SSMTag: ssmwindows
+# # aws_ec2.yml (Dynamic Inventory - Windows)
+# plugin: aws_ec2
+# regions:
+#   - us-east-1
+# hostnames:
+#   - instance-id
+# # This will return the Instances with the tag "SSMTag" set to "ssmwindows"
+# filters:
+#   tag:SSMTag: ssmwindows
 # -----------------------
 - name: Create a dir.
   hosts: all
@@ -245,10 +251,13 @@ EXAMPLES = r"""
       win_file:
         path: C:\Temp\SSM_Testing5
         state: directory
+
+---
+
 # Execution:  ansible-playbook win_file.yaml -i aws_ec2.yml
 # The playbook tasks will get executed on the instance ids returned from the dynamic inventory plugin using ssm connection.
 
-# Install a Nginx Package on Linux Instance; with specific SSE for file transfer
+# Install a Nginx Package on Linux Instance; with specific SSE CMK used for the file transfer
 - name: Install a Nginx Package
   vars:
     ansible_connection: aws_ssm
@@ -262,7 +271,7 @@ EXAMPLES = r"""
         name: nginx
         state: present
 
-# Install a Nginx Package on Linux Instance; with dedicated SSM document
+# Install a Nginx Package on Linux Instance; using the specified SSM document
 - name: Install a Nginx Package
   vars:
     ansible_connection: aws_ssm
