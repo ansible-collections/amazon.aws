@@ -75,9 +75,7 @@ EXAMPLES = r"""
   community.aws.ec2_placement_group:
     name: my-cluster
     state: absent
-
 """
-
 
 RETURN = r"""
 placement_group:
@@ -97,7 +95,6 @@ placement_group:
       description: PG strategy
       type: str
       sample: "cluster"
-
 """
 
 try:

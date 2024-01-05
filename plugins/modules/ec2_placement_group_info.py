@@ -39,14 +39,13 @@ EXAMPLES = r"""
 - name: List two placement groups.
   community.aws.ec2_placement_group_info:
     names:
-     - my-cluster
-     - my-other-cluster
+      - my-cluster
+      - my-other-cluster
   register: specific_ec2_placement_groups
 
 - ansible.builtin.debug:
     msg: >
       {{ specific_ec2_placement_groups | json_query("[?name=='my-cluster']") }}
-
 """
 
 
@@ -68,7 +67,6 @@ placement_groups:
       description: PG strategy
       type: str
       sample: "cluster"
-
 """
 
 try:
