@@ -209,8 +209,8 @@ EXAMPLES = r"""
     peering_id: "{{ vpc_peer.peering_id }}"
     profile: bot03_profile_for_cross_account
     state: reject
-
 """
+
 RETURN = r"""
 peering_id:
   description: The id of the VPC peering connection created/deleted.
