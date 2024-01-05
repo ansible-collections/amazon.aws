@@ -50,14 +50,13 @@ EXAMPLES = r"""
 # Gather information about a set of ELBs
 - community.aws.elb_classic_lb_info:
     names:
-    - frontend-prod-elb
-    - backend-prod-elb
+      - frontend-prod-elb
+      - backend-prod-elb
   register: elb_info
 
 - ansible.builtin.debug:
     msg: "{{ item.dns_name }}"
   loop: "{{ elb_info.elbs }}"
-
 """
 
 RETURN = r"""
