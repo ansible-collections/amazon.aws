@@ -148,7 +148,7 @@ options:
       - Required (alternative to runtime zip_file and s3_bucket) when creating a function.
       - Required when I(state=present).
     type: str
-    version_added: 6.5.2
+    version_added: 7.2.0
 author:
   - 'Steyn Huizinga (@steynovich)'
 extends_documentation_fragment:
