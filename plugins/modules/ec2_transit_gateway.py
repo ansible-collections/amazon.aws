@@ -91,9 +91,9 @@ EXAMPLES = r"""
     asn: 64514
     auto_associate: false
     auto_propagate: false
-    dns_support: True
+    dns_support: true
     description: "nonprod transit gateway"
-    purge_tags: False
+    purge_tags: false
     state: present
     region: us-east-1
     tags:
