@@ -40,7 +40,6 @@ EXAMPLES = r"""
     vpc_id: vpc-abcdefgh
     state: present
   register: eigw
-
 """
 
 RETURN = r"""
