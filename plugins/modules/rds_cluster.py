@@ -367,7 +367,7 @@ options:
               - ACU values can be specified in in half-step increments, such as C(40), C(40.5), C(41), and so on.
               - The largest possible value is C(128).
             type: float
-        version_added: 7.2.0
+        version_added: 7.3.0
     skip_final_snapshot:
         description:
           - Whether a final DB cluster snapshot is created before the DB cluster is deleted.
@@ -716,7 +716,7 @@ serverless_v2_scaling_configuration:
       "max_capacity": 4.5,
       "min_capacity": 2.5
   }
-  version_added: 7.2.0
+  version_added: 7.3.0
 status:
   description: The status of the DB cluster.
   returned: always
