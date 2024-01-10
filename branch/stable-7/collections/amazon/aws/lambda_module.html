@@ -141,7 +141,7 @@
 <h1>amazon.aws.lambda module – Manage AWS Lambda functions<a class="headerlink" href="#amazon-aws-lambda-module-manage-aws-lambda-functions" title="Link to this heading"></a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This module is part of the <a class="reference external" href="https://galaxy.ansible.com/ui/repo/published/amazon/aws/">amazon.aws collection</a> (version 7.1.0).</p>
+<p>This module is part of the <a class="reference external" href="https://galaxy.ansible.com/ui/repo/published/amazon/aws/">amazon.aws collection</a> (version 7.2.0).</p>
 <p>It is not included in <code class="docutils literal notranslate"><span class="pre">ansible-core</span></code>.
 To check whether it is installed, run <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">list</span></code>.</p>
 <p>To install it, use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">amazon.aws</span></code>.
@@ -291,6 +291,16 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-image_uri"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-module-parameter-image-uri"><strong>image_uri</strong></p>
+<a class="ansibleOptionLink" href="#parameter-image_uri" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 7.3.0</em></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The Amazon ECR URI of the image to use.</p>
+<p>Required (alternative to runtime zip_file and s3_bucket) when creating a function.</p>
+<p>Required when <em>state=present</em>.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-kms_key_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-module-parameter-kms-key-arn"><strong>kms_key_arn</strong></p>
 <a class="ansibleOptionLink" href="#parameter-kms_key_arn" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 <p><em class="ansible-option-versionadded">added in community.aws 3.3.0</em></p>
@@ -298,7 +308,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <td><div class="ansible-option-cell"><p>The KMS key ARN used to encrypt the function’s environment variables.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-layers"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-module-parameter-layers"><strong>layers</strong></p>
 <a class="ansibleOptionLink" href="#parameter-layers" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
 <p><em class="ansible-option-versionadded">added in amazon.aws 5.5.0</em></p>
@@ -307,7 +317,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <p>Specify each layer by its ARN, including the version.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-layers/layer_name"></div>
 <div class="ansibleOptionAnchor" id="parameter-layers/layer_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-module-parameter-layers-layer-name"><span id="ansible-collections-amazon-aws-lambda-module-parameter-layers-layer-arn"></span><strong>layer_name</strong></p>
 <a class="ansibleOptionLink" href="#parameter-layers/layer_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: layer_arn</span></p>
@@ -317,7 +327,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <p>Mutually exclusive with <em>layer_version_arn</em>.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-layers/layer_version_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-module-parameter-layers-layer-version-arn"><strong>layer_version_arn</strong></p>
 <a class="ansibleOptionLink" href="#parameter-layers/layer_version_arn" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -325,7 +335,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <p>Mutually exclusive with <em>layer_version_arn</em>.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-layers/version"></div>
 <div class="ansibleOptionAnchor" id="parameter-layers/layer_version"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-module-parameter-layers-version"><span id="ansible-collections-amazon-aws-lambda-module-parameter-layers-layer-version"></span><strong>version</strong></p>
 <a class="ansibleOptionLink" href="#parameter-layers/version" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: layer_version</span></p>
@@ -335,7 +345,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <p>Required when <em>layer_name</em> is provided, ignored if not.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-memory_size"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-module-parameter-memory-size"><strong>memory_size</strong></p>
 <a class="ansibleOptionLink" href="#parameter-memory_size" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
@@ -343,14 +353,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">128</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-module-parameter-name"><strong>name</strong></p>
 <a class="ansibleOptionLink" href="#parameter-name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The name you want to assign to the function you are uploading. Cannot be changed.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-profile"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_profile"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-module-parameter-profile"><span id="ansible-collections-amazon-aws-lambda-module-parameter-aws-profile"></span><strong>profile</strong></p>
 <a class="ansibleOptionLink" href="#parameter-profile" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_profile</span></p>
@@ -362,7 +372,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <p>The <em>profile</em> option is mutually exclusive with the <em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> options.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-purge_tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-module-parameter-purge-tags"><strong>purge_tags</strong></p>
 <a class="ansibleOptionLink" href="#parameter-purge_tags" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -376,7 +386,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-region"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_region"></div>
 <div class="ansibleOptionAnchor" id="parameter-ec2_region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-module-parameter-region"><span id="ansible-collections-amazon-aws-lambda-module-parameter-ec2-region"></span><span id="ansible-collections-amazon-aws-lambda-module-parameter-aws-region"></span><strong>region</strong></p>
@@ -391,7 +401,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_REGION</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-role"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-module-parameter-role"><strong>role</strong></p>
 <a class="ansibleOptionLink" href="#parameter-role" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -399,7 +409,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <p>Required when <em>state=present</em>.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-runtime"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-module-parameter-runtime"><strong>runtime</strong></p>
 <a class="ansibleOptionLink" href="#parameter-runtime" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -409,7 +419,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <p>For supported list of runtimes, see <a class="reference external" href="https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html">https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html</a>.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-s3_bucket"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-module-parameter-s3-bucket"><strong>s3_bucket</strong></p>
 <a class="ansibleOptionLink" href="#parameter-s3_bucket" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -418,7 +428,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <p><em>s3_bucket</em> and <em>s3_key</em> are required together.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-s3_key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-module-parameter-s3-key"><strong>s3_key</strong></p>
 <a class="ansibleOptionLink" href="#parameter-s3_key" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -426,14 +436,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <p><em>s3_bucket</em> and <em>s3_key</em> are required together.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-s3_object_version"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-module-parameter-s3-object-version"><strong>s3_object_version</strong></p>
 <a class="ansibleOptionLink" href="#parameter-s3_object_version" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The Amazon S3 object (the deployment package) version you want to upload.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-secret_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_secret_access_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_secret_key"></div>
@@ -450,7 +460,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_SECRET_KEY</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-session_token"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_session_token"></div>
 <div class="ansibleOptionAnchor" id="parameter-security_token"></div>
@@ -468,7 +478,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_SECRET_KEY</span></code> and <code class="docutils literal notranslate"><span class="pre">AWS_SECURITY_TOKEN</span></code> environment variables has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-state"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-module-parameter-state"><strong>state</strong></p>
 <a class="ansibleOptionLink" href="#parameter-state" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -480,7 +490,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-tags"></div>
 <div class="ansibleOptionAnchor" id="parameter-resource_tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-module-parameter-tags"><span id="ansible-collections-amazon-aws-lambda-module-parameter-resource-tags"></span><strong>tags</strong></p>
 <a class="ansibleOptionLink" href="#parameter-tags" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: resource_tags</span></p>
@@ -490,7 +500,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <p>If the <em>tags</em> parameter is not set then tags will not be modified.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-timeout"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-module-parameter-timeout"><strong>timeout</strong></p>
 <a class="ansibleOptionLink" href="#parameter-timeout" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
@@ -498,7 +508,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">3</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-tracing_mode"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-module-parameter-tracing-mode"><strong>tracing_mode</strong></p>
 <a class="ansibleOptionLink" href="#parameter-tracing_mode" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -510,7 +520,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-validate_certs"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-module-parameter-validate-certs"><strong>validate_certs</strong></p>
 <a class="ansibleOptionLink" href="#parameter-validate_certs" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -523,7 +533,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-vpc_security_group_ids"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-module-parameter-vpc-security-group-ids"><strong>vpc_security_group_ids</strong></p>
 <a class="ansibleOptionLink" href="#parameter-vpc_security_group_ids" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
@@ -531,7 +541,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <p>Required when <em>vpc_subnet_ids</em> is used.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-vpc_subnet_ids"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-module-parameter-vpc-subnet-ids"><strong>vpc_subnet_ids</strong></p>
 <a class="ansibleOptionLink" href="#parameter-vpc_subnet_ids" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
@@ -540,7 +550,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <p>If set, <em>vpc_security_group_ids</em> must also be set.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-zip_file"></div>
 <div class="ansibleOptionAnchor" id="parameter-src"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-module-parameter-zip-file"><span id="ansible-collections-amazon-aws-lambda-module-parameter-src"></span><strong>zip_file</strong></p>
 <a class="ansibleOptionLink" href="#parameter-zip_file" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: src</span></p>
@@ -631,7 +641,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 </section>
 <section id="return-values">
 <h2><a class="toc-backref" href="#id6" role="doc-backlink">Return Values</a><a class="headerlink" href="#return-values" title="Link to this heading"></a></h2>
-<p>Common return values are documented <a class="reference external" href="https://docs.ansible.com/ansible-core/devel/reference_appendices/common_return_values.html#common-return-values" title="(in Ansible vdevel)"><span class="xref std std-ref">here</span></a>, the following are the fields unique to this module:</p>
+<p>Common return values are documented <a class="reference external" href="https://docs.ansible.com/ansible-core/devel/reference_appendices/common_return_values.html#common-return-values" title="(in Ansible Core vdevel)"><span class="xref std std-ref">here</span></a>, the following are the fields unique to this module:</p>
 <table class="longtable ansible-option-table docutils align-default" style="width: 100%">
 <thead>
 <tr class="row-odd"><th class="head"><p>Key</p></th>

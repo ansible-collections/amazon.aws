@@ -314,7 +314,7 @@ In case you only want allow traffic with AWS S3 service, you need to fetch the c
 <section id="host-inventory">
 <span id="ansible-collections-amazon-aws-docsite-aws-host-inventory"></span><h2><a class="toc-backref" href="#id4" role="doc-backlink">Host Inventory</a><a class="headerlink" href="#host-inventory" title="Link to this heading"></a></h2>
 <p>Once your nodes are spun up, you’ll probably want to talk to them again.  With a cloud setup, it’s best to not maintain a static list of cloud hostnames
-in text files.  Rather, the best way to handle this is to use the aws_ec2 inventory plugin. See <a class="reference external" href="https://docs.ansible.com/ansible-core/devel/inventory_guide/intro_dynamic_inventory.html#dynamic-inventory" title="(in Ansible vdevel)"><span>Working with dynamic inventory</span></a>.</p>
+in text files.  Rather, the best way to handle this is to use the aws_ec2 inventory plugin. See <a class="reference external" href="https://docs.ansible.com/ansible-core/devel/inventory_guide/intro_dynamic_inventory.html#dynamic-inventory" title="(in Ansible Core vdevel)"><span>Working with dynamic inventory</span></a>.</p>
 <p>The plugin will also return instances that were created outside of Ansible and allow Ansible to manage them.</p>
 </section>
 <section id="tags-and-groups-and-variables">
@@ -343,7 +343,7 @@ can configure autoscaling policy.</p>
 <p>To do this, pre-bake machine images which contain the necessary ansible-pull invocation.  Ansible-pull is a command line tool that fetches a playbook from a git server and runs it locally.</p>
 <p>One of the challenges of this approach is that there needs to be a centralized way to store data about the results of pull commands in an autoscaling context.
 For this reason, the autoscaling solution provided below in the next section can be a better approach.</p>
-<p>Read <a class="reference external" href="https://docs.ansible.com/ansible-core/devel/cli/ansible-pull.html#ansible-pull" title="(in Ansible vdevel)"><span class="xref std std-ref">ansible-pull</span></a> for more information on pull-mode playbooks.</p>
+<p>Read <a class="reference external" href="https://docs.ansible.com/ansible-core/devel/cli/ansible-pull.html#ansible-pull" title="(in Ansible Core vdevel)"><span class="xref std std-ref">ansible-pull</span></a> for more information on pull-mode playbooks.</p>
 </section>
 <section id="autoscaling-with-ansible-automation-platform">
 <span id="ansible-collections-amazon-aws-docsite-aws-autoscale"></span><h2><a class="toc-backref" href="#id7" role="doc-backlink">Autoscaling with Ansible Automation Platform</a><a class="headerlink" href="#autoscaling-with-ansible-automation-platform" title="Link to this heading"></a></h2>
@@ -384,9 +384,9 @@ documentation for a full list with examples.</p>
 <dl class="simple">
 <dt><a class="reference internal" href="../../../index.html#list-of-collections"><span class="std std-ref">Collection Index</span></a></dt><dd><p>Browse existing collections, modules, and plugins</p>
 </dd>
-<dt><a class="reference external" href="https://docs.ansible.com/ansible-core/devel/playbook_guide/playbooks.html#working-with-playbooks" title="(in Ansible vdevel)"><span>Working with playbooks</span></a></dt><dd><p>An introduction to playbooks</p>
+<dt><a class="reference external" href="https://docs.ansible.com/ansible-core/devel/playbook_guide/playbooks.html#working-with-playbooks" title="(in Ansible Core vdevel)"><span>Working with playbooks</span></a></dt><dd><p>An introduction to playbooks</p>
 </dd>
-<dt><a class="reference external" href="https://docs.ansible.com/ansible-core/devel/playbook_guide/playbooks_delegation.html#playbooks-delegation" title="(in Ansible vdevel)"><span>Controlling where tasks run: delegation and local actions</span></a></dt><dd><p>Delegation, useful for working with loud balancers, clouds, and locally executed steps.</p>
+<dt><a class="reference external" href="https://docs.ansible.com/ansible-core/devel/playbook_guide/playbooks_delegation.html#playbooks-delegation" title="(in Ansible Core vdevel)"><span>Controlling where tasks run: delegation and local actions</span></a></dt><dd><p>Delegation, useful for working with loud balancers, clouds, and locally executed steps.</p>
 </dd>
 <dt><a class="reference external" href="https://groups.google.com/group/ansible-devel">User Mailing List</a></dt><dd><p>Have a question?  Stop by the google group!</p>
 </dd>
