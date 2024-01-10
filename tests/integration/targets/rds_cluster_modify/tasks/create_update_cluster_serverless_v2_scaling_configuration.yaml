@@ -1,0 +1,118 @@
+---
+- name: Run tests for testing serverless v2 scaling configuration
+  block:
+    - name: Create a cluster (check_mode)
+      amazon.aws.rds_cluster:
+        db_cluster_identifier: "{{ cluster_id }}"
+        region: "{{ aws_region }}"
+        engine: "{{ test_engine }}"
+        engine_version: "{{ test_engine_version }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        serverless_v2_scaling_configuration:
+          min_capacity: "{{ min_capacity }}"
+          max_capacity: "{{ max_capacity }}"
+      check_mode: true
+      register: create_result_check_mode
+
+    - name: Get RDS cluster info
+      amazon.aws.rds_cluster_info:
+        db_cluster_identifier: "{{ cluster_id }}"
+        region: "{{ aws_region }}"
+      register: result
+
+    - assert:
+        that:
+          - create_result_check_mode is changed
+          - create_result_check_mode is not failed
+          - result.clusters | length == 0
+
+    - name: Create a cluster
+      amazon.aws.rds_cluster:
+        db_cluster_identifier: "{{ cluster_id }}"
+        region: "{{ aws_region }}"
+        engine: "{{ test_engine }}"
+        engine_version: "{{ test_engine_version }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        serverless_v2_scaling_configuration:
+          min_capacity: "{{ min_capacity }}"
+          max_capacity: "{{ max_capacity }}"
+      register: create_result
+
+    - name: Get RDS cluster info
+      amazon.aws.rds_cluster_info:
+        db_cluster_identifier: "{{ cluster_id }}"
+        region: "{{ aws_region }}"
+      register: result
+
+    - assert:
+        that:
+          - create_result is changed
+          - create_result is not failed
+          - result.clusters[0].serverless_v2_scaling_configuration is defined
+          - result.clusters[0].serverless_v2_scaling_configuration.min_capacity == 2.5
+          - result.clusters[0].serverless_v2_scaling_configuration.max_capacity == 4.5
+
+    - name: Modify cluster - update serverless v2 scaling configuration (check_mode)
+      amazon.aws.rds_cluster:
+        db_cluster_identifier: "{{ cluster_id }}"
+        region: "{{ aws_region }}"
+        engine: "{{ test_engine }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        serverless_v2_scaling_configuration:
+          min_capacity: 2
+          max_capacity: 5
+      check_mode: true
+      register: modify_result_check_mode
+
+    - name: Get RDS cluster info
+      amazon.aws.rds_cluster_info:
+        db_cluster_identifier: "{{ cluster_id }}"
+        region: "{{ aws_region }}"
+      register: result
+
+    - assert:
+        that:
+          - modify_result_check_mode is changed
+          - modify_result_check_mode is not failed
+          - result.clusters[0].serverless_v2_scaling_configuration is defined
+          - result.clusters[0].serverless_v2_scaling_configuration.min_capacity != 2
+          - result.clusters[0].serverless_v2_scaling_configuration.max_capacity != 5
+
+    - name: Modify cluster - update serverless v2 scaling configuration
+      amazon.aws.rds_cluster:
+        db_cluster_identifier: "{{ cluster_id }}"
+        region: "{{ aws_region }}"
+        engine: "{{ test_engine }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        serverless_v2_scaling_configuration:
+          min_capacity: 2
+          max_capacity: 5
+      register: modify_result
+
+    - name: Get RDS cluster info
+      amazon.aws.rds_cluster_info:
+        db_cluster_identifier: "{{ cluster_id }}"
+        region: "{{ aws_region }}"
+      register: result
+
+    - assert:
+        that:
+          - modify_result is changed
+          - modify_result is not failed
+          - result.clusters[0].serverless_v2_scaling_configuration is defined
+          - result.clusters[0].serverless_v2_scaling_configuration.min_capacity == 2
+          - result.clusters[0].serverless_v2_scaling_configuration.max_capacity == 5
+
+  always:
+
+    - name: Delete DB cluster created in this test
+      amazon.aws.rds_cluster:
+        cluster_id: "{{ cluster_id }}"
+        region: "{{ aws_region }}"
+        skip_final_snapshot: true
+        state: absent
+      ignore_errors: true

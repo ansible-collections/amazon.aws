@@ -18,6 +18,9 @@ test_engine: aurora-mysql
 test_engine_version: 8.0
 test_instance_class: db.r5.large
 
+min_capacity: 2.5
+max_capacity: 4.5
+
 # Global cluster parameters ================================
 test_global_cluster_name: ansible-test-global-{{ tiny_prefix }}
 
