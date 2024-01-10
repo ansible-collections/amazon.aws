@@ -2622,6 +2622,8 @@ releases:
       - ec2_ami_info - simplify parameters to ``get_image_attribute`` to only pass
         ID of image (https://github.com/ansible-collections/amazon.aws/pull/1846).
       - ec2_eip - use ``ResourceTags`` to set initial tags upon creation (https://github.com/ansible-collections/amazon.aws/issues/1843)
+      - ec2_instance - add support for AdditionalInfo option when creating an instance
+        (https://github.com/ansible-collections/amazon.aws/pull/1828).
       - ec2_security_group - use ``ResourceTags`` to set initial tags upon creation
         (https://github.com/ansible-collections/amazon.aws/pull/1844)
       - ec2_vpc_igw - use ``ResourceTags`` to set initial tags upon creation (https://github.com/ansible-collections/amazon.aws/issues/1843)
@@ -2636,8 +2638,6 @@ releases:
       - iam_group - add support for setting group path (https://github.com/ansible-collections/amazon.aws/pull/1892).
       - iam_group - adds attached_policies return value (https://github.com/ansible-collections/amazon.aws/pull/1892).
       - iam_group - code refactored to avoid single long function (https://github.com/ansible-collections/amazon.aws/pull/1892).
-      - ec2_instance - add support for AdditionalInfo option when creating
-        an instance (https://github.com/ansible-collections/amazon.aws/pull/1828).
       - rds_instance_snapshot - minor PEP8 whitespace sanity fixes (https://github.com/ansible-collections/amazon.aws/pull/1846).
       release_summary: This release brings some new features and several bugfixes.
     fragments:
@@ -2654,3 +2654,76 @@ releases:
     - 20231130-iam_group.yml
     - release_summary.yml
     release_date: '2023-12-05'
+  7.2.0:
+    changes:
+      bugfixes:
+      - iam_managed_policy - fixed an issue where only partial results were returned
+        (https://github.com/ansible-collections/amazon.aws/pull/1936).
+      minor_changes:
+      - ec2_instance - Add support for modifying metadata options of an existing instance
+        (https://github.com/ansible-collections/amazon.aws/pull/1918).
+      - iam_group - Basic testing of ``name`` and ``path`` has been added to improve
+        error messages (https://github.com/ansible-collections/amazon.aws/pull/1933).
+      - iam_group - ``group_name`` has been added as an alias to ``name`` for consistency
+        with other IAM modules (https://github.com/ansible-collections/amazon.aws/pull/1933).
+      - iam_instance_profile - Basic testing of ``name`` and ``path`` has been added
+        to improve error messages (https://github.com/ansible-collections/amazon.aws/pull/1933).
+      - iam_instance_profile - Basic testing of ``name`` and ``path`` has been added
+        to improve error messages (https://github.com/ansible-collections/amazon.aws/pull/1933).
+      - iam_instance_profile - attempting to change the ``path`` for an existing profile
+        will now generate a warning, previously this was silently ignored (https://github.com/ansible-collections/amazon.aws/pull/1933).
+      - iam_instance_profile - the ``prefix`` parameter has been renamed ``path``
+        for consistency with other IAM modules, ``prefix`` remains as an alias. No
+        change to playbooks is required (https://github.com/ansible-collections/amazon.aws/pull/1933).
+      - iam_instance_profile - the default value for ``path`` has been removed.  New
+        instances will still be created with a default path of ``/``. No change to
+        playbooks is required (https://github.com/ansible-collections/amazon.aws/pull/1933).
+      - iam_managed_policy - Basic testing of ``name`` and ``path`` has been added
+        to improve error messages (https://github.com/ansible-collections/amazon.aws/pull/1933).
+      - iam_managed_policy - ``description`` attempting to update the description
+        now results in a warning, previously it was simply ignored (https://github.com/ansible-collections/amazon.aws/pull/1936).
+      - iam_managed_policy - ``policy`` is no longer a required parameter (https://github.com/ansible-collections/amazon.aws/pull/1936).
+      - iam_managed_policy - added support for tagging managed policies (https://github.com/ansible-collections/amazon.aws/pull/1936).
+      - iam_managed_policy - more consistently perform retries on rate limiting errors
+        (https://github.com/ansible-collections/amazon.aws/pull/1936).
+      - iam_managed_policy - support for setting ``path`` (https://github.com/ansible-collections/amazon.aws/pull/1936).
+      - iam_managed_policy - the ``policy_description`` parameter has been renamed
+        ``description`` for consistency with other IAM modules, ``policy_description``
+        remains as an alias. No change to playbooks is required (https://github.com/ansible-collections/amazon.aws/pull/1933).
+      - iam_managed_policy - the ``policy_name`` parameter has been renamed ``name``
+        for consistency with other IAM modules, ``policy_name`` remains as an alias.
+        No change to playbooks is required (https://github.com/ansible-collections/amazon.aws/pull/1933).
+      - iam_role - Basic testing of ``name`` and ``path`` has been added to improve
+        error messages (https://github.com/ansible-collections/amazon.aws/pull/1933).
+      - iam_role - ``prefix`` and ``path_prefix`` have been added as aliases to ``path``
+        for consistency with other IAM modules (https://github.com/ansible-collections/amazon.aws/pull/1933).
+      - iam_role - ``role_name`` has been added as an alias to ``name`` for consistency
+        with other IAM modules (https://github.com/ansible-collections/amazon.aws/pull/1933).
+      - iam_role - attempting to change the ``path`` for an existing profile will
+        now generate a warning, previously this was silently ignored (https://github.com/ansible-collections/amazon.aws/pull/1933).
+      - iam_role - the default value for ``path`` has been removed.  New roles will
+        still be created with a default path of ``/``. No change to playbooks is required
+        (https://github.com/ansible-collections/amazon.aws/pull/1933).
+      - iam_role_info - ``path`` and ``prefix`` have been added as aliases to ``path_prefix``
+        for consistency with other IAM modules (https://github.com/ansible-collections/amazon.aws/pull/1933).
+      - iam_user - Basic testing of ``name`` and ``path`` has been added to improve
+        error messages (https://github.com/ansible-collections/amazon.aws/pull/1933).
+      - iam_user - ``user_name`` has been added as an alias to ``name`` for consistency
+        with other IAM modules (https://github.com/ansible-collections/amazon.aws/pull/1933).
+      - iam_user - add ``boundary`` parameter to support managing boundary policy
+        on users (https://github.com/ansible-collections/amazon.aws/pull/1912).
+      - iam_user - add ``path`` parameter to support managing user path (https://github.com/ansible-collections/amazon.aws/pull/1912).
+      - iam_user - added ``attached_policies`` to return value (https://github.com/ansible-collections/amazon.aws/pull/1912).
+      - iam_user - refactored code to reduce complexity (https://github.com/ansible-collections/amazon.aws/pull/1912).
+      - iam_user_info - ``prefix`` has been added as an alias to ``path_prefix`` for
+        consistency with other IAM modules (https://github.com/ansible-collections/amazon.aws/pull/1933).
+      - iam_user_info - the ``path`` parameter has been renamed ``path_prefix`` for
+        consistency with other IAM modules, ``path`` remains as an alias. No change
+        to playbooks is required (https://github.com/ansible-collections/amazon.aws/pull/1933).
+    release_summary: This release includes new features and a bugfix.
+    fragments:
+    - 1918-ec2_instance-add-support-to-modify-metadata-options.yml
+    - 20231206-iam_user_path.yml
+    - 20231219-iam-consistency.yml
+    - 20231222-managed_policy.yml
+    release_date: '2024-01-09'
