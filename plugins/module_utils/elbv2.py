@@ -964,7 +964,20 @@ class ELBListener:
             # Rules is not a valid parameter for create_listener
             if "Rules" in self.listener:
                 self.listener.pop("Rules")
-            AWSRetry.jittered_backoff()(self.connection.create_listener)(LoadBalancerArn=self.elb_arn, **self.listener)
+
+            # handle multiple certs by adding only 1 cert during listener creation and make calls to add_listener_certificates to add other certs
+            listener_certificates = self.listener['Certificates']
+            if len(listener_certificates) <= 1:
+                create_listener_result = AWSRetry.jittered_backoff()(self.connection.create_listener)(LoadBalancerArn=self.elb_arn, **self.listener)
+            else:
+                first_certificate, other_certs = listener_certificates[0], listener_certificates[1:]
+                self.listener['Certificates'] = [first_certificate]
+                # create listener
+                create_listener_result = AWSRetry.jittered_backoff()(self.connection.create_listener)(LoadBalancerArn=self.elb_arn, **self.listener)
+                # only one cert can be specified per call to add_listener_certificates
+                for cert in other_certs:
+                    AWSRetry.jittered_backoff()(self.connection.add_listener_certificates)(ListenerArn=create_listener_result['Listeners'][0]['ListenerArn'], Certificates=[cert])
+
         except (BotoCoreError, ClientError) as e:
             self.module.fail_json_aws(e)
 
@@ -973,7 +986,7 @@ class ELBListener:
             # Rules is not a valid parameter for modify_listener
             if "Rules" in self.listener:
                 self.listener.pop("Rules")
-            AWSRetry.jittered_backoff()(self.connection.modify_listener)(**self.listener)
+            # AWSRetry.jittered_backoff()(self.connection.modify_listener)(**self.listener)
         except (BotoCoreError, ClientError) as e:
             self.module.fail_json_aws(e)
 
@@ -1235,3 +1248,4 @@ class ELBListenerRule:
             self.module.fail_json_aws(e)
 
         self.changed = True
+
