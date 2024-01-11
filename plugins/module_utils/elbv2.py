@@ -966,7 +966,7 @@ class ELBListener:
                 self.listener.pop("Rules")
 
             # handle multiple certs by adding only 1 cert during listener creation and make calls to add_listener_certificates to add other certs
-            listener_certificates = self.listener["Certificates"]
+            listener_certificates = self.listener.get("Certificates", [])
             if len(listener_certificates) <= 1:
                 create_listener_result = AWSRetry.jittered_backoff()(self.connection.create_listener)(
                     LoadBalancerArn=self.elb_arn, **self.listener
