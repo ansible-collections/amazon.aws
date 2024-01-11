@@ -430,7 +430,10 @@ class Connection(ConnectionBase):
         bucket_location = tmp_s3_client.get_bucket_location(
             Bucket=(self.get_option("bucket_name")),
         )
-        bucket_region = bucket_location["LocationConstraint"]
+        if bucket_location["LocationConstraint"]:
+            bucket_region = bucket_location["LocationConstraint"]
+        else:
+            bucket_region = "us-east-1"
 
         if self.get_option("bucket_endpoint_url"):
             return self.get_option("bucket_endpoint_url"), bucket_region
