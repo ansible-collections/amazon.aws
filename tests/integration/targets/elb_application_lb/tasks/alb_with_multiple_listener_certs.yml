@@ -63,7 +63,7 @@
           - Protocol: HTTPS
             Port: 446
             SslPolicy: ELBSecurityPolicy-TLS13-1-2-2021-06
-            Certificates: # The ARN of the certificate (only one certficate ARN should be provided)
+            Certificates: # The ARN of the certificate
               - CertificateArn: "{{ cert_1_arn }}"
               - CertificateArn: "{{ cert_2_arn }}"
             DefaultActions:
@@ -105,7 +105,7 @@
           - Protocol: HTTPS
             Port: 446
             SslPolicy: ELBSecurityPolicy-TLS13-1-2-2021-06
-            Certificates: # The ARN of the certificate (only one certficate ARN should be provided)
+            Certificates: # The ARN of the certificate
               - CertificateArn: "{{ cert_1_arn }}"
               - CertificateArn: "{{ cert_2_arn }}"
             DefaultActions:
