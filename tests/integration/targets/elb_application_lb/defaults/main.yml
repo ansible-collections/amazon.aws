@@ -4,6 +4,7 @@
 resource_short: "{{ '%0.8x' % ((16**8) | random(seed=resource_prefix)) }}"
 alb_name: alb-test-{{ resource_short }}
 alb_2_name: alb-test-2-{{ resource_short }}
+alb_name_multiple_listener_test: alb-test-{{ resource_short }}-lt
 tg_name: alb-test-{{ resource_short }}
 tg_2_name: alb-test-2-{{ resource_short }}
 vpc_cidr: 10.{{ 256 | random(seed=resource_prefix) }}.0.0/16
@@ -26,3 +27,15 @@ elb_access_log_account_id_map:
   us-gov-west-1: "048591011584"
 
 elb_account_id: "{{ elb_access_log_account_id_map[aws_region] }}"
+
+local_certs:
+  - priv_key: "{{ remote_tmp_dir }}/private-1.pem"
+    cert: "{{ remote_tmp_dir }}/public-1.pem"
+    csr: "{{ remote_tmp_dir }}/csr-1.csr"
+    domain: elb-classic.{{ tiny_prefix }}.ansible.test
+    name: "{{ resource_prefix }}_{{ resource_prefix }}_1"
+  - priv_key: "{{ remote_tmp_dir }}/private-2.pem"
+    cert: "{{ remote_tmp_dir }}/public-2.pem"
+    csr: "{{ remote_tmp_dir }}/csr-2.csr"
+    domain: elb-classic.{{ tiny_prefix }}.ansible.test
+    name: "{{ resource_prefix }}_{{ resource_prefix }}_2"
