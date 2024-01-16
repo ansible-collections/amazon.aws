@@ -967,6 +967,7 @@ class ELBListener:
 
             # handle multiple certs by adding only 1 cert during listener creation and make calls to add_listener_certificates to add other certs
             listener_certificates = self.listener.get("Certificates", [])
+            first_certificate, other_certs = [], []
             if len(listener_certificates) > 0:
                 first_certificate, other_certs = listener_certificates[0], listener_certificates[1:]
                 self.listener["Certificates"] = [first_certificate]
