@@ -720,7 +720,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-appl
 <span class="w">        </span><span class="nt">Port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">80</span><span class="w"> </span><span class="c1"># Required. The port on which the load balancer is listening.</span>
 <span class="w">        </span><span class="c1"># The security policy that defines which ciphers and protocols are supported. The default is the current predefined security policy.</span>
 <span class="w">        </span><span class="nt">SslPolicy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ELBSecurityPolicy-2015-05</span>
-<span class="w">        </span><span class="nt">Certificates</span><span class="p">:</span><span class="w"> </span><span class="c1"># The ARN of the certificate (only one certficate ARN should be provided)</span>
+<span class="w">        </span><span class="nt">Certificates</span><span class="p">:</span><span class="w"> </span><span class="c1"># The ARN of the certificate</span>
 <span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">CertificateArn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arn:aws:iam::123456789012:server-certificate/test.domain.com</span>
 <span class="w">        </span><span class="nt">DefaultActions</span><span class="p">:</span>
 <span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">forward</span><span class="w"> </span><span class="c1"># Required.</span>
@@ -744,7 +744,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-appl
 <span class="w">        </span><span class="nt">Port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">80</span><span class="w"> </span><span class="c1"># Required. The port on which the load balancer is listening.</span>
 <span class="w">        </span><span class="c1"># The security policy that defines which ciphers and protocols are supported. The default is the current predefined security policy.</span>
 <span class="w">        </span><span class="nt">SslPolicy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ELBSecurityPolicy-2015-05</span>
-<span class="w">        </span><span class="nt">Certificates</span><span class="p">:</span><span class="w"> </span><span class="c1"># The ARN of the certificate (only one certficate ARN should be provided)</span>
+<span class="w">        </span><span class="nt">Certificates</span><span class="p">:</span><span class="w"> </span><span class="c1"># The ARN of the certificate</span>
 <span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">CertificateArn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arn:aws:iam::123456789012:server-certificate/test.domain.com</span>
 <span class="w">        </span><span class="nt">DefaultActions</span><span class="p">:</span>
 <span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">forward</span><span class="w"> </span><span class="c1"># Required.</span>
@@ -812,6 +812,29 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-appl
 <span class="w">            </span><span class="nt">Actions</span><span class="p">:</span>
 <span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">TargetGroupName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test-target-group</span>
 <span class="w">                </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">forward</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
+
+<span class="c1"># Create an ALB with a listener having multiple listener certificates</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.elb_application_lb</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">myalb</span>
+<span class="w">    </span><span class="nt">security_groups</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sg-12345678</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-sec-group</span>
+<span class="w">    </span><span class="nt">subnets</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-012345678</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-abcdef000</span>
+<span class="w">    </span><span class="nt">listeners</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">HTTP</span><span class="w"> </span><span class="c1"># Required. The protocol for connections from clients to the load balancer (HTTP or HTTPS) (case-sensitive).</span>
+<span class="w">        </span><span class="nt">Port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">80</span><span class="w"> </span><span class="c1"># Required. The port on which the load balancer is listening.</span>
+<span class="w">        </span><span class="c1"># The security policy that defines which ciphers and protocols are supported. The default is the current predefined security policy.</span>
+<span class="w">        </span><span class="nt">SslPolicy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ELBSecurityPolicy-2015-05</span>
+<span class="w">        </span><span class="nt">Certificates</span><span class="p">:</span><span class="w"> </span><span class="c1"># The ARN of the certificate (first certificate in the list will be set as default certificate)</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">CertificateArn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arn:aws:iam::123456789012:server-certificate/test.domain.com</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">CertificateArn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arn:aws:iam::123456789012:server-certificate/secondtest.domain.com</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">CertificateArn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arn:aws:iam::123456789012:server-certificate/thirdtest.domain.com</span>
+<span class="w">        </span><span class="nt">DefaultActions</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">forward</span><span class="w"> </span><span class="c1"># Required.</span>
+<span class="w">            </span><span class="nt">TargetGroupName</span><span class="p">:</span><span class="w"> </span><span class="c1"># Required. The name of the target group</span>
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
 
 <span class="c1"># Remove an ALB</span>
