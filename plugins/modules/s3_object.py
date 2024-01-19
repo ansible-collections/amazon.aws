@@ -594,7 +594,7 @@ def list_keys(s3, bucket, prefix=None, marker=None, max_keys=None):
         "StartAfter": marker,
         "MaxKeys": max_keys,
     }
-    pagination_params = {k: v for k, v in pagination_params.items() if v}
+    pagination_params = {k: v for k, v in pagination_params.items() if v is not None}
 
     try:
         return list(paginated_list(s3, **pagination_params))
