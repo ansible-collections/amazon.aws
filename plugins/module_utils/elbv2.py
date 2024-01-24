@@ -107,6 +107,12 @@ def _prune_secret(action):
     if action["AuthenticateOidcConfig"].get("UseExistingClientSecret", False):
         action["AuthenticateOidcConfig"].pop("ClientSecret", None)
 
+    if not action["AuthenticateOidcConfig"].get("OnUnauthenticatedRequest", False):
+        action["AuthenticateOidcConfig"]["OnUnauthenticatedRequest"] = "authenticate"
+
+    if not action["AuthenticateOidcConfig"].get("SessionCookieName", False):
+        action["AuthenticateOidcConfig"]["SessionCookieName"] = "AWSELBAuthSessionCookie"
+
     return action
 
 
@@ -1010,7 +1016,7 @@ class ELBListenerRules:
 
         # Get listener based on port so we can use ARN
         self.current_listener = get_elb_listener(connection, module, elb_arn, listener_port)
-        self.listener_arn = self.current_listener["ListenerArn"]
+        self.listener_arn = self.current_listener.get("ListenerArn")
         self.rules_to_add = deepcopy(self.rules)
         self.rules_to_modify = []
         self.rules_to_delete = []
@@ -1141,8 +1147,9 @@ class ELBListenerRules:
         if len(current_rule["Actions"]) == len(new_rule["Actions"]):
             # if actions have just one element, compare the contents and then update if
             # they're different
+            copy_new_rule = deepcopy(new_rule)
             current_actions_sorted = _sort_actions(current_rule["Actions"])
-            new_actions_sorted = _sort_actions(new_rule["Actions"])
+            new_actions_sorted = _sort_actions(copy_new_rule["Actions"])
 
             new_current_actions_sorted = [_append_use_existing_client_secretn(i) for i in current_actions_sorted]
             new_actions_sorted_no_secret = [_prune_secret(i) for i in new_actions_sorted]
@@ -1193,7 +1200,7 @@ class ELBListenerRules:
                     break
 
             # If the current rule was not matched against passed rules, mark for removal
-            if not current_rule_passed_to_module and not current_rule["IsDefault"]:
+            if not current_rule_passed_to_module and not current_rule.get("IsDefault", False):
                 rules_to_delete.append(current_rule["RuleArn"])
 
         return rules_to_add, rules_to_modify, rules_to_delete
@@ -1217,6 +1224,9 @@ class ELBListenerRule:
         try:
             self.rule["ListenerArn"] = self.listener_arn
             self.rule["Priority"] = int(self.rule["Priority"])
+            for action in self.rule.get("Actions", []):
+                if action.get("AuthenticateOidcConfig", {}).get("UseExistingClientSecret", False):
+                    action["AuthenticateOidcConfig"]["UseExistingClientSecret"] = False
             AWSRetry.jittered_backoff()(self.connection.create_rule)(**self.rule)
         except (BotoCoreError, ClientError) as e:
             self.module.fail_json_aws(e)
@@ -1232,6 +1242,10 @@ class ELBListenerRule:
 
         try:
             del self.rule["Priority"]
+            for action in self.rule.get("Actions", []):
+                if action.get("AuthenticateOidcConfig", {}).get("ClientSecret", False):
+                    # You cannot both specify a client secret and set UseExistingClientSecret to true
+                    action["AuthenticateOidcConfig"]["UseExistingClientSecret"] = False
             AWSRetry.jittered_backoff()(self.connection.modify_rule)(**self.rule)
         except (BotoCoreError, ClientError) as e:
             self.module.fail_json_aws(e)
