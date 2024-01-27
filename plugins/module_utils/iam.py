@@ -17,6 +17,7 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 from .arn import parse_aws_arn
 from .arn import validate_aws_arn
 from .botocore import is_boto3_error_code
+from .errors import AWSErrorHandler
 from .exceptions import AnsibleAWSError
 from .retries import AWSRetry
 from .tagging import ansible_dict_to_boto3_tag_list
@@ -25,6 +26,14 @@ from .tagging import boto3_tag_list_to_ansible_dict
 
 class AnsibleIAMError(AnsibleAWSError):
     pass
+
+
+class IAMErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleIAMError
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code("NoSuchEntity")
 
 
 @AWSRetry.jittered_backoff()
