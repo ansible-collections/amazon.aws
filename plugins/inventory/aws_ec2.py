@@ -659,8 +659,8 @@ class InventoryModule(AWSInventoryBase):
         return {"aws_ec2": instances}
 
     def _add_ssm_information(self, connection, instances):
-        filters = [{"Key": "AWS:InstanceInformation.InstanceId", "Values": [x["InstanceId"] for x in instances]}]
-        result = _get_ssm_information(connection, filters)
+        instance_ids = [x["InstanceId"] for x in instances]
+        result = self._get_multiple_ssm_inventories(connection, instance_ids)
         for entity in result.get("Entities", []):
             for x in instances:
                 if x["InstanceId"] == entity["Id"]:
@@ -668,6 +668,18 @@ class InventoryModule(AWSInventoryBase):
                     if content:
                         x["SsmInventory"] = content[0]
                     break
+
+    def _get_multiple_ssm_inventories(self, connection, instance_ids):
+        result = {}
+        # SSM inventory filters Values list can contain a maximum of 40 items so we need to retrieve 40 at a time https://docs.aws.amazon.com/systems-manager/latest/APIReference/API_InventoryFilter.html
+        while len(instance_ids) > 40:
+            filters = [{"Key": "AWS:InstanceInformation.InstanceId", "Values": instance_ids[:40]}]
+            result.update(_get_ssm_information(connection, filters))
+            instance_ids = instance_ids[40:]
+        if instance_ids:
+            filters = [{"Key": "AWS:InstanceInformation.InstanceId", "Values": instance_ids}]
+            result.update(_get_ssm_information(connection, filters))
+        return result
 
     def _populate(
         self,
