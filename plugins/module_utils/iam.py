@@ -17,6 +17,7 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 from .arn import parse_aws_arn
 from .arn import validate_aws_arn
 from .botocore import is_boto3_error_code
+from .errors import AWSErrorHandler
 from .exceptions import AnsibleAWSError
 from .retries import AWSRetry
 from .tagging import ansible_dict_to_boto3_tag_list
@@ -25,6 +26,14 @@ from .tagging import boto3_tag_list_to_ansible_dict
 
 class AnsibleIAMError(AnsibleAWSError):
     pass
+
+
+class IAMErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleIAMError
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code("NoSuchEntity")
 
 
 @AWSRetry.jittered_backoff()
@@ -80,11 +89,9 @@ def _list_managed_policies(client, **kwargs):
     return paginator.paginate(**kwargs).build_full_result()
 
 
+@IAMErrorHandler.common_error_handler("list all managed policies")
 def list_managed_policies(client):
-    try:
-        return _list_managed_policies(client)["Policies"]
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        raise AnsibleIAMError(message="Failed to list all managed policies", exception=e)
+    return _list_managed_policies(client)["Policies"]
 
 
 def convert_managed_policy_names_to_arns(client, policy_names):
@@ -99,7 +106,7 @@ def convert_managed_policy_names_to_arns(client, policy_names):
     try:
         return [allpolicies[policy] for policy in policy_names if policy is not None]
     except KeyError as e:
-        raise AnsibleIAMError(message="Failed to find policy by name:" + str(e), exception=e)
+        raise AnsibleIAMError(message="Failed to find policy by name:" + str(e), exception=e) from e
 
 
 def get_aws_account_id(module):
@@ -148,10 +155,10 @@ def get_aws_account_info(module):
                 )
             account_id = result.get("account_id")
             partition = result.get("partition")
-        except (
+        except (  # pylint: disable=duplicate-except
             botocore.exceptions.BotoCoreError,
             botocore.exceptions.ClientError,
-        ) as e:  # pylint: disable=duplicate-except
+        ) as e:
             module.fail_json_aws(
                 e,
                 msg="Failed to get AWS account information, Try allowing sts:GetCallerIdentity or iam:GetUser permissions.",
@@ -165,68 +172,35 @@ def get_aws_account_info(module):
     return (to_native(account_id), to_native(partition))
 
 
+@IAMErrorHandler.common_error_handler("create instance profile")
 def create_iam_instance_profile(client, name, path, tags):
     boto3_tags = ansible_dict_to_boto3_tag_list(tags or {})
     path = path or "/"
-    try:
-        result = _create_instance_profile(client, InstanceProfileName=name, Path=path, Tags=boto3_tags)
-    except (
-        botocore.exceptions.BotoCoreError,
-        botocore.exceptions.ClientError,
-    ) as e:  # pylint: disable=duplicate-except
-        raise AnsibleIAMError(message="Unable to create instance profile", exception=e)
+    result = _create_instance_profile(client, InstanceProfileName=name, Path=path, Tags=boto3_tags)
     return result["InstanceProfile"]
 
 
+@IAMErrorHandler.deletion_error_handler("delete instance profile")
 def delete_iam_instance_profile(client, name):
-    try:
-        _delete_instance_profile(client, InstanceProfileName=name)
-    except is_boto3_error_code("NoSuchEntity"):
-        # Deletion already happened.
-        return False
-    except (
-        botocore.exceptions.BotoCoreError,
-        botocore.exceptions.ClientError,
-    ) as e:  # pylint: disable=duplicate-except
-        raise AnsibleIAMError(message="Unable to delete instance profile", exception=e)
+    _delete_instance_profile(client, InstanceProfileName=name)
+    # Error Handler will return False if the resource didn't exist
     return True
 
 
+@IAMErrorHandler.common_error_handler("add role to instance profile")
 def add_role_to_iam_instance_profile(client, profile_name, role_name):
-    try:
-        _add_role_to_instance_profile(client, InstanceProfileName=profile_name, RoleName=role_name)
-    except (
-        botocore.exceptions.BotoCoreError,
-        botocore.exceptions.ClientError,
-    ) as e:  # pylint: disable=duplicate-except
-        raise AnsibleIAMError(
-            message="Unable to add role to instance profile",
-            exception=e,
-            profile_name=profile_name,
-            role_name=role_name,
-        )
+    _add_role_to_instance_profile(client, InstanceProfileName=profile_name, RoleName=role_name)
     return True
 
 
+@IAMErrorHandler.deletion_error_handler("remove role from instance profile")
 def remove_role_from_iam_instance_profile(client, profile_name, role_name):
-    try:
-        _remove_role_from_instance_profile(client, InstanceProfileName=profile_name, RoleName=role_name)
-    except is_boto3_error_code("NoSuchEntity"):
-        # Deletion already happened.
-        return False
-    except (
-        botocore.exceptions.BotoCoreError,
-        botocore.exceptions.ClientError,
-    ) as e:  # pylint: disable=duplicate-except
-        raise AnsibleIAMError(
-            message="Unable to remove role from instance profile",
-            exception=e,
-            profile_name=profile_name,
-            role_name=role_name,
-        )
+    _remove_role_from_instance_profile(client, InstanceProfileName=profile_name, RoleName=role_name)
+    # Error Handler will return False if the resource didn't exist
     return True
 
 
+@IAMErrorHandler.list_error_handler("list instance profiles", [])
 def list_iam_instance_profiles(client, name=None, prefix=None, role=None):
     """
     Returns a list of IAM instance profiles in boto3 format.
@@ -234,22 +208,14 @@ def list_iam_instance_profiles(client, name=None, prefix=None, role=None):
 
     See also: normalize_iam_instance_profile
     """
-    try:
-        if role:
-            return _list_iam_instance_profiles_for_role(client, RoleName=role)
-        if name:
-            # Unlike the others this returns a single result, make this a list with 1 element.
-            return [_get_iam_instance_profiles(client, InstanceProfileName=name)]
-        if prefix:
-            return _list_iam_instance_profiles(client, PathPrefix=prefix)
-        return _list_iam_instance_profiles(client)
-    except is_boto3_error_code("NoSuchEntity"):
-        return []
-    except (
-        botocore.exceptions.BotoCoreError,
-        botocore.exceptions.ClientError,
-    ) as e:  # pylint: disable=duplicate-except
-        raise AnsibleIAMError(message="Unable to list instance profiles", exception=e)
+    if role:
+        return _list_iam_instance_profiles_for_role(client, RoleName=role)
+    if name:
+        # Unlike the others this returns a single result, make this a list with 1 element.
+        return [_get_iam_instance_profiles(client, InstanceProfileName=name)]
+    if prefix:
+        return _list_iam_instance_profiles(client, PathPrefix=prefix)
+    return _list_iam_instance_profiles(client)
 
 
 def normalize_iam_instance_profile(profile):
@@ -288,29 +254,19 @@ def normalize_iam_role(role):
     return new_role
 
 
+@IAMErrorHandler.common_error_handler("tag instance profile")
 def tag_iam_instance_profile(client, name, tags):
     if not tags:
         return
     boto3_tags = ansible_dict_to_boto3_tag_list(tags or {})
-    try:
-        result = _tag_iam_instance_profile(client, InstanceProfileName=name, Tags=boto3_tags)
-    except (
-        botocore.exceptions.BotoCoreError,
-        botocore.exceptions.ClientError,
-    ) as e:  # pylint: disable=duplicate-except
-        raise AnsibleIAMError(message="Unable to tag instance profile", exception=e)
+    result = _tag_iam_instance_profile(client, InstanceProfileName=name, Tags=boto3_tags)
 
 
+@IAMErrorHandler.common_error_handler("untag instance profile")
 def untag_iam_instance_profile(client, name, tags):
     if not tags:
         return
-    try:
-        result = _untag_iam_instance_profile(client, InstanceProfileName=name, TagKeys=tags)
-    except (
-        botocore.exceptions.BotoCoreError,
-        botocore.exceptions.ClientError,
-    ) as e:  # pylint: disable=duplicate-except
-        raise AnsibleIAMError(message="Unable to untag instance profile", exception=e)
+    result = _untag_iam_instance_profile(client, InstanceProfileName=name, TagKeys=tags)
 
 
 def _validate_iam_name(resource_type, name=None):
