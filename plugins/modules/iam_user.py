@@ -227,6 +227,7 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.iam import AnsibleIAMError
+from ansible_collections.amazon.aws.plugins.module_utils.iam import IAMErrorHandler
 from ansible_collections.amazon.aws.plugins.module_utils.iam import convert_managed_policy_names_to_arns
 from ansible_collections.amazon.aws.plugins.module_utils.iam import validate_iam_identifiers
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
@@ -243,6 +244,12 @@ def normalize_user(user):
     return user
 
 
+@IAMErrorHandler.common_error_handler("waiting for IAM user creation")
+def _wait_user_exists(connection, **params):
+    waiter = connection.get_waiter("user_exists")
+    waiter.wait(**params)
+
+
 def wait_iam_exists(connection, module):
     if not module.params.get("wait"):
         return
@@ -252,19 +259,12 @@ def wait_iam_exists(connection, module):
 
     delay = min(wait_timeout, 5)
     max_attempts = wait_timeout // delay
+    waiter_config = {"Delay": delay, "MaxAttempts": max_attempts}
 
-    try:
-        waiter = connection.get_waiter("user_exists")
-        waiter.wait(
-            WaiterConfig={"Delay": delay, "MaxAttempts": max_attempts},
-            UserName=user_name,
-        )
-    except botocore.exceptions.WaiterError as e:
-        module.fail_json_aws(e, msg="Timeout while waiting on IAM user creation")
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed while waiting on IAM user creation")
+    _wait_user_exists(connection, WaiterConfig=waiter_config, UserName=user_name)
 
 
+@IAMErrorHandler.common_error_handler("create user")
 def create_user(connection, module, user_name, path, boundary, tags):
     params = {"UserName": user_name}
     if path:
@@ -277,15 +277,21 @@ def create_user(connection, module, user_name, path, boundary, tags):
     if module.check_mode:
         module.exit_json(changed=True, create_params=params)
 
-    try:
-        user = connection.create_user(aws_retry=True, **params)
-    except (
-        botocore.exceptions.ClientError,
-        botocore.exceptions.BotoCoreError,
-    ) as e:  # pylint: disable=duplicate-except
-        raise AnsibleIAMError(message=f"Unable to create user {user_name}", exception=e)
+    user = connection.create_user(aws_retry=True, **params)
 
     return normalize_user(user)
+
+
+@IAMErrorHandler.common_error_handler("create user login profile")
+def _create_login_profile(connection, **params):
+    return connection.create_login_profile(aws_retry=True, **params)
+
+
+# Uses the list error handler because we "update" as a quick test for existence
+# when our next step would be update or create.
+@IAMErrorHandler.list_error_handler("update user login profile")
+def _update_login_profile(connection, **params):
+    return connection.update_login_profile(aws_retry=True, **params)
 
 
 def _create_or_update_login_profile(connection, name, password, reset):
@@ -296,21 +302,10 @@ def _create_or_update_login_profile(connection, name, password, reset):
         "PasswordResetRequired": reset,
     }
 
-    try:
-        retval = connection.update_login_profile(aws_retry=True, **user_params)
-    except is_boto3_error_code("NoSuchEntity"):
-        # Login profile does not yet exist - create it
-        try:
-            retval = connection.create_login_profile(aws_retry=True, **user_params)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            raise AnsibleIAMError(message="Unable to create user login profile", exception=e)
-    except (
-        botocore.exceptions.ClientError,
-        botocore.exceptions.BotoCoreError,
-    ) as e:  # pylint: disable=duplicate-except
-        raise AnsibleIAMError(message="Unable to update user login profile", exception=e)
-
-    return retval
+    retval = _update_login_profile(connection, **user_params)
+    if retval:
+        return retval
+    return _create_login_profile(connection, **user_params)
 
 
 def ensure_login_profile(connection, check_mode, user_name, password, update, reset, new_user):
@@ -325,29 +320,14 @@ def ensure_login_profile(connection, check_mode, user_name, password, update, re
     return True, _create_or_update_login_profile(connection, user_name, password, reset)
 
 
+@IAMErrorHandler.list_error_handler("get login profile")
 def _get_login_profile(connection, name):
-    try:
-        profile = connection.get_login_profile(aws_retry=True, UserName=name).get("LoginProfile")
-    except is_boto3_error_code("NoSuchEntity"):
-        return None
-    except (
-        botocore.exceptions.ClientError,
-        botocore.exceptions.BotoCoreError,
-    ) as e:
-        raise AnsibleIAMError(message=f"Unable to get login profile for user {name}", exception=e)
-    return profile
+    return connection.get_login_profile(aws_retry=True, UserName=name).get("LoginProfile")
 
 
+@IAMErrorHandler.deletion_error_handler("delete login profile")
 def _delete_login_profile(connection, name):
-    try:
-        connection.delete_login_profile(aws_retry=True, UserName=name)
-    except is_boto3_error_code("NoSuchEntityException"):
-        return
-    except (
-        botocore.exceptions.ClientError,
-        botocore.exceptions.BotoCoreError,
-    ) as e:  # pylint: disable=duplicate-except
-        raise AnsibleIAMError(message="Unable to delete user login profile", exception=e)
+    connection.delete_login_profile(aws_retry=True, UserName=name)
 
 
 def remove_login_profile(connection, check_mode, user_name, remove_password, new_user):
@@ -368,38 +348,29 @@ def remove_login_profile(connection, check_mode, user_name, remove_password, new
     return True
 
 
+@IAMErrorHandler.list_error_handler("get policies for user")
 def _list_attached_policies(connection, user_name):
-    try:
-        return connection.list_attached_user_policies(UserName=user_name)["AttachedPolicies"]
-    except is_boto3_error_code("NoSuchEntity"):
-        return []
-    except (
-        botocore.exceptions.ClientError,
-        botocore.exceptions.BotoCoreError,
-    ) as e:  # pylint: disable=duplicate-except
-        raise AnsibleIAMError(message=f"Unable to get policies for user {user_name}", exception=e)
+    return connection.list_attached_user_policies(UserName=user_name)["AttachedPolicies"]
 
 
-def attach_policies(connection, user_name, policies):
+@IAMErrorHandler.common_error_handler("attach policy to user")
+def attach_policies(connection, check_mode, user_name, policies):
+    if not policies:
+        return False
+    if check_mode:
+        return True
     for policy_arn in policies:
-        try:
-            connection.attach_user_policy(UserName=user_name, PolicyArn=policy_arn)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            raise AnsibleIAMError(
-                message=f"Unable to attach policy {policy_arn} to user {user_name}",
-                exception=e,
-            )
+        connection.attach_user_policy(UserName=user_name, PolicyArn=policy_arn)
 
 
-def detach_policies(connection, user_name, policies):
+@IAMErrorHandler.common_error_handler("detach policy from user")
+def detach_policies(connection, check_mode, user_name, policies):
+    if not policies:
+        return False
+    if check_mode:
+        return True
     for policy_arn in policies:
-        try:
-            connection.detach_user_policy(UserName=user_name, PolicyArn=policy_arn)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            raise AnsibleIAMError(
-                message=f"Unable to detach policy {policy_arn} from user {user_name}",
-                exception=e,
-            )
+        connection.detach_user_policy(UserName=user_name, PolicyArn=policy_arn)
 
 
 def ensure_managed_policies(connection, check_mode, user_name, managed_policies, purge_policies):
@@ -423,12 +394,13 @@ def ensure_managed_policies(connection, check_mode, user_name, managed_policies,
     if check_mode:
         return True
 
-    detach_policies(connection, user_name, policies_to_remove)
-    attach_policies(connection, user_name, policies_to_add)
+    detach_policies(connection, check_mode, user_name, policies_to_remove)
+    attach_policies(connection, check_mode, user_name, policies_to_add)
 
     return True
 
 
+@IAMErrorHandler.common_error_handler("set tags for user")
 def ensure_user_tags(connection, check_mode, user, user_name, new_tags, purge_tags):
     if new_tags is None:
         return False
@@ -443,18 +415,26 @@ def ensure_user_tags(connection, check_mode, user, user_name, new_tags, purge_ta
     if check_mode:
         return True
 
-    try:
-        if tags_to_remove:
-            connection.untag_user(UserName=user_name, TagKeys=tags_to_remove)
-        if tags_to_add:
-            connection.tag_user(UserName=user_name, Tags=ansible_dict_to_boto3_tag_list(tags_to_add))
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        raise AnsibleIAMError(
-            message=f"Unable to set tags for user {user_name}",
-            exception=e,
-        )
+    if tags_to_remove:
+        connection.untag_user(UserName=user_name, TagKeys=tags_to_remove)
+    if tags_to_add:
+        connection.tag_user(UserName=user_name, Tags=ansible_dict_to_boto3_tag_list(tags_to_add))
 
     return True
+
+
+@IAMErrorHandler.deletion_error_handler("remove permissions boundary for user")
+def _delete_user_permissions_boundary(connection, check_mode, user_name):
+    if check_mode:
+        return True
+    connection.delete_user_permissions_boundary(aws_retry=True, UserName=user_name)
+
+
+@IAMErrorHandler.common_error_handler("set permissions boundary for user")
+def _put_user_permissions_boundary(connection, check_mode, user_name, boundary):
+    if check_mode:
+        return True
+    connection.put_user_permissions_boundary(aws_retry=True, UserName=user_name, PermissionsBoundary=boundary)
 
 
 def ensure_permissions_boundary(connection, check_mode, user, user_name, boundary):
@@ -472,32 +452,14 @@ def ensure_permissions_boundary(connection, check_mode, user, user_name, boundar
         return True
 
     if boundary == "":
-        try:
-            connection.delete_user_permissions_boundary(
-                aws_retry=True,
-                UserName=user_name,
-            )
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            raise AnsibleIAMError(
-                message=f"Unable to remove permissions boundary for user {user_name}",
-                exception=e,
-            )
+        _delete_user_permissions_boundary(connection, check_mode, user_name)
     else:
-        try:
-            connection.put_user_permissions_boundary(
-                aws_retry=True,
-                UserName=user_name,
-                PermissionsBoundary=boundary,
-            )
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            raise AnsibleIAMError(
-                message=f"Unable to set permissions boundary for user {user_name}",
-                exception=e,
-            )
+        _put_user_permissions_boundary(connection, check_mode, user_name, boundary)
 
     return True
 
 
+@IAMErrorHandler.common_error_handler("set path for user")
 def ensure_path(connection, check_mode, user, user_name, path):
     if path is None:
         return False
@@ -510,17 +472,7 @@ def ensure_path(connection, check_mode, user, user_name, path):
     if check_mode:
         return True
 
-    try:
-        connection.update_user(
-            aws_retry=True,
-            UserName=user_name,
-            NewPath=path,
-        )
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        raise AnsibleIAMError(
-            message=f"Unable to set path for user {user_name}",
-            exception=e,
-        )
+    connection.update_user(aws_retry=True, UserName=user_name, NewPath=path)
 
     return True
 
@@ -627,6 +579,149 @@ def create_or_update_user(connection, module):
     module.exit_json(changed=changed, iam_user=user, user=user["user"])
 
 
+@IAMErrorHandler.deletion_error_handler("delete access key")
+def delete_access_key(connection, check_mode, user_name, key_id):
+    if check_mode:
+        return True
+    connection.delete_access_key(aws_retry=True, UserName=user_name, AccessKeyId=key_id)
+    return True
+
+
+@IAMErrorHandler.list_error_handler("list access keys")
+def delete_access_keys(connection, check_mode, user_name):
+    access_keys = connection.list_access_keys(aws_retry=True, UserName=user_name)["AccessKeyMetadata"]
+    if not access_keys:
+        return False
+    for access_key in access_keys:
+        delete_access_key(connection, check_mode, user_name, access_key["AccessKeyId"])
+    return True
+
+
+@IAMErrorHandler.deletion_error_handler("delete SSH key")
+def delete_ssh_key(connection, check_mode, user_name, key_id):
+    if check_mode:
+        return True
+    connection.delete_ssh_public_key(aws_retry=True, UserName=user_name, SSHPublicKeyId=key_id)
+    return True
+
+
+@IAMErrorHandler.list_error_handler("list SSH keys")
+def delete_ssh_public_keys(connection, check_mode, user_name):
+    public_keys = connection.list_ssh_public_keys(aws_retry=True, UserName=user_name)["SSHPublicKeys"]
+    if not public_keys:
+        return False
+    for public_key in public_keys:
+        delete_ssh_key(connection, check_mode, user_name, public_key["SSHPublicKeyId"])
+    return True
+
+
+@IAMErrorHandler.deletion_error_handler("delete service credential")
+def delete_service_credential(connection, check_mode, user_name, cred_id):
+    if check_mode:
+        return True
+    connection.delete_ssh_public_key(aws_retry=True, UserName=user_name, SSHPublicKeyId=cred_id)
+    return True
+
+
+@IAMErrorHandler.list_error_handler("list service credentials")
+def delete_service_credentials(connection, check_mode, user_name):
+    credentials = connection.list_service_specific_credentials(aws_retry=True, UserName=user_name)[
+        "ServiceSpecificCredentials"
+    ]
+    if not credentials:
+        return False
+    for credential in credentials:
+        delete_service_credential(connection, check_mode, user_name, credential["ServiceSpecificCredentialId"])
+    return True
+
+
+@IAMErrorHandler.deletion_error_handler("delete signing certificate")
+def delete_signing_certificate(connection, check_mode, user_name, cert_id):
+    if check_mode:
+        return True
+    connection.delete_signing_certificate(aws_retry=True, UserName=user_name, CertificateId=cert_id)
+    return True
+
+
+@IAMErrorHandler.list_error_handler("list signing certificates")
+def delete_signing_certificates(connection, check_mode, user_name):
+    certificates = connection.list_signing_certificates(aws_retry=True, UserName=user_name)["Certificates"]
+    if not certificates:
+        return False
+    for certificate in certificates:
+        delete_signing_certificate(connection, check_mode, user_name, certificate["CertificateId"])
+    return True
+
+
+@IAMErrorHandler.deletion_error_handler("delete MFA device")
+def delete_mfa_device(connection, check_mode, user_name, device_id):
+    if check_mode:
+        return True
+    connection.deactivate_mfa_device(aws_retry=True, UserName=user_name, SerialNumber=device_id)
+    return True
+
+
+@IAMErrorHandler.list_error_handler("list MFA devices")
+def delete_mfa_devices(connection, check_mode, user_name):
+    devices = connection.list_mfa_devices(aws_retry=True, UserName=user_name)["MFADevices"]
+    if not devices:
+        return False
+    for device in devices:
+        delete_mfa_device(connection, check_mode, user_name, device["SerialNumber"])
+    return True
+
+
+def detach_all_policies(connection, check_mode, user_name):
+    # Remove any attached policies
+    attached_policies_desc = _list_attached_policies(connection, user_name)
+    current_attached_policies = [policy["PolicyArn"] for policy in attached_policies_desc]
+    detach_policies(connection, check_mode, user_name, current_attached_policies)
+
+
+@IAMErrorHandler.deletion_error_handler("delete inline policy")
+def delete_inline_policy(connection, check_mode, user_name, policy):
+    if check_mode:
+        return True
+    connection.delete_user_policy(aws_retry=True, UserName=user_name, PolicyName=policy)
+    return True
+
+
+@IAMErrorHandler.list_error_handler("list inline policies")
+def delete_inline_policies(connection, check_mode, user_name):
+    inline_policies = connection.list_user_policies(aws_retry=True, UserName=user_name)["PolicyNames"]
+    if not inline_policies:
+        return False
+    for policy_name in inline_policies:
+        delete_inline_policy(connection, check_mode, user_name, policy_name)
+    return True
+
+
+@IAMErrorHandler.deletion_error_handler("remove user from group")
+def remove_from_group(connection, check_mode, user_name, group_name):
+    if check_mode:
+        return True
+    connection.remove_user_from_group(aws_retry=True, UserName=user_name, GroupName=group_name)
+    return True
+
+
+@IAMErrorHandler.list_error_handler("list groups containing user")
+def remove_from_all_groups(connection, check_mode, user_name):
+    user_groups = connection.list_groups_for_user(aws_retry=True, UserName=user_name)["Groups"]
+    if not user_groups:
+        return False
+    for group in user_groups:
+        remove_from_group(connection, check_mode, user_name, group["GroupName"])
+    return True
+
+
+@IAMErrorHandler.deletion_error_handler("delete user")
+def delete_user(connection, check_mode, user_name):
+    if check_mode:
+        return True
+    connection.delete_user(aws_retry=True, UserName=user_name)
+    return True
+
+
 def destroy_user(connection, module):
     user_name = module.params.get("name")
 
@@ -655,67 +750,17 @@ def destroy_user(connection, module):
     #   - Inline policies
     #   - Group membership
 
-    try:
-        # Remove user's login profile (console password)
-        remove_login_profile(connection, module.check_mode, user_name, True, False)
-
-        # Remove user's access keys
-        access_keys = connection.list_access_keys(aws_retry=True, UserName=user_name)["AccessKeyMetadata"]
-        for access_key in access_keys:
-            connection.delete_access_key(aws_retry=True, UserName=user_name, AccessKeyId=access_key["AccessKeyId"])
-
-        # Remove user's ssh public keys
-        ssh_public_keys = connection.list_ssh_public_keys(UserName=user_name)["SSHPublicKeys"]
-        for ssh_public_key in ssh_public_keys:
-            connection.delete_ssh_public_key(
-                aws_retry=True, UserName=user_name, SSHPublicKeyId=ssh_public_key["SSHPublicKeyId"]
-            )
-
-        # Remove user's service specific credentials
-        service_credentials = connection.list_service_specific_credentials(aws_retry=True, UserName=user_name)[
-            "ServiceSpecificCredentials"
-        ]
-        for service_specific_credential in service_credentials:
-            connection.delete_service_specific_credential(
-                aws_retry=True,
-                UserName=user_name,
-                ServiceSpecificCredentialId=service_specific_credential["ServiceSpecificCredentialId"],
-            )
-
-        # Remove user's signing certificates
-        signing_certificates = connection.list_signing_certificates(UserName=user_name)["Certificates"]
-        for signing_certificate in signing_certificates:
-            connection.delete_signing_certificate(
-                aws_retry=True, UserName=user_name, CertificateId=signing_certificate["CertificateId"]
-            )
-
-        # Remove user's MFA devices
-        mfa_devices = connection.list_mfa_devices(aws_retry=True, UserName=user_name)["MFADevices"]
-        for mfa_device in mfa_devices:
-            connection.deactivate_mfa_device(
-                aws_retry=True, UserName=user_name, SerialNumber=mfa_device["SerialNumber"]
-            )
-
-        # Remove any attached policies
-        attached_policies_desc = _list_attached_policies(connection, user_name)
-        current_attached_policies = [policy["PolicyArn"] for policy in attached_policies_desc]
-        detach_policies(connection, user_name, current_attached_policies)
-
-        # Remove user's inline policies
-        inline_policies = connection.list_user_policies(aws_retry=True, UserName=user_name)["PolicyNames"]
-        for policy_name in inline_policies:
-            connection.delete_user_policy(aws_retry=True, UserName=user_name, PolicyName=policy_name)
-
-        # Remove user's group membership
-        user_groups = connection.list_groups_for_user(aws_retry=True, UserName=user_name)["Groups"]
-        for group in user_groups:
-            connection.remove_user_from_group(aws_retry=True, UserName=user_name, GroupName=group["GroupName"])
-
-        connection.delete_user(aws_retry=True, UserName=user_name)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg=f"Unable to delete user {user_name}")
-
-    module.exit_json(changed=True)
+    remove_login_profile(connection, module.check_mode, user_name, True, False)
+    delete_access_keys(connection, module.check_mode, user_name)
+    delete_ssh_public_keys(connection, module.check_mode, user_name)
+    delete_service_credentials(connection, module.check_mode, user_name)
+    delete_signing_certificates(connection, module.check_mode, user_name)
+    delete_mfa_devices(connection, module.check_mode, user_name)
+    detach_all_policies(connection, module.check_mode, user_name)
+    delete_inline_policies(connection, module.check_mode, user_name)
+    remove_from_all_groups(connection, module.check_mode, user_name)
+    changed = delete_user(connection, module.check_mode, user_name)
+    module.exit_json(changed=changed)
 
 
 def get_user(connection, name):
