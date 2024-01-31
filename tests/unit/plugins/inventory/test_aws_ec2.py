@@ -649,3 +649,39 @@ def test_inventory__add_ssm_information(m_get_ssm_information, inventory):
 
     filters = [{"Key": "AWS:InstanceInformation.InstanceId", "Values": [x["InstanceId"] for x in instances]}]
     m_get_ssm_information.assert_called_once_with(connection, filters)
+
+
+@patch("ansible_collections.amazon.aws.plugins.inventory.aws_ec2._get_ssm_information")
+def test_inventory__get_multiple_ssm_inventories(m_get_ssm_information, inventory):
+    instances = [{"InstanceId": f"i-00{i}", "Name": f"instance {i}"} for i in range(41)]
+    result = {
+        "StatusCode": 200,
+        "Entities": [
+            {
+                "Id": f"i-00{i}",
+                "Data": {
+                    "AWS:InstanceInformation": {
+                        "Content": [{"os_type": "Linux", "os_name": "Fedora", "os_version": 37}]
+                    }
+                },
+            }
+            for i in range(41)
+        ],
+    }
+    m_get_ssm_information.return_value = result
+
+    connection = MagicMock()
+
+    expected = [
+        {
+            "InstanceId": f"i-00{i}",
+            "Name": f"instance {i}",
+            "SsmInventory": {"os_type": "Linux", "os_name": "Fedora", "os_version": 37},
+        }
+        for i in range(41)
+    ]
+
+    inventory._add_ssm_information(connection, instances)
+    assert expected == instances
+
+    assert 2 == m_get_ssm_information.call_count
