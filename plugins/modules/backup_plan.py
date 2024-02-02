@@ -131,6 +131,7 @@ options:
           - By default, ScheduleExpressions are in UTC. You can modify this to a specified timezone.
           - This option requires botocore >= 1.31.36.
         type: str
+        default: "Utc/ETC"
         required: false
         version_added: 7.3.0
   advanced_backup_settings:
@@ -301,7 +302,7 @@ backup_plan:
           description:
             - This is the timezone in which the schedule expression is set.
             - This information is returned for botocore versions >= 1.31.36.
-          type: bool
+          type: str
           returned: when botocore >= 1.31.36
           sample: "Etc/UTC"
           version_added: 7.3.0
@@ -353,6 +354,7 @@ ARGUMENT_SPEC = dict(
             schedule_expression=dict(type="str", default="cron(0 5 ? * * *)"),
             start_window_minutes=dict(type="int", default=480),
             completion_window_minutes=dict(type="int", default=10080),
+            schedule_expression_timezone=dict(type="str", default="Etc/UTC"),
             lifecycle=dict(
                 type="dict",
                 options=dict(
@@ -624,10 +626,12 @@ def main():
     }
 
     if module.params["rules"]:
-        if module.botocore_at_least("1.31.36"):
-            for each in plan["rules"]:
-                if not each.get("schedule_expression_timezone"):
-                    each["schedule_expression_timezone"] = "Etc/UTC"
+        for each in plan["rules"]:
+            if not module.botocore_at_least("1.31.36"):
+                module.warn(
+                    "schedule_expression_timezone requires botocore >= 1.31.36. schedule_expression_timezone will be ignored."
+                )
+                each.pop("schedule_expression_timezone")
 
     tags = module.params["tags"]
 
