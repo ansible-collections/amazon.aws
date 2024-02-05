@@ -446,6 +446,17 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-backup-p
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-rules/schedule_expression_timezone"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-plan-module-parameter-rules-schedule-expression-timezone"><strong>schedule_expression_timezone</strong></p>
+<a class="ansibleOptionLink" href="#parameter-rules/schedule_expression_timezone" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 7.3.0</em></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>This is the timezone in which the schedule expression is set.</p>
+<p>By default, ScheduleExpressions are in UTC. You can modify this to a specified timezone.</p>
+<p>This option requires botocore &gt;= 1.31.36.</p>
+<p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;Etc/UTC&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-rules/start_window_minutes"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-plan-module-parameter-rules-start-window-minutes"><strong>start_window_minutes</strong></p>
 <a class="ansibleOptionLink" href="#parameter-rules/start_window_minutes" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
@@ -454,14 +465,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-backup-p
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">480</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-rules/target_backup_vault_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-plan-module-parameter-rules-target-backup-vault-name"><strong>target_backup_vault_name</strong></p>
 <a class="ansibleOptionLink" href="#parameter-rules/target_backup_vault_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Name of the Backup Vault this rule should target.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-secret_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_secret_access_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_secret_key"></div>
@@ -478,7 +489,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-backup-p
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_SECRET_KEY</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-session_token"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_session_token"></div>
 <div class="ansibleOptionAnchor" id="parameter-security_token"></div>
@@ -496,7 +507,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-backup-p
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_SECRET_KEY</span></code> and <code class="docutils literal notranslate"><span class="pre">AWS_SECURITY_TOKEN</span></code> environment variables has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-state"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-plan-module-parameter-state"><strong>state</strong></p>
 <a class="ansibleOptionLink" href="#parameter-state" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -508,7 +519,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-backup-p
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-tags"></div>
 <div class="ansibleOptionAnchor" id="parameter-resource_tags"></div>
 <div class="ansibleOptionAnchor" id="parameter-backup_plan_tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-plan-module-parameter-tags"><span id="ansible-collections-amazon-aws-backup-plan-module-parameter-resource-tags"></span><span id="ansible-collections-amazon-aws-backup-plan-module-parameter-backup-plan-tags"></span><strong>tags</strong></p>
@@ -518,7 +529,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-backup-p
 <td><div class="ansible-option-cell"><p>To help organize your resources, you can assign your own metadata to the resources that you create. Each tag is a key-value pair. The specified tags are assigned to all backups created with this plan.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-validate_certs"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-plan-module-parameter-validate-certs"><strong>validate_certs</strong></p>
 <a class="ansibleOptionLink" href="#parameter-validate_certs" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -622,7 +633,108 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-backup-p
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-backup_plan/rules/completion_window_minutes"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-plan-module-return-backup-plan-rules-completion-window-minutes"><strong>completion_window_minutes</strong></p>
+<a class="ansibleOptionLink" href="#return-backup_plan/rules/completion_window_minutes" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A value in minutes after a backup job is successfully started before it must be completed or it will be canceled by Backup.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">10080</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-backup_plan/rules/copy_actions"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-plan-module-return-backup-plan-rules-copy-actions"><strong>copy_actions</strong></p>
+<a class="ansibleOptionLink" href="#return-backup_plan/rules/copy_actions" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>An array of CopyAction objects, which contains the details of the copy operation.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[]</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-backup_plan/rules/enable_continous_backup"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-plan-module-return-backup-plan-rules-enable-continous-backup"><strong>enable_continous_backup</strong></p>
+<a class="ansibleOptionLink" href="#return-backup_plan/rules/enable_continous_backup" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Specifies whether Backup creates continuous backups.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">false</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-backup_plan/rules/lifecycle"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-plan-module-return-backup-plan-rules-lifecycle"><strong>lifecycle</strong></p>
+<a class="ansibleOptionLink" href="#return-backup_plan/rules/lifecycle" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The lifecycle defines when a protected resource is transitioned to cold storage and when it expires.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{}</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-backup_plan/rules/recovery_point_tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-plan-module-return-backup-plan-rules-recovery-point-tags"><strong>recovery_point_tags</strong></p>
+<a class="ansibleOptionLink" href="#return-backup_plan/rules/recovery_point_tags" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>An array of key-value pair strings that are assigned to resources that are associated with this rule when restored from backup.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{}</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-backup_plan/rules/rule_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-plan-module-return-backup-plan-rules-rule-id"><strong>rule_id</strong></p>
+<a class="ansibleOptionLink" href="#return-backup_plan/rules/rule_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Uniquely identifies a rule that is used to schedule the backup of a selection of resources.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;973621ef-d863-41ef-b5c3-9e943a64ad0c&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-backup_plan/rules/rule_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-plan-module-return-backup-plan-rules-rule-name"><strong>rule_name</strong></p>
+<a class="ansibleOptionLink" href="#return-backup_plan/rules/rule_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A display name for a backup rule.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;daily&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-backup_plan/rules/schedule_expression"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-plan-module-return-backup-plan-rules-schedule-expression"><strong>schedule_expression</strong></p>
+<a class="ansibleOptionLink" href="#return-backup_plan/rules/schedule_expression" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A cron expression in UTC specifying when Backup initiates a backup job.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;cron(0</span> <span class="pre">5</span> <span class="pre">?</span> <span class="pre">*</span> <span class="pre">*</span> <span class="pre">*)&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-backup_plan/rules/schedule_expression_timezone"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-plan-module-return-backup-plan-rules-schedule-expression-timezone"><strong>schedule_expression_timezone</strong></p>
+<a class="ansibleOptionLink" href="#return-backup_plan/rules/schedule_expression_timezone" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 7.3.0</em></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>This is the timezone in which the schedule expression is set.</p>
+<p>This information is returned for botocore versions &gt;= 1.31.36.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when botocore &gt;= 1.31.36</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;Etc/UTC&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-backup_plan/rules/start_window_minutes"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-plan-module-return-backup-plan-rules-start-window-minutes"><strong>start_window_minutes</strong></p>
+<a class="ansibleOptionLink" href="#return-backup_plan/rules/start_window_minutes" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A value in minutes after a backup is scheduled before a job will be canceled if it doesn’t start successfully.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">480</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-backup_plan/rules/target_backup_vault_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-plan-module-return-backup-plan-rules-target-backup-vault-name"><strong>target_backup_vault_name</strong></p>
+<a class="ansibleOptionLink" href="#return-backup_plan/rules/target_backup_vault_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The name of a logical container where backups are stored.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;09da67966fd5-backup-vault\&quot;&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-backup_plan/tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-plan-module-return-backup-plan-tags"><strong>tags</strong></p>
 <a class="ansibleOptionLink" href="#return-backup_plan/tags" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -630,7 +742,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-backup-p
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> on create/update</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-backup_plan_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-plan-module-return-backup-plan-arn"><strong>backup_plan_arn</strong></p>
 <a class="ansibleOptionLink" href="#return-backup_plan_arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -639,7 +751,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-backup-p
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:backup:eu-central-1:111122223333:backup-plan:1111f877-1ecf-4d79-9718-a861cd09df3b&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-backup_plan_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-plan-module-return-backup-plan-id"><strong>backup_plan_id</strong></p>
 <a class="ansibleOptionLink" href="#return-backup_plan_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -648,7 +760,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-backup-p
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;1111f877-1ecf-4d79-9718-a861cd09df3b&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-backup_plan_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-plan-module-return-backup-plan-name"><strong>backup_plan_name</strong></p>
 <a class="ansibleOptionLink" href="#return-backup_plan_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -657,7 +769,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-backup-p
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;elastic&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-creation_date"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-plan-module-return-creation-date"><strong>creation_date</strong></p>
 <a class="ansibleOptionLink" href="#return-creation_date" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -666,7 +778,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-backup-p
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2023-01-24T10:08:03.193000+01:00&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-deletion_date"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-plan-module-return-deletion-date"><strong>deletion_date</strong></p>
 <a class="ansibleOptionLink" href="#return-deletion_date" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -675,7 +787,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-backup-p
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2023-05-05T16:24:51.987000-04:00&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-exists"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-plan-module-return-exists"><strong>exists</strong></p>
 <a class="ansibleOptionLink" href="#return-exists" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -684,7 +796,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-backup-p
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">true</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-version_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-plan-module-return-version-id"><strong>version_id</strong></p>
 <a class="ansibleOptionLink" href="#return-version_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
