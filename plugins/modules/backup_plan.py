@@ -131,7 +131,7 @@ options:
           - By default, ScheduleExpressions are in UTC. You can modify this to a specified timezone.
           - This option requires botocore >= 1.31.36.
         type: str
-        default: "Utc/ETC"
+        default: "Etc/UTC"
         required: false
         version_added: 7.3.0
   advanced_backup_settings:
