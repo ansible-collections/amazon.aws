@@ -269,7 +269,7 @@ backup_plan:
             - A value in minutes after a backup job is successfully started before it must be
               completed or it will be canceled by Backup.
           type: int
-          sample:10080
+          sample: 10080
         lifecycle:
           description:
             - The lifecycle defines when a protected resource is transitioned to cold storage and when
