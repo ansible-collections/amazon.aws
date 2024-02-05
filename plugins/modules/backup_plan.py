@@ -125,6 +125,15 @@ options:
           - AWS default if not supplied is false.
         type: bool
         default: false
+      schedule_expression_timezone:
+        description:
+          - This is the timezone in which the schedule expression is set.
+          - By default, ScheduleExpressions are in UTC. You can modify this to a specified timezone.
+          - This option requires botocore >= 1.31.36.
+        type: str
+        default: "Etc/UTC"
+        required: false
+        version_added: 7.3.0
   advanced_backup_settings:
     description:
       - Specifies a list of advanced backup settings for each resource type.
@@ -233,6 +242,70 @@ backup_plan:
       returned: always
       type: list
       elements: dict
+      contains:
+        rule_name:
+          description: A display name for a backup rule.
+          returned: always
+          type: str
+          sample: "daily"
+        target_backup_vault_name:
+          description: The name of a logical container where backups are stored.
+          returned: always
+          type: str
+          sample: 09da67966fd5-backup-vault"
+        schedule_expression:
+          description: A cron expression in UTC specifying when Backup initiates a backup job.
+          returned: always
+          type: str
+          sample: "cron(0 5 ? * * *)"
+        start_window_minutes:
+          description:
+            - A value in minutes after a backup is scheduled before a job will be canceled if it
+              doesn't start successfully.
+          type: int
+          sample: 480
+        completion_window_minutes:
+          description:
+            - A value in minutes after a backup job is successfully started before it must be
+              completed or it will be canceled by Backup.
+          type: int
+          sample: 10080
+        lifecycle:
+          description:
+            - The lifecycle defines when a protected resource is transitioned to cold storage and when
+              it expires.
+          type: dict
+          sample: {}
+        recovery_point_tags:
+          description:
+            - An array of key-value pair strings that are assigned to resources that are associated with
+              this rule when restored from backup.
+          type: dict
+          sample: {}
+        rule_id:
+          description:
+            - Uniquely identifies a rule that is used to schedule the backup of a selection of resources.
+          type: str
+          returned: always
+          sample: "973621ef-d863-41ef-b5c3-9e943a64ad0c"
+        copy_actions:
+          description: An array of CopyAction objects, which contains the details of the copy operation.
+          type: list
+          returned: always
+          sample: []
+        enable_continous_backup:
+          description: Specifies whether Backup creates continuous backups.
+          type: bool
+          returned: always
+          sample: false
+        schedule_expression_timezone:
+          description:
+            - This is the timezone in which the schedule expression is set.
+            - This information is returned for botocore versions >= 1.31.36.
+          type: str
+          returned: when botocore >= 1.31.36
+          sample: "Etc/UTC"
+          version_added: 7.3.0
     advanced_backup_settings:
       description: Advanced backup settings of the backup plan.
       returned: when configured
@@ -281,6 +354,7 @@ ARGUMENT_SPEC = dict(
             schedule_expression=dict(type="str", default="cron(0 5 ? * * *)"),
             start_window_minutes=dict(type="int", default=480),
             completion_window_minutes=dict(type="int", default=10080),
+            schedule_expression_timezone=dict(type="str", default="Etc/UTC"),
             lifecycle=dict(
                 type="dict",
                 options=dict(
@@ -542,6 +616,7 @@ def main():
     client = module.client("backup")
     state = module.params["state"]
     plan_name = module.params["backup_plan_name"]
+
     plan = {
         "backup_plan_name": module.params["backup_plan_name"],
         "rules": [scrub_none_parameters(rule) for rule in module.params["rules"] or []],
@@ -549,6 +624,15 @@ def main():
             scrub_none_parameters(setting) for setting in module.params["advanced_backup_settings"] or []
         ],
     }
+
+    if module.params["rules"]:
+        for each in plan["rules"]:
+            if not module.botocore_at_least("1.31.36"):
+                module.warn(
+                    "schedule_expression_timezone requires botocore >= 1.31.36. schedule_expression_timezone will be ignored."
+                )
+                each.pop("schedule_expression_timezone")
+
     tags = module.params["tags"]
 
     # Get existing backup plan details and ID if present
