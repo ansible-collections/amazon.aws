@@ -1,6 +1,0 @@
-bugfixes:
-  - backup_plan - Fix idempotency issue when using botocore >= 1.31.36 (https://github.com/ansible-collections/amazon.aws/issues/1952).
-
-minor_changes:
-  - backup_plan - Let user to set ``schedule_expression_timezone`` for
-    backup plan rules when when using botocore >= 1.31.36 (https://github.com/ansible-collections/amazon.aws/issues/1952).

@@ -1,7 +1,7 @@
 ---
 namespace: amazon
 name: aws
-version: 7.2.0
+version: 7.3.0
 readme: README.md
 authors:
   - Ansible (https://github.com/ansible)

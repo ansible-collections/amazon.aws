@@ -2692,10 +2692,38 @@ releases:
       - iam_user_info - the ``path`` parameter has been renamed ``path_prefix`` for
         consistency with other IAM modules, ``path`` remains as an alias. No change
         to playbooks is required (https://github.com/ansible-collections/amazon.aws/pull/1933).
-    release_summary: This release includes new features and a bugfix.
     fragments:
     - 1918-ec2_instance-add-support-to-modify-metadata-options.yml
     - 20231206-iam_user_path.yml
     - 20231219-iam-consistency.yml
     - 20231222-managed_policy.yml
     release_date: '2024-01-09'
+  7.3.0:
+    changes:
+      bugfixes:
+      - backup_plan - Fix idempotency issue when using botocore >= 1.31.36 (https://github.com/ansible-collections/amazon.aws/issues/1952).
+      - plugins/inventory/aws_ec2 - Fix failure when retrieving information for more
+        than 40 instances with use_ssm_inventory (https://github.com/ansible-collections/amazon.aws/issues/1713).
+      minor_changes:
+      - backup_plan - Let user to set ``schedule_expression_timezone`` for backup
+        plan rules when when using botocore >= 1.31.36 (https://github.com/ansible-collections/amazon.aws/issues/1952).
+      - iam_user - refactored error handling to use a decorator (https://github.com/ansible-collections/amazon.aws/pull/1951).
+      - lambda - added support for using ECR images for the function (https://github.com/ansible-collections/amazon.aws/pull/1939).
+      - module_utils.errors - added a basic error handler decorator (https://github.com/ansible-collections/amazon.aws/pull/1951).
+      - rds_cluster - Add support for ServerlessV2ScalingConfiguration to create and
+        modify cluster operations (https://github.com/ansible-collections/amazon.aws/pull/1839).
+      - s3_bucket_info - add parameter ``bucket_versioning`` to return the versioning
+        state of a bucket (https://github.com/ansible-collections/amazon.aws/pull/1919).
+      - s3_object_info - fix exception raised when listing objects from empty bucket
+        (https://github.com/ansible-collections/amazon.aws/pull/1919).
+      release_summary: The amazon.aws 7.3.0 release includes a number of minor bugfixes,
+        some new features and improvements.
+    fragments:
+    - 1839-rds_cluster-add-support-for-serverless_v2_scaling_configuration.yml
+    - 1939-image_uri.yml
+    - 1951-error-handler.yml
+    - 20231211-s3_bucket_info-add-support-for-bucket_versioning.yml
+    - 20240129-aws_ec2-inventory-bugfix.yml
+    - 20240202-backup_plan-idempotency.yml
+    - release_summary.yml
+    release_date: '2024-02-06'
