@@ -5,6 +5,19 @@ amazon.aws Release Notes
 .. contents:: Topics
 
 
+v6.5.2
+======
+
+Release Summary
+---------------
+
+This release includes a bugfix for the ``amazon.aws.aws_ec2`` inventory plugin when retrieving information for more than 40 instances with ``use_ssm_inventory``.
+
+Bugfixes
+--------
+
+- plugins/inventory/aws_ec2 - Fix failure when retrieving information for more than 40 instances with use_ssm_inventory (https://github.com/ansible-collections/amazon.aws/issues/1713).
+
 v6.5.1
 ======
 
