@@ -2692,6 +2692,7 @@ releases:
       - iam_user_info - the ``path`` parameter has been renamed ``path_prefix`` for
         consistency with other IAM modules, ``path`` remains as an alias. No change
         to playbooks is required (https://github.com/ansible-collections/amazon.aws/pull/1933).
+    release_summary: This release includes new features and a bugfix.
     fragments:
     - 1918-ec2_instance-add-support-to-modify-metadata-options.yml
     - 20231206-iam_user_path.yml
