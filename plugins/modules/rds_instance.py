@@ -1028,7 +1028,7 @@ def get_options_with_changing_values(client, module, parameters):
         parameters["DBPortNumber"] = port
     if not force_update_password:
         parameters.pop("MasterUserPassword", None)
-    if cloudwatch_logs_enabled:
+    if cloudwatch_logs_enabled is not None:
         parameters["CloudwatchLogsExportConfiguration"] = cloudwatch_logs_enabled
     if not module.params["storage_type"]:
         parameters.pop("Iops", None)
