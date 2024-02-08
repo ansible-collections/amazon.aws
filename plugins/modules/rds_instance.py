@@ -43,7 +43,9 @@ options:
         type: bool
         default: false
     purge_cloudwatch_logs_exports:
-        description: Set to C(false) to retain any enabled cloudwatch logs that aren't specified in the task and are associated with the instance.
+        description:
+          - Set to C(false) to retain any enabled cloudwatch logs that aren't specified in the task and are associated with the instance.
+            Set I(enable_cloudwatch_logs_exports) to an empty list to disable all.
         type: bool
         default: true
     read_replica:
