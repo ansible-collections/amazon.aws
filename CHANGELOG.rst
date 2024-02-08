@@ -5,6 +5,31 @@ amazon.aws Release Notes
 .. contents:: Topics
 
 
+v7.3.0
+======
+
+Release Summary
+---------------
+
+The amazon.aws 7.3.0 release includes a number of minor bugfixes, some new features and improvements.
+
+Minor Changes
+-------------
+
+- backup_plan - Let user to set ``schedule_expression_timezone`` for backup plan rules when when using botocore >= 1.31.36 (https://github.com/ansible-collections/amazon.aws/issues/1952).
+- iam_user - refactored error handling to use a decorator (https://github.com/ansible-collections/amazon.aws/pull/1951).
+- lambda - added support for using ECR images for the function (https://github.com/ansible-collections/amazon.aws/pull/1939).
+- module_utils.errors - added a basic error handler decorator (https://github.com/ansible-collections/amazon.aws/pull/1951).
+- rds_cluster - Add support for ServerlessV2ScalingConfiguration to create and modify cluster operations (https://github.com/ansible-collections/amazon.aws/pull/1839).
+- s3_bucket_info - add parameter ``bucket_versioning`` to return the versioning state of a bucket (https://github.com/ansible-collections/amazon.aws/pull/1919).
+- s3_object_info - fix exception raised when listing objects from empty bucket (https://github.com/ansible-collections/amazon.aws/pull/1919).
+
+Bugfixes
+--------
+
+- backup_plan - Fix idempotency issue when using botocore >= 1.31.36 (https://github.com/ansible-collections/amazon.aws/issues/1952).
+- plugins/inventory/aws_ec2 - Fix failure when retrieving information for more than 40 instances with use_ssm_inventory (https://github.com/ansible-collections/amazon.aws/issues/1713).
+
 v7.2.0
 ======
 
@@ -12,7 +37,6 @@ Release Summary
 ---------------
 
 This release includes new features and a bugfix.
-
 
 Minor Changes
 -------------
