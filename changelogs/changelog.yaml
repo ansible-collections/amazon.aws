@@ -2450,6 +2450,18 @@ releases:
     - 1881-allow-s3_object-to-specify-content-type-in-metadata.yml
     - release_summary.yml
     release_date: '2023-12-07'
+  6.5.2:
+    changes:
+      bugfixes:
+      - plugins/inventory/aws_ec2 - Fix failure when retrieving information for more
+        than 40 instances with use_ssm_inventory (https://github.com/ansible-collections/amazon.aws/issues/1713).
+      release_summary: This release includes a bugfix for the ``amazon.aws.aws_ec2``
+        inventory plugin when retrieving information for more than 40 instances with
+        ``use_ssm_inventory``.
+    fragments:
+    - 20240129-aws_ec2-inventory-bugfix.yml
+    - release_summary.yml
+    release_date: '2024-02-06'
   7.0.0:
     changes:
       breaking_changes:
