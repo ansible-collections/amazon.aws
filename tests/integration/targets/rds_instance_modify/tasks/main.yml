@@ -423,6 +423,28 @@
           - result is not failed
           - db_info.instances[0].enabled_cloudwatch_logs_exports | length == 2
 
+    - name: Disable all cloudwatch log exports - no purge
+      amazon.aws.rds_instance:
+        state: present
+        db_instance_identifier: "{{ modified_instance_id }}"
+        enable_cloudwatch_logs_exports: []
+        purge_cloudwatch_logs_exports: false
+      register: result
+      vars:
+        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
+
+    - name: Get current cloudwatch log exports
+      amazon.aws.rds_instance_info:
+        db_instance_identifier: "{{ modified_instance_id }}"
+      register: db_info
+    - name: Assert that cloudwatch log exports has not been modified
+      ansible.builtin.assert:
+        that:
+          - result is not changed
+          - result is not failed
+          - not result.pending_modified_values
+          - db_info.instances[0].enabled_cloudwatch_logs_exports | length == 2
+
     - name: Disable all cloudwatch log exports - check_mode
       amazon.aws.rds_instance:
         state: present
