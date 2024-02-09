@@ -43,7 +43,9 @@ options:
         type: bool
         default: false
     purge_cloudwatch_logs_exports:
-        description: Set to C(false) to retain any enabled cloudwatch logs that aren't specified in the task and are associated with the instance.
+        description:
+          - Set to C(false) to retain any enabled cloudwatch logs that aren't specified in the task and are associated with the instance.
+          - Set I(enable_cloudwatch_logs_exports) to an empty list to disable all.
         type: bool
         default: true
     read_replica:
@@ -1028,7 +1030,7 @@ def get_options_with_changing_values(client, module, parameters):
         parameters["DBPortNumber"] = port
     if not force_update_password:
         parameters.pop("MasterUserPassword", None)
-    if cloudwatch_logs_enabled:
+    if cloudwatch_logs_enabled is not None:
         parameters["CloudwatchLogsExportConfiguration"] = cloudwatch_logs_enabled
     if not module.params["storage_type"]:
         parameters.pop("Iops", None)
