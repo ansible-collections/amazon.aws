@@ -1017,9 +1017,6 @@ class ELBListenerRules:
         # Get listener based on port so we can use ARN
         self.current_listener = get_elb_listener(connection, module, elb_arn, listener_port)
         self.listener_arn = self.current_listener.get("ListenerArn")
-        self.rules_to_add = deepcopy(self.rules)
-        self.rules_to_modify = []
-        self.rules_to_delete = []
 
         # If the listener exists (i.e. has an ARN) get rules for the listener
         if "ListenerArn" in self.current_listener:
@@ -1196,12 +1193,22 @@ class ELBListenerRules:
                         modified_rule["RuleArn"] = current_rule["RuleArn"]
                         modified_rule["Actions"] = new_rule["Actions"]
                         modified_rule["Conditions"] = new_rule["Conditions"]
+                        # You cannot both specify a client secret and set UseExistingClientSecret to true
+                        for action in modified_rule.get("Actions", []):
+                            if action.get("AuthenticateOidcConfig", {}).get("ClientSecret", False):
+                                action["AuthenticateOidcConfig"]["UseExistingClientSecret"] = False
                         rules_to_modify.append(modified_rule)
                     break
 
             # If the current rule was not matched against passed rules, mark for removal
             if not current_rule_passed_to_module and not current_rule.get("IsDefault", False):
                 rules_to_delete.append(current_rule["RuleArn"])
+
+        # For rules to create 'UseExistingClientSecret' should be set to False
+        for rule in rules_to_add:
+            for action in rule.get("Actions", []):
+                if action.get("AuthenticateOidcConfig", {}).get("UseExistingClientSecret", False):
+                    action["AuthenticateOidcConfig"]["UseExistingClientSecret"] = False
 
         return rules_to_add, rules_to_modify, rules_to_delete
 
@@ -1224,9 +1231,6 @@ class ELBListenerRule:
         try:
             self.rule["ListenerArn"] = self.listener_arn
             self.rule["Priority"] = int(self.rule["Priority"])
-            for action in self.rule.get("Actions", []):
-                if action.get("AuthenticateOidcConfig", {}).get("UseExistingClientSecret", False):
-                    action["AuthenticateOidcConfig"]["UseExistingClientSecret"] = False
             AWSRetry.jittered_backoff()(self.connection.create_rule)(**self.rule)
         except (BotoCoreError, ClientError) as e:
             self.module.fail_json_aws(e)
@@ -1242,10 +1246,6 @@ class ELBListenerRule:
 
         try:
             del self.rule["Priority"]
-            for action in self.rule.get("Actions", []):
-                if action.get("AuthenticateOidcConfig", {}).get("ClientSecret", False):
-                    # You cannot both specify a client secret and set UseExistingClientSecret to true
-                    action["AuthenticateOidcConfig"]["UseExistingClientSecret"] = False
             AWSRetry.jittered_backoff()(self.connection.modify_rule)(**self.rule)
         except (BotoCoreError, ClientError) as e:
             self.module.fail_json_aws(e)

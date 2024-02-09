@@ -328,7 +328,7 @@ test_listeners_rules = [
                                 "UserInfoEndpoint": "https://sample.oauth.com/userinfo",
                                 "ClientId": "id123645",
                                 "ClientSecret": "testSecret123!@#$",
-                                "UseExistingClientSecret": True,
+                                "UseExistingClientSecret": False,
                             },
                         },
                     ],
@@ -365,12 +365,6 @@ def test_compare_rules(mocker, current_rules, rules, expected):
     elb_listener_rules = elbv2.ELBListenerRules(connection, module, elb_arn, rules, 8009)
     elb_listener_rules.current_rules = current_rules
     rules_to_add, rules_to_modify, rules_to_delete = elb_listener_rules.compare_rules()
-
-    import json
-
-    print("add => ", json.dumps(rules_to_add))
-    print("modify => ", json.dumps(rules_to_modify))
-    print("delete => ", json.dumps(rules_to_delete))
 
     assert sorted(rules_to_add, key=lambda x: x.get("Priority", 0)) == sorted(
         expected.get("to_add", []), key=lambda x: x.get("Priority", 0)
