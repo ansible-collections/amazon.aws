@@ -247,14 +247,22 @@ class LookupModule(AWSLookupBase):
             if "SecretString" in response:
                 if nested:
                     query = term.split(".")[1:]
+                    path = None
                     secret_string = json.loads(response["SecretString"])
                     ret_val = secret_string
-                    for key in query:
+                    while query:
+                        key = query.pop(0)
+                        path = key if not path else path + "." + key
                         if key in ret_val:
                             ret_val = ret_val[key]
-                        else:
+                        elif on_missing == "warn":
+                            self._display.warning(
+                                f"Skipping, Successfully retrieved secret but there exists no key {path} in the secret"
+                            )
+                            return None
+                        elif on_missing == "error":
                             raise AnsibleLookupError(
-                                f"Successfully retrieved secret but there exists no key {key} in the secret"
+                                f"Successfully retrieved secret but there exists no key {path} in the secret"
                             )
                     return str(ret_val)
                 else:
