@@ -136,6 +136,11 @@ from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.plugin_utils.lookup import AWSLookupBase
 
 
+def _list_secrets(client, term):
+    paginator = client.get_paginator("list_secrets")
+    return paginator.paginate(Filters=[{"Key": "name", "Values": [term]}])
+
+
 class LookupModule(AWSLookupBase):
     def run(self, terms, variables, **kwargs):
         """
@@ -177,9 +182,7 @@ class LookupModule(AWSLookupBase):
             secrets = {}
             for term in terms:
                 try:
-                    paginator = client.get_paginator("list_secrets")
-                    paginator_response = paginator.paginate(Filters=[{"Key": "name", "Values": [term]}])
-                    for object in paginator_response:
+                    for object in _list_secrets(client, term):
                         if "SecretList" in object:
                             for secret_obj in object["SecretList"]:
                                 secrets.update(
