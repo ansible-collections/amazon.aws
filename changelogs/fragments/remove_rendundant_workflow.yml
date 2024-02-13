@@ -1,0 +1,3 @@
+---
+trivial:
+  - remove tests.yml as the workflows are covered in all_green_check.yml.
