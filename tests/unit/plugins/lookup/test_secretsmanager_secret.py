@@ -24,13 +24,19 @@ def lookup_plugin():
     lookup.params = {}
 
     lookup.get_option = MagicMock()
-    lookup.get_option.side_effect = lambda x: lookup.params.get(x)
+
+    def _get_option(x):
+        return lookup.params.get(x)
+
+    lookup.get_option.side_effect = _get_option
     lookup.client = MagicMock()
 
     return lookup
 
 
-def pick_from_list(elements=["error", "warn", "skip"]):
+def pick_from_list(elements=None):
+    if elements is None:
+        elements = ["error", "warn", "skip"]
     return random.choice(elements)
 
 
