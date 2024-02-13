@@ -6,6 +6,10 @@
       region: "{{ aws_region }}"
 
   block:
+
+    - name: Run tests for testing json input_template
+      ansible.builtin.import_tasks: test_json_input_template.yml
+
     - name: Create SNS topic
       sns_topic:
         name: "TestSNSTopic"
