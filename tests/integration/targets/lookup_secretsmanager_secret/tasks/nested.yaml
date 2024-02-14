@@ -1,0 +1,59 @@
+---
+- vars:
+    json_secret_name: "ansible-test-{{ tiny_prefix }}-secret-json"
+    json_secret_value: "{{ json_secret | to_json }}"
+  block:
+    - name: create secret "{{ json_secret_name }}"
+      community.aws.secretsmanager_secret:
+        name: "{{ json_secret_name }}"
+        secret: "{{ json_secret_value }}"
+        state: present
+
+    - name: Validate nested secret value
+      assert:
+        that:
+          - lookup('amazon.aws.secretsmanager_secret', json_secret_name + '.resource_prefix', nested=True, **connection_args) == resource_prefix
+
+    - name: Read missing secret variable using 'on_missing==error' 
+      set_fact:
+        missing_err_secret: "{{ lookup('amazon.aws.secretsmanager_secret', json_secret_name + '.missing_err_secret', nested=True, on_missing='error', **connection_args) }}"
+      register: on_missing_error
+      ignore_errors: true
+
+    - name: Ensure the lookup raised an error
+      assert:
+        that:
+          - on_missing_error is failed
+          - on_missing_error.msg == "Successfully retrieved secret but there exists no key missing_err_secret in the secret"
+          - missing_err_secret is undefined
+    
+    - name: Read missing secret variable using 'on_missing==error' 
+      set_fact:
+        resource_prefix_child: "{{ lookup('amazon.aws.secretsmanager_secret', json_secret_name + '.resource_prefix.child', nested=True, on_missing='error', **connection_args) }}"
+      register: nested_child
+      ignore_errors: true
+
+    - name: Ensure the lookup raised an error
+      assert:
+        that:
+          - nested_child is failed
+          - nested_child.msg == "Successfully retrieved secret but there exists no key resource_prefix.child in the secret"
+          - resource_prefix_child is undefined
+
+    - name: Read missing secret variable using 'on_missing==warn' 
+      set_fact:
+        missing_wrn_secret: "{{ lookup('amazon.aws.secretsmanager_secret', json_secret_name + '.missing_wrn_secret', nested=True, on_missing='warn', **connection_args) }}"
+
+    - name: Ensure that the variable has not been defined
+      assert:
+        that:
+          - missing_wrn_secret == []
+
+  always:
+    # delete secret created
+    - name: Delete secret '{{ json_secret_name }}'
+      community.aws.secretsmanager_secret:
+        name: "{{ json_secret_name }}"
+        state: absent
+        recovery_window: 0
+      ignore_errors: true
