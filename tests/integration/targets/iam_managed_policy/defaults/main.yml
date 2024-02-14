@@ -1,2 +1,4 @@
 ---
 policy_name: "{{ resource_prefix }}-policy"
+policy_path: "/ansible-test-{{ tiny_prefix }}/"
+policy_description: "An example Managed Policy description"

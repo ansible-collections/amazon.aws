@@ -305,6 +305,45 @@
           - backup_plan_delete_result.backup_plan_arn == backup_plan_info.backup_plans[0].backup_plan_arn
           - backup_plan_delete_result.deletion_date is defined
 
+    - name: Create a backup plan using specific botocore version
+      amazon.aws.backup_plan:
+        backup_plan_name: "{{ backup_plan_name }}"
+        rules:
+          - rule_name: daily
+            target_backup_vault_name: "{{ backup_vault_name }}"
+        tags:
+          Environment: Test
+      register: backup_plan_create_result
+      vars:
+        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
+
+    - name: Verify backup plan create result
+      ansible.builtin.assert:
+        that:
+          - backup_plan_create_result.exists is true
+          - backup_plan_create_result.changed is true
+          - backup_plan_create_result.backup_plan_name == backup_plan_name
+          - backup_plan_create_result.backup_plan.rules != []
+          - "backup_plan_create_result.backup_plan.rules | selectattr('schedule_expression_timezone', 'match', 'Etc/UTC') | list"
+
+    - name: Create a backup plan using specific botocore version (idempotency)
+      amazon.aws.backup_plan:
+        backup_plan_name: "{{ backup_plan_name }}"
+        rules:
+          - rule_name: daily
+            target_backup_vault_name: "{{ backup_vault_name }}"
+        tags:
+          Environment: Test
+      register: backup_plan_create_result
+      vars:
+        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
+
+    - name: Verify backup plan create result
+      ansible.builtin.assert:
+        that:
+          - backup_plan_create_result.exists is true
+          - backup_plan_create_result.changed is false
+
   always:
     - name: Delete AWS Backup plan created during this test
       amazon.aws.backup_plan:

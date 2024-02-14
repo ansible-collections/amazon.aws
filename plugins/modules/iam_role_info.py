@@ -26,7 +26,9 @@ options:
         description:
             - Prefix of role to restrict IAM role search for.
             - Mutually exclusive with I(name).
+            - C(path) and C(prefix) were added as aliases in release 7.2.0.
         type: str
+        aliases: ["path", "prefix"]
 extends_documentation_fragment:
     - amazon.aws.common.modules
     - amazon.aws.region.modules
@@ -261,7 +263,7 @@ def main():
     """
     argument_spec = dict(
         name=dict(aliases=["role_name"]),
-        path_prefix=dict(),
+        path_prefix=dict(aliases=["path", "prefix"]),
     )
 
     module = AnsibleAWSModule(

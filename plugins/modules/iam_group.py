@@ -20,10 +20,12 @@ options:
     description:
       - The name of the group.
       - >-
-        Note: group names are unique within an account.  Paths (I(path)) do B(not) affect
+        Note: Group names are unique within an account.  Paths (I(path)) do B(not) affect
         the uniqueness requirements of I(name).  For example it is not permitted to have both
         C(/Path1/MyGroup) and C(/Path2/MyGroup) in the same account.
+      - The alias C(group_name) was added in release 7.2.0.
     required: true
+    aliases: ['group_name']
     type: str
   path:
     description:
@@ -204,6 +206,7 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.iam import AnsibleIAMError
 from ansible_collections.amazon.aws.plugins.module_utils.iam import convert_managed_policy_names_to_arns
+from ansible_collections.amazon.aws.plugins.module_utils.iam import validate_iam_identifiers
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 
@@ -444,7 +447,7 @@ def list_all_policies(connection, module):
 
 def main():
     argument_spec = dict(
-        name=dict(required=True),
+        name=dict(aliases=["group_name"], required=True),
         path=dict(aliases=["prefix", "path_prefix"]),
         managed_policies=dict(default=[], type="list", aliases=["managed_policy"], elements="str"),
         users=dict(default=[], type="list", elements="str"),
@@ -457,6 +460,12 @@ def main():
         argument_spec=argument_spec,
         supports_check_mode=True,
     )
+
+    identifier_problem = validate_iam_identifiers(
+        "group", name=module.params.get("name"), path=module.params.get("path")
+    )
+    if identifier_problem:
+        module.fail_json(msg=identifier_problem)
 
     connection = module.client("iam", retry_decorator=AWSRetry.jittered_backoff())
 

@@ -106,7 +106,7 @@ options:
           - To retrieve the versioning state of a bucket, you must be the bucket owner.
         type: bool
         default: False
-        version_added: 7.2.0
+        version_added: 7.3.0
     type: dict
     version_added: 1.4.0
   transform_location:

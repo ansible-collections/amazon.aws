@@ -19,20 +19,25 @@ options:
   name:
     description:
       - The name of the IAM user to look for.
+      - C(user_name) was added as an alias in release 7.2.0.
     required: false
     type: str
+    aliases: ["user_name"]
   group:
     description:
       - The group name name of the IAM user to look for. Mutually exclusive with C(path).
+      - C(group_name) was added as an alias in release 7.2.0.
     required: false
     type: str
-  path:
+    aliases: ["group_name"]
+  path_prefix:
     description:
       - The path to the IAM user. Mutually exclusive with C(group).
       - If specified, then would get all user names whose path starts with user provided value.
     required: false
     default: '/'
     type: str
+    aliases: ["path", "prefix"]
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
@@ -130,7 +135,7 @@ def describe_iam_user(user):
 def list_iam_users(connection, module):
     name = module.params.get("name")
     group = module.params.get("group")
-    path = module.params.get("path")
+    path = module.params.get("path_prefix")
 
     params = dict()
     iam_users = []
@@ -171,10 +176,14 @@ def list_iam_users(connection, module):
 
 
 def main():
-    argument_spec = dict(name=dict(), group=dict(), path=dict(default="/"))
+    argument_spec = dict(
+        name=dict(aliases=["user_name"]),
+        group=dict(aliases=["group_name"]),
+        path_prefix=dict(aliases=["path", "prefix"], default="/"),
+    )
 
     module = AnsibleAWSModule(
-        argument_spec=argument_spec, mutually_exclusive=[["group", "path"]], supports_check_mode=True
+        argument_spec=argument_spec, mutually_exclusive=[["group", "path_prefix"]], supports_check_mode=True
     )
 
     connection = module.client("iam")

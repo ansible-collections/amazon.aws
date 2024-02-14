@@ -260,6 +260,19 @@
 
     # ===================================================================
 
+    - name: Update path for complex Instance Profile - no change can be made
+      amazon.aws.iam_instance_profile:
+        name: "{{ test_profile_complex }}"
+        role: "{{ test_role }}-2"
+        path: "{{ test_path }}subpath/"
+      register: profile_result
+
+    - ansible.builtin.assert:
+        that:
+          - profile_result is not changed
+
+    # ===================================================================
+
     - name: List all Instance Profiles (no filter)
       amazon.aws.iam_instance_profile_info:
       register: profile_info

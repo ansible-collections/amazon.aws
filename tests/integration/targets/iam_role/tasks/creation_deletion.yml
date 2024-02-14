@@ -222,6 +222,17 @@
       - iam_role is not changed
       - iam_role.iam_role.role_name == test_role
 
+- name: Minimal IAM Role with updated path (no change)
+  community.aws.iam_role:
+    name: "{{ test_role }}"
+    path: "{{ test_path }}subpath/"
+  register: iam_role
+
+- ansible.builtin.assert:
+    that:
+      - iam_role is not changed
+      - iam_role.iam_role.role_name == test_role
+
 - name: iam_role_info after Role creation
   community.aws.iam_role_info:
     name: "{{ test_role }}"

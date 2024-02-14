@@ -82,7 +82,7 @@
           - '"is not valid for adding IAM roles" in result.msg'
 
     # TODO: test modifying db_subnet_group_name, db_security_groups, db_parameter_group_name, option_group_name,
-    # monitoring_role_arn, monitoring_interval, domain, domain_iam_role_name, cloudwatch_logs_export_configuration
+    # monitoring_role_arn, monitoring_interval, domain, domain_iam_role_name
 
     # ------------------------------------------------------------------------------------------
     - name: Modify the storage type without immediate application - check_mode
@@ -305,6 +305,193 @@
           - result is not failed
           - db_info.instances[0].ca_certificate_identifier == "rds-ca-ecc384-g1"
   # Test modifying CA certificate identifier Complete-------------------------------------------
+
+  # Test modifying cloudwatch log exports -------------------------------------------
+    - name: Enable all cloudwatch log exports - check_mode
+      amazon.aws.rds_instance:
+        state: present
+        db_instance_identifier: "{{ modified_instance_id }}"
+        enable_cloudwatch_logs_exports: ["audit", "error", "general", "slowquery"]
+      register: result
+      check_mode: true
+      vars:
+        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
+
+    - name: Get current cloudwatch log exports
+      amazon.aws.rds_instance_info:
+        db_instance_identifier: "{{ modified_instance_id }}"
+      register: db_info
+    - name: Assert that cloudwatch log exports has been modified - check_mode
+      ansible.builtin.assert:
+        that:
+          - result is changed
+          - result is not failed
+          - db_info.instances[0].enabled_cloudwatch_logs_exports is not defined
+
+    - name: Enable all cloudwatch log exports
+      amazon.aws.rds_instance:
+        state: present
+        db_instance_identifier: "{{ modified_instance_id }}"
+        enable_cloudwatch_logs_exports: ["audit", "error", "general", "slowquery"]
+      register: result
+      vars:
+        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
+
+    - name: Get current cloudwatch log exports
+      amazon.aws.rds_instance_info:
+        db_instance_identifier: "{{ modified_instance_id }}"
+      register: db_info
+      # It applies immediately but takes a couple seconds
+      until:
+        - db_info.instances[0].db_instance_status == 'available'
+        - not db_info.instances[0].pending_modified_values
+      retries: 10
+      delay: 20
+
+    - name: Assert that cloudwatch log exports has been modified
+      ansible.builtin.assert:
+        that:
+          - result is changed
+          - result is not failed
+          - db_info.instances[0].enabled_cloudwatch_logs_exports | length == 4
+
+    - name: Enable all cloudwatch log exports - idempotent
+      amazon.aws.rds_instance:
+        state: present
+        db_instance_identifier: "{{ modified_instance_id }}"
+        enable_cloudwatch_logs_exports: ["audit", "error", "general", "slowquery"]
+      register: result
+      vars:
+        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
+
+    - name: Get current cloudwatch log exports
+      amazon.aws.rds_instance_info:
+        db_instance_identifier: "{{ modified_instance_id }}"
+      register: db_info
+    - name: Assert that cloudwatch log exports has not been modified
+      ansible.builtin.assert:
+        that:
+          - result is not changed
+          - result is not failed
+          - not result.pending_modified_values
+          - db_info.instances[0].enabled_cloudwatch_logs_exports | length == 4
+
+    - name: Disable some cloudwatch log exports - check_mode
+      amazon.aws.rds_instance:
+        state: present
+        db_instance_identifier: "{{ modified_instance_id }}"
+        enable_cloudwatch_logs_exports: ["audit", "error"]
+      register: result
+      check_mode: true
+      vars:
+        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
+
+    - name: Get current cloudwatch log exports
+      amazon.aws.rds_instance_info:
+        db_instance_identifier: "{{ modified_instance_id }}"
+      register: db_info
+    - name: Assert that cloudwatch log exports has been modified - check_mode
+      ansible.builtin.assert:
+        that:
+          - result is changed
+          - result is not failed
+          - db_info.instances[0].enabled_cloudwatch_logs_exports | length == 4
+
+    - name: Disable some cloudwatch log exports
+      amazon.aws.rds_instance:
+        state: present
+        db_instance_identifier: "{{ modified_instance_id }}"
+        enable_cloudwatch_logs_exports: ["audit", "error"]
+      register: result
+      vars:
+        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
+
+    - name: Get current cloudwatch log exports
+      amazon.aws.rds_instance_info:
+        db_instance_identifier: "{{ modified_instance_id }}"
+      register: db_info
+      until:
+        - db_info.instances[0].db_instance_status == 'available'
+        - not db_info.instances[0].pending_modified_values
+      retries: 10
+      delay: 20
+
+    - name: Assert that cloudwatch log exports has been modified
+      ansible.builtin.assert:
+        that:
+          - result is changed
+          - result is not failed
+          - db_info.instances[0].enabled_cloudwatch_logs_exports | length == 2
+
+    - name: Disable all cloudwatch log exports - no purge
+      amazon.aws.rds_instance:
+        state: present
+        db_instance_identifier: "{{ modified_instance_id }}"
+        enable_cloudwatch_logs_exports: []
+        purge_cloudwatch_logs_exports: false
+      register: result
+      vars:
+        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
+
+    - name: Get current cloudwatch log exports
+      amazon.aws.rds_instance_info:
+        db_instance_identifier: "{{ modified_instance_id }}"
+      register: db_info
+    - name: Assert that cloudwatch log exports has not been modified
+      ansible.builtin.assert:
+        that:
+          - result is not changed
+          - result is not failed
+          - not result.pending_modified_values
+          - db_info.instances[0].enabled_cloudwatch_logs_exports | length == 2
+
+    - name: Disable all cloudwatch log exports - check_mode
+      amazon.aws.rds_instance:
+        state: present
+        db_instance_identifier: "{{ modified_instance_id }}"
+        enable_cloudwatch_logs_exports: []
+      register: result
+      check_mode: true
+      vars:
+        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
+
+    - name: Get current cloudwatch log exports
+      amazon.aws.rds_instance_info:
+        db_instance_identifier: "{{ modified_instance_id }}"
+      register: db_info
+    - name: Assert that cloudwatch log exports has been modified - check_mode
+      ansible.builtin.assert:
+        that:
+          - result is changed
+          - result is not failed
+          - db_info.instances[0].enabled_cloudwatch_logs_exports | length == 2
+
+    - name: Disable all cloudwatch log exports
+      amazon.aws.rds_instance:
+        state: present
+        db_instance_identifier: "{{ modified_instance_id }}"
+        enable_cloudwatch_logs_exports: []
+      register: result
+      vars:
+        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
+
+    - name: Get current cloudwatch log exports
+      amazon.aws.rds_instance_info:
+        db_instance_identifier: "{{ modified_instance_id }}"
+      register: db_info
+      until:
+        - db_info.instances[0].db_instance_status == 'available'
+        - not db_info.instances[0].pending_modified_values
+      retries: 10
+      delay: 20
+
+    - name: Assert that cloudwatch log exports has been modified
+      ansible.builtin.assert:
+        that:
+          - result is changed
+          - result is not failed
+          - db_info.instances[0].enabled_cloudwatch_logs_exports is not defined
+  # Test modifying cloudwatch log exports Complete-------------------------------------------
 
   always:
     - name: Delete the instance
