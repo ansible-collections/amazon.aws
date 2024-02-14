@@ -524,6 +524,19 @@
         unit: Percent
         description: This will alarm when an instance's cpu usage average is lower than
           5% for 15 minutes
+      register: ec2_instance_metric_alarm_no_dimensions
+
+    - name: get info on alarm without dimensions
+      amazon.aws.cloudwatch_metric_alarm_info:
+        alarm_names:
+          - "{{ alarm_full_name }}"
+      register: alarm_info_metrics_alarm_no_dimensions
+
+    - name: verify that an alarm was created without dimensions
+      ansible.builtin.assert:
+        that:
+          - ec2_instance_metric_alarm_no_dimensions.changed
+          - alarm_info_metrics_alarm_no_dimensions.metric_alarms[0].dimensions | length == 0
 
     - name: create alarm without dimensions (idempotent)
       cloudwatch_metric_alarm:
