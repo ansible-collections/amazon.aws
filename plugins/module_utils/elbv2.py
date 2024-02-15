@@ -1179,10 +1179,41 @@ class ELBListenerRules:
         rules_to_modify = []
         rules_to_delete = []
         rules_to_add = deepcopy(self.rules)
+        rules_to_set_priority = []
 
-        for current_rule in self.current_rules:
+        # List rules to update priority, 'Actions' and 'Conditions' remain the same
+        # only the 'Priority' has changed
+        current_rules = deepcopy(self.current_rules)
+        remaining_rules = []
+        while current_rules:
+            current_rule = current_rules.pop(0)
+            # Skip the default rule, this one can't be modified
+            if current_rule.get("IsDefault", False):
+                continue
+            to_keep = True
+            for new_rule in rules_to_add:
+                modified_rule = self._compare_rule(current_rule, new_rule)
+                if not modified_rule:
+                    # The current rule has been passed with the same properties to the module
+                    # Remove it for later comparison
+                    rules_to_add.remove(new_rule)
+                    to_keep = False
+                    break
+                if modified_rule and list(modified_rule.keys()) == ["Priority"]:
+                    # if only the Priority has changed
+                    modified_rule["Priority"] = int(new_rule["Priority"])
+                    modified_rule["RuleArn"] = current_rule["RuleArn"]
+
+                    rules_to_set_priority.append(modified_rule)
+                    to_keep = False
+                    rules_to_add.remove(new_rule)
+                    break
+            if to_keep:
+                remaining_rules.append(current_rule)
+
+        for current_rule in remaining_rules:
             current_rule_passed_to_module = False
-            for new_rule in self.rules[:]:
+            for new_rule in rules_to_add:
                 if current_rule["Priority"] == str(new_rule["Priority"]):
                     current_rule_passed_to_module = True
                     # Remove what we match so that what is left can be marked as 'to be added'
@@ -1210,7 +1241,7 @@ class ELBListenerRules:
                 if action.get("AuthenticateOidcConfig", {}).get("UseExistingClientSecret", False):
                     action["AuthenticateOidcConfig"]["UseExistingClientSecret"] = False
 
-        return rules_to_add, rules_to_modify, rules_to_delete
+        return rules_to_add, rules_to_modify, rules_to_delete, rules_to_set_priority
 
 
 class ELBListenerRule:
@@ -1261,6 +1292,24 @@ class ELBListenerRule:
 
         try:
             AWSRetry.jittered_backoff()(self.connection.delete_rule)(RuleArn=self.rule["RuleArn"])
+        except (BotoCoreError, ClientError) as e:
+            self.module.fail_json_aws(e)
+
+        self.changed = True
+
+    def set_rule_priorities(self):
+        """
+        Sets the priorities of the specified rules.
+
+        :return:
+        """
+
+        try:
+            rules = [self.rule]
+            if isinstance(self.rule, list):
+                rules = self.rule
+            rule_priorities = [{"RuleArn": rule["RuleArn"], "Priority": rule["Priority"]} for rule in rules]
+            AWSRetry.jittered_backoff()(self.connection.set_rule_priorities)(RulePriorities=rule_priorities)
         except (BotoCoreError, ClientError) as e:
             self.module.fail_json_aws(e)
 
