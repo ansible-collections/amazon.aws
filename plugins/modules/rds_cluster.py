@@ -420,6 +420,7 @@ options:
 
 EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
+# testing
 - name: Create minimal aurora cluster in default VPC and default subnet group
   amazon.aws.rds_cluster:
     cluster_id: "{{ cluster_id }}"
