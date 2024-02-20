@@ -1220,6 +1220,9 @@ def build_network_spec(params):
                 sub = get_default_subnet(default_vpc, availability_zone=module.params.get("availability_zone"))
                 spec["SubnetId"] = sub["SubnetId"]
 
+        if network.get("ipv6_addresses"):
+            spec["Ipv6Addresses"] = [{"Ipv6Address": a} for a in network.get("ipv6_addresses", [])]
+
         if network.get("private_ip_address"):
             spec["PrivateIpAddress"] = network["private_ip_address"]
 
