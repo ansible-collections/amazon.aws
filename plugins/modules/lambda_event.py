@@ -138,6 +138,7 @@ lambda_stream_events:
 import re
 
 try:
+    from botocore.exceptions import BotoCoreError
     from botocore.exceptions import ClientError
     from botocore.exceptions import MissingParametersError
     from botocore.exceptions import ParamValidationError
@@ -146,9 +147,9 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import boto3_conn
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 
 # ---------------------------------------------------------------------------------------------------
 #
@@ -157,122 +158,47 @@ from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleA
 # ---------------------------------------------------------------------------------------------------
 
 
-class AWSConnection:
-    """
-    Create the connection object and client objects as required.
-    """
-
-    def __init__(self, ansible_obj, resources, use_boto3=True):
-        try:
-            self.region, self.endpoint, aws_connect_kwargs = get_aws_connection_info(ansible_obj, boto3=use_boto3)
-
-            self.resource_client = dict()
-            if not resources:
-                resources = ["lambda"]
-
-            resources.append("iam")
-
-            for resource in resources:
-                aws_connect_kwargs.update(
-                    dict(region=self.region, endpoint=self.endpoint, conn_type="client", resource=resource)
-                )
-                self.resource_client[resource] = boto3_conn(ansible_obj, **aws_connect_kwargs)
-
-            # if region is not provided, then get default profile/session region
-            if not self.region:
-                self.region = self.resource_client["lambda"].meta.region_name
-
-        except (ClientError, ParamValidationError, MissingParametersError) as e:
-            ansible_obj.fail_json(msg=f"Unable to connect, authorize or access resource: {e}")
-
-        # set account ID
-        try:
-            self.account_id = self.resource_client["iam"].get_user()["User"]["Arn"].split(":")[4]
-        except (ClientError, ValueError, KeyError, IndexError):
-            self.account_id = ""
-
-    def client(self, resource="lambda"):
-        return self.resource_client[resource]
-
-
-def pc(key):
-    """
-    Changes python key into Pascale case equivalent. For example, 'this_function_name' becomes 'ThisFunctionName'.
-
-    :param key:
-    :return:
-    """
-
-    return "".join([token.capitalize() for token in key.split("_")])
-
-
-def ordered_obj(obj):
-    """
-    Order object for comparison purposes
-
-    :param obj:
-    :return:
-    """
-
-    if isinstance(obj, dict):
-        return sorted((k, ordered_obj(v)) for k, v in obj.items())
-    if isinstance(obj, list):
-        return sorted(ordered_obj(x) for x in obj)
-    else:
-        return obj
-
-
-def set_api_sub_params(params):
-    """
-    Sets module sub-parameters to those expected by the boto3 API.
-
-    :param params:
-    :return:
-    """
-
-    api_params = dict()
-
-    for param in params.keys():
-        param_value = params.get(param, None)
-        if param_value:
-            api_params[pc(param)] = param_value
-
-    return api_params
-
-
-def validate_params(module, aws):
+def validate_params(module, client):
     """
     Performs basic parameter validation.
 
-    :param module:
-    :param aws:
+    :param module: The AnsibleAWSModule object
+    :param client: The client used to perform requests to AWS
     :return:
     """
 
     function_name = module.params["lambda_function_arn"]
+    qualifier = get_qualifier(module)
 
     # validate function name
     if not re.search(r"^[\w\-:]+$", function_name):
         module.fail_json(
             msg=f"Function name {function_name} is invalid. Names must contain only alphanumeric characters and hyphens.",
         )
-    if len(function_name) > 64 and not function_name.startswith("arn:aws:lambda:"):
-        module.fail_json(msg=f'Function name "{function_name}" exceeds 64 character limit')
 
-    elif len(function_name) > 140 and function_name.startswith("arn:aws:lambda:"):
-        module.fail_json(msg=f'ARN "{function_name}" exceeds 140 character limit')
+    # lamba_fuction_arn contains only the function name (not the arn)
+    if not function_name.startswith("arn:aws:lambda:"):
+        if len(function_name) > 64:
+            module.fail_json(msg=f'Function name "{function_name}" exceeds 64 character limit')
+        try:
+            params = {"FunctionName": function_name}
+            if qualifier:
+                params["Qualifier"] = qualifier
+            response = client.get_function(**params)
+            module.params["lambda_function_arn"] = response["Configuration"]["FunctionArn"]
+        except is_boto3_error_code("ResourceNotFoundException"):
+            msg = f"An error occurred: The function '{function_name}' does not exist."
+            if qualifier:
+                msg = f"An error occurred: The function '{function_name}' (qualifier={qualifier}) does not exist."
+            module.fail_json(msg=msg)
+        except ClientError as e:  # pylint: disable=duplicate-except
+            module.fail_json(msg=f"An error occurred while trying to describe function '{function_name}': {e}")
+    else:
+        if len(function_name) > 140:
+            module.fail_json(msg='ARN "{0}" exceeds 140 character limit'.format(function_name))
 
-    # check if 'function_name' needs to be expanded in full ARN format
-    if not module.params["lambda_function_arn"].startswith("arn:aws:lambda:"):
-        function_name = module.params["lambda_function_arn"]
-        module.params["lambda_function_arn"] = f"arn:aws:lambda:{aws.region}:{aws.account_id}:function:{function_name}"
-
-    qualifier = get_qualifier(module)
-    if qualifier:
-        function_arn = module.params["lambda_function_arn"]
-        module.params["lambda_function_arn"] = f"{function_arn}:{qualifier}"
-
-    return
+        if qualifier:
+            module.params["lambda_function_arn"] = f"{function_name}:{qualifier}"
 
 
 def get_qualifier(module):
@@ -302,7 +228,7 @@ def get_qualifier(module):
 # ---------------------------------------------------------------------------------------------------
 
 
-def lambda_event_stream(module, aws):
+def lambda_event_stream(module, client):
     """
     Adds, updates or deletes lambda stream (DynamoDb, Kinesis) event notifications.
     :param module:
@@ -310,7 +236,6 @@ def lambda_event_stream(module, aws):
     :return:
     """
 
-    client = aws.client("lambda")
     facts = dict()
     changed = False
     current_state = "absent"
@@ -333,9 +258,7 @@ def lambda_event_stream(module, aws):
         try:
             source_params["batch_size"] = int(batch_size)
         except ValueError:
-            module.fail_json(
-                msg=f"Source parameter 'batch_size' must be an integer, found: {source_params['batch_size']}"
-            )
+            module.fail_json(msg=f"Source parameter 'batch_size' must be an integer, found: {batch_size}")
 
     # optional boolean value needs special treatment as not present does not imply False
     source_param_enabled = module.boolean(source_params.get("enabled", "True"))
@@ -351,16 +274,15 @@ def lambda_event_stream(module, aws):
     if state == "present":
         if current_state == "absent":
             starting_position = source_params.get("starting_position")
-            if starting_position:
+            event_source = module.params.get("event_source")
+            if event_source == "stream":
+                if not starting_position:
+                    module.fail_json(
+                        msg="Source parameter 'starting_position' is required for stream event notification."
+                    )
                 api_params.update(StartingPosition=starting_position)
-            elif module.params.get("event_source") == "sqs":
-                # starting position is not required for SQS
-                pass
-            else:
-                module.fail_json(msg="Source parameter 'starting_position' is required for stream event notification.")
 
-            if source_arn:
-                api_params.update(Enabled=source_param_enabled)
+            api_params.update(Enabled=source_param_enabled)
             if source_params.get("batch_size"):
                 api_params.update(BatchSize=source_params.get("batch_size"))
             if source_params.get("function_response_types"):
@@ -375,9 +297,8 @@ def lambda_event_stream(module, aws):
 
         else:
             # current_state is 'present'
-            api_params = dict(FunctionName=module.params["lambda_function_arn"])
             current_mapping = facts[0]
-            api_params.update(UUID=current_mapping["UUID"])
+            api_params = dict(FunctionName=module.params["lambda_function_arn"], UUID=current_mapping["UUID"])
             mapping_changed = False
 
             # check if anything changed
@@ -438,12 +359,15 @@ def main():
         required_together=[],
     )
 
-    aws = AWSConnection(module, ["lambda"])
+    try:
+        client = module.client("lambda", retry_decorator=AWSRetry.jittered_backoff())
+    except (ClientError, BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Trying to connect to AWS")
 
-    validate_params(module, aws)
+    validate_params(module, client)
 
     if module.params["event_source"].lower() in ("stream", "sqs"):
-        results = lambda_event_stream(module, aws)
+        results = lambda_event_stream(module, client)
     else:
         module.fail_json(msg="Please select `stream` or `sqs` as the event type")
 
