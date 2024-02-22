@@ -38,7 +38,7 @@
     - name: Upload test lambda (version 1)
       amazon.aws.lambda:
         name: "{{ lambda_function_name }}"
-        runtime: python3.7
+        runtime: python3.12
         handler: mini_lambda.handler
         role: "{{ lambda_role_name }}"
         zip_file: "{{ zip_res.dest }}"
