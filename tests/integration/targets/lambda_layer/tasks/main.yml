@@ -55,7 +55,7 @@
         content:
           zip_file: "{{ zip_file_path }}"
         compatible_runtimes:
-          - python3.7
+          - python3.12
         license_info: GPL-3.0-only
       register: create_check_mode
       check_mode: true
@@ -79,7 +79,7 @@
         content:
           zip_file: "{{ zip_file_path }}"
         compatible_runtimes:
-          - python3.7
+          - python3.12
         license_info: GPL-3.0-only
       register: first_version
 
@@ -91,7 +91,7 @@
           s3_bucket: "{{ s3_bucket_name }}"
           s3_key: "{{ s3_bucket_object }}"
         compatible_runtimes:
-          - python3.7
+          - python3.12
         license_info: GPL-3.0-only
       register: last_version
 
