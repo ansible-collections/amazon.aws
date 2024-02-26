@@ -195,7 +195,7 @@ def validate_params(module, client):
             module.fail_json(msg=f"An error occurred while trying to describe function '{function_name}': {e}")
     else:
         if len(function_name) > 140:
-            module.fail_json(msg='ARN "{0}" exceeds 140 character limit'.format(function_name))
+            module.fail_json(msg=f'ARN "{function_name}" exceeds 140 character limit')
 
         if qualifier:
             module.params["lambda_function_arn"] = f"{function_name}:{qualifier}"
