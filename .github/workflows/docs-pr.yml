@@ -21,6 +21,7 @@ jobs:
       intersphinx-links: |
         community_aws:https://ansible-collections.github.io/community.aws/branch/main/
         ansible_devel:https://docs.ansible.com/ansible-core/devel/
+      artifact-name: ${{ github.event.repository.name }}_validate_docs_${{ github.event.pull_request.head.sha }}
 
 
   build-docs:
