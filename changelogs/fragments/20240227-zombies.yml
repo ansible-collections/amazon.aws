@@ -1,8 +1,8 @@
 minor_changes:
- - autoscaling_group - removed unused code ().
- - cloudtrail - removed unused code ().
- - ec2_instance - removed unused code ().
- - ec2_vol - removed unused code ().
- - elb_classic_lb - removed unused code ().
- - kms_key - removed unused code ().
- - s3_object - removed unused code ().
+ - autoscaling_group - removed unused code (https://github.com/ansible-collections/amazon.aws/pull/1996).
+ - cloudtrail - removed unused code (https://github.com/ansible-collections/amazon.aws/pull/1996).
+ - ec2_instance - removed unused code (https://github.com/ansible-collections/amazon.aws/pull/1996).
+ - ec2_vol - removed unused code (https://github.com/ansible-collections/amazon.aws/pull/1996).
+ - elb_classic_lb - removed unused code (https://github.com/ansible-collections/amazon.aws/pull/1996).
+ - kms_key - removed unused code (https://github.com/ansible-collections/amazon.aws/pull/1996).
+ - s3_object - removed unused code (https://github.com/ansible-collections/amazon.aws/pull/1996).
