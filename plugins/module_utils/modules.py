@@ -242,6 +242,12 @@ class AnsibleAWSModule:
 
         self.fail_json(**failure)
 
+    def fail_json_aws_error(self, exception):
+        """A helper to call the right failure mode after catching an AnsibleAWSError"""
+        if exception.exception:
+            self.fail_json_aws(exception.exception, msg=exception.message)
+        self.fail_json(msg=exception.message)
+
     def _gather_versions(self):
         """Gather AWS SDK (boto3 and botocore) dependency versions
 
