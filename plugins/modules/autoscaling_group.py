@@ -668,25 +668,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleA
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
 
-ASG_ATTRIBUTES = (
-    "AvailabilityZones",
-    "DefaultCooldown",
-    "DesiredCapacity",
-    "HealthCheckGracePeriod",
-    "HealthCheckType",
-    "LaunchConfigurationName",
-    "LoadBalancerNames",
-    "MaxInstanceLifetime",
-    "MaxSize",
-    "MinSize",
-    "AutoScalingGroupName",
-    "PlacementGroup",
-    "TerminationPolicies",
-    "VPCZoneIdentifier",
-)
-
-INSTANCE_ATTRIBUTES = ("instance_id", "health_status", "lifecycle_state", "launch_config_name")
-
 backoff_params = dict(retries=10, delay=3, backoff=1.5)
 
 

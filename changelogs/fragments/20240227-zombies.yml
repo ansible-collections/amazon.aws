@@ -1,0 +1,8 @@
+minor_changes:
+ - autoscaling_group - removed unused code ().
+ - cloudtrail - removed unused code ().
+ - ec2_instance - removed unused code ().
+ - ec2_vol - removed unused code ().
+ - elb_classic_lb - removed unused code ().
+ - kms_key - removed unused code ().
+ - s3_object - removed unused code ().

@@ -329,22 +329,6 @@ def get_volume(module, ec2_conn, vol_id=None, fail_on_not_found=True):
     return vol
 
 
-def get_volumes(module, ec2_conn):
-    instance = module.params.get("instance")
-
-    find_params = dict()
-    if instance:
-        find_params["Filters"] = ansible_dict_to_boto3_filter_list({"attachment.instance-id": instance})
-
-    vols = []
-    try:
-        vols_response = ec2_conn.describe_volumes(aws_retry=True, **find_params)
-        vols = [camel_dict_to_snake_dict(vol) for vol in vols_response.get("Volumes", [])]
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Error while getting EBS volumes")
-    return vols
-
-
 def delete_volume(module, ec2_conn, volume_id=None):
     changed = False
     if volume_id:
