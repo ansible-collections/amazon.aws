@@ -99,12 +99,7 @@ def describe_iam_instance_profiles(module, client):
     name = module.params["name"]
     prefix = module.params["path_prefix"]
     profiles = []
-    try:
-        profiles = list_iam_instance_profiles(client, name=name, prefix=prefix)
-    except AnsibleIAMError as e:
-        if e.exception:
-            module.fail_json_aws(e.exception, msg=e.message)
-        module.fail_json(msg=e.message)
+    profiles = list_iam_instance_profiles(client, name=name, prefix=prefix)
 
     return [normalize_iam_instance_profile(p) for p in profiles]
 
@@ -125,7 +120,10 @@ def main():
     )
 
     client = module.client("iam", retry_decorator=AWSRetry.jittered_backoff())
-    module.exit_json(changed=False, iam_instance_profiles=describe_iam_instance_profiles(module, client))
+    try:
+        module.exit_json(changed=False, iam_instance_profiles=describe_iam_instance_profiles(module, client))
+    except AnsibleIAMError as e:
+        module.fail_json_aws_error(e)
 
 
 if __name__ == "__main__":

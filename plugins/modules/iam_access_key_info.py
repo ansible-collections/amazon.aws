@@ -69,40 +69,13 @@ access_key:
             sample: Inactive
 """
 
-try:
-    import botocore
-except ImportError:
-    pass  # caught by AnsibleAWSModule
-
-from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
-
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import normalize_boto3_result
+from ansible_collections.amazon.aws.plugins.module_utils.iam import AnsibleIAMError
+from ansible_collections.amazon.aws.plugins.module_utils.iam import get_iam_access_keys
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 
 
-def get_access_keys(user):
-    try:
-        results = client.list_access_keys(aws_retry=True, UserName=user)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg=f'Failed to get access keys for user "{user}"')
-    if not results:
-        return None
-
-    results = camel_dict_to_snake_dict(results)
-    access_keys = results.get("access_key_metadata", [])
-    if not access_keys:
-        return []
-
-    access_keys = normalize_boto3_result(access_keys)
-    access_keys = sorted(access_keys, key=lambda d: d.get("create_date", None))
-    return access_keys
-
-
 def main():
-    global module
-    global client
-
     argument_spec = dict(
         user_name=dict(required=True, type="str", aliases=["username"]),
     )
@@ -111,11 +84,11 @@ def main():
 
     client = module.client("iam", retry_decorator=AWSRetry.jittered_backoff())
 
-    changed = False
-    user = module.params.get("user_name")
-    access_keys = get_access_keys(user)
-
-    module.exit_json(changed=changed, access_keys=access_keys)
+    try:
+        access_keys = get_iam_access_keys(client, module.params.get("user_name"))
+        module.exit_json(changed=False, access_keys=access_keys)
+    except AnsibleIAMError as e:
+        module.fail_json_aws_error(e)
 
 
 if __name__ == "__main__":

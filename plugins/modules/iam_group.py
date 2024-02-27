@@ -196,21 +196,17 @@ iam_group:
                     sample: test_policy
 """
 
-try:
-    import botocore
-except ImportError:
-    pass  # caught by AnsibleAWSModule
-
-from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
-
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.iam import AnsibleIAMError
+from ansible_collections.amazon.aws.plugins.module_utils.iam import IAMErrorHandler
 from ansible_collections.amazon.aws.plugins.module_utils.iam import convert_managed_policy_names_to_arns
+from ansible_collections.amazon.aws.plugins.module_utils.iam import get_iam_group
+from ansible_collections.amazon.aws.plugins.module_utils.iam import normalize_iam_group
 from ansible_collections.amazon.aws.plugins.module_utils.iam import validate_iam_identifiers
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 
 
+@IAMErrorHandler.common_error_handler("update group path")
 def ensure_path(connection, module, group_info, path):
     if path is None:
         return False
@@ -231,18 +227,16 @@ def ensure_path(connection, module, group_info, path):
 
 def detach_policies(connection, module, group_name, policies):
     for policy_arn in policies:
-        try:
-            connection.detach_group_policy(aws_retry=True, GroupName=group_name, PolicyArn=policy_arn)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg=f"Couldn't detach policy {policy_arn} from group {group_name}")
+        IAMErrorHandler.deletion_error_handler(f"detach policy {policy_arn} from group")(
+            connection.detach_group_policy
+        )(aws_retry=True, GroupName=group_name, PolicyArn=policy_arn)
 
 
 def attach_policies(connection, module, group_name, policies):
     for policy_arn in policies:
-        try:
-            connection.attach_group_policy(aws_retry=True, GroupName=group_name, PolicyArn=policy_arn)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg=f"Couldn't attach policy {policy_arn} to group {group_name}")
+        IAMErrorHandler.common_error_handler(f"attach policy {policy_arn} to group")(connection.attach_group_policy)(
+            aws_retry=True, GroupName=group_name, PolicyArn=policy_arn
+        )
 
 
 def ensure_managed_policies(connection, module, group_info, managed_policies, purge_policies):
@@ -276,18 +270,16 @@ def ensure_managed_policies(connection, module, group_info, managed_policies, pu
 
 def add_group_members(connection, module, group_name, members):
     for user in members:
-        try:
-            connection.add_user_to_group(GroupName=group_name, UserName=user)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg=f"Couldn't add user {user} to group {group_name}")
+        IAMErrorHandler.common_error_handler(f"add user {user} to group")(connection.add_user_to_group)(
+            aws_retry=True, GroupName=group_name, UserName=user
+        )
 
 
 def remove_group_members(connection, module, group_name, members):
     for user in members:
-        try:
-            connection.remove_user_from_group(aws_retry=True, GroupName=group_name, UserName=user)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg=f"Couldn't remove user {user} from group {group_name}")
+        IAMErrorHandler.deletion_error_handler(f"remove user {user} from group")(connection.remove_user_from_group)(
+            aws_retry=True, GroupName=group_name, UserName=user
+        )
 
 
 def ensure_group_members(connection, module, group_info, users, purge_users):
@@ -314,13 +306,9 @@ def ensure_group_members(connection, module, group_info, users, purge_users):
     return True
 
 
+@IAMErrorHandler.common_error_handler("create group")
 def get_or_create_group(connection, module, group_name, path):
-    # Get group
-    try:
-        group = get_group(connection, module, group_name)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Couldn't get group")
-
+    group = get_iam_group(connection, group_name)
     if group:
         return False, group
 
@@ -332,10 +320,7 @@ def get_or_create_group(connection, module, group_name, path):
     if module.check_mode:
         module.exit_json(changed=True, create_params=params)
 
-    try:
-        group = connection.create_group(aws_retry=True, **params)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Couldn't create group")
+    group = connection.create_group(aws_retry=True, **params)
 
     if "Users" not in group:
         group["Users"] = []
@@ -376,26 +361,18 @@ def create_or_update_group(connection, module):
         module.exit_json(changed=changed)
 
     # Get the group again
-    try:
-        group_info = get_group(connection, module, module.params["name"])
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, f"Couldn't get group {module.params['name']}")
-    try:
-        policies = get_attached_policy_list(connection, module, module.params["name"])
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, f"Couldn't get group policies {module.params['name']}")
+    group_info = get_iam_group(connection, module.params["name"])
+    policies = get_attached_policy_list(connection, module, module.params["name"])
     group_info["AttachedPolicies"] = policies
 
-    module.exit_json(changed=changed, iam_group=camel_dict_to_snake_dict(group_info))
+    module.exit_json(changed=changed, iam_group=normalize_iam_group(group_info))
 
 
+@IAMErrorHandler.deletion_error_handler("delete group")
 def destroy_group(connection, module):
     group_name = module.params.get("name")
 
-    try:
-        group = get_group(connection, module, group_name)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, f"Couldn't get group {group_name}")
+    group = get_iam_group(connection, group_name)
 
     if not group:
         module.exit_json(changed=False)
@@ -413,36 +390,16 @@ def destroy_group(connection, module):
     current_group_members = [user["UserName"] for user in group["Users"]]
     remove_group_members(connection, module, group_name, current_group_members)
 
-    try:
-        connection.delete_group(aws_retry=True, GroupName=group_name)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, f"Couldn't delete group {group_name}")
+    connection.delete_group(aws_retry=True, GroupName=group_name)
 
     module.exit_json(changed=True)
 
 
-@AWSRetry.jittered_backoff()
-def get_group(connection, module, name):
-    try:
-        paginator = connection.get_paginator("get_group")
-        return paginator.paginate(GroupName=name).build_full_result()
-    except is_boto3_error_code("NoSuchEntity"):
-        return None
-
-
+@IAMErrorHandler.list_error_handler("list policies attached to group")
 @AWSRetry.jittered_backoff()
 def get_attached_policy_list(connection, module, name):
-    try:
-        paginator = connection.get_paginator("list_attached_group_policies")
-        return paginator.paginate(GroupName=name).build_full_result()["AttachedPolicies"]
-    except is_boto3_error_code("NoSuchEntity"):
-        return None
-
-
-@AWSRetry.jittered_backoff()
-def list_all_policies(connection, module):
-    paginator = connection.get_paginator("list_policies")
-    return paginator.paginate().build_full_result()["Policies"]
+    paginator = connection.get_paginator("list_attached_group_policies")
+    return paginator.paginate(GroupName=name).build_full_result()["AttachedPolicies"]
 
 
 def main():
@@ -477,9 +434,7 @@ def main():
         else:
             destroy_group(connection, module)
     except AnsibleIAMError as e:
-        if e.exception:
-            module.fail_json_aws(e.exception, msg=e.message)
-        module.fail_json(msg=e.message)
+        module.fail_json_aws_error(e)
 
 
 if __name__ == "__main__":

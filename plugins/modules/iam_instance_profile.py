@@ -354,9 +354,7 @@ def main():
             final_profile = describe_iam_instance_profile(client, name, path)
 
     except AnsibleIAMError as e:
-        if e.exception:
-            module.fail_json_aws(e.exception, msg=e.message)
-        module.fail_json(msg=e.message)
+        module.fail_json_aws_error(e)
 
     results = {
         "changed": changed,
