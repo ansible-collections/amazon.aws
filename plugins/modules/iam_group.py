@@ -196,7 +196,6 @@ iam_group:
                     sample: test_policy
 """
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.iam import AnsibleIAMError
 from ansible_collections.amazon.aws.plugins.module_utils.iam import IAMErrorHandler
 from ansible_collections.amazon.aws.plugins.module_utils.iam import convert_managed_policy_names_to_arns

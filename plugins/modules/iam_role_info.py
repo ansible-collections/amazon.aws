@@ -160,7 +160,6 @@ iam_roles:
 
 
 from ansible_collections.amazon.aws.plugins.module_utils.iam import AnsibleIAMError
-from ansible_collections.amazon.aws.plugins.module_utils.iam import IAMErrorHandler
 from ansible_collections.amazon.aws.plugins.module_utils.iam import get_iam_role
 from ansible_collections.amazon.aws.plugins.module_utils.iam import list_iam_instance_profiles
 from ansible_collections.amazon.aws.plugins.module_utils.iam import list_iam_role_attached_policies
@@ -232,7 +231,7 @@ def main():
                 "In a release after 2026-05-01 paths must begin and end with /.  "
                 "path_prefix has been modified to '{path_prefix}'",
                 date="2026-05-01",
-                collection="amazon.aws",
+                collection_name="amazon.aws",
             )
 
     try:

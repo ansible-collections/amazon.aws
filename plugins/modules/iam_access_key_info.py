@@ -70,7 +70,6 @@ access_key:
 """
 
 from ansible_collections.amazon.aws.plugins.module_utils.iam import AnsibleIAMError
-from ansible_collections.amazon.aws.plugins.module_utils.iam import IAMErrorHandler
 from ansible_collections.amazon.aws.plugins.module_utils.iam import get_iam_access_keys
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry

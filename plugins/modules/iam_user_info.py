@@ -105,21 +105,12 @@ iam_users:
             sample: '{"Env": "Prod"}'
 """
 
-try:
-    from botocore.exceptions import BotoCoreError
-    from botocore.exceptions import ClientError
-except ImportError:
-    pass  # caught by AnsibleAWSModule
-
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.iam import AnsibleIAMError
-from ansible_collections.amazon.aws.plugins.module_utils.iam import IAMErrorHandler
 from ansible_collections.amazon.aws.plugins.module_utils.iam import get_iam_group
 from ansible_collections.amazon.aws.plugins.module_utils.iam import get_iam_user
 from ansible_collections.amazon.aws.plugins.module_utils.iam import list_iam_users
 from ansible_collections.amazon.aws.plugins.module_utils.iam import normalize_iam_user
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 
 
 def _list_users(connection, name, group, path):
