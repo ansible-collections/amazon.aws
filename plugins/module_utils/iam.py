@@ -202,9 +202,9 @@ def normalize_iam_mfa_device(device):
     """Converts IAM MFA Device from the CamelCase boto3 format to the snake_case Ansible format"""
     if not device:
         return device
-    camel_user = camel_dict_to_snake_dict(device)
-    camel_user["tags"] = boto3_tag_list_to_ansible_dict(device.pop("Tags", []))
-    return camel_user
+    camel_device = camel_dict_to_snake_dict(device)
+    camel_device["tags"] = boto3_tag_list_to_ansible_dict(device.pop("Tags", []))
+    return camel_device
 
 
 def normalize_iam_mfa_devices(devices):
