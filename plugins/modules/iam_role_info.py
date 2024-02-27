@@ -27,6 +27,9 @@ options:
             - Prefix of role to restrict IAM role search for.
             - Mutually exclusive with I(name).
             - C(path) and C(prefix) were added as aliases in release 7.2.0.
+            - In a release after 2026-05-01 paths must begin and end with C(/).
+              Prior to this paths will automatically have C(/) added as appropriate
+              to ensure that they start and end with C(/).
         type: str
         aliases: ["path", "prefix"]
 extends_documentation_fragment:
@@ -46,7 +49,7 @@ EXAMPLES = r"""
 
 - name: describe all roles matching a path prefix
   amazon.aws.iam_role_info:
-    path_prefix: /application/path
+    path_prefix: /application/path/
 """
 
 RETURN = r"""
@@ -155,106 +158,35 @@ iam_roles:
       sample: '{"Env": "Prod"}'
 """
 
-try:
-    import botocore
-except ImportError:
-    pass  # caught by AnsibleAWSModule
 
-from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
-
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.iam import AnsibleIAMError
+from ansible_collections.amazon.aws.plugins.module_utils.iam import IAMErrorHandler
+from ansible_collections.amazon.aws.plugins.module_utils.iam import get_iam_role
+from ansible_collections.amazon.aws.plugins.module_utils.iam import list_iam_instance_profiles
+from ansible_collections.amazon.aws.plugins.module_utils.iam import list_iam_role_attached_policies
+from ansible_collections.amazon.aws.plugins.module_utils.iam import list_iam_role_policies
+from ansible_collections.amazon.aws.plugins.module_utils.iam import list_iam_roles
+from ansible_collections.amazon.aws.plugins.module_utils.iam import normalize_iam_role
+from ansible_collections.amazon.aws.plugins.module_utils.iam import validate_iam_identifiers
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 
 
-@AWSRetry.jittered_backoff()
-def list_iam_roles_with_backoff(client, **kwargs):
-    paginator = client.get_paginator("list_roles")
-    return paginator.paginate(**kwargs).build_full_result()
-
-
-@AWSRetry.jittered_backoff()
-def list_iam_role_policies_with_backoff(client, role_name):
-    paginator = client.get_paginator("list_role_policies")
-    return paginator.paginate(RoleName=role_name).build_full_result()["PolicyNames"]
-
-
-@AWSRetry.jittered_backoff()
-def list_iam_attached_role_policies_with_backoff(client, role_name):
-    paginator = client.get_paginator("list_attached_role_policies")
-    return paginator.paginate(RoleName=role_name).build_full_result()["AttachedPolicies"]
-
-
-@AWSRetry.jittered_backoff()
-def list_iam_instance_profiles_for_role_with_backoff(client, role_name):
-    paginator = client.get_paginator("list_instance_profiles_for_role")
-    return paginator.paginate(RoleName=role_name).build_full_result()["InstanceProfiles"]
-
-
-def describe_iam_role(module, client, role):
+def expand_iam_role(client, role):
     name = role["RoleName"]
-    try:
-        role["InlinePolicies"] = list_iam_role_policies_with_backoff(client, name)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg=f"Couldn't get inline policies for role {name}")
-    try:
-        role["ManagedPolicies"] = list_iam_attached_role_policies_with_backoff(client, name)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg=f"Couldn't get managed  policies for role {name}")
-    try:
-        role["InstanceProfiles"] = list_iam_instance_profiles_for_role_with_backoff(client, name)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg=f"Couldn't get instance profiles for role {name}")
-    try:
-        role["tags"] = boto3_tag_list_to_ansible_dict(role["Tags"])
-        del role["Tags"]
-    except KeyError:
-        role["tags"] = {}
+    role["InlinePolicies"] = list_iam_role_policies(client, name)
+    role["ManagedPolicies"] = list_iam_role_attached_policies(client, name)
+    role["InstanceProfiles"] = list_iam_instance_profiles(client, role=name)
     return role
 
 
-def describe_iam_roles(module, client):
-    name = module.params["name"]
-    path_prefix = module.params["path_prefix"]
+def describe_iam_roles(client, name, path_prefix):
     if name:
-        try:
-            roles = [client.get_role(RoleName=name, aws_retry=True)["Role"]]
-        except is_boto3_error_code("NoSuchEntity"):
-            return []
-        except (
-            botocore.exceptions.ClientError,
-            botocore.exceptions.BotoCoreError,
-        ) as e:  # pylint: disable=duplicate-except
-            module.fail_json_aws(e, msg=f"Couldn't get IAM role {name}")
+        roles = [get_iam_role(client, name)]
     else:
-        params = dict()
-        if path_prefix:
-            if not path_prefix.startswith("/"):
-                path_prefix = "/" + path_prefix
-            if not path_prefix.endswith("/"):
-                path_prefix = path_prefix + "/"
-            params["PathPrefix"] = path_prefix
-        try:
-            roles = list_iam_roles_with_backoff(client, **params)["Roles"]
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Couldn't list IAM roles")
-    return [normalize_role(describe_iam_role(module, client, role)) for role in roles]
-
-
-def normalize_profile(profile):
-    new_profile = camel_dict_to_snake_dict(profile)
-    if profile.get("Roles"):
-        profile["roles"] = [normalize_role(role) for role in profile.get("Roles")]
-    return new_profile
-
-
-def normalize_role(role):
-    new_role = camel_dict_to_snake_dict(role, ignore_list=["tags"])
-    new_role["assume_role_policy_document_raw"] = role.get("AssumeRolePolicyDocument")
-    if role.get("InstanceProfiles"):
-        role["instance_profiles"] = [normalize_profile(profile) for profile in role.get("InstanceProfiles")]
-    return new_role
+        roles = list_iam_roles(client, path=path_prefix)
+    roles = [r for r in roles if r is not None]
+    return [normalize_iam_role(expand_iam_role(client, role), _v7_compat=True) for role in roles]
 
 
 def main():
@@ -273,6 +205,8 @@ def main():
     )
 
     client = module.client("iam", retry_decorator=AWSRetry.jittered_backoff())
+    name = module.params["name"]
+    path_prefix = module.params["path_prefix"]
 
     module.deprecate(
         "In a release after 2023-12-01 the contents of assume_role_policy_document "
@@ -283,7 +217,28 @@ def main():
         collection_name="amazon.aws",
     )
 
-    module.exit_json(changed=False, iam_roles=describe_iam_roles(module, client))
+    # Once the deprecation is over we can merge this into a single call to validate_iam_identifiers
+    if name:
+        validation_error = validate_iam_identifiers("role", name=name)
+        if validation_error:
+            module.fail_json(msg=validation_error)
+    if path_prefix:
+        validation_error = validate_iam_identifiers("role", path=path_prefix)
+        if validation_error:
+            _prefix = "/" if not path_prefix.startswith("/") else ""
+            _suffix = "/" if not path_prefix.endswith("/") else ""
+            path_prefix = "{_prefix}{path_prefix}{_suffix}"
+            module.deprecate(
+                "In a release after 2026-05-01 paths must begin and end with /.  "
+                "path_prefix has been modified to '{path_prefix}'",
+                date="2026-05-01",
+                collection="amazon.aws",
+            )
+
+    try:
+        module.exit_json(changed=False, iam_roles=describe_iam_roles(client, name, path_prefix))
+    except AnsibleIAMError as e:
+        module.fail_json_aws_error(e)
 
 
 if __name__ == "__main__":
