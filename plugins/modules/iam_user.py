@@ -218,33 +218,21 @@ user:
                     sample: test_policy
 """
 
-try:
-    import botocore
-except ImportError:
-    pass  # caught by AnsibleAWSModule
-
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.iam import AnsibleIAMError
 from ansible_collections.amazon.aws.plugins.module_utils.iam import IAMErrorHandler
 from ansible_collections.amazon.aws.plugins.module_utils.iam import convert_managed_policy_names_to_arns
+from ansible_collections.amazon.aws.plugins.module_utils.iam import get_iam_user
+from ansible_collections.amazon.aws.plugins.module_utils.iam import normalize_iam_user
 from ansible_collections.amazon.aws.plugins.module_utils.iam import validate_iam_identifiers
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
 
 
-def normalize_user(user):
-    tags = boto3_tag_list_to_ansible_dict(user["User"].pop("Tags", []))
-    user = camel_dict_to_snake_dict(user)
-    user["user"]["tags"] = tags
-    return user
-
-
-@IAMErrorHandler.common_error_handler("waiting for IAM user creation")
+@IAMErrorHandler.common_error_handler("wait for IAM user creation")
 def _wait_user_exists(connection, **params):
     waiter = connection.get_waiter("user_exists")
     waiter.wait(**params)
@@ -277,9 +265,9 @@ def create_user(connection, module, user_name, path, boundary, tags):
     if module.check_mode:
         module.exit_json(changed=True, create_params=params)
 
-    user = connection.create_user(aws_retry=True, **params)
+    user = connection.create_user(aws_retry=True, **params)["User"]
 
-    return normalize_user(user)
+    return normalize_iam_user(user)
 
 
 @IAMErrorHandler.common_error_handler("create user login profile")
@@ -350,7 +338,7 @@ def remove_login_profile(connection, check_mode, user_name, remove_password, new
 
 @IAMErrorHandler.list_error_handler("get policies for user")
 def _list_attached_policies(connection, user_name):
-    return connection.list_attached_user_policies(UserName=user_name)["AttachedPolicies"]
+    return connection.list_attached_user_policies(aws_retry=True, UserName=user_name)["AttachedPolicies"]
 
 
 @IAMErrorHandler.common_error_handler("attach policy to user")
@@ -405,7 +393,7 @@ def ensure_user_tags(connection, check_mode, user, user_name, new_tags, purge_ta
     if new_tags is None:
         return False
 
-    existing_tags = user["user"]["tags"]
+    existing_tags = user["tags"]
 
     tags_to_add, tags_to_remove = compare_aws_tags(existing_tags, new_tags, purge_tags=purge_tags)
 
@@ -441,7 +429,8 @@ def ensure_permissions_boundary(connection, check_mode, user, user_name, boundar
     if boundary is None:
         return False
 
-    current_boundary = user.get("user", {}).get("permissions_boundary", "")
+    current_boundary = user.get("permissions_boundary", "") if user else None
+
     if current_boundary:
         current_boundary = current_boundary.get("permissions_boundary_arn")
 
@@ -464,7 +453,7 @@ def ensure_path(connection, check_mode, user, user_name, path):
     if path is None:
         return False
 
-    current_path = user.get("user", {}).get("path", "")
+    current_path = user.get("path", "") if user else None
 
     if path == current_path:
         return False
@@ -482,7 +471,7 @@ def create_or_update_user(connection, module):
 
     changed = False
     new_user = False
-    user = get_user(connection, user_name)
+    user = get_iam_user(connection, user_name)
 
     boundary = module.params.get("boundary")
     if boundary:
@@ -558,25 +547,23 @@ def create_or_update_user(connection, module):
         module.exit_json(changed=changed)
 
     # Get the user again
-    user = get_user(connection, user_name)
+    user = get_iam_user(connection, user_name)
 
     if changed and login_profile:
         # `LoginProfile` is only returned on `create_login_profile` method
-        user["user"]["password_reset_required"] = login_profile.get("LoginProfile", {}).get(
-            "PasswordResetRequired", False
-        )
+        user["password_reset_required"] = login_profile.get("LoginProfile", {}).get("PasswordResetRequired", False)
 
     try:
         # (camel_dict_to_snake_dict doesn't handle lists, so do this as a merge of two dictionaries)
         policies = {"attached_policies": _list_attached_policies(connection, user_name)}
-        user["user"].update(camel_dict_to_snake_dict(policies))
+        user.update(camel_dict_to_snake_dict(policies))
     except AnsibleIAMError as e:
         module.warn(
             f"Failed to list attached policies - {str(e.exception)}",
         )
         pass
 
-    module.exit_json(changed=changed, iam_user=user, user=user["user"])
+    module.exit_json(changed=changed, iam_user={"user": user}, user=user)
 
 
 @IAMErrorHandler.deletion_error_handler("delete access key")
@@ -725,7 +712,7 @@ def delete_user(connection, check_mode, user_name):
 def destroy_user(connection, module):
     user_name = module.params.get("name")
 
-    user = get_user(connection, user_name)
+    user = get_iam_user(connection, user_name)
     # User is not present
     if not user:
         module.exit_json(changed=False)
@@ -761,23 +748,6 @@ def destroy_user(connection, module):
     remove_from_all_groups(connection, module.check_mode, user_name)
     changed = delete_user(connection, module.check_mode, user_name)
     module.exit_json(changed=changed)
-
-
-def get_user(connection, name):
-    params = dict()
-    params["UserName"] = name
-
-    try:
-        user = connection.get_user(**params)
-    except is_boto3_error_code("NoSuchEntity"):
-        return None
-    except (
-        botocore.exceptions.ClientError,
-        botocore.exceptions.BotoCoreError,
-    ) as e:  # pylint: disable=duplicate-except
-        raise AnsibleIAMError(message=f"Unable to get user {name}", exception=e)
-
-    return normalize_user(user)
 
 
 def main():
@@ -827,9 +797,7 @@ def main():
         else:
             destroy_user(connection, module)
     except AnsibleIAMError as e:
-        if e.exception:
-            module.fail_json_aws(e.exception, msg=e.message)
-        module.fail_json(msg=e.message)
+        module.fail_json_aws_error(e)
 
 
 if __name__ == "__main__":

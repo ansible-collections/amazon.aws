@@ -68,7 +68,7 @@ EXAMPLES = r"""
   amazon.aws.iam_access_key:
     user_name: example_user
     state: present
-    no_log: true
+  no_log: true
 
 - name: Delete the access_key
   amazon.aws.iam_access_key:
@@ -122,107 +122,73 @@ deleted_access_key_id:
     sample: AKIA1EXAMPLE1EXAMPLE
 """
 
-try:
-    import botocore
-except ImportError:
-    pass  # caught by AnsibleAWSModule
-
-from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
-
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import normalize_boto3_result
+from ansible_collections.amazon.aws.plugins.module_utils.iam import AnsibleIAMError
+from ansible_collections.amazon.aws.plugins.module_utils.iam import IAMErrorHandler
+from ansible_collections.amazon.aws.plugins.module_utils.iam import get_iam_access_keys
+from ansible_collections.amazon.aws.plugins.module_utils.iam import normalize_iam_access_key
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
 
 
+@IAMErrorHandler.deletion_error_handler("Failed to delete access key for user")
 def delete_access_key(access_keys, user, access_key_id):
     if not access_key_id:
         return False
-
-    if access_key_id not in access_keys:
+    if access_key_id not in [k["access_key_id"] for k in access_keys]:
         return False
 
     if module.check_mode:
         return True
 
-    try:
-        client.delete_access_key(
-            aws_retry=True,
-            UserName=user,
-            AccessKeyId=access_key_id,
-        )
-    except is_boto3_error_code("NoSuchEntityException"):
-        # Generally occurs when race conditions have happened and someone
-        # deleted the key while we were checking to see if it existed.
-        return False
-    except (
-        botocore.exceptions.ClientError,
-        botocore.exceptions.BotoCoreError,
-    ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg=f'Failed to delete access key "{access_key_id}" for user "{user}"')
-
+    client.delete_access_key(aws_retry=True, UserName=user, AccessKeyId=access_key_id)
     return True
 
 
-def update_access_key(access_keys, user, access_key_id, enabled):
-    if access_key_id not in access_keys:
-        module.fail_json(
-            msg=f'Access key "{access_key_id}" not found attached to User "{user}"',
-        )
+@IAMErrorHandler.common_error_handler("Failed to update access key for user")
+def update_access_key_state(access_keys, user, access_key_id, enabled):
+    keys = {k["access_key_id"]: k for k in access_keys}
 
-    changes = dict()
-    access_key = access_keys.get(access_key_id)
+    if access_key_id not in keys:
+        raise AnsibleIAMError(message=f'Access key "{access_key_id}" not found attached to User "{user}"')
 
-    if enabled is not None:
-        desired_status = "Active" if enabled else "Inactive"
-        if access_key.get("status") != desired_status:
-            changes["Status"] = desired_status
+    if enabled is None:
+        return False
 
-    if not changes:
+    access_key = keys.get(access_key_id)
+
+    desired_status = "Active" if enabled else "Inactive"
+    if access_key.get("status") == desired_status:
         return False
 
     if module.check_mode:
         return True
 
-    try:
-        client.update_access_key(aws_retry=True, UserName=user, AccessKeyId=access_key_id, **changes)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(
-            e,
-            changes=changes,
-            msg=f'Failed to update access key "{access_key_id}" for user "{user}"',
-        )
+    client.update_access_key(aws_retry=True, UserName=user, AccessKeyId=access_key_id, Status=desired_status)
     return True
 
 
+@IAMErrorHandler.common_error_handler("Failed to create access key for user")
 def create_access_key(access_keys, user, rotate_keys, enabled):
     changed = False
     oldest_key = False
 
     if len(access_keys) > 1 and rotate_keys:
-        sorted_keys = sorted(list(access_keys), key=lambda k: access_keys[k].get("create_date", None))
-        oldest_key = sorted_keys[0]
+        oldest_key = access_keys[0].get("access_key_id")
         changed |= delete_access_key(access_keys, user, oldest_key)
 
     if module.check_mode:
-        if changed:
+        if oldest_key:
             return dict(deleted_access_key=oldest_key)
-        return True
+        return dict()
 
-    try:
-        results = client.create_access_key(aws_retry=True, UserName=user)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg=f'Failed to create access key for user "{user}"')
-    results = camel_dict_to_snake_dict(results)
-    access_key = results.get("access_key")
-    access_key = normalize_boto3_result(access_key)
+    results = client.create_access_key(aws_retry=True, UserName=user)
+    access_key = normalize_iam_access_key(results.get("AccessKey"))
 
     # Update settings which can't be managed on creation
     if enabled is False:
         access_key_id = access_key["access_key_id"]
-        access_keys = {access_key_id: access_key}
-        update_access_key(access_keys, user, access_key_id, enabled)
+        update_access_key_state([access_key], user, access_key_id, enabled)
         access_key["status"] = "Inactive"
 
     if oldest_key:
@@ -231,22 +197,11 @@ def create_access_key(access_keys, user, rotate_keys, enabled):
     return access_key
 
 
-def get_access_keys(user):
-    try:
-        results = client.list_access_keys(aws_retry=True, UserName=user)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg=f'Failed to get access keys for user "{user}"')
-    if not results:
-        return None
-
-    results = camel_dict_to_snake_dict(results)
-    access_keys = results.get("access_key_metadata", [])
-    if not access_keys:
-        return []
-
-    access_keys = normalize_boto3_result(access_keys)
-    access_keys = {k["access_key_id"]: k for k in access_keys}
-    return access_keys
+def update_access_key(access_keys, user, access_key_id, enabled):
+    changed = update_access_key_state(access_keys, user, access_key_id, enabled)
+    access_keys = get_iam_access_keys(client, user)
+    keys = {k["access_key_id"]: k for k in access_keys}
+    return changed, {"access_key": keys.get(access_key_id, None)}
 
 
 def main():
@@ -275,39 +230,36 @@ def main():
 
     client = module.client("iam", retry_decorator=AWSRetry.jittered_backoff())
 
-    changed = False
     state = module.params.get("state")
     user = module.params.get("user_name")
     access_key_id = module.params.get("id")
     rotate_keys = module.params.get("rotate_keys")
     enabled = module.params.get("active")
 
-    access_keys = get_access_keys(user)
+    access_keys = get_iam_access_keys(client, user)
     results = dict()
 
-    if state == "absent":
-        changed |= delete_access_key(access_keys, user, access_key_id)
-    else:
-        # If we have an ID then we should try to update it
+    try:
+        if state == "absent":
+            changed = delete_access_key(access_keys, user, access_key_id)
+            module.exit_json(changed=changed)
+
         if access_key_id:
-            changed |= update_access_key(access_keys, user, access_key_id, enabled)
-            access_keys = get_access_keys(user)
-            results["access_key"] = access_keys.get(access_key_id, None)
-        # Otherwise we try to create a new one
+            changed, results = update_access_key(access_keys, user, access_key_id, enabled)
         else:
             secret_key = create_access_key(access_keys, user, rotate_keys, enabled)
-            if isinstance(secret_key, bool):
-                changed |= secret_key
-            else:
-                changed = True
-                results["access_key_id"] = secret_key.get("access_key_id", None)
-                results["secret_access_key"] = secret_key.pop("secret_access_key", None)
-                results["deleted_access_key_id"] = secret_key.pop("deleted_access_key", None)
-                if secret_key:
-                    results["access_key"] = secret_key
-                results = scrub_none_parameters(results)
+            changed = True
+            results = {
+                "access_key_id": secret_key.get("access_key_id", None),
+                "secret_access_key": secret_key.pop("secret_access_key", None),
+                "deleted_access_key_id": secret_key.pop("deleted_access_key", None),
+                "access_key": secret_key or None,
+            }
+            results = scrub_none_parameters(results)
 
-    module.exit_json(changed=changed, **results)
+        module.exit_json(changed=changed, **results)
+    except AnsibleIAMError as e:
+        module.fail_json_aws_error(e)
 
 
 if __name__ == "__main__":

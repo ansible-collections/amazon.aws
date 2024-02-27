@@ -17,6 +17,7 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 from .arn import parse_aws_arn
 from .arn import validate_aws_arn
 from .botocore import is_boto3_error_code
+from .botocore import normalize_boto3_result
 from .errors import AWSErrorHandler
 from .exceptions import AnsibleAWSError
 from .retries import AWSRetry
@@ -36,14 +37,25 @@ class IAMErrorHandler(AWSErrorHandler):
         return is_boto3_error_code("NoSuchEntity")
 
 
+@IAMErrorHandler.deletion_error_handler("detach group policy")
 @AWSRetry.jittered_backoff()
-def _tag_iam_instance_profile(client, **kwargs):
-    client.tag_instance_profile(**kwargs)
+def detach_iam_group_policy(client, arn, group):
+    client.detach_group_policy(PolicyArn=arn, GroupName=group)
+    return True
 
 
+@IAMErrorHandler.deletion_error_handler("detach role policy")
 @AWSRetry.jittered_backoff()
-def _untag_iam_instance_profile(client, **kwargs):
-    client.untag_instance_profile(**kwargs)
+def detach_iam_role_policy(client, arn, role):
+    client.detach_group_policy(PolicyArn=arn, RoleName=role)
+    return True
+
+
+@IAMErrorHandler.deletion_error_handler("detach user policy")
+@AWSRetry.jittered_backoff()
+def detach_iam_user_policy(client, arn, user):
+    client.detach_group_policy(PolicyArn=arn, UserName=user)
+    return True
 
 
 @AWSRetry.jittered_backoff()
@@ -63,42 +75,194 @@ def _list_iam_instance_profiles_for_role(client, **kwargs):
     return paginator.paginate(**kwargs).build_full_result()["InstanceProfiles"]
 
 
+@IAMErrorHandler.list_error_handler("list policies for role", [])
 @AWSRetry.jittered_backoff()
-def _create_instance_profile(client, **kwargs):
-    return client.create_instance_profile(**kwargs)
+def list_iam_role_policies(client, role_name):
+    paginator = client.get_paginator("list_role_policies")
+    return paginator.paginate(RoleName=role_name).build_full_result()["PolicyNames"]
 
 
+@IAMErrorHandler.list_error_handler("list policies attached to role", [])
 @AWSRetry.jittered_backoff()
-def _delete_instance_profile(client, **kwargs):
-    client.delete_instance_profile(**kwargs)
+def list_iam_role_attached_policies(client, role_name):
+    paginator = client.get_paginator("list_attached_role_policies")
+    return paginator.paginate(RoleName=role_name).build_full_result()["AttachedPolicies"]
 
 
+@IAMErrorHandler.list_error_handler("list users", [])
 @AWSRetry.jittered_backoff()
-def _add_role_to_instance_profile(client, **kwargs):
-    client.add_role_to_instance_profile(**kwargs)
-
-
-@AWSRetry.jittered_backoff()
-def _remove_role_from_instance_profile(client, **kwargs):
-    client.remove_role_from_instance_profile(**kwargs)
-
-
-@AWSRetry.jittered_backoff()
-def _list_managed_policies(client, **kwargs):
-    paginator = client.get_paginator("list_policies")
-    return paginator.paginate(**kwargs).build_full_result()
+def list_iam_users(client, path=None):
+    args = {}
+    if path is None:
+        args = {"PathPrefix": path}
+    paginator = client.get_paginator("list_users")
+    return paginator.paginate(**args).build_full_result()["Users"]
 
 
 @IAMErrorHandler.common_error_handler("list all managed policies")
-def list_managed_policies(client):
-    return _list_managed_policies(client)["Policies"]
+@AWSRetry.jittered_backoff()
+def list_iam_managed_policies(client, **kwargs):
+    paginator = client.get_paginator("list_policies")
+    return paginator.paginate(**kwargs).build_full_result()["Policies"]
+
+
+list_managed_policies = list_iam_managed_policies
+
+
+@IAMErrorHandler.list_error_handler("list entities for policy", [])
+@AWSRetry.jittered_backoff()
+def list_iam_entities_for_policy(client, arn):
+    paginator = client.get_paginator("list_entities_for_policy")
+    return paginator.paginate(PolicyArn=arn).build_full_result()
+
+
+@IAMErrorHandler.list_error_handler("list roles", [])
+@AWSRetry.jittered_backoff()
+def list_iam_roles(client, path=None):
+    args = {}
+    if path:
+        args["PathPrefix"] = path
+    paginator = client.get_paginator("list_roles")
+    return paginator.paginate(**args).build_full_result()["Roles"]
+
+
+@IAMErrorHandler.list_error_handler("list mfa devices", [])
+@AWSRetry.jittered_backoff()
+def list_iam_mfa_devices(client, user=None):
+    args = {}
+    if user:
+        args["UserName"] = user
+    paginator = client.get_paginator("list_mfa_devices")
+    return paginator.paginate(**args).build_full_result()["MFADevices"]
+
+
+@IAMErrorHandler.list_error_handler("get role")
+@AWSRetry.jittered_backoff()
+def get_iam_role(client, name):
+    return client.get_role(RoleName=name)["Role"]
+
+
+@IAMErrorHandler.list_error_handler("get group")
+@AWSRetry.jittered_backoff()
+def get_iam_group(client, name):
+    paginator = client.get_paginator("get_group")
+    return paginator.paginate(GroupName=name).build_full_result()
+
+
+@IAMErrorHandler.list_error_handler("get access keys for user", [])
+@AWSRetry.jittered_backoff()
+def get_iam_access_keys(client, user):
+    results = client.list_access_keys(UserName=user)
+    return normalize_iam_access_keys(results.get("AccessKeyMetadata", []))
+
+
+@IAMErrorHandler.list_error_handler("get user")
+@AWSRetry.jittered_backoff()
+def get_iam_user(client, user):
+    results = client.get_user(UserName=user)
+    return normalize_iam_user(results.get("User", []))
+
+
+def find_iam_managed_policy_by_name(client, name):
+    policies = list_iam_managed_policies(client)
+    for policy in policies:
+        if policy["PolicyName"] == name:
+            return policy
+    return None
+
+
+def get_iam_managed_policy_by_name(client, name):
+    # get_policy() requires an ARN, and list_policies() doesn't return all fields, so we need to do both :(
+    policy = find_iam_managed_policy_by_name(client, name)
+    if policy is None:
+        return None
+    return get_iam_managed_policy_by_arn(client, policy["Arn"])
+
+
+@IAMErrorHandler.common_error_handler("get policy")
+@AWSRetry.jittered_backoff()
+def get_iam_managed_policy_by_arn(client, arn):
+    policy = client.get_policy(PolicyArn=arn)["Policy"]
+    return policy
+
+
+@IAMErrorHandler.common_error_handler("list policy versions")
+@AWSRetry.jittered_backoff()
+def list_iam_managed_policy_versions(client, arn):
+    return client.list_policy_versions(PolicyArn=arn)["Versions"]
+
+
+@IAMErrorHandler.common_error_handler("get policy version")
+@AWSRetry.jittered_backoff()
+def get_iam_managed_policy_version(client, arn, version):
+    return client.get_policy_version(PolicyArn=arn, VersionId=version)["PolicyVersion"]
+
+
+def normalize_iam_mfa_device(device):
+    """Converts IAM MFA Device from the CamelCase boto3 format to the snake_case Ansible format"""
+    if not device:
+        return device
+    camel_device = camel_dict_to_snake_dict(device)
+    camel_device["tags"] = boto3_tag_list_to_ansible_dict(device.pop("Tags", []))
+    return camel_device
+
+
+def normalize_iam_mfa_devices(devices):
+    """Converts a list of IAM MFA Devices from the CamelCase boto3 format to the snake_case Ansible format"""
+    if not devices:
+        return []
+    devices = [normalize_iam_mfa_device(d) for d in devices]
+    return devices
+
+
+def normalize_iam_user(user):
+    """Converts IAM users from the CamelCase boto3 format to the snake_case Ansible format"""
+    if not user:
+        return user
+    camel_user = camel_dict_to_snake_dict(user)
+    camel_user["tags"] = boto3_tag_list_to_ansible_dict(user.pop("Tags", []))
+    return camel_user
+
+
+def normalize_iam_policy(policy):
+    """Converts IAM policies from the CamelCase boto3 format to the snake_case Ansible format"""
+    if not policy:
+        return policy
+    camel_policy = camel_dict_to_snake_dict(policy)
+    camel_policy["tags"] = boto3_tag_list_to_ansible_dict(policy.get("Tags", []))
+    return camel_policy
+
+
+def normalize_iam_group(group):
+    """Converts IAM Groups from the CamelCase boto3 format to the snake_case Ansible format"""
+    if not group:
+        return group
+    camel_group = camel_dict_to_snake_dict(normalize_boto3_result(group))
+    return camel_group
+
+
+def normalize_iam_access_key(access_key):
+    """Converts IAM access keys from the CamelCase boto3 format to the snake_case Ansible format"""
+    if not access_key:
+        return access_key
+    camel_key = camel_dict_to_snake_dict(normalize_boto3_result(access_key))
+    return camel_key
+
+
+def normalize_iam_access_keys(access_keys):
+    """Converts a list of IAM access keys from the CamelCase boto3 format to the snake_case Ansible format"""
+    if not access_keys:
+        return []
+    access_keys = [normalize_iam_access_key(k) for k in access_keys]
+    sorted_keys = sorted(access_keys, key=lambda d: d.get("create_date", None))
+    return sorted_keys
 
 
 def convert_managed_policy_names_to_arns(client, policy_names):
     if all(validate_aws_arn(policy, service="iam") for policy in policy_names if policy is not None):
         return policy_names
     allpolicies = {}
-    policies = list_managed_policies(client)
+    policies = list_iam_managed_policies(client)
 
     for policy in policies:
         allpolicies[policy["PolicyName"]] = policy["Arn"]
@@ -173,29 +337,33 @@ def get_aws_account_info(module):
 
 
 @IAMErrorHandler.common_error_handler("create instance profile")
+@AWSRetry.jittered_backoff()
 def create_iam_instance_profile(client, name, path, tags):
     boto3_tags = ansible_dict_to_boto3_tag_list(tags or {})
     path = path or "/"
-    result = _create_instance_profile(client, InstanceProfileName=name, Path=path, Tags=boto3_tags)
+    result = client.create_instance_profile(InstanceProfileName=name, Path=path, Tags=boto3_tags)
     return result["InstanceProfile"]
 
 
 @IAMErrorHandler.deletion_error_handler("delete instance profile")
+@AWSRetry.jittered_backoff()
 def delete_iam_instance_profile(client, name):
-    _delete_instance_profile(client, InstanceProfileName=name)
+    client.delete_instance_profile(InstanceProfileName=name)
     # Error Handler will return False if the resource didn't exist
     return True
 
 
 @IAMErrorHandler.common_error_handler("add role to instance profile")
+@AWSRetry.jittered_backoff()
 def add_role_to_iam_instance_profile(client, profile_name, role_name):
-    _add_role_to_instance_profile(client, InstanceProfileName=profile_name, RoleName=role_name)
+    client.add_role_to_instance_profile(InstanceProfileName=profile_name, RoleName=role_name)
     return True
 
 
 @IAMErrorHandler.deletion_error_handler("remove role from instance profile")
+@AWSRetry.jittered_backoff()
 def remove_role_from_iam_instance_profile(client, profile_name, role_name):
-    _remove_role_from_instance_profile(client, InstanceProfileName=profile_name, RoleName=role_name)
+    client.remove_role_from_instance_profile(InstanceProfileName=profile_name, RoleName=role_name)
     # Error Handler will return False if the resource didn't exist
     return True
 
@@ -218,14 +386,16 @@ def list_iam_instance_profiles(client, name=None, prefix=None, role=None):
     return _list_iam_instance_profiles(client)
 
 
-def normalize_iam_instance_profile(profile):
+def normalize_iam_instance_profile(profile, _v7_compat=False):
     """
     Converts a boto3 format IAM instance profile into "Ansible" format
+
+    _v7_compat is deprecated and will be removed in release after 2025-05-01 DO NOT USE.
     """
 
     new_profile = camel_dict_to_snake_dict(deepcopy(profile))
     if profile.get("Roles"):
-        new_profile["roles"] = [normalize_iam_role(role) for role in profile.get("Roles")]
+        new_profile["roles"] = [normalize_iam_role(role, _v7_compat=_v7_compat) for role in profile.get("Roles")]
     if profile.get("Tags"):
         new_profile["tags"] = boto3_tag_list_to_ansible_dict(profile.get("Tags"))
     else:
@@ -234,39 +404,61 @@ def normalize_iam_instance_profile(profile):
     return new_profile
 
 
-def normalize_iam_role(role):
+def normalize_iam_role(role, _v7_compat=False):
     """
     Converts a boto3 format IAM instance role into "Ansible" format
+
+    _v7_compat is deprecated and will be removed in release after 2025-05-01 DO NOT USE.
     """
 
     new_role = camel_dict_to_snake_dict(deepcopy(role))
     if role.get("InstanceProfiles"):
         new_role["instance_profiles"] = [
-            normalize_iam_instance_profile(profile) for profile in role.get("InstanceProfiles")
+            normalize_iam_instance_profile(profile, _v7_compat=_v7_compat) for profile in role.get("InstanceProfiles")
         ]
     if role.get("AssumeRolePolicyDocument"):
-        new_role["assume_role_policy_document"] = role.get("AssumeRolePolicyDocument")
-    if role.get("Tags"):
-        new_role["tags"] = boto3_tag_list_to_ansible_dict(role.get("Tags"))
-    else:
-        new_role["tags"] = {}
-    new_role["original"] = role
+        if _v7_compat:
+            # new_role["assume_role_policy_document"] = role.get("AssumeRolePolicyDocument")
+            new_role["assume_role_policy_document_raw"] = role.get("AssumeRolePolicyDocument")
+        else:
+            new_role["assume_role_policy_document"] = role.get("AssumeRolePolicyDocument")
+
+    new_role["tags"] = boto3_tag_list_to_ansible_dict(role.get("Tags", []))
     return new_role
 
 
 @IAMErrorHandler.common_error_handler("tag instance profile")
+@AWSRetry.jittered_backoff()
 def tag_iam_instance_profile(client, name, tags):
     if not tags:
         return
     boto3_tags = ansible_dict_to_boto3_tag_list(tags or {})
-    result = _tag_iam_instance_profile(client, InstanceProfileName=name, Tags=boto3_tags)
+    result = client.tag_instance_profile(InstanceProfileName=name, Tags=boto3_tags)
 
 
 @IAMErrorHandler.common_error_handler("untag instance profile")
+@AWSRetry.jittered_backoff()
 def untag_iam_instance_profile(client, name, tags):
     if not tags:
         return
-    result = _untag_iam_instance_profile(client, InstanceProfileName=name, TagKeys=tags)
+    client.untag_instance_profile(InstanceProfileName=name, TagKeys=tags)
+
+
+@IAMErrorHandler.common_error_handler("tag managed policy")
+@AWSRetry.jittered_backoff()
+def tag_iam_policy(client, arn, tags):
+    if not tags:
+        return
+    boto3_tags = ansible_dict_to_boto3_tag_list(tags or {})
+    client.tag_policy(PolicyArn=arn, Tags=boto3_tags)
+
+
+@IAMErrorHandler.common_error_handler("untag managed policy")
+@AWSRetry.jittered_backoff()
+def untag_iam_policy(client, arn, tags):
+    if not tags:
+        return
+    client.untag_policy(PolicyArn=arn, TagKeys=tags)
 
 
 def _validate_iam_name(resource_type, name=None):
