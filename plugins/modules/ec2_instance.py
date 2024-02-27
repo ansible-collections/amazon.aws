@@ -1458,7 +1458,7 @@ def build_top_level_options(params):
     return spec
 
 
-def build_instance_tags(params, propagate_tags_to_volumes=True):
+def build_instance_tags(params):
     tags = params.get("tags") or {}
     if params.get("name") is not None:
         tags["Name"] = params.get("name")

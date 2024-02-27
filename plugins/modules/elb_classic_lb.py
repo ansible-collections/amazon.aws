@@ -1490,14 +1490,6 @@ class ElbManager:
     def _policy_name(self, policy_type):
         return f"ec2-elb-lb-{policy_type}"
 
-    def _get_listener_policies(self):
-        """Get a list of listener policies mapped to the LoadBalancerPort"""
-        if not self.elb:
-            return {}
-        listener_descriptions = self.elb.get("ListenerDescriptions", [])
-        policies = {l["LoadBalancerPort"]: l["PolicyNames"] for l in listener_descriptions}
-        return policies
-
     def _set_listener_policies(self, port, policies):
         self.changed = True
         if self.check_mode:

@@ -435,14 +435,6 @@ multi_region:
   sample: False
 """
 
-# these mappings are used to go from simple labels to the actual 'Sid' values returned
-# by get_policy. They seem to be magic values.
-statement_label = {
-    "role": "Allow use of the key",
-    "role grant": "Allow attachment of persistent resources",
-    "admin": "Allow access for Key Administrators",
-}
-
 import json
 
 try:
@@ -459,12 +451,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
-
-
-@AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
-def get_iam_roles_with_backoff(connection):
-    paginator = connection.get_paginator("list_roles")
-    return paginator.paginate().build_full_result()
 
 
 @AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
@@ -601,15 +587,6 @@ def get_key_details(connection, module, key_id):
     result["policies"] = get_kms_policies(connection, module, key_id)
     result["key_policies"] = [json.loads(policy) for policy in result["policies"]]
     return result
-
-
-def get_kms_facts(connection, module):
-    try:
-        keys = get_kms_keys_with_backoff(connection)["Keys"]
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to obtain keys")
-
-    return [get_key_details(connection, module, key["KeyId"]) for key in keys]
 
 
 def convert_grant_params(grant, key):
@@ -945,13 +922,6 @@ def delete_key(connection, module, key_metadata):
     result = get_key_details(connection, module, key_metadata["Arn"])
     result["changed"] = changed
     return result
-
-
-def get_arn_from_role_name(iam, rolename):
-    ret = iam.get_role(RoleName=rolename)
-    if ret.get("Role") and ret["Role"].get("Arn"):
-        return ret["Role"]["Arn"]
-    raise Exception(f"could not find arn for name {rolename}.")
 
 
 def canonicalize_alias_name(alias):

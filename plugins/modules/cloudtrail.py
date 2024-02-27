@@ -334,19 +334,6 @@ def tag_trail(module, client, tags, trail_arn, curr_tags=None, purge_tags=True):
     return True
 
 
-def get_tag_list(keys, tags):
-    """
-    Returns a list of dicts with tags to act on
-    keys : set of keys to get the values for
-    tags : the dict of tags to turn into a list
-    """
-    tag_list = []
-    for k in keys:
-        tag_list.append({"Key": k, "Value": tags[k]})
-
-    return tag_list
-
-
 def set_logging(module, client, name, action):
     """
     Starts or stops logging based on given state

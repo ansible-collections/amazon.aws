@@ -548,22 +548,6 @@ def paginated_list(s3, **pagination_params):
             yield data["Key"]
 
 
-def paginated_versioned_list_with_fallback(s3, **pagination_params):
-    try:
-        versioned_pg = s3.get_paginator("list_object_versions")
-        for page in versioned_pg.paginate(**pagination_params):
-            delete_markers = [
-                {"Key": data["Key"], "VersionId": data["VersionId"]} for data in page.get("DeleteMarkers", [])
-            ]
-            current_objects = [
-                {"Key": data["Key"], "VersionId": data["VersionId"]} for data in page.get("Versions", [])
-            ]
-            yield delete_markers + current_objects
-    except is_boto3_error_code(IGNORE_S3_DROP_IN_EXCEPTIONS + ["AccessDenied"]):
-        for key in paginated_list(s3, **pagination_params):
-            yield [{"Key": key}]
-
-
 def list_keys(s3, bucket, prefix=None, marker=None, max_keys=None):
     pagination_params = {
         "Bucket": bucket,
