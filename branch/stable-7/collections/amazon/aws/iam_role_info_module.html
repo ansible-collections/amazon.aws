@@ -264,6 +264,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-role
 <td><div class="ansible-option-cell"><p>Prefix of role to restrict IAM role search for.</p>
 <p>Mutually exclusive with <em>name</em>.</p>
 <p><code class="docutils literal notranslate"><span class="pre">path</span></code> and <code class="docutils literal notranslate"><span class="pre">prefix</span></code> were added as aliases in release 7.2.0.</p>
+<p>In a release after 2026-05-01 paths must begin and end with <code class="docutils literal notranslate"><span class="pre">/</span></code>. Prior to this paths will automatically have <code class="docutils literal notranslate"><span class="pre">/</span></code> added as appropriate to ensure that they start and end with <code class="docutils literal notranslate"><span class="pre">/</span></code>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -366,7 +367,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-role
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">describe all roles matching a path prefix</span>
 <span class="w">  </span><span class="nt">amazon.aws.iam_role_info</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">path_prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/application/path</span>
+<span class="w">    </span><span class="nt">path_prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/application/path/</span>
 </pre></div>
 </div>
 </section>
