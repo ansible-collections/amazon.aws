@@ -54,7 +54,7 @@
       amazon.aws.iam_access_key:
         user_name: "{{ test_user }}"
         state: present
-        no_log: true
+      no_log: true
       register: create_key_1
     - ansible.builtin.assert:
         that:
@@ -104,7 +104,7 @@
       amazon.aws.iam_access_key:
         user_name: "{{ test_user }}"
         state: present
-        no_log: true
+      no_log: true
       register: create_key_2
     - ansible.builtin.assert:
         that:
@@ -152,7 +152,7 @@
       amazon.aws.iam_access_key:
         user_name: "{{ test_user }}"
         state: present
-        no_log: true
+      no_log: true
       register: create_key_3
       ignore_errors: true
     - ansible.builtin.assert:
@@ -207,7 +207,7 @@
         user_name: "{{ test_user }}"
         state: present
         rotate_keys: true
-        no_log: true
+      no_log: true
       register: create_key_3
     - ansible.builtin.assert:
         that:
@@ -650,7 +650,7 @@
         user_name: "{{ test_user }}"
         state: present
         enabled: false
-        no_log: true
+      no_log: true
       register: create_key_4
     - ansible.builtin.assert:
         that:

@@ -56,30 +56,16 @@ EXAMPLES = r"""
   register: assumed_role
 """
 
-try:
-    import botocore
-    from botocore.exceptions import ClientError
-except ImportError:
-    pass  # Handled by AnsibleAWSModule
-
-from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
-
+from ansible_collections.amazon.aws.plugins.module_utils.iam import AnsibleIAMError
+from ansible_collections.amazon.aws.plugins.module_utils.iam import list_iam_mfa_devices
+from ansible_collections.amazon.aws.plugins.module_utils.iam import normalize_iam_mfa_devices
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 
 
 def list_mfa_devices(connection, module):
     user_name = module.params.get("user_name")
-    changed = False
-
-    args = {}
-    if user_name is not None:
-        args["UserName"] = user_name
-    try:
-        response = connection.list_mfa_devices(**args)
-    except ClientError as e:
-        module.fail_json_aws(e, msg="Failed to list MFA devices")
-
-    module.exit_json(changed=changed, **camel_dict_to_snake_dict(response))
+    devices = list_iam_mfa_devices(connection, user_name)
+    module.exit_json(changed=False, mfa_devices=normalize_iam_mfa_devices(devices))
 
 
 def main():
@@ -92,12 +78,11 @@ def main():
         supports_check_mode=True,
     )
 
+    connection = module.client("iam")
     try:
-        connection = module.client("iam")
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to connect to AWS")
-
-    list_mfa_devices(connection, module)
+        list_mfa_devices(connection, module)
+    except AnsibleIAMError as e:
+        module.fail_json_aws_error(e)
 
 
 if __name__ == "__main__":

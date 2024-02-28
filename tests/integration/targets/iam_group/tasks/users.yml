@@ -13,7 +13,7 @@
   ansible.builtin.assert:
     that:
       - iam_group is failed
-      - iam_group.msg.startswith("Couldn't add user NonExistentUser to group " + test_group)
+      - iam_group.msg.startswith("Failed to add user NonExistentUser to group")
 
 - name: Remove a user
   amazon.aws.iam_group:
