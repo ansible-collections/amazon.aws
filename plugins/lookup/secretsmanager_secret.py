@@ -136,6 +136,11 @@ from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.plugin_utils.lookup import AWSLookupBase
 
 
+def _list_secrets(client, term):
+    paginator = client.get_paginator("list_secrets")
+    return paginator.paginate(Filters=[{"Key": "name", "Values": [term]}])
+
+
 class LookupModule(AWSLookupBase):
     def run(self, terms, variables, **kwargs):
         """
@@ -177,9 +182,7 @@ class LookupModule(AWSLookupBase):
             secrets = {}
             for term in terms:
                 try:
-                    paginator = client.get_paginator("list_secrets")
-                    paginator_response = paginator.paginate(Filters=[{"Key": "name", "Values": [term]}])
-                    for object in paginator_response:
+                    for object in _list_secrets(client, term):
                         if "SecretList" in object:
                             for secret_obj in object["SecretList"]:
                                 secrets.update(
@@ -247,14 +250,22 @@ class LookupModule(AWSLookupBase):
             if "SecretString" in response:
                 if nested:
                     query = term.split(".")[1:]
+                    path = None
                     secret_string = json.loads(response["SecretString"])
                     ret_val = secret_string
-                    for key in query:
+                    while query:
+                        key = query.pop(0)
+                        path = key if not path else path + "." + key
                         if key in ret_val:
                             ret_val = ret_val[key]
-                        else:
+                        elif on_missing == "warn":
+                            self._display.warning(
+                                f"Skipping, Successfully retrieved secret but there exists no key {path} in the secret"
+                            )
+                            return None
+                        elif on_missing == "error":
                             raise AnsibleLookupError(
-                                f"Successfully retrieved secret but there exists no key {key} in the secret"
+                                f"Successfully retrieved secret but there exists no key {path} in the secret"
                             )
                     return str(ret_val)
                 else:
