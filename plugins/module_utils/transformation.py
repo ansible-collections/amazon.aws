@@ -28,8 +28,26 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 # USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import typing
+from copy import deepcopy
+from typing import Any
+from typing import Callable
+from typing import Mapping
+from typing import Optional
+from typing import Sequence
+from typing import Union
+
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils.six import integer_types
 from ansible.module_utils.six import string_types
+
+from .botocore import normalize_boto3_result
+from .tagging import boto3_tag_list_to_ansible_dict
+
+BotoResource = Union[None, Mapping[str, Any]]
+BotoResourceList = Union[None, Sequence[Mapping[str, Any]]]
+AnsibleAWSResource = Union[None, Mapping[str, Any]]
+AnsibleAWSResourceList = Union[None, Sequence[Mapping[str, Any]]]
 
 
 def ansible_dict_to_boto3_filter_list(filters_dict):
@@ -133,3 +151,82 @@ def scrub_none_parameters(parameters, descend_into_lists=True):
             clean_parameters[k] = v
 
     return clean_parameters
+
+
+def _perform_nested_transforms(
+    resource: Mapping[str, Any],
+    nested_transforms: Optional[Mapping[str, Callable]],
+) -> Mapping[str, Any]:
+    if not nested_transforms:
+        return resource
+
+    for k, transform in nested_transforms.items():
+        if k in resource:
+            resource[k] = transform(resource[k])
+
+    return resource
+
+
+def boto3_resource_to_ansible_dict(
+    resource: BotoResource,
+    transform_tags: bool = True,
+    force_tags: bool = True,
+    normalize: bool = True,
+    ignore_list: Optional[Sequence[str]] = None,
+    nested_transforms: Optional[Mapping[str, Callable]] = None,
+) -> AnsibleAWSResource:
+    """
+    Transforms boto3-style (CamelCase) resource to the ansible-style (snake_case).
+
+    :param resource: a dictionary representing the resource
+    :param transform_tags: whether or not to perform "tag list" to "dictionary" conversion on the "Tags" key
+    :param normalize: whether resources should be passed through .botocore.normalize_boto3_result
+    :param ignore_list: a list of keys, the contents of which should not be transformed
+    :param nested_transforms: a mapping of keys to Callable, the Callable will only be passed the value for the key
+                              in the resource dictionary
+    :return: dictionary representing the transformed resource
+    """
+    if not resource:
+        return resource
+    ignore_list = ignore_list or []
+    nested_transforms = nested_transforms or {}
+
+    transformed_resource = deepcopy(resource)
+    if normalize:
+        transformed_resource = normalize_boto3_result(transformed_resource)
+    transformed_resource = _perform_nested_transforms(transformed_resource, nested_transforms)
+    ignore_list = [*ignore_list, *nested_transforms]
+    camel_resource = camel_dict_to_snake_dict(transformed_resource, ignore_list=ignore_list)
+    if transform_tags and "Tags" in resource:
+        camel_resource["tags"] = boto3_tag_list_to_ansible_dict(resource["Tags"])
+    if force_tags and "Tags" not in resource:
+        camel_resource["tags"] = {}
+
+    return camel_resource
+
+
+def boto3_resource_list_to_ansible_dict(
+    resource_list: BotoResourceList,
+    transform_tags: bool = True,
+    force_tags: bool = True,
+    normalize: bool = True,
+    ignore_list: Optional[Sequence[str]] = None,
+    nested_transforms: Optional[Mapping[str, Callable]] = None,
+) -> AnsibleAWSResourceList:
+    """
+    Transforms a list of boto3-style (CamelCase) resources to the ansible-style (snake_case).
+
+    :param resource_list: a list of dictionaries representing the resources
+    :param transform_tags: whether or not to perform "tag list" to "dictionary" conversion on the "Tags" key
+    :param normalize: whether resources should be passed through .botocore.normalize_boto3_result()
+    :param ignore_list: a list of keys, the contents of which should not be transformed
+    :param nested_transforms: a mapping of keys to Callable, the Callable will only be passed the value for the key
+                              in the resource dictionary
+    :return: list of dictionaries representing the transformed resources
+    """
+    if not resource_list:
+        return resource_list
+    return [
+        boto3_resource_to_ansible_dict(resource, transform_tags, force_tags, normalize, ignore_list, nested_transforms)
+        for resource in resource_list
+    ]
