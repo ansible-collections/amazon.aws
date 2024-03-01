@@ -1,0 +1,6 @@
+---
+bugfixes:
+  - >-
+    module_utils/elbv2 - Fix issue when creating or modifying Load balancer rule
+    type authenticate-oidc using ``ClientSecret`` parameter and
+    ``UseExistingClientSecret=true`` (https://github.com/ansible-collections/amazon.aws/issues/1877).

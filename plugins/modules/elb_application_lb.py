@@ -657,11 +657,21 @@ def create_or_update_alb(alb_obj):
             rules_obj = ELBListenerRules(
                 alb_obj.connection, alb_obj.module, alb_obj.elb["LoadBalancerArn"], listener["Rules"], listener["Port"]
             )
-            rules_to_add, rules_to_modify, rules_to_delete = rules_obj.compare_rules()
+            rules_to_add, rules_to_modify, rules_to_delete, rules_to_set_priority = rules_obj.compare_rules()
 
             # Exit on check_mode
-            if alb_obj.module.check_mode and (rules_to_add or rules_to_modify or rules_to_delete):
+            if alb_obj.module.check_mode and (
+                rules_to_add or rules_to_modify or rules_to_delete or rules_to_set_priority
+            ):
                 alb_obj.module.exit_json(changed=True, msg="Would have updated ALB if not in check mode.")
+
+            # Set rules priorities
+            if rules_to_set_priority:
+                rule_obj = ELBListenerRule(
+                    alb_obj.connection, alb_obj.module, rules_to_set_priority, rules_obj.listener_arn
+                )
+                rule_obj.set_rule_priorities()
+                alb_obj.changed |= rule_obj.changed
 
             # Delete rules
             if alb_obj.module.params["purge_rules"]:
