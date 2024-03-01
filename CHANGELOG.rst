@@ -11,7 +11,7 @@ v6.5.3
 Release Summary
 ---------------
 
-This release bugfixes for the``cloudwatchevent_rule`` module and ``secretsmanager_secret`` lookup plugin.
+This release includes bugfixes for the``cloudwatchevent_rule`` module and ``secretsmanager_secret`` lookup plugin.
 
 Bugfixes
 --------
