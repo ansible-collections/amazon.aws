@@ -111,8 +111,13 @@ class AWSInventoryBase(BaseInventoryPlugin, Constructable, Cacheable, AWSPluginB
     def _set_frozen_credentials(self):
         options = self.get_options()
         iam_role_arn = options.get("assume_role_arn")
-        if iam_role_arn:
+        iam_role_arns = options.get("assume_role_arns")
+        if iam_role_arn and not iam_role_arns:
             self._freeze_iam_role(iam_role_arn)
+        if iam_role_arn and iam_role_arns:
+            self.fail_aws(
+                " Conflict here, cannot have not assume_role_arn and assume_role_arns used together "
+            )
 
     def _describe_regions(self, service):
         # Try pulling a list of regions from the service
@@ -159,6 +164,18 @@ class AWSInventoryBase(BaseInventoryPlugin, Constructable, Cacheable, AWSPluginB
             )
 
         return regions
+
+    def collective_roles(self, role):
+        """
+        This is used when the user uses `assume_role_arns`, to get inventory from different accounts
+
+        :param role: The role mentioned in list of assume roles
+        """
+
+        # This will be resetting the credential and
+        # using the base credential to assume different roles
+        self._frozen_credentials = {}
+        self._freeze_iam_role(role)
 
     def all_clients(self, service):
         """

@@ -22,4 +22,10 @@ options:
       - The ARN of the IAM role to assume to perform the lookup.
       - You should still provide AWS credentials with enough privilege to perform the AssumeRole action.
     aliases: ["iam_role_arn"]
+  assume_role_arns:
+    description:
+      - List of ARNs which can be assumed to get collective inventory result.
+      - This conflicts with `assume_role_arn`.
+      - You should still provide AWS credentials with enough privilege to perform the AssumeRole action.
+    aliases: ["iam_role_arns"]
 """
