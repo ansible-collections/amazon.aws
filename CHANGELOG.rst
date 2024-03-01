@@ -5,6 +5,20 @@ amazon.aws Release Notes
 .. contents:: Topics
 
 
+v6.5.3
+======
+
+Release Summary
+---------------
+
+This release bugfixes for the``cloudwatchevent_rule`` module and ``secretsmanager_secret`` lookup plugin.
+
+Bugfixes
+--------
+
+- cloudwatchevent_rule - Fix to avoid adding quotes to JSON input for provided input_template (https://github.com/ansible-collections/amazon.aws/pull/1883).
+- lookup/secretsmanager_secret - fix the issue when the nested secret is missing and on_missing is set to warn, the lookup was raising an error instead of a warning message (https://github.com/ansible-collections/amazon.aws/issues/1781).
+
 v6.5.2
 ======
 
