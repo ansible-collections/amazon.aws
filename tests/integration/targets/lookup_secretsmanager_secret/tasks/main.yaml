@@ -109,8 +109,8 @@
       that:
         - get_deleted_secret is failed
 
-    # Test with nested secrets
-    - include_tasks: tasks/nested.yaml
+  # Test with nested secrets
+  - include_tasks: tasks/nested.yaml
 
   always:
 
