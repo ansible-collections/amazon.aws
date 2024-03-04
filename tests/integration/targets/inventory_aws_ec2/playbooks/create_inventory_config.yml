@@ -9,3 +9,8 @@
       copy:
         dest: ../test.aws_ec2.yml
         content: "{{ lookup('template', template_name) }}"
+
+    - name: write ini configuration
+      ansible.builtin.copy:
+        dest: ../config.ini
+        content: "{{ lookup('template', '../templates/config.ini.j2') }}"
