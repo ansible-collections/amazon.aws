@@ -5,7 +5,7 @@ secret_key: '{{ aws_secret_key }}'
 session_token: '{{ security_token }}'
 {% endif %}
 regions:
-- '{{ aws_region }}'
+- '{{ '{{ lookup("ansible.builtin.ini", "region", section="ansible-test", file="config.ini") }}' }}'
 filters:
   tag:Name:
   - '{{ resource_prefix }}'
