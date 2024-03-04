@@ -96,7 +96,7 @@ class AwsUnitTestTemplar:
             variable = re.sub("{{([ ]*%s[ ]*)}}" % k, v, variable)
         if self.is_template_string(variable):
             m = re.findall("{{([ ]*[a-zA-Z0-9_]*[ ]*)}}", variable)
-            raise AnsibleError("Missing variables: %s" % ",".join([k.replace(" ", "") for k in m]))
+            raise AnsibleError(f"Missing variables: {','.join([k.replace(' ', '') for k in m])}")
         return variable
 
 
