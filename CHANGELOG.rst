@@ -5,6 +5,42 @@ amazon.aws Release Notes
 .. contents:: Topics
 
 
+v7.4.0
+======
+
+Release Summary
+---------------
+
+This release brings several bugfixes and minor changes. It also introduces a deprecation for the ``iam_role_info`` plugin.
+
+Minor Changes
+-------------
+
+- AnsibeAWSModule - added ``fail_json_aws_error()`` as a wrapper for ``fail_json()`` and ``fail_json_aws()`` when passed an ``AnsibleAWSError`` exception (https://github.com/ansible-collections/amazon.aws/pull/1997).
+- iam_access_key - refactored code to use ``AnsibleIAMError`` and ``IAMErrorHandler`` as well as moving shared code into module_utils.iam (https://github.com/ansible-collections/amazon.aws/pull/1998).
+- iam_access_key_info - refactored code to use ``AnsibleIAMError`` and ``IAMErrorHandler`` as well as moving shared code into module_utils.iam (https://github.com/ansible-collections/amazon.aws/pull/1998).
+- iam_group - refactored code to use ``AnsibleIAMError`` and ``IAMErrorHandler`` as well as moving shared code into module_utils.iam (https://github.com/ansible-collections/amazon.aws/pull/1998).
+- iam_instance_profile - refactored code to use ``AnsibleIAMError`` and ``IAMErrorHandler`` as well as moving shared code into module_utils.iam (https://github.com/ansible-collections/amazon.aws/pull/1998).
+- iam_instance_profile_info - refactored code to use ``AnsibleIAMError`` and ``IAMErrorHandler`` as well as moving shared code into module_utils.iam (https://github.com/ansible-collections/amazon.aws/pull/1998).
+- iam_managed_policy - refactored code to use ``AnsibleIAMError`` and ``IAMErrorHandler`` as well as moving shared code into module_utils.iam (https://github.com/ansible-collections/amazon.aws/pull/1998).
+- iam_mfa_device_info - refactored code to use ``AnsibleIAMError`` and ``IAMErrorHandler`` as well as moving shared code into module_utils.iam (https://github.com/ansible-collections/amazon.aws/pull/1998).
+- iam_role - refactored code to use ``AnsibleIAMError`` and ``IAMErrorHandler`` as well as moving shared code into module_utils.iam (https://github.com/ansible-collections/amazon.aws/pull/1998).
+- iam_role_info - refactored code to use ``AnsibleIAMError`` and ``IAMErrorHandler`` as well as moving shared code into module_utils.iam (https://github.com/ansible-collections/amazon.aws/pull/1998).
+- iam_user - refactored code to use ``AnsibleIAMError`` and ``IAMErrorHandler`` as well as moving shared code into module_utils.iam (https://github.com/ansible-collections/amazon.aws/pull/1998).
+- iam_user_info - refactored code to use ``AnsibleIAMError`` and ``IAMErrorHandler`` as well as moving shared code into module_utils.iam (https://github.com/ansible-collections/amazon.aws/pull/1998).
+
+Deprecated Features
+-------------------
+
+- iam_role_info - in a release after 2026-05-01 paths must begin and end with ``/`` (https://github.com/ansible-collections/amazon.aws/pull/1998).
+
+Bugfixes
+--------
+
+- cloudwatchevent_rule - Fix to avoid adding quotes to JSON input for provided input_template (https://github.com/ansible-collections/amazon.aws/pull/1883).
+- lookup/secretsmanager_secret - fix the issue when the nested secret is missing and on_missing is set to warn, the lookup was raising an error instead of a warning message (https://github.com/ansible-collections/amazon.aws/issues/1781).
+- module_utils/elbv2 - Fix issue when creating or modifying Load balancer rule type authenticate-oidc using ``ClientSecret`` parameter and ``UseExistingClientSecret=true`` (https://github.com/ansible-collections/amazon.aws/issues/1877).
+
 v7.3.0
 ======
 
