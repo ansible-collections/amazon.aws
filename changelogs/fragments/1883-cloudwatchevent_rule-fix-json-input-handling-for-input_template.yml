@@ -1,3 +1,0 @@
----
-bugfixes:
-  - cloudwatchevent_rule - Fix to avoid adding quotes to JSON input for provided input_template (https://github.com/ansible-collections/amazon.aws/pull/1883).
