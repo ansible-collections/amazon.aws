@@ -2411,4 +2411,4 @@ releases:
     - 20240212-lookup-secretsmanager_secret-fix-issue-when-nested-is-missing-and-on_missing-is-set-to-warn.yaml
     - release_summary.yml
     - remove_rendundant_workflow.yml
-    release_date: '2024-03-05'
+    release_date: '2024-03-06'
