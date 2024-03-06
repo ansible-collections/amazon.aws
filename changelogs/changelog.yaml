@@ -2462,6 +2462,22 @@ releases:
     - 20240129-aws_ec2-inventory-bugfix.yml
     - release_summary.yml
     release_date: '2024-02-06'
+  6.5.3:
+    changes:
+      bugfixes:
+      - cloudwatchevent_rule - Fix to avoid adding quotes to JSON input for provided
+        input_template (https://github.com/ansible-collections/amazon.aws/pull/1883).
+      - lookup/secretsmanager_secret - fix the issue when the nested secret is missing
+        and on_missing is set to warn, the lookup was raising an error instead of
+        a warning message (https://github.com/ansible-collections/amazon.aws/issues/1781).
+      release_summary: This release includes bugfixes for the``cloudwatchevent_rule``
+        module and ``secretsmanager_secret`` lookup plugin.
+    fragments:
+    - 1883-cloudwatchevent_rule-fix-json-input-handling-for-input_template.yml
+    - 20240212-lookup-secretsmanager_secret-fix-issue-when-nested-is-missing-and-on_missing-is-set-to-warn.yaml
+    - release_summary.yml
+    - remove_rendundant_workflow.yml
+    release_date: '2024-03-06'
   7.0.0:
     changes:
       breaking_changes:
