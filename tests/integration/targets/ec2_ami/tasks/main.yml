@@ -708,8 +708,8 @@
         tags:
           Name: "{{ ec2_ami_name }}_permissions"
         launch_permissions:
-          org_arns: [arn:aws:organizations::123456789012:organization/o-123ab4cdef]
-          org_unit_arns: [arn:aws:organizations::123456789012:ou/o-123example/ou-1234-5exampld]
+          org_arns: ["arn:aws:organizations::123456789012:organization/o-123ab4cdef"]
+          org_unit_arns: ["arn:aws:organizations::123456789012:ou/o-123example/ou-1234-5exampld"]
       register: permissions_update_result
 
     - name: Get ami info
