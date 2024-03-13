@@ -12,7 +12,7 @@
         to_port: 8182
         cidr_ipv6:
           - 64:ff9b::/96
-          - [2620::/32]
+          - ["2620::/32"]
       - proto: tcp
         ports: 5665
         cidr_ip:
@@ -38,7 +38,7 @@
         to_port: 8182
         cidr_ipv6:
           - 64:ff9b::/96
-          - [2620::/32]
+          - ["2620::/32"]
       - proto: tcp
         ports: 5665
         cidr_ip:
@@ -66,7 +66,7 @@
         to_port: 8182
         cidr_ipv6:
           - 64:ff9b::/96
-          - [2620::/32]
+          - ["2620::/32"]
       - proto: tcp
         ports: 5665
         cidr_ip:
@@ -92,7 +92,7 @@
         to_port: 8182
         cidr_ipv6:
           - 64:ff9b::/96
-          - [2620::/32]
+          - ["2620::/32"]
       - proto: tcp
         ports: 5665
         cidr_ip:
@@ -117,7 +117,7 @@
         to_port: 8182
         cidr_ipv6:
           - 64:ff9b::/96
-          - [2620::/32]
+          - ["2620::/32"]
       - proto: tcp
         ports: 5665
         cidr_ip:
@@ -142,7 +142,7 @@
         to_port: 8182
         cidr_ipv6:
           - 64:ff9b::/96
-          - [2620::/32]
+          - ["2620::/32"]
       - proto: tcp
         ports: 5665
         cidr_ip:
@@ -167,7 +167,7 @@
         from_port: 8182
         to_port: 8182
         cidr_ipv6:
-          - [2620::/32, 64:ff9b::/96]
+          - ["2620::/32", "64:ff9b::/96"]
       - proto: tcp
         ports: 5665
         cidr_ip:
@@ -190,8 +190,8 @@
         from_port: 8182
         to_port: 8182
         cidr_ipv6:
-          - [2620::/32, 64:ff9b::/96]
-          - [2001:DB8:A0B:12F0::1/64]
+          - ["2620::/32", "64:ff9b::/96"]
+          - ["2001:DB8:A0B:12F0::1/64"]
       - proto: tcp
         ports: 5665
         cidr_ip:
