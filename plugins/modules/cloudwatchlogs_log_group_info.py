@@ -82,6 +82,18 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+
+
+@AWSRetry.exponential_backoff()
+def list_tags_log_group_with_backoff(client, log_group_name):
+    return client.list_tags_log_group(logGroupName=log_group_name)
+
+
+@AWSRetry.exponential_backoff()
+def describe_log_groups_with_backoff(client, **kwargs):
+    paginator = client.get_paginator("describe_log_groups")
+    return paginator.paginate(**kwargs).build_full_result()
 
 
 def describe_log_group(client, log_group_name, module):
@@ -89,15 +101,14 @@ def describe_log_group(client, log_group_name, module):
     if log_group_name:
         params["logGroupNamePrefix"] = log_group_name
     try:
-        paginator = client.get_paginator("describe_log_groups")
-        desc_log_group = paginator.paginate(**params).build_full_result()
+        desc_log_group = describe_log_groups_with_backoff(client, **params)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg=f"Unable to describe log group {log_group_name}")
 
     for log_group in desc_log_group["logGroups"]:
         log_group_name = log_group["logGroupName"]
         try:
-            tags = client.list_tags_log_group(logGroupName=log_group_name)
+            tags = list_tags_log_group_with_backoff(client, log_group_name)
         except is_boto3_error_code("AccessDeniedException"):
             tags = {}
             module.warn(f"Permission denied listing tags for log group {log_group_name}")
