@@ -1,0 +1,7 @@
+---
+rds_cluster_param_group_name: "{{ resource_prefix }}-cluster-param-group"
+rds_engine: postgres
+resource_tags:
+  resource_prefix: "{{ resource_prefix }}"
+  some: tag
+  another: tag
