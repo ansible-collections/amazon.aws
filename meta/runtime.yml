@@ -98,8 +98,11 @@ action_groups:
     - lambda_policy
     - rds_cluster
     - rds_cluster_info
-    - rds_global_cluster_info
+    - rds_cluster_param_group
+    - rds_cluster_param_group_info
     - rds_cluster_snapshot
+    - rds_engine_versions_info
+    - rds_global_cluster_info
     - rds_instance
     - rds_instance_info
     - rds_instance_param_group
