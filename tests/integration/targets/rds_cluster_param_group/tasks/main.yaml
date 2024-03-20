@@ -13,7 +13,8 @@
         default_only: true
       register: engine_versions
 
-    - set_fact:
+    - name: Set variable for RDS param group family
+      ansible.builtin.set_fact:
         dbparam_group_family: "{{ engine_versions.db_engine_versions.0.db_parameter_group_family }}"
 
     # Test create using check_mode=true
@@ -31,7 +32,7 @@
       register: cluster_params
 
     - name: Assert that the RDS cluster parameter was not created (using check_mode=true)
-      assert:
+      ansible.builtin.assert:
         that:
           - create_checkmode is changed
           - cluster_params.db_cluster_parameter_groups | length == 0
@@ -50,7 +51,7 @@
       register: cluster_params
 
     - name: Assert that the RDS cluster parameter was created
-      assert:
+      ansible.builtin.assert:
         that:
           - create_group is changed
           - cluster_params.db_cluster_parameter_groups | length == 1
@@ -63,8 +64,8 @@
         description: "RDS cluster param group for Engine {{ engine_versions.db_engine_versions.0.engine_version }}"
       register: create_idempotency
 
-    - name: Validate that module did not reported change
-      assert:
+    - name: Validate that module did not report change
+      ansible.builtin.assert:
         that:
           - create_idempotency is not changed
 
@@ -84,7 +85,7 @@
       register: cluster_params
 
     - name: Validate that the resource has been updated with tags
-      assert:
+      ansible.builtin.assert:
         that:
           - create_tag is changed
           - cluster_params.db_cluster_parameter_groups.0.tags == {}
@@ -104,7 +105,7 @@
       register: cluster_params
 
     - name: Validate that the resource has been updated with tags
-      assert:
+      ansible.builtin.assert:
         that:
           - create_tag is changed
           - cluster_params.db_cluster_parameter_groups.0.tags == resource_tags
@@ -123,79 +124,97 @@
         name: "{{ rds_cluster_param_group_name }}"
       register: cluster_params
 
-    - name: Validate that the resource has been updated with tags
-      assert:
+    - name: Validate that the module did not report change and the resource tag remain unchanged
+      ansible.builtin.assert:
         that:
           - create_tag_idempotency is not changed
           - cluster_params.db_cluster_parameter_groups.0.tags == resource_tags
 
-    # Test adding invalid or not modifiable parameters
-    - name: Update existing RDS cluster parameter group with tags (idempotency)
+    # Test adding not modifiable parameter
+    - name: Update RDS cluster param group with not modifiable parameter
       amazon.aws.rds_cluster_param_group:
         name: "{{ rds_cluster_param_group_name }}"
         db_parameter_group_family: "{{ dbparam_group_family }}"
         description: "RDS cluster param group for Engine {{ engine_versions.db_engine_versions.0.engine_version }}"
         parameters:
-          archive_library: "testing_lib"  # This parameter is not modifiable
-          invalid_fake: true  # this parameter does not exist
-      register: update_parameters
+          - parameter_name: archive_library
+            parameter_value: test
+            apply_method: immediate
+      register: not_modifiable
       ignore_errors: true
 
-    - name: Ensure module failed to update invalid/not modifiable parameters
-      assert:
+    - name: Ensure module failed to update not modifiable parameter
+      ansible.builtin.assert:
         that:
-          - update_parameters is failed
-          - update_parameters.msg == error_msg
-      vars:
-        error_msg: "The following parameters are not modifiable: archive_library. The following parameters are not available parameters for the 'postgres16' DB parameter group family: invalid_fake."
+          - not_modifiable is failed
+          - '"The parameter archive_library cannot be modified" in not_modifiable.msg'
 
-    # Test adding parameters
+    # Test adding invalid parameter
+    - name: Update RDS cluster param group with invalid parameter
+      amazon.aws.rds_cluster_param_group:
+        name: "{{ rds_cluster_param_group_name }}"
+        db_parameter_group_family: "{{ dbparam_group_family }}"
+        description: "RDS cluster param group for Engine {{ engine_versions.db_engine_versions.0.engine_version }}"
+        parameters:
+          - parameter_name: invalid_fake
+            parameter_value: test
+            apply_method: immediate
+      register: invalid_param
+      ignore_errors: true
+
+    - name: Ensure module failed to update invalid parameter
+      ansible.builtin.assert:
+        that:
+          - invalid_param is failed
+          - '"Could not find parameter with name: invalid_fake" in invalid_param.msg'
+
+    # Test Modify parameters
     - name: Modify RDS cluster parameter group with new parameters
       amazon.aws.rds_cluster_param_group:
         name: "{{ rds_cluster_param_group_name }}"
         db_parameter_group_family: "{{ dbparam_group_family }}"
         description: "RDS cluster param group for Engine {{ engine_versions.db_engine_versions.0.engine_version }}"
         parameters:
-          array_nulls: 0
-          authentication_timeout: 50
+          - parameter_name: array_nulls
+            parameter_value: "0"
+            apply_method: immediate
+          - parameter_name: authentication_timeout
+            parameter_value: "50"
+            apply_method: immediate
       register: update_parameters
 
+    - name: Describe RDS parameter group
+      amazon.aws.rds_cluster_param_group_info:
+        name: "{{ rds_cluster_param_group_name }}"
+        include_parameters: user
+      register: cluster_params
+
     - name: Assert that the parameters are updated correctly
-      assert:
+      ansible.builtin.assert:
         that:
           - update_parameters is changed
+          - cluster_params.db_cluster_parameter_groups.0.db_parameters | selectattr('parameter_name', 'equalto', 'array_nulls') | first | community.general.json_query('parameter_value') == "0"
+          - cluster_params.db_cluster_parameter_groups.0.db_parameters | selectattr('parameter_name', 'equalto', 'authentication_timeout') | first | community.general.json_query('parameter_value') == "50"
 
-    # Test adding parameters (idempotency)
+    # Test Modify parameters (idempotency)
     - name: Modify RDS cluster parameter group with new parameters (idempotency)
       amazon.aws.rds_cluster_param_group:
         name: "{{ rds_cluster_param_group_name }}"
         db_parameter_group_family: "{{ dbparam_group_family }}"
         description: "RDS cluster param group for Engine {{ engine_versions.db_engine_versions.0.engine_version }}"
         parameters:
-          array_nulls: 0
-          authentication_timeout: 50
+          - parameter_name: array_nulls
+            parameter_value: "0"
+            apply_method: immediate
+          - parameter_name: authentication_timeout
+            parameter_value: "50"
+            apply_method: immediate
       register: update_idempotency
 
-    - name: Ensure module did not reported change
-      assert:
+    - name: Ensure module did not report change
+      ansible.builtin.assert:
         that:
           - update_idempotency is not changed
-
-    # Test update existing parameter value
-    - name: Modify RDS cluster parameter group existing parameter value
-      amazon.aws.rds_cluster_param_group:
-        name: "{{ rds_cluster_param_group_name }}"
-        db_parameter_group_family: "{{ dbparam_group_family }}"
-        description: "RDS cluster param group for Engine {{ engine_versions.db_engine_versions.0.engine_version }}"
-        parameters:
-          array_nulls: 0
-          authentication_timeout: 100
-      register: update_parameters
-
-    - name: Ensure module reported change
-      assert:
-        that:
-          - update_parameters is changed
 
     # Test delete RDS cluster parameter group (check_mode=true)
     - name: Delete existing RDS cluster parameter group (check_mode=true)
@@ -228,8 +247,8 @@
         name: "{{ rds_cluster_param_group_name }}"
       register: cluster_params
 
-    - name: Validate that module execution reported change but the RDS cluster param group was not deleted
-      assert:
+    - name: Validate that module execution reported change and the RDS cluster param group is deleted
+      ansible.builtin.assert:
         that:
           - delete_cluster_param is changed
           - cluster_params.db_cluster_parameter_groups | length == 0
@@ -241,8 +260,8 @@
         state: absent
       register: delete_cluster_param
 
-    - name: Ensure module did not reported change
-      assert:
+    - name: Ensure module did not report change
+      ansible.builtin.assert:
         that:
           - delete_cluster_param is not changed
 

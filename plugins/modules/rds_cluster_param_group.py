@@ -38,19 +38,62 @@ options:
         See U(https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-rds-dbclusterparametergroup.html)
       - Required for O(state=present).
     type: str
-  immediate:
+  parameters:
     description:
-      - Whether to apply the changes immediately, or after the next reboot of any associated instances.
-      - Ignored when O(state=absent)
-    aliases:
-      - apply_immediately
-    type: bool
-  params:
-    description:
-      - Map of parameter names and values. Numeric values may be represented as K for kilo (1024), M for mega (1024^2), G for giga (1024^3),
-        or T for tera (1024^4), and these values will be expanded into the appropriate number before being set in the parameter group.
-    aliases: [parameters]
-    type: dict
+      - A list of parameters to update.
+    type: list
+    elements: dict
+    suboptions:
+      parameter_name:
+        description: Specifies the name of the parameter.
+        type: str
+        required: true
+      parameter_value:
+        description:
+        - Specifies the value of the parameter.
+        type: str
+        required: true
+      apply_method:
+        description:
+        - Indicates when to apply parameter updates.
+        choices:
+        - immediate
+        - pending-reboot
+        type: str
+        required: true
+      description:
+        description:
+        - Provides a description of the parameter.
+        type: str
+      source:
+        description:
+        - Indicates the source of the parameter value.
+        type: str
+      apply_type:
+        description:
+        - Specifies the engine specific parameters type.
+        type: str
+      data_type:
+        description:
+        - Specifies the valid data type for the parameter.
+        type: str
+      allowed_values:
+        description:
+        - Specifies the valid range of values for the parameter.
+        type: str
+      is_modifiable:
+        description:
+        - Indicates whether V(True) or not V(False) the parameter can be modified.
+        type: bool
+      minimum_engine_version:
+        description:
+        - The earliest engine version to which the parameter can apply.
+        type: str
+      supported_engine_modes:
+        description:
+        - The valid DB engine modes.
+        type: list
+        elements: str
 author:
   - "Aubin Bikouo (@abikouo)"
 extends_documentation_fragment:
@@ -67,8 +110,10 @@ EXAMPLES = r"""
       name: test-cluster-group
       description: 'My test RDS cluster group'
       db_parameter_group_family: 'mysql5.6'
-      params:
-          auto_increment_increment: "42K"
+      parameters:
+          - parameter_name: authentication_timeout
+            parameter_value: "200"
+            apply_method: immediate
       tags:
           Environment: production
           Application: parrot
@@ -115,8 +160,7 @@ except ImportError:
     pass  # Handled by AnsibleAWSModule
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
-from ansible.module_utils.parsing.convert_bool import BOOLEANS_TRUE
-from ansible.module_utils.six import string_types
+from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
@@ -125,101 +169,44 @@ from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
 
-INT_MODIFIERS = {
-    "K": 1024,
-    "M": pow(1024, 2),
-    "G": pow(1024, 3),
-    "T": pow(1024, 4),
-}
-
 
 @AWSRetry.jittered_backoff()
 def _describe_db_cluster_parameters(module, connection, group_name):
     try:
         paginator = connection.get_paginator("describe_db_cluster_parameters")
-        return paginator.paginate(DBClusterParameterGroupName=group_name).build_full_result()
+        return paginator.paginate(DBClusterParameterGroupName=group_name).build_full_result()["Parameters"]
     except is_boto3_error_code("DBParameterGroupNotFound"):
         return None
     except botocore.exceptions.ClientError as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to describe existing RDS cluster parameter groups")
 
 
-def convert_parameter(param, value):
-    """
-    Allows setting parameters with 10M = 10* 1024 * 1024 and so on.
-    """
-    converted_value = value
+def modify_parameters(module, connection, group_name, parameters):
+    if module.check_mode:
+        return True
 
-    if param["DataType"] == "integer":
-        if isinstance(value, string_types):
-            try:
-                for modifier in INT_MODIFIERS.keys():
-                    if value.endswith(modifier):
-                        converted_value = int(value[:-1]) * INT_MODIFIERS[modifier]
-            except ValueError:
-                # may be based on a variable (ie. {foo*3/4}) so
-                # just pass it on through to the AWS SDK
-                pass
-        elif isinstance(value, bool):
-            converted_value = 1 if value else 0
-
-    elif param["DataType"] == "boolean":
-        if isinstance(value, string_types):
-            converted_value = value in BOOLEANS_TRUE
-        # convert True/False to 1/0
-        converted_value = 1 if converted_value else 0
-    return str(converted_value)
-
-
-def update_parameters(module, connection):
-    group_name = module.params["name"]
-    db_parameter_group_family = module.params["db_parameter_group_family"]
-    user_params = module.params["params"]
-    apply_method = "immediate" if module.params["immediate"] else "pending-reboot"
-    modify_list = []
-    db_cluster_params = []
-    response = _describe_db_cluster_parameters(module, connection, group_name)
-    if response:
-        db_cluster_params = response["Parameters"]
-    invalids, not_modifiable = [], []
-    for param_key, param_value in user_params.items():
-        found = list(filter(lambda x: x["ParameterName"] == param_key, db_cluster_params))
-        if not found:
-            invalids.append(param_key)
-            continue
-        param_def = found[0]
-        converted_value = convert_parameter(param_def, param_value)
-        # engine-default parameters do not have a ParameterValue, so we'll always override those.
-        if converted_value != param_def.get("ParameterValue"):
-            if param_def["IsModifiable"]:
-                modify_list.append(
-                    dict(ParameterValue=converted_value, ParameterName=param_key, ApplyMethod=apply_method)
-                )
-            else:
-                not_modifiable.append(param_key)
-    if not_modifiable or invalids:
-        error = ""
-        if not_modifiable:
-            error += f"The following parameters are not modifiable: {','.join(not_modifiable)}. "
-        if invalids:
-            error += (
-                "The following parameters are not available parameters for the '%s' DB parameter group family: %s."
-                % (db_parameter_group_family, ",".join(invalids))
+    current_params = _describe_db_cluster_parameters(module, connection, group_name)
+    parameters_names = [x["parameter_name"] for x in parameters]
+    parameters = snake_dict_to_camel_dict(
+        list(map(lambda x: {k: v for k, v in x.items() if v is not None}, parameters)), capitalize_first=True
+    )
+    for chunk in zip_longest(*[iter(parameters)] * 20, fillvalue=None):
+        non_empty_chunk = [item for item in chunk if item]
+        try:
+            connection.modify_db_cluster_parameter_group(
+                aws_retry=True, DBClusterParameterGroupName=group_name, Parameters=non_empty_chunk
             )
-        return False, error
-
-    # modify_db_parameters takes at most 20 parameters
-    if modify_list and not module.check_mode:
-        for modify_slice in zip_longest(*[iter(modify_list)] * 20, fillvalue=None):
-            non_empty_slice = [item for item in modify_slice if item]
-            try:
-                connection.modify_db_cluster_parameter_group(
-                    aws_retry=True, DBClusterParameterGroupName=group_name, Parameters=non_empty_slice
-                )
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                module.fail_json_aws(e, msg="Couldn't update RDS cluster parameters")
-        return True, None
-    return False, None
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            module.fail_json_aws(e, msg="Couldn't update RDS cluster parameters")
+    update_params = _describe_db_cluster_parameters(module, connection, group_name)
+    changed = False
+    for name in parameters_names:
+        previous = list(filter(lambda x: x["ParameterName"] == name, current_params))[0]
+        new = list(filter(lambda x: x["ParameterName"] == name, update_params))[0]
+        if new != previous:
+            changed = True
+            break
+    return changed
 
 
 def _list_resource_tags(module, connection, resource_arn):
@@ -306,11 +293,9 @@ def ensure_present(module, connection):
         if tags:
             changed = update_tags(module, connection, group["DBClusterParameterGroupArn"], tags)
 
-    if module.params.get("params"):
-        params_changed, err = update_parameters(module, connection)
-        if err:
-            module.fail_json(changed=changed, msg=err)
-        changed = changed or params_changed
+    parameters = module.params.get("parameters")
+    if parameters:
+        changed |= modify_parameters(module, connection, group_name, parameters)
 
     response = _describe_db_cluster_parameter_group(module=module, connection=connection, group_name=group_name)
     group = camel_dict_to_snake_dict(response["DBClusterParameterGroups"][0])
@@ -341,10 +326,25 @@ def main():
         name=dict(required=True),
         db_parameter_group_family=dict(),
         description=dict(),
-        params=dict(aliases=["parameters"], type="dict"),
-        immediate=dict(type="bool", aliases=["apply_immediately"]),
         tags=dict(type="dict", aliases=["resource_tags"]),
         purge_tags=dict(type="bool", default=True),
+        parameters=dict(
+            type="list",
+            elements="dict",
+            options=dict(
+                parameter_name=dict(required=True),
+                parameter_value=dict(required=True),
+                apply_method=dict(choices=["immediate", "pending-reboot"], required=True),
+                description=dict(),
+                source=dict(),
+                apply_type=dict(),
+                data_type=dict(),
+                allowed_values=dict(),
+                is_modifiable=dict(type="bool"),
+                minimum_engine_version=dict(),
+                supported_engine_modes=dict(type="list", elements="str"),
+            ),
+        ),
     )
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
