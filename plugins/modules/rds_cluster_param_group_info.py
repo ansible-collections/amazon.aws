@@ -16,6 +16,19 @@ options:
           - The RDS cluster parameter group name.
         type: str
         required: true
+    include_parameters:
+        description:
+          - Specifies whether to include the detailed parameters of the RDS cluster parameter group.
+          - V(all) include all parameters.
+          - V(engine-default) include engine-default parameters.
+          - V(system) include system parameters.
+          - V(user) include user parameters.
+        type: str
+        choices:
+          - all
+          - engine-default
+          - system
+          - user
 author:
   - Aubin Bikouo (@abikouo)
 extends_documentation_fragment:
@@ -28,6 +41,11 @@ EXAMPLES = r"""
 - name: Describe a specific RDS cluster parameter group
   amazon.aws.rds_cluster_param_group_info:
     name: myrdsclustergroup
+
+- name: Describe a specific RDS cluster parameter group including user parameters
+  amazon.aws.rds_cluster_param_group_info:
+    name: myrdsclustergroup
+    include_parameters: user
 """
 
 RETURN = r"""
@@ -52,6 +70,28 @@ db_cluster_parameter_groups:
         description:
         - The Amazon Resource Name (ARN) for the RDS cluster parameter group.
         type: str
+    db_parameters:
+        description:
+        - Provides a list of parameters for the RDS cluster parameter group.
+        returned: When O(include_parameters) is set
+        type: list
+        elements: dict
+        sample: [
+            {
+                "allowed_values": "1-600",
+                "apply_method": "pending-reboot",
+                "apply_type": "dynamic",
+                "data_type": "integer",
+                "description": "(s) Sets the maximum allowed time to complete client authentication.",
+                "is_modifiable": true,
+                "parameter_name": "authentication_timeout",
+                "parameter_value": "100",
+                "source": "user",
+                "supported_engine_modes": [
+                    "provisioned"
+                ]
+            }
+        ]
     tags:
         description: A dictionary of key value pairs.
         type: dict
@@ -86,13 +126,32 @@ def _describe_db_cluster_parameter_group(module, connection, group_name):
     return response
 
 
-def describe_db_engine_versions(connection, module):
+@AWSRetry.jittered_backoff()
+def _describe_db_cluster_parameters(module, connection, group_name, source):
+    try:
+        paginator = connection.get_paginator("describe_db_cluster_parameters")
+        params = {"DBClusterParameterGroupName": group_name}
+        if source != "all":
+            params["Source"] = source
+        return paginator.paginate(**params).build_full_result()["Parameters"]
+    except is_boto3_error_code("DBParameterGroupNotFoundFault"):
+        return []
+    except botocore.exceptions.ClientError as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Couldn't access RDS cluster parameters information")
+
+
+def describe_rds_cluster_parameter_group(connection, module):
     group_name = module.params.get("name")
+    include_parameters = module.params.get("include_parameters")
     results = []
     response = _describe_db_cluster_parameter_group(module, connection, group_name)
     if response:
         resource = response["DBClusterParameterGroups"][0]
         resource["tags"] = get_tags(connection, module, resource["DBClusterParameterGroupArn"])
+        if include_parameters is not None:
+            resource["db_parameters"] = _describe_db_cluster_parameters(
+                module, connection, group_name, include_parameters
+            )
         results.append(camel_dict_to_snake_dict(resource, ignore_list=["tags"]))
     module.exit_json(changed=False, db_cluster_parameter_groups=results)
 
@@ -100,6 +159,7 @@ def describe_db_engine_versions(connection, module):
 def main():
     argument_spec = dict(
         name=dict(required=True),
+        include_parameters=dict(choices=["user", "all", "system", "engine-default"]),
     )
 
     module = AnsibleAWSModule(
@@ -112,7 +172,7 @@ def main():
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to connect to AWS.")
 
-    describe_db_engine_versions(client, module)
+    describe_rds_cluster_parameter_group(client, module)
 
 
 if __name__ == "__main__":
