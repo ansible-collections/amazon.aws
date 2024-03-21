@@ -103,6 +103,11 @@ iam_users:
             type: dict
             returned: if user exists
             sample: '{"Env": "Prod"}'
+        console_access:
+            description: If user has access to log in from AWS default console.
+            returned: always
+            type: bool
+            sample: "true"
 """
 
 from ansible_collections.amazon.aws.plugins.module_utils.iam import AnsibleIAMError
@@ -111,8 +116,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.iam import get_iam_user
 from ansible_collections.amazon.aws.plugins.module_utils.iam import list_iam_users
 from ansible_collections.amazon.aws.plugins.module_utils.iam import normalize_iam_user
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-##import of botocore 
-from botocore.exceptions import ClientError
 
 ##add function to check if a user has or not access to login via console
 def check_console_access(connection, user_name):
