@@ -115,7 +115,8 @@ from ansible_collections.amazon.aws.plugins.module_utils.iam import get_iam_grou
 from ansible_collections.amazon.aws.plugins.module_utils.iam import get_iam_user
 from ansible_collections.amazon.aws.plugins.module_utils.iam import list_iam_users
 from ansible_collections.amazon.aws.plugins.module_utils.iam import normalize_iam_user
-from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule, is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 
 def check_console_access(connection, user_name):
 # add function to check if a user has or not access to login via console
