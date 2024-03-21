@@ -145,7 +145,7 @@ def list_users(connection, name, group, path):
     users = _list_users(connection, name, group, path)
     users = [u for u in users if u is not None]
     for user in users:
-        user['console_access'] = check_console_access(connection, user['UserName'])
+        user['LoginProfile'] = check_console_access(connection, user['UserName'])
     return [normalize_iam_user(user) for user in users]
 
 
