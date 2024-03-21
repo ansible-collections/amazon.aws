@@ -119,12 +119,11 @@ from ansible_collections.amazon.aws.plugins.module_utils.iam import normalize_ia
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 
+
+@IAMErrorHandler.list_error_handler("get login profile", {}) 
+@AWSRetry.jittered_backoff()
 def check_console_access(connection, user_name):
-# add function to check if a user has or not access to login via console
-    try:
-        return connection.get_login_profile(UserName=user_name)['LoginProfile']
-    except is_boto3_error_code("NoSuchEntity"):
-        return {}
+    return connection.get_login_profile(UserName=user_name)['LoginProfile']
 
 def _list_users(connection, name, group, path):
     # name but not path or group
