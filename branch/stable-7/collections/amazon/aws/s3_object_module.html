@@ -2,7 +2,7 @@
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta content="2.8.0" name="antsibull-docs" />
+<meta content="2.9.0" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>amazon.aws.s3_object module – Manage objects in S3 &mdash; Ansible collections  documentation</title>
@@ -745,7 +745,9 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <span class="w">    </span><span class="nt">object</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/my/desired/key.txt</span>
 <span class="w">    </span><span class="nt">src</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/usr/local/myfile.txt</span>
 <span class="w">    </span><span class="nt">mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">put</span>
-<span class="w">    </span><span class="nt">metadata</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Content-Encoding=gzip,Cache-Control=no-cache&#39;</span>
+<span class="w">    </span><span class="nt">metadata</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">Content-Encoding</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gzip</span>
+<span class="w">      </span><span class="nt">Cache-Control</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">no-cache</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PUT/upload with custom headers</span>
 <span class="w">  </span><span class="nt">amazon.aws.s3_object</span><span class="p">:</span>
