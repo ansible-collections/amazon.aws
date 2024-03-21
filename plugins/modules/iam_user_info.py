@@ -118,11 +118,8 @@ from botocore.exceptions import ClientError
 def check_console_access(connection, user_name):
     try:
         return connection.get_login_profile(UserName=user_name)['LoginProfile']
-    except ClientError as e:
-        if e.response['Error']['Code'] == 'NoSuchEntity':
-            return False
-        else:
-            raise
+    except is_boto3_error_code("NoSuchEntity"):
+        return {}
           
 def _list_users(connection, name, group, path):
     # name but not path or group
