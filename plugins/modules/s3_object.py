@@ -315,7 +315,9 @@ EXAMPLES = r"""
     object: /my/desired/key.txt
     src: /usr/local/myfile.txt
     mode: put
-    metadata: 'Content-Encoding=gzip,Cache-Control=no-cache'
+    metadata:
+      Content-Encoding: gzip
+      Cache-Control: no-cache
 
 - name: PUT/upload with custom headers
   amazon.aws.s3_object:
@@ -1298,6 +1300,11 @@ def copy_object_to_bucket(module, s3, bucket, obj, encrypt, metadata, validate, 
                     metadata,
                 )
             )
+            if metadata:
+                # 'MetadataDirective' Specifies whether the metadata is copied from the source object or replaced
+                # with metadata that's provided in the request. The default value is 'COPY', therefore when user
+                # specifies a metadata we should set it to 'REPLACE'
+                params.update({"MetadataDirective": "REPLACE"})
             s3.copy_object(aws_retry=True, **params)
             put_object_acl(module, s3, bucket, obj)
             # Tags
