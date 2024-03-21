@@ -111,6 +111,7 @@ iam_users:
 """
 
 from ansible_collections.amazon.aws.plugins.module_utils.iam import AnsibleIAMError
+from ansible_collections.amazon.aws.plugins.module_utils.iam import IAMErrorHandler
 from ansible_collections.amazon.aws.plugins.module_utils.iam import get_iam_group
 from ansible_collections.amazon.aws.plugins.module_utils.iam import get_iam_user
 from ansible_collections.amazon.aws.plugins.module_utils.iam import list_iam_users
