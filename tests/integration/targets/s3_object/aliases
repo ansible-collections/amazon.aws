@@ -1,3 +1,4 @@
 cloud/aws
 aws_s3
 s3_object_info
+time=12m
