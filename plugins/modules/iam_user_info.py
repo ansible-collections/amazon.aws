@@ -103,11 +103,11 @@ iam_users:
             type: dict
             returned: if user exists
             sample: '{"Env": "Prod"}'
-        console_access:
-            description: If user has access to log in from AWS default console.
+        login_profile:
+            description: Detailed login profile information if the user has access to log in from AWS default console. Returns an empty object {} if no access.
             returned: always
-            type: bool
-            sample: "true"
+            type: dict
+            sample: {"create_date": "2024-03-20T12:50:56+00:00", "password_reset_required": false, "user_name": "i_am_a_user"}
 """
 
 from ansible_collections.amazon.aws.plugins.module_utils.iam import AnsibleIAMError
