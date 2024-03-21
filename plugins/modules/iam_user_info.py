@@ -117,8 +117,7 @@ from botocore.exceptions import ClientError
 ##add function to check if a user has or not access to login via console
 def check_console_access(connection, user_name):
     try:
-        connection.get_login_profile(UserName=user_name)
-        return True
+        return connection.get_login_profile(UserName=user_name)['LoginProfile']
     except ClientError as e:
         if e.response['Error']['Code'] == 'NoSuchEntity':
             return False
