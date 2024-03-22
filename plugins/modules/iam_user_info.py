@@ -123,7 +123,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 @IAMErrorHandler.list_error_handler("get login profile", {})
 @AWSRetry.jittered_backoff()
 def check_console_access(connection, user_name):
-    return connection.get_login_profile(UserName=user_name)['LoginProfile']
+    return connection.get_login_profile(UserName=user_name)["LoginProfile"]
 
 
 def _list_users(connection, name, group, path):
@@ -150,7 +150,7 @@ def list_users(connection, name, group, path):
     users = _list_users(connection, name, group, path)
     users = [u for u in users if u is not None]
     for user in users:
-        user['LoginProfile'] = check_console_access(connection, user['UserName'])
+        user["LoginProfile"] = check_console_access(connection, user["UserName"])
     return [normalize_iam_user(user) for user in users]
 
 
@@ -162,7 +162,9 @@ def main():
     )
 
     module = AnsibleAWSModule(
-        argument_spec=argument_spec, mutually_exclusive=[["group", "path_prefix"]], supports_check_mode=True
+        argument_spec=argument_spec,
+        mutually_exclusive=[["group", "path_prefix"]],
+        supports_check_mode=True,
     )
 
     name = module.params.get("name")
@@ -171,7 +173,9 @@ def main():
 
     connection = module.client("iam")
     try:
-        module.exit_json(changed=False, iam_users=list_users(connection, name, group, path))
+        module.exit_json(
+            changed=False, iam_users=list_users(connection, name, group, path)
+        )
     except AnsibleIAMError as e:
         module.fail_json_aws_error(e)
 
