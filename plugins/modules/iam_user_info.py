@@ -120,10 +120,11 @@ from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleA
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 
 
-@IAMErrorHandler.list_error_handler("get login profile", {}) 
+@IAMErrorHandler.list_error_handler("get login profile", {})
 @AWSRetry.jittered_backoff()
 def check_console_access(connection, user_name):
     return connection.get_login_profile(UserName=user_name)['LoginProfile']
+
 
 def _list_users(connection, name, group, path):
     # name but not path or group
