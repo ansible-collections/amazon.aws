@@ -1,0 +1,110 @@
+- name: Test copying object create using multipart upload
+  vars:
+    src_bucket: "{{ resource_prefix }}-multipart"
+    dst_bucket_with_versioning: "{{ resource_prefix }}-multipart-versioned"
+  block:
+    # Create Buckets
+    - name: Create buckets
+      amazon.aws.s3_bucket:
+        name: "{{ item.name }}"
+        versioning: "{{ item.versioned }}"
+      with_items:
+        - name: "{{ src_bucket }}"
+          versioned: false
+        - name: "{{ dst_bucket_with_versioning }}"
+          versioned: true
+
+    - name: Create object into bucket using multipart upload
+      test_s3_upload_multipart:
+        access_key: "{{ aws_access_key }}"
+        secret_key: "{{ aws_secret_key }}"
+        session_token: "{{ security_token | default(omit) }}"
+        region: "{{ aws_region }}"
+        bucket: "{{ src_bucket }}"
+        object: multipart_src
+
+    # Test copying multipart-uploaded object
+    - name: Copy object into dest bucket
+      amazon.aws.s3_object:
+        bucket: "{{ src_bucket }}"
+        mode: copy
+        object: multipart_dst
+        copy_src:
+          bucket: "{{ src_bucket }}"
+          object: multipart_src
+      register: _copy
+
+    - name: Ensure module reported change
+      ansible.builtin.assert:
+        that:
+          - _copy is changed
+
+    - name: Copy object once again (idempotency)
+      amazon.aws.s3_object:
+        bucket: "{{ src_bucket }}"
+        mode: copy
+        object: multipart_dst
+        copy_src:
+          bucket: "{{ src_bucket }}"
+          object: multipart_src
+      register: copy_idempotency
+
+    - name: Ensure module did not reported change
+      ansible.builtin.assert:
+        that:
+          - copy_idempotency is not changed
+
+    # Test copying multipart-uploaded object into bucket with versioning activated
+    - name: Copy object into bucket with versioning activated
+      amazon.aws.s3_object:
+        bucket: "{{ dst_bucket_with_versioning }}"
+        mode: copy
+        object: versioned_obj
+        copy_src:
+          bucket: "{{ src_bucket }}"
+          object: multipart_src
+      register: _copy
+
+    - name: Get objects info from bucket with versioning activated
+      amazon.aws.s3_object_info:
+        bucket_name: "{{ dst_bucket_with_versioning }}"
+        object_name: versioned_obj
+      register: obj_info_v1
+
+    - name: Ensure object was copied and object info contain versioning information
+      ansible.builtin.assert:
+        that:
+          - _copy is changed
+          - obj_info_v1.object_info.0.object_data.version_id
+
+    - name: Copy once again object into bucket with versioning activated
+      amazon.aws.s3_object:
+        bucket: "{{ dst_bucket_with_versioning }}"
+        mode: copy
+        object: versioned_obj
+        copy_src:
+          bucket: "{{ src_bucket }}"
+          object: multipart_src
+      register: _copy_again
+
+    - name: Get objects info from bucket with versioning activated
+      amazon.aws.s3_object_info:
+        bucket_name: "{{ dst_bucket_with_versioning }}"
+        object_name: versioned_obj
+      register: obj_info_v2
+
+    - name: Validate that idempotency is not satisfied when copying multipart-uploaded object into bucket with versioning
+      ansible.builtin.assert:
+        that:
+          - _copy_again is changed
+          - obj_info_v1.object_info.0.object_data.version_id != obj_info_v2.object_info.0.object_data.version_id
+
+  always:
+    - name: Create buckets
+      amazon.aws.s3_bucket:
+        name: "{{ item }}"
+        state: absent
+        force: true
+      with_items:
+        - "{{ src_bucket }}"
+        - "{{ dst_bucket_with_versioning }}"

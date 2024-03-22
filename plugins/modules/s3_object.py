@@ -473,7 +473,7 @@ def key_check(module, s3, bucket, obj, version=None, validate=True):
 
 
 def etag_compare(module, s3, bucket, obj, version=None, local_file=None, content=None):
-    s3_etag = get_etag(s3, bucket, obj, version=version)
+    s3_etag = _head_object(s3, bucket, obj, version=version).get("ETag")
     if local_file is not None:
         local_etag = calculate_etag(module, local_file, s3_etag, s3, bucket, obj, version)
     else:
@@ -481,27 +481,26 @@ def etag_compare(module, s3, bucket, obj, version=None, local_file=None, content
     return s3_etag == local_etag
 
 
-def get_etag(s3, bucket, obj, version=None):
+def _head_object(s3, bucket, obj, version=None):
     try:
         if version:
             key_check = s3.head_object(aws_retry=True, Bucket=bucket, Key=obj, VersionId=version)
         else:
             key_check = s3.head_object(aws_retry=True, Bucket=bucket, Key=obj)
         if not key_check:
-            return None
-        return key_check["ETag"]
+            return {}
+        key_check.pop("ResponseMetadata")
+        return key_check
     except is_boto3_error_code("404"):
-        return None
+        return {}
 
 
 def get_s3_last_modified_timestamp(s3, bucket, obj, version=None):
-    if version:
-        key_check = s3.head_object(aws_retry=True, Bucket=bucket, Key=obj, VersionId=version)
-    else:
-        key_check = s3.head_object(aws_retry=True, Bucket=bucket, Key=obj)
-    if not key_check:
-        return None
-    return key_check["LastModified"].timestamp()
+    last_modified = None
+    obj_info = _head_object(s3, bucket, obj, version)
+    if obj_info:
+        last_modified = obj_info["LastModified"].timestamp()
+    return last_modified
 
 
 def is_local_object_latest(s3, bucket, obj, version=None, local_file=None):
@@ -1255,6 +1254,14 @@ def check_object_tags(module, connection, bucket, obj):
     return diff
 
 
+def _are_objects_equal(s_obj_info, d_obj_info, d_metadata):
+    if s_obj_info.get("ETag") != d_obj_info.get("ETag"):
+        return False
+    if d_metadata and d_metadata != d_obj_info.get("Metadata"):
+        return False
+    return True
+
+
 def copy_object_to_bucket(module, s3, bucket, obj, encrypt, metadata, validate, src_bucket, src_obj, versionId=None):
     try:
         params = {"Bucket": bucket, "Key": obj}
@@ -1265,14 +1272,15 @@ def copy_object_to_bucket(module, s3, bucket, obj, encrypt, metadata, validate, 
                 changed=False,
             )
 
-        s_etag = get_etag(s3, src_bucket, src_obj, version=versionId)
-        d_etag = get_etag(s3, bucket, obj)
-        if s_etag == d_etag:
+        s_obj_info = _head_object(s3, src_bucket, src_obj, version=versionId)
+        d_obj_info = _head_object(s3, bucket, obj)
+        if _are_objects_equal(s_obj_info, d_obj_info, metadata):
+            # S3 objects are equals, ensure tags will not be updated
             if module.check_mode:
                 changed = check_object_tags(module, s3, bucket, obj)
                 result = {}
                 if changed:
-                    result.update({"msg": "Would have update object tags is not running in check mode."})
+                    result.update({"msg": "Would have update object tags if not running in check mode."})
                 return changed, result
 
             # Ensure tags
@@ -1281,10 +1289,20 @@ def copy_object_to_bucket(module, s3, bucket, obj, encrypt, metadata, validate, 
             if changed:
                 result = {"msg": "tags successfully updated.", "tags": tags}
             return changed, result
-        elif module.check_mode:
-            return True, {"msg": "ETag from source and destination differ"}
-        else:
+        # S3 objects differ
+        if module.check_mode:
             changed = True
+            if s_obj_info.get("ETag") != d_obj_info.get("ETag"):
+                msg = "ETag from source and destination differ"
+            else:
+                msg = "Would have update object Metadata if not running in check mode."
+            return changed, {"msg": msg}
+        else:
+            changed = False
+            # ETag may differ between source and destination before and after copy operation
+            # This is in case the source object has been upload with multiple parts
+            if metadata and metadata != d_obj_info.get("Metadata"):
+                changed = True
             bucketsrc = {
                 "Bucket": src_bucket,
                 "Key": src_obj,
@@ -1305,11 +1323,19 @@ def copy_object_to_bucket(module, s3, bucket, obj, encrypt, metadata, validate, 
                 # with metadata that's provided in the request. The default value is 'COPY', therefore when user
                 # specifies a metadata we should set it to 'REPLACE'
                 params.update({"MetadataDirective": "REPLACE"})
-            s3.copy_object(aws_retry=True, **params)
+            response = s3.copy_object(aws_retry=True, **params)
+            changed |= response.get("VersionId") is not None or response.get("CopyObjectResult").get(
+                "ETag"
+            ) != d_obj_info.get("ETag")
             put_object_acl(module, s3, bucket, obj)
             # Tags
             tags, tags_updated = ensure_tags(s3, module, bucket, obj)
-            msg = f"Object copied from bucket {bucketsrc['Bucket']} to bucket {bucket}."
+            changed |= tags_updated
+            msg = None
+            if changed:
+                msg = f"Object copied from bucket {bucketsrc['Bucket']} to bucket {bucket}."
+            else:
+                msg = "ETag from source and destination are the same"
             return changed, {"msg": msg, "tags": tags}
     except (
         botocore.exceptions.BotoCoreError,
