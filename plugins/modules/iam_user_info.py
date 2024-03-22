@@ -173,9 +173,7 @@ def main():
 
     connection = module.client("iam")
     try:
-        module.exit_json(
-            changed=False, iam_users=list_users(connection, name, group, path)
-        )
+        module.exit_json(changed=False, iam_users=list_users(connection, name, group, path))
     except AnsibleIAMError as e:
         module.fail_json_aws_error(e)
 
