@@ -135,6 +135,6 @@ class TestBoto3ResourceToAnsibleDict:
     def test_no_force_tags(self, input_params, output_params):
         # Test with force_tags explicitly enabled
         expected_value = deepcopy(output_params)
-        if input_params and not "Tags" in input_params:
+        if input_params and "Tags" not in input_params:
             del expected_value["tags"]
         assert boto3_resource_to_ansible_dict(input_params, force_tags=False) == expected_value

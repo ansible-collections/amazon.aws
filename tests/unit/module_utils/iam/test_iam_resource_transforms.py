@@ -5,7 +5,6 @@
 
 
 import dateutil
-import pytest
 
 from ansible_collections.amazon.aws.plugins.module_utils.iam import normalize_iam_access_key
 from ansible_collections.amazon.aws.plugins.module_utils.iam import normalize_iam_access_keys
@@ -16,11 +15,9 @@ from ansible_collections.amazon.aws.plugins.module_utils.iam import normalize_ia
 from ansible_collections.amazon.aws.plugins.module_utils.iam import normalize_iam_policy
 from ansible_collections.amazon.aws.plugins.module_utils.iam import normalize_iam_role
 from ansible_collections.amazon.aws.plugins.module_utils.iam import normalize_iam_user
-from ansible_collections.amazon.aws.plugins.module_utils.transformation import boto3_resource_to_ansible_dict
 
 # The various normalize_ functions are based upon ..transformation.boto3_resource_to_ansible_dict
 # As such these tests will be relatively light touch.
-
 
 example_date1_txt = "2020-12-30T00:00:00.000Z"
 example_date2_txt = "2021-04-26T01:23:58.000Z"

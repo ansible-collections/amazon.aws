@@ -4,7 +4,6 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 import re
-from copy import deepcopy
 
 try:
     import botocore
@@ -12,7 +11,6 @@ except ImportError:
     pass  # Modules are responsible for handling this.
 
 from ansible.module_utils._text import to_native
-from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from .arn import parse_aws_arn
 from .arn import validate_aws_arn
@@ -21,7 +19,6 @@ from .errors import AWSErrorHandler
 from .exceptions import AnsibleAWSError
 from .retries import AWSRetry
 from .tagging import ansible_dict_to_boto3_tag_list
-from .tagging import boto3_tag_list_to_ansible_dict
 from .transformation import AnsibleAWSResource
 from .transformation import AnsibleAWSResourceList
 from .transformation import BotoResource
