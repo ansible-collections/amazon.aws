@@ -400,7 +400,6 @@ def normalize_iam_instance_profile(profile, _v7_compat=False):
         new_profile["tags"] = boto3_tag_list_to_ansible_dict(profile.get("Tags"))
     else:
         new_profile["tags"] = {}
-    new_profile["original"] = profile
     return new_profile
 
 
