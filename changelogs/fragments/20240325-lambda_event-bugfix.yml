@@ -1,0 +1,5 @@
+bugfixes:
+  - lambda_event - Fix when batch_size is greater than 10, by enabling support for setting ``maximum_batching_window_in_seconds``.
+
+minor_changes:
+  - lambda_event - Add support for setting the ``maximum_batching_window_in_seconds`` option.
