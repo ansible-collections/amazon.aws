@@ -251,11 +251,12 @@ db_engine_versions:
         description:
         - The creation time of the DB engine version.
         type: str
-    tag_list:
-        description:
-        - A list of tags.
-        type: list
-        elements: dict
+    tags:
+        description: A dictionary of key value pairs.
+        type: dict
+        sample: {
+            "some": "tag"
+        }
     supports_babelfish:
         description:
         - Indicates whether the engine version supports Babelfish for Aurora PostgreSQL.
@@ -299,6 +300,7 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 
 
 @AWSRetry.jittered_backoff(retries=10)
@@ -329,7 +331,13 @@ def describe_db_engine_versions(client, module):
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, "Couldn't get RDS engine versions.")
 
-    return dict(changed=False, db_engine_versions=[camel_dict_to_snake_dict(v) for v in result])
+    def _transform_item(v):
+        tag_list = v.pop("TagList", [])
+        v = camel_dict_to_snake_dict(v)
+        v["tags"] = boto3_tag_list_to_ansible_dict(tag_list)
+        return v
+
+    return dict(changed=False, db_engine_versions=[_transform_item(v) for v in result])
 
 
 def main():
