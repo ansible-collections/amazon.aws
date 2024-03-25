@@ -119,7 +119,7 @@ def _describe_db_cluster_parameter_group(module, connection, group_name):
         response = connection.describe_db_cluster_parameter_groups(
             aws_retry=True, DBClusterParameterGroupName=group_name
         )
-    except is_boto3_error_code("DBParameterGroupNotFound"):
+    except is_boto3_error_code("DBParameterGroupNotFoundFault"):
         response = None
     except botocore.exceptions.ClientError as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Couldn't access parameter group information")

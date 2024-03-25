@@ -104,7 +104,7 @@ extends_documentation_fragment:
 """
 
 EXAMPLES = r"""
-- name: Add or change a parameter group, in this case setting auto_increment_increment to 42 * 1024
+- name: Add or change a parameter group, in this case setting authentication_timeout to 200
   amazon.aws.rds_cluster_param_group:
       state: present
       name: test-cluster-group
@@ -168,7 +168,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.rds import ensure_tags
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_tags
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 
 
 @AWSRetry.jittered_backoff()
@@ -265,9 +264,7 @@ def ensure_present(module, connection):
 
     response = _describe_db_cluster_parameter_group(module=module, connection=connection, group_name=group_name)
     group = camel_dict_to_snake_dict(response["DBClusterParameterGroups"][0])
-    group["tags"] = boto3_tag_list_to_ansible_dict(
-        get_tags(connection, module, group["db_cluster_parameter_group_arn"])
-    )
+    group["tags"] = get_tags(connection, module, group["db_cluster_parameter_group_arn"])
 
     module.exit_json(changed=changed, db_cluster_parameter_group=group)
 

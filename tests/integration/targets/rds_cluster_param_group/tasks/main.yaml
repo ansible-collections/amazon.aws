@@ -87,7 +87,7 @@
         name: "{{ rds_cluster_param_group_name }}"
       register: cluster_params
 
-    - name: Validate that the resource has been updated with tags
+    - name: Validate that the resource has not been updated with tags (check_mode)
       ansible.builtin.assert:
         that:
           - create_tag is changed
