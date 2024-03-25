@@ -164,10 +164,11 @@ from ansible.module_utils.common.dict_transformations import snake_dict_to_camel
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.rds import ensure_tags
+from ansible_collections.amazon.aws.plugins.module_utils.rds import get_tags
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
 
 
 @AWSRetry.jittered_backoff()
@@ -209,45 +210,6 @@ def modify_parameters(module, connection, group_name, parameters):
     return changed
 
 
-def _list_resource_tags(module, connection, resource_arn):
-    try:
-        return connection.list_tags_for_resource(aws_retry=True, ResourceName=resource_arn)["TagList"]
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Couldn't obtain RDS cluster parameter group tags")
-
-
-def update_tags(module, connection, group_arn, tags):
-    if tags is None:
-        return False
-    changed = False
-
-    existing_tags = _list_resource_tags(module, connection, group_arn)
-    to_update, to_delete = compare_aws_tags(
-        boto3_tag_list_to_ansible_dict(existing_tags), tags, module.params["purge_tags"]
-    )
-
-    if module.check_mode:
-        return to_delete or to_update
-
-    if to_update:
-        try:
-            connection.add_tags_to_resource(
-                aws_retry=True,
-                ResourceName=group_arn,
-                Tags=ansible_dict_to_boto3_tag_list(to_update),
-            )
-            changed = True
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Couldn't add tags to RDS cluster parameter group")
-    if to_delete:
-        try:
-            connection.remove_tags_from_resource(aws_retry=True, ResourceName=group_arn, TagKeys=to_delete)
-            changed = True
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Couldn't remove tags from RDS cluster parameter group")
-    return changed
-
-
 def _describe_db_cluster_parameter_group(module, connection, group_name):
     try:
         response = connection.describe_db_cluster_parameter_groups(
@@ -264,6 +226,7 @@ def ensure_present(module, connection):
     group_name = module.params["name"]
     db_parameter_group_family = module.params["db_parameter_group_family"]
     tags = module.params.get("tags")
+    purge_tags = module.params.get("purge_tags")
     changed = False
 
     response = _describe_db_cluster_parameter_group(module=module, connection=connection, group_name=group_name)
@@ -291,7 +254,10 @@ def ensure_present(module, connection):
             )
 
         if tags:
-            changed = update_tags(module, connection, group["DBClusterParameterGroupArn"], tags)
+            existing_tags = get_tags(connection, module, group["DBClusterParameterGroupArn"])
+            changed = ensure_tags(
+                connection, module, group["DBClusterParameterGroupArn"], existing_tags, tags, purge_tags
+            )
 
     parameters = module.params.get("parameters")
     if parameters:
@@ -300,7 +266,7 @@ def ensure_present(module, connection):
     response = _describe_db_cluster_parameter_group(module=module, connection=connection, group_name=group_name)
     group = camel_dict_to_snake_dict(response["DBClusterParameterGroups"][0])
     group["tags"] = boto3_tag_list_to_ansible_dict(
-        _list_resource_tags(module, connection, group["db_cluster_parameter_group_arn"])
+        get_tags(connection, module, group["db_cluster_parameter_group_arn"])
     )
 
     module.exit_json(changed=changed, db_cluster_parameter_group=group)
