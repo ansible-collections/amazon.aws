@@ -388,8 +388,8 @@ def main():
             type="dict",
             required=True,
             options=dict(
-                source_arn=dict(type="str"),
-                enabled=dict(type="bool", default=False),
+                source_arn=dict(type="str", required=True),
+                enabled=dict(type="bool", default=True),
                 batch_size=dict(type="int"),
                 starting_position=dict(type="str", choices=["TRIM_HORIZON", "LATEST"]),
                 function_response_types=dict(type="list", elements="str", choices=["ReportBatchItemFailures"]),

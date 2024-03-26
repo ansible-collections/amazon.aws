@@ -205,6 +205,7 @@ def test_lambda_event_stream_create_event_missing_starting_position(ansible_aws_
         "event_source": "stream",
         "source_params": {
             "source_arn": "arn:aws:sqs:us-east-2:123456789012:ansible-test-sqs",
+            "maximum_batching_window_in_seconds": 1,
             "batch_size": 200,
         },
         "alias": None,
@@ -235,6 +236,7 @@ def test_lambda_event_stream_create_event_missing_starting_position(ansible_aws_
                 "event_source": "stream",
                 "source_params": {
                     "source_arn": "arn:aws:sqs:us-east-2:123456789012:ansible-test-sqs",
+                    "maximum_batching_window_in_seconds": 1,
                     "batch_size": 250,
                     "starting_position": "END",
                     "function_response_types": ["ReportBatchItemFailures"],
@@ -247,6 +249,7 @@ def test_lambda_event_stream_create_event_missing_starting_position(ansible_aws_
                 "EventSourceArn": "arn:aws:sqs:us-east-2:123456789012:ansible-test-sqs",
                 "StartingPosition": "END",
                 "Enabled": True,
+                "MaximumBatchingWindowInSeconds": 1,
                 "BatchSize": 250,
                 "FunctionResponseTypes": ["ReportBatchItemFailures"],
             },
@@ -258,6 +261,7 @@ def test_lambda_event_stream_create_event_missing_starting_position(ansible_aws_
                 "event_source": "stream",
                 "source_params": {
                     "source_arn": "arn:aws:sqs:us-east-2:123456789012:ansible-test-sqs",
+                    "maximum_batching_window_in_seconds": 1,
                     "batch_size": 250,
                     "starting_position": "END",
                     "function_response_types": ["ReportBatchItemFailures"],
@@ -271,6 +275,7 @@ def test_lambda_event_stream_create_event_missing_starting_position(ansible_aws_
                 "EventSourceArn": "arn:aws:sqs:us-east-2:123456789012:ansible-test-sqs",
                 "StartingPosition": "END",
                 "Enabled": False,
+                "MaximumBatchingWindowInSeconds": 1,
                 "BatchSize": 250,
                 "FunctionResponseTypes": ["ReportBatchItemFailures"],
             },
@@ -282,6 +287,7 @@ def test_lambda_event_stream_create_event_missing_starting_position(ansible_aws_
                 "event_source": "sqs",
                 "source_params": {
                     "source_arn": "arn:aws:sqs:us-east-2:123456789012:ansible-test-sqs",
+                    "maximum_batching_window_in_seconds": 1,
                     "batch_size": 101,
                 },
                 "alias": None,
@@ -291,6 +297,7 @@ def test_lambda_event_stream_create_event_missing_starting_position(ansible_aws_
                 "FunctionName": "sqs_consumer",
                 "EventSourceArn": "arn:aws:sqs:us-east-2:123456789012:ansible-test-sqs",
                 "Enabled": True,
+                "MaximumBatchingWindowInSeconds": 1,
                 "BatchSize": 101,
             },
         ),
