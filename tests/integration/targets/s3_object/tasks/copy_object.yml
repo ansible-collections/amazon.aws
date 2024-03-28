@@ -6,6 +6,9 @@
     metacopy_data:
       name: metacopy
       version: "1.0.3"
+    another_metadata:
+      another: meta
+      mode: copy
   block:
     - name: define bucket name used for tests
       ansible.builtin.set_fact:
@@ -210,6 +213,54 @@
           - obj_info.results | selectattr('item', 'equalto', 'withmeta') | map(attribute='object_info.0.object_data.metadata') | first == withmeta_data
           - obj_info.results | selectattr('item', 'equalto', 'metacopy') | map(attribute='object_info.0.object_data.metadata') | first == metacopy_data
           - obj_info.results | selectattr('item', 'equalto', 'copywithmeta') | map(attribute='object_info.0.object_data.metadata') | first == withmeta_data
+
+    # Validate copy idempotency with metadata
+    - name: Copy same object including metadata (check_mode=true)
+      amazon.aws.s3_object:
+        bucket: "{{ bucket_name }}"
+        mode: copy
+        object: copywithmeta
+        copy_src:
+          bucket: "{{ bucket_name }}"
+          object: withmeta
+        metadata: "{{ another_metadata }}"
+      register: copy_with_metadata_checkmode
+      check_mode: true
+
+    - name: Get objects info
+      amazon.aws.s3_object_info:
+        bucket_name: "{{ bucket_name }}"
+        object_name: copywithmeta
+      register: obj_info
+
+    - name: Validate that objects module reported change but metadata was not updated
+      ansible.builtin.assert:
+        that:
+          - copy_with_metadata_checkmode is changed
+          - obj_info.object_info.0.object_data.metadata == withmeta_data
+
+    - name: Copy same object including metadata
+      amazon.aws.s3_object:
+        bucket: "{{ bucket_name }}"
+        mode: copy
+        object: copywithmeta
+        copy_src:
+          bucket: "{{ bucket_name }}"
+          object: withmeta
+        metadata: "{{ another_metadata }}"
+      register: copy_with_metadata
+
+    - name: Get objects info
+      amazon.aws.s3_object_info:
+        bucket_name: "{{ bucket_name }}"
+        object_name: copywithmeta
+      register: obj_info
+
+    - name: Validate that objects module reported change and metadata was updated
+      ansible.builtin.assert:
+        that:
+          - copy_with_metadata is changed
+          - obj_info.object_info.0.object_data.metadata == another_metadata
 
   always:
     - ansible.builtin.include_tasks: delete_bucket.yml
