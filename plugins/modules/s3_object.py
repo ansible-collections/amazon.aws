@@ -1321,10 +1321,7 @@ def copy_object_to_bucket(module, s3, bucket, obj, encrypt, metadata, validate, 
                 # with metadata that's provided in the request. The default value is 'COPY', therefore when user
                 # specifies a metadata we should set it to 'REPLACE'
                 params.update({"MetadataDirective": "REPLACE"})
-            response = s3.copy_object(aws_retry=True, **params)
-            changed |= response.get("VersionId") is not None or response.get("CopyObjectResult").get(
-                "ETag"
-            ) != d_obj_info.get("ETag")
+            s3.copy_object(aws_retry=True, **params)
             put_object_acl(module, s3, bucket, obj)
             # Tags
             tags, tags_updated = ensure_tags(s3, module, bucket, obj)
