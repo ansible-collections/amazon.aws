@@ -477,7 +477,7 @@ def etag_compare(module, s3, bucket, obj, version=None, local_file=None, content
     if local_file is not None:
         local_etag = calculate_etag(module, local_file, s3_etag, s3, bucket, obj, version)
     else:
-        local_etag = calculate_etag_content(module, content, s3, bucket, obj, s3_etag, version)
+        local_etag = calculate_etag_content(module, content, s3_etag, s3, bucket, obj, version)
     return s3_etag == local_etag
 
 
@@ -1246,7 +1246,8 @@ def calculate_object_etag(module, s3, bucket, obj, head_etag, version=None):
         # object has been created using multipart upload, compute ETag using
         # object content to ensure idempotency.
         contents = _get_object_content(module, s3, bucket, obj, version)
-        etag = calculate_etag_content(module, contents, s3, bucket, obj)
+        # Set ETag to None, to force function to compute ETag from content
+        etag = calculate_etag_content(module, contents, None, s3, bucket, obj)
     return etag
 
 
