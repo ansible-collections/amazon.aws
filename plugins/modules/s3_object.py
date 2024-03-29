@@ -1278,7 +1278,7 @@ def copy_object_to_bucket(module, s3, bucket, obj, encrypt, metadata, validate, 
         else:
             # The destination object does not exists
             do_match = False
-            diff_msg = f"Key '{obj}' does not exist in bucket '{bucket}', would have copy Key '{src_obj}' from bucket '{src_bucket}' if not running in check mode."
+            diff_msg = "Would have copy object if not running in check mode."
 
         if do_match:
             # S3 objects are equals, ensure tags will not be updated
