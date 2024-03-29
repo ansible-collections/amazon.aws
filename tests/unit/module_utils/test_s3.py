@@ -150,12 +150,12 @@ def test_calculate_etag_content(m_checksum_content, etag_multipart):
 
     if not etag_multipart:
         assert digest == s3.calculate_etag_content(
-            module, content, etag, client, s3bucket_name, s3bucket_object, version
+            module, content, client, s3bucket_name, s3bucket_object, etag, version
         )
     else:
         etag = f'"f20e84ac3d0c33cea77b3f29e3323a09-{parts}"'
         m_checksum_content.return_value = digest
-        result = s3.calculate_etag_content(module, content, etag, client, s3bucket_name, s3bucket_object, version)
+        result = s3.calculate_etag_content(module, content, client, s3bucket_name, s3bucket_object, etag, version)
         assert result == digest
 
         m_checksum_content.assert_called_with(client, parts, s3bucket_name, s3bucket_object, version, content)

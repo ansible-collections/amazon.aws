@@ -54,20 +54,32 @@ from ansible.module_utils.common.dict_transformations import snake_dict_to_camel
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import s3_extra_params
+import string
+import random
+
+
+def generate_content(length):
+    return "".join([
+        random.choice(string.ascii_letters + string.digits)
+        for _ in range(length)
+    ])
 
 
 def updload_parts(s3, parts, part_size, **kwargs):
     multiparts = []
-    for part_id in range(1, parts + 1):
-        response = s3.upload_part(Body=b"x" * part_size * 1024 * 1024, PartNumber=part_id, **kwargs)
-
-        multiparts.append(
-            {
-                "PartNumber": part_id,
-                "ETag": response.get("ETag"),
-            }
+    for part_id in range(1, parts+1):
+        response = s3.upload_part(
+            Body=str.encode(generate_content(part_size * 1024 * 1024)),
+            PartNumber=part_id,
+            **kwargs
         )
+
+        multiparts.append({
+            "PartNumber": part_id,
+            "ETag": response.get("ETag"),
+        })
     return multiparts
+
 
 
 def main():

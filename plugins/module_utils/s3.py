@@ -69,11 +69,11 @@ def calculate_etag(module, filename, etag, s3, bucket, obj, version=None):
         return f'"{module.md5(filename)}"'
 
 
-def calculate_etag_content(module, content, etag, s3, bucket, obj, version=None):
+def calculate_etag_content(module, content, s3, bucket, obj, etag=None, version=None):
     if not HAS_MD5:
         return None
 
-    if "-" in etag:
+    if etag and "-" in etag:
         # Multi-part ETag; a hash of the hashes of each part.
         parts = int(etag[1:-1].split("-")[1])
         try:

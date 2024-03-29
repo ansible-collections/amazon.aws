@@ -1071,10 +1071,10 @@
               - "'tags' in result"
               - (result.tags | length) == 0
 
-        - ansible.builtin.include_tasks: copy_recursively.yml
-        - ansible.builtin.include_tasks: copy_object.yml
-        - ansible.builtin.include_tasks: copy_object_acl_disabled_bucket.yml
-        - ansible.builtin.include_tasks: copy_multipart_upload.yml
+    - ansible.builtin.include_tasks: copy_recursively.yml
+    - ansible.builtin.include_tasks: copy_object.yml
+    - ansible.builtin.include_tasks: copy_object_acl_disabled_bucket.yml
+    - ansible.builtin.include_tasks: copy_multipart_upload.yml
   always:
     - name: delete temporary files
       file:
