@@ -131,7 +131,9 @@ def test_inventory_get_options_without_templar(aws_inventory_base, mocker, optio
     }
     aws_inventory_base._options = inventory_options
 
-    super_get_options_patch = mocker.patch("ansible_collections.amazon.aws.plugins.plugin_utils.inventory.BaseInventoryPlugin.get_options")
+    super_get_options_patch = mocker.patch(
+        "ansible_collections.amazon.aws.plugins.plugin_utils.inventory.BaseInventoryPlugin.get_options"
+    )
     super_get_options_patch.return_value = aws_inventory_base._options
 
     options = aws_inventory_base.get_options()
@@ -166,10 +168,14 @@ def test_inventory_get_options_with_templar(aws_inventory_base, mocker, option, 
     }
     aws_inventory_base.templar = AwsUnitTestTemplar(templar_config)
 
-    super_get_options_patch = mocker.patch("ansible_collections.amazon.aws.plugins.plugin_utils.inventory.BaseInventoryPlugin.get_options")
+    super_get_options_patch = mocker.patch(
+        "ansible_collections.amazon.aws.plugins.plugin_utils.inventory.BaseInventoryPlugin.get_options"
+    )
     super_get_options_patch.return_value = aws_inventory_base._options
 
-    super_get_option_patch = mocker.patch("ansible_collections.amazon.aws.plugins.plugin_utils.inventory.BaseInventoryPlugin.get_option")
+    super_get_option_patch = mocker.patch(
+        "ansible_collections.amazon.aws.plugins.plugin_utils.inventory.BaseInventoryPlugin.get_option"
+    )
     super_get_option_patch.side_effect = lambda x, hostvars=None: aws_inventory_base._options.get(x)
 
     if error:
