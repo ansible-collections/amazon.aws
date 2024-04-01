@@ -103,14 +103,27 @@ iam_users:
             type: dict
             returned: if user exists
             sample: '{"Env": "Prod"}'
+        login_profile:
+            description: Detailed login profile information if the user has access to log in from AWS default console. Returns an empty object {} if no access.
+            returned: always
+            type: dict
+            sample: {"create_date": "2024-03-20T12:50:56+00:00", "password_reset_required": false, "user_name": "i_am_a_user"}
 """
 
 from ansible_collections.amazon.aws.plugins.module_utils.iam import AnsibleIAMError
+from ansible_collections.amazon.aws.plugins.module_utils.iam import IAMErrorHandler
 from ansible_collections.amazon.aws.plugins.module_utils.iam import get_iam_group
 from ansible_collections.amazon.aws.plugins.module_utils.iam import get_iam_user
 from ansible_collections.amazon.aws.plugins.module_utils.iam import list_iam_users
 from ansible_collections.amazon.aws.plugins.module_utils.iam import normalize_iam_user
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+
+
+@IAMErrorHandler.list_error_handler("get login profile", {})
+@AWSRetry.jittered_backoff()
+def check_console_access(connection, user_name):
+    return connection.get_login_profile(UserName=user_name)["LoginProfile"]
 
 
 def _list_users(connection, name, group, path):
@@ -136,6 +149,8 @@ def _list_users(connection, name, group, path):
 def list_users(connection, name, group, path):
     users = _list_users(connection, name, group, path)
     users = [u for u in users if u is not None]
+    for user in users:
+        user["LoginProfile"] = check_console_access(connection, user["UserName"])
     return [normalize_iam_user(user) for user in users]
 
 
@@ -147,7 +162,9 @@ def main():
     )
 
     module = AnsibleAWSModule(
-        argument_spec=argument_spec, mutually_exclusive=[["group", "path_prefix"]], supports_check_mode=True
+        argument_spec=argument_spec,
+        mutually_exclusive=[["group", "path_prefix"]],
+        supports_check_mode=True,
     )
 
     name = module.params.get("name")
