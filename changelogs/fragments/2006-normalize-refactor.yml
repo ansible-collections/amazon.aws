@@ -1,3 +1,0 @@
-minor_changes:
-- module_utils.transformations - add ``boto3_resource_to_ansible_dict()`` and ``boto3_resource_list_to_ansible_dict()`` helpers (https://github.com/ansible-collections/amazon.aws/pull/2006).
-- module_utils.iam - refactored normalization functions to use ``boto3_resource_to_ansible_dict()`` and ``boto3_resource_list_to_ansible_dict()`` (https://github.com/ansible-collections/amazon.aws/pull/2006).
