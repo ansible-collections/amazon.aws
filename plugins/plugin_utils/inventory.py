@@ -33,7 +33,10 @@ class AWSInventoryBase(BaseInventoryPlugin, Constructable, Cacheable, AWSPluginB
             "secret_key",
             "session_token",
             "profile",
-            "iam_role_name",
+            "endpoint_url",
+            "assume_role_arn",
+            "region",
+            "regions",
         )
 
         def __init__(self, templar, options):
@@ -48,20 +51,21 @@ class AWSInventoryBase(BaseInventoryPlugin, Constructable, Cacheable, AWSPluginB
 
         def get(self, *args):
             value = self.original_options.get(*args)
-            if not value:
-                return value
-            if args[0] not in self.TEMPLATABLE_OPTIONS:
-                return value
-            if not self.templar.is_template(value):
+            if (
+                not value
+                or not self.templar
+                or args[0] not in self.TEMPLATABLE_OPTIONS
+                or not self.templar.is_template(value)
+            ):
                 return value
 
             return self.templar.template(variable=value, disable_lookups=False)
 
     def get_options(self, *args):
-        original_options = super().get_options(*args)
-        if not self.templar:
-            return original_options
-        return self.TemplatedOptions(self.templar, original_options)
+        return self.TemplatedOptions(self.templar, super().get_options(*args))
+
+    def get_option(self, option, hostvars=None):
+        return self.TemplatedOptions(self.templar, {option: super().get_option(option, hostvars)}).get(option)
 
     def __init__(self):
         super().__init__()
@@ -109,8 +113,7 @@ class AWSInventoryBase(BaseInventoryPlugin, Constructable, Cacheable, AWSPluginB
         }
 
     def _set_frozen_credentials(self):
-        options = self.get_options()
-        iam_role_arn = options.get("assume_role_arn")
+        iam_role_arn = self.get_option("assume_role_arn")
         if iam_role_arn:
             self._freeze_iam_role(iam_role_arn)
 
@@ -136,10 +139,9 @@ class AWSInventoryBase(BaseInventoryPlugin, Constructable, Cacheable, AWSPluginB
         return None
 
     def _boto3_regions(self, service):
-        options = self.get_options()
-
-        if options.get("regions"):
-            return options.get("regions")
+        regions = self.get_option("regions")
+        if regions:
+            return regions
 
         # boto3 has hard coded lists of available regions for resources, however this does bit-rot
         # As such we try to query the service, and fall back to ec2 for a list of regions
@@ -149,7 +151,7 @@ class AWSInventoryBase(BaseInventoryPlugin, Constructable, Cacheable, AWSPluginB
                 return regions
 
         # fallback to local list hardcoded in boto3 if still no regions
-        session = _boto3_session(options.get("profile"))
+        session = _boto3_session(self.get_option("profile"))
         regions = session.get_available_regions(service)
 
         if not regions:

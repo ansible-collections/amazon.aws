@@ -238,6 +238,7 @@ def test_get_tag_hostname(preference, instance, expected):
 )
 def test_inventory_build_include_filters(inventory, _options, expected):
     inventory._options = _options
+    inventory.templar = None
     assert inventory.build_include_filters() == expected
 
 
