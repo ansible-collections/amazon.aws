@@ -97,7 +97,7 @@ options:
           - For streams and Amazon SQS event sources, when I(batch_size) is set to a value greater than C(10), I(maximum_batching_window_in_seconds) defaults to C(1).
           - I(maximum_batching_window_in_seconds) is not supported by FIFO queues.
         type: int
-        version_added: 7.5.0
+        version_added: 7.6.0
     required: true
     type: dict
 extends_documentation_fragment:
