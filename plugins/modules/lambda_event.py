@@ -94,7 +94,7 @@ options:
         description:
           - The maximum amount of time, in seconds, that Lambda spends gathering records before invoking the function.
           - You can configure I(maximum_batching_window_in_seconds) to any value from C(0) seconds to C(300) seconds in increments of seconds.
-          - For streams and Amazon SQS event sources, when I(batch_size) to a value greater than C(10), I(maximum_batching_window_in_seconds) defaults to C(1).
+          - For streams and Amazon SQS event sources, when I(batch_size) is set to a value greater than C(10), I(maximum_batching_window_in_seconds) defaults to C(1).
           - I(maximum_batching_window_in_seconds) is not supported by FIFO queues.
         type: int
         version_added: 7.5.0
@@ -280,14 +280,14 @@ def lambda_event_stream(module, client):
                             msg="maximum_batching_window_in_seconds is not supported by Amazon SQS FIFO event sources."
                         )
                 else:
-                    if source_params["batch_size"] > 10000 or source_params["batch_size"] < 100:
+                    if not (100 <= source_params["batch_size"] <= 10000):
                         module.fail_json(msg="For standard queue batch_size must be between 100 and 10000.")
 
         elif module.params["event_source"].lower() == "stream":
             if not source_params.get("batch_size"):
                 # Default 100 for streams.
                 source_params["batch_size"] = 100
-            elif source_params["batch_size"] > 10000 or source_params["batch_size"] < 100:
+            elif not (100 <= source_params["batch_size"] <= 10000):
                 module.fail_json(msg="batch_size for streams must be between 100 and 10000")
 
         if source_params["batch_size"] > 10 and not source_params.get("maximum_batching_window_in_seconds"):
