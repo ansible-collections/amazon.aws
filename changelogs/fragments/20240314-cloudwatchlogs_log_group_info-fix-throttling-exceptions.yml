@@ -1,3 +1,0 @@
----
-bugfixes:
-  - cloudwatchlogs_log_group_info - Implement exponential backoff when making API calls to prevent throttling exceptions (https://github.com/ansible-collections/amazon.aws/issues/2011).

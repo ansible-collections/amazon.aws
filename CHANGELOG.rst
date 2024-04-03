@@ -4,6 +4,19 @@ amazon.aws Release Notes
 
 .. contents:: Topics
 
+v6.5.4
+======
+
+Release Summary
+---------------
+
+This release includes bugfixes for the ``cloudwatchlogs_log_group_info`` module and the inventory plugins.
+
+Bugfixes
+--------
+
+- cloudwatchlogs_log_group_info - Implement exponential backoff when making API calls to prevent throttling exceptions (https://github.com/ansible-collections/amazon.aws/issues/2011).
+- plugin_utils.inventory - Ensure templated options in lookup plugins are converted (https://github.com/ansible-collections/amazon.aws/issues/1955).
 
 v6.5.3
 ======
@@ -62,7 +75,6 @@ Release Summary
 
 This release is the last planned minor release of ``amazon.aws`` prior to the release of 7.0.0.
 It includes documentation fixes as well as minor changes and bug fixes for the ``ec2_ami`` and ``elb_application_lb_info`` modules.
-
 
 Minor Changes
 -------------
@@ -371,7 +383,6 @@ Release Summary
 
 This release contains a number of bugfixes, new features and new modules.  This is the last planned minor release prior to the release of version 6.0.0.
 
-
 Minor Changes
 -------------
 
@@ -465,7 +476,6 @@ Release Summary
 ---------------
 
 A minor release containing bugfixes for the ``ec2_eni_info`` module and the ``aws_rds`` inventory plugin, as well as improvements to the ``rds_instance`` module.
-
 
 Minor Changes
 -------------
@@ -690,7 +700,6 @@ Release Summary
 
 This release contains a minor bugfix for the ``ec2_vol`` module, some minor work on the ``ec2_key`` module, and various documentation fixes.  This is the last planned release of the 4.x series.
 
-
 Minor Changes
 -------------
 
@@ -729,7 +738,6 @@ Release Summary
 The amazon.aws 4.3.0 release includes a number of minor bug fixes and improvements.
 Following the release of amazon.aws 5.0.0, backports to the 4.x series will be limited to
 security issues and bugfixes.
-
 
 Minor Changes
 -------------
@@ -884,7 +892,6 @@ Release Summary
 ---------------
 
 Following the release of amazon.aws 5.0.0, 3.5.0 is a bugfix release and the final planned release for the 3.x series.
-
 
 Minor Changes
 -------------
