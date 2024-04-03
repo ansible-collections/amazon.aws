@@ -2732,7 +2732,7 @@ releases:
       - iam_user_info - the ``path`` parameter has been renamed ``path_prefix`` for
         consistency with other IAM modules, ``path`` remains as an alias. No change
         to playbooks is required (https://github.com/ansible-collections/amazon.aws/pull/1933).
-    release_summary: This release includes new features and a bugfix.
+      release_summary: This release includes new features and a bugfix.
     fragments:
     - 1918-ec2_instance-add-support-to-modify-metadata-options.yml
     - 20231206-iam_user_path.yml
@@ -2768,3 +2768,77 @@ releases:
     - 20240202-backup_plan-idempotency.yml
     - release_summary.yml
     release_date: '2024-02-06'
+  7.4.0:
+    changes:
+      bugfixes:
+      - cloudwatchevent_rule - Fix to avoid adding quotes to JSON input for provided
+        input_template (https://github.com/ansible-collections/amazon.aws/pull/1883).
+      - lookup/secretsmanager_secret - fix the issue when the nested secret is missing
+        and on_missing is set to warn, the lookup was raising an error instead of
+        a warning message (https://github.com/ansible-collections/amazon.aws/issues/1781).
+      - module_utils/elbv2 - Fix issue when creating or modifying Load balancer rule
+        type authenticate-oidc using ``ClientSecret`` parameter and ``UseExistingClientSecret=true``
+        (https://github.com/ansible-collections/amazon.aws/issues/1877).
+      deprecated_features:
+      - iam_role_info - in a release after 2026-05-01 paths must begin and end with
+        ``/`` (https://github.com/ansible-collections/amazon.aws/pull/1998).
+      minor_changes:
+      - AnsibeAWSModule - added ``fail_json_aws_error()`` as a wrapper for ``fail_json()``
+        and ``fail_json_aws()`` when passed an ``AnsibleAWSError`` exception (https://github.com/ansible-collections/amazon.aws/pull/1997).
+      - iam_access_key - refactored code to use ``AnsibleIAMError`` and ``IAMErrorHandler``
+        as well as moving shared code into module_utils.iam (https://github.com/ansible-collections/amazon.aws/pull/1998).
+      - iam_access_key_info - refactored code to use ``AnsibleIAMError`` and ``IAMErrorHandler``
+        as well as moving shared code into module_utils.iam (https://github.com/ansible-collections/amazon.aws/pull/1998).
+      - iam_group - refactored code to use ``AnsibleIAMError`` and ``IAMErrorHandler``
+        as well as moving shared code into module_utils.iam (https://github.com/ansible-collections/amazon.aws/pull/1998).
+      - iam_instance_profile - refactored code to use ``AnsibleIAMError`` and ``IAMErrorHandler``
+        as well as moving shared code into module_utils.iam (https://github.com/ansible-collections/amazon.aws/pull/1998).
+      - iam_instance_profile_info - refactored code to use ``AnsibleIAMError`` and
+        ``IAMErrorHandler`` as well as moving shared code into module_utils.iam (https://github.com/ansible-collections/amazon.aws/pull/1998).
+      - iam_managed_policy - refactored code to use ``AnsibleIAMError`` and ``IAMErrorHandler``
+        as well as moving shared code into module_utils.iam (https://github.com/ansible-collections/amazon.aws/pull/1998).
+      - iam_mfa_device_info - refactored code to use ``AnsibleIAMError`` and ``IAMErrorHandler``
+        as well as moving shared code into module_utils.iam (https://github.com/ansible-collections/amazon.aws/pull/1998).
+      - iam_role - refactored code to use ``AnsibleIAMError`` and ``IAMErrorHandler``
+        as well as moving shared code into module_utils.iam (https://github.com/ansible-collections/amazon.aws/pull/1998).
+      - iam_role_info - refactored code to use ``AnsibleIAMError`` and ``IAMErrorHandler``
+        as well as moving shared code into module_utils.iam (https://github.com/ansible-collections/amazon.aws/pull/1998).
+      - iam_user - refactored code to use ``AnsibleIAMError`` and ``IAMErrorHandler``
+        as well as moving shared code into module_utils.iam (https://github.com/ansible-collections/amazon.aws/pull/1998).
+      - iam_user_info - refactored code to use ``AnsibleIAMError`` and ``IAMErrorHandler``
+        as well as moving shared code into module_utils.iam (https://github.com/ansible-collections/amazon.aws/pull/1998).
+      release_summary: This release brings several bugfixes and minor changes. It
+        also introduces a deprecation for the ``iam_role_info`` plugin.
+    fragments:
+    - 1883-cloudwatchevent_rule-fix-json-input-handling-for-input_template.yml
+    - 20240124-module_utils-elbv2-fix-issue-with-authenticated-oidc.yml
+    - 20240212-lookup-secretsmanager_secret-fix-issue-when-nested-is-missing-and-on_missing-is-set-to-warn.yaml
+    - 20240227-fail_aws_error.yml
+    - 20240227-iam-refactor.yml
+    - release_summary.yml
+    release_date: '2024-03-05'
+  7.5.0:
+    changes:
+      bugfixes:
+      - cloudwatchlogs_log_group_info - Implement exponential backoff when making
+        API calls to prevent throttling exceptions (https://github.com/ansible-collections/amazon.aws/issues/2011).
+      - plugin_utils.inventory - Ensure templated options in lookup plugins are converted
+        (https://github.com/ansible-collections/amazon.aws/issues/1955).
+      - s3_object - Fix the issue when copying an object with overriding metadata.
+        (https://github.com/ansible-collections/amazon.aws/issues/1991).
+      minor_changes:
+      - iam_user_info - Add ``login_profile`` to return info that is get from a user,
+        to know if they can login from AWS console (https://github.com/ansible-collections/amazon.aws/pull/2012).
+      - module_utils.iam - refactored normalization functions to use ``boto3_resource_to_ansible_dict()``
+        and ``boto3_resource_list_to_ansible_dict()`` (https://github.com/ansible-collections/amazon.aws/pull/2006).
+      - module_utils.transformations - add ``boto3_resource_to_ansible_dict()`` and
+        ``boto3_resource_list_to_ansible_dict()`` helpers (https://github.com/ansible-collections/amazon.aws/pull/2006).
+      release_summary: This release includes a new feature for the ``iam_user_info``
+        module, bugfixes for the ``cloudwatchlogs_log_group_info`` and ``s3_object``
+        modules and the inventory plugins, and some internal refactoring of ``module_utils``.
+    fragments:
+    - 2006-normalize-refactor.yml
+    - 20240314-cloudwatchlogs_log_group_info-fix-throttling-exceptions.yml
+    - 20240314-s3_object-copy-mode-with-metadata.yml
+    - 20240321-iam-user-info.yml
+    release_date: '2024-04-03'

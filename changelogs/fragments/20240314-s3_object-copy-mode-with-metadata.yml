@@ -1,3 +1,0 @@
----
-bugfixes:
-  - s3_object - Fix the issue when copying an object with overriding metadata. (https://github.com/ansible-collections/amazon.aws/issues/1991).
