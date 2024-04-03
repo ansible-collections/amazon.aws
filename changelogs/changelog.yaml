@@ -2478,6 +2478,18 @@ releases:
     - release_summary.yml
     - remove_rendundant_workflow.yml
     release_date: '2024-03-06'
+  6.5.4:
+    changes:
+      bugfixes:
+      - cloudwatchlogs_log_group_info - Implement exponential backoff when making
+        API calls to prevent throttling exceptions (https://github.com/ansible-collections/amazon.aws/issues/2011).
+      - plugin_utils.inventory - Ensure templated options in lookup plugins are converted (https://github.com/ansible-collections/amazon.aws/issues/1955).
+      release_summary: This release includes bugfixes for the ``cloudwatchlogs_log_group_info``
+        module and the inventory plugins.
+    fragments:
+    - 20240314-cloudwatchlogs_log_group_info-fix-throttling-exceptions.yml
+    - 6.5.4-release-summary.yml
+    release_date: '2024-04-03'
   7.0.0:
     changes:
       breaking_changes:

@@ -244,6 +244,20 @@ New Modules
 - ec2_import_image_info - Gather information about import virtual machine tasks
 - rds_global_cluster_info - Obtain information about Aurora global database clusters
 
+v6.5.4
+======
+
+Release Summary
+---------------
+
+This release includes bugfixes for the ``cloudwatchlogs_log_group_info`` module and the inventory plugins.
+
+Bugfixes
+--------
+
+- cloudwatchlogs_log_group_info - Implement exponential backoff when making API calls to prevent throttling exceptions (https://github.com/ansible-collections/amazon.aws/issues/2011).
+- plugin_utils.inventory - Ensure templated options in lookup plugins are converted (https://github.com/ansible-collections/amazon.aws/issues/1955).
+
 v6.5.3
 ======
 
