@@ -1,0 +1,14 @@
+deprecated_features:
+- aws_ec2 inventory plugin - removal of the previously deprecated ``include_extra_api_calls`` option has been assigned to release 9.0.0 (https://github.com/ansible-collections/amazon.aws/pull/2040).
+- iam_policy - removal of the previously deprecated ``policies`` return key has been assigned to release 9.0.0.  Use the ``policy_names`` return key instead (https://github.com/ansible-collections/amazon.aws/pull/2040).
+
+removed_features:
+- module_utils.policy - the previously deprecated ``sort_json_policy_dict()`` function has been removed, consider using ``compare_policies()`` instead (https://github.com/ansible-collections/amazon.aws/pull/2040).
+- iam_role - the ``iam_role.assume_role_policy_document_raw`` return value has been deprecated.  ``iam_role.assume_role_policy_document`` now returns the same format as ``iam_role.assume_role_policy_document_raw`` (https://github.com/ansible-collections/amazon.aws/pull/2040).
+- iam_role_info - the ``iam_role.assume_role_policy_document_raw`` return value has been deprecated.  ``iam_role.assume_role_policy_document`` now returns the same format as ``iam_role.assume_role_policy_document_raw`` (https://github.com/ansible-collections/amazon.aws/pull/2040).
+
+breaking_changes:
+- iam_role - ``iam_role.assume_role_policy_document`` is no longer converted from CamelCase to snake_case (https://github.com/ansible-collections/amazon.aws/pull/2040).
+- iam_role_info - ``iam_role.assume_role_policy_document`` is no longer converted from CamelCase to snake_case (https://github.com/ansible-collections/amazon.aws/pull/2040).
+- kms_key - the ``policies`` return value has been renamed to ``key_policies`` the contents has not been changed (https://github.com/ansible-collections/amazon.aws/pull/2040).
+- kms_key_info - the ``policies`` return value has been renamed to ``key_policies`` the contents has not been changed (https://github.com/ansible-collections/amazon.aws/pull/2040).
