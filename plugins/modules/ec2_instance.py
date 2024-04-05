@@ -359,7 +359,9 @@ options:
         type: int
         required: false
       tenancy:
-        description: Type of tenancy to allow an instance to use. Default is shared tenancy. Dedicated tenancy will incur additional charges.
+        description:
+          - Type of tenancy to allow an instance to use. Default is shared tenancy. Dedicated tenancy will incur additional charges.
+          - Support for I(tenancy=host) was added in amazon.aws 7.6.0.
         type: str
         required: false
         choices: ['dedicated', 'default', 'host']
