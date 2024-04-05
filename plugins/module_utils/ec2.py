@@ -70,7 +70,6 @@ from .modules import _aws_common_argument_spec as aws_common_argument_spec  # py
 from .modules import aws_argument_spec as ec2_argument_spec  # pylint: disable=unused-import
 
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.policy
-from .policy import _py3cmp as py3cmp  # pylint: disable=unused-import
 from .policy import compare_policies  # pylint: disable=unused-import
 
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.retries

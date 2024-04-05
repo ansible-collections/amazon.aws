@@ -174,8 +174,8 @@ iam_role:
             description:
               - the policy that grants an entity permission to assume the role
               - |
-                note: the case of keys in this dictionary are currently converted from CamelCase to
-                snake_case.  In a release after 2023-12-01 this behaviour will change
+                Note: the case of keys in this dictionary are no longer converted from CamelCase to
+                snake_case.  This behaviour changed in release 8.0.0.
             type: dict
             returned: always
             sample: {
@@ -192,23 +192,14 @@ iam_role:
                         'version': '2012-10-17'
                     }
         assume_role_policy_document_raw:
-            description: the policy that grants an entity permission to assume the role
+            description:
+              - |
+                Note: this return value has been deprecated and will be removed in a release after
+                2026-05-01.  assume_role_policy_document and assume_role_policy_document_raw now use
+                the same format.
             type: dict
             returned: always
             version_added: 5.3.0
-            sample: {
-                        'Statement': [
-                            {
-                                'Action': 'sts:AssumeRole',
-                                'Effect': 'Allow',
-                                'Principal': {
-                                    'Service': 'ec2.amazonaws.com'
-                                },
-                                'Sid': ''
-                            }
-                        ],
-                        'Version': '2012-10-17'
-                    }
 
         attached_policies:
             description: a list of dicts containing the name and ARN of the managed IAM policies attached to the role
@@ -504,7 +495,7 @@ def create_or_update_role(module, client):
     role["AttachedPolicies"] = list_iam_role_attached_policies(client, role_name)
     camel_role = normalize_iam_role(role, _v7_compat=True)
 
-    module.exit_json(changed=changed, iam_role=camel_role, **camel_role)
+    module.exit_json(changed=changed, iam_role=camel_role)
 
 
 def create_instance_profiles(client, check_mode, role_name, path):
@@ -658,17 +649,10 @@ def main():
     )
 
     module.deprecate(
-        "All return values other than iam_role and changed have been deprecated and "
-        "will be removed in a release after 2023-12-01.",
-        date="2023-12-01",
-        collection_name="amazon.aws",
-    )
-    module.deprecate(
-        "In a release after 2023-12-01 the contents of iam_role.assume_role_policy_document "
-        "will no longer be converted from CamelCase to snake_case.  The "
-        "iam_role.assume_role_policy_document_raw return value already returns the "
-        "policy document in this future format.",
-        date="2023-12-01",
+        "In a release after 2026-05-01 iam_role.assume_role_policy_document_raw "
+        "will no longer be returned.  Since release 8.0.0 assume_role_policy_document "
+        "has been returned iwith the same format as iam_role.assume_role_policy_document_raw",
+        date="2026-05-01",
         collection_name="amazon.aws",
     )
 

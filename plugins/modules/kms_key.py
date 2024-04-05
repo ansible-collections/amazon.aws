@@ -156,6 +156,7 @@ notes:
     This can cause issues when running duplicate tasks in succession or using the M(amazon.aws.kms_key_info) module to fetch key metadata
     shortly after modifying keys.
     For this reason, it is recommended to use the return data from this module (M(amazon.aws.kms_key)) to fetch a key's metadata.
+  - The C(policies) return key was removed in amazon.aws release 8.0.0.
 """
 
 EXAMPLES = r"""
@@ -281,41 +282,6 @@ aliases:
   sample:
     - aws/acm
     - aws/ebs
-policies:
-  description: List of policy documents for the key. Empty when access is denied even if there are policies.
-  type: list
-  returned: always
-  elements: str
-  sample:
-    Version: "2012-10-17"
-    Id: "auto-ebs-2"
-    Statement:
-    - Sid: "Allow access through EBS for all principals in the account that are authorized to use EBS"
-      Effect: "Allow"
-      Principal:
-        AWS: "*"
-      Action:
-      - "kms:Encrypt"
-      - "kms:Decrypt"
-      - "kms:ReEncrypt*"
-      - "kms:GenerateDataKey*"
-      - "kms:CreateGrant"
-      - "kms:DescribeKey"
-      Resource: "*"
-      Condition:
-        StringEquals:
-          kms:CallerAccount: "123456789012"
-          kms:ViaService: "ec2.ap-southeast-2.amazonaws.com"
-    - Sid: "Allow direct access to key metadata to the account"
-      Effect: "Allow"
-      Principal:
-        AWS: "arn:aws:iam::123456789012:root"
-      Action:
-      - "kms:Describe*"
-      - "kms:Get*"
-      - "kms:List*"
-      - "kms:RevokeGrant"
-      Resource: "*"
 key_policies:
   description: List of policy documents for the key. Empty when access is denied even if there are policies.
   type: list
@@ -584,8 +550,8 @@ def get_key_details(connection, module, key_id):
         module.fail_json_aws(e, msg="Failed to obtain key grants")
     tags = get_kms_tags(connection, module, key_id)
     result["tags"] = boto3_tag_list_to_ansible_dict(tags, "TagKey", "TagValue")
-    result["policies"] = get_kms_policies(connection, module, key_id)
-    result["key_policies"] = [json.loads(policy) for policy in result["policies"]]
+    policies = get_kms_policies(connection, module, key_id)
+    result["key_policies"] = [json.loads(policy) for policy in policies]
     return result
 
 
@@ -1006,15 +972,6 @@ def main():
     )
 
     kms = module.client("kms")
-
-    module.deprecate(
-        (
-            "The 'policies' return key is deprecated and will be replaced by 'key_policies'. Both values are returned"
-            " for now."
-        ),
-        date="2024-05-01",
-        collection_name="amazon.aws",
-    )
 
     key_metadata = fetch_key_metadata(kms, module, module.params.get("key_id"), module.params.get("alias"))
     validate_params(module, key_metadata)

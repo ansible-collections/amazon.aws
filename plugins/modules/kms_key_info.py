@@ -49,6 +49,8 @@ options:
     description: Whether to get full details (tags, grants etc.) of keys pending deletion.
     default: False
     type: bool
+notes:
+  - The C(policies) return key was removed in amazon.aws release 8.0.0.
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
@@ -154,41 +156,6 @@ kms_keys:
       sample:
         Name: myKey
         Purpose: protecting_stuff
-    policies:
-      description: List of policy documents for the key. Empty when access is denied even if there are policies.
-      type: list
-      returned: always
-      elements: str
-      sample:
-        Version: "2012-10-17"
-        Id: "auto-ebs-2"
-        Statement:
-        - Sid: "Allow access through EBS for all principals in the account that are authorized to use EBS"
-          Effect: "Allow"
-          Principal:
-            AWS: "*"
-          Action:
-          - "kms:Encrypt"
-          - "kms:Decrypt"
-          - "kms:ReEncrypt*"
-          - "kms:GenerateDataKey*"
-          - "kms:CreateGrant"
-          - "kms:DescribeKey"
-          Resource: "*"
-          Condition:
-            StringEquals:
-              kms:CallerAccount: "123456789012"
-              kms:ViaService: "ec2.ap-southeast-2.amazonaws.com"
-        - Sid: "Allow direct access to key metadata to the account"
-          Effect: "Allow"
-          Principal:
-            AWS: "arn:aws:iam::123456789012:root"
-          Action:
-          - "kms:Describe*"
-          - "kms:Get*"
-          - "kms:List*"
-          - "kms:RevokeGrant"
-          Resource: "*"
     key_policies:
       description: List of policy documents for the key. Empty when access is denied even if there are policies.
       type: list
@@ -480,8 +447,8 @@ def get_key_details(connection, module, key_id, tokens=None):
 
     result = camel_dict_to_snake_dict(result)
     result["tags"] = boto3_tag_list_to_ansible_dict(tags, "TagKey", "TagValue")
-    result["policies"] = get_kms_policies(connection, module, key_id)
-    result["key_policies"] = [json.loads(policy) for policy in result["policies"]]
+    policies = get_kms_policies(connection, module, key_id)
+    result["key_policies"] = [json.loads(policy) for policy in policies]
     return result
 
 
@@ -522,15 +489,6 @@ def main():
         connection = module.client("kms")
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to connect to AWS")
-
-    module.deprecate(
-        (
-            "The 'policies' return key is deprecated and will be replaced by 'key_policies'. Both values are returned"
-            " for now."
-        ),
-        date="2024-05-01",
-        collection_name="amazon.aws",
-    )
 
     all_keys = get_kms_info(connection, module)
     filtered_keys = [key for key in all_keys if key_matches_filters(key, module.params["filters"])]
