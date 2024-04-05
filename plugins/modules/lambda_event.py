@@ -94,7 +94,8 @@ options:
         description:
           - The maximum amount of time, in seconds, that Lambda spends gathering records before invoking the function.
           - You can configure I(maximum_batching_window_in_seconds) to any value from C(0) seconds to C(300) seconds in increments of seconds.
-          - For streams and Amazon SQS event sources, when I(batch_size) is set to a value greater than C(10), I(maximum_batching_window_in_seconds) defaults to C(1).
+          - For streams and Amazon SQS event sources, when I(batch_size) is set to a value greater than C(10), I(maximum_batching_window_in_seconds)
+            defaults to C(1).
           - I(maximum_batching_window_in_seconds) is not supported by FIFO queues.
         type: int
         version_added: 7.6.0
