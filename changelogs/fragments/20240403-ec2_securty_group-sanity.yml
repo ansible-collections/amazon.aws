@@ -1,0 +1,2 @@
+trivial:
+  - ec2_securty_group - Use ``yield from`` in order to fix sanity errors.
