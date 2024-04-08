@@ -372,18 +372,139 @@ from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 
 
+
+def handle_bucket_versioning(s3_client, module, name):
+    versioning = module.params.get("versioning")
+    versioning_changed = False
+    versioning_status = {}
+
+    try:
+        versioning_status = get_bucket_versioning(s3_client, name)
+    except is_boto3_error_code(["NotImplemented", "XNotImplemented"]) as e:
+        if versioning is not None:
+            module.fail_json_aws(e, msg="Bucket versioning is not supported by the current S3 Endpoint")
+    except is_boto3_error_code("AccessDenied") as e:
+        if versioning is not None:
+            module.fail_json_aws(e, msg="Failed to get bucket versioning")
+        module.debug("AccessDenied fetching bucket versioning")
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Failed to get bucket versioning")
+    else:
+        if versioning is not None:
+            required_versioning = None
+            if versioning and versioning_status.get("Status") != "Enabled":
+                required_versioning = "Enabled"
+            elif not versioning and versioning_status.get("Status") == "Enabled":
+                required_versioning = "Suspended"
+
+            if required_versioning:
+                try:
+                    put_bucket_versioning(s3_client, name, required_versioning)
+                    versioning_changed = True
+                except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+                    module.fail_json_aws(e, msg="Failed to update bucket versioning")
+
+                versioning_status = wait_versioning_is_applied(module, s3_client, name, required_versioning)
+
+        versioning_result = {
+            "Versioning": versioning_status.get("Status", "Disabled"),
+            "MfaDelete": versioning_status.get("MFADelete", "Disabled"),
+        }
+        # This output format is there to ensure compatibility with previous versions of the module
+        return versioning_changed, versioning_result
+
+
+def handle_bucket_requester_pays(s3_client, module, name):
+    requester_pays = module.params.get("requester_pays")
+    requester_pays_changed = False
+    requester_pays_status = {}
+    try:
+        requester_pays_status = get_bucket_request_payment(s3_client, name)
+    except is_boto3_error_code(["NotImplemented", "XNotImplemented"]) as e:
+        if requester_pays is not None:
+            module.fail_json_aws(e, msg="Bucket request payment is not supported by the current S3 Endpoint")
+    except is_boto3_error_code("AccessDenied") as e:
+        if requester_pays is not None:
+            module.fail_json_aws(e, msg="Failed to get bucket request payment")
+        module.debug("AccessDenied fetching bucket request payment")
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Failed to get bucket request payment")
+    else:
+        if requester_pays is not None:
+            payer = "Requester" if requester_pays else "BucketOwner"
+            if requester_pays_status != payer:
+                put_bucket_request_payment(s3_client, name, payer)
+                requester_pays_status = wait_payer_is_applied(module, s3_client, name, payer, should_fail=False)
+                if requester_pays_status is None:
+                    # We have seen that it happens quite a lot of times that the put request was not taken into
+                    # account, so we retry one more time
+                    put_bucket_request_payment(s3_client, name, payer)
+                    requester_pays_status = wait_payer_is_applied(module, s3_client, name, payer, should_fail=True)
+                changed = True
+
+    return requester_pays_changed, requester_pays
+
+
+def handle_bucket_public_access_config(s3_client, module, name):
+    public_access = module.params.get("public_access")
+    delete_public_access = module.params.get("delete_public_access")
+    public_access_changed = False
+    public_access_result = {}
+
+    current_public_access = {}
+    try:
+        current_public_access = get_bucket_public_access(s3_client, name)
+    except is_boto3_error_code(["NotImplemented", "XNotImplemented"]) as e:
+        if public_access is not None:
+            module.fail_json_aws(e, msg="Bucket public access settings are not supported by the current S3 Endpoint")
+    except is_boto3_error_code("AccessDenied") as e:
+        if public_access is not None:
+            module.fail_json_aws(e, msg="Failed to get bucket public access configuration")
+        module.debug("AccessDenied fetching bucket public access settings")
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Failed to get bucket public access configuration")
+    else:
+        # -- Create / Update public access block
+        if public_access is not None:
+            camel_public_block = snake_dict_to_camel_dict(public_access, capitalize_first=True)
+
+            if current_public_access == camel_public_block:
+                public_access_result = current_public_access
+            else:
+                put_bucket_public_access(s3_client, name, camel_public_block)
+                public_access_changed = True
+                public_access_result = camel_public_block
+
+        # -- Delete public access block
+        if delete_public_access:
+            if current_public_access == {}:
+                public_access_result = current_public_access
+            else:
+                delete_bucket_public_access(s3_client, name)
+                public_access_changed = True
+                public_access_result = {}
+
+    # Return the result
+    return public_access_changed, public_access_result
+
+
 def create_or_update_bucket(s3_client, module):
     policy = module.params.get("policy")
     name = module.params.get("name")
-    requester_pays = module.params.get("requester_pays")
     tags = module.params.get("tags")
     purge_tags = module.params.get("purge_tags")
-    versioning = module.params.get("versioning")
     encryption = module.params.get("encryption")
     encryption_key_id = module.params.get("encryption_key_id")
     bucket_key_enabled = module.params.get("bucket_key_enabled")
-    public_access = module.params.get("public_access")
-    delete_public_access = module.params.get("delete_public_access")
     delete_object_ownership = module.params.get("delete_object_ownership")
     object_ownership = module.params.get("object_ownership")
     object_lock_enabled = module.params.get("object_lock_enabled")
@@ -413,109 +534,16 @@ def create_or_update_bucket(s3_client, module):
             module.fail_json_aws(e, msg="Failed while creating bucket")
 
     # Versioning
-    try:
-        versioning_status = get_bucket_versioning(s3_client, name)
-    except is_boto3_error_code(["NotImplemented", "XNotImplemented"]) as e:
-        if versioning is not None:
-            module.fail_json_aws(e, msg="Bucket versioning is not supported by the current S3 Endpoint")
-    except is_boto3_error_code("AccessDenied") as e:
-        if versioning is not None:
-            module.fail_json_aws(e, msg="Failed to get bucket versioning")
-        module.debug("AccessDenied fetching bucket versioning")
-    except (
-        botocore.exceptions.BotoCoreError,
-        botocore.exceptions.ClientError,
-    ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Failed to get bucket versioning")
-    else:
-        if versioning is not None:
-            required_versioning = None
-            if versioning and versioning_status.get("Status") != "Enabled":
-                required_versioning = "Enabled"
-            elif not versioning and versioning_status.get("Status") == "Enabled":
-                required_versioning = "Suspended"
-
-            if required_versioning:
-                try:
-                    put_bucket_versioning(s3_client, name, required_versioning)
-                    changed = True
-                except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-                    module.fail_json_aws(e, msg="Failed to update bucket versioning")
-
-                versioning_status = wait_versioning_is_applied(module, s3_client, name, required_versioning)
-
-        # This output format is there to ensure compatibility with previous versions of the module
-        result["versioning"] = {
-            "Versioning": versioning_status.get("Status", "Disabled"),
-            "MfaDelete": versioning_status.get("MFADelete", "Disabled"),
-        }
+    versioning_changed, versioning_result = handle_bucket_versioning(s3_client, module, name)
+    result["versioning"] = versioning_result
 
     # Requester pays
-    try:
-        requester_pays_status = get_bucket_request_payment(s3_client, name)
-    except is_boto3_error_code(["NotImplemented", "XNotImplemented"]) as e:
-        if requester_pays is not None:
-            module.fail_json_aws(e, msg="Bucket request payment is not supported by the current S3 Endpoint")
-    except is_boto3_error_code("AccessDenied") as e:
-        if requester_pays is not None:
-            module.fail_json_aws(e, msg="Failed to get bucket request payment")
-        module.debug("AccessDenied fetching bucket request payment")
-    except (
-        botocore.exceptions.BotoCoreError,
-        botocore.exceptions.ClientError,
-    ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Failed to get bucket request payment")
-    else:
-        if requester_pays is not None:
-            payer = "Requester" if requester_pays else "BucketOwner"
-            if requester_pays_status != payer:
-                put_bucket_request_payment(s3_client, name, payer)
-                requester_pays_status = wait_payer_is_applied(module, s3_client, name, payer, should_fail=False)
-                if requester_pays_status is None:
-                    # We have seen that it happens quite a lot of times that the put request was not taken into
-                    # account, so we retry one more time
-                    put_bucket_request_payment(s3_client, name, payer)
-                    requester_pays_status = wait_payer_is_applied(module, s3_client, name, payer, should_fail=True)
-                changed = True
-
-        result["requester_pays"] = requester_pays
+    requester_pays_changed, requester_pays_result = handle_bucket_requester_pays(s3_client, module, name)
+    result["requester_pays"] = requester_pays_result
 
     # Public access clock configuration
-    current_public_access = {}
-    try:
-        current_public_access = get_bucket_public_access(s3_client, name)
-    except is_boto3_error_code(["NotImplemented", "XNotImplemented"]) as e:
-        if public_access is not None:
-            module.fail_json_aws(e, msg="Bucket public access settings are not supported by the current S3 Endpoint")
-    except is_boto3_error_code("AccessDenied") as e:
-        if public_access is not None:
-            module.fail_json_aws(e, msg="Failed to get bucket public access configuration")
-        module.debug("AccessDenied fetching bucket public access settings")
-    except (
-        botocore.exceptions.BotoCoreError,
-        botocore.exceptions.ClientError,
-    ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Failed to get bucket public access configuration")
-    else:
-        # -- Create / Update public access block
-        if public_access is not None:
-            camel_public_block = snake_dict_to_camel_dict(public_access, capitalize_first=True)
-
-            if current_public_access == camel_public_block:
-                result["public_access_block"] = current_public_access
-            else:
-                put_bucket_public_access(s3_client, name, camel_public_block)
-                changed = True
-                result["public_access_block"] = camel_public_block
-
-        # -- Delete public access block
-        if delete_public_access:
-            if current_public_access == {}:
-                result["public_access_block"] = current_public_access
-            else:
-                delete_bucket_public_access(s3_client, name)
-                changed = True
-                result["public_access_block"] = {}
+    public_access_config_changed, public_access_config_result = handle_bucket_public_access_config(s3_client, module, name)
+    result["public_access_block"] = public_access_config_result
 
     # Policy
     try:
@@ -730,6 +758,7 @@ def create_or_update_bucket(s3_client, module):
                 module.fail_json(msg="Enabling object lock for existing buckets is not supported")
 
     # Module exit
+    changed = changed or versioning_changed or requester_pays_changed or public_access_config_changed
     module.exit_json(changed=changed, name=name, **result)
 
 
