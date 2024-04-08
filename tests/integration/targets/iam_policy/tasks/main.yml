@@ -19,7 +19,7 @@
           - result is changed
 
     - name: Create role for tests
-      community.aws.iam_role:
+      amazon.aws.iam_role:
         state: present
         name: "{{ iam_name }}"
         assume_role_policy_document: "{{ lookup('file','no_trust.json') }}"
@@ -30,7 +30,7 @@
           - result is changed
 
     - name: Create group for tests
-      community.aws.iam_group:
+      amazon.aws.iam_group:
         state: present
         name: "{{ iam_name }}"
       register: result
@@ -60,12 +60,12 @@
         name: "{{ iam_name }}"
       ignore_errors: true
     - name: Remove role
-      community.aws.iam_role:
+      amazon.aws.iam_role:
         state: absent
         name: "{{ iam_name }}"
       ignore_errors: true
     - name: Remove group
-      community.aws.iam_group:
+      amazon.aws.iam_group:
         state: absent
         name: "{{ iam_name }}"
       ignore_errors: true

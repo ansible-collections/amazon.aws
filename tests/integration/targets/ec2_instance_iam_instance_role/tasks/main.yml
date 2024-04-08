@@ -7,7 +7,7 @@
       region: "{{ aws_region }}"
   block:
     - name: Create IAM role for test
-      community.aws.iam_role:
+      amazon.aws.iam_role:
         state: present
         name: "{{ first_iam_role }}"
         assume_role_policy_document: "{{ lookup('file','assume-role-policy.json') }}"
@@ -17,7 +17,7 @@
       register: iam_role
 
     - name: Create second IAM role for test
-      community.aws.iam_role:
+      amazon.aws.iam_role:
         state: present
         name: "{{ second_iam_role }}"
         assume_role_policy_document: "{{ lookup('file','assume-role-policy.json') }}"
@@ -46,7 +46,7 @@
 
     - ansible.builtin.assert:
         that:
-          - instance_with_role.instances[0].iam_instance_profile.arn == iam_role.arn.replace(":role/", ":instance-profile/")
+          - instance_with_role.instances[0].iam_instance_profile.arn == iam_role.iam_role.arn.replace(":role/", ":instance-profile/")
 
     - name: Make instance with an instance_role(check mode)
       amazon.aws.ec2_instance:
@@ -55,7 +55,7 @@
         image_id: "{{ ec2_ami_id }}"
         security_groups: "{{ sg.group_id }}"
         instance_type: "{{ ec2_instance_type }}"
-        instance_role: "{{ iam_role.arn.replace(':role/', ':instance-profile/') }}"
+        instance_role: "{{ iam_role.iam_role.arn.replace(':role/', ':instance-profile/') }}"
         vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         tags:
           TestId: "{{ ec2_instance_tag_TestId }}"
@@ -86,7 +86,7 @@
         image_id: "{{ ec2_ami_id }}"
         security_groups: "{{ sg.group_id }}"
         instance_type: "{{ ec2_instance_type }}"
-        instance_role: "{{ iam_role_2.arn.replace(':role/', ':instance-profile/') }}"
+        instance_role: "{{ iam_role_2.iam_role.arn.replace(':role/', ':instance-profile/') }}"
         vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         tags:
           TestId: "{{ ec2_instance_tag_TestId }}"
@@ -105,7 +105,7 @@
 
     - ansible.builtin.assert:
         that:
-          - updates_instance_info.instances[0].iam_instance_profile.arn == iam_role_2.arn.replace(":role/", ":instance-profile/")
+          - updates_instance_info.instances[0].iam_instance_profile.arn == iam_role_2.iam_role.arn.replace(":role/", ":instance-profile/")
           - updates_instance_info.instances[0].instance_id == instance_with_role.instances[0].instance_id
 
   always:
@@ -119,7 +119,7 @@
       ignore_errors: true
 
     - name: Delete IAM role for test
-      community.aws.iam_role:
+      amazon.aws.iam_role:
         state: absent
         name: "{{ item }}"
         delete_instance_profile: true

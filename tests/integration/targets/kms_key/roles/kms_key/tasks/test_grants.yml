@@ -10,7 +10,7 @@
       amazon.aws.aws_caller_info:
       register: aws_caller_info
     - name: Create an IAM role that can do nothing
-      community.aws.iam_role:
+      amazon.aws.iam_role:
         name: "{{ kms_key_alias }}"
         state: present
         assume_role_policy_document:
@@ -353,7 +353,7 @@
         pending_window: 7
       ignore_errors: true # noqa: ignore-errors
     - name: Remove the IAM role
-      community.aws.iam_role:
+      amazon.aws.iam_role:
         name: "{{ kms_key_alias }}"
         state: absent
       ignore_errors: true # noqa: ignore-errors

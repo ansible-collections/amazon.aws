@@ -2,12 +2,12 @@
 - name: Try running some rapid fire create/delete tests
   block:
     - name: Minimal IAM Role without instance profile (rapid)
-      community.aws.iam_role:
+      amazon.aws.iam_role:
         name: "{{ test_role }}"
         create_instance_profile: false
       register: iam_role
     - name: Minimal IAM Role without instance profile (rapid)
-      community.aws.iam_role:
+      amazon.aws.iam_role:
         name: "{{ test_role }}"
         create_instance_profile: false
       register: iam_role_again
@@ -17,12 +17,12 @@
           - iam_role_again is not changed
 
     - name: Remove IAM Role (rapid)
-      community.aws.iam_role:
+      amazon.aws.iam_role:
         state: absent
         name: "{{ test_role }}"
       register: iam_role
     - name: Remove IAM Role (rapid)
-      community.aws.iam_role:
+      amazon.aws.iam_role:
         state: absent
         name: "{{ test_role }}"
       register: iam_role_again
@@ -32,12 +32,12 @@
           - iam_role_again is not changed
 
     - name: Minimal IAM Role without instance profile (rapid)
-      community.aws.iam_role:
+      amazon.aws.iam_role:
         name: "{{ test_role }}"
         create_instance_profile: false
       register: iam_role
     - name: Remove IAM Role (rapid)
-      community.aws.iam_role:
+      amazon.aws.iam_role:
         state: absent
         name: "{{ test_role }}"
       register: iam_role_again
@@ -50,14 +50,14 @@
 # Role Creation
 # (without Instance profile)
 - name: iam_role_info before Role creation (no args)
-  community.aws.iam_role_info:
+  amazon.aws.iam_role_info:
   register: role_info
 - ansible.builtin.assert:
     that:
       - role_info is succeeded
 
 - name: iam_role_info before Role creation (search for test role)
-  community.aws.iam_role_info:
+  amazon.aws.iam_role_info:
     name: "{{ test_role }}"
   register: role_info
 - ansible.builtin.assert:
@@ -66,7 +66,7 @@
       - role_info.iam_roles | length == 0
 
 - name: Minimal IAM Role (CHECK MODE)
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: "{{ test_role }}"
     create_instance_profile: false
   register: iam_role
@@ -76,7 +76,7 @@
       - iam_role is changed
 
 - name: iam_role_info after Role creation in check_mode
-  community.aws.iam_role_info:
+  amazon.aws.iam_role_info:
     name: "{{ test_role }}"
   register: role_info
 - ansible.builtin.assert:
@@ -85,7 +85,7 @@
       - role_info.iam_roles | length == 0
 
 - name: Minimal IAM Role without instance profile
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: "{{ test_role }}"
     create_instance_profile: false
   register: iam_role
@@ -106,7 +106,7 @@
       - '"role_id" in iam_role.iam_role'
 
 - name: Minimal IAM Role without instance profile (no change) - check mode
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: "{{ test_role }}"
     create_instance_profile: false
   register: iam_role
@@ -116,7 +116,7 @@
       - iam_role is not changed
 
 - name: Minimal IAM Role without instance profile (no change)
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: "{{ test_role }}"
     create_instance_profile: false
   register: iam_role
@@ -126,7 +126,7 @@
       - iam_role.iam_role.role_name == test_role
 
 - name: iam_role_info after Role creation
-  community.aws.iam_role_info:
+  amazon.aws.iam_role_info:
     name: "{{ test_role }}"
   register: role_info
 - ansible.builtin.assert:
@@ -151,7 +151,7 @@
       - role_info.iam_roles[0].tags | length == 0
 
 - name: Remove IAM Role
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     state: absent
     name: "{{ test_role }}"
     delete_instance_profile: true
@@ -161,7 +161,7 @@
       - iam_role is changed
 
 - name: iam_role_info after Role deletion
-  community.aws.iam_role_info:
+  amazon.aws.iam_role_info:
     name: "{{ test_role }}"
   register: role_info
 - ansible.builtin.assert:
@@ -173,7 +173,7 @@
 
 # (with path)
 - name: Minimal IAM Role with path (CHECK MODE)
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: "{{ test_role }}"
     path: "{{ test_path }}"
   register: iam_role
@@ -183,7 +183,7 @@
       - iam_role is changed
 
 - name: Minimal IAM Role with path
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: "{{ test_role }}"
     path: "{{ test_path }}"
   register: iam_role
@@ -203,7 +203,7 @@
       - '"role_id" in iam_role.iam_role'
 
 - name: Minimal IAM Role with path (no change) - check mode
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: "{{ test_role }}"
     path: "{{ test_path }}"
   register: iam_role
@@ -213,7 +213,7 @@
       - iam_role is not changed
 
 - name: Minimal IAM Role with path (no change)
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: "{{ test_role }}"
     path: "{{ test_path }}"
   register: iam_role
@@ -223,7 +223,7 @@
       - iam_role.iam_role.role_name == test_role
 
 - name: Minimal IAM Role with updated path (no change)
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: "{{ test_role }}"
     path: "{{ test_path }}subpath/"
   register: iam_role
@@ -234,7 +234,7 @@
       - iam_role.iam_role.role_name == test_role
 
 - name: iam_role_info after Role creation
-  community.aws.iam_role_info:
+  amazon.aws.iam_role_info:
     name: "{{ test_role }}"
   register: role_info
 - ansible.builtin.assert:
@@ -260,7 +260,7 @@
       - role_info.iam_roles[0].tags | length == 0
 
 - name: iam_role_info after Role creation (searching a path)
-  community.aws.iam_role_info:
+  amazon.aws.iam_role_info:
     path_prefix: "{{ test_path }}"
   register: role_info
 - ansible.builtin.assert:
@@ -286,7 +286,7 @@
       - role_info.iam_roles[0].tags | length == 0
 
 - name: Remove IAM Role
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     state: absent
     name: "{{ test_role }}"
     path: "{{ test_path }}"
@@ -297,7 +297,7 @@
       - iam_role is changed
 
 - name: iam_role_info after Role deletion
-  community.aws.iam_role_info:
+  amazon.aws.iam_role_info:
     name: "{{ test_role }}"
   register: role_info
 - ansible.builtin.assert:
@@ -309,7 +309,7 @@
 
 # (with Instance profile)
 - name: Minimal IAM Role with instance profile - check mode
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: "{{ test_role }}"
     create_instance_profile: true
   register: iam_role
@@ -319,7 +319,7 @@
       - iam_role is changed
 
 - name: Minimal IAM Role with instance profile
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: "{{ test_role }}"
     create_instance_profile: true
   register: iam_role
@@ -339,7 +339,7 @@
       - '"role_id" in iam_role.iam_role'
 
 - name: Minimal IAM Role wth instance profile (no change) - check mode
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: "{{ test_role }}"
     create_instance_profile: true
   register: iam_role
@@ -349,7 +349,7 @@
       - iam_role is not changed
 
 - name: Minimal IAM Role wth instance profile (no change)
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: "{{ test_role }}"
     create_instance_profile: true
   register: iam_role
@@ -359,7 +359,7 @@
       - iam_role.iam_role.role_name == test_role
 
 - name: iam_role_info after Role creation
-  community.aws.iam_role_info:
+  amazon.aws.iam_role_info:
     name: "{{ test_role }}"
   register: role_info
 - ansible.builtin.assert:

@@ -12,7 +12,7 @@
   # ============================================================
 
     - name: Create an IAM Role
-      community.aws.iam_role:
+      amazon.aws.iam_role:
         name: "{{ backup_iam_role_name }}"
         assume_role_policy_document: '{{ lookup("file", "backup-policy.json") }}'
         create_instance_profile: false
@@ -745,7 +745,7 @@
       ignore_errors: true
 
     - name: Delete IAM role created during this test
-      community.aws.iam_role:
+      amazon.aws.iam_role:
         name: "{{ backup_iam_role_name }}"
         state: absent
       ignore_errors: true

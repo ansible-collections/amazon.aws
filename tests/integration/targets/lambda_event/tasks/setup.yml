@@ -33,7 +33,7 @@
   when: (lookup('env', 'HOME'))
 
 - name: create minimal lambda role
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: "{{ lambda_role_name }}"
     assume_role_policy_document: '{{ lookup("file", "minimal_trust_policy.json")}}'
     create_instance_profile: false
