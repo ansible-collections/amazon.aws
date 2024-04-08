@@ -214,7 +214,7 @@ def main():
     module.deprecate(
         "In a release after 2026-05-01 iam_role.assume_role_policy_document_raw "
         "will no longer be returned.  Since release 8.0.0 assume_role_policy_document "
-        "has been returned iwith the same format as iam_role.assume_role_policy_document_raw",
+        "has been returned with the same format as iam_role.assume_role_policy_document_raw",
         date="2026-05-01",
         collection_name="amazon.aws",
     )
