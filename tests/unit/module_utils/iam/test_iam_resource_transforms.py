@@ -451,10 +451,10 @@ class TestIamResourceToAnsibleDict:
         OUTPUT = {
             "arn": "arn:aws:iam::123456789012:role/ansible-test-76640355",
             "assume_role_policy_document": {
-                "statement": [
-                    {"action": "sts:AssumeRole", "effect": "Deny", "principal": {"service": "ec2.amazonaws.com"}}
+                "Statement": [
+                    {"Action": "sts:AssumeRole", "Effect": "Deny", "Principal": {"Service": "ec2.amazonaws.com"}}
                 ],
-                "version": "2012-10-17",
+                "Version": "2012-10-17",
             },
             "assume_role_policy_document_raw": {
                 "Statement": [
