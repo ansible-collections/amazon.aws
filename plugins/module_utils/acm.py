@@ -40,7 +40,7 @@ def acm_catch_boto_exception(func):
             return func(*args, **kwargs)
         except is_boto3_error_code(ignore_error_codes):
             return None
-        except (BotoCoreError, ClientError) as e:
+        except (BotoCoreError, ClientError) as e:  # pylint: disable=duplicate-except
             if not module:
                 raise
             module.fail_json_aws(e, msg=error)
