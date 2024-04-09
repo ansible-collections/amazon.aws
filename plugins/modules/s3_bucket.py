@@ -736,10 +736,9 @@ def create_or_update_bucket(s3_client, module):
 def bucket_exists(s3_client, bucket_name):
     try:
         s3_client.head_bucket(Bucket=bucket_name)
-        bucket_exists = True
+        return True
     except is_boto3_error_code("404"):
-        bucket_exists = False
-    return bucket_exists
+        return False
 
 
 @AWSRetry.exponential_backoff(max_delay=120)

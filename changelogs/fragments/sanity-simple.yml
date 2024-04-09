@@ -1,2 +1,5 @@
 bugfixes:
   - elb_classic_lb - fixes bug where ``proxy_protocol`` not being set or being set to ``None`` may result in unexpected behaviour or errors ().
+
+minor_changes:
+  - cloudformation - apply automatic retries when paginating through stack events without a filter ().
