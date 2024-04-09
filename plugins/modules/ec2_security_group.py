@@ -532,7 +532,7 @@ def rule_cmp(a, b):
             # equal protocols can interchange `(-1, -1)` and `(None, None)`
             if a.port_range in ((None, None), (-1, -1)) and b.port_range in ((None, None), (-1, -1)):
                 continue
-            elif getattr(a, prop) != getattr(b, prop):
+            if getattr(a, prop) != getattr(b, prop):
                 return False
         elif getattr(a, prop) != getattr(b, prop):
             return False

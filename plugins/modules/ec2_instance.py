@@ -1930,7 +1930,7 @@ def change_instance_state(filters, desired_module_state):
                 if inst["State"]["Name"] in ("pending", "running"):
                     unchanged.add(inst["InstanceId"])
                     continue
-                elif inst["State"]["Name"] == "stopping":
+                if inst["State"]["Name"] == "stopping":
                     await_instances([inst["InstanceId"]], desired_module_state="stopped", force_wait=True)
 
                 if module.check_mode:

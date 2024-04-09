@@ -1566,8 +1566,7 @@ def main():
                     instance = get_instance(client, module, instance_id)
                     if instance:
                         break
-                    else:
-                        sleep(5)
+                    sleep(5)
 
         if state == "absent" and changed and not module.params["skip_final_snapshot"]:
             instance.update(
