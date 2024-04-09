@@ -497,18 +497,254 @@ def handle_bucket_public_access_config(s3_client, module, name):
     return public_access_changed, public_access_result
 
 
-def create_or_update_bucket(s3_client, module):
+def handle_bucket_policy(s3_client, module, name):
     policy = module.params.get("policy")
-    name = module.params.get("name")
+    policy_changed = False
+    try:
+        current_policy = get_bucket_policy(s3_client, name)
+    except is_boto3_error_code(["NotImplemented", "XNotImplemented"]) as e:
+        if policy is not None:
+            module.fail_json_aws(e, msg="Bucket policy is not supported by the current S3 Endpoint")
+    except is_boto3_error_code("AccessDenied") as e:
+        if policy is not None:
+            module.fail_json_aws(e, msg="Failed to get bucket policy")
+        module.debug("AccessDenied fetching bucket policy")
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Failed to get bucket policy")
+    else:
+        if policy is not None:
+            if isinstance(policy, string_types):
+                policy = json.loads(policy)
+
+            if not policy and current_policy:
+                try:
+                    delete_bucket_policy(s3_client, name)
+                except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+                    module.fail_json_aws(e, msg="Failed to delete bucket policy")
+                current_policy = wait_policy_is_applied(module, s3_client, name, policy)
+                policy_changed = True
+            elif compare_policies(current_policy, policy):
+                try:
+                    put_bucket_policy(s3_client, name, policy)
+                except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+                    module.fail_json_aws(e, msg="Failed to update bucket policy")
+                current_policy = wait_policy_is_applied(module, s3_client, name, policy, should_fail=False)
+                if current_policy is None:
+                    # As for request payement, it happens quite a lot of times that the put request was not taken into
+                    # account, so we retry one more time
+                    put_bucket_policy(s3_client, name, policy)
+                    current_policy = wait_policy_is_applied(module, s3_client, name, policy, should_fail=True)
+                policy_changed = True
+
+        return policy_changed, current_policy
+
+
+def handle_bucket_tags(s3_client, module, name):
     tags = module.params.get("tags")
     purge_tags = module.params.get("purge_tags")
+    bucket_tags_changed = False
+
+    try:
+        current_tags_dict = get_current_bucket_tags_dict(s3_client, name)
+    except is_boto3_error_code(["NotImplemented", "XNotImplemented"]) as e:
+        if tags is not None:
+            module.fail_json_aws(e, msg="Bucket tagging is not supported by the current S3 Endpoint")
+    except is_boto3_error_code("AccessDenied") as e:
+        if tags is not None:
+            module.fail_json_aws(e, msg="Failed to get bucket tags")
+        module.debug("AccessDenied fetching bucket tags")
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Failed to get bucket tags")
+    else:
+        if tags is not None:
+            # Tags are always returned as text
+            tags = dict((to_text(k), to_text(v)) for k, v in tags.items())
+            if not purge_tags:
+                # Ensure existing tags that aren't updated by desired tags remain
+                current_copy = current_tags_dict.copy()
+                current_copy.update(tags)
+                tags = current_copy
+            if current_tags_dict != tags:
+                if tags:
+                    try:
+                        put_bucket_tagging(s3_client, name, tags)
+                    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+                        module.fail_json_aws(e, msg="Failed to update bucket tags")
+                else:
+                    if purge_tags:
+                        try:
+                            delete_bucket_tagging(s3_client, name)
+                        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+                            module.fail_json_aws(e, msg="Failed to delete bucket tags")
+                current_tags_dict = wait_tags_are_applied(module, s3_client, name, tags)
+                bucket_tags_changed = True
+
+        return bucket_tags_changed, current_tags_dict
+
+
+def handle_bucket_encryption(s3_client, module, name):
     encryption = module.params.get("encryption")
     encryption_key_id = module.params.get("encryption_key_id")
     bucket_key_enabled = module.params.get("bucket_key_enabled")
+    encryption_changed = False
+
+    try:
+        current_encryption = get_bucket_encryption(s3_client, name)
+    except is_boto3_error_code(["NotImplemented", "XNotImplemented"]) as e:
+        if encryption is not None:
+            module.fail_json_aws(e, msg="Bucket encryption is not supported by the current S3 Endpoint")
+    except is_boto3_error_code("AccessDenied") as e:
+        if encryption is not None:
+            module.fail_json_aws(e, msg="Failed to get bucket encryption settings")
+        module.debug("AccessDenied fetching bucket encryption settings")
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Failed to get bucket encryption settings")
+    else:
+        if encryption is not None:
+            current_encryption_algorithm = current_encryption.get("SSEAlgorithm") if current_encryption else None
+            current_encryption_key = current_encryption.get("KMSMasterKeyID") if current_encryption else None
+            if encryption == "none":
+                if current_encryption_algorithm is not None:
+                    try:
+                        delete_bucket_encryption(s3_client, name)
+                    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+                        module.fail_json_aws(e, msg="Failed to delete bucket encryption")
+                    current_encryption = wait_encryption_is_applied(module, s3_client, name, None)
+                    encryption_changed = True
+            else:
+                if (encryption != current_encryption_algorithm) or (
+                    encryption == "aws:kms" and current_encryption_key != encryption_key_id
+                ):
+                    expected_encryption = {"SSEAlgorithm": encryption}
+                    if encryption == "aws:kms" and encryption_key_id is not None:
+                        expected_encryption.update({"KMSMasterKeyID": encryption_key_id})
+                    current_encryption = put_bucket_encryption_with_retry(module, s3_client, name, expected_encryption)
+                    encryption_changed = True
+
+        if bucket_key_enabled is not None:
+            current_encryption_algorithm = current_encryption.get("SSEAlgorithm") if current_encryption else None
+            if current_encryption_algorithm == "aws:kms":
+                if get_bucket_key(s3_client, name) != bucket_key_enabled:
+                    expected_encryption = bool(bucket_key_enabled)
+                    current_encryption = put_bucket_key_with_retry(module, s3_client, name, expected_encryption)
+                    encryption_changed = True
+
+        return encryption_changed, current_encryption
+
+
+def handle_bucket_ownership(s3_client, module, name):
     delete_object_ownership = module.params.get("delete_object_ownership")
     object_ownership = module.params.get("object_ownership")
-    object_lock_enabled = module.params.get("object_lock_enabled")
+    bucket_ownership_changed = False
+    bucket_ownership_result = {}
+    try:
+        bucket_ownership = get_bucket_ownership_cntrl(s3_client, name)
+        bucket_ownership_result = bucket_ownership
+    except KeyError as e:
+        # Some non-AWS providers appear to return policy documents that aren't
+        # compatible with AWS, cleanly catch KeyError so users can continue to use
+        # other features.
+        if delete_object_ownership or object_ownership is not None:
+            module.fail_json_aws(e, msg="Failed to get bucket object ownership settings")
+    except is_boto3_error_code(["NotImplemented", "XNotImplemented"]) as e:
+        if delete_object_ownership or object_ownership is not None:
+            module.fail_json_aws(e, msg="Bucket object ownership is not supported by the current S3 Endpoint")
+    except is_boto3_error_code("AccessDenied") as e:
+        if delete_object_ownership or object_ownership is not None:
+            module.fail_json_aws(e, msg="Failed to get bucket object ownership settings")
+        module.debug("AccessDenied fetching bucket object ownership settings")
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Failed to get bucket object ownership settings")
+    else:
+        if delete_object_ownership:
+            # delete S3 buckect ownership
+            if bucket_ownership is not None:
+                delete_bucket_ownership(s3_client, name)
+                bucket_ownership_changed = True
+                bucket_ownership_result =  None
+        elif object_ownership is not None:
+            # update S3 bucket ownership
+            if bucket_ownership != object_ownership:
+                put_bucket_ownership(s3_client, name, object_ownership)
+                bucket_ownership_changed = True
+                bucket_ownership_result =  object_ownership
+
+    return bucket_ownership_changed, bucket_ownership_result
+
+
+def handle_bucket_acl(s3_client, module, name):
     acl = module.params.get("acl")
+    bucket_acl_changed = False
+    bucket_acl_result = {}
+    if acl:
+        try:
+            s3_client.put_bucket_acl(Bucket=name, ACL=acl)
+            bucket_acl_result = acl
+            bucket_acl_changed = True
+        except KeyError as e:
+            # Some non-AWS providers appear to return policy documents that aren't
+            # compatible with AWS, cleanly catch KeyError so users can continue to use
+            # other features.
+            module.fail_json_aws(e, msg="Failed to get bucket acl block")
+        except is_boto3_error_code(["NotImplemented", "XNotImplemented"]) as e:
+            module.fail_json_aws(e, msg="Bucket ACLs ar not supported by the current S3 Endpoint")
+        except is_boto3_error_code("AccessDenied") as e:  # pylint: disable=duplicate-except
+            module.fail_json_aws(e, msg="Access denied trying to update bucket ACL")
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:  # pylint: disable=duplicate-except
+            module.fail_json_aws(e, msg="Failed to update bucket ACL")
+
+    return bucket_acl_changed, bucket_acl_result
+
+
+def handle_bucket_object_lock(s3_client, module, name):
+    object_lock_enabled = module.params.get("object_lock_enabled")
+    object_lock_result = {}
+    try:
+        object_lock_status = get_bucket_object_lock_enabled(s3_client, name)
+        object_lock_result = object_lock_status
+    except is_boto3_error_code(["NotImplemented", "XNotImplemented"]) as e:
+        if object_lock_enabled is not None:
+            module.fail_json(msg="Fetching bucket object lock state is not supported")
+    except is_boto3_error_code("ObjectLockConfigurationNotFoundError"):  # pylint: disable=duplicate-except
+        if object_lock_enabled:
+            module.fail_json(msg="Enabling object lock for existing buckets is not supported")
+        object_lock_result = False
+    except is_boto3_error_code("AccessDenied") as e:  # pylint: disable=duplicate-except
+        if object_lock_enabled is not None:
+            module.fail_json(msg="Permission denied fetching object lock state for bucket")
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Failed to fetch bucket object lock state")
+    else:
+        if object_lock_status is not None:
+            if not object_lock_enabled and object_lock_status:
+                module.fail_json(msg="Disabling object lock for existing buckets is not supported")
+            if object_lock_enabled and not object_lock_status:
+                module.fail_json(msg="Enabling object lock for existing buckets is not supported")
+
+    return object_lock_result
+
+
+def create_or_update_bucket(s3_client, module):
+    name = module.params.get("name")
+    object_lock_enabled = module.params.get("object_lock_enabled")
     # default to US Standard region,
     # note: module.region will also try to pull a default out of the boto3 configs.
     location = module.region or "us-east-1"
@@ -546,219 +782,31 @@ def create_or_update_bucket(s3_client, module):
     result["public_access_block"] = public_access_config_result
 
     # Policy
-    try:
-        current_policy = get_bucket_policy(s3_client, name)
-    except is_boto3_error_code(["NotImplemented", "XNotImplemented"]) as e:
-        if policy is not None:
-            module.fail_json_aws(e, msg="Bucket policy is not supported by the current S3 Endpoint")
-    except is_boto3_error_code("AccessDenied") as e:
-        if policy is not None:
-            module.fail_json_aws(e, msg="Failed to get bucket policy")
-        module.debug("AccessDenied fetching bucket policy")
-    except (
-        botocore.exceptions.BotoCoreError,
-        botocore.exceptions.ClientError,
-    ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Failed to get bucket policy")
-    else:
-        if policy is not None:
-            if isinstance(policy, string_types):
-                policy = json.loads(policy)
-
-            if not policy and current_policy:
-                try:
-                    delete_bucket_policy(s3_client, name)
-                except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-                    module.fail_json_aws(e, msg="Failed to delete bucket policy")
-                current_policy = wait_policy_is_applied(module, s3_client, name, policy)
-                changed = True
-            elif compare_policies(current_policy, policy):
-                try:
-                    put_bucket_policy(s3_client, name, policy)
-                except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-                    module.fail_json_aws(e, msg="Failed to update bucket policy")
-                current_policy = wait_policy_is_applied(module, s3_client, name, policy, should_fail=False)
-                if current_policy is None:
-                    # As for request payement, it happens quite a lot of times that the put request was not taken into
-                    # account, so we retry one more time
-                    put_bucket_policy(s3_client, name, policy)
-                    current_policy = wait_policy_is_applied(module, s3_client, name, policy, should_fail=True)
-                changed = True
-
-        result["policy"] = current_policy
+    policy_changed, current_policy = handle_bucket_policy(s3_client, module, name)
+    result["policy"] = current_policy
 
     # Tags
-    try:
-        current_tags_dict = get_current_bucket_tags_dict(s3_client, name)
-    except is_boto3_error_code(["NotImplemented", "XNotImplemented"]) as e:
-        if tags is not None:
-            module.fail_json_aws(e, msg="Bucket tagging is not supported by the current S3 Endpoint")
-    except is_boto3_error_code("AccessDenied") as e:
-        if tags is not None:
-            module.fail_json_aws(e, msg="Failed to get bucket tags")
-        module.debug("AccessDenied fetching bucket tags")
-    except (
-        botocore.exceptions.BotoCoreError,
-        botocore.exceptions.ClientError,
-    ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Failed to get bucket tags")
-    else:
-        if tags is not None:
-            # Tags are always returned as text
-            tags = dict((to_text(k), to_text(v)) for k, v in tags.items())
-            if not purge_tags:
-                # Ensure existing tags that aren't updated by desired tags remain
-                current_copy = current_tags_dict.copy()
-                current_copy.update(tags)
-                tags = current_copy
-            if current_tags_dict != tags:
-                if tags:
-                    try:
-                        put_bucket_tagging(s3_client, name, tags)
-                    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-                        module.fail_json_aws(e, msg="Failed to update bucket tags")
-                else:
-                    if purge_tags:
-                        try:
-                            delete_bucket_tagging(s3_client, name)
-                        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-                            module.fail_json_aws(e, msg="Failed to delete bucket tags")
-                current_tags_dict = wait_tags_are_applied(module, s3_client, name, tags)
-                changed = True
-
-        result["tags"] = current_tags_dict
+    tags_changed, current_tags_dict = handle_bucket_tags(s3_client, module, name)
+    result["tags"] = current_tags_dict
 
     # Encryption
-    try:
-        current_encryption = get_bucket_encryption(s3_client, name)
-    except is_boto3_error_code(["NotImplemented", "XNotImplemented"]) as e:
-        if encryption is not None:
-            module.fail_json_aws(e, msg="Bucket encryption is not supported by the current S3 Endpoint")
-    except is_boto3_error_code("AccessDenied") as e:
-        if encryption is not None:
-            module.fail_json_aws(e, msg="Failed to get bucket encryption settings")
-        module.debug("AccessDenied fetching bucket encryption settings")
-    except (
-        botocore.exceptions.BotoCoreError,
-        botocore.exceptions.ClientError,
-    ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Failed to get bucket encryption settings")
-    else:
-        if encryption is not None:
-            current_encryption_algorithm = current_encryption.get("SSEAlgorithm") if current_encryption else None
-            current_encryption_key = current_encryption.get("KMSMasterKeyID") if current_encryption else None
-            if encryption == "none":
-                if current_encryption_algorithm is not None:
-                    try:
-                        delete_bucket_encryption(s3_client, name)
-                    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-                        module.fail_json_aws(e, msg="Failed to delete bucket encryption")
-                    current_encryption = wait_encryption_is_applied(module, s3_client, name, None)
-                    changed = True
-            else:
-                if (encryption != current_encryption_algorithm) or (
-                    encryption == "aws:kms" and current_encryption_key != encryption_key_id
-                ):
-                    expected_encryption = {"SSEAlgorithm": encryption}
-                    if encryption == "aws:kms" and encryption_key_id is not None:
-                        expected_encryption.update({"KMSMasterKeyID": encryption_key_id})
-                    current_encryption = put_bucket_encryption_with_retry(module, s3_client, name, expected_encryption)
-                    changed = True
-
-        if bucket_key_enabled is not None:
-            current_encryption_algorithm = current_encryption.get("SSEAlgorithm") if current_encryption else None
-            if current_encryption_algorithm == "aws:kms":
-                if get_bucket_key(s3_client, name) != bucket_key_enabled:
-                    expected_encryption = bool(bucket_key_enabled)
-                    current_encryption = put_bucket_key_with_retry(module, s3_client, name, expected_encryption)
-                    changed = True
-        result["encryption"] = current_encryption
+    encryption_changed, current_encryption = handle_bucket_encryption(s3_client, module, name)
+    result["encryption"] = current_encryption
 
     # -- Bucket ownership
-    try:
-        bucket_ownership = get_bucket_ownership_cntrl(s3_client, name)
-        result["object_ownership"] = bucket_ownership
-    except KeyError as e:
-        # Some non-AWS providers appear to return policy documents that aren't
-        # compatible with AWS, cleanly catch KeyError so users can continue to use
-        # other features.
-        if delete_object_ownership or object_ownership is not None:
-            module.fail_json_aws(e, msg="Failed to get bucket object ownership settings")
-    except is_boto3_error_code(["NotImplemented", "XNotImplemented"]) as e:
-        if delete_object_ownership or object_ownership is not None:
-            module.fail_json_aws(e, msg="Bucket object ownership is not supported by the current S3 Endpoint")
-    except is_boto3_error_code("AccessDenied") as e:
-        if delete_object_ownership or object_ownership is not None:
-            module.fail_json_aws(e, msg="Failed to get bucket object ownership settings")
-        module.debug("AccessDenied fetching bucket object ownership settings")
-    except (
-        botocore.exceptions.BotoCoreError,
-        botocore.exceptions.ClientError,
-    ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Failed to get bucket object ownership settings")
-    else:
-        if delete_object_ownership:
-            # delete S3 buckect ownership
-            if bucket_ownership is not None:
-                delete_bucket_ownership(s3_client, name)
-                changed = True
-                result["object_ownership"] = None
-        elif object_ownership is not None:
-            # update S3 bucket ownership
-            if bucket_ownership != object_ownership:
-                put_bucket_ownership(s3_client, name, object_ownership)
-                changed = True
-                result["object_ownership"] = object_ownership
+    bucket_ownership_changed, object_ownership_result = handle_bucket_ownership(s3_client, module, name)
+    result["object_ownership"] = object_ownership_result
 
     # -- Bucket ACL
-    if acl:
-        try:
-            s3_client.put_bucket_acl(Bucket=name, ACL=acl)
-            result["acl"] = acl
-            changed = True
-        except KeyError as e:
-            # Some non-AWS providers appear to return policy documents that aren't
-            # compatible with AWS, cleanly catch KeyError so users can continue to use
-            # other features.
-            module.fail_json_aws(e, msg="Failed to get bucket acl block")
-        except is_boto3_error_code(["NotImplemented", "XNotImplemented"]) as e:
-            module.fail_json_aws(e, msg="Bucket ACLs ar not supported by the current S3 Endpoint")
-        except is_boto3_error_code("AccessDenied") as e:  # pylint: disable=duplicate-except
-            module.fail_json_aws(e, msg="Access denied trying to update bucket ACL")
-        except (
-            botocore.exceptions.BotoCoreError,
-            botocore.exceptions.ClientError,
-        ) as e:  # pylint: disable=duplicate-except
-            module.fail_json_aws(e, msg="Failed to update bucket ACL")
+    bucket_acl_changed, bucket_acl_result = handle_bucket_acl(s3_client, module, name)
+    result["acl"] = bucket_acl_result
 
     # -- Object Lock
-    try:
-        object_lock_status = get_bucket_object_lock_enabled(s3_client, name)
-        result["object_lock_enabled"] = object_lock_status
-    except is_boto3_error_code(["NotImplemented", "XNotImplemented"]) as e:
-        if object_lock_enabled is not None:
-            module.fail_json(msg="Fetching bucket object lock state is not supported")
-    except is_boto3_error_code("ObjectLockConfigurationNotFoundError"):  # pylint: disable=duplicate-except
-        if object_lock_enabled:
-            module.fail_json(msg="Enabling object lock for existing buckets is not supported")
-        result["object_lock_enabled"] = False
-    except is_boto3_error_code("AccessDenied") as e:  # pylint: disable=duplicate-except
-        if object_lock_enabled is not None:
-            module.fail_json(msg="Permission denied fetching object lock state for bucket")
-    except (
-        botocore.exceptions.BotoCoreError,
-        botocore.exceptions.ClientError,
-    ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Failed to fetch bucket object lock state")
-    else:
-        if object_lock_status is not None:
-            if not object_lock_enabled and object_lock_status:
-                module.fail_json(msg="Disabling object lock for existing buckets is not supported")
-            if object_lock_enabled and not object_lock_status:
-                module.fail_json(msg="Enabling object lock for existing buckets is not supported")
+    bucket_object_lock_result = handle_bucket_object_lock(s3_client, module, name)
+    result["object_lock_enabled"] = bucket_object_lock_result
 
     # Module exit
-    changed = changed or versioning_changed or requester_pays_changed or public_access_config_changed
+    changed = changed or versioning_changed or requester_pays_changed or public_access_config_changed or policy_changed or tags_changed or encryption_changed or bucket_ownership_changed or bucket_acl_changed
     module.exit_json(changed=changed, name=name, **result)
 
 
