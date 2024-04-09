@@ -1296,8 +1296,7 @@ def flatten_nested_targets(module, rules):
                     date="2024-12-01",
                     collection_name="amazon.aws",
                 )
-                for t in _flatten(target):
-                    yield t
+                yield from _flatten(target)
             elif isinstance(target, string_types):
                 yield target
 
