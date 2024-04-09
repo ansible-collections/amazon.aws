@@ -843,7 +843,8 @@ def ensure_route_table_present(connection, module):
     if changed:
         # pause to allow route table routes/subnets/associations to be updated before exiting with final state
         sleep(5)
-    module.exit_json(changed=changed, route_table=get_route_table_info(connection, module, route_table))
+
+    return dict(changed=changed, route_table=get_route_table_info(connection, module, route_table))
 
 
 def main():
