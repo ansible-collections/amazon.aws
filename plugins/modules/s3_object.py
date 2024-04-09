@@ -656,10 +656,7 @@ def create_dirkey(module, s3, bucket, obj, encrypt, expiry):
 
 
 def path_check(path):
-    if os.path.exists(path):
-        return True
-    else:
-        return False
+    return bool(os.path.exists(path))
 
 
 def guess_content_type(src):

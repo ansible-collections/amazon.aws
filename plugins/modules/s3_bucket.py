@@ -641,10 +641,7 @@ def create_or_update_bucket(s3_client, module):
             current_encryption_algorithm = current_encryption.get("SSEAlgorithm") if current_encryption else None
             if current_encryption_algorithm == "aws:kms":
                 if get_bucket_key(s3_client, name) != bucket_key_enabled:
-                    if bucket_key_enabled:
-                        expected_encryption = True
-                    else:
-                        expected_encryption = False
+                    expected_encryption = bool(bucket_key_enabled)
                     current_encryption = put_bucket_key_with_retry(module, s3_client, name, expected_encryption)
                     changed = True
         result["encryption"] = current_encryption
