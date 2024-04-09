@@ -1717,10 +1717,10 @@ class ElbManager:
         if any(proxy_ports.values()):
             changed |= self._set_proxy_protocol_policy(proxy_policy_name)
 
-        for port in proxy_ports:
+        for port, port_policy in proxy_ports.items():
             current_policies = set(backend_policies.get(port, []))
             new_policies = list(current_policies - proxy_policies)
-            if proxy_ports[port]:
+            if port_policy:
                 new_policies.append(proxy_policy_name)
 
             changed |= self._set_backend_policy(port, new_policies)

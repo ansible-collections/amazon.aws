@@ -149,9 +149,9 @@ def convert_parameter(param, value):
     if param["DataType"] == "integer":
         if isinstance(value, string_types):
             try:
-                for modifier in INT_MODIFIERS.keys():
-                    if value.endswith(modifier):
-                        converted_value = int(value[:-1]) * INT_MODIFIERS[modifier]
+                for name, modifier in INT_MODIFIERS.items():
+                    if value.endswith(name):
+                        converted_value = int(value[:-1]) * modifier
             except ValueError:
                 # may be based on a variable (ie. {foo*3/4}) so
                 # just pass it on through to the AWS SDK
