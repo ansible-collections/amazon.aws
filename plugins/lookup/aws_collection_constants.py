@@ -49,7 +49,7 @@ except ImportError:
 
 
 class LookupModule(LookupBase):
-    def lookup_constant(self, name):
+    def lookup_constant(self, name):  # pylint: disable=too-many-return-statements
         if name == "MINIMUM_BOTOCORE_VERSION":
             return botocore_utils.MINIMUM_BOTOCORE_VERSION
         if name == "MINIMUM_BOTO3_VERSION":
