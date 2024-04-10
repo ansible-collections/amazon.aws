@@ -5,6 +5,9 @@
 ### dotenv ###
 .env
 
+# mypy ignore
+.collection_root/
+
 ### Emacs ###
 # -*- mode: gitignore; -*-
 *~

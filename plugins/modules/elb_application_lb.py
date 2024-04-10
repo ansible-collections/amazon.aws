@@ -680,42 +680,22 @@ def create_or_update_alb(alb_obj):
             rules_obj = ELBListenerRules(
                 alb_obj.connection, alb_obj.module, alb_obj.elb["LoadBalancerArn"], listener["Rules"], listener["Port"]
             )
-            rules_to_add, rules_to_modify, rules_to_delete, rules_to_set_priority = rules_obj.compare_rules()
+            rules_to_add, rules_to_set_priority, rules_to_modify, rules_to_delete = rules_obj.compare_rules()
 
             # Exit on check_mode
             if alb_obj.module.check_mode and (
-                rules_to_add or rules_to_modify or rules_to_delete or rules_to_set_priority
+                rules_to_add
+                or rules_to_modify
+                or rules_to_set_priority
+                or (alb_obj.module.params["purge_rules"] and rules_to_delete)
             ):
                 alb_obj.module.exit_json(changed=True, msg="Would have updated ALB if not in check mode.")
 
-            # Set rules priorities
-            if rules_to_set_priority:
-                rule_obj = ELBListenerRule(
-                    alb_obj.connection, alb_obj.module, rules_to_set_priority, rules_obj.listener_arn
-                )
-                rule_obj.set_rule_priorities()
-                alb_obj.changed |= rule_obj.changed
-
-            # Delete rules
-            if alb_obj.module.params["purge_rules"]:
-                for rule in rules_to_delete:
-                    rule_obj = ELBListenerRule(
-                        alb_obj.connection, alb_obj.module, {"RuleArn": rule}, rules_obj.listener_arn
-                    )
-                    rule_obj.delete()
-                    alb_obj.changed = True
-
-            # Add rules
-            for rule in rules_to_add:
-                rule_obj = ELBListenerRule(alb_obj.connection, alb_obj.module, rule, rules_obj.listener_arn)
-                rule_obj.create()
-                alb_obj.changed = True
-
-            # Modify rules
-            for rule in rules_to_modify:
-                rule_obj = ELBListenerRule(alb_obj.connection, alb_obj.module, rule, rules_obj.listener_arn)
-                rule_obj.modify()
-                alb_obj.changed = True
+            # Create/Update/Delete Listener Rules
+            rule_obj = ELBListenerRule(alb_obj.connection, alb_obj.module)
+            alb_obj.changed |= rule_obj.process_rules(
+                rules_to_add, rules_to_set_priority, rules_to_modify, rules_to_delete
+            )
 
     # Update ALB ip address type only if option has been provided
     if alb_obj.module.params.get("ip_address_type") and alb_obj.elb_ip_addr_type != alb_obj.module.params.get(

@@ -231,3 +231,64 @@ def test__prune_secret_simplifiable_actions(action):
 def test__prune_secret_non_simplifiable_actions(action):
     pruned_config = elbv2._prune_secret(action)
     assert pruned_config == action
+
+
+# Test _simple_forward_config_arn
+@pytest.mark.parametrize(
+    "config,parent_arn,expected",
+    [
+        ({}, None, None),
+        ({"TargetGroupStickinessConfig": {"Enabled": True}}, None, None),
+        ({"TargetGroupStickinessConfig": {"Enabled": False}}, None, None),
+        ({"Some": "info"}, None, None),
+        ({"TargetGroups": ["group1", "group2"]}, None, None),
+        ({"TargetGroupStickinessConfig": {"Enabled": False}}, "parent_arn", "parent_arn"),
+        ({"TargetGroups": [{"Weight": 2, "TargetGroupArn": "group_arn", "other": "key"}]}, None, None),
+        ({"TargetGroups": [{"Weight": 2, "other": "key"}]}, None, None),
+        ({"TargetGroups": [{"Weight": 2, "TargetGroupArn": "group_arn", "other": "key"}]}, None, None),
+        ({"TargetGroups": [{"Weight": 2}]}, "parent_arn", "parent_arn"),
+        (
+            {
+                "TargetGroupStickinessConfig": {"Enabled": False},
+                "TargetGroups": [{"Weight": 2, "TargetGroupArn": "group_arn"}],
+            },
+            "parent_arn",
+            None,
+        ),
+        (
+            {
+                "TargetGroupStickinessConfig": {"Enabled": False},
+                "TargetGroups": [{"Weight": 2, "TargetGroupArn": "group_arn"}],
+            },
+            "group_arn",
+            "group_arn",
+        ),
+    ],
+)
+def test__simple_forward_config_arn(config, parent_arn, expected):
+    assert elbv2._simple_forward_config_arn(config, parent_arn) == expected
+
+
+@pytest.mark.parametrize(
+    "action,expected",
+    [
+        ({"Type": "logger"}, {"Type": "logger"}),
+        (
+            {"Type": "authenticate-oidc", "AuthenticateOidcConfig": {}},
+            {"Type": "authenticate-oidc", "AuthenticateOidcConfig": {"UseExistingClientSecret": True}},
+        ),
+    ],
+)
+def test__append_use_existing_client_secretn(action, expected):
+    assert elbv2._append_use_existing_client_secretn(action) == expected
+
+
+@pytest.mark.parametrize(
+    "actions,expected",
+    [
+        ([{"Order": 2}, {"Order": 1}], [{"Order": 1}, {"Order": 2}]),
+        ([{"Order": 2}, {}, {"Order": 1}], [{}, {"Order": 1}, {"Order": 2}]),
+    ],
+)
+def test__sort_actions(actions, expected):
+    assert elbv2._sort_actions(actions) == expected

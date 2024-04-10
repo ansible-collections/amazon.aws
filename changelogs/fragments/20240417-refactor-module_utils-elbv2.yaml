@@ -1,0 +1,4 @@
+---
+minor_changes:
+  - module_utils/elbv2 - Refactor listeners and rules comparison logic (https://github.com/ansible-collections/amazon.aws/issues/1981).
+
