@@ -57,6 +57,8 @@ options:
         must be specified (but only one of them).
       - If I(state=present), the stack does exist, and neither I(template),
         I(template_body) nor I(template_url) are specified, the previous template will be reused.
+      - The I(template) parameter has been deprecated and will be remove in a release after
+        2026-05-01.  It is recommended to use I(template_body) with the lookup plugin.
     type: path
   notification_arns:
     description:
@@ -172,7 +174,9 @@ EXAMPLES = r"""
     state: "present"
     region: "us-east-1"
     disable_rollback: true
-    template: "files/cloudformation-example.json"
+    # The template parameter has been deprecated, use template_body with lookup instead.
+    # template: "files/cloudformation-example.json"
+    template_body: "{{ lookup('file', 'cloudformation-example.json') }}"
     template_parameters:
       KeyName: "jmartin"
       DiskType: "ephemeral"
@@ -188,7 +192,9 @@ EXAMPLES = r"""
     state: "present"
     region: "us-east-1"
     disable_rollback: true
-    template: "roles/cloudformation/files/cloudformation-example.json"
+    # The template parameter has been deprecated, use template_body with lookup instead.
+    # template: "roles/cloudformation/files/cloudformation-example.json"
+    template_body: "{{ lookup('file', 'cloudformation-example.json') }}"
     role_arn: 'arn:aws:iam::123456789012:role/cloudformation-iam-role'
 
 - name: delete a stack
@@ -640,7 +646,13 @@ def main():
         stack_name=dict(required=True),
         template_parameters=dict(required=False, type="dict", default={}),
         state=dict(default="present", choices=["present", "absent"]),
-        template=dict(default=None, required=False, type="path"),
+        template=dict(
+            default=None,
+            required=False,
+            type="path",
+            removed_at_date="2026-05-01",
+            removed_from_collection="amazon.aws",
+        ),
         notification_arns=dict(default=None, required=False),
         stack_policy=dict(default=None, required=False),
         stack_policy_body=dict(default=None, required=False, type="json"),
