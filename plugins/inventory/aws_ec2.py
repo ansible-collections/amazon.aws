@@ -633,17 +633,17 @@ class InventoryModule(AWSInventoryBase):
         """
         instances = []
         ids_to_ignore = []
-        for filter in exclude_filters:
+        for filter_dict in exclude_filters:
             for i in self._get_instances_by_region(
                 regions,
-                ansible_dict_to_boto3_filter_list(filter),
+                ansible_dict_to_boto3_filter_list(filter_dict),
                 strict_permissions,
             ):
                 ids_to_ignore.append(i["InstanceId"])
-        for filter in include_filters:
+        for filter_dict in include_filters:
             for i in self._get_instances_by_region(
                 regions,
-                ansible_dict_to_boto3_filter_list(filter),
+                ansible_dict_to_boto3_filter_list(filter_dict),
                 strict_permissions,
             ):
                 if i["InstanceId"] not in ids_to_ignore:

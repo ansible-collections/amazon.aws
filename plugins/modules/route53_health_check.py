@@ -535,21 +535,21 @@ def update_health_check(existing_check):
     return True, "update", check_id
 
 
-def describe_health_check(id):
-    if not id:
+def describe_health_check(check_id):
+    if not check_id:
         return dict()
 
     try:
         result = client.get_health_check(
             aws_retry=True,
-            HealthCheckId=id,
+            HealthCheckId=check_id,
         )
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        module.fail_json_aws(e, msg="Failed to get health check.", id=id)
+        module.fail_json_aws(e, msg="Failed to get health check.", id=check_id)
 
     health_check = result.get("HealthCheck", {})
     health_check = camel_dict_to_snake_dict(health_check)
-    tags = get_tags(module, client, "healthcheck", id)
+    tags = get_tags(module, client, "healthcheck", check_id)
     health_check["tags"] = tags
     return health_check
 
@@ -705,7 +705,7 @@ def main():
         if check_id:
             changed |= manage_tags(module, client, "healthcheck", check_id, tags, purge_tags)
 
-    health_check = describe_health_check(id=check_id)
+    health_check = describe_health_check(check_id)
     health_check["action"] = action
     module.exit_json(
         changed=changed,
