@@ -5,7 +5,7 @@ AWS related modules and plugins supported by the Ansible community are in the [c
 
 ## Ansible version compatibility
 
-Tested with the Ansible Core >= 2.13.0 versions, and the current development version of Ansible. Ansible Core versions prior to 2.13.0 are not supported.
+Tested with the Ansible Core >= 2.14.0 versions, and the current development version of Ansible. Ansible Core versions prior to 2.14.0 are not supported.
 
 ## Python version compatibility
 
