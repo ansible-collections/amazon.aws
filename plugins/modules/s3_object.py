@@ -473,7 +473,7 @@ def key_check(module, s3, bucket, obj, version=None, validate=True):
 
 
 def etag_compare(module, s3, bucket, obj, version=None, local_file=None, content=None):
-    s3_etag = get_etag(s3, bucket, obj, version=version)
+    s3_etag = _head_object(s3, bucket, obj, version=version).get("ETag")
     if local_file is not None:
         local_etag = calculate_etag(module, local_file, s3_etag, s3, bucket, obj, version)
     else:
@@ -481,27 +481,49 @@ def etag_compare(module, s3, bucket, obj, version=None, local_file=None, content
     return s3_etag == local_etag
 
 
-def get_etag(s3, bucket, obj, version=None):
+def _head_object(s3, bucket, obj, version=None):
     try:
         if version:
             key_check = s3.head_object(aws_retry=True, Bucket=bucket, Key=obj, VersionId=version)
         else:
             key_check = s3.head_object(aws_retry=True, Bucket=bucket, Key=obj)
         if not key_check:
-            return None
-        return key_check["ETag"]
+            return {}
+        key_check.pop("ResponseMetadata")
+        return key_check
     except is_boto3_error_code("404"):
-        return None
+        return {}
+
+
+def _get_object_content(module, s3, bucket, obj, version=None):
+    try:
+        if version:
+            contents = s3.get_object(aws_retry=True, Bucket=bucket, Key=obj, VersionId=version)["Body"].read()
+        else:
+            contents = s3.get_object(aws_retry=True, Bucket=bucket, Key=obj)["Body"].read()
+        return contents
+    except is_boto3_error_code(["404", "403"]) as e:
+        # AccessDenied errors may be triggered if 1) file does not exist or 2) file exists but
+        # user does not have the s3:GetObject permission.
+        module.fail_json_aws(e, msg=f"Could not find the key {obj}.")
+    except is_boto3_error_message("require AWS Signature Version 4"):  # pylint: disable=duplicate-except
+        raise Sigv4Required()
+    except is_boto3_error_code("InvalidArgument") as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg=f"Could not find the key {obj}.")
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+        boto3.exceptions.Boto3Error,
+    ) as e:  # pylint: disable=duplicate-except
+        raise S3ObjectFailure(f"Could not find the key {obj}.", e)
 
 
 def get_s3_last_modified_timestamp(s3, bucket, obj, version=None):
-    if version:
-        key_check = s3.head_object(aws_retry=True, Bucket=bucket, Key=obj, VersionId=version)
-    else:
-        key_check = s3.head_object(aws_retry=True, Bucket=bucket, Key=obj)
-    if not key_check:
-        return None
-    return key_check["LastModified"].timestamp()
+    last_modified = None
+    obj_info = _head_object(s3, bucket, obj, version)
+    if obj_info:
+        last_modified = obj_info["LastModified"].timestamp()
+    return last_modified
 
 
 def is_local_object_latest(s3, bucket, obj, version=None, local_file=None):
@@ -763,29 +785,7 @@ def download_s3file(module, s3, bucket, obj, dest, retries, version=None):
         module.exit_json(msg="GET operation skipped - running in check mode", changed=True)
     # retries is the number of loops; range/xrange needs to be one
     # more to get that count of loops.
-    try:
-        # Note: Something of a permissions related hack
-        # get_object returns the HEAD information, plus a *stream* which can be read.
-        # because the stream's dropped on the floor, we never pull the data and this is the
-        # functional equivalent of calling get_head which still relying on the 'GET' permission
-        if version:
-            s3.get_object(aws_retry=True, Bucket=bucket, Key=obj, VersionId=version)
-        else:
-            s3.get_object(aws_retry=True, Bucket=bucket, Key=obj)
-    except is_boto3_error_code(["404", "403"]) as e:
-        # AccessDenied errors may be triggered if 1) file does not exist or 2) file exists but
-        # user does not have the s3:GetObject permission. 404 errors are handled by download_file().
-        module.fail_json_aws(e, msg=f"Could not find the key {obj}.")
-    except is_boto3_error_message("require AWS Signature Version 4"):  # pylint: disable=duplicate-except
-        raise Sigv4Required()
-    except is_boto3_error_code("InvalidArgument") as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg=f"Could not find the key {obj}.")
-    except (
-        botocore.exceptions.BotoCoreError,
-        botocore.exceptions.ClientError,
-        boto3.exceptions.Boto3Error,
-    ) as e:  # pylint: disable=duplicate-except
-        raise S3ObjectFailure(f"Could not find the key {obj}.", e)
+    _get_object_content(module, s3, bucket, obj, version)
 
     optional_kwargs = {"ExtraArgs": {"VersionId": version}} if version else {}
     for x in range(0, retries + 1):
@@ -811,27 +811,8 @@ def download_s3file(module, s3, bucket, obj, dest, retries, version=None):
 def download_s3str(module, s3, bucket, obj, version=None):
     if module.check_mode:
         module.exit_json(msg="GET operation skipped - running in check mode", changed=True)
-    try:
-        if version:
-            contents = to_native(
-                s3.get_object(aws_retry=True, Bucket=bucket, Key=obj, VersionId=version)["Body"].read()
-            )
-        else:
-            contents = to_native(s3.get_object(aws_retry=True, Bucket=bucket, Key=obj)["Body"].read())
-        module.exit_json(msg="GET operation complete", contents=contents, changed=True)
-    except is_boto3_error_message("require AWS Signature Version 4"):
-        raise Sigv4Required()
-    except is_boto3_error_code("InvalidArgument") as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(
-            e,
-            msg=f"Failed while getting contents of object {obj} as a string.",
-        )
-    except (
-        botocore.exceptions.BotoCoreError,
-        botocore.exceptions.ClientError,
-        boto3.exceptions.Boto3Error,
-    ) as e:  # pylint: disable=duplicate-except
-        raise S3ObjectFailure(f"Failed while getting contents of object {obj} as a string.", e)
+    contents = to_native(_get_object_content(module, s3, bucket, obj, version))
+    module.exit_json(msg="GET operation complete", contents=contents, changed=True)
 
 
 def get_download_url(module, s3, bucket, obj, expiry, tags=None, changed=True):
@@ -1255,6 +1236,17 @@ def check_object_tags(module, connection, bucket, obj):
     return diff
 
 
+def calculate_object_etag(module, s3, bucket, obj, head_etag, version=None):
+    etag = head_etag
+    if "-" in etag:
+        # object has been created using multipart upload, compute ETag using
+        # object content to ensure idempotency.
+        contents = _get_object_content(module, s3, bucket, obj, version)
+        # Set ETag to None, to force function to compute ETag from content
+        etag = calculate_etag_content(module, contents, None, s3, bucket, obj)
+    return etag
+
+
 def copy_object_to_bucket(module, s3, bucket, obj, encrypt, metadata, validate, src_bucket, src_obj, versionId=None):
     try:
         params = {"Bucket": bucket, "Key": obj}
@@ -1265,14 +1257,33 @@ def copy_object_to_bucket(module, s3, bucket, obj, encrypt, metadata, validate, 
                 changed=False,
             )
 
-        s_etag = get_etag(s3, src_bucket, src_obj, version=versionId)
-        d_etag = get_etag(s3, bucket, obj)
-        if s_etag == d_etag:
+        s_obj_info = _head_object(s3, src_bucket, src_obj, version=versionId)
+        d_obj_info = _head_object(s3, bucket, obj)
+        do_match = True
+        diff_msg = None
+        if d_obj_info:
+            src_etag = calculate_object_etag(module, s3, src_bucket, src_obj, s_obj_info.get("ETag"), versionId)
+            dst_etag = calculate_object_etag(module, s3, bucket, obj, d_obj_info.get("ETag"))
+            if src_etag != dst_etag:
+                # Source and destination objects ETag differ
+                do_match = False
+                diff_msg = "ETag from source and destination differ"
+            if do_match and metadata and metadata != d_obj_info.get("Metadata"):
+                # Metadata from module inputs differs from what has been retrieved from object header
+                diff_msg = "Would have update object Metadata if not running in check mode."
+                do_match = False
+        else:
+            # The destination object does not exists
+            do_match = False
+            diff_msg = "Would have copy object if not running in check mode."
+
+        if do_match:
+            # S3 objects are equals, ensure tags will not be updated
             if module.check_mode:
                 changed = check_object_tags(module, s3, bucket, obj)
                 result = {}
                 if changed:
-                    result.update({"msg": "Would have update object tags is not running in check mode."})
+                    result.update({"msg": "Would have update object tags if not running in check mode."})
                 return changed, result
 
             # Ensure tags
@@ -1281,8 +1292,9 @@ def copy_object_to_bucket(module, s3, bucket, obj, encrypt, metadata, validate, 
             if changed:
                 result = {"msg": "tags successfully updated.", "tags": tags}
             return changed, result
-        elif module.check_mode:
-            return True, {"msg": "ETag from source and destination differ"}
+        # S3 objects differ
+        if module.check_mode:
+            return True, {"msg": diff_msg}
         else:
             changed = True
             bucketsrc = {
