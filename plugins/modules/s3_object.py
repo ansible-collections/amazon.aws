@@ -497,10 +497,6 @@ def _head_object(s3, bucket, obj, version=None):
 
 def _get_object_content(module, s3, bucket, obj, version=None):
     try:
-        # Note: Something of a permissions related hack
-        # get_object returns the HEAD information, plus a *stream* which can be read.
-        # because the stream's dropped on the floor, we never pull the data and this is the
-        # functional equivalent of calling get_head which still relying on the 'GET' permission
         if version:
             contents = s3.get_object(aws_retry=True, Bucket=bucket, Key=obj, VersionId=version)["Body"].read()
         else:

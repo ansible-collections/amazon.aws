@@ -1,3 +1,3 @@
 ---
-minor_changes:
+bugfixes:
   - s3_object - fix idempotency issue when copying object uploaded using multipart upload (https://github.com/ansible-collections/amazon.aws/issues/2016).
