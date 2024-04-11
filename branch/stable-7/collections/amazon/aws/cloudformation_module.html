@@ -476,6 +476,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudfor
 <p>This must be the full path to the file, relative to the working directory. If using roles this may look like <code class="docutils literal notranslate"><span class="pre">roles/cloudformation/files/cloudformation-example.json</span></code>.</p>
 <p>If <em>state=present</em> and the stack does not exist yet, either <em>template</em>, <em>template_body</em> or <em>template_url</em> must be specified (but only one of them).</p>
 <p>If <em>state=present</em>, the stack does exist, and neither <em>template</em>, <em>template_body</em> nor <em>template_url</em> are specified, the previous template will be reused.</p>
+<p>The <em>template</em> parameter has been deprecated and will be remove in a release after 2026-05-01.  It is recommended to use <em>template_body</em> with the lookup plugin.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -551,7 +552,9 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudfor
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;present&quot;</span>
 <span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;us-east-1&quot;</span>
 <span class="w">    </span><span class="nt">disable_rollback</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<span class="w">    </span><span class="nt">template</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;files/cloudformation-example.json&quot;</span>
+<span class="w">    </span><span class="c1"># The template parameter has been deprecated, use template_body with lookup instead.</span>
+<span class="w">    </span><span class="c1"># template: &quot;files/cloudformation-example.json&quot;</span>
+<span class="w">    </span><span class="nt">template_body</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">&#39;file&#39;</span><span class="o">,</span> <span class="s1">&#39;cloudformation-example.json&#39;</span><span class="o">)</span> <span class="cp">}}</span><span class="s">&quot;</span>
 <span class="w">    </span><span class="nt">template_parameters</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">KeyName</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;jmartin&quot;</span>
 <span class="w">      </span><span class="nt">DiskType</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ephemeral&quot;</span>
@@ -567,7 +570,9 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudfor
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;present&quot;</span>
 <span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;us-east-1&quot;</span>
 <span class="w">    </span><span class="nt">disable_rollback</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<span class="w">    </span><span class="nt">template</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;roles/cloudformation/files/cloudformation-example.json&quot;</span>
+<span class="w">    </span><span class="c1"># The template parameter has been deprecated, use template_body with lookup instead.</span>
+<span class="w">    </span><span class="c1"># template: &quot;roles/cloudformation/files/cloudformation-example.json&quot;</span>
+<span class="w">    </span><span class="nt">template_body</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">&#39;file&#39;</span><span class="o">,</span> <span class="s1">&#39;cloudformation-example.json&#39;</span><span class="o">)</span> <span class="cp">}}</span><span class="s">&quot;</span>
 <span class="w">    </span><span class="nt">role_arn</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;arn:aws:iam::123456789012:role/cloudformation-iam-role&#39;</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">delete a stack</span>
