@@ -72,7 +72,6 @@ from .modules import aws_argument_spec as ec2_argument_spec  # pylint: disable=u
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.policy
 from .policy import _py3cmp as py3cmp  # pylint: disable=unused-import
 from .policy import compare_policies  # pylint: disable=unused-import
-from .policy import sort_json_policy_dict  # pylint: disable=unused-import
 
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.retries
 from .retries import AWSRetry  # pylint: disable=unused-import
