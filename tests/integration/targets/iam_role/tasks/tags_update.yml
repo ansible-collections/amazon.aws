@@ -1,6 +1,6 @@
 ---
 - name: Add Tag (CHECK MODE)
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: "{{ test_role }}"
     tags:
       TagA: ValueA
@@ -11,7 +11,7 @@
       - iam_role is changed
 
 - name: Add Tag
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: "{{ test_role }}"
     tags:
       TagA: ValueA
@@ -25,7 +25,7 @@
       - iam_role.iam_role.tags.TagA == "ValueA"
 
 - name: Add Tag (no change) - check mode
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: "{{ test_role }}"
     tags:
       TagA: ValueA
@@ -36,7 +36,7 @@
       - iam_role is not changed
 
 - name: Add Tag (no change)
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: "{{ test_role }}"
     tags:
       TagA: ValueA
@@ -49,7 +49,7 @@
       - iam_role.iam_role.tags.TagA == "ValueA"
 
 - name: iam_role_info after adding Tags
-  community.aws.iam_role_info:
+  amazon.aws.iam_role_info:
     name: "{{ test_role }}"
   register: role_info
 - ansible.builtin.assert:
@@ -79,7 +79,7 @@
 # ------------------------------------------------------------------------------------------
 
 - name: Update Tag (CHECK MODE)
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: "{{ test_role }}"
     tags:
       TagA: AValue
@@ -90,7 +90,7 @@
       - iam_role is changed
 
 - name: Update Tag
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: "{{ test_role }}"
     tags:
       TagA: AValue
@@ -103,7 +103,7 @@
       - iam_role.iam_role.tags.TagA == "AValue"
 
 - name: Update Tag (no change) - check mode
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: "{{ test_role }}"
     tags:
       TagA: AValue
@@ -114,7 +114,7 @@
       - iam_role is not changed
 
 - name: Update Tag (no change)
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: "{{ test_role }}"
     tags:
       TagA: AValue
@@ -127,7 +127,7 @@
       - iam_role.iam_role.tags.TagA == "AValue"
 
 - name: iam_role_info after updating Tag
-  community.aws.iam_role_info:
+  amazon.aws.iam_role_info:
     name: "{{ test_role }}"
   register: role_info
 - ansible.builtin.assert:
@@ -157,7 +157,7 @@
 # ------------------------------------------------------------------------------------------
 
 - name: Add second Tag without purge (CHECK MODE)
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: "{{ test_role }}"
     purge_tags: false
     tags:
@@ -169,7 +169,7 @@
       - iam_role is changed
 
 - name: Add second Tag without purge
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: "{{ test_role }}"
     purge_tags: false
     tags:
@@ -183,7 +183,7 @@
       - iam_role.iam_role.tags.TagB == "ValueB"
 
 - name: Add second Tag without purge (no change) - check mode
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: "{{ test_role }}"
     purge_tags: false
     tags:
@@ -195,7 +195,7 @@
       - iam_role is not changed
 
 - name: Add second Tag without purge (no change)
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: "{{ test_role }}"
     purge_tags: false
     tags:
@@ -209,7 +209,7 @@
       - iam_role.iam_role.tags.TagB == "ValueB"
 
 - name: iam_role_info after adding second Tag without purge
-  community.aws.iam_role_info:
+  amazon.aws.iam_role_info:
     name: "{{ test_role }}"
   register: role_info
 - ansible.builtin.assert:
@@ -241,7 +241,7 @@
 # ------------------------------------------------------------------------------------------
 
 - name: Purge first tag (CHECK MODE)
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: "{{ test_role }}"
     purge_tags: true
     tags:
@@ -253,7 +253,7 @@
       - iam_role is changed
 
 - name: Purge first tag
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: "{{ test_role }}"
     purge_tags: true
     tags:
@@ -267,7 +267,7 @@
       - iam_role.iam_role.tags.TagB == "ValueB"
 
 - name: Purge first tag (no change) - check mode
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: "{{ test_role }}"
     purge_tags: true
     tags:
@@ -278,7 +278,7 @@
       - iam_role is not changed
 
 - name: Purge first tag (no change)
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: "{{ test_role }}"
     purge_tags: true
     tags:
@@ -292,7 +292,7 @@
       - iam_role.iam_role.tags.TagB == "ValueB"
 
 - name: iam_role_info after purging first Tag
-  community.aws.iam_role_info:
+  amazon.aws.iam_role_info:
     name: "{{ test_role }}"
   register: role_info
 - ansible.builtin.assert:

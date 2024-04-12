@@ -15,7 +15,7 @@
         state: present
 
     - name: Create Safe IAM Managed Policy
-      community.aws.iam_managed_policy:
+      amazon.aws.iam_managed_policy:
         state: present
         policy_name: "{{ custom_policy_name }}"
         policy_description: A safe (deny-all) managed policy
@@ -54,7 +54,7 @@
         state: absent
 
     - name: Remove Safe IAM Managed Policy
-      community.aws.iam_managed_policy:
+      amazon.aws.iam_managed_policy:
         state: absent
         policy_name: "{{ custom_policy_name }}"
 

@@ -67,12 +67,16 @@ iam_roles:
       description:
         - The policy that grants an entity permission to assume the role
         - |
-          Note: the case of keys in this dictionary are currently converted from CamelCase to
-          snake_case.  In a release after 2023-12-01 this behaviour will change.
+          Note: the case of keys in this dictionary are no longer converted from CamelCase to
+          snake_case.  This behaviour changed in release 8.0.0.
       returned: always
       type: dict
     assume_role_policy_document_raw:
-      description: The policy document describing what can assume the role.
+      description:
+        - |
+          Note: this return value has been deprecated and will be removed in a release after
+          2026-05-01.  assume_role_policy_document and assume_role_policy_document_raw now use
+          the same format.
       returned: always
       type: dict
       version_added: 5.3.0
@@ -208,11 +212,10 @@ def main():
     path_prefix = module.params["path_prefix"]
 
     module.deprecate(
-        "In a release after 2023-12-01 the contents of assume_role_policy_document "
-        "will no longer be converted from CamelCase to snake_case.  The "
-        ".assume_role_policy_document_raw return value already returns the "
-        "policy document in this future format.",
-        date="2023-12-01",
+        "In a release after 2026-05-01 iam_role.assume_role_policy_document_raw "
+        "will no longer be returned.  Since release 8.0.0 assume_role_policy_document "
+        "has been returned with the same format as iam_role.assume_role_policy_document_raw",
+        date="2026-05-01",
         collection_name="amazon.aws",
     )
 

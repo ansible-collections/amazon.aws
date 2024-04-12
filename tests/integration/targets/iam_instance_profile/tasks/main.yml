@@ -17,7 +17,7 @@
     # Prepare
 
     - name: Prepare IAM Roles
-      community.aws.iam_role:
+      amazon.aws.iam_role:
         state: present
         name: "{{ item }}"
         path: "{{ test_path }}"
@@ -504,7 +504,7 @@
         - "{{ test_role }}-2"
 
     - name: Remove IAM Roles
-      community.aws.iam_role:
+      amazon.aws.iam_role:
         state: absent
         name: "{{ item }}"
         path: "{{ test_path }}"

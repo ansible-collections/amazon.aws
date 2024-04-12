@@ -9,7 +9,7 @@
     - amazon.aws
   block:
     - name: set iam password policy
-      community.aws.iam_password_policy:
+      amazon.aws.iam_password_policy:
         state: present
         min_pw_length: 8
         require_symbols: false
@@ -28,7 +28,7 @@
           - result.changed
 
     - name: verify iam password policy has been created
-      community.aws.iam_password_policy:
+      amazon.aws.iam_password_policy:
         state: present
         min_pw_length: 8
         require_symbols: false
@@ -47,7 +47,7 @@
           - not result.changed
 
     - name: update iam password policy with different settings
-      community.aws.iam_password_policy:
+      amazon.aws.iam_password_policy:
         state: present
         min_pw_length: 15
         require_symbols: true
@@ -67,7 +67,7 @@
 
     # Test for regression of #59102
     - name: update iam password policy without expiry
-      community.aws.iam_password_policy:
+      amazon.aws.iam_password_policy:
         state: present
         min_pw_length: 15
         require_symbols: true
@@ -83,7 +83,7 @@
           - result.changed
 
     - name: remove iam password policy
-      community.aws.iam_password_policy:
+      amazon.aws.iam_password_policy:
         state: absent
       register: result
 
@@ -93,7 +93,7 @@
           - result.changed
 
     - name: verify password policy has been removed
-      community.aws.iam_password_policy:
+      amazon.aws.iam_password_policy:
         state: absent
       register: result
 
@@ -103,6 +103,6 @@
           - not result.changed
   always:
     - name: remove iam password policy
-      community.aws.iam_password_policy:
+      amazon.aws.iam_password_policy:
         state: absent
       register: result

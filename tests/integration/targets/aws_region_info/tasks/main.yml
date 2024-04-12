@@ -7,7 +7,7 @@
       region: "{{ aws_region }}"
   block:
     - name: List available Regions
-      community.aws.aws_region_info:
+      amazon.aws.aws_region_info:
       register: regions
     - name: check task return attributes
       vars:
@@ -22,7 +22,7 @@
           - '"region_name" in first_region'
 
     - name: List available Regions - check_mode
-      community.aws.aws_region_info:
+      amazon.aws.aws_region_info:
       register: check_regions
     - name: check task return attributes - check_mode
       vars:
@@ -37,7 +37,7 @@
           - '"region_name" in first_region'
 
     - name: Filter available Regions using - ("region-name")
-      community.aws.aws_region_info:
+      amazon.aws.aws_region_info:
         filters:
           region-name: us-west-1
       register: us_west_1
@@ -58,7 +58,7 @@
           - first_region.region_name == 'us-west-1'
 
     - name: Filter available Regions using _ ("region_name")
-      community.aws.aws_region_info:
+      amazon.aws.aws_region_info:
         filters:
           region_name: us-west-2
       register: us_west_2
@@ -79,7 +79,7 @@
           - first_region.region_name == 'us-west-2'
 
     - name: Filter available Regions using _ and - to check precedence
-      community.aws.aws_region_info:
+      amazon.aws.aws_region_info:
         filters:
           region-name: eu-west-1
           region_name: eu-central-1

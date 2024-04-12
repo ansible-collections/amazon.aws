@@ -23,7 +23,7 @@
       ignore_errors: true
 
     - name: Create an enhanced monitoring role
-      community.aws.iam_role:
+      amazon.aws.iam_role:
         assume_role_policy_document: "{{ lookup('file','files/enhanced_monitoring_assume_policy.json') }}"
         name: "{{ instance_id }}-role"
         state: present
@@ -91,7 +91,7 @@
         preferred_maintenance_window: "{{ preferred_maintenance_window }}"
         auto_minor_version_upgrade: false
         monitoring_interval: "{{ monitoring_interval }}"
-        monitoring_role_arn: "{{ enhanced_monitoring_role.arn }}"
+        monitoring_role_arn: "{{ enhanced_monitoring_role.iam_role.arn }}"
         iops: "{{ iops }}"
         port: 1150
         max_allocated_storage: 150
@@ -115,7 +115,7 @@
         preferred_maintenance_window: "{{ preferred_maintenance_window }}"
         auto_minor_version_upgrade: false
         monitoring_interval: "{{ monitoring_interval }}"
-        monitoring_role_arn: "{{ enhanced_monitoring_role.arn }}"
+        monitoring_role_arn: "{{ enhanced_monitoring_role.iam_role.arn }}"
         iops: "{{ iops }}"
         port: 1150
         max_allocated_storage: 150
@@ -143,7 +143,7 @@
         preferred_maintenance_window: "{{ preferred_maintenance_window }}"
         auto_minor_version_upgrade: false
         monitoring_interval: "{{ monitoring_interval }}"
-        monitoring_role_arn: "{{ enhanced_monitoring_role.arn }}"
+        monitoring_role_arn: "{{ enhanced_monitoring_role.iam_role.arn }}"
         iops: "{{ iops }}"
         port: 1150
         max_allocated_storage: 150
@@ -166,7 +166,7 @@
         preferred_maintenance_window: "{{ preferred_maintenance_window }}"
         auto_minor_version_upgrade: false
         monitoring_interval: "{{ monitoring_interval }}"
-        monitoring_role_arn: "{{ enhanced_monitoring_role.arn }}"
+        monitoring_role_arn: "{{ enhanced_monitoring_role.iam_role.arn }}"
         iops: "{{ iops }}"
         port: 1150
         max_allocated_storage: 150
@@ -190,7 +190,7 @@
       ignore_errors: true
 
     - name: Remove enhanced monitoring role
-      community.aws.iam_role:
+      amazon.aws.iam_role:
         assume_role_policy_document: "{{ lookup('file','files/enhanced_monitoring_assume_policy.json') }}"
         name: "{{ instance_id }}-role"
         state: absent

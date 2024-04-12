@@ -1,6 +1,6 @@
 ---
 - name: Add Managed Policy (CHECK MODE)
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: "{{ test_role }}"
     purge_policies: false
     managed_policy:
@@ -12,7 +12,7 @@
       - iam_role is changed
 
 - name: Add Managed Policy
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: "{{ test_role }}"
     purge_policies: false
     managed_policy:
@@ -24,7 +24,7 @@
       - iam_role.iam_role.role_name == test_role
 
 - name: Add Managed Policy (no change) - check mode
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: "{{ test_role }}"
     purge_policies: false
     managed_policy:
@@ -36,7 +36,7 @@
       - iam_role is not changed
 
 - name: Add Managed Policy (no change)
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: "{{ test_role }}"
     purge_policies: false
     managed_policy:
@@ -48,7 +48,7 @@
       - iam_role.iam_role.role_name == test_role
 
 - name: iam_role_info after adding Managed Policy
-  community.aws.iam_role_info:
+  amazon.aws.iam_role_info:
     name: "{{ test_role }}"
   register: role_info
 - ansible.builtin.assert:
@@ -80,7 +80,7 @@
 # ------------------------------------------------------------------------------------------
 
 - name: Update Managed Policy without purge (CHECK MODE)
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: "{{ test_role }}"
     purge_policies: false
     managed_policy:
@@ -92,7 +92,7 @@
       - iam_role is changed
 
 - name: Update Managed Policy without purge
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: "{{ test_role }}"
     purge_policies: false
     managed_policy:
@@ -104,7 +104,7 @@
       - iam_role.iam_role.role_name == test_role
 
 - name: Update Managed Policy without purge (no change) - check mode
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: "{{ test_role }}"
     purge_policies: false
     managed_policy:
@@ -116,7 +116,7 @@
       - iam_role is not changed
 
 - name: Update Managed Policy without purge (no change)
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: "{{ test_role }}"
     purge_policies: false
     managed_policy:
@@ -128,7 +128,7 @@
       - iam_role.iam_role.role_name == test_role
 
 - name: iam_role_info after updating Managed Policy without purge
-  community.aws.iam_role_info:
+  amazon.aws.iam_role_info:
     name: "{{ test_role }}"
   register: role_info
 - ansible.builtin.assert:
@@ -161,7 +161,7 @@
 
 # Managed Policies are purged by default
 - name: Update Managed Policy with purge (CHECK MODE)
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: "{{ test_role }}"
     managed_policy:
       - "{{ custom_policy_name }}"
@@ -172,7 +172,7 @@
       - iam_role is changed
 
 - name: Update Managed Policy with purge
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: "{{ test_role }}"
     managed_policy:
       - "{{ custom_policy_name }}"
@@ -183,7 +183,7 @@
       - iam_role.iam_role.role_name == test_role
 
 - name: Update Managed Policy with purge (no change) - check mode
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: "{{ test_role }}"
     managed_policy:
       - "{{ custom_policy_name }}"
@@ -194,7 +194,7 @@
       - iam_role is not changed
 
 - name: Update Managed Policy with purge (no change)
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: "{{ test_role }}"
     managed_policy:
       - "{{ custom_policy_name }}"
@@ -205,7 +205,7 @@
       - iam_role.iam_role.role_name == test_role
 
 - name: iam_role_info after updating Managed Policy with purge
-  community.aws.iam_role_info:
+  amazon.aws.iam_role_info:
     name: "{{ test_role }}"
   register: role_info
 - ansible.builtin.assert:

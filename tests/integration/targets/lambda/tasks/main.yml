@@ -16,7 +16,7 @@
       when: (lookup('env', 'HOME'))
     # Preparation
     - name: create minimal lambda role
-      community.aws.iam_role:
+      amazon.aws.iam_role:
         name: "{{ lambda_role_name }}"
         assume_role_policy_document: '{{ lookup("file", "minimal_trust_policy.json") }}'
         create_instance_profile: false
@@ -807,7 +807,7 @@
         - "{{ lambda_function_name }}_4"
 
     - name: ensure role has been removed at end of test
-      community.aws.iam_role:
+      amazon.aws.iam_role:
         name: "{{ lambda_role_name }}"
         state: absent
       ignore_errors: true

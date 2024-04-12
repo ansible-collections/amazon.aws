@@ -340,7 +340,7 @@ def main():
                 "The 'policies' return key is deprecated and will be replaced by 'policy_names'. Both values are"
                 " returned for now."
             ),
-            date="2024-08-01",
+            version="9.0.0",
             collection_name="amazon.aws",
         )
 

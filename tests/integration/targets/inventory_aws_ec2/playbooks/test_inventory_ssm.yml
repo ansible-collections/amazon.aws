@@ -31,7 +31,7 @@
         # Create VPC, subnet, security group, and find image_id to create instance
         - ansible.builtin.include_tasks: tasks/setup.yml
         - name: Ensure IAM instance role exists
-          community.aws.iam_role:
+          amazon.aws.iam_role:
             name: "{{ iam_role_name }}"
             assume_role_policy_document: "{{ lookup('file', 'files/ec2-trust-policy.json') }}"
             state: present
@@ -117,7 +117,7 @@
 
       always:
         - name: Delete IAM role
-          community.aws.iam_role:
+          amazon.aws.iam_role:
             name: "{{ iam_role_name }}"
             state: absent
             wait: true

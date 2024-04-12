@@ -34,7 +34,7 @@
         assume_deny_policy: '{{ lookup("file", "deny-assume.json") | from_json }}'
     - ansible.builtin.include_tasks: parameter_checks.yml
     - name: Create Safe IAM Managed Policy
-      community.aws.iam_managed_policy:
+      amazon.aws.iam_managed_policy:
         state: present
         policy_name: "{{ custom_policy_name }}"
         policy_description: A safe (deny-all) managed policy
@@ -60,23 +60,23 @@
     # Cleanup
 
     - name: Remove IAM Role
-      community.aws.iam_role:
+      amazon.aws.iam_role:
         state: absent
         name: "{{ test_role }}"
         delete_instance_profile: true
       ignore_errors: true
     - name: Remove IAM Role (with path)
-      community.aws.iam_role:
+      amazon.aws.iam_role:
         state: absent
         name: "{{ test_role }}"
         path: "{{ test_path }}"
         delete_instance_profile: true
       ignore_errors: true
     - name: iam_role_info after Role deletion
-      community.aws.iam_role_info:
+      amazon.aws.iam_role_info:
         name: "{{ test_role }}"
       ignore_errors: true
     - name: Remove test managed policy
-      community.aws.iam_managed_policy:
+      amazon.aws.iam_managed_policy:
         state: absent
         policy_name: "{{ custom_policy_name }}"

@@ -26,7 +26,7 @@
     state: absent
 
 - name: Delete the role
-  community.aws.iam_role:
+  amazon.aws.iam_role:
     name: "{{ lambda_role_name }}"
     assume_role_policy_document: '{{ lookup("file", "minimal_trust_policy.json")}}'
     state: absent

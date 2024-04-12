@@ -1,5 +1,5 @@
 ---
-- name: Test community.aws.aws_s3_bucket_info
+- name: Test s3_bucket_info
   module_defaults:
     group/aws:
       access_key: "{{ aws_access_key }}"

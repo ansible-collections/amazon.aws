@@ -141,7 +141,7 @@
       register: kms_key2
 
     - name: Create CloudWatch IAM Role
-      community.aws.iam_role:
+      amazon.aws.iam_role:
         state: present
         name: "{{ cloudwatch_role }}"
         assume_role_policy_document: "{{ lookup('template', 'cloudwatch-assume-policy.j2') }}"
@@ -167,7 +167,7 @@
         policy_json: "{{ lookup('template', 'cloudwatch-policy.j2') | to_json }}"
 
     - name: Create CloudWatch IAM Role with no kms permissions
-      community.aws.iam_role:
+      amazon.aws.iam_role:
         state: present
         name: "{{ cloudwatch_no_kms_role }}"
         assume_role_policy_document: "{{ lookup('template', 'cloudtrail-no-kms-assume-policy.j2') }}"
@@ -551,7 +551,7 @@
         state: present
         name: "{{ cloudtrail_name }}"
         cloudwatch_logs_log_group_arn: "{{ output_cloudwatch_log_group.arn }}"
-        cloudwatch_logs_role_arn: "{{ output_cloudwatch_role.arn }}"
+        cloudwatch_logs_role_arn: "{{ output_cloudwatch_role.iam_role.arn }}"
       register: output
       check_mode: true
     - ansible.builtin.assert:
@@ -563,28 +563,28 @@
         state: present
         name: "{{ cloudtrail_name }}"
         cloudwatch_logs_log_group_arn: "{{ output_cloudwatch_log_group.arn }}"
-        cloudwatch_logs_role_arn: "{{ output_cloudwatch_role.arn }}"
+        cloudwatch_logs_role_arn: "{{ output_cloudwatch_role.iam_role.arn }}"
       register: output
     - ansible.builtin.assert:
         that:
           - output is changed
           - output.trail.name == cloudtrail_name
           - output.trail.cloud_watch_logs_log_group_arn == output_cloudwatch_log_group.arn
-          - output.trail.cloud_watch_logs_role_arn == output_cloudwatch_role.arn
+          - output.trail.cloud_watch_logs_role_arn == output_cloudwatch_role.iam_role.arn
 
     - name: Set CloudWatch Log Group (no change)
       amazon.aws.cloudtrail:
         state: present
         name: "{{ cloudtrail_name }}"
         cloudwatch_logs_log_group_arn: "{{ output_cloudwatch_log_group.arn }}"
-        cloudwatch_logs_role_arn: "{{ output_cloudwatch_role.arn }}"
+        cloudwatch_logs_role_arn: "{{ output_cloudwatch_role.iam_role.arn }}"
       register: output
     - ansible.builtin.assert:
         that:
           - output is not changed
           - output.trail.name == cloudtrail_name
           - output.trail.cloud_watch_logs_log_group_arn == output_cloudwatch_log_group.arn
-          - output.trail.cloud_watch_logs_role_arn == output_cloudwatch_role.arn
+          - output.trail.cloud_watch_logs_role_arn == output_cloudwatch_role.iam_role.arn
 
     - name: No-op update to trail
       amazon.aws.cloudtrail:
@@ -596,7 +596,7 @@
           - output is not changed
           - output.trail.name == cloudtrail_name
           - output.trail.cloud_watch_logs_log_group_arn == output_cloudwatch_log_group.arn
-          - output.trail.cloud_watch_logs_role_arn == output_cloudwatch_role.arn
+          - output.trail.cloud_watch_logs_role_arn == output_cloudwatch_role.iam_role.arn
 
     - name: Get the trail info with CloudWatch Log Group
       amazon.aws.cloudtrail_info:
@@ -608,49 +608,49 @@
       ansible.builtin.assert:
         that:
           - info.trail_list[0].cloud_watch_logs_log_group_arn == output_cloudwatch_log_group.arn
-          - info.trail_list[0].cloud_watch_logs_role_arn == output_cloudwatch_role.arn
+          - info.trail_list[0].cloud_watch_logs_role_arn == output_cloudwatch_role.iam_role.arn
 
     - name: Update CloudWatch Log Group (CHECK MODE)
       amazon.aws.cloudtrail:
         state: present
         name: "{{ cloudtrail_name }}"
         cloudwatch_logs_log_group_arn: "{{ output_cloudwatch_log_group2.arn }}"
-        cloudwatch_logs_role_arn: "{{ output_cloudwatch_role.arn }}"
+        cloudwatch_logs_role_arn: "{{ output_cloudwatch_role.iam_role.arn }}"
       register: output
       check_mode: true
     - ansible.builtin.assert:
         that:
           - output is changed
           - output.trail.cloud_watch_logs_log_group_arn == output_cloudwatch_log_group2.arn
-          - output.trail.cloud_watch_logs_role_arn == output_cloudwatch_role.arn
+          - output.trail.cloud_watch_logs_role_arn == output_cloudwatch_role.iam_role.arn
 
     - name: Update CloudWatch Log Group
       amazon.aws.cloudtrail:
         state: present
         name: "{{ cloudtrail_name }}"
         cloudwatch_logs_log_group_arn: "{{ output_cloudwatch_log_group2.arn }}"
-        cloudwatch_logs_role_arn: "{{ output_cloudwatch_role.arn }}"
+        cloudwatch_logs_role_arn: "{{ output_cloudwatch_role.iam_role.arn }}"
       register: output
     - ansible.builtin.assert:
         that:
           - output is changed
           - output.trail.name == cloudtrail_name
           - output.trail.cloud_watch_logs_log_group_arn == output_cloudwatch_log_group2.arn
-          - output.trail.cloud_watch_logs_role_arn == output_cloudwatch_role.arn
+          - output.trail.cloud_watch_logs_role_arn == output_cloudwatch_role.iam_role.arn
 
     - name: Update CloudWatch Log Group (no change)
       amazon.aws.cloudtrail:
         state: present
         name: "{{ cloudtrail_name }}"
         cloudwatch_logs_log_group_arn: "{{ output_cloudwatch_log_group2.arn }}"
-        cloudwatch_logs_role_arn: "{{ output_cloudwatch_role.arn }}"
+        cloudwatch_logs_role_arn: "{{ output_cloudwatch_role.iam_role.arn }}"
       register: output
     - ansible.builtin.assert:
         that:
           - output is not changed
           - output.trail.name == cloudtrail_name
           - output.trail.cloud_watch_logs_log_group_arn == output_cloudwatch_log_group2.arn
-          - output.trail.cloud_watch_logs_role_arn == output_cloudwatch_role.arn
+          - output.trail.cloud_watch_logs_role_arn == output_cloudwatch_role.iam_role.arn
 
     - name: Get the trail info with CloudWatch Log Group after update
       amazon.aws.cloudtrail_info:
@@ -662,7 +662,7 @@
       ansible.builtin.assert:
         that:
           - info.trail_list[0].cloud_watch_logs_log_group_arn == output_cloudwatch_log_group2.arn
-          - info.trail_list[0].cloud_watch_logs_role_arn == output_cloudwatch_role.arn
+          - info.trail_list[0].cloud_watch_logs_role_arn == output_cloudwatch_role.iam_role.arn
 
     #- name: 'Remove CloudWatch Log Group (CHECK MODE)'
     #  amazon.aws.cloudtrail:
@@ -1332,7 +1332,7 @@
     # Assume role to a role with Denied access to KMS
 
     - amazon.aws.sts_assume_role:
-        role_arn: "{{ output_cloudwatch_no_kms_role.arn }}"
+        role_arn: "{{ output_cloudwatch_no_kms_role.iam_role.arn }}"
         role_session_name: cloudtrailNoKms
         region: "{{ aws_region }}"
       register: noKms_assumed_role
@@ -1438,7 +1438,7 @@
         s3_key_prefix: "{{ cloudtrail_prefix }}"
         sns_topic_name: "{{ sns_topic }}"
         cloudwatch_logs_log_group_arn: "{{ output_cloudwatch_log_group.arn }}"
-        cloudwatch_logs_role_arn: "{{ output_cloudwatch_role.arn }}"
+        cloudwatch_logs_role_arn: "{{ output_cloudwatch_role.iam_role.arn }}"
         is_multi_region_trail: true
         include_global_events: true
         enable_log_file_validation: true
@@ -1468,7 +1468,7 @@
         s3_key_prefix: "{{ cloudtrail_prefix }}"
         sns_topic_name: "{{ sns_topic }}"
         cloudwatch_logs_log_group_arn: "{{ output_cloudwatch_log_group.arn }}"
-        cloudwatch_logs_role_arn: "{{ output_cloudwatch_role.arn }}"
+        cloudwatch_logs_role_arn: "{{ output_cloudwatch_role.iam_role.arn }}"
         is_multi_region_trail: true
         include_global_events: true
         enable_log_file_validation: true
@@ -1572,7 +1572,7 @@
         policy_name: CloudWatch
       ignore_errors: true
     - name: Delete CloudWatch IAM Role
-      community.aws.iam_role:
+      amazon.aws.iam_role:
         state: absent
         name: "{{ cloudwatch_role }}"
       ignore_errors: true
@@ -1584,7 +1584,7 @@
         policy_name: CloudWatchNokms
       ignore_errors: true
     - name: Delete CloudWatch No KMS IAM Role
-      community.aws.iam_role:
+      amazon.aws.iam_role:
         state: absent
         name: "{{ cloudwatch_no_kms_role }}"
       ignore_errors: true
