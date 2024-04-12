@@ -2068,7 +2068,10 @@ def enforce_count(existing_matches, desired_module_state):
         await_instances(terminate_ids, desired_module_state="terminated", force_wait=True)
     except is_boto3_error_code("InvalidInstanceID.NotFound"):
         pass
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:  # pylint: disable=duplicate-except
         module.fail_json(e, msg="Unable to terminate instances")
 
     # include data for all matched instances in addition to the list of terminations
