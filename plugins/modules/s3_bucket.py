@@ -373,7 +373,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_ta
 
 
 
-def handle_bucket_versioning(s3_client, module, name):
+def handle_bucket_versioning(s3_client, module: AnsibleAWSModule, name: str) -> tuple[bool, dict]:
     versioning = module.params.get("versioning")
     versioning_changed = False
     versioning_status = {}
@@ -417,7 +417,7 @@ def handle_bucket_versioning(s3_client, module, name):
         return versioning_changed, versioning_result
 
 
-def handle_bucket_requester_pays(s3_client, module, name):
+def handle_bucket_requester_pays(s3_client, module: AnsibleAWSModule, name: str) -> tuple[bool, dict]:
     requester_pays = module.params.get("requester_pays")
     requester_pays_changed = False
     requester_pays_status = {}
@@ -446,12 +446,12 @@ def handle_bucket_requester_pays(s3_client, module, name):
                     # account, so we retry one more time
                     put_bucket_request_payment(s3_client, name, payer)
                     requester_pays_status = wait_payer_is_applied(module, s3_client, name, payer, should_fail=True)
-                changed = True
+                requester_pays_changed = True
 
     return requester_pays_changed, requester_pays
 
 
-def handle_bucket_public_access_config(s3_client, module, name):
+def handle_bucket_public_access_config(s3_client, module: AnsibleAWSModule, name: str) -> tuple[bool, dict]:
     public_access = module.params.get("public_access")
     delete_public_access = module.params.get("delete_public_access")
     public_access_changed = False
@@ -497,7 +497,7 @@ def handle_bucket_public_access_config(s3_client, module, name):
     return public_access_changed, public_access_result
 
 
-def handle_bucket_policy(s3_client, module, name):
+def handle_bucket_policy(s3_client, module: AnsibleAWSModule, name: str) -> tuple[bool, dict]:
     policy = module.params.get("policy")
     policy_changed = False
     try:
@@ -542,7 +542,7 @@ def handle_bucket_policy(s3_client, module, name):
         return policy_changed, current_policy
 
 
-def handle_bucket_tags(s3_client, module, name):
+def handle_bucket_tags(s3_client, module: AnsibleAWSModule, name: str) -> tuple[bool, dict]:
     tags = module.params.get("tags")
     purge_tags = module.params.get("purge_tags")
     bucket_tags_changed = False
@@ -588,7 +588,7 @@ def handle_bucket_tags(s3_client, module, name):
         return bucket_tags_changed, current_tags_dict
 
 
-def handle_bucket_encryption(s3_client, module, name):
+def handle_bucket_encryption(s3_client, module: AnsibleAWSModule, name: str) -> tuple[bool, dict]:
     encryption = module.params.get("encryption")
     encryption_key_id = module.params.get("encryption_key_id")
     bucket_key_enabled = module.params.get("bucket_key_enabled")
@@ -641,7 +641,7 @@ def handle_bucket_encryption(s3_client, module, name):
         return encryption_changed, current_encryption
 
 
-def handle_bucket_ownership(s3_client, module, name):
+def handle_bucket_ownership(s3_client, module: AnsibleAWSModule, name: str) -> tuple[bool, dict]:
     delete_object_ownership = module.params.get("delete_object_ownership")
     object_ownership = module.params.get("object_ownership")
     bucket_ownership_changed = False
@@ -684,7 +684,7 @@ def handle_bucket_ownership(s3_client, module, name):
     return bucket_ownership_changed, bucket_ownership_result
 
 
-def handle_bucket_acl(s3_client, module, name):
+def handle_bucket_acl(s3_client, module: AnsibleAWSModule, name: str) -> tuple[bool, dict]:
     acl = module.params.get("acl")
     bucket_acl_changed = False
     bucket_acl_result = {}
@@ -711,7 +711,7 @@ def handle_bucket_acl(s3_client, module, name):
     return bucket_acl_changed, bucket_acl_result
 
 
-def handle_bucket_object_lock(s3_client, module, name):
+def handle_bucket_object_lock(s3_client, module: AnsibleAWSModule, name: str):
     object_lock_enabled = module.params.get("object_lock_enabled")
     object_lock_result = {}
     try:
@@ -742,7 +742,7 @@ def handle_bucket_object_lock(s3_client, module, name):
     return object_lock_result
 
 
-def create_or_update_bucket(s3_client, module):
+def create_or_update_bucket(s3_client, module: AnsibleAWSModule):
     name = module.params.get("name")
     object_lock_enabled = module.params.get("object_lock_enabled")
     # default to US Standard region,
@@ -810,7 +810,7 @@ def create_or_update_bucket(s3_client, module):
     module.exit_json(changed=changed, name=name, **result)
 
 
-def bucket_exists(s3_client, bucket_name):
+def bucket_exists(s3_client, bucket_name: str) -> bool:
     try:
         s3_client.head_bucket(Bucket=bucket_name)
         return True
@@ -819,7 +819,7 @@ def bucket_exists(s3_client, bucket_name):
 
 
 @AWSRetry.exponential_backoff(max_delay=120)
-def create_bucket(s3_client, bucket_name, location, object_lock_enabled=False):
+def create_bucket(s3_client, bucket_name: str, location: str, object_lock_enabled=False) -> bool:
     try:
         params = {"Bucket": bucket_name}
 
@@ -843,22 +843,22 @@ def create_bucket(s3_client, bucket_name, location, object_lock_enabled=False):
 
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def put_bucket_tagging(s3_client, bucket_name, tags):
+def put_bucket_tagging(s3_client, bucket_name: str, tags):
     s3_client.put_bucket_tagging(Bucket=bucket_name, Tagging={"TagSet": ansible_dict_to_boto3_tag_list(tags)})
 
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def put_bucket_policy(s3_client, bucket_name, policy):
+def put_bucket_policy(s3_client, bucket_name: str, policy):
     s3_client.put_bucket_policy(Bucket=bucket_name, Policy=json.dumps(policy))
 
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def delete_bucket_policy(s3_client, bucket_name):
+def delete_bucket_policy(s3_client, bucket_name: str):
     s3_client.delete_bucket_policy(Bucket=bucket_name)
 
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def get_bucket_policy(s3_client, bucket_name):
+def get_bucket_policy(s3_client, bucket_name: str):
     try:
         current_policy_string = s3_client.get_bucket_policy(Bucket=bucket_name).get("Policy")
         if not current_policy_string:
@@ -871,33 +871,33 @@ def get_bucket_policy(s3_client, bucket_name):
 
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def put_bucket_request_payment(s3_client, bucket_name, payer):
+def put_bucket_request_payment(s3_client, bucket_name: str, payer):
     s3_client.put_bucket_request_payment(Bucket=bucket_name, RequestPaymentConfiguration={"Payer": payer})
 
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def get_bucket_request_payment(s3_client, bucket_name):
+def get_bucket_request_payment(s3_client, bucket_name: str):
     return s3_client.get_bucket_request_payment(Bucket=bucket_name).get("Payer")
 
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def get_bucket_versioning(s3_client, bucket_name):
+def get_bucket_versioning(s3_client, bucket_name: str):
     return s3_client.get_bucket_versioning(Bucket=bucket_name)
 
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def put_bucket_versioning(s3_client, bucket_name, required_versioning):
+def put_bucket_versioning(s3_client, bucket_name: str, required_versioning):
     s3_client.put_bucket_versioning(Bucket=bucket_name, VersioningConfiguration={"Status": required_versioning})
 
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def get_bucket_object_lock_enabled(s3_client, bucket_name):
+def get_bucket_object_lock_enabled(s3_client, bucket_name: str):
     object_lock_configuration = s3_client.get_object_lock_configuration(Bucket=bucket_name)
     return object_lock_configuration["ObjectLockConfiguration"]["ObjectLockEnabled"] == "Enabled"
 
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def get_bucket_encryption(s3_client, bucket_name):
+def get_bucket_encryption(s3_client, bucket_name: str):
     try:
         result = s3_client.get_bucket_encryption(Bucket=bucket_name)
         return (
@@ -912,7 +912,7 @@ def get_bucket_encryption(s3_client, bucket_name):
 
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def get_bucket_key(s3_client, bucket_name):
+def get_bucket_key(s3_client, bucket_name: str):
     try:
         result = s3_client.get_bucket_encryption(Bucket=bucket_name)
         return result.get("ServerSideEncryptionConfiguration", {}).get("Rules", [])[0].get("BucketKeyEnabled")
@@ -922,7 +922,7 @@ def get_bucket_key(s3_client, bucket_name):
         return None
 
 
-def put_bucket_encryption_with_retry(module, s3_client, name, expected_encryption):
+def put_bucket_encryption_with_retry(module: AnsibleAWSModule, s3_client, name, expected_encryption):
     max_retries = 3
     for retries in range(1, max_retries + 1):
         try:
@@ -950,14 +950,14 @@ def put_bucket_encryption_with_retry(module, s3_client, name, expected_encryptio
 
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def put_bucket_encryption(s3_client, bucket_name, encryption):
+def put_bucket_encryption(s3_client, bucket_name: str, encryption):
     server_side_encryption_configuration = {"Rules": [{"ApplyServerSideEncryptionByDefault": encryption}]}
     s3_client.put_bucket_encryption(
         Bucket=bucket_name, ServerSideEncryptionConfiguration=server_side_encryption_configuration
     )
 
 
-def put_bucket_key_with_retry(module, s3_client, name, expected_encryption):
+def put_bucket_key_with_retry(module: AnsibleAWSModule, s3_client, name: str, expected_encryption):
     max_retries = 3
     for retries in range(1, max_retries + 1):
         try:
@@ -982,7 +982,7 @@ def put_bucket_key_with_retry(module, s3_client, name, expected_encryption):
 
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def put_bucket_key(s3_client, bucket_name, encryption):
+def put_bucket_key(s3_client, bucket_name: str, encryption):
     # server_side_encryption_configuration ={'Rules': [{'BucketKeyEnabled': encryption}]}
     encryption_status = s3_client.get_bucket_encryption(Bucket=bucket_name)
     encryption_status["ServerSideEncryptionConfiguration"]["Rules"][0]["BucketKeyEnabled"] = encryption
@@ -992,17 +992,17 @@ def put_bucket_key(s3_client, bucket_name, encryption):
 
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def delete_bucket_tagging(s3_client, bucket_name):
+def delete_bucket_tagging(s3_client, bucket_name: str):
     s3_client.delete_bucket_tagging(Bucket=bucket_name)
 
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def delete_bucket_encryption(s3_client, bucket_name):
+def delete_bucket_encryption(s3_client, bucket_name: str):
     s3_client.delete_bucket_encryption(Bucket=bucket_name)
 
 
 @AWSRetry.exponential_backoff(max_delay=240, catch_extra_error_codes=["OperationAborted"])
-def delete_bucket(s3_client, bucket_name):
+def delete_bucket(s3_client, bucket_name: str):
     try:
         s3_client.delete_bucket(Bucket=bucket_name)
     except is_boto3_error_code("NoSuchBucket"):
@@ -1012,7 +1012,7 @@ def delete_bucket(s3_client, bucket_name):
 
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def put_bucket_public_access(s3_client, bucket_name, public_acces):
+def put_bucket_public_access(s3_client, bucket_name: str, public_acces):
     """
     Put new public access block to S3 bucket
     """
@@ -1020,7 +1020,7 @@ def put_bucket_public_access(s3_client, bucket_name, public_acces):
 
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def delete_bucket_public_access(s3_client, bucket_name):
+def delete_bucket_public_access(s3_client, bucket_name: str):
     """
     Delete public access block from S3 bucket
     """
@@ -1028,7 +1028,7 @@ def delete_bucket_public_access(s3_client, bucket_name):
 
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def delete_bucket_ownership(s3_client, bucket_name):
+def delete_bucket_ownership(s3_client, bucket_name: str):
     """
     Delete bucket ownership controls from S3 bucket
     """
@@ -1036,7 +1036,7 @@ def delete_bucket_ownership(s3_client, bucket_name):
 
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def put_bucket_ownership(s3_client, bucket_name, target):
+def put_bucket_ownership(s3_client, bucket_name: str, target):
     """
     Put bucket ownership controls for S3 bucket
     """
@@ -1045,7 +1045,7 @@ def put_bucket_ownership(s3_client, bucket_name, target):
     )
 
 
-def wait_policy_is_applied(module, s3_client, bucket_name, expected_policy, should_fail=True):
+def wait_policy_is_applied(module: AnsibleAWSModule, s3_client, bucket_name: str, expected_policy, should_fail=True):
     for _ in range(0, 12):
         try:
             current_policy = get_bucket_policy(s3_client, bucket_name)
@@ -1066,7 +1066,7 @@ def wait_policy_is_applied(module, s3_client, bucket_name, expected_policy, shou
         return None
 
 
-def wait_payer_is_applied(module, s3_client, bucket_name, expected_payer, should_fail=True):
+def wait_payer_is_applied(module: AnsibleAWSModule, s3_client, bucket_name: str, expected_payer, should_fail=True):
     for _ in range(0, 12):
         try:
             requester_pays_status = get_bucket_request_payment(s3_client, bucket_name)
@@ -1086,7 +1086,7 @@ def wait_payer_is_applied(module, s3_client, bucket_name, expected_payer, should
         return None
 
 
-def wait_encryption_is_applied(module, s3_client, bucket_name, expected_encryption, should_fail=True, retries=12):
+def wait_encryption_is_applied(module: AnsibleAWSModule, s3_client, bucket_name: str, expected_encryption, should_fail=True, retries=12):
     for _ in range(0, retries):
         try:
             encryption = get_bucket_encryption(s3_client, bucket_name)
@@ -1107,7 +1107,7 @@ def wait_encryption_is_applied(module, s3_client, bucket_name, expected_encrypti
     return encryption
 
 
-def wait_bucket_key_is_applied(module, s3_client, bucket_name, expected_encryption, should_fail=True, retries=12):
+def wait_bucket_key_is_applied(module: AnsibleAWSModule, s3_client, bucket_name: str, expected_encryption, should_fail=True, retries=12):
     for _ in range(0, retries):
         try:
             encryption = get_bucket_key(s3_client, bucket_name)
@@ -1127,7 +1127,7 @@ def wait_bucket_key_is_applied(module, s3_client, bucket_name, expected_encrypti
     return encryption
 
 
-def wait_versioning_is_applied(module, s3_client, bucket_name, required_versioning):
+def wait_versioning_is_applied(module: AnsibleAWSModule, s3_client, bucket_name: str, required_versioning):
     for _ in range(0, 24):
         try:
             versioning_status = get_bucket_versioning(s3_client, bucket_name)
@@ -1144,7 +1144,7 @@ def wait_versioning_is_applied(module, s3_client, bucket_name, required_versioni
     )
 
 
-def wait_tags_are_applied(module, s3_client, bucket_name, expected_tags_dict):
+def wait_tags_are_applied(module: AnsibleAWSModule, s3_client, bucket_name: str, expected_tags_dict):
     for _ in range(0, 12):
         try:
             current_tags_dict = get_current_bucket_tags_dict(s3_client, bucket_name)
@@ -1161,7 +1161,7 @@ def wait_tags_are_applied(module, s3_client, bucket_name, expected_tags_dict):
     )
 
 
-def get_current_bucket_tags_dict(s3_client, bucket_name):
+def get_current_bucket_tags_dict(s3_client, bucket_name: str):
     try:
         current_tags = s3_client.get_bucket_tagging(Bucket=bucket_name).get("TagSet")
     except is_boto3_error_code("NoSuchTagSet"):
@@ -1173,7 +1173,7 @@ def get_current_bucket_tags_dict(s3_client, bucket_name):
     return boto3_tag_list_to_ansible_dict(current_tags)
 
 
-def get_bucket_public_access(s3_client, bucket_name):
+def get_bucket_public_access(s3_client, bucket_name: str):
     """
     Get current bucket public access block
     """
@@ -1184,7 +1184,7 @@ def get_bucket_public_access(s3_client, bucket_name):
         return {}
 
 
-def get_bucket_ownership_cntrl(s3_client, bucket_name):
+def get_bucket_ownership_cntrl(s3_client, bucket_name: str):
     """
     Get current bucket public access block
     """
@@ -1213,7 +1213,7 @@ def paginated_versions_list(s3_client, **pagination_params):
         yield []
 
 
-def delete_objects(s3_client, module, name):
+def delete_objects(s3_client, module: AnsibleAWSModule, name: str) -> tuple[bool, dict]:
     try:
         for key_version_pairs in paginated_versions_list(s3_client, Bucket=name):
             formatted_keys = [{"Key": key, "VersionId": version} for key, version in key_version_pairs]
@@ -1239,7 +1239,7 @@ def delete_objects(s3_client, module, name):
             module.fail_json_aws(e, msg="Failed while deleting bucket")
 
 
-def destroy_bucket(s3_client, module):
+def destroy_bucket(s3_client, module: AnsibleAWSModule):
     force = module.params.get("force")
     name = module.params.get("name")
     try:
