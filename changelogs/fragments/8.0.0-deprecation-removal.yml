@@ -3,7 +3,6 @@ deprecated_features:
 - iam_policy - removal of the previously deprecated ``policies`` return key has been assigned to release 9.0.0.  Use the ``policy_names`` return key instead (https://github.com/ansible-collections/amazon.aws/pull/2040).
 
 removed_features:
-- module_utils.policy - the previously deprecated ``sort_json_policy_dict()`` function has been removed, consider using ``compare_policies()`` instead (https://github.com/ansible-collections/amazon.aws/pull/2040).
 - iam_role - the ``iam_role.assume_role_policy_document_raw`` return value has been deprecated.  ``iam_role.assume_role_policy_document`` now returns the same format as ``iam_role.assume_role_policy_document_raw`` (https://github.com/ansible-collections/amazon.aws/pull/2040).
 - iam_role_info - the ``iam_role.assume_role_policy_document_raw`` return value has been deprecated.  ``iam_role.assume_role_policy_document`` now returns the same format as ``iam_role.assume_role_policy_document_raw`` (https://github.com/ansible-collections/amazon.aws/pull/2040).
 
