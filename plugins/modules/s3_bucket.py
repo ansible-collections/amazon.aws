@@ -1046,7 +1046,7 @@ def put_bucket_ownership(s3_client, bucket_name, target):
 
 
 def wait_policy_is_applied(module, s3_client, bucket_name, expected_policy, should_fail=True):
-    for dummy in range(0, 12):
+    for _ in range(0, 12):
         try:
             current_policy = get_bucket_policy(s3_client, bucket_name)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
@@ -1067,7 +1067,7 @@ def wait_policy_is_applied(module, s3_client, bucket_name, expected_policy, shou
 
 
 def wait_payer_is_applied(module, s3_client, bucket_name, expected_payer, should_fail=True):
-    for dummy in range(0, 12):
+    for _ in range(0, 12):
         try:
             requester_pays_status = get_bucket_request_payment(s3_client, bucket_name)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
@@ -1087,7 +1087,7 @@ def wait_payer_is_applied(module, s3_client, bucket_name, expected_payer, should
 
 
 def wait_encryption_is_applied(module, s3_client, bucket_name, expected_encryption, should_fail=True, retries=12):
-    for dummy in range(0, retries):
+    for _ in range(0, retries):
         try:
             encryption = get_bucket_encryption(s3_client, bucket_name)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
@@ -1108,7 +1108,7 @@ def wait_encryption_is_applied(module, s3_client, bucket_name, expected_encrypti
 
 
 def wait_bucket_key_is_applied(module, s3_client, bucket_name, expected_encryption, should_fail=True, retries=12):
-    for dummy in range(0, retries):
+    for _ in range(0, retries):
         try:
             encryption = get_bucket_key(s3_client, bucket_name)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
@@ -1128,7 +1128,7 @@ def wait_bucket_key_is_applied(module, s3_client, bucket_name, expected_encrypti
 
 
 def wait_versioning_is_applied(module, s3_client, bucket_name, required_versioning):
-    for dummy in range(0, 24):
+    for _ in range(0, 24):
         try:
             versioning_status = get_bucket_versioning(s3_client, bucket_name)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
@@ -1145,7 +1145,7 @@ def wait_versioning_is_applied(module, s3_client, bucket_name, required_versioni
 
 
 def wait_tags_are_applied(module, s3_client, bucket_name, expected_tags_dict):
-    for dummy in range(0, 12):
+    for _ in range(0, 12):
         try:
             current_tags_dict = get_current_bucket_tags_dict(s3_client, bucket_name)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
@@ -1213,6 +1213,32 @@ def paginated_versions_list(s3_client, **pagination_params):
         yield []
 
 
+def delete_objects(s3_client, module, name):
+    try:
+        for key_version_pairs in paginated_versions_list(s3_client, Bucket=name):
+            formatted_keys = [{"Key": key, "VersionId": version} for key, version in key_version_pairs]
+            for fk in formatted_keys:
+                # remove VersionId from cases where they are `None` so that
+                # unversioned objects are deleted using `DeleteObject`
+                # rather than `DeleteObjectVersion`, improving backwards
+                # compatibility with older IAM policies.
+                if not fk.get("VersionId") or fk.get("VersionId") == "null":
+                    fk.pop("VersionId")
+            if formatted_keys:
+                resp = s3_client.delete_objects(Bucket=name, Delete={"Objects": formatted_keys})
+                if resp.get("Errors"):
+                    objects_to_delete = ", ".join([k["Key"] for k in resp["Errors"]])
+                    module.fail_json(
+                        msg=(
+                            f"Could not empty bucket before deleting. Could not delete objects: {objects_to_delete}"
+                        ),
+                        errors=resp["Errors"],
+                        response=resp,
+                    )
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+            module.fail_json_aws(e, msg="Failed while deleting bucket")
+
+
 def destroy_bucket(s3_client, module):
     force = module.params.get("force")
     name = module.params.get("name")
@@ -1229,29 +1255,9 @@ def destroy_bucket(s3_client, module):
     if force:
         # if there are contents then we need to delete them (including versions) before we can delete the bucket
         try:
-            for key_version_pairs in paginated_versions_list(s3_client, Bucket=name):
-                formatted_keys = [{"Key": key, "VersionId": version} for key, version in key_version_pairs]
-                for fk in formatted_keys:
-                    # remove VersionId from cases where they are `None` so that
-                    # unversioned objects are deleted using `DeleteObject`
-                    # rather than `DeleteObjectVersion`, improving backwards
-                    # compatibility with older IAM policies.
-                    if not fk.get("VersionId") or fk.get("VersionId") == "null":
-                        fk.pop("VersionId")
-
-                if formatted_keys:
-                    resp = s3_client.delete_objects(Bucket=name, Delete={"Objects": formatted_keys})
-                    if resp.get("Errors"):
-                        objects_to_delete = ", ".join([k["Key"] for k in resp["Errors"]])
-                        module.fail_json(
-                            msg=(
-                                f"Could not empty bucket before deleting. Could not delete objects: {objects_to_delete}"
-                            ),
-                            errors=resp["Errors"],
-                            response=resp,
-                        )
+            delete_objects(s3_client, module, name)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-            module.fail_json_aws(e, msg="Failed while deleting bucket")
+            module.fail_json_aws(e, msg="Failed while deleting objects")
 
     try:
         delete_bucket(s3_client, name)
@@ -1262,6 +1268,7 @@ def destroy_bucket(s3_client, module):
         module.fail_json_aws(e, msg="Failed to delete bucket")
 
     module.exit_json(changed=True)
+
 
 
 def main():
