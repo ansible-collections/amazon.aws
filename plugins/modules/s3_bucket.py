@@ -876,7 +876,9 @@ def create_or_update_bucket(s3_client, module: AnsibleAWSModule):
     result["requester_pays"] = requester_pays_result
 
     # Public access clock configuration
-    public_access_config_changed, public_access_config_result = handle_bucket_public_access_config(s3_client, module, name)
+    public_access_config_changed, public_access_config_result = handle_bucket_public_access_config(
+        s3_client, module, name
+    )
     result["public_access_block"] = public_access_config_result
 
     # Policy
@@ -1409,7 +1411,9 @@ def wait_payer_is_applied(module: AnsibleAWSModule, s3_client, bucket_name: str,
         return None
 
 
-def wait_encryption_is_applied(module: AnsibleAWSModule, s3_client, bucket_name: str, expected_encryption, should_fail=True, retries=12):
+def wait_encryption_is_applied(
+    module: AnsibleAWSModule, s3_client, bucket_name: str, expected_encryption, should_fail=True, retries=12
+):
     """
     Wait for the encryption setting to be applied to an S3 bucket.
     Parameters:
@@ -1442,7 +1446,9 @@ def wait_encryption_is_applied(module: AnsibleAWSModule, s3_client, bucket_name:
     return encryption
 
 
-def wait_bucket_key_is_applied(module: AnsibleAWSModule, s3_client, bucket_name: str, expected_encryption, should_fail=True, retries=12):
+def wait_bucket_key_is_applied(
+    module: AnsibleAWSModule, s3_client, bucket_name: str, expected_encryption, should_fail=True, retries=12
+):
     """
     Wait for the bucket key setting to be applied to an S3 bucket.
     Parameters:
@@ -1639,9 +1645,7 @@ def delete_objects(s3_client, module: AnsibleAWSModule, name: str):
                 if resp.get("Errors"):
                     objects_to_delete = ", ".join([k["Key"] for k in resp["Errors"]])
                     module.fail_json(
-                        msg=(
-                            f"Could not empty bucket before deleting. Could not delete objects: {objects_to_delete}"
-                        ),
+                        msg=(f"Could not empty bucket before deleting. Could not delete objects: {objects_to_delete}"),
                         errors=resp["Errors"],
                         response=resp,
                     )
