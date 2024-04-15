@@ -39,6 +39,7 @@ up in this module because "that's where the AWS code was" (originally).
 
 import re
 
+import ansible.module_utils.common.warnings as ansible_warnings
 from ansible.module_utils.ansible_release import __version__
 
 # Used to live here, moved into ansible.module_utils.common.dict_transformations
@@ -99,11 +100,21 @@ def get_ec2_security_group_ids_from_names(sec_group_list, ec2_connection, vpc_id
     a try block
     """
 
-    def get_sg_name(sg, boto3=None):
+    def get_sg_name(sg):
         return str(sg["GroupName"])
 
-    def get_sg_id(sg, boto3=None):
+    def get_sg_id(sg):
         return str(sg["GroupId"])
+
+    if boto3 is not None:
+        ansible_warnings.deprecate(
+            (
+                "The boto3 parameter for get_ec2_security_group_ids_from_names() has been deprecated."
+                "The parameter has been ignored since release 4.0.0."
+            ),
+            date="2025-05-01",
+            collection_name="amazon.aws",
+        )
 
     sec_group_id_list = []
 
@@ -124,7 +135,7 @@ def get_ec2_security_group_ids_from_names(sec_group_list, ec2_connection, vpc_id
     else:
         all_sec_groups = ec2_connection.describe_security_groups()["SecurityGroups"]
 
-    unmatched = set(sec_group_list).difference(str(get_sg_name(all_sg, boto3)) for all_sg in all_sec_groups)
+    unmatched = set(sec_group_list).difference(str(get_sg_name(all_sg)) for all_sg in all_sec_groups)
     sec_group_name_list = list(set(sec_group_list) - set(unmatched))
 
     if len(unmatched) > 0:

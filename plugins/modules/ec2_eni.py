@@ -395,7 +395,7 @@ def create_eni(connection, vpc_id, module):
     private_ip_address = module.params.get("private_ip_address")
     description = module.params.get("description")
     security_groups = get_ec2_security_group_ids_from_names(
-        module.params.get("security_groups"), connection, vpc_id=vpc_id, boto3=True
+        module.params.get("security_groups"), connection, vpc_id=vpc_id
     )
     secondary_private_ip_addresses = module.params.get("secondary_private_ip_addresses")
     secondary_private_ip_address_count = module.params.get("secondary_private_ip_address_count")
@@ -510,7 +510,7 @@ def modify_eni(connection, module, eni):
                     )
                 changed = True
         if len(security_groups) > 0:
-            groups = get_ec2_security_group_ids_from_names(security_groups, connection, vpc_id=eni["VpcId"], boto3=True)
+            groups = get_ec2_security_group_ids_from_names(security_groups, connection, vpc_id=eni["VpcId"])
             if sorted(get_sec_group_list(eni["Groups"])) != sorted(groups):
                 if not module.check_mode:
                     connection.modify_network_interface_attribute(
