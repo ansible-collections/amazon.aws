@@ -449,7 +449,7 @@ class ApplicationLoadBalancer(ElasticLoadBalancerV2):
         if module.params.get("security_groups") is not None:
             try:
                 self.security_groups = AWSRetry.jittered_backoff()(get_ec2_security_group_ids_from_names)(
-                    module.params.get("security_groups"), self.connection_ec2, boto3=True
+                    module.params.get("security_groups"), self.connection_ec2
                 )
             except ValueError as e:
                 self.module.fail_json(msg=str(e), exception=traceback.format_exc())

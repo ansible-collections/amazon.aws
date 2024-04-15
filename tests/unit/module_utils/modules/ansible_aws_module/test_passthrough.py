@@ -70,7 +70,7 @@ def test_region(monkeypatch, stdin):
     aws_module = utils_module.AnsibleAWSModule(argument_spec=dict())
 
     assert aws_module.region is sentinel.RETURNED_REGION
-    assert get_aws_region.call_args == call(aws_module, True)
+    assert get_aws_region.call_args == call(aws_module)
 
 
 @pytest.mark.parametrize("stdin", [{}], indirect=["stdin"])
@@ -129,7 +129,7 @@ def test_client_no_wrapper(monkeypatch, stdin):
 
     aws_module = utils_module.AnsibleAWSModule(argument_spec=dict())
     assert aws_module.client(sentinel.PARAM_SERVICE) is sentinel.BOTO3_CONN
-    assert get_aws_connection_info.call_args == call(aws_module, boto3=True)
+    assert get_aws_connection_info.call_args == call(aws_module)
     assert boto3_conn.call_args == call(
         aws_module,
         conn_type="client",
@@ -153,7 +153,7 @@ def test_client_wrapper(monkeypatch, stdin):
     wrapped_conn = aws_module.client(sentinel.PARAM_SERVICE, sentinel.PARAM_WRAPPER)
     assert wrapped_conn.client is sentinel.BOTO3_CONN
     assert wrapped_conn.retry is sentinel.PARAM_WRAPPER
-    assert get_aws_connection_info.call_args == call(aws_module, boto3=True)
+    assert get_aws_connection_info.call_args == call(aws_module)
     assert boto3_conn.call_args == call(
         aws_module,
         conn_type="client",
@@ -166,7 +166,7 @@ def test_client_wrapper(monkeypatch, stdin):
     wrapped_conn = aws_module.client(sentinel.PARAM_SERVICE, sentinel.PARAM_WRAPPER, region=sentinel.PARAM_REGION)
     assert wrapped_conn.client is sentinel.BOTO3_CONN
     assert wrapped_conn.retry is sentinel.PARAM_WRAPPER
-    assert get_aws_connection_info.call_args == call(aws_module, boto3=True)
+    assert get_aws_connection_info.call_args == call(aws_module)
     assert boto3_conn.call_args == call(
         aws_module,
         conn_type="client",
@@ -188,7 +188,7 @@ def test_resource(monkeypatch, stdin):
 
     aws_module = utils_module.AnsibleAWSModule(argument_spec=dict())
     assert aws_module.resource(sentinel.PARAM_SERVICE) is sentinel.BOTO3_CONN
-    assert get_aws_connection_info.call_args == call(aws_module, boto3=True)
+    assert get_aws_connection_info.call_args == call(aws_module)
     assert boto3_conn.call_args == call(
         aws_module,
         conn_type="resource",
@@ -199,7 +199,7 @@ def test_resource(monkeypatch, stdin):
 
     # Check that we can override parameters
     assert aws_module.resource(sentinel.PARAM_SERVICE, region=sentinel.PARAM_REGION) is sentinel.BOTO3_CONN
-    assert get_aws_connection_info.call_args == call(aws_module, boto3=True)
+    assert get_aws_connection_info.call_args == call(aws_module)
     assert boto3_conn.call_args == call(
         aws_module,
         conn_type="resource",
