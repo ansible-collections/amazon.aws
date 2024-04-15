@@ -1090,7 +1090,7 @@ def wait_for_target_group(asg_connection, group_name):
 
 
 def suspend_processes(ec2_connection, as_group):
-    suspend_processes = set(module.params.get("suspend_processes"))
+    processes_to_suspend = set(module.params.get("suspend_processes"))
 
     try:
         suspended_processes = set([p["ProcessName"] for p in as_group["SuspendedProcesses"]])
@@ -1098,15 +1098,15 @@ def suspend_processes(ec2_connection, as_group):
         # New ASG being created, no suspended_processes defined yet
         suspended_processes = set()
 
-    if suspend_processes == suspended_processes:
+    if processes_to_suspend == suspended_processes:
         return False
 
-    resume_processes = list(suspended_processes - suspend_processes)
+    resume_processes = list(suspended_processes - processes_to_suspend)
     if resume_processes:
         resume_asg_processes(ec2_connection, module.params.get("name"), resume_processes)
 
-    if suspend_processes:
-        suspend_asg_processes(ec2_connection, module.params.get("name"), list(suspend_processes))
+    if processes_to_suspend:
+        suspend_asg_processes(ec2_connection, module.params.get("name"), list(processes_to_suspend))
 
     return True
 

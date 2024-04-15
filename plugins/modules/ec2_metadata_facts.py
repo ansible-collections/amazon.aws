@@ -450,6 +450,8 @@ socket.setdefaulttimeout(5)
 # The ec2_metadata_facts module is a special case, while we generally dropped support for Python < 3.6
 # this module doesn't depend on the SDK and still has valid use cases for folks working with older
 # OSes.
+
+# pylint: disable=consider-using-f-string
 try:
     json_decode_error = json.JSONDecodeError
 except AttributeError:

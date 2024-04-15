@@ -368,10 +368,7 @@ def correct_ip_count(connection, ip_count, module, eni_id):
         for ip in eni["PrivateIpAddresses"]:
             private_addresses.add(ip["PrivateIpAddress"])
 
-    if len(private_addresses) == ip_count:
-        return True
-    else:
-        return False
+    return bool(len(private_addresses) == ip_count)
 
 
 def wait_for(function_pointer, *args):

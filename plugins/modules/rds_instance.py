@@ -1164,8 +1164,7 @@ def get_current_attributes_with_inconsistent_keys(instance):
 def get_changing_options_with_inconsistent_keys(modify_params, instance, purge_cloudwatch_logs, purge_security_groups):
     changing_params = {}
     current_options = get_current_attributes_with_inconsistent_keys(instance)
-    for option in current_options:
-        current_option = current_options[option]
+    for option, current_option in current_options.items():
         desired_option = modify_params.pop(option, None)
         if desired_option is None:
             continue
@@ -1567,8 +1566,7 @@ def main():
                     instance = get_instance(client, module, instance_id)
                     if instance:
                         break
-                    else:
-                        sleep(5)
+                    sleep(5)
 
         if state == "absent" and changed and not module.params["skip_final_snapshot"]:
             instance.update(

@@ -84,11 +84,11 @@ class AnsibleAWSModule:
 
     def __init__(self, **kwargs):
         local_settings = {}
-        for key in AnsibleAWSModule.default_settings:
+        for key, default_value in AnsibleAWSModule.default_settings.items():
             try:
                 local_settings[key] = kwargs.pop(key)
             except KeyError:
-                local_settings[key] = AnsibleAWSModule.default_settings[key]
+                local_settings[key] = default_value
         self.settings = local_settings
 
         if local_settings["default_args"]:

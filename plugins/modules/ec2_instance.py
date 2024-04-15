@@ -1930,7 +1930,7 @@ def change_instance_state(filters, desired_module_state):
                 if inst["State"]["Name"] in ("pending", "running"):
                     unchanged.add(inst["InstanceId"])
                     continue
-                elif inst["State"]["Name"] == "stopping":
+                if inst["State"]["Name"] == "stopping":
                     await_instances([inst["InstanceId"]], desired_module_state="stopped", force_wait=True)
 
                 if module.check_mode:
@@ -2029,63 +2029,60 @@ def handle_existing(existing_matches, state, filters):
     return result
 
 
-def enforce_count(existing_matches, module, desired_module_state):
+def enforce_count(existing_matches, desired_module_state):
     exact_count = module.params.get("exact_count")
 
+    current_count = len(existing_matches)
+    if current_count == exact_count:
+        return dict(
+            changed=False,
+            instances=[pretty_instance(i) for i in existing_matches],
+            instance_ids=[i["InstanceId"] for i in existing_matches],
+            msg=f"{exact_count} instances already running, nothing to do.",
+        )
+
+    if current_count < exact_count:
+        # launch instances
+        return ensure_present(
+            existing_matches=existing_matches,
+            desired_module_state=desired_module_state,
+            current_count=current_count,
+        )
+
+    to_terminate = current_count - exact_count
+    # sort the instances from least recent to most recent based on launch time
+    existing_matches = sorted(existing_matches, key=lambda inst: inst["LaunchTime"])
+    # get the instance ids of instances with the count tag on them
+    all_instance_ids = [x["InstanceId"] for x in existing_matches]
+    terminate_ids = all_instance_ids[0:to_terminate]
+    if module.check_mode:
+        return dict(
+            changed=True,
+            terminated_ids=terminate_ids,
+            instance_ids=all_instance_ids,
+            msg=f"Would have terminated following instances if not in check mode {terminate_ids}",
+        )
+    # terminate instances
     try:
-        current_count = len(existing_matches)
-        if current_count == exact_count:
-            module.exit_json(
-                changed=False,
-                instances=[pretty_instance(i) for i in existing_matches],
-                instance_ids=[i["InstanceId"] for i in existing_matches],
-                msg=f"{exact_count} instances already running, nothing to do.",
-            )
+        client.terminate_instances(aws_retry=True, InstanceIds=terminate_ids)
+        await_instances(terminate_ids, desired_module_state="terminated", force_wait=True)
+    except is_boto3_error_code("InvalidInstanceID.NotFound"):
+        pass
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:  # pylint: disable=duplicate-except
+        module.fail_json(e, msg="Unable to terminate instances")
 
-        elif current_count < exact_count:
-            # launch instances
-            try:
-                ensure_present(
-                    existing_matches=existing_matches,
-                    desired_module_state=desired_module_state,
-                    current_count=current_count,
-                )
-            except botocore.exceptions.ClientError as e:
-                module.fail_json(e, msg="Unable to launch instances")
-        elif current_count > exact_count:
-            to_terminate = current_count - exact_count
-            # sort the instances from least recent to most recent based on launch time
-            existing_matches = sorted(existing_matches, key=lambda inst: inst["LaunchTime"])
-            # get the instance ids of instances with the count tag on them
-            all_instance_ids = [x["InstanceId"] for x in existing_matches]
-            terminate_ids = all_instance_ids[0:to_terminate]
-            if module.check_mode:
-                module.exit_json(
-                    changed=True,
-                    terminated_ids=terminate_ids,
-                    instance_ids=all_instance_ids,
-                    msg=f"Would have terminated following instances if not in check mode {terminate_ids}",
-                )
-            # terminate instances
-            try:
-                client.terminate_instances(aws_retry=True, InstanceIds=terminate_ids)
-                await_instances(terminate_ids, desired_module_state="terminated", force_wait=True)
-            except is_boto3_error_code("InvalidInstanceID.NotFound"):
-                pass
-            except botocore.exceptions.ClientError as e:  # pylint: disable=duplicate-except
-                module.fail_json(e, msg="Unable to terminate instances")
-            # include data for all matched instances in addition to the list of terminations
-            # allowing for recovery of metadata from the destructive operation
-            module.exit_json(
-                changed=True,
-                msg="Successfully terminated instances.",
-                terminated_ids=terminate_ids,
-                instance_ids=all_instance_ids,
-                instances=existing_matches,
-            )
-
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        module.fail_json_aws(e, msg="Failed to enforce instance count")
+    # include data for all matched instances in addition to the list of terminations
+    # allowing for recovery of metadata from the destructive operation
+    return dict(
+        changed=True,
+        msg="Successfully terminated instances.",
+        terminated_ids=terminate_ids,
+        instance_ids=all_instance_ids,
+        instances=existing_matches,
+    )
 
 
 def ensure_present(existing_matches, desired_module_state, current_count=None):
@@ -2100,7 +2097,7 @@ def ensure_present(existing_matches, desired_module_state, current_count=None):
         if module.check_mode:
             if existing_matches:
                 instance_ids = [x["InstanceId"] for x in existing_matches]
-                module.exit_json(
+                return dict(
                     changed=True,
                     instance_ids=instance_ids,
                     instances=existing_matches,
@@ -2108,7 +2105,7 @@ def ensure_present(existing_matches, desired_module_state, current_count=None):
                     msg="Would have launched instances if not in check_mode.",
                 )
             else:
-                module.exit_json(
+                return dict(
                     changed=True,
                     spec=instance_spec,
                     msg="Would have launched instances if not in check_mode.",
@@ -2144,14 +2141,14 @@ def ensure_present(existing_matches, desired_module_state, current_count=None):
             all_instance_ids = [x["InstanceId"] for x in existing_matches] + instance_ids
         if not module.params.get("wait"):
             if existing_matches:
-                module.exit_json(
+                return dict(
                     changed=True,
                     changed_ids=instance_ids,
                     instance_ids=all_instance_ids,
                     spec=instance_spec,
                 )
             else:
-                module.exit_json(
+                return dict(
                     changed=True,
                     instance_ids=instance_ids,
                     spec=instance_spec,
@@ -2161,7 +2158,7 @@ def ensure_present(existing_matches, desired_module_state, current_count=None):
 
         if existing_matches:
             all_instances = existing_matches + instances
-            module.exit_json(
+            return dict(
                 changed=True,
                 changed_ids=instance_ids,
                 instance_ids=all_instance_ids,
@@ -2169,7 +2166,7 @@ def ensure_present(existing_matches, desired_module_state, current_count=None):
                 spec=instance_spec,
             )
         else:
-            module.exit_json(
+            return dict(
                 changed=True,
                 instance_ids=instance_ids,
                 instances=[pretty_instance(i) for i in instances],
@@ -2396,7 +2393,7 @@ def main():
                     changed=False,
                 )
         elif module.params.get("exact_count"):
-            enforce_count(existing_matches, module, desired_module_state=state)
+            result = enforce_count(existing_matches, desired_module_state=state)
         elif existing_matches and not module.params.get("count"):
             for match in existing_matches:
                 warn_if_public_ip_assignment_changed(match)

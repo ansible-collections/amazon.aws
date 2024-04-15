@@ -1174,7 +1174,7 @@ def ensure_present(cluster, parameters, method_name, method_options_name):
     return changed
 
 
-def handle_remove_from_global_db(module, cluster):
+def handle_remove_from_global_db(cluster):
     global_cluster_id = module.params.get("global_cluster_identifier")
     db_cluster_id = module.params.get("db_cluster_identifier")
     db_cluster_arn = cluster["DBClusterArn"]
@@ -1361,7 +1361,7 @@ def main():
         if method_name == "delete_db_cluster":
             if cluster and module.params.get("remove_from_global_db"):
                 if cluster["Engine"] in ["aurora", "aurora-mysql", "aurora-postgresql"]:
-                    changed = handle_remove_from_global_db(module, cluster)
+                    changed = handle_remove_from_global_db(cluster)
 
             call_method(client, module, method_name, eval(method_options_name)(parameters))
             changed = True
@@ -1377,7 +1377,7 @@ def main():
         if cluster["Engine"] in ["aurora", "aurora-mysql", "aurora-postgresql"]:
             if changed:
                 wait_for_cluster_status(client, module, cluster_id, "cluster_available")
-        changed |= handle_remove_from_global_db(module, cluster)
+        changed |= handle_remove_from_global_db(cluster)
 
     result = camel_dict_to_snake_dict(get_cluster(cluster_id))
 

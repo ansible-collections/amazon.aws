@@ -1412,7 +1412,7 @@ class ElbManager:
         if not self.health_check:
             return False
 
-        """Set health check values on ELB as needed"""
+        # Set health check values on ELB as needed
         health_check_config = self._format_healthcheck()
 
         if self.elb and health_check_config == self.elb["HealthCheck"]:
@@ -1697,7 +1697,7 @@ class ElbManager:
             proxy_protocol = listener.get("proxy_protocol", None)
             # Only look at the listeners for which proxy_protocol is defined
             if proxy_protocol is None:
-                next
+                continue
             instance_port = listener.get("instance_port")
             if proxy_ports.get(instance_port, None) is not None:
                 if proxy_ports[instance_port] != proxy_protocol:
@@ -1717,10 +1717,10 @@ class ElbManager:
         if any(proxy_ports.values()):
             changed |= self._set_proxy_protocol_policy(proxy_policy_name)
 
-        for port in proxy_ports:
+        for port, port_policy in proxy_ports.items():
             current_policies = set(backend_policies.get(port, []))
             new_policies = list(current_policies - proxy_policies)
-            if proxy_ports[port]:
+            if port_policy:
                 new_policies.append(proxy_policy_name)
 
             changed |= self._set_backend_policy(port, new_policies)

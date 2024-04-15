@@ -44,13 +44,10 @@ _raw:
 
 import json
 
+import ansible.module_utils.six.moves.urllib.error
+import ansible.module_utils.urls
 from ansible.errors import AnsibleLookupError
 from ansible.module_utils._text import to_native
-from ansible.module_utils.six.moves.urllib.error import HTTPError
-from ansible.module_utils.six.moves.urllib.error import URLError
-from ansible.module_utils.urls import ConnectionError
-from ansible.module_utils.urls import SSLValidationError
-from ansible.module_utils.urls import open_url
 from ansible.plugins.lookup import LookupBase
 
 
@@ -64,19 +61,19 @@ class LookupModule(LookupBase):
             ip_prefix_label = "ip_prefix"
 
         try:
-            resp = open_url("https://ip-ranges.amazonaws.com/ip-ranges.json")
+            resp = ansible.module_utils.urls.open_url("https://ip-ranges.amazonaws.com/ip-ranges.json")
             amazon_response = json.load(resp)[prefixes_label]
         except getattr(json.decoder, "JSONDecodeError", ValueError) as e:
             # on Python 3+, json.decoder.JSONDecodeError is raised for bad
             # JSON. On 2.x it's a ValueError
             raise AnsibleLookupError(f"Could not decode AWS IP ranges: {to_native(e)}")
-        except HTTPError as e:
+        except ansible.module_utils.six.moves.urllib.error.HTTPError as e:
             raise AnsibleLookupError(f"Received HTTP error while pulling IP ranges: {to_native(e)}")
-        except SSLValidationError as e:
+        except ansible.module_utils.urls.SSLValidationError as e:
             raise AnsibleLookupError(f"Error validating the server's certificate for: {to_native(e)}")
-        except URLError as e:
+        except ansible.module_utils.six.moves.urllib.error.URLError as e:
             raise AnsibleLookupError(f"Failed look up IP range service: {to_native(e)}")
-        except ConnectionError as e:
+        except ansible.module_utils.urls.ConnectionError as e:
             raise AnsibleLookupError(f"Error connecting to IP range service: {to_native(e)}")
 
         if "region" in kwargs:

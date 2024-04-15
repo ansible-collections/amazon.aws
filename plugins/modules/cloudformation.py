@@ -345,9 +345,17 @@ from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleA
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
 
-# Set a default, mostly for our integration tests.  This will be overridden in
-# the main() loop to match the parameters we're passed
-retry_decorator = AWSRetry.jittered_backoff()
+
+@AWSRetry.jittered_backoff()
+def _search_events(cfn, stack_name, events_limit, token_filter):
+    pg = cfn.get_paginator("describe_stack_events").paginate(
+        StackName=stack_name,
+        PaginationConfig={"MaxItems": events_limit},
+    )
+    if token_filter is None:
+        return list(pg.search("StackEvents[*]"))
+
+    return list(pg.search(f"StackEvents[?ClientRequestToken == '{token_filter}']"))
 
 
 def get_stack_events(cfn, stack_name, events_limit, token_filter=None):
@@ -355,13 +363,7 @@ def get_stack_events(cfn, stack_name, events_limit, token_filter=None):
     ret = {"events": [], "log": []}
 
     try:
-        pg = cfn.get_paginator("describe_stack_events").paginate(
-            StackName=stack_name, PaginationConfig={"MaxItems": events_limit}
-        )
-        if token_filter is not None:
-            events = list(retry_decorator(pg.search)(f"StackEvents[?ClientRequestToken == '{token_filter}']"))
-        else:
-            events = list(pg.search("StackEvents[*]"))
+        events = _search_events(cfn, stack_name, events_limit, token_filter)
     except is_boto3_error_message("does not exist"):
         ret["log"].append("Stack does not exist.")
         return ret

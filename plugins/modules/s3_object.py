@@ -962,13 +962,13 @@ def ensure_tags(client, module, bucket, obj):
     return current_tags_dict, changed
 
 
-def get_binary_content(vars):
+def get_binary_content(s3_vars):
     # the content will be uploaded as a byte string, so we must encode it first
     bincontent = None
-    if vars.get("content"):
-        bincontent = vars["content"].encode("utf-8")
-    if vars.get("content_base64"):
-        bincontent = base64.standard_b64decode(vars["content_base64"])
+    if s3_vars.get("content"):
+        bincontent = s3_vars["content"].encode("utf-8")
+    if s3_vars.get("content_base64"):
+        bincontent = base64.standard_b64decode(s3_vars["content_base64"])
     return bincontent
 
 
