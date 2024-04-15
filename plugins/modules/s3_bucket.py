@@ -372,7 +372,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 
 
-
 def handle_bucket_versioning(s3_client, module: AnsibleAWSModule, name: str) -> tuple[bool, dict]:
     """
     Manage versioning for an S3 bucket.
@@ -743,13 +742,13 @@ def handle_bucket_ownership(s3_client, module: AnsibleAWSModule, name: str) -> t
             if bucket_ownership is not None:
                 delete_bucket_ownership(s3_client, name)
                 bucket_ownership_changed = True
-                bucket_ownership_result =  None
+                bucket_ownership_result = None
         elif object_ownership is not None:
             # update S3 bucket ownership
             if bucket_ownership != object_ownership:
                 put_bucket_ownership(s3_client, name, object_ownership)
                 bucket_ownership_changed = True
-                bucket_ownership_result =  object_ownership
+                bucket_ownership_result = object_ownership
 
     return bucket_ownership_changed, bucket_ownership_result
 
@@ -905,7 +904,17 @@ def create_or_update_bucket(s3_client, module: AnsibleAWSModule):
     result["object_lock_enabled"] = bucket_object_lock_result
 
     # Module exit
-    changed = changed or versioning_changed or requester_pays_changed or public_access_config_changed or policy_changed or tags_changed or encryption_changed or bucket_ownership_changed or bucket_acl_changed
+    changed = (
+        changed
+        or versioning_changed
+        or requester_pays_changed
+        or public_access_config_changed
+        or policy_changed
+        or tags_changed
+        or encryption_changed
+        or bucket_ownership_changed
+        or bucket_acl_changed
+    )
     module.exit_json(changed=changed, name=name, **result)
 
 
@@ -1349,7 +1358,7 @@ def wait_policy_is_applied(module: AnsibleAWSModule, s3_client, bucket_name: str
     Returns:
         The current policy applied to the bucket, or None if the policy failed to apply within the expected time.
     """
-    for _ in range(0, 12):
+    for dummy in range(0, 12):
         try:
             current_policy = get_bucket_policy(s3_client, bucket_name)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
@@ -1381,7 +1390,7 @@ def wait_payer_is_applied(module: AnsibleAWSModule, s3_client, bucket_name: str,
     Returns:
         The current status of the requester pays setting applied to the bucket.
     """
-    for _ in range(0, 12):
+    for dummy in range(0, 12):
         try:
             requester_pays_status = get_bucket_request_payment(s3_client, bucket_name)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
@@ -1413,7 +1422,7 @@ def wait_encryption_is_applied(module: AnsibleAWSModule, s3_client, bucket_name:
     Returns:
         The current encryption setting applied to the bucket.
     """
-    for _ in range(0, retries):
+    for dummy in range(0, retries):
         try:
             encryption = get_bucket_encryption(s3_client, bucket_name)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
@@ -1446,7 +1455,7 @@ def wait_bucket_key_is_applied(module: AnsibleAWSModule, s3_client, bucket_name:
     Returns:
         The current bucket key setting applied to the bucket.
     """
-    for _ in range(0, retries):
+    for dummy in range(0, retries):
         try:
             encryption = get_bucket_key(s3_client, bucket_name)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
@@ -1476,7 +1485,7 @@ def wait_versioning_is_applied(module: AnsibleAWSModule, s3_client, bucket_name:
     Returns:
         The current versioning status applied to the bucket.
     """
-    for _ in range(0, 24):
+    for dummy in range(0, 24):
         try:
             versioning_status = get_bucket_versioning(s3_client, bucket_name)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
@@ -1503,7 +1512,7 @@ def wait_tags_are_applied(module: AnsibleAWSModule, s3_client, bucket_name: str,
     Returns:
         The current tags dictionary applied to the bucket.
     """
-    for _ in range(0, 12):
+    for dummy in range(0, 12):
         try:
             current_tags_dict = get_current_bucket_tags_dict(s3_client, bucket_name)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
@@ -1637,7 +1646,7 @@ def delete_objects(s3_client, module: AnsibleAWSModule, name: str):
                         response=resp,
                     )
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-            module.fail_json_aws(e, msg="Failed while deleting bucket")
+        module.fail_json_aws(e, msg="Failed while deleting bucket")
 
 
 def destroy_bucket(s3_client, module: AnsibleAWSModule):
@@ -1675,7 +1684,6 @@ def destroy_bucket(s3_client, module: AnsibleAWSModule):
         module.fail_json_aws(e, msg="Failed to delete bucket")
 
     module.exit_json(changed=True)
-
 
 
 def main():

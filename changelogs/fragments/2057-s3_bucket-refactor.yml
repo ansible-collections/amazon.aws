@@ -1,0 +1,3 @@
+---
+minor_changes:
+  - s3_bucket - refactor s3_bucket module code for improved readability and maintainability (https://github.com/ansible-collections/amazon.aws/pull/2057).
