@@ -102,6 +102,7 @@ action_groups:
     - rds_cluster_snapshot
     - rds_instance
     - rds_instance_info
+    - rds_instance_param_group
     - rds_instance_snapshot
     - rds_option_group
     - rds_option_group_info
@@ -155,6 +156,13 @@ plugin_routing:
     execute_lambda:
       # Deprecation for this alias should not *start* prior to 2024-09-01
       redirect: amazon.aws.lambda_execute
+    rds_param_group:
+      redirect: amazon.aws.rds_instance_param_group
+      deprecation:
+         removal_version: 10.0.0
+         warning_text: >-
+           rds_param_group has been renamed to rds_instance_param_group.
+           Please update your tasks.
   lookup:
     aws_ssm:
       # Deprecation for this alias should not *start* prior to 2024-09-01

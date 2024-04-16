@@ -1,0 +1,3 @@
+deprecated_features:
+ - rds_param_group - the ``rds_param_group`` module has been renamed to ``rds_instance_param_group``.
+   The usage of the module has not changed. The rds_param_group alias will be removed in version 10.0.0 (https://github.com/ansible-collections/amazon.aws/pull/2058).
