@@ -858,7 +858,7 @@ def main():
     elif state == "absent":
         if not name and not param_id:
             module.fail_json("A volume name or id is required for deletion")
-        if volume:
+        if volume and volume.get("state") not in ("deleting", "deleted"):
             if module.check_mode:
                 module.exit_json(changed=True, msg="Would have deleted volume if not in check mode.")
             detach_volume(module, ec2_conn, volume_dict=volume)
