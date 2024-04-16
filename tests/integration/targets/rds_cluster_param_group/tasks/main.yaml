@@ -172,12 +172,6 @@
           - '"Could not find parameter with name: invalid_fake" in invalid_param.msg'
 
     # Test Modify parameters
-    - name: Describe RDS parameter group
-      amazon.aws.rds_cluster_param_group_info:
-        name: "{{ rds_cluster_param_group_name }}"
-        include_parameters: user
-      register: initial_params
-
     - name: Modify RDS cluster parameter group with new parameters (check_mode)
       amazon.aws.rds_cluster_param_group:
         name: "{{ rds_cluster_param_group_name }}"
@@ -196,15 +190,19 @@
     - name: Describe RDS parameter group
       amazon.aws.rds_cluster_param_group_info:
         name: "{{ rds_cluster_param_group_name }}"
-        include_parameters: user
-      register: cluster_params
+        include_parameters: all
+      register: initial_params
+      no_log: true # very spammy
 
     - name: Assert that the task executed in check_mode reported change, while the parameters remain unchanged
       ansible.builtin.assert:
         that:
           - update_param_check_mode is changed
-          - cluster_params.db_cluster_parameter_groups.0.db_parameters | selectattr('parameter_name', 'equalto', 'array_nulls') | first | community.general.json_query('parameter_value') == initial_params.db_cluster_parameter_groups.0.db_parameters | selectattr('parameter_name', 'equalto', 'array_nulls') | first | community.general.json_query('parameter_value')
-          - cluster_params.db_cluster_parameter_groups.0.db_parameters | selectattr('parameter_name', 'equalto', 'authentication_timeout') | first | community.general.json_query('parameter_value') == initial_params.db_cluster_parameter_groups.0.db_parameters | selectattr('parameter_name', 'equalto', 'authentication_timeout') | first | community.general.json_query('parameter_value')
+          - "'parameter_value' not in array_nulls_param"
+          - "'parameter_value' not in auth_timeout_param"
+      vars:
+        array_nulls_param: "{{ initial_params.db_cluster_parameter_groups.0.db_parameters | selectattr('parameter_name', 'equalto', 'array_nulls') | first }}"
+        auth_timeout_param: "{{ initial_params.db_cluster_parameter_groups.0.db_parameters | selectattr('parameter_name', 'equalto', 'authentication_timeout') | first }}"
 
     - name: Modify RDS cluster parameter group with new parameters
       amazon.aws.rds_cluster_param_group:

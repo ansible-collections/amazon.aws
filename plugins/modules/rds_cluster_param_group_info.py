@@ -123,7 +123,7 @@ def describe_rds_cluster_parameter_group(connection, module):
     results = []
     response = describe_db_cluster_parameter_groups(module, connection, group_name)
     if response:
-        for resource in response["DBClusterParameterGroups"]:
+        for resource in response:
             resource["tags"] = get_tags(connection, module, resource["DBClusterParameterGroupArn"])
             if include_parameters is not None:
                 resource["db_parameters"] = describe_db_cluster_parameters(

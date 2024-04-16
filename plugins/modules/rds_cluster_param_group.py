@@ -136,12 +136,11 @@ from ansible_collections.amazon.aws.plugins.module_utils.rds import ensure_tags
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_tags
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
-from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
 
 
 def modify_parameters(module, connection, group_name, parameters):
     current_params = describe_db_cluster_parameters(module, connection, group_name)
-    parameters = snake_dict_to_camel_dict(scrub_none_parameters(parameters), capitalize_first=True)
+    parameters = snake_dict_to_camel_dict(parameters, capitalize_first=True)
     # compare current resource parameters with the value from module parameters
     changed = False
     for param in parameters:
@@ -149,6 +148,8 @@ def modify_parameters(module, connection, group_name, parameters):
         for current_p in current_params:
             if param.get("ParameterName") == current_p.get("ParameterName"):
                 found = True
+                if not current_p["IsModifiable"]:
+                    module.fail_json("The parameter %s cannot be modified" % param.get("ParameterName"))
                 changed |= any((current_p.get(k) != v for k, v in param.items()))
         if not found:
             module.fail_json(msg="Could not find parameter with name: %s" % param.get("ParameterName"))
@@ -193,7 +194,7 @@ def ensure_present(module, connection):
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg="Couldn't create parameter group")
     else:
-        group = response["DBClusterParameterGroups"][0]
+        group = response[0]
         if db_parameter_group_family != group["DBParameterGroupFamily"]:
             module.warn(
                 "The RDS cluster parameter group family is immutable and can't be changed when updating a RDS cluster parameter group."
@@ -210,7 +211,7 @@ def ensure_present(module, connection):
         changed |= modify_parameters(module, connection, group_name, parameters)
 
     response = describe_db_cluster_parameter_groups(module=module, connection=connection, group_name=group_name)
-    group = camel_dict_to_snake_dict(response["DBClusterParameterGroups"][0])
+    group = camel_dict_to_snake_dict(response[0])
     group["tags"] = get_tags(connection, module, group["db_cluster_parameter_group_arn"])
 
     module.exit_json(changed=changed, db_cluster_parameter_group=group)

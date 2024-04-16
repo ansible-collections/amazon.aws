@@ -451,7 +451,7 @@ def describe_db_cluster_parameter_groups(module, connection, group_name):
             params["DBClusterParameterGroupName"] = group_name
         paginator = connection.get_paginator("describe_db_cluster_parameter_groups")
         return paginator.paginate(**params).build_full_result()["DBClusterParameterGroups"]
-    except is_boto3_error_code("DBParameterGroupNotFoundFault"):
+    except is_boto3_error_code("DBParameterGroupNotFound"):
         return []
     except ClientError as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Couldn't access parameter groups information")
@@ -465,7 +465,7 @@ def describe_db_cluster_parameters(module, connection, group_name, source="all")
         if source != "all":
             params["Source"] = source
         return paginator.paginate(**params).build_full_result()["Parameters"]
-    except is_boto3_error_code("DBParameterGroupNotFoundFault"):
+    except is_boto3_error_code("DBParameterGroupNotFound"):
         return []
     except ClientError as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Couldn't access RDS cluster parameters information")
