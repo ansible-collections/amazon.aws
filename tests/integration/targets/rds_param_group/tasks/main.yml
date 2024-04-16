@@ -22,7 +22,7 @@
   block:
     # ============================================================
     - name: test empty parameter group - CHECK_MODE
-      amazon.aws.rds_param_group:
+      amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
         description: "{{ rds_param_group.description }}"
@@ -36,7 +36,7 @@
           - result.changed
 
     - name: test empty parameter group
-      amazon.aws.rds_param_group:
+      amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
         description: "{{ rds_param_group.description }}"
@@ -54,7 +54,7 @@
 
     # ============================================================
     - name: test empty parameter group with no arguments changes nothing - CHECK_MODE
-      amazon.aws.rds_param_group:
+      amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
         description: "{{ rds_param_group.description }}"
@@ -68,7 +68,7 @@
           - not result.changed
 
     - name: test empty parameter group with no arguments changes nothing
-      amazon.aws.rds_param_group:
+      amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
         description: "{{ rds_param_group.description }}"
@@ -82,7 +82,7 @@
 
     # ============================================================
     - name: test adding numeric tag - CHECK_MODE
-      amazon.aws.rds_param_group:
+      amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
         description: "{{ rds_param_group.description }}"
@@ -98,7 +98,7 @@
         that:
           - result.changed
     - name: test adding numeric tag
-      amazon.aws.rds_param_group:
+      amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
         description: "{{ rds_param_group.description }}"
@@ -123,7 +123,7 @@
     # ============================================================
 
     - name: test modifying rds parameter group engine/family (warning displayed)
-      amazon.aws.rds_param_group:
+      amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine_to_modify_to }}"
         description: "{{ rds_param_group.description }}"
@@ -143,7 +143,7 @@
 
     # ============================================================
     - name: test tagging existing group - CHECK_MODE
-      amazon.aws.rds_param_group:
+      amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
         description: "{{ rds_param_group.description }}"
@@ -160,7 +160,7 @@
         that:
           - result.changed
     - name: test tagging existing group
-      amazon.aws.rds_param_group:
+      amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
         description: "{{ rds_param_group.description }}"
@@ -186,7 +186,7 @@
 
     # ============================================================
     - name: test repeating tagging existing group - CHECK_MODE
-      amazon.aws.rds_param_group:
+      amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
         description: "{{ rds_param_group.description }}"
@@ -212,7 +212,7 @@
           - result.tags["NewTag"] == 'hello'
 
     - name: test repeating tagging existing group
-      amazon.aws.rds_param_group:
+      amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
         description: "{{ rds_param_group.description }}"
@@ -238,7 +238,7 @@
 
     # ============================================================
     - name: test deleting tags from existing group - CHECK_MODE
-      amazon.aws.rds_param_group:
+      amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
         description: "{{ rds_param_group.description }}"
@@ -254,7 +254,7 @@
         that:
           - result.changed
     - name: test deleting tags from existing group
-      amazon.aws.rds_param_group:
+      amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
         description: "{{ rds_param_group.description }}"
@@ -277,7 +277,7 @@
 
     # ============================================================
     - name: test state=absent with engine defined (expect changed=true) - CHECK_MODE
-      amazon.aws.rds_param_group:
+      amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
         state: absent
@@ -290,7 +290,7 @@
           - result.changed
 
     - name: test state=absent with engine defined (expect changed=true)
-      amazon.aws.rds_param_group:
+      amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
         state: absent
@@ -303,7 +303,7 @@
 
     # ============================================================
     - name: test creating group with parameters - CHECK_MODE
-      amazon.aws.rds_param_group:
+      amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
         description: "{{ rds_param_group.description }}"
@@ -325,7 +325,7 @@
           - result.changed
 
     - name: test creating group with parameters
-      amazon.aws.rds_param_group:
+      amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
         description: "{{ rds_param_group.description }}"
@@ -355,7 +355,7 @@
 
     # ============================================================
     - name: test repeating group with parameters - CHECK_MODE
-      amazon.aws.rds_param_group:
+      amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
         description: "{{ rds_param_group.description }}"
@@ -377,7 +377,7 @@
           - not result.changed
 
     - name: test repeating group with parameters
-      amazon.aws.rds_param_group:
+      amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
         description: "{{ rds_param_group.description }}"
@@ -407,7 +407,7 @@
 
     # ============================================================
     - name: test state=absent with engine defined (expect changed=true) - CHECK_MODE
-      amazon.aws.rds_param_group:
+      amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
         state: absent
@@ -419,7 +419,7 @@
         that:
           - result.changed
     - name: test state=absent with engine defined (expect changed=true)
-      amazon.aws.rds_param_group:
+      amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
         state: absent
@@ -432,7 +432,7 @@
 
     # ============================================================
     - name: test repeating state=absent (expect changed=false) - CHECK_MODE
-      amazon.aws.rds_param_group:
+      amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
         state: absent
@@ -445,7 +445,7 @@
         that:
           - not result.changed
     - name: test repeating state=absent (expect changed=false)
-      amazon.aws.rds_param_group:
+      amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
         state: absent
@@ -459,7 +459,7 @@
 
     # ============================================================
     - name: test creating group with more than 20 parameters - CHECK_MODE
-      amazon.aws.rds_param_group:
+      amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
         description: "{{ rds_param_group.description }}"
@@ -473,7 +473,7 @@
         that:
           - result.changed
     - name: test creating group with more than 20 parameters
-      amazon.aws.rds_param_group:
+      amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
         description: "{{ rds_param_group.description }}"
@@ -488,7 +488,7 @@
 
     # ============================================================
     - name: test creating group with more than 20 parameters - CHECK_MODE
-      amazon.aws.rds_param_group:
+      amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
         description: "{{ rds_param_group.description }}"
@@ -502,7 +502,7 @@
         that:
           - not result.changed
     - name: test creating group with more than 20 parameters
-      amazon.aws.rds_param_group:
+      amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
         description: "{{ rds_param_group.description }}"
@@ -518,7 +518,7 @@
   always:
     # ============================================================
     - name: test state=absent (expect changed=false)
-      amazon.aws.rds_param_group:
+      amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         state: absent
       register: result

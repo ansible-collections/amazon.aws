@@ -6,7 +6,7 @@
 
 DOCUMENTATION = r"""
 ---
-module: rds_param_group
+module: rds_instance_param_group
 version_added: 5.0.0
 short_description: manage RDS parameter groups
 description:
@@ -61,7 +61,7 @@ extends_documentation_fragment:
 
 EXAMPLES = r"""
 - name: Add or change a parameter group, in this case setting auto_increment_increment to 42 * 1024
-  amazon.aws.rds_param_group:
+  amazon.aws.rds_instance_param_group:
       state: present
       name: norwegian-blue
       description: 'My Fancy Ex Parrot Group'
@@ -73,7 +73,7 @@ EXAMPLES = r"""
           Application: parrot
 
 - name: Remove a parameter group
-  amazon.aws.rds_param_group:
+  amazon.aws.rds_instance_param_group:
       state: absent
       name: norwegian-blue
 """
