@@ -6,16 +6,15 @@
 
 DOCUMENTATION = r"""
 module: rds_cluster_param_group_info
-version_added: 7.5.0
+version_added: 7.6.0
 short_description: Describes the properties of specific RDS cluster parameter group.
 description:
-  - Obtain information about one specific RDS cluster parameter group.
+  - Obtain information about a list or one specific RDS cluster parameter group.
 options:
     name:
         description:
           - The RDS cluster parameter group name.
         type: str
-        required: true
     include_parameters:
         description:
           - Specifies whether to include the detailed parameters of the RDS cluster parameter group.
@@ -41,6 +40,9 @@ EXAMPLES = r"""
 - name: Describe a specific RDS cluster parameter group
   amazon.aws.rds_cluster_param_group_info:
     name: myrdsclustergroup
+
+- name: Describe all RDS cluster parameter group
+  amazon.aws.rds_cluster_param_group_info:
 
 - name: Describe a specific RDS cluster parameter group including user parameters
   amazon.aws.rds_cluster_param_group_info:
@@ -108,57 +110,32 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_cluster_parameter_groups
+from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_cluster_parameters
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_tags
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
-
-
-def _describe_db_cluster_parameter_group(module, connection, group_name):
-    try:
-        response = connection.describe_db_cluster_parameter_groups(
-            aws_retry=True, DBClusterParameterGroupName=group_name
-        )
-    except is_boto3_error_code("DBParameterGroupNotFoundFault"):
-        response = None
-    except botocore.exceptions.ClientError as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Couldn't access parameter group information")
-    return response
-
-
-@AWSRetry.jittered_backoff()
-def _describe_db_cluster_parameters(module, connection, group_name, source):
-    try:
-        paginator = connection.get_paginator("describe_db_cluster_parameters")
-        params = {"DBClusterParameterGroupName": group_name}
-        if source != "all":
-            params["Source"] = source
-        return paginator.paginate(**params).build_full_result()["Parameters"]
-    except is_boto3_error_code("DBParameterGroupNotFoundFault"):
-        return []
-    except botocore.exceptions.ClientError as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Couldn't access RDS cluster parameters information")
 
 
 def describe_rds_cluster_parameter_group(connection, module):
     group_name = module.params.get("name")
     include_parameters = module.params.get("include_parameters")
     results = []
-    response = _describe_db_cluster_parameter_group(module, connection, group_name)
+    response = describe_db_cluster_parameter_groups(module, connection, group_name)
     if response:
-        resource = response["DBClusterParameterGroups"][0]
-        resource["tags"] = get_tags(connection, module, resource["DBClusterParameterGroupArn"])
-        if include_parameters is not None:
-            resource["db_parameters"] = _describe_db_cluster_parameters(
-                module, connection, group_name, include_parameters
-            )
-        results.append(camel_dict_to_snake_dict(resource, ignore_list=["tags"]))
+        for resource in response["DBClusterParameterGroups"]:
+            resource["tags"] = get_tags(connection, module, resource["DBClusterParameterGroupArn"])
+            if include_parameters is not None:
+                resource["db_parameters"] = describe_db_cluster_parameters(
+                    module, connection, resource["DBClusterParameterGroupName"], include_parameters
+                )
+            results.append(camel_dict_to_snake_dict(resource, ignore_list=["tags"]))
     module.exit_json(changed=False, db_cluster_parameter_groups=results)
 
 
 def main():
     argument_spec = dict(
-        name=dict(required=True),
+        name=dict(),
         include_parameters=dict(choices=["user", "all", "system", "engine-default"]),
     )
 

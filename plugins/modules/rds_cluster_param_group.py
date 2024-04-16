@@ -7,7 +7,7 @@
 DOCUMENTATION = r"""
 ---
 module: rds_cluster_param_group
-version_added: 7.5.0
+version_added: 7.6.0
 short_description: Manage RDS cluster parameter groups
 description:
   - Creates, modifies, and deletes RDS cluster parameter groups.
@@ -61,39 +61,6 @@ options:
         - pending-reboot
         type: str
         required: true
-      description:
-        description:
-        - Provides a description of the parameter.
-        type: str
-      source:
-        description:
-        - Indicates the source of the parameter value.
-        type: str
-      apply_type:
-        description:
-        - Specifies the engine specific parameters type.
-        type: str
-      data_type:
-        description:
-        - Specifies the valid data type for the parameter.
-        type: str
-      allowed_values:
-        description:
-        - Specifies the valid range of values for the parameter.
-        type: str
-      is_modifiable:
-        description:
-        - Indicates whether V(True) or not V(False) the parameter can be modified.
-        type: bool
-      minimum_engine_version:
-        description:
-        - The earliest engine version to which the parameter can apply.
-        type: str
-      supported_engine_modes:
-        description:
-        - The valid DB engine modes.
-        type: list
-        elements: str
 author:
   - "Aubin Bikouo (@abikouo)"
 extends_documentation_fragment:
@@ -162,63 +129,43 @@ except ImportError:
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_cluster_parameter_groups
+from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_cluster_parameters
 from ansible_collections.amazon.aws.plugins.module_utils.rds import ensure_tags
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_tags
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
-
-
-@AWSRetry.jittered_backoff()
-def _describe_db_cluster_parameters(module, connection, group_name):
-    try:
-        paginator = connection.get_paginator("describe_db_cluster_parameters")
-        return paginator.paginate(DBClusterParameterGroupName=group_name).build_full_result()["Parameters"]
-    except is_boto3_error_code("DBParameterGroupNotFound"):
-        return None
-    except botocore.exceptions.ClientError as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Failed to describe existing RDS cluster parameter groups")
+from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
 
 
 def modify_parameters(module, connection, group_name, parameters):
-    if module.check_mode:
-        return True
-
-    current_params = _describe_db_cluster_parameters(module, connection, group_name)
-    parameters_names = [x["parameter_name"] for x in parameters]
-    parameters = snake_dict_to_camel_dict(
-        list(map(lambda x: {k: v for k, v in x.items() if v is not None}, parameters)), capitalize_first=True
-    )
-    for chunk in zip_longest(*[iter(parameters)] * 20, fillvalue=None):
-        non_empty_chunk = [item for item in chunk if item]
-        try:
-            connection.modify_db_cluster_parameter_group(
-                aws_retry=True, DBClusterParameterGroupName=group_name, Parameters=non_empty_chunk
-            )
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Couldn't update RDS cluster parameters")
-    update_params = _describe_db_cluster_parameters(module, connection, group_name)
+    current_params = describe_db_cluster_parameters(module, connection, group_name)
+    parameters = snake_dict_to_camel_dict(scrub_none_parameters(parameters), capitalize_first=True)
+    # compare current resource parameters with the value from module parameters
     changed = False
-    for name in parameters_names:
-        previous = list(filter(lambda x: x["ParameterName"] == name, current_params))[0]
-        new = list(filter(lambda x: x["ParameterName"] == name, update_params))[0]
-        if new != previous:
-            changed = True
-            break
+    for param in parameters:
+        found = False
+        for current_p in current_params:
+            if param.get("ParameterName") == current_p.get("ParameterName"):
+                found = True
+                changed |= any((current_p.get(k) != v for k, v in param.items()))
+        if not found:
+            module.fail_json(msg="Could not find parameter with name: %s" % param.get("ParameterName"))
+    if changed:
+        if not module.check_mode:
+            # When calling modify_db_cluster_parameter_group() function
+            # A maximum of 20 parameters can be modified in a single request.
+            # This is why we are creating chunk containing at max 20 items
+            for chunk in zip_longest(*[iter(parameters)] * 20, fillvalue=None):
+                non_empty_chunk = [item for item in chunk if item]
+                try:
+                    connection.modify_db_cluster_parameter_group(
+                        aws_retry=True, DBClusterParameterGroupName=group_name, Parameters=non_empty_chunk
+                    )
+                except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+                    module.fail_json_aws(e, msg="Couldn't update RDS cluster parameters")
     return changed
-
-
-def _describe_db_cluster_parameter_group(module, connection, group_name):
-    try:
-        response = connection.describe_db_cluster_parameter_groups(
-            aws_retry=True, DBClusterParameterGroupName=group_name
-        )
-    except is_boto3_error_code("DBParameterGroupNotFound"):
-        response = None
-    except botocore.exceptions.ClientError as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Couldn't access parameter group information")
-    return response
 
 
 def ensure_present(module, connection):
@@ -228,7 +175,7 @@ def ensure_present(module, connection):
     purge_tags = module.params.get("purge_tags")
     changed = False
 
-    response = _describe_db_cluster_parameter_group(module=module, connection=connection, group_name=group_name)
+    response = describe_db_cluster_parameter_groups(module=module, connection=connection, group_name=group_name)
     if not response:
         # Create RDS cluster parameter group
         params = dict(
@@ -239,7 +186,7 @@ def ensure_present(module, connection):
         if tags:
             params["Tags"] = ansible_dict_to_boto3_tag_list(tags)
         if module.check_mode:
-            module.exit_json(changed=True)
+            module.exit_json(changed=True, msg="Would have create RDS parameter group if not in check mode.")
         try:
             response = connection.create_db_cluster_parameter_group(aws_retry=True, **params)
             changed = True
@@ -262,7 +209,7 @@ def ensure_present(module, connection):
     if parameters:
         changed |= modify_parameters(module, connection, group_name, parameters)
 
-    response = _describe_db_cluster_parameter_group(module=module, connection=connection, group_name=group_name)
+    response = describe_db_cluster_parameter_groups(module=module, connection=connection, group_name=group_name)
     group = camel_dict_to_snake_dict(response["DBClusterParameterGroups"][0])
     group["tags"] = get_tags(connection, module, group["db_cluster_parameter_group_arn"])
 
@@ -271,7 +218,7 @@ def ensure_present(module, connection):
 
 def ensure_absent(module, connection):
     group = module.params["name"]
-    response = _describe_db_cluster_parameter_group(module=module, connection=connection, group_name=group)
+    response = describe_db_cluster_parameter_groups(module=module, connection=connection, group_name=group)
     if not response:
         module.exit_json(changed=False, msg="The RDS cluster parameter group does not exist.")
 
@@ -298,14 +245,6 @@ def main():
                 parameter_name=dict(required=True),
                 parameter_value=dict(required=True),
                 apply_method=dict(choices=["immediate", "pending-reboot"], required=True),
-                description=dict(),
-                source=dict(),
-                apply_type=dict(),
-                data_type=dict(),
-                allowed_values=dict(),
-                is_modifiable=dict(type="bool"),
-                minimum_engine_version=dict(),
-                supported_engine_modes=dict(type="list", elements="str"),
             ),
         ),
     )

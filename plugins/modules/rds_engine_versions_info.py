@@ -6,7 +6,7 @@
 
 DOCUMENTATION = r"""
 module: rds_engine_versions_info
-version_added: 7.5.0
+version_added: 7.6.0
 short_description: Describes the properties of specific versions of DB engines.
 description:
   - Obtain information about a specific versions of DB engines.

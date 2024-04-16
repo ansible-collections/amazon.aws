@@ -16,6 +16,7 @@ except ImportError:
 from ansible.module_utils._text import to_text
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 
+from .botocore import is_boto3_error_code
 from .retries import AWSRetry
 from .tagging import ansible_dict_to_boto3_tag_list
 from .tagging import boto3_tag_list_to_ansible_dict
@@ -440,3 +441,31 @@ def update_iam_roles(client, module, instance_id, roles_to_add, roles_to_remove)
         params = {"DBInstanceIdentifier": instance_id, "RoleArn": role["role_arn"], "FeatureName": role["feature_name"]}
         _result, changed = call_method(client, module, method_name="add_role_to_db_instance", parameters=params)
     return changed
+
+
+@AWSRetry.jittered_backoff()
+def describe_db_cluster_parameter_groups(module, connection, group_name):
+    try:
+        params = {}
+        if group_name is not None:
+            params["DBClusterParameterGroupName"] = group_name
+        paginator = connection.get_paginator("describe_db_cluster_parameter_groups")
+        return paginator.paginate(**params).build_full_result()["DBClusterParameterGroups"]
+    except is_boto3_error_code("DBParameterGroupNotFoundFault"):
+        return []
+    except ClientError as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Couldn't access parameter groups information")
+
+
+@AWSRetry.jittered_backoff()
+def describe_db_cluster_parameters(module, connection, group_name, source="all"):
+    try:
+        paginator = connection.get_paginator("describe_db_cluster_parameters")
+        params = {"DBClusterParameterGroupName": group_name}
+        if source != "all":
+            params["Source"] = source
+        return paginator.paginate(**params).build_full_result()["Parameters"]
+    except is_boto3_error_code("DBParameterGroupNotFoundFault"):
+        return []
+    except ClientError as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Couldn't access RDS cluster parameters information")

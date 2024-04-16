@@ -172,6 +172,40 @@
           - '"Could not find parameter with name: invalid_fake" in invalid_param.msg'
 
     # Test Modify parameters
+    - name: Describe RDS parameter group
+      amazon.aws.rds_cluster_param_group_info:
+        name: "{{ rds_cluster_param_group_name }}"
+        include_parameters: user
+      register: initial_params
+
+    - name: Modify RDS cluster parameter group with new parameters (check_mode)
+      amazon.aws.rds_cluster_param_group:
+        name: "{{ rds_cluster_param_group_name }}"
+        db_parameter_group_family: "{{ dbparam_group_family }}"
+        description: "RDS cluster param group for Engine {{ engine_versions.db_engine_versions.0.engine_version }}"
+        parameters:
+          - parameter_name: array_nulls
+            parameter_value: "0"
+            apply_method: immediate
+          - parameter_name: authentication_timeout
+            parameter_value: "50"
+            apply_method: immediate
+      register: update_param_check_mode
+      check_mode: true
+
+    - name: Describe RDS parameter group
+      amazon.aws.rds_cluster_param_group_info:
+        name: "{{ rds_cluster_param_group_name }}"
+        include_parameters: user
+      register: cluster_params
+
+    - name: Assert that the task executed in check_mode reported change, while the parameters remain unchanged
+      ansible.builtin.assert:
+        that:
+          - update_param_check_mode is changed
+          - cluster_params.db_cluster_parameter_groups.0.db_parameters | selectattr('parameter_name', 'equalto', 'array_nulls') | first | community.general.json_query('parameter_value') == initial_params.db_cluster_parameter_groups.0.db_parameters | selectattr('parameter_name', 'equalto', 'array_nulls') | first | community.general.json_query('parameter_value')
+          - cluster_params.db_cluster_parameter_groups.0.db_parameters | selectattr('parameter_name', 'equalto', 'authentication_timeout') | first | community.general.json_query('parameter_value') == initial_params.db_cluster_parameter_groups.0.db_parameters | selectattr('parameter_name', 'equalto', 'authentication_timeout') | first | community.general.json_query('parameter_value')
+
     - name: Modify RDS cluster parameter group with new parameters
       amazon.aws.rds_cluster_param_group:
         name: "{{ rds_cluster_param_group_name }}"
@@ -200,6 +234,25 @@
           - cluster_params.db_cluster_parameter_groups.0.db_parameters | selectattr('parameter_name', 'equalto', 'authentication_timeout') | first | community.general.json_query('parameter_value') == "50"
 
     # Test Modify parameters (idempotency)
+    - name: Modify RDS cluster parameter group with new parameters (idempotency with check_mode)
+      amazon.aws.rds_cluster_param_group:
+        name: "{{ rds_cluster_param_group_name }}"
+        db_parameter_group_family: "{{ dbparam_group_family }}"
+        description: "RDS cluster param group for Engine {{ engine_versions.db_engine_versions.0.engine_version }}"
+        parameters:
+          - parameter_name: array_nulls
+            parameter_value: "0"
+            apply_method: immediate
+          - parameter_name: authentication_timeout
+            parameter_value: "50"
+            apply_method: immediate
+      register: update_idempotency_check_mode
+
+    - name: Ensure task executed using check_mode did not reported change
+      ansible.builtin.assert:
+        that:
+          - update_idempotency_check_mode is not changed
+
     - name: Modify RDS cluster parameter group with new parameters (idempotency)
       amazon.aws.rds_cluster_param_group:
         name: "{{ rds_cluster_param_group_name }}"
