@@ -149,10 +149,10 @@ def modify_parameters(module, connection, group_name, parameters):
             if param.get("ParameterName") == current_p.get("ParameterName"):
                 found = True
                 if not current_p["IsModifiable"]:
-                    module.fail_json("The parameter %s cannot be modified" % param.get("ParameterName"))
+                    module.fail_json(f"The parameter {param.get('ParameterName')} cannot be modified")
                 changed |= any((current_p.get(k) != v for k, v in param.items()))
         if not found:
-            module.fail_json(msg="Could not find parameter with name: %s" % param.get("ParameterName"))
+            module.fail_json(msg=f"Could not find parameter with name: {param.get('ParameterName')}")
     if changed:
         if not module.check_mode:
             # When calling modify_db_cluster_parameter_group() function
