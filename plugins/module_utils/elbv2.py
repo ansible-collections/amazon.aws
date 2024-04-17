@@ -1176,7 +1176,7 @@ def _compare_rule(current_rule: Dict[str, Any], new_rule: Dict[str, Any]) -> Dic
 
 def _group_rules(
     current_rules: List[Dict[str, Any]], rules: List[Dict[str, Any]]
-) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
+) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]], List[str]]:
     """This function compares listener rules from AWS with module provided listener rules and a matrix with the
     following:
         - Rules to add: a rule is added when it is part of the module parameters and not currently stored on AWS
@@ -1314,7 +1314,7 @@ class ELBListenerRules:
 
     def compare_rules(
         self,
-    ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
+    ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]], List[str]]:
         """This function creates the rule matrix (to add, to set priority, to modify, to delete)
         and prepare them to be ready for AWS API call.
 
@@ -1374,7 +1374,7 @@ class ELBListenerRule:
             self.module.fail_json_aws(e)
 
     @AWSRetry.jittered_backoff()
-    def delete(self, rule: Dict[str, Any]) -> None:
+    def delete(self, rule_arn: str) -> None:
         """
         Delete a listener rule
 
@@ -1382,7 +1382,7 @@ class ELBListenerRule:
         """
 
         try:
-            self.connection.delete_rule(RuleArn=rule["RuleArn"])
+            self.connection.delete_rule(RuleArn=rule_arn)
         except (BotoCoreError, ClientError) as e:
             self.module.fail_json_aws(e)
 
@@ -1406,15 +1406,15 @@ class ELBListenerRule:
         rules_to_create: List[Dict[str, Any]],
         rules_to_set_priority: List[Dict[str, Any]],
         rules_to_modify: List[Dict[str, Any]],
-        rules_to_delete: List[Dict[str, Any]],
+        rules_to_delete: List[str],
     ) -> bool:
         changed = False
         if rules_to_set_priority:
             self.set_rule_priorities(rules_to_set_priority)
             changed = True
         if self.module.params["purge_rules"]:
-            for rule in rules_to_delete:
-                self.delete(rule)
+            for arn in rules_to_delete:
+                self.delete(arn)
                 changed = True
         for rule in rules_to_create:
             self.create(rule)
