@@ -120,6 +120,9 @@ db_cluster_parameter_group:
 """
 
 from itertools import zip_longest
+from typing import Any
+from typing import Dict
+from typing import List
 
 try:
     import botocore
@@ -138,7 +141,9 @@ from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
 
 
-def modify_parameters(module, connection, group_name, parameters):
+def modify_parameters(
+    module: AnsibleAWSModule, connection: Any, group_name: str, parameters: List[Dict[str, Any]]
+) -> bool:
     current_params = describe_db_cluster_parameters(module, connection, group_name)
     parameters = snake_dict_to_camel_dict(parameters, capitalize_first=True)
     # compare current resource parameters with the value from module parameters
@@ -169,7 +174,7 @@ def modify_parameters(module, connection, group_name, parameters):
     return changed
 
 
-def ensure_present(module, connection):
+def ensure_present(module: AnsibleAWSModule, connection: Any) -> None:
     group_name = module.params["name"]
     db_parameter_group_family = module.params["db_parameter_group_family"]
     tags = module.params.get("tags")
@@ -217,7 +222,7 @@ def ensure_present(module, connection):
     module.exit_json(changed=changed, db_cluster_parameter_group=group)
 
 
-def ensure_absent(module, connection):
+def ensure_absent(module: AnsibleAWSModule, connection: Any) -> None:
     group = module.params["name"]
     response = describe_db_cluster_parameter_groups(module=module, connection=connection, group_name=group)
     if not response:
@@ -231,7 +236,7 @@ def ensure_absent(module, connection):
     module.exit_json(changed=True)
 
 
-def main():
+def main() -> None:
     argument_spec = dict(
         state=dict(default="present", choices=["present", "absent"]),
         name=dict(required=True),
@@ -256,16 +261,14 @@ def main():
     )
 
     try:
-        client = module.client("rds", retry_decorator=AWSRetry.jittered_backoff())
+        connection = module.client("rds", retry_decorator=AWSRetry.jittered_backoff())
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to connect to AWS")
 
-    func_mapping = {
-        "present": ensure_present,
-        "absent": ensure_absent,
-    }
-    state = module.params.get("state")
-    func_mapping.get(state)(module, client)
+    if module.params.get("state") == "present":
+        ensure_present(module=module, connection=connection)
+    else:
+        ensure_absent(module=module, connection=connection)
 
 
 if __name__ == "__main__":

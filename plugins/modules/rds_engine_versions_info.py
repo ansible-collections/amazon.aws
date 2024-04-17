@@ -290,6 +290,9 @@ db_engine_versions:
         type: bool
 """
 
+from typing import Any
+from typing import Dict
+from typing import List
 
 try:
     import botocore
@@ -304,12 +307,12 @@ from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_ta
 
 
 @AWSRetry.jittered_backoff(retries=10)
-def _describe_db_engine_versions(client, **params):
-    paginator = client.get_paginator("describe_db_engine_versions")
+def _describe_db_engine_versions(connection: Any, **params: Dict[str, Any]) -> List[Dict[str, Any]]:
+    paginator = connection.get_paginator("describe_db_engine_versions")
     return paginator.paginate(**params).build_full_result()["DBEngineVersions"]
 
 
-def describe_db_engine_versions(client, module):
+def describe_db_engine_versions(connection: Any, module: AnsibleAWSModule) -> Dict[str, Any]:
     engine = module.params.get("engine")
     engine_version = module.params.get("engine_version")
     db_parameter_group_family = module.params.get("db_parameter_group_family")
@@ -327,7 +330,7 @@ def describe_db_engine_versions(client, module):
         params["Filters"] = filters
 
     try:
-        result = _describe_db_engine_versions(client, **params)
+        result = _describe_db_engine_versions(connection, **params)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, "Couldn't get RDS engine versions.")
 
@@ -340,7 +343,7 @@ def describe_db_engine_versions(client, module):
     return dict(changed=False, db_engine_versions=[_transform_item(v) for v in result])
 
 
-def main():
+def main() -> None:
     argument_spec = dict(
         engine=dict(
             choices=[

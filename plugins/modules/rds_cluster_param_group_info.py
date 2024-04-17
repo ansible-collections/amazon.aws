@@ -102,6 +102,7 @@ db_cluster_parameter_groups:
         }
 """
 
+from typing import Any
 
 try:
     import botocore
@@ -117,7 +118,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.rds import get_tags
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 
 
-def describe_rds_cluster_parameter_group(connection, module):
+def describe_rds_cluster_parameter_group(connection: Any, module: AnsibleAWSModule) -> None:
     group_name = module.params.get("name")
     include_parameters = module.params.get("include_parameters")
     results = []
@@ -133,7 +134,7 @@ def describe_rds_cluster_parameter_group(connection, module):
     module.exit_json(changed=False, db_cluster_parameter_groups=results)
 
 
-def main():
+def main() -> None:
     argument_spec = dict(
         name=dict(),
         include_parameters=dict(choices=["user", "all", "system", "engine-default"]),
