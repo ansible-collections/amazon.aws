@@ -937,7 +937,7 @@ def bucket_exists(s3_client, bucket_name: str) -> bool:
 
 
 @AWSRetry.exponential_backoff(max_delay=120)
-def create_bucket(s3_client, bucket_name: str, location: str, object_lock_enabled=False) -> bool:
+def create_bucket(s3_client, bucket_name: str, location: str, object_lock_enabled: bool = False) -> bool:
     """
     Create an S3 bucket.
     Parameters:
@@ -971,7 +971,7 @@ def create_bucket(s3_client, bucket_name: str, location: str, object_lock_enable
 
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def put_bucket_tagging(s3_client, bucket_name: str, tags):
+def put_bucket_tagging(s3_client, bucket_name: str, tags: dict):
     """
     Set tags for an S3 bucket.
     Parameters:
@@ -985,7 +985,7 @@ def put_bucket_tagging(s3_client, bucket_name: str, tags):
 
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def put_bucket_policy(s3_client, bucket_name: str, policy):
+def put_bucket_policy(s3_client, bucket_name: str, policy: dict):
     """
     Set the policy for an S3 bucket.
     Parameters:
@@ -1033,7 +1033,7 @@ def get_bucket_policy(s3_client, bucket_name: str):
 
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def put_bucket_request_payment(s3_client, bucket_name: str, payer):
+def put_bucket_request_payment(s3_client, bucket_name: str, payer: str):
     """
     Set the request payment configuration for an S3 bucket.
     Parameters:
@@ -1073,7 +1073,7 @@ def get_bucket_versioning(s3_client, bucket_name: str):
 
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def put_bucket_versioning(s3_client, bucket_name: str, required_versioning):
+def put_bucket_versioning(s3_client, bucket_name: str, required_versioning: str):
     """
     Set the versioning configuration for an S3 bucket.
     Parameters:
@@ -1142,7 +1142,7 @@ def get_bucket_key(s3_client, bucket_name: str):
         return None
 
 
-def put_bucket_encryption_with_retry(module: AnsibleAWSModule, s3_client, name, expected_encryption):
+def put_bucket_encryption_with_retry(module: AnsibleAWSModule, s3_client, name: str, expected_encryption: dict):
     """
     Set the encryption configuration for an S3 bucket with retry logic.
     Parameters:
@@ -1180,7 +1180,7 @@ def put_bucket_encryption_with_retry(module: AnsibleAWSModule, s3_client, name, 
 
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def put_bucket_encryption(s3_client, bucket_name: str, encryption):
+def put_bucket_encryption(s3_client, bucket_name: str, encryption: dict):
     """
     Set the encryption configuration for an S3 bucket.
     Parameters:
@@ -1196,7 +1196,7 @@ def put_bucket_encryption(s3_client, bucket_name: str, encryption):
     )
 
 
-def put_bucket_key_with_retry(module: AnsibleAWSModule, s3_client, name: str, expected_encryption):
+def put_bucket_key_with_retry(module: AnsibleAWSModule, s3_client, name: str, expected_encryption: bool):
     """
     Set the status of server-side encryption for an S3 bucket.
     Parameters:
@@ -1231,7 +1231,7 @@ def put_bucket_key_with_retry(module: AnsibleAWSModule, s3_client, name: str, ex
 
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def put_bucket_key(s3_client, bucket_name: str, encryption):
+def put_bucket_key(s3_client, bucket_name: str, encryption: bool):
     """
     Set the status of server-side encryption for an S3 bucket.
     Parameters:
@@ -1294,7 +1294,7 @@ def delete_bucket(s3_client, bucket_name: str):
 
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def put_bucket_public_access(s3_client, bucket_name: str, public_acces):
+def put_bucket_public_access(s3_client, bucket_name: str, public_acces: dict):
     """
     Put new public access block to S3 bucket
     Parameters:
@@ -1334,7 +1334,7 @@ def delete_bucket_ownership(s3_client, bucket_name: str):
 
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def put_bucket_ownership(s3_client, bucket_name: str, target):
+def put_bucket_ownership(s3_client, bucket_name: str, target: str):
     """
     Put bucket ownership controls for S3 bucket
     Parameters:
@@ -1348,7 +1348,9 @@ def put_bucket_ownership(s3_client, bucket_name: str, target):
     )
 
 
-def wait_policy_is_applied(module: AnsibleAWSModule, s3_client, bucket_name: str, expected_policy, should_fail=True):
+def wait_policy_is_applied(
+    module: AnsibleAWSModule, s3_client, bucket_name: str, expected_policy: dict, should_fail: bool = True
+):
     """
     Wait for a bucket policy to be applied to an S3 bucket.
     Parameters:
@@ -1380,7 +1382,9 @@ def wait_policy_is_applied(module: AnsibleAWSModule, s3_client, bucket_name: str
         return None
 
 
-def wait_payer_is_applied(module: AnsibleAWSModule, s3_client, bucket_name: str, expected_payer, should_fail=True):
+def wait_payer_is_applied(
+    module: AnsibleAWSModule, s3_client, bucket_name: str, expected_payer: bool, should_fail=True
+):
     """
     Wait for the requester pays setting to be applied to an S3 bucket.
     Parameters:
@@ -1412,7 +1416,7 @@ def wait_payer_is_applied(module: AnsibleAWSModule, s3_client, bucket_name: str,
 
 
 def wait_encryption_is_applied(
-    module: AnsibleAWSModule, s3_client, bucket_name: str, expected_encryption, should_fail=True, retries=12
+    module: AnsibleAWSModule, s3_client, bucket_name: str, expected_encryption: str, should_fail=True, retries=12
 ):
     """
     Wait for the encryption setting to be applied to an S3 bucket.
@@ -1447,7 +1451,7 @@ def wait_encryption_is_applied(
 
 
 def wait_bucket_key_is_applied(
-    module: AnsibleAWSModule, s3_client, bucket_name: str, expected_encryption, should_fail=True, retries=12
+    module: AnsibleAWSModule, s3_client, bucket_name: str, expected_encryption: str, should_fail=True, retries=12
 ):
     """
     Wait for the bucket key setting to be applied to an S3 bucket.
@@ -1480,7 +1484,7 @@ def wait_bucket_key_is_applied(
     return encryption
 
 
-def wait_versioning_is_applied(module: AnsibleAWSModule, s3_client, bucket_name: str, required_versioning):
+def wait_versioning_is_applied(module: AnsibleAWSModule, s3_client, bucket_name: str, required_versioning: str):
     """
     Wait for the versioning setting to be applied to an S3 bucket.
     Parameters:
@@ -1507,7 +1511,7 @@ def wait_versioning_is_applied(module: AnsibleAWSModule, s3_client, bucket_name:
     )
 
 
-def wait_tags_are_applied(module: AnsibleAWSModule, s3_client, bucket_name: str, expected_tags_dict):
+def wait_tags_are_applied(module: AnsibleAWSModule, s3_client, bucket_name: str, expected_tags_dict: dict):
     """
     Wait for the tags to be applied to an S3 bucket.
     Parameters:
