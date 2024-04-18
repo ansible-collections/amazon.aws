@@ -1485,7 +1485,9 @@ def wait_bucket_key_is_applied(
     return encryption
 
 
-def wait_versioning_is_applied(module: AnsibleAWSModule, s3_client, bucket_name: str, required_versioning: dict) -> dict:
+def wait_versioning_is_applied(
+    module: AnsibleAWSModule, s3_client, bucket_name: str, required_versioning: dict
+) -> dict:
     """
     Wait for the versioning setting to be applied to an S3 bucket.
     Parameters:
