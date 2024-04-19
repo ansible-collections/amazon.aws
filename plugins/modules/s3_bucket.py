@@ -352,7 +352,9 @@ acl:
 
 import json
 import time
-from typing import Iterator, List, Tuple
+from typing import Iterator
+from typing import List
+from typing import Tuple
 
 try:
     import botocore
