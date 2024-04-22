@@ -98,7 +98,7 @@ options:
             defaults to C(1).
           - I(maximum_batching_window_in_seconds) is not supported by FIFO queues.
         type: int
-        version_added: 7.6.0
+        version_added: 8.0.0
     required: true
     type: dict
 extends_documentation_fragment:
