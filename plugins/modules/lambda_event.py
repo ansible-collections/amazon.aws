@@ -270,25 +270,24 @@ def lambda_event_stream(module, client):
     if state == "present":
         if module.params["event_source"].lower() == "sqs":
             # Default 10. For standard queues the max is 10,000. For FIFO queues the max is 10.
-            if not source_params.get("batch_size"):
-                source_params["batch_size"] = 10
+            source_params.setdefault("batch_size", 10)
+
+            if source_params["source_arn"].endswith(".fifo"):
+                if source_params["batch_size"] > 10:
+                    module.fail_json(msg="For FIFO queues the maximum batch_size is 10.")
+                if source_params.get("maximum_batching_window_in_seconds"):
+                    module.fail_json(
+                        msg="maximum_batching_window_in_seconds is not supported by Amazon SQS FIFO event sources."
+                    )
             else:
-                if source_params["source_arn"].endswith(".fifo"):
-                    if source_params["batch_size"] > 10:
-                        module.fail_json(msg="For FIFO queues the maximum batch_size is 10.")
-                    if source_params.get("maximum_batching_window_in_seconds"):
-                        module.fail_json(
-                            msg="maximum_batching_window_in_seconds is not supported by Amazon SQS FIFO event sources."
-                        )
-                else:
-                    if not (100 <= source_params["batch_size"] <= 10000):
-                        module.fail_json(msg="For standard queue batch_size must be between 100 and 10000.")
+                if not (100 <= source_params["batch_size"] <= 10000):
+                    module.fail_json(msg="For standard queue batch_size must be between 100 and 10000.")
 
         elif module.params["event_source"].lower() == "stream":
-            if not source_params.get("batch_size"):
-                # Default 100 for streams.
-                source_params["batch_size"] = 100
-            elif not (100 <= source_params["batch_size"] <= 10000):
+            # Default 100.
+            source_params.setdefault("batch_size", 100)
+
+            if not (100 <= source_params["batch_size"] <= 10000):
                 module.fail_json(msg="batch_size for streams must be between 100 and 10000")
 
         if source_params["batch_size"] > 10 and not source_params.get("maximum_batching_window_in_seconds"):

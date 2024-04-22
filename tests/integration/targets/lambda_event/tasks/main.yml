@@ -29,6 +29,23 @@
           - create_lambda_event_result is failed
           - '"maximum_batching_window_in_seconds is not supported by Amazon SQS FIFO event sources." in create_lambda_event_result.msg'
 
+    - name: Create a SQS event mapping - (expected to fail)
+      amazon.aws.lambda_event:
+        state: present
+        event_source: sqs
+        function_arn: "{{ lambda_function_arn }}"
+        source_params:
+          source_arn: "{{ sqs_arn_fifo }}"
+          enabled: true
+          batch_size: 100
+      register: create_lambda_event_result
+      ignore_errors: true
+
+    - ansible.builtin.assert:
+        that:
+          - create_lambda_event_result is failed
+          - '"For FIFO queues the maximum batch_size is 10." in create_lambda_event_result.msg'
+
     - name: Create a SQS event mapping
       amazon.aws.lambda_event:
         state: present
