@@ -359,10 +359,12 @@ options:
         type: int
         required: false
       tenancy:
-        description: Type of tenancy to allow an instance to use. Default is shared tenancy. Dedicated tenancy will incur additional charges.
+        description:
+          - Type of tenancy to allow an instance to use. Default is shared tenancy. Dedicated tenancy will incur additional charges.
+          - Support for I(tenancy=host) was added in amazon.aws 7.6.0.
         type: str
         required: false
-        choices: ['dedicated', 'default']
+        choices: ['dedicated', 'default', 'host']
   license_specifications:
     description:
       - The license specifications to be used for the instance.
@@ -2304,7 +2306,7 @@ def main():
                 host_id=dict(type="str"),
                 host_resource_group_arn=dict(type="str"),
                 partition_number=dict(type="int"),
-                tenancy=dict(type="str", choices=["dedicated", "default"]),
+                tenancy=dict(type="str", choices=["dedicated", "default", "host"]),
             ),
         ),
         instance_initiated_shutdown_behavior=dict(type="str", choices=["stop", "terminate"]),
