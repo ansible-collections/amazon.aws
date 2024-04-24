@@ -1,41 +1,139 @@
 [tool.black]
 skip-string-normalization = false
 line-length = 120
-target-version = ['py37', 'py38']
-extend-exclude = '''
-/(
-  | plugins/module_utils/_version.py
-)/
-'''
+target-version = [ "py37", "py38",]
+extend-exclude = "/(\n  | plugins/module_utils/_version.py\n)/\n"
 
 [tool.darker]
 revision = "origin/main.."
-
-src = [
-    "plugins",
-    "tests/unit",
-    "tests/integration",
-]
+src = [ "plugins", "tests/unit", "tests/integration",]
 
 [tool.isort]
 profile = "black"
 force_single_line = true
 line_length = 120
-
-src_paths = [
-    "plugins",
-    "tests/unit",
-    "tests/integration",
-]
-
-sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "ANSIBLE_CORE", "ANSIBLE_AMAZON_AWS", "ANSIBLE_COMMUNITY_AWS", "LOCALFOLDER"]
-known_third_party = ["botocore", "boto3"]
-known_ansible_core = ["ansible"]
-known_ansible_amazon_aws = ["ansible_collections.amazon.aws"]
-known_ansible_community_aws = ["ansible_collections.community.aws"]
+src_paths = [ "plugins", "tests/unit", "tests/integration",]
+sections = [ "FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "ANSIBLE_CORE", "ANSIBLE_AMAZON_AWS", "ANSIBLE_COMMUNITY_AWS", "LOCALFOLDER",]
+known_third_party = [ "botocore", "boto3",]
+known_ansible_core = [ "ansible",]
+known_ansible_amazon_aws = [ "ansible_collections.amazon.aws",]
+known_ansible_community_aws = [ "ansible_collections.community.aws",]
 
 [tool.flynt]
 transform-joins = true
-exclude = [
-    "ec2_metadata_facts",
+exclude = [ "ec2_metadata_facts",]
+
+
+[tool.ruff]
+builtins = [ "__",]
+line-length = 120
+target-version = "py39"
+
+[tool.ruff.lint]
+# See all rules at https://docs.astral.sh/ruff/rules/
+select = [
+    "E",      # pycodestyle
+    "W",      # pycodestyle
+    "F",      # Pyflakes
+    "Q",      # flake8-quotes
+    "I",      # isort
+    "TID",    # flake8-tidy-imports
+    "TCH",    # flake8-type-checking
+    "PL",     # Pylint
+    "FLY",    # Flynt
+    "COM",    # flake8-commas
+    "N",      # pep8-naming
+    "YTT",    # flake8-2020
+    "PT",     # flake8-pytest-style
+
+    # "S",      # flake8-bandit
+    # "D",      # pydocstyle
+    # "ISC",    # flake8-implicit-str-concat
+    # "C",      # complexity
+    # "FBT001", # flake8-boolean-trap
+    # "UP",     # pyupgrade
+    # "SIM",    # flake8-simplify
+    # "C4",     # flake8-comprehensions
+    # "RUF",    # Ruff-specific rules
+    # "B",      # flake8-bugbear
 ]
+
+ignore = [
+    # Conflicts with the formatter
+    "COM812", "ISC001",
+    "E741",	            # Ambiguous variable name
+    "E501",             # Never enforce `E501` (line length violations).
+    "F401",             # imported but unused
+    "F811",             # redefinition of unnused
+    "F841",             # Local variable is assigned to but never used
+    "PLR",              # Design related pylint codes
+    "PLW",              # Design related pylint codes
+    "D202",	            # No blank lines allowed after function docstring (found 1)
+    "D205",	            # 1 blank line required between summary line and description
+    "D401",  	        # First line of docstring should be in imperative mood
+    "D403",         	# First word of the first line should be capitalized
+    "RUF012",	        # Mutable class attributes should be annotated with `typing.ClassVar`
+    "N806",   	        # Variable in function should be lowercase
+    "N802",          	# Function name should be lowercase
+    "N818", 	        # Exception name should be named with an Error suffix
+    "N803",          	# Argument name `keyId` should be lowercase
+ 	"N801",	            # Class name should use CapWords convention
+]
+
+# Disable fix for unused imports (`F401`).
+unfixable = ["F401"]
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.ruff.lint.isort]
+force-single-line = true # Force from .. import to be 1 per line
+section-order = ["future", "standard-library", "third-party", "first-party", "ansible_core", "ansible_amazon_aws", "ansible_community_aws", "local-folder"]
+known-local-folder = [ "plugins", "tests/unit", "tests/integration",]
+known-third-party = [ "botocore", "boto3",]
+
+[tool.ruff.lint.isort.sections]
+ansible_core = [ "ansible",]
+ansible_amazon_aws = [ "ansible_collections.amazon.aws",]
+ansible_community_aws = [ "ansible_collections.community.aws",]
+
+[tool.ruff.lint.pydocstyle]
+convention = "pep257"
+
+[tool.ruff.lint.per-file-ignores]
+# 402: Module level import not at top of file
+"plugins/**/*.py" = [ "D1", "E402"]
+"tests/**/*.py" = [
+    "D1", "E402",
+    "S101", # asserts allowed in tests...
+    "ARG", # Unused function args -> fixtures nevertheless are functionally relevant...
+    "FBT", # Don't care about booleans as positional arguments in tests, e.g. via @pytest.mark.parametrize()
+    "PT",  # pytest error codes
+]
+
+[tool.ruff.format]
+# Like Black, use double quotes for strings.
+quote-style = "double"
+
+# Like Black, indent with spaces, rather than tabs.
+indent-style = "space"
+
+# Like Black, respect magic trailing commas.
+skip-magic-trailing-comma = true
+
+# Like Black, automatically detect the appropriate line ending.
+line-ending = "auto"
+
+# Enable auto-formatting of code examples in docstrings. Markdown,
+# reStructuredText code/literal blocks and doctests are all supported.
+#
+# This is currently disabled by default, but it is planned for this
+# to be opt-out in the future.
+docstring-code-format = false
+
+# Set the line length limit used when formatting code snippets in
+# docstrings.
+#
+# This only has an effect when the `docstring-code-format` setting is
+# enabled.
+docstring-code-line-length = "dynamic"
