@@ -1,12 +1,20 @@
 [tool.black]
 skip-string-normalization = false
 line-length = 120
-target-version = [ "py37", "py38",]
-extend-exclude = "/(\n  | plugins/module_utils/_version.py\n)/\n"
+target-version = ['py37', 'py38']
+extend-exclude = '''
+/(
+  | plugins/module_utils/_version.py
+)/
+'''
 
 [tool.darker]
 revision = "origin/main.."
-src = [ "plugins", "tests/unit", "tests/integration",]
+src = [
+    "plugins",
+    "tests/unit",
+    "tests/integration",
+]
 
 [tool.isort]
 profile = "black"
@@ -60,15 +68,15 @@ select = [
 ignore = [
     # Conflicts with the formatter
     "COM812", "ISC001",
-    "E741",	            # Ambiguous variable name
+    "E741",             # Ambiguous variable name
     "E501",             # Never enforce `E501` (line length violations).
     "F401",             # imported but unused
     "F811",             # redefinition of unnused
     "F841",             # Local variable is assigned to but never used
     "PLR",              # Design related pylint codes
     "PLW",              # Design related pylint codes
-    "D202",	            # No blank lines allowed after function docstring (found 1)
-    "D205",	            # 1 blank line required between summary line and description
+    "D202",             # No blank lines allowed after function docstring (found 1)
+    "D205",             # 1 blank line required between summary line and description
     "D401",  	        # First line of docstring should be in imperative mood
     "D403",         	# First word of the first line should be capitalized
     "RUF012",	        # Mutable class attributes should be annotated with `typing.ClassVar`
@@ -76,7 +84,7 @@ ignore = [
     "N802",          	# Function name should be lowercase
     "N818", 	        # Exception name should be named with an Error suffix
     "N803",          	# Argument name `keyId` should be lowercase
- 	"N801",	            # Class name should use CapWords convention
+    "N801",             # Class name should use CapWords convention
 ]
 
 # Disable fix for unused imports (`F401`).

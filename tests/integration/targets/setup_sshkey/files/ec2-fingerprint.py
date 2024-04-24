@@ -8,7 +8,6 @@ ssh-keygen -f id_rsa.pub -e -m PKCS8 | openssl pkey -pubin -outform DER | openss
 (but without needing the OpenSSL CLI)
 """
 
-
 import hashlib
 import sys
 
