@@ -209,17 +209,15 @@ next_token_id:
     returned: when option C(max_results) is set in input
 """
 
-try:
-    from botocore.exceptions import BotoCoreError
-    from botocore.exceptions import ClientError
-except ImportError:
-    pass  # Handled by AnsibleAWSModule
+from typing import Any
+from typing import Dict
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleEC2Error
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_snapshot_attribute
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_snapshots
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 
@@ -239,44 +237,27 @@ def build_request_args(snapshot_ids, owner_ids, restorable_by_user_ids, filters,
     return request_args
 
 
-def get_snapshots(connection, module, request_args):
-    snapshot_ids = request_args.get("SnapshotIds")
+def list_ec2_snapshots(connection, module: AnsibleAWSModule, request_args: Dict[str, Any]) -> Dict[str, Any]:
     try:
-        snapshots = connection.describe_snapshots(aws_retry=True, **request_args)
-    except is_boto3_error_code("InvalidSnapshot.NotFound") as e:
-        if len(snapshot_ids) > 1:
-            module.warn(f"Some of your snapshots may exist, but {str(e)}")
-        snapshots = {"Snapshots": []}
-
-    return snapshots
-
-
-def _describe_snapshot_attribute(module, ec2, snapshot_id):
-    try:
-        response = ec2.describe_snapshot_attribute(Attribute="createVolumePermission", SnapshotId=snapshot_id)
-    except (BotoCoreError, ClientError) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Failed to describe snapshot attribute createVolumePermission")
-
-    return response["CreateVolumePermissions"]
-
-
-def list_ec2_snapshots(connection, module, request_args):
-    try:
-        snapshots = get_snapshots(connection, module, request_args)
-    except ClientError as e:  # pylint: disable=duplicate-except
+        snapshots = describe_snapshots(connection, **request_args)
+    except AnsibleEC2Error as e:
         module.fail_json_aws(e, msg="Failed to describe snapshots")
 
     result = {}
 
     # Add createVolumePermission info to snapshots result
-    for snapshot in snapshots["Snapshots"]:
+    for snapshot in snapshots.get("Snapshots", []):
         snapshot_id = snapshot.get("SnapshotId")
-        create_vol_permission = _describe_snapshot_attribute(module, connection, snapshot_id)
-        snapshot["CreateVolumePermissions"] = create_vol_permission
+        try:
+            snapshot["CreateVolumePermissions"] = describe_snapshot_attribute(
+                connection, attribute="createVolumePermission", snapshot_id=snapshot_id
+            )["CreateVolumePermissions"]
+        except AnsibleEC2Error as e:
+            module.fail_json_aws(e, msg="Failed to describe snapshot attribute")
 
     # Turn the boto3 result in to ansible_friendly_snaked_names
     snaked_snapshots = []
-    for snapshot in snapshots["Snapshots"]:
+    for snapshot in snapshots.get("Snapshots", []):
         snaked_snapshots.append(camel_dict_to_snake_dict(snapshot))
 
     # Turn the boto3 result in to ansible friendly tag dictionary
@@ -312,7 +293,7 @@ def main():
         supports_check_mode=True,
     )
 
-    connection = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff())
+    connection = module.client("ec2")
 
     request_args = build_request_args(
         filters=module.params["filters"],

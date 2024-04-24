@@ -87,8 +87,7 @@
       register: subnets_removed
       loop: "{{ remaining_subnets.subnets }}"
       until: subnets_removed is not failed
-      when:
-        - item.name != 'default'
+      when: ("name" not in item) or ("name" in item and item.name != 'default')
       ignore_errors: true
       retries: 10
 

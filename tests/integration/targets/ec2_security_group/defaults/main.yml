@@ -4,4 +4,5 @@ ec2_group_name: "{{resource_prefix}}"
 ec2_group_description: Created by ansible integration tests
 
 vpc_cidr: 10.{{ 256 | random(seed=resource_prefix) }}.0.0/16
+vpc_peer_cidr: 172.{{ 256 | random(seed=resource_prefix) }}.0.0/16
 subnet_cidr: 10.{{ 256 | random(seed=resource_prefix) }}.1.0/24

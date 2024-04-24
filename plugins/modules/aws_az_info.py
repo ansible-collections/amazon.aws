@@ -155,8 +155,8 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_availability_zones
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 
 
@@ -165,7 +165,7 @@ def main():
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
-    connection = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff())
+    connection = module.client("ec2")
 
     # Replace filter key underscores with dashes, for compatibility
     sanitized_filters = dict(module.params.get("filters"))
@@ -175,14 +175,14 @@ def main():
             del sanitized_filters[k]
 
     try:
-        availability_zones = connection.describe_availability_zones(
-            aws_retry=True, Filters=ansible_dict_to_boto3_filter_list(sanitized_filters)
+        availability_zones = describe_availability_zones(
+            connection, Filters=ansible_dict_to_boto3_filter_list(sanitized_filters)
         )
     except (BotoCoreError, ClientError) as e:
         module.fail_json_aws(e, msg="Unable to describe availability zones.")
 
     # Turn the boto3 result into ansible_friendly_snaked_names
-    snaked_availability_zones = [camel_dict_to_snake_dict(az) for az in availability_zones["AvailabilityZones"]]
+    snaked_availability_zones = [camel_dict_to_snake_dict(az) for az in availability_zones]
 
     module.exit_json(availability_zones=snaked_availability_zones)
 

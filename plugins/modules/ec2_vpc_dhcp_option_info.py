@@ -149,16 +149,13 @@ changed:
     returned: always
 """
 
-try:
-    import botocore
-except ImportError:
-    pass  # Handled by AnsibleAWSModule
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleEC2Error
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_dhcp_options
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import normalize_ec2_vpc_dhcp_config
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 
@@ -182,16 +179,15 @@ def list_dhcp_options(client, module):
         params["DhcpOptionsIds"] = module.params.get("dhcp_options_ids")
 
     try:
-        all_dhcp_options = client.describe_dhcp_options(aws_retry=True, **params)
-    except botocore.exceptions.ClientError as e:
+        all_dhcp_options = describe_dhcp_options(client, **params)
+        if not all_dhcp_options and module.params.get("dhcp_options_ids"):
+            module.fail_json(msg="Requested DHCP options does not exist")
+    except AnsibleEC2Error as e:
         module.fail_json_aws(e)
 
-    normalized_config = [
-        normalize_ec2_vpc_dhcp_config(config["DhcpConfigurations"]) for config in all_dhcp_options["DhcpOptions"]
-    ]
+    normalized_config = [normalize_ec2_vpc_dhcp_config(config["DhcpConfigurations"]) for config in all_dhcp_options]
     raw_config = [
-        camel_dict_to_snake_dict(get_dhcp_options_info(option), ignore_list=["Tags"])
-        for option in all_dhcp_options["DhcpOptions"]
+        camel_dict_to_snake_dict(get_dhcp_options_info(option), ignore_list=["Tags"]) for option in all_dhcp_options
     ]
     return raw_config, normalized_config
 
@@ -205,7 +201,7 @@ def main():
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
-    client = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff())
+    client = module.client("ec2")
 
     # call your function here
     results, normalized_config = list_dhcp_options(client, module)

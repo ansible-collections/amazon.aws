@@ -255,26 +255,21 @@ security_groups:
     ]
 """
 
-try:
-    from botocore.exceptions import BotoCoreError
-    from botocore.exceptions import ClientError
-except ImportError:
-    pass  # caught by AnsibleAWSModule
-
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleEC2Error
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_security_groups
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 
 
-def main():
+def main() -> None:
     argument_spec = dict(filters=dict(default={}, type="dict"))
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
-    connection = module.client("ec2", AWSRetry.jittered_backoff())
+    connection = module.client("ec2")
 
     # Replace filter key underscores with dashes, for compatibility, except if we're dealing with tags
     filters = module.params.get("filters")
@@ -287,14 +282,14 @@ def main():
             sanitized_filters[key.replace("_", "-")] = filters[key]
 
     try:
-        security_groups = connection.describe_security_groups(
-            aws_retry=True, Filters=ansible_dict_to_boto3_filter_list(sanitized_filters)
+        security_groups = describe_security_groups(
+            connection, Filters=ansible_dict_to_boto3_filter_list(sanitized_filters)
         )
-    except (BotoCoreError, ClientError) as e:
+    except AnsibleEC2Error as e:
         module.fail_json_aws(e, msg="Failed to describe security groups")
 
     snaked_security_groups = []
-    for security_group in security_groups["SecurityGroups"]:
+    for security_group in security_groups:
         # Modify boto3 tags list to be ansible friendly dict
         # but don't camel case tags
         security_group = camel_dict_to_snake_dict(security_group)

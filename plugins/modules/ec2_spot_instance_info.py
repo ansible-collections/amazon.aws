@@ -242,17 +242,13 @@ except ImportError:
     pass  # Handled by AnsibleAWSModule
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleEC2Error
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_spot_instance_requests
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 
 
-def _describe_spot_instance_requests(connection, **params):
-    paginator = connection.get_paginator("describe_spot_instance_requests")
-    return paginator.paginate(**params).build_full_result()
-
-
-def describe_spot_instance_requests(connection, module):
+def list_spot_instance_requests(connection, module: AnsibleAWSModule) -> None:
     params = {}
 
     if module.params.get("filters"):
@@ -261,10 +257,8 @@ def describe_spot_instance_requests(connection, module):
         params["SpotInstanceRequestIds"] = module.params.get("spot_instance_request_ids")
 
     try:
-        describe_spot_instance_requests_response = _describe_spot_instance_requests(connection, **params)[
-            "SpotInstanceRequests"
-        ]
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        describe_spot_instance_requests_response = describe_spot_instance_requests(connection, **params)
+    except AnsibleEC2Error as e:
         module.fail_json_aws(e, msg="Failed to describe spot instance requests")
 
     spot_request = []
@@ -284,11 +278,11 @@ def main():
     )
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
     try:
-        connection = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff())
+        connection = module.client("ec2")
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to connect to AWS")
 
-    describe_spot_instance_requests(connection, module)
+    list_spot_instance_requests(connection, module)
 
 
 if __name__ == "__main__":

@@ -32,7 +32,7 @@
           Description: Created by ansible-test
       register: vpc_result
     #TODO(ryansb): Update CI for VPC peering permissions
-    #- include_tasks: ./multi_account.yml
+    - include_tasks: ./multi_account.yml
     - ansible.builtin.include_tasks: ./diff_mode.yml
     - ansible.builtin.include_tasks: ./numeric_protos.yml
     - ansible.builtin.include_tasks: ./rule_group_create.yml

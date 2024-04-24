@@ -6,7 +6,7 @@
       amazon.aws.ec2_vpc_net:
         name: "{{ resource_prefix }}-vpc-2"
         state: present
-        cidr_block: "{{ vpc_cidr }}"
+        cidr_block: "{{ vpc_peer_cidr }}"
         tags:
           Description: Created by ansible-test
       register: vpc_result_2

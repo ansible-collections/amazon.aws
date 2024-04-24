@@ -63,8 +63,8 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_regions
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 
 
@@ -75,7 +75,7 @@ def main():
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
-    connection = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff())
+    connection = module.client("ec2")
 
     # Replace filter key underscores with dashes, for compatibility
     sanitized_filters = dict(module.params.get("filters"))
@@ -85,13 +85,11 @@ def main():
             del sanitized_filters[k]
 
     try:
-        regions = connection.describe_regions(
-            aws_retry=True, Filters=ansible_dict_to_boto3_filter_list(sanitized_filters)
-        )
+        regions = describe_regions(connection, Filters=ansible_dict_to_boto3_filter_list(sanitized_filters))
     except (BotoCoreError, ClientError) as e:
         module.fail_json_aws(e, msg="Unable to describe regions.")
 
-    module.exit_json(regions=[camel_dict_to_snake_dict(r) for r in regions["Regions"]])
+    module.exit_json(regions=[camel_dict_to_snake_dict(r) for r in regions])
 
 
 if __name__ == "__main__":

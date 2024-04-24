@@ -124,15 +124,11 @@ volumes:
             sample: 131
 """
 
-try:
-    from botocore.exceptions import ClientError
-except ImportError:
-    pass  # Handled by AnsibleAWSModule
-
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleEC2Error
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_volumes
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 
@@ -171,12 +167,6 @@ def get_volume_info(volume, region):
     return volume_info
 
 
-@AWSRetry.jittered_backoff()
-def describe_volumes_with_backoff(connection, filters):
-    paginator = connection.get_paginator("describe_volumes")
-    return paginator.paginate(Filters=filters).build_full_result()
-
-
 def list_ec2_volumes(connection, module):
     # Replace filter key underscores with dashes, for compatibility, except if we're dealing with tags
     sanitized_filters = module.params.get("filters")
@@ -186,11 +176,11 @@ def list_ec2_volumes(connection, module):
     volume_dict_array = []
 
     try:
-        all_volumes = describe_volumes_with_backoff(connection, ansible_dict_to_boto3_filter_list(sanitized_filters))
-    except ClientError as e:
+        all_volumes = describe_volumes(connection, Filters=ansible_dict_to_boto3_filter_list(sanitized_filters))
+    except AnsibleEC2Error as e:
         module.fail_json_aws(e, msg="Failed to describe volumes.")
 
-    for volume in all_volumes["Volumes"]:
+    for volume in all_volumes:
         volume = camel_dict_to_snake_dict(volume, ignore_list=["Tags"])
         volume_dict_array.append(get_volume_info(volume, module.region))
     module.exit_json(volumes=volume_dict_array)

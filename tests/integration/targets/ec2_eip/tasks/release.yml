@@ -1,0 +1,75 @@
+- name: Test release EIP
+  block:
+    # ------------------------------------------------------------------------------------------
+    # Release EIP
+    # ------------------------------------------------------------------------------------------
+    - name: Get current state of EIPs
+      amazon.aws.ec2_eip_info:
+      register: eip_info_start
+
+    - name: Allocate a new EIP with no conditions
+      amazon.aws.ec2_eip:
+        state: present
+        tags:
+          ResourcePrefix: "{{ resource_prefix }}"
+      register: eip
+
+    - name: Release EIP - check_mode
+      amazon.aws.ec2_eip:
+        state: absent
+        public_ip: "{{ eip.public_ip }}"
+      register: eip_release
+      check_mode: true
+
+    - ansible.builtin.assert:
+        that:
+          - eip_release.changed
+
+    - name: Release eip
+      amazon.aws.ec2_eip:
+        state: absent
+        public_ip: "{{ eip.public_ip }}"
+      register: eip_release
+
+    - amazon.aws.ec2_eip_info:
+      register: eip_info
+
+    - ansible.builtin.assert:
+        that:
+          - eip_release.changed
+          - not eip_release.disassociated
+          - eip_release.released
+          - ( eip_info_start.addresses | length ) == ( eip_info.addresses | length )
+
+    - name: Release EIP (idempotence) - check_mode
+      amazon.aws.ec2_eip:
+        state: absent
+        public_ip: "{{ eip.public_ip }}"
+      register: eip_release
+      check_mode: true
+
+    - ansible.builtin.assert:
+        that:
+          - eip_release is not changed
+
+    - name: Release EIP (idempotence)
+      amazon.aws.ec2_eip:
+        state: absent
+        public_ip: "{{ eip.public_ip }}"
+      register: eip_release
+
+    - amazon.aws.ec2_eip_info:
+      register: eip_info
+
+    - ansible.builtin.assert:
+        that:
+          - not eip_release.changed
+          - not eip_release.disassociated
+          - not eip_release.released
+          - ( eip_info_start.addresses | length ) == ( eip_info.addresses | length )
+  always:
+    - name: Release eip
+      amazon.aws.ec2_eip:
+        state: absent
+        public_ip: "{{ eip.public_ip }}"
+      when: eip is defined

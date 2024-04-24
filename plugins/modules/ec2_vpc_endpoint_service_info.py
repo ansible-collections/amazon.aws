@@ -118,25 +118,11 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleEC2Error
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_vpc_endpoint_services
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
-
-
-# We're using a paginator so we can't use the client decorators
-@AWSRetry.jittered_backoff()
-def get_services(client, module):
-    paginator = client.get_paginator("describe_vpc_endpoint_services")
-    params = {}
-    if module.params.get("filters"):
-        params["Filters"] = ansible_dict_to_boto3_filter_list(module.params.get("filters"))
-
-    if module.params.get("service_names"):
-        params["ServiceNames"] = module.params.get("service_names")
-
-    results = paginator.paginate(**params).build_full_result()
-    return results
 
 
 def normalize_service(service):
@@ -167,12 +153,17 @@ def main():
         module.fail_json_aws(e, msg="Failed to connect to AWS")
 
     try:
-        results = get_services(client, module)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        filters = None
+        if module.params.get("filters"):
+            filters = ansible_dict_to_boto3_filter_list(module.params.get("filters"))
+        results = describe_vpc_endpoint_services(
+            client, filters=filters, service_names=module.params.get("service_names")
+        )
+        if results:
+            results = normalize_result(results)
+        module.exit_json(changed=False, **results)
+    except AnsibleEC2Error as e:
         module.fail_json_aws(e, msg="Failed to connect to retrieve service details")
-    normalized_result = normalize_result(results)
-
-    module.exit_json(changed=False, **normalized_result)
 
 
 if __name__ == "__main__":

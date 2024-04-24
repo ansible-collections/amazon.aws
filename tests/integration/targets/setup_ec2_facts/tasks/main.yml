@@ -41,7 +41,7 @@
           root-device-type: ebs
       register: _images_info
       # Very spammy
-      no_log: true
+      # no_log: true
 
     - name: Set Fact for latest AMI
       vars:
