@@ -23,7 +23,6 @@ known_ansible_community_aws = [ "ansible_collections.community.aws",]
 transform-joins = true
 exclude = [ "ec2_metadata_facts",]
 
-
 [tool.ruff]
 builtins = [ "__",]
 line-length = 120
@@ -81,7 +80,10 @@ ignore = [
 ]
 
 # Disable fix for unused imports (`F401`).
-unfixable = ["F401"]
+fixable = ["ALL"]
+
+# Avoid trying to fix flake8-bugbear (`B`) violations.
+unfixable = ["F401", "B"]
 
 # Allow unused variables when underscore-prefixed.
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
@@ -119,7 +121,7 @@ quote-style = "double"
 indent-style = "space"
 
 # Like Black, respect magic trailing commas.
-skip-magic-trailing-comma = true
+skip-magic-trailing-comma = false
 
 # Like Black, automatically detect the appropriate line ending.
 line-ending = "auto"
