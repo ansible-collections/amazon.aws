@@ -795,7 +795,8 @@ def detach_asg_instances(connection, instance_ids, as_group_name, decrement_capa
 def enforce_required_arguments_for_create():
     """As many arguments are not required for autoscale group deletion
     they cannot be mandatory arguments for the module, so we enforce
-    them here"""
+    them here.
+    """
     missing_args = []
     if module.params.get("launch_config_name") is None and module.params.get("launch_template") is None:
         module.fail_json(msg="Missing either launch_config_name or launch_template for autoscaling group create")

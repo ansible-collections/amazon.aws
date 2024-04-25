@@ -749,7 +749,6 @@ class InventoryModule(AWSInventoryBase):
         :param str hostvars_suffix: ends the hostvars variable name with this suffix
         :param bool use_contrib_script_compatible_ec2_tag_keys: transform the host name with the legacy naming system
         """
-
         for name, host_vars in self.iter_entry(
             hosts,
             hostnames,

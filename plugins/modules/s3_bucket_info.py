@@ -463,9 +463,7 @@ def get_bucket_list(module, connection, name="", name_filter=""):
 
 
 def get_buckets_facts(connection, buckets, requested_facts, transform_location):
-    """
-    Retrieve additional information about S3 buckets
-    """
+    """Retrieve additional information about S3 buckets."""
     full_bucket_list = []
     # Iterate over all buckets and append Retrieved facts to bucket
     for bucket in buckets:
@@ -476,9 +474,7 @@ def get_buckets_facts(connection, buckets, requested_facts, transform_location):
 
 
 def get_bucket_details(connection, name, requested_facts, transform_location):
-    """
-    Execute all enabled S3API get calls for selected bucket
-    """
+    """Execute all enabled S3API get calls for selected bucket."""
     all_facts = {}
 
     for key in requested_facts:
@@ -510,9 +506,7 @@ def get_bucket_details(connection, name, requested_facts, transform_location):
 
 @AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
 def get_bucket_location(name, connection, transform_location=False):
-    """
-    Get bucket location and optionally transform 'null' to 'us-east-1'
-    """
+    """Get bucket location and optionally transform 'null' to 'us-east-1'."""
     data = connection.get_bucket_location(Bucket=name)
 
     # Replace 'null' with 'us-east-1'?
@@ -529,9 +523,7 @@ def get_bucket_location(name, connection, transform_location=False):
 
 @AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
 def get_bucket_tagging(name, connection):
-    """
-    Get bucket tags and transform them using `boto3_tag_list_to_ansible_dict` function
-    """
+    """Get bucket tags and transform them using `boto3_tag_list_to_ansible_dict` function."""
     data = connection.get_bucket_tagging(Bucket=name)
 
     try:
@@ -545,9 +537,7 @@ def get_bucket_tagging(name, connection):
 
 @AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
 def get_bucket_property(name, connection, get_api_name):
-    """
-    Get bucket property
-    """
+    """Get bucket property."""
     api_call = "get_" + get_api_name
     api_function = getattr(connection, api_call)
     data = api_function(Bucket=name)

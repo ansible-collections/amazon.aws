@@ -193,9 +193,7 @@ def describe_iam_roles(client, name, path_prefix):
 
 
 def main():
-    """
-    Module action handler
-    """
+    """Module action handler."""
     argument_spec = dict(
         name=dict(aliases=["role_name"]),
         path_prefix=dict(aliases=["path", "prefix"]),

@@ -519,9 +519,8 @@ def create_instance_profiles(client, check_mode, role_name, path):
 
 def remove_instance_profiles(client, check_mode, role_name, delete_instance_profile):
     """Removes the role from instance profiles and deletes the instance profile if
-    delete_instance_profile is set
+    delete_instance_profile is set.
     """
-
     instance_profiles = list_iam_instance_profiles(client, role=role_name)
     if not instance_profiles:
         return False

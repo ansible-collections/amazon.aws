@@ -1311,9 +1311,8 @@ def build_network_spec(params):
         ],
         'SecondaryPrivateIpAddressCount': 123,
         'SubnetId': 'string'
-    },
+    },.
     """
-
     interfaces = []
     network = params.get("network") or {}
     if not network.get("interfaces"):
@@ -1669,8 +1668,7 @@ def await_instances(ids, desired_module_state="present", force_wait=False):
 
 
 def diff_instance_and_params(instance, params, skip=None):
-    """boto3 instance obj, module params"""
-
+    """boto3 instance obj, module params."""
     if skip is None:
         skip = []
 
@@ -1888,9 +1886,7 @@ def get_default_subnet(vpc, availability_zone=None):
 
 
 def ensure_instance_state(desired_module_state, filters):
-    """
-    Sets return keys depending on the desired instance state
-    """
+    """Sets return keys depending on the desired instance state."""
     results = dict()
     changed = False
     if desired_module_state in ("running", "started"):

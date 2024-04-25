@@ -191,7 +191,7 @@ class AnsibleEc2Igw:
                 vpc_id (str): VPC ID
                 gateway_id (str): Internet Gateway ID, if specified
             Returns:
-                igw (dict): dict of igw found, None if none found
+                igw (dict): dict of igw found, None if none found.
         """
         try:
             # If we know the gateway_id, use it to avoid bugs with using filters
@@ -218,7 +218,7 @@ class AnsibleEc2Igw:
             Parameters:
                 vpc_id (str): VPC ID
             Returns:
-                vpc (dict): dict of vpc found, None if none found
+                vpc (dict): dict of vpc found, None if none found.
         """
         try:
             vpcs = describe_vpcs_with_backoff(self._connection, VpcIds=[vpc_id])

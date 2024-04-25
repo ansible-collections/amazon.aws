@@ -80,9 +80,7 @@ def _retry_func(
 
 
 class CloudRetry:
-    """
-    The base class to be used by other cloud providers to provide a backoff/retry decorator based on status codes.
-    """
+    """The base class to be used by other cloud providers to provide a backoff/retry decorator based on status codes."""
 
     base_class = type(None)
 

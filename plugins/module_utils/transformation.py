@@ -68,9 +68,8 @@ def ansible_dict_to_boto3_filter_list(filters_dict):
                     'i-01234567',
                 ]
             }
-        ]
+        ].
     """
-
     filters_list = []
     for k, v in filters_dict.items():
         filter_dict = {"Name": k}
@@ -103,7 +102,6 @@ def map_complex_type(complex_type, type_map):
 
     This ensures all keys within the root element are casted and valid integers
     """
-
     if complex_type is None:
         return
     new_type = type(complex_type)()
@@ -126,7 +124,7 @@ def map_complex_type(complex_type, type_map):
 
 def scrub_none_parameters(parameters, descend_into_lists=True):
     """
-    Iterate over a dictionary removing any keys that have a None value
+    Iterate over a dictionary removing any keys that have a None value.
 
     Reference: https://github.com/ansible-collections/community.aws/issues/251
     Credit: https://medium.com/better-programming/how-to-remove-null-none-values-from-a-dictionary-in-python-1bedf1aab5e4
@@ -135,7 +133,6 @@ def scrub_none_parameters(parameters, descend_into_lists=True):
     :param parameters: parameter dict
     :return: parameter dict with all keys = None removed
     """
-
     clean_parameters = {}
 
     for k, v in parameters.items():

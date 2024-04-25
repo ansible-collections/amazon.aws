@@ -44,9 +44,7 @@ def _canonify_root_arn(arn):
 
 
 def _canonify_policy_dict_item(item, key):
-    """
-    Converts special cases where there are multiple ways to write the same thing into a single form
-    """
+    """Converts special cases where there are multiple ways to write the same thing into a single form."""
     # There are multiple ways to specify anonymous principals
     # https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_principal.html#principal-anonymous
     if key in ["NotPrincipal", "Principal"]:
@@ -77,7 +75,7 @@ def _hashable_policy(policy, policy_list):
                       ('Effect', ('Allow',)),
                       ('Principal', ('AWS', (('arn:aws:iam::XXXXXXXXXXXX:user/username1',), ('arn:aws:iam::XXXXXXXXXXXX:user/username2',)))),
                       ('Resource', ('arn:aws:s3:::test_policy/*',)), ('Sid', ('AddCannedAcl2',)))),
-     ('Version', ('2012-10-17',)))]
+     ('Version', ('2012-10-17',)))].
 
     """
     # Amazon will automatically convert bool and int to strings for us

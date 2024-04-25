@@ -618,7 +618,7 @@ class SecurityGroupError(Exception):
 
 
 def rule_cmp(a, b):
-    """Compare rules without descriptions"""
+    """Compare rules without descriptions."""
     for prop in ["port_range", "protocol", "target", "target_type"]:
         if prop == "port_range" and to_text(a.protocol) == to_text(b.protocol):
             # equal protocols can interchange `(-1, -1)` and `(None, None)`
@@ -765,7 +765,7 @@ def sg_exists_with_backoff(client, **kwargs):
 
 
 def deduplicate_rules_args(rules):
-    """Returns unique rules"""
+    """Returns unique rules."""
     if rules is None:
         return None
     return list(dict(zip((json.dumps(r, sort_keys=True) for r in rules), rules)).values())
@@ -931,7 +931,7 @@ def _strip_rule(rule):
     """
     Returns a copy of the rule with the Target/Source and Port information
     from a rule stripped out.
-    This can then be combined with the expanded information
+    This can then be combined with the expanded information.
     """
     stripped_rule = deepcopy(rule)
     # Get just the non-source/port info from the rule

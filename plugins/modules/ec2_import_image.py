@@ -331,10 +331,7 @@ def ensure_ec2_import_image_result(import_image_info):
 
 
 def absent(client, module):
-    """
-    Cancel an in-process import virtual machine
-    """
-
+    """Cancel an in-process import virtual machine."""
     filters = {
         "Filters": [
             {"Name": "tag:Name", "Values": [module.params["task_name"]]},

@@ -237,7 +237,7 @@ def create_subnet_list(subnets):
         subnets (list): A list of subnets definitions.
         @see https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/rds.html#RDS.Client.describe_db_subnet_groups
     Returns:
-        (list): List of subnet ids (str)
+        (list): List of subnet ids (str).
     """
     subnets_ids = []
     for subnet in subnets:

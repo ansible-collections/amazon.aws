@@ -140,9 +140,7 @@ def _describe_db_parameters(connection, **params):
 
 
 def convert_parameter(param, value):
-    """
-    Allows setting parameters with 10M = 10* 1024 * 1024 and so on.
-    """
+    """Allows setting parameters with 10M = 10* 1024 * 1024 and so on."""
     converted_value = value
 
     if param["DataType"] == "integer":

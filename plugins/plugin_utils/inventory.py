@@ -164,7 +164,7 @@ class AWSInventoryBase(BaseInventoryPlugin, Constructable, Cacheable, AWSPluginB
 
     def all_clients(self, service):
         """
-        Generator that yields a boto3 client and the region
+        Generator that yields a boto3 client and the region.
 
         :param service: The boto3 service to connect to.
 

@@ -73,7 +73,7 @@ def _simple_forward_config_arn(config, parent_arn):
 def _prune_ForwardConfig(action):
     """
     Drops a redundant ForwardConfig where TargetGroupARN has already been set.
-    (So we can perform comparisons)
+    (So we can perform comparisons).
     """
     if action.get("Type", "") != "forward":
         return action
@@ -162,12 +162,11 @@ class ElasticLoadBalancerV2:
 
     def wait_for_ip_type(self, elb_arn, ip_type):
         """
-        Wait for load balancer to reach 'active' status
+        Wait for load balancer to reach 'active' status.
 
         :param elb_arn: The load balancer ARN
         :return:
         """
-
         if not self.wait:
             return
 
@@ -186,12 +185,11 @@ class ElasticLoadBalancerV2:
 
     def wait_for_status(self, elb_arn):
         """
-        Wait for load balancer to reach 'active' status
+        Wait for load balancer to reach 'active' status.
 
         :param elb_arn: The load balancer ARN
         :return:
         """
-
         if not self.wait:
             return
 
@@ -203,12 +201,11 @@ class ElasticLoadBalancerV2:
 
     def wait_for_deletion(self, elb_arn):
         """
-        Wait for load balancer to reach 'active' status
+        Wait for load balancer to reach 'active' status.
 
         :param elb_arn: The load balancer ARN
         :return:
         """
-
         if not self.wait:
             return
 
@@ -220,11 +217,10 @@ class ElasticLoadBalancerV2:
 
     def get_elb_attributes(self):
         """
-        Get load balancer attributes
+        Get load balancer attributes.
 
         :return:
         """
-
         try:
             attr_list = AWSRetry.jittered_backoff()(self.connection.describe_load_balancer_attributes)(
                 LoadBalancerArn=self.elb["LoadBalancerArn"]
@@ -239,11 +235,10 @@ class ElasticLoadBalancerV2:
 
     def get_elb_ip_address_type(self):
         """
-        Retrieve load balancer ip address type using describe_load_balancers
+        Retrieve load balancer ip address type using describe_load_balancers.
 
         :return:
         """
-
         return self.elb.get("IpAddressType", None)
 
     def update_elb_attributes(self):
@@ -255,11 +250,10 @@ class ElasticLoadBalancerV2:
 
     def get_elb_tags(self):
         """
-        Get load balancer tags
+        Get load balancer tags.
 
         :return:
         """
-
         try:
             return AWSRetry.jittered_backoff()(self.connection.describe_tags)(
                 ResourceArns=[self.elb["LoadBalancerArn"]]
@@ -269,11 +263,10 @@ class ElasticLoadBalancerV2:
 
     def delete_tags(self, tags_to_delete):
         """
-        Delete elb tags
+        Delete elb tags.
 
         :return:
         """
-
         try:
             AWSRetry.jittered_backoff()(self.connection.remove_tags)(
                 ResourceArns=[self.elb["LoadBalancerArn"]], TagKeys=tags_to_delete
@@ -285,11 +278,10 @@ class ElasticLoadBalancerV2:
 
     def modify_tags(self):
         """
-        Modify elb tags
+        Modify elb tags.
 
         :return:
         """
-
         try:
             AWSRetry.jittered_backoff()(self.connection.add_tags)(
                 ResourceArns=[self.elb["LoadBalancerArn"]], Tags=self.tags
@@ -304,7 +296,6 @@ class ElasticLoadBalancerV2:
         Delete elb
         :return:
         """
-
         try:
             AWSRetry.jittered_backoff()(self.connection.delete_load_balancer)(
                 LoadBalancerArn=self.elb["LoadBalancerArn"]
@@ -318,11 +309,10 @@ class ElasticLoadBalancerV2:
 
     def compare_subnets(self):
         """
-        Compare user subnets with current ELB subnets
+        Compare user subnets with current ELB subnets.
 
         :return: bool True if they match otherwise False
         """
-
         subnet_mapping_id_list = []
         subnet_mappings = []
 
@@ -356,7 +346,6 @@ class ElasticLoadBalancerV2:
         Modify elb subnets to match module parameters
         :return:
         """
-
         try:
             AWSRetry.jittered_backoff()(self.connection.set_subnets)(
                 LoadBalancerArn=self.elb["LoadBalancerArn"], Subnets=self.subnets
@@ -371,7 +360,6 @@ class ElasticLoadBalancerV2:
         Update the elb from AWS
         :return:
         """
-
         self.elb = get_elb(self.connection, self.module, self.module.params.get("name"))
         self.elb["tags"] = self.get_elb_tags()
 
@@ -420,7 +408,6 @@ class ElasticLoadBalancerV2:
         Create a load balancer
         :return:
         """
-
         params = self._elb_create_params()
 
         try:
@@ -485,9 +472,8 @@ class ApplicationLoadBalancer(ElasticLoadBalancerV2):
     def compare_elb_attributes(self):
         """
         Compare user attributes with current ELB attributes
-        :return: bool True if they match otherwise False
+        :return: bool True if they match otherwise False.
         """
-
         update_attributes = []
         if (
             self.access_logs_enabled is not None
@@ -568,11 +554,10 @@ class ApplicationLoadBalancer(ElasticLoadBalancerV2):
 
     def modify_elb_attributes(self):
         """
-        Update Application ELB attributes if required
+        Update Application ELB attributes if required.
 
         :return:
         """
-
         update_attributes = []
 
         if (
@@ -663,11 +648,10 @@ class ApplicationLoadBalancer(ElasticLoadBalancerV2):
 
     def compare_security_groups(self):
         """
-        Compare user security groups with current ELB security groups
+        Compare user security groups with current ELB security groups.
 
         :return: bool True if they match otherwise False
         """
-
         if set(self.elb["SecurityGroups"]) != set(self.security_groups):
             return False
         else:
@@ -678,7 +662,6 @@ class ApplicationLoadBalancer(ElasticLoadBalancerV2):
         Modify elb security groups to match module parameters
         :return:
         """
-
         try:
             AWSRetry.jittered_backoff()(self.connection.set_security_groups)(
                 LoadBalancerArn=self.elb["LoadBalancerArn"], SecurityGroups=self.security_groups
@@ -718,11 +701,10 @@ class NetworkLoadBalancer(ElasticLoadBalancerV2):
 
     def modify_elb_attributes(self):
         """
-        Update Network ELB attributes if required
+        Update Network ELB attributes if required.
 
         :return:
         """
-
         update_attributes = []
 
         if (
@@ -759,7 +741,6 @@ class NetworkLoadBalancer(ElasticLoadBalancerV2):
         Modify elb subnets to match module parameters (unsupported for NLB)
         :return:
         """
-
         self.module.fail_json(msg="Modifying subnets and elastic IPs is not supported for Network Load Balancer")
 
 
@@ -785,7 +766,7 @@ class ELBListeners:
 
     def update(self):
         """
-        Update the listeners for the ELB
+        Update the listeners for the ELB.
 
         :return:
         """
@@ -793,11 +774,10 @@ class ELBListeners:
 
     def _get_elb_listeners(self):
         """
-        Get ELB listeners
+        Get ELB listeners.
 
         :return:
         """
-
         try:
             listener_paginator = self.connection.get_paginator("describe_listeners")
             return (
@@ -826,7 +806,6 @@ class ELBListeners:
         :param listeners: a list of listener dicts
         :return: the same list of dicts ensuring that each listener DefaultActions dict has TargetGroupArn key. If a TargetGroupName key exists, it is removed.
         """
-
         if not listeners:
             listeners = []
 
@@ -846,10 +825,7 @@ class ELBListeners:
         return fixed_listeners
 
     def compare_listeners(self):
-        """
-
-        :return:
-        """
+        """:return:"""
         listeners_to_modify = []
         listeners_to_delete = []
         listeners_to_add = deepcopy(self.listeners)
@@ -885,7 +861,6 @@ class ELBListeners:
         :param new_listener:
         :return:
         """
-
         modified_listener = {}
 
         # Port
@@ -959,7 +934,6 @@ class ELBListener:
         :param listener:
         :param elb_arn:
         """
-
         self.connection = connection
         self.module = module
         self.listener = listener
@@ -1032,7 +1006,6 @@ class ELBListenerRules:
         :param rules: a list of rule dicts
         :return: the same list of dicts ensuring that each rule Actions dict has TargetGroupArn key. If a TargetGroupName key exists, it is removed.
         """
-
         fixed_rules = []
         for rule in rules:
             fixed_actions = []
@@ -1063,7 +1036,6 @@ class ELBListenerRules:
         :param condition:
         :return:
         """
-
         condition_found = False
 
         for current_condition in current_conditions:
@@ -1126,11 +1098,7 @@ class ELBListenerRules:
         return condition_found
 
     def _compare_rule(self, current_rule, new_rule):
-        """
-
-        :return:
-        """
-
+        """:return:"""
         modified_rule = {}
 
         # Priority
@@ -1171,11 +1139,7 @@ class ELBListenerRules:
         return modified_rule
 
     def compare_rules(self):
-        """
-
-        :return:
-        """
-
+        """:return:"""
         rules_to_modify = []
         rules_to_delete = []
         rules_to_add = deepcopy(self.rules)
@@ -1254,11 +1218,10 @@ class ELBListenerRule:
 
     def create(self):
         """
-        Create a listener rule
+        Create a listener rule.
 
         :return:
         """
-
         try:
             self.rule["ListenerArn"] = self.listener_arn
             self.rule["Priority"] = int(self.rule["Priority"])
@@ -1270,11 +1233,10 @@ class ELBListenerRule:
 
     def modify(self):
         """
-        Modify a listener rule
+        Modify a listener rule.
 
         :return:
         """
-
         try:
             del self.rule["Priority"]
             AWSRetry.jittered_backoff()(self.connection.modify_rule)(**self.rule)
@@ -1285,11 +1247,10 @@ class ELBListenerRule:
 
     def delete(self):
         """
-        Delete a listener rule
+        Delete a listener rule.
 
         :return:
         """
-
         try:
             AWSRetry.jittered_backoff()(self.connection.delete_rule)(RuleArn=self.rule["RuleArn"])
         except (BotoCoreError, ClientError) as e:
@@ -1303,7 +1264,6 @@ class ELBListenerRule:
 
         :return:
         """
-
         try:
             rules = [self.rule]
             if isinstance(self.rule, list):

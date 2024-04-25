@@ -16,9 +16,7 @@ class TestCloudRetry:
     custom_error_codes = [100, 200, 300]
 
     class OurTestException(Exception):
-        """
-        custom exception class for testing
-        """
+        """custom exception class for testing."""
 
         def __init__(self, status):
             self.status = status

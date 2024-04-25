@@ -655,7 +655,7 @@ class DeregisterImage:
 
     @classmethod
     def do(cls, module, connection, image_id):
-        """Entry point to deregister an image"""
+        """Entry point to deregister an image."""
         delete_snapshot = module.params.get("delete_snapshot")
         wait = module.params.get("wait")
         wait_timeout = module.params.get("wait_timeout")
@@ -778,7 +778,7 @@ class UpdateImage:
 
     @classmethod
     def do(cls, module, connection, image_id):
-        """Entry point to update an image"""
+        """Entry point to update an image."""
         launch_permissions = module.params.get("launch_permissions")
         # remove any keys with value=None
         if launch_permissions:
@@ -947,7 +947,7 @@ class CreateImage:
 
     @classmethod
     def do(cls, module, connection, _image_id):
-        """Entry point to create image"""
+        """Entry point to create image."""
         create_image_parameters = cls.build_create_image_parameters(**module.params)
 
         func = cls.create_or_register(connection, create_image_parameters)

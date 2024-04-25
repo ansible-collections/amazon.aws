@@ -105,9 +105,7 @@ def describe_iam_instance_profiles(module, client):
 
 
 def main():
-    """
-    Module action handler
-    """
+    """Module action handler."""
     argument_spec = dict(
         name=dict(aliases=["instance_profile_name"]),
         path_prefix=dict(aliases=["path", "prefix"]),

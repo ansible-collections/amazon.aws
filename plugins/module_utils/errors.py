@@ -14,13 +14,13 @@ from .exceptions import AnsibleAWSError
 
 
 class AWSErrorHandler:
-    """_CUSTOM_EXCEPTION can be overridden by subclasses to customize the exception raised"""
+    """_CUSTOM_EXCEPTION can be overridden by subclasses to customize the exception raised."""
 
     _CUSTOM_EXCEPTION = AnsibleAWSError
 
     @classmethod
     def _is_missing(cls):
-        """Should be overridden with a class method that returns the value from is_boto3_error_code (or similar)"""
+        """Should be overridden with a class method that returns the value from is_boto3_error_code (or similar)."""
         return type("NeverEverRaisedException", (Exception,), {})
 
     @classmethod
@@ -53,7 +53,7 @@ class AWSErrorHandler:
         """A simple error handler that catches the standard Boto3 exceptions and raises
         an AnsibleAWSError exception.
         Error codes representing a non-existent entity will result in None being returned
-        Generally used for Get/List calls where the exception just means the resource isn't there
+        Generally used for Get/List calls where the exception just means the resource isn't there.
 
         param: description: a description of the action being taken.
                             Exception raised will include a message of
@@ -81,7 +81,7 @@ class AWSErrorHandler:
         """A simple error handler that catches the standard Boto3 exceptions and raises
         an AnsibleAWSError exception.
         Error codes representing a non-existent entity will result in None being returned
-        Generally used in deletion calls where NoSuchEntity means it's already gone
+        Generally used in deletion calls where NoSuchEntity means it's already gone.
 
         param: description: a description of the action being taken.
                             Exception raised will include a message of

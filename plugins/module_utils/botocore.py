@@ -86,7 +86,7 @@ def boto3_conn(module, conn_type=None, resource=None, region=None, endpoint=None
         ValueError,
         botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError,
         botocore.exceptions.NoCredentialsError, botocore.exceptions.ConfigParseError,
-        botocore.exceptions.NoRegionError
+        botocore.exceptions.NoRegionError.
     """
     try:
         return _boto3_conn(conn_type=conn_type, resource=resource, region=region, endpoint=endpoint, **params)
@@ -113,7 +113,7 @@ def boto3_conn(module, conn_type=None, resource=None, region=None, endpoint=None
 def _merge_botocore_config(config_a, config_b):
     """
     Merges the extra configuration options from config_b into config_a.
-    Supports both botocore.config.Config objects and dicts
+    Supports both botocore.config.Config objects and dicts.
     """
     if not config_b:
         return config_a
@@ -316,7 +316,7 @@ def paginated_query_with_retries(client, paginator_name, retry_decorator=None, *
 
 
 def gather_sdk_versions():
-    """Gather AWS SDK (boto3 and botocore) dependency versions
+    """Gather AWS SDK (boto3 and botocore) dependency versions.
 
     Returns {'boto3_version': str, 'botocore_version': str}
     Returns {} if either module is not installed
@@ -412,9 +412,7 @@ def normalize_boto3_result(result):
 
 
 def enable_placebo(session):
-    """
-    Helper to record or replay offline modules for testing purpose.
-    """
+    """Helper to record or replay offline modules for testing purpose."""
     if "_ANSIBLE_PLACEBO_RECORD" in os.environ:
         import placebo
 
@@ -454,9 +452,8 @@ def check_sdk_version_supported(botocore_version=None, boto3_version=None, warn=
         AnsibleBotocoreError - If botocore/boto3 is missing
     returns
         False if boto3 or botocore is less than the minimum supported versions
-        True if boto3 and botocore are greater than or equal the the minimum supported versions
+        True if boto3 and botocore are greater than or equal the the minimum supported versions.
     """
-
     botocore_version = botocore_version or MINIMUM_BOTOCORE_VERSION
     boto3_version = boto3_version or MINIMUM_BOTO3_VERSION
 

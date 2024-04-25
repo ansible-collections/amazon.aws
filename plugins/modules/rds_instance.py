@@ -1305,7 +1305,7 @@ def promote_replication_instance(client, module, instance, read_replica):
 
 def ensure_iam_roles(client, module, instance_id):
     """
-    Ensure specified IAM roles are associated with DB instance
+    Ensure specified IAM roles are associated with DB instance.
 
         Parameters:
             client: RDS client

@@ -148,7 +148,6 @@ def pc(key):
     :param key:
     :return:
     """
-
     return "".join([token.capitalize() for token in key.split("_")])
 
 
@@ -168,7 +167,6 @@ def set_api_params(module, module_params):
     :param module_params:
     :return:
     """
-
     api_params = dict()
 
     for param in module_params:
@@ -186,7 +184,6 @@ def validate_params(module):
     :param module:
     :return:
     """
-
     function_name = module.params["function_name"]
 
     # validate function name
@@ -213,7 +210,6 @@ def get_qualifier(module):
     :param module:
     :return:
     """
-
     if module.params.get("version") is not None:
         return to_native(module.params["version"])
     elif module.params["alias"]:
@@ -223,7 +219,7 @@ def get_qualifier(module):
 
 
 def extract_statement(policy, sid):
-    """return flattened single policy statement from a policy
+    """Return flattened single policy statement from a policy.
 
     If a policy statement is present in the policy extract it and
     return it in a flattened form.  Otherwise return an empty
@@ -304,7 +300,6 @@ def add_policy_permission(module, client):
     :param aws:
     :return:
     """
-
     changed = False
 
     # set API parameters
@@ -340,7 +335,6 @@ def remove_policy_permission(module, client):
     :param aws:
     :return:
     """
-
     changed = False
 
     # set API parameters
@@ -421,7 +415,6 @@ def main():
 
     :return dict: ansible facts
     """
-
     module = setup_module_object()
     client = module.client("lambda")
     validate_params(module)

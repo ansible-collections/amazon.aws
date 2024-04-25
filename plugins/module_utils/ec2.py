@@ -96,7 +96,7 @@ def get_ec2_security_group_ids_from_names(sec_group_list, ec2_connection, vpc_id
     """Return list of security group IDs from security group names. Note that security group names are not unique
     across VPCs.  If a name exists across multiple VPCs and no VPC ID is supplied, all matching IDs will be returned. This
     will probably lead to a boto exception if you attempt to assign both IDs to a resource so ensure you wrap the call in
-    a try block
+    a try block.
     """
 
     def get_sg_name(sg):
@@ -159,7 +159,6 @@ def add_ec2_tags(client, module, resource_id, tags_to_set, retry_codes=None):
     :param tags_to_set: A dictionary of key/value pairs to set
     :param retry_codes: additional boto3 error codes to trigger retries
     """
-
     if not tags_to_set:
         return False
     if module.check_mode:
@@ -188,7 +187,6 @@ def remove_ec2_tags(client, module, resource_id, tags_to_unset, retry_codes=None
     :param tags_to_unset: a list of tag keys to removes
     :param retry_codes: additional boto3 error codes to trigger retries
     """
-
     if not tags_to_unset:
         return False
     if module.check_mode:
@@ -251,7 +249,6 @@ def ensure_ec2_tags(client, module, resource_id, resource_type=None, tags=None, 
     :param retry_codes: additional boto3 error codes to trigger retries
     :return: changed: returns True if the tags are changed
     """
-
     if tags is None:
         return False
 
@@ -292,7 +289,7 @@ def normalize_ec2_vpc_dhcp_config(option_config):
             "netbios-name-servers": ["10.0.0.1", "10.0.1.1"],
             "netbios-node-type": "1",
             "ntp-servers": ["10.0.0.2", "10.0.1.2"]
-        },
+        },.
     """
     config_data = {}
 

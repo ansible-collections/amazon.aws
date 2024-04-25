@@ -3,7 +3,7 @@
 #  Copyright 2017 Michael De La Rue | Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-"""This module adds shared support for generic Amazon AWS modules
+"""This module adds shared support for generic Amazon AWS modules.
 
 In order to use this module, include it as part of a custom
 module as shown below.

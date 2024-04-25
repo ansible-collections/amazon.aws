@@ -293,9 +293,7 @@ def ensure_absent(
 
 
 def main():
-    """
-    Module action handler
-    """
+    """Module action handler."""
     argument_spec = dict(
         name=dict(aliases=["instance_profile_name"], required=True),
         path=dict(aliases=["path_prefix", "prefix"]),

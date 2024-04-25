@@ -173,7 +173,6 @@ def set_api_params(module_params, param_names):
     :param param_names:
     :return:
     """
-
     api_params = dict()
 
     for param in param_names:
@@ -191,7 +190,6 @@ def validate_params(module_params):
     :param module_params: AnsibleAWSModule Parameters
     :return:
     """
-
     function_name = module_params["function_name"]
 
     # validate function name
@@ -224,7 +222,6 @@ def get_lambda_alias(module_params, client):
     :param client: (wrapped) boto3 lambda client
     :return:
     """
-
     # set API parameters
     api_params = set_api_params(module_params, ("function_name", "name"))
 

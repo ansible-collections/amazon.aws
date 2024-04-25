@@ -240,7 +240,7 @@ class TestComparePolicy:
     def test_compare_small_policies_without_differences(self):
         """Testing two small policies which are identical except for:
         * The contents of the statement are in different orders
-        * The second policy contains a list of length one whereas in the first it is a string
+        * The second policy contains a list of length one whereas in the first it is a string.
         """
         assert compare_policies(self.small_policy_one, self.small_policy_two) is False
 
@@ -248,44 +248,44 @@ class TestComparePolicy:
         """Testing two larger policies which are identical except for:
         * The statements are in different orders
         * The contents of the statements are also in different orders
-        * The second contains a list of length one for the Principal whereas in the first it is a string
+        * The second contains a list of length one for the Principal whereas in the first it is a string.
         """
         assert compare_policies(self.larger_policy_one, self.larger_policy_two) is False
 
     def test_compare_larger_policies_with_difference(self):
         """Testing two larger policies which are identical except for:
-        * one different principal
+        * one different principal.
         """
         assert compare_policies(self.larger_policy_two, self.larger_policy_three) is True
 
     def test_compare_smaller_policy_with_larger(self):
-        """Testing two policies of different sizes"""
+        """Testing two policies of different sizes."""
         assert compare_policies(self.larger_policy_one, self.small_policy_one) is True
 
     def test_compare_boolean_policy_bool_and_string_are_equal(self):
-        """Testing two policies one using a quoted boolean, the other a bool"""
+        """Testing two policies one using a quoted boolean, the other a bool."""
         assert compare_policies(self.bool_policy_string, self.bool_policy_bool) is False
 
     def test_compare_numeric_policy_number_and_string_are_equal(self):
-        """Testing two policies one using a quoted number, the other an int"""
+        """Testing two policies one using a quoted number, the other an int."""
         assert compare_policies(self.numeric_policy_string, self.numeric_policy_number) is False
 
     def test_compare_version_policies_defaults_old(self):
         """Testing that a policy without Version is considered identical to one
-        with the 'old' Version (by default)
+        with the 'old' Version (by default).
         """
         assert compare_policies(self.version_policy_old, self.version_policy_missing) is False
         assert compare_policies(self.version_policy_new, self.version_policy_missing) is True
 
     def test_compare_version_policies_default_disabled(self):
-        """Testing that a policy without Version not considered identical when default_version=None"""
+        """Testing that a policy without Version not considered identical when default_version=None."""
         assert compare_policies(self.version_policy_missing, self.version_policy_missing, default_version=None) is False
         assert compare_policies(self.version_policy_old, self.version_policy_missing, default_version=None) is True
         assert compare_policies(self.version_policy_new, self.version_policy_missing, default_version=None) is True
 
     def test_compare_version_policies_default_set(self):
         """Testing that a policy without Version is only considered identical
-        when default_version="2008-10-17"
+        when default_version="2008-10-17".
         """
         assert (
             compare_policies(self.version_policy_missing, self.version_policy_missing, default_version="2012-10-17")
@@ -307,13 +307,13 @@ class TestComparePolicy:
         )
 
     def test_compare_version_policies_with_none(self):
-        """Testing that comparing with no policy works"""
+        """Testing that comparing with no policy works."""
         assert compare_policies(self.small_policy_one, None) is True
         assert compare_policies(None, self.small_policy_one) is True
         assert compare_policies(None, None) is False
 
     def test_compare_wildcard_policies_without_differences(self):
         """Testing two small wildcard policies which are identical except for:
-        * Principal: "*" vs Principal: ["AWS": "*"]
+        * Principal: "*" vs Principal: ["AWS": "*"].
         """
         assert compare_policies(self.wildcard_policy_one, self.wildcard_policy_two) is False

@@ -52,9 +52,8 @@ def boto3_tag_list_to_ansible_dict(tags_list, tag_name_key_name=None, tag_value_
         Dict: Dict of key:value pairs representing AWS tags
          {
             'MyTagKey': 'MyTagValue',
-        }
+        }.
     """
-
     if tag_name_key_name and tag_value_key_name:
         tag_candidates = {tag_name_key_name: tag_value_key_name}
     else:
@@ -70,7 +69,7 @@ def boto3_tag_list_to_ansible_dict(tags_list, tag_name_key_name=None, tag_value_
 
 
 def ansible_dict_to_boto3_tag_list(tags_dict, tag_name_key_name="Key", tag_value_key_name="Value"):
-    """Convert a flat dict of key:value pairs representing AWS resource tags to a boto3 list of dicts
+    """Convert a flat dict of key:value pairs representing AWS resource tags to a boto3 list of dicts.
 
     Note: booleans are converted to their Capitalized text form ("True" and "False"), this is
     different to ansible_dict_to_boto3_filter_list because historically we've used "to_text()" and
@@ -96,7 +95,6 @@ def ansible_dict_to_boto3_tag_list(tags_dict, tag_name_key_name="Key", tag_value
             }
         ]
     """
-
     if not tags_dict:
         return []
 
@@ -191,7 +189,6 @@ def compare_aws_tags(current_tags_dict, new_tags_dict, purge_tags=True):
     :return: tag_key_value_pairs_to_set: a dict of key value pairs that need to be set in AWS. If all tags are identical this dict will be empty
     :return: tag_keys_to_unset: a list of key names (type str) that need to be unset in AWS. If no tags need to be unset this list will be empty
     """
-
     tag_key_value_pairs_to_set = {}
     tag_keys_to_unset = []
 

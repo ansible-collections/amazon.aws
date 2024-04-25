@@ -510,7 +510,7 @@ def get_kms_policies(connection, module, key_id):
 
 
 def camel_to_snake_grant(grant):
-    """camel_to_snake_grant snakifies everything except the encryption context"""
+    """camel_to_snake_grant snakifies everything except the encryption context."""
     constraints = grant.get("Constraints", {})
     result = camel_dict_to_snake_dict(grant)
     if "EncryptionContextEquals" in constraints:

@@ -27,9 +27,7 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 # USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""
-This module adds shared support for Batch modules.
-"""
+"""This module adds shared support for Batch modules."""
 
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 

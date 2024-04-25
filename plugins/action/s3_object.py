@@ -19,7 +19,7 @@ class ActionModule(ActionBase):
     TRANSFERS_FILES = True
 
     def run(self, tmp=None, task_vars=None):
-        """handler for s3_object operations
+        """Handler for s3_object operations.
 
         This adds the magic that means 'src' can point to both a 'remote' file
         on the 'host' or in the 'files/' lookup path on the controller.

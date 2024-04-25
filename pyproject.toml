@@ -10,6 +10,7 @@ extend-exclude = '''
 
 [tool.darker]
 revision = "origin/main.."
+
 src = [
     "plugins",
     "tests/unit",
@@ -52,10 +53,12 @@ select = [
     "N",      # pep8-naming
     "YTT",    # flake8-2020
     "PT",     # flake8-pytest-style
+    "ISC",    # flake8-implicit-str-concat
+    "D",      # pydocstyle
+    "C90",    # mccabe
 
+    # To be enabed
     # "S",      # flake8-bandit
-    # "D",      # pydocstyle
-    # "ISC",    # flake8-implicit-str-concat
     # "C",      # complexity
     # "FBT001", # flake8-boolean-trap
     # "UP",     # pyupgrade
@@ -75,16 +78,18 @@ ignore = [
     "F841",             # Local variable is assigned to but never used
     "PLR",              # Design related pylint codes
     "PLW",              # Design related pylint codes
-    "D202",             # No blank lines allowed after function docstring (found 1)
-    "D205",             # 1 blank line required between summary line and description
-    "D401",  	        # First line of docstring should be in imperative mood
-    "D403",         	# First word of the first line should be capitalized
     "RUF012",	        # Mutable class attributes should be annotated with `typing.ClassVar`
     "N806",   	        # Variable in function should be lowercase
     "N802",          	# Function name should be lowercase
     "N818", 	        # Exception name should be named with an Error suffix
     "N803",          	# Argument name `keyId` should be lowercase
     "N801",             # Class name should use CapWords convention
+    "UP009",            # UTF-8 encoding declaration is unnecessary
+    "ISC003",           # Explicitly concatenated string should be implicitly concatenated
+    "D401",             # First line of docstring should be in imperative mood
+    "C901",             # `_compare_condition` is too complex (15 > 10)
+    "D205",             # 1 blank line required between summary line and description
+    "D400",    	        # First line should end with a period
 ]
 
 # Disable fix for unused imports (`F401`).
@@ -114,11 +119,12 @@ convention = "pep257"
 # 402: Module level import not at top of file
 "plugins/**/*.py" = [ "D1", "E402"]
 "tests/**/*.py" = [
-    "D1", "E402",
-    "S101", # asserts allowed in tests...
-    "ARG", # Unused function args -> fixtures nevertheless are functionally relevant...
-    "FBT", # Don't care about booleans as positional arguments in tests, e.g. via @pytest.mark.parametrize()
-    "PT",  # pytest error codes
+    "D1",
+    "E402",
+    "S101",  # asserts allowed in tests...
+    "ARG",   # Unused function args -> fixtures nevertheless are functionally relevant...
+    "FBT",   # Don't care about booleans as positional arguments in tests, e.g. via @pytest.mark.parametrize()
+    "PT",    # pytest error codes
 ]
 
 [tool.ruff.format]

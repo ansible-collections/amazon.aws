@@ -303,7 +303,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_ta
 
 
 class CloudFormationServiceManager:
-    """Handles CloudFormation Services"""
+    """Handles CloudFormation Services."""
 
     def __init__(self, module):
         self.module = module
@@ -402,7 +402,7 @@ class CloudFormationServiceManager:
 
 
 def to_dict(items, key, value):
-    """Transforms a list of items to a Key/Value dictionary"""
+    """Transforms a list of items to a Key/Value dictionary."""
     if items:
         return dict(zip([i.get(key) for i in items], [i.get(value) for i in items]))
     else:

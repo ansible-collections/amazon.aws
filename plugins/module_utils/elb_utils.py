@@ -38,7 +38,6 @@ def _get_elb(connection, module, elb_name):
     :param elb_name: Name of load balancer to get
     :return: boto3 ELB dict or None if not found
     """
-
     try:
         load_balancer_paginator = connection.get_paginator("describe_load_balancers")
         return (load_balancer_paginator.paginate(Names=[elb_name]).build_full_result())["LoadBalancers"][0]
@@ -56,7 +55,6 @@ def get_elb_listener(connection, module, elb_arn, listener_port):
     :param listener_port: Port of the listener to look for
     :return: boto3 ELB listener dict or None if not found
     """
-
     try:
         listener_paginator = connection.get_paginator("describe_listeners")
         listeners = (
@@ -84,7 +82,6 @@ def get_elb_listener_rules(connection, module, listener_arn):
     :param listener_arn: ARN of the ELB listener
     :return: boto3 ELB rules list
     """
-
     try:
         return AWSRetry.jittered_backoff()(connection.describe_rules)(ListenerArn=listener_arn)["Rules"]
     except (BotoCoreError, ClientError) as e:
@@ -93,14 +90,13 @@ def get_elb_listener_rules(connection, module, listener_arn):
 
 def convert_tg_name_to_arn(connection, module, tg_name):
     """
-    Get ARN of a target group using the target group's name
+    Get ARN of a target group using the target group's name.
 
     :param connection: AWS boto3 elbv2 connection
     :param module: Ansible module
     :param tg_name: Name of the target group
     :return: target group ARN string
     """
-
     try:
         response = AWSRetry.jittered_backoff()(connection.describe_target_groups)(Names=[tg_name])
     except (BotoCoreError, ClientError) as e:

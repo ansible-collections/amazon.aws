@@ -23,9 +23,8 @@ def boto3_conn(plugin, conn_type=None, resource=None, region=None, endpoint=None
         ValueError,
         botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError,
         botocore.exceptions.NoCredentialsError, botocore.exceptions.ConfigParseError,
-        botocore.exceptions.NoRegionError
+        botocore.exceptions.NoRegionError.
     """
-
     try:
         return _boto3_conn(conn_type=conn_type, resource=resource, region=region, endpoint=endpoint, **params)
     except ValueError as e:

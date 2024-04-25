@@ -511,7 +511,7 @@ def update_stack(module, stack_params, cfn, events_limit):
 
 
 def update_termination_protection(module, cfn, stack_name, desired_termination_protection_state):
-    """updates termination protection of a stack"""
+    """Updates termination protection of a stack."""
     stack = get_stack_facts(module, cfn, stack_name)
     if stack:
         if stack["EnableTerminationProtection"] is not desired_termination_protection_state:
@@ -526,7 +526,7 @@ def update_termination_protection(module, cfn, stack_name, desired_termination_p
 
 
 def stack_operation(module, cfn, stack_name, operation, events_limit, op_token=None):
-    """gets the status of a stack while it is created/updated/deleted"""
+    """Gets the status of a stack while it is created/updated/deleted."""
     existed = []
     while True:
         try:

@@ -102,7 +102,7 @@ def validate_bucket_name(name):
 
 # Spot special case of fakes3.
 def is_fakes3(url):
-    """Return True if endpoint_url has scheme fakes3://"""
+    """Return True if endpoint_url has scheme fakes3://."""
     result = False
     if url is not None:
         result = urlparse(url).scheme in ("fakes3", "fakes3s")

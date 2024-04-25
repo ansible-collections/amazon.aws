@@ -34,7 +34,7 @@ def validate_aws_arn(
 
 def parse_aws_arn(arn):
     """
-    Based on https://docs.aws.amazon.com/IAM/latest/UserGuide/reference-arns.html
+    Based on https://docs.aws.amazon.com/IAM/latest/UserGuide/reference-arns.html.
 
     The following are the general formats for ARNs.
         arn:partition:service:region:account-id:resource-id
@@ -70,8 +70,7 @@ def parse_aws_arn(arn):
 # aren't specific to the EC2 service
 def is_outpost_arn(arn):
     """
-    Validates that the ARN is for an AWS Outpost
-
+    Validates that the ARN is for an AWS Outpost.
 
     API Specification Document:
     https://docs.aws.amazon.com/outposts/latest/APIReference/API_Outpost.html

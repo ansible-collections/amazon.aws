@@ -602,8 +602,7 @@ def attach_volume(module, ec2_conn, volume_dict, instance_dict, device_name):
 
 
 def modify_dot_attribute(module, ec2_conn, instance_dict, device_name):
-    """Modify delete_on_termination attribute"""
-
+    """Modify delete_on_termination attribute."""
     delete_on_termination = module.params.get("delete_on_termination")
     changed = False
 
