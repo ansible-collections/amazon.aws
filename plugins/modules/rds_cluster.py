@@ -1329,7 +1329,9 @@ def main():
 
     if module.params.get("storage_type") and module.params["storage_type"] in ("aurora-iopt1"):
         if module.params.get("engine") not in ("aurora", "aurora-mysql", "aurora-postgresql"):
-            module.fail_json(f"storage_type={module.params['storage_type']} is only supported for aurora engines 'aurora', 'aurora-mysql', 'aurora-postgresql'")
+            module.fail_json(
+                f"storage_type={module.params['storage_type']} is only supported for aurora engines 'aurora', 'aurora-mysql', 'aurora-postgresql'"
+            )
 
     module.params["db_cluster_identifier"] = module.params["db_cluster_identifier"].lower()
     cluster = get_cluster(module.params["db_cluster_identifier"])
