@@ -118,10 +118,49 @@
         that:
           - not _result_create_db_cluster.changed
 
+    # aurora-iopt1 test
+    - name: Create aurora cluster with IO optimized storage
+      amazon.aws.rds_cluster:
+        engine: "{{ engine }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        cluster_id: "{{ cluster_id }}-io-optimized"
+        tags: "{{ tags_create }}"
+        storage_type: aurora-iopt1
+      register: _result_create_db_cluster_io_optimized
+
+    - assert:
+        that:
+          - _result_create_db_cluster_io_optimized.changed
+          - _result_create_db_cluster_io_optimized.storage_type == 'aurora-iopt1'
+          - _result_create_db_cluster_io_optimized.storage_encrypted == false
+          - _result_create_db_cluster_io_optimized.engine_mode == "provisioned"
+          - _result_create_db_cluster_io_optimized.status == 'available'
+
+    # aurora-iopt1 test failure
+    - name: Create mysql cluster with IO optimized storage - test failure with wrong engine + storage combination
+      amazon.aws.rds_cluster:
+        engine: mysql
+        username: "{{ username }}"
+        password: "{{ password }}"
+        cluster_id: "{{ cluster_id }}-io-optimized-failure"
+        tags: "{{ tags_create }}"
+        storage_type: aurora-iopt1
+      register: _result_create_db_cluster_io_optimized
+      ignore_errors: true
+
+    - assert:
+        that:
+          - not _result_create_db_cluster_io_optimized.changed
+          - _result_create_db_cluster_io_optimized.failed
+
   always:
-    - name: Delete DB cluster without creating a final snapshot
+    - name: Delete test DB clusters without creating a final snapshot
       amazon.aws.rds_cluster:
         state: absent
-        cluster_id: "{{ cluster_id }}"
+        cluster_id: "{{ item }}"
         skip_final_snapshot: true
       ignore_errors: true
+      with_items:
+        - "{{ cluster_id }}"
+        - "{{ cluster_id }}-io-optimized"
