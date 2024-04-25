@@ -187,11 +187,14 @@ options:
         description:
           - Specifies the storage type to be associated with the DB cluster.
           - This setting is required to create a Multi-AZ DB cluster.
-          - When specified, a value for the I(iops) parameter is required.
+          - When specified I(storage_type=io1), a value for the I(iops) parameter is required.
+          - When I(engine) is set to aurora/aurora-mysql/aurora-postgresql, not specifying I(storage_type) defaults it to aurora standard.
+          - I(storage_type) require botocore >= 1.23.44.
           - Defaults to C(io1).
         type: str
         choices:
           - io1
+          - aurora-iopt1
         version_added: 5.5.0
     iops:
         description:
@@ -1237,7 +1240,7 @@ def main():
         engine_mode=dict(choices=["provisioned", "serverless", "parallelquery", "global", "multimaster"]),
         engine_version=dict(),
         allocated_storage=dict(type="int"),
-        storage_type=dict(type="str", choices=["io1"]),
+        storage_type=dict(type="str", choices=["io1", "aurora-iopt1"]),
         iops=dict(type="int"),
         final_snapshot_identifier=dict(),
         force_backtrack=dict(type="bool"),
@@ -1323,6 +1326,10 @@ def main():
                 # Fall to default value
                 if not module.params.get("storage_type"):
                     module.params["storage_type"] = "io1"
+
+    if module.params.get("storage_type") and module.params["storage_type"] in ("aurora-iopt1"):
+        if module.params.get("engine") not in ("aurora", "aurora-mysql", "aurora-postgresql"):
+            module.fail_json(f"storage_type={module.params['storage_type']} is only supported for aurora engines 'aurora', 'aurora-mysql', 'aurora-postgresql'")
 
     module.params["db_cluster_identifier"] = module.params["db_cluster_identifier"].lower()
     cluster = get_cluster(module.params["db_cluster_identifier"])
