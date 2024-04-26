@@ -174,16 +174,22 @@ options:
     version_added: 8.1.0
   object_lock_default_retention:
     description:
-      - Default Object Lock configuration that will be applied by default to every new object placed in the specified bucket.
+      - Default Object Lock configuration that will be applied by default to
+        every new object placed in the specified bucket.
     suboptions:
       mode:
-        description: 'GOVERNANCE' or 'COMPLIANCE
+        description: Type of retention modes
+        choices: [ 'GOVERNANCE', 'COMPLIANCE']
         type: str
       days:
-        description: The number of days that you want to specify for the default retention period. 
+        description:
+            - The number of days that you want to specify for the default retention period.
+            - Mutually exclusive with I(years).
         type: int
       years:
-        description: The number of years that you want to specify for the default retention period.
+        description:
+            - The number of years that you want to specify for the default retention period.
+            - Mutually exclusive with I(days).
         type: int
     type: dict
     version_added: 7.6.0
@@ -308,13 +314,11 @@ EXAMPLES = r"""
     state: present
     acl: public-read
 
-<<<<<<< HEAD
 # Enable transfer acceleration
 - amazon.aws.s3_bucket:
     name: mys3bucket
     state: present
     accelerate_enabled: true
-=======
 # Default Object Lock retention
 - amazon.aws.s3_bucket:
     name: mys3bucket
@@ -322,7 +326,6 @@ EXAMPLES = r"""
     object_lock_default_retention:
       mode: governance
       days: 1
->>>>>>> 523553f39 (Object Lock default retention)
 """
 
 RETURN = r"""
