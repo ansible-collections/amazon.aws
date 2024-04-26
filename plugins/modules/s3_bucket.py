@@ -961,6 +961,55 @@ def handle_bucket_accelerate(s3_client, module: AnsibleAWSModule, name: str) -> 
             module.fail_json_aws(e, msg="Failed to update bucket transfer acceleration")
     return accelerate_enabled_changed, accelerate_enabled_result
 
+def handle_bucket_object_lock_retention(s3_client, module: AnsibleAWSModule, name: str) -> tuple[bool, dict]:
+    """
+    Manage object lock retention configuration for an S3 bucket.
+    Parameters:
+        s3_client (boto3.client): The Boto3 S3 client object.
+        module (AnsibleAWSModule): The Ansible module object.
+        name (str): The name of the bucket to handle object lock for.
+    Returns:
+        A tuple containing a boolean indicating whether the bucket object lock
+        retention configuration was changed and a dictionary containing the change.
+    """
+    object_lock_enabled = module.params.get("object_lock_enabled")
+    object_lock_default_retention = module.params.get("object_lock_default_retention")
+    object_lock_default_retention_result = {}
+    object_lock_default_retention_changed = False
+    try:
+        if object_lock_enabled:
+            object_lock_configuration_status = get_object_lock_configuration(s3_client, name)
+        else:
+            object_lock_configuration_status = {}
+    except is_boto3_error_code(["NotImplemented", "XNotImplemented"]) as e:
+        if object_lock_default_retention is not None:
+            module.fail_json_aws(e, msg="Fetching bucket object lock default retention is not supported")
+    except is_boto3_error_code("AccessDenied") as e:  # pylint: disable=duplicate-except
+        if object_lock_default_retention is not None:
+            module.fail_json_aws(e, msg="Permission denied fetching object lock default retention for bucket")
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Failed to fetch bucket object lock default retention state")
+    else:
+        if not object_lock_default_retention and object_lock_configuration_status != {}:
+            module.fail_json(msg="Removing object lock default retention is not supported")
+        if object_lock_default_retention is not None:
+            conf = snake_dict_to_camel_dict(object_lock_default_retention, capitalize_first=True)
+            conf = {k: v for k, v in conf.items() if v}  # remove keys with None value
+            try:
+                if object_lock_default_retention and object_lock_configuration_status != conf:
+                    put_object_lock_configuration(s3_client, name, conf)
+                    object_lock_default_retention_changed = True
+                    object_lock_default_retention_result = object_lock_default_retention
+                else:
+                    object_lock_default_retention_result = object_lock_default_retention
+            except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+                module.fail_json_aws(e, msg="Failed to update bucket object lock default retention")
+
+    return object_lock_default_retention_changed, object_lock_default_retention_result
+
 
 def create_or_update_bucket(s3_client, module: AnsibleAWSModule):
     """
@@ -1041,6 +1090,9 @@ def create_or_update_bucket(s3_client, module: AnsibleAWSModule):
     # -- Transfer Acceleration
     bucket_accelerate_changed, bucket_accelerate_result = handle_bucket_accelerate(s3_client, module, name)
     result["accelerate_enabled"] = bucket_accelerate_result
+    # -- Object Lock Default Retention
+    bucket_object_lock_retention_changed, bucket_object_lock_retention_result = handle_bucket_object_lock_retention(s3_client, module, name)
+    result["object_lock_default_retention"] = bucket_object_lock_retention_result
 
     # Module exit
     changed = (
@@ -1054,6 +1106,7 @@ def create_or_update_bucket(s3_client, module: AnsibleAWSModule):
         or bucket_ownership_changed
         or bucket_acl_changed
         or bucket_accelerate_changed
+        or bucket_object_lock_retention_changed
     )
     module.exit_json(changed=changed, name=name, **result)
 
