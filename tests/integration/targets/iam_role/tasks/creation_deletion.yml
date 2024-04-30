@@ -285,6 +285,32 @@
       - role_info.iam_roles[0].role_name == test_role
       - role_info.iam_roles[0].tags | length == 0
 
+- name: iam_role_info after Role creation (searching a path without / prefix and suffix)
+  amazon.aws.iam_role_info:
+    path_prefix: "{{ bad_test_path }}"
+  register: role_info
+- ansible.builtin.assert:
+    that:
+      - role_info is succeeded
+      - role_info.iam_roles | length == 1
+      - role_info.iam_roles[0].arn.startswith("arn")
+      - role_info.iam_roles[0].arn.endswith("role" + test_path + test_role )
+      - '"assume_role_policy_document" in role_info.iam_roles[0]'
+      - '"create_date" in role_info.iam_roles[0]'
+      - '"description" not in role_info.iam_roles[0]'
+      - role_info.iam_roles[0].inline_policies | length == 0
+      - role_info.iam_roles[0].instance_profiles | length == 1
+      - role_info.iam_roles[0].instance_profiles[0].instance_profile_name == test_role
+      - role_info.iam_roles[0].instance_profiles[0].arn.startswith("arn")
+      - role_info.iam_roles[0].instance_profiles[0].arn.endswith("instance-profile" + test_path + test_role)
+      - role_info.iam_roles[0].managed_policies | length == 0
+      - role_info.iam_roles[0].max_session_duration == 3600
+      - '"permissions_boundary" not in role_info.iam_roles[0]'
+      - role_info.iam_roles[0].path == test_path
+      - role_info.iam_roles[0].role_id == iam_role.iam_role.role_id
+      - role_info.iam_roles[0].role_name == test_role
+      - role_info.iam_roles[0].tags | length == 0
+
 - name: Remove IAM Role
   community.aws.iam_role:
     state: absent
