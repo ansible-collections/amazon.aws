@@ -226,10 +226,10 @@ def main():
         if validation_error:
             _prefix = "/" if not path_prefix.startswith("/") else ""
             _suffix = "/" if not path_prefix.endswith("/") else ""
-            path_prefix = "{_prefix}{path_prefix}{_suffix}"
+            path_prefix = f"{_prefix}{path_prefix}{_suffix}"
             module.deprecate(
                 "In a release after 2026-05-01 paths must begin and end with /.  "
-                "path_prefix has been modified to '{path_prefix}'",
+                f"path_prefix has been modified to '{path_prefix}'",
                 date="2026-05-01",
                 collection_name="amazon.aws",
             )
