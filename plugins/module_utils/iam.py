@@ -49,14 +49,14 @@ def detach_iam_group_policy(client, arn, group):
 @IAMErrorHandler.deletion_error_handler("detach role policy")
 @AWSRetry.jittered_backoff()
 def detach_iam_role_policy(client, arn, role):
-    client.detach_group_policy(PolicyArn=arn, RoleName=role)
+    client.detach_role_policy(PolicyArn=arn, RoleName=role)
     return True
 
 
 @IAMErrorHandler.deletion_error_handler("detach user policy")
 @AWSRetry.jittered_backoff()
 def detach_iam_user_policy(client, arn, user):
-    client.detach_group_policy(PolicyArn=arn, UserName=user)
+    client.detach_user_policy(PolicyArn=arn, UserName=user)
     return True
 
 
