@@ -11,6 +11,7 @@ encryption_sse
 public_access
 acl
 object_lock
+inventory
 
 [all:vars]
 ansible_connection=local
