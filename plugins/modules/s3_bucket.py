@@ -895,29 +895,49 @@ def handle_bucket_inventory(s3_client, module: AnsibleAWSModule, name: str) -> t
         bucket_inventory_result = bucket_inventory_status
     except is_boto3_error_code(["NotImplemented", "XNotImplemented"]) as e:
         if bucket_inventory_settings is not None:
-            module.fail_json(msg="Fetching bucket inventory state is not supported")
-    except is_boto3_error_code("ObjectLockConfigurationNotFoundError"):  # pylint: disable=duplicate-except
-        if bucket_inventory_settings:
-            module.fail_json(msg="Enabling object lock for existing buckets is not supported")
-        object_lock_result = False
+            module.fail_json(msg="Fetching bucket inventory settings is not supported")
     except is_boto3_error_code("AccessDenied") as e:  # pylint: disable=duplicate-except
         if bucket_inventory_settings is not None:
-            module.fail_json(msg="Permission denied fetching object lock state for bucket")
+            module.fail_json(msg="Permission denied fetching bucket inventory setting")
     except (
         botocore.exceptions.BotoCoreError,
         botocore.exceptions.ClientError,
     ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Failed to fetch bucket object lock state")
+        module.fail_json_aws(e, msg="Failed to fetch bucket inventory setting state")
     else:
-        if bucket_inventory_status is not None:
-            if not bucket_inventory_settings and bucket_inventory_status:
-                delete_bucket_inventory(s3_client, name)
-                bucket_inventory_changed = True
-            if bucket_inventory_settings and not bucket_inventory_status:
-                put_bucket_inventory(s3_client, name, bucket_inventory_settings)
-                bucket_inventory_changed = True
+        if not bucket_inventory_settings and bucket_inventory_status != {} :
+            inventory_id = bucket_inventory_status.get("Id", "")
+            delete_bucket_inventory(s3_client, name, inventory_id)
+            bucket_inventory_changed = True
+        if bucket_inventory_settings:
+            camel_destination = snake_dict_to_camel_dict(bucket_inventory_settings.get("destination", {}), True)
+            inventory_settings = {
+                "IsEnabled": True,
+                "Id": bucket_inventory_settings.get("id"),
+                "Destination": { "S3BucketDestination": { k: v for k, v in camel_destination.items() if v is not None} },
+                "IncludedObjectVersions": bucket_inventory_settings.get("included_object_versions"),
+                "Schedule": {"Frequency": bucket_inventory_settings.get("schedule")}
+            }
 
+            for field in bucket_inventory_settings.get("optional_fields", []):
+                inventory_settings["OptionalFields"].append({"Field": field})
+            if bucket_inventory_settings.get("filter") is not None:
+                inventory_settings["Filter"] = {"Prefix": bucket_inventory_settings.get("filter")}
+
+            if inventory_settings != bucket_inventory_status:
+                try:
+                    put_bucket_inventory(s3_client, name, inventory_settings)
+                    bucket_inventory_result = inventory_settings
+                    bucket_inventory_changed = True
+                except is_boto3_error_code("InvalidS3DestinationBucket"):
+                    module.fail_json(msg="Invalid destibation bucket ARN")
+                except (
+                    botocore.exceptions.BotoCoreError,
+                    botocore.exceptions.ClientError,
+                ) as e:  # pylint: disable=duplicate-except
+                    module.fail_json_aws(e, msg="Failed to set bucket inventory setting")
     return bucket_inventory_changed, bucket_inventory_result
+
 
 def create_or_update_bucket(s3_client, module: AnsibleAWSModule):
     """
