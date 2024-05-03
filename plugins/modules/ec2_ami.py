@@ -372,7 +372,7 @@ is_public:
 kernel_id:
     description: The kernel associated with the image, if any. Only applicable for machine images.
     returned: when AMI is created or already exists
-    type: string
+    type: str
     sample: "aki-88aa75e1"
 launch_permission:
     description: Permissions allowing other accounts to access the AMI.

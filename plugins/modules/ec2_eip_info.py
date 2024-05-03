@@ -124,7 +124,7 @@ addresses:
       description: The Elastic IP address.
       returned: if any instance is associated
       type: str
-      sample: "54.81.104.1",
+      sample: "54.81.104.1"
     "tags":
       description: Any tags assigned to the Elastic IP address.
       type: dict
