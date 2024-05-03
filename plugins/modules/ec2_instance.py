@@ -678,7 +678,7 @@ instances:
             type: complex
             contains:
                 capacity_reservation_preference:
-                    description: Describes the instance’s Capacity Reservation preferences.
+                    description: Describes the Capacity Reservation preferences.
                     type: str
                     sample: open
         client_token:

@@ -108,7 +108,7 @@ security_groups:
             elements: dict
             contains:
                 from_port:
-                    description: If the protocol is TCP or UDP, this is the start of the port range. If the protocol is ICMP or ICMPv6, this is the ICMP type or -1 (all ICMP types).
+                    description: If the protocol is TCP or UDP, this is the start of the port range.
                     type: int
                     sample: 80
                 ip_protocol:
@@ -146,7 +146,7 @@ security_groups:
                             returned: always
                             type: str
                 to_group:
-                    description: If the protocol is TCP or UDP, this is the end of the port range. If the protocol is ICMP or ICMPv6, this is the ICMP code or -1 (all ICMP codes). If the start port is -1 (all ICMP types), then the end port must be -1 (all ICMP codes).
+                    description: If the protocol is TCP or UDP, this is the end of the port range.
                     type: int
                     sample: 80
                 user_id_group_pairs:
