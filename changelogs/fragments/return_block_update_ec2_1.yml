@@ -1,0 +1,3 @@
+---
+trivial:
+  - Update return block in the module documentation ec2_eip_info, ec2_ami, ec2_ami_info, ec2_eni, ec2_eni_info, ec2_instance, ec2_instance_info, ec2_security_group, ec2_security_group_info

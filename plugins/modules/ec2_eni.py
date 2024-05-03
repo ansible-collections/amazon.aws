@@ -217,15 +217,25 @@ interface:
   returned: when state != absent
   type: complex
   contains:
+    attachment:
+      description: The network interface attachment.
+      type: dict
+      sample: {
+            "attach_time": "2024-04-25T20:57:20+00:00",
+            "attachment_id": "eni-attach-0ddce58b341a1846f",
+            "delete_on_termination": true,
+            "device_index": 0,
+            "instance_id": "i-032cb1cceb29250d2",
+            "status": "attached"
+        }
     description:
       description: interface description
       type: str
       sample: Firewall network interface
     groups:
-      description: list of security groups
-      type: list
-      elements: dict
-      sample: [ { "sg-f8a8a9da": "default" } ]
+      description: dict of security groups
+      type: dict
+      sample: { "sg-f8a8a9da": "default" }
     id:
       description: network interface id
       type: str

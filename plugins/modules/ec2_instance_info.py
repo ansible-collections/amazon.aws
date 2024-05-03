@@ -161,6 +161,14 @@ instances:
                             returned: always
                             type: str
                             sample: vol-12345678
+        capacity_reservation_specification:
+            description: Information about the Capacity Reservation targeting option.
+            type: complex
+            contains:
+                capacity_reservation_preference:
+                    description: Describes the instance’s Capacity Reservation preferences.
+                    type: str
+                    sample: open
         cpu_options:
             description: The CPU options set for the instance.
             returned: always
@@ -181,11 +189,38 @@ instances:
             returned: always
             type: str
             sample: mytoken
+        current_instance_boot_mode:
+            description: The boot mode that is used to boot the instance at launch or start.
+            type: str
+            sample: legacy-bios
         ebs_optimized:
             description: Indicates whether the instance is optimized for EBS I/O.
             returned: always
             type: bool
             sample: false
+        ena_support:
+            description: Specifies whether enhanced networking with ENA is enabled.
+            returned: always
+            type: bool
+            sample: true
+        enclave_options:
+            description: Indicates whether the instance is enabled for Amazon Web Services Nitro Enclaves.
+            type: dict
+            contains:
+                enabled:
+                    description: If this parameter is set to true, the instance is enabled for Amazon Web Services Nitro Enclaves.
+                    returned: always
+                    type: bool
+                    sample: false
+        hibernation_options:
+            description: Indicates whether the instance is enabled for hibernation.
+            type: dict
+            contains:
+                configured:
+                    description: If true, your instance is enabled for hibernation; otherwise, it is not enabled for hibernation.
+                    returned: always
+                    type: bool
+                    sample: false
         hypervisor:
             description: The hypervisor type of the instance.
             returned: always
@@ -193,7 +228,6 @@ instances:
             sample: xen
         iam_instance_profile:
             description: The IAM instance profile associated with the instance, if applicable.
-            returned: always
             type: complex
             contains:
                 arn:
@@ -231,6 +265,44 @@ instances:
             returned: always
             type: str
             sample: "2017-03-23T22:51:24+00:00"
+        maintenance_options:
+            description: Provides information on the recovery and maintenance options of your instance.
+            returned: always
+            type: dict
+            contains:
+                auto_recovery:
+                    description: Provides information on the current automatic recovery behavior of your instance.
+                    type: str
+                    sample: default
+        metadata_options:
+            description: The metadata options for the instance.
+            returned: always
+            type: complex
+            contains:
+                http_endpoint:
+                    description: Indicates whether the HTTP metadata endpoint on your instances is enabled or disabled.
+                    type: str
+                    sample: enabled
+                http_protocol_ipv6:
+                    description: Indicates whether the IPv6 endpoint for the instance metadata service is enabled or disabled.
+                    type: str
+                    sample: disabled
+                http_put_response_hop_limit:
+                    description: The maximum number of hops that the metadata token can travel.
+                    type: int
+                    sample: 1
+                http_tokens:
+                    description: Indicates whether IMDSv2 is required.
+                    type: str
+                    sample: optional
+                instance_metadata_tags:
+                    description: Indicates whether access to instance tags from the instance metadata is enabled or disabled.
+                    type: str
+                    sample: disabled
+                state:
+                    description: The state of the metadata option changes.
+                    type: str
+                    sample: applied
         monitoring:
             description: The monitoring for the instance.
             returned: always
@@ -291,6 +363,11 @@ instances:
                             returned: always
                             type: int
                             sample: 0
+                        network_card_index:
+                            description: The index of the network card.
+                            returned: always
+                            type: int
+                            sample: 0
                         status:
                             description: The attachment state.
                             returned: always
@@ -317,6 +394,11 @@ instances:
                             returned: always
                             type: str
                             sample: mygroup
+                interface_type:
+                    description: The type of network interface.
+                    returned: always
+                    type: str
+                    sample: interface
                 ipv6_addresses:
                     description: One or more IPv6 addresses associated with the network interface.
                     returned: always
@@ -343,6 +425,11 @@ instances:
                     returned: always
                     type: str
                     sample: 01234567890
+                private_dns_name:
+                    description: The private DNS hostname name assigned to the instance.
+                    type: str
+                    returned: always
+                    sample: ip-10-1-0-156.ec2.internal
                 private_ip_address:
                     description: The IPv4 address of the network interface within the subnet.
                     returned: always
@@ -356,7 +443,6 @@ instances:
                     contains:
                         association:
                             description: The association information for an Elastic IP address (IPv4) associated with the network interface.
-                            returned: always
                             type: complex
                             contains:
                                 ip_owner_id:
@@ -379,6 +465,11 @@ instances:
                             returned: always
                             type: bool
                             sample: true
+                        private_dns_name:
+                            description: The private DNS hostname name assigned to the instance.
+                            type: str
+                            returned: always
+                            sample: ip-10-1-0-156.ec2.internal
                         private_ip_address:
                             description: The private IPv4 address of the network interface.
                             returned: always
@@ -424,11 +515,32 @@ instances:
                     returned: always
                     type: str
                     sample: default
+        platform_details:
+            description: The platform details value for the instance.
+            returned: always
+            type: str
+            sample: Linux/UNIX
         private_dns_name:
             description: The private DNS name.
             returned: always
             type: str
             sample: ip-10-0-0-1.ap-southeast-2.compute.internal
+        private_dns_name_options:
+            description: The options for the instance hostname.
+            type: dict
+            contains:
+                enable_resource_name_dns_a_record:
+                    description: Indicates whether to respond to DNS queries for instance hostnames with DNS A records.
+                    type: bool
+                    sample: false
+                enable_resource_name_dns_aaaa_record:
+                    description: Indicates whether to respond to DNS queries for instance hostnames with DNS AAAA records.
+                    type: bool
+                    sample: false
+                hostname_type:
+                    description: The type of hostname to assign to an instance.
+                    type: string
+                    sample: ip-name
         private_ip_address:
             description: The IPv4 address of the network interface within the subnet.
             returned: always

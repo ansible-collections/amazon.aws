@@ -413,8 +413,8 @@ EXAMPLES = r"""
 """
 
 RETURN = r"""
-group_name:
-  description: Security group name
+description:
+  description: Description of security group
   sample: My Security Group
   type: str
   returned: on create/update
@@ -423,10 +423,131 @@ group_id:
   sample: sg-abcd1234
   type: str
   returned: on create/update
-description:
-  description: Description of security group
+group_name:
+  description: Security group name
   sample: My Security Group
   type: str
+  returned: on create/update
+ip_permissions:
+    description: The inbound rules associated with the security group.
+    returned: always
+    type: list
+    elements: dict
+    contains:
+        from_port:
+            description: If the protocol is TCP or UDP, this is the start of the port range. If the protocol is ICMP or ICMPv6, this is the ICMP type or -1 (all ICMP types).
+            type: int
+            sample: 80
+        ip_protocol:
+            description: The IP protocol name or number.
+            returned: always
+            type: str
+        ip_ranges:
+            description: The IPv4 ranges.
+            returned: always
+            type: list
+            elements: dict
+            contains:
+                cidr_ip:
+                    description: The IPv4 CIDR range.
+                    returned: always
+                    type: str
+        ipv6_ranges:
+            description: The IPv6 ranges.
+            returned: always
+            type: list
+            elements: dict
+            contains:
+                cidr_ipv6:
+                    description: The IPv6 CIDR range.
+                    returned: always
+                    type: str
+        prefix_list_ids:
+            description: The prefix list IDs.
+            returned: always
+            type: list
+            elements: dict
+            contains:
+                prefix_list_id:
+                    description: The ID of the prefix.
+                    returned: always
+                    type: str
+        to_group:
+            description: If the protocol is TCP or UDP, this is the end of the port range. If the protocol is ICMP or ICMPv6, this is the ICMP code or -1 (all ICMP codes). If the start port is -1 (all ICMP types), then the end port must be -1 (all ICMP codes).
+            type: int
+            sample: 80
+        user_id_group_pairs:
+            description: The security group and AWS account ID pairs.
+            returned: always
+            type: list
+            elements: dict
+            contains:
+                group_id:
+                    description: The security group ID of the pair.
+                    returned: always
+                    type: str
+                user_id:
+                    description: The user ID of the pair.
+                    returned: always
+                    type: str
+ip_permissions_egress:
+    description: The outbound rules associated with the security group.
+    returned: always
+    type: list
+    elements: dict
+    contains:
+        ip_protocol:
+            description: The IP protocol name or number.
+            returned: always
+            type: str
+        ip_ranges:
+            description: The IPv4 ranges.
+            returned: always
+            type: list
+            elements: dict
+            contains:
+                cidr_ip:
+                    description: The IPv4 CIDR range.
+                    returned: always
+                    type: str
+        ipv6_ranges:
+            description: The IPv6 ranges.
+            returned: always
+            type: list
+            elements: dict
+            contains:
+                cidr_ipv6:
+                    description: The IPv6 CIDR range.
+                    returned: always
+                    type: str
+        prefix_list_ids:
+            description: The prefix list IDs.
+            returned: always
+            type: list
+            elements: dict
+            contains:
+                prefix_list_id:
+                    description: The ID of the prefix.
+                    returned: always
+                    type: str
+        user_id_group_pairs:
+            description: The security group and AWS account ID pairs.
+            returned: always
+            type: list
+            elements: dict
+            contains:
+                group_id:
+                    description: The security group ID of the pair.
+                    returned: always
+                    type: str
+                user_id:
+                    description: The user ID of the pair.
+                    returned: always
+                    type: str
+owner_id:
+  description: AWS Account ID of the security group
+  sample: 123456789012
+  type: int
   returned: on create/update
 tags:
   description: Tags associated with the security group
@@ -439,35 +560,6 @@ vpc_id:
   description: ID of VPC to which the security group belongs
   sample: vpc-abcd1234
   type: str
-  returned: on create/update
-ip_permissions:
-  description: Inbound rules associated with the security group.
-  sample:
-    - from_port: 8182
-      ip_protocol: tcp
-      ip_ranges:
-        - cidr_ip: "198.51.100.1/32"
-      ipv6_ranges: []
-      prefix_list_ids: []
-      to_port: 8182
-      user_id_group_pairs: []
-  type: list
-  returned: on create/update
-ip_permissions_egress:
-  description: Outbound rules associated with the security group.
-  sample:
-    - ip_protocol: -1
-      ip_ranges:
-        - cidr_ip: "0.0.0.0/0"
-          ipv6_ranges: []
-          prefix_list_ids: []
-          user_id_group_pairs: []
-  type: list
-  returned: on create/update
-owner_id:
-  description: AWS Account ID of the security group
-  sample: 123456789012
-  type: int
   returned: on create/update
 """
 
