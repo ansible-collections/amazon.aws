@@ -131,7 +131,6 @@ addresses:
       sample: {
             "Name": "test-vm-54.81.104.1"
         }
-    }]
 """
 
 try:
