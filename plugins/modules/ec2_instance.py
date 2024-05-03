@@ -833,7 +833,7 @@ instances:
             description: One or more network interfaces for the instance.
             returned: always
             type: list
-            elements: complex
+            elements: dict
             contains:
                 association:
                     description: The association information for an Elastic IPv4 associated with the network interface.
@@ -1081,7 +1081,7 @@ instances:
                     sample: false
                 hostname_type:
                     description: The type of hostname to assign to an instance.
-                    type: string
+                    type: str
                     sample: ip-name
         private_ip_address:
             description: The IPv4 address of the network interface within the subnet.

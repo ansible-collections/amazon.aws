@@ -114,7 +114,7 @@ addresses:
       description: The ID of the network interface.
       returned: if any instance is associated
       type: str
-      sample: "0123456789",
+      sample: "0123456789"
     "private_ip_address":
       description: The private IP address associated with the Elastic IP address.
       returned: always

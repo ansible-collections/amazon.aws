@@ -437,7 +437,7 @@ state_reason:
     sample: {
                 'Code': 'string',
                 'Message': 'string'
-            },
+            }
 tags:
     description: A dictionary of tags assigned to image.
     returned: when AMI is created or already exists
