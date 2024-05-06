@@ -209,7 +209,6 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 </div></td>
 <td><div class="ansible-option-cell"><p>The amount of storage in gibibytes (GiB) to allocate to each DB instance in the Multi-AZ DB cluster.</p>
 <p>This setting is required to create a Multi-AZ DB cluster.</p>
-<p><em>allocated_storage</em> require botocore &gt;= 1.23.44.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -334,7 +333,6 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <p>Not all DB instance classes are available in all Amazon Web Services Regions, or for all database engines.</p>
 <p>For the full list of DB instance classes and availability for your engine visit <a class="reference external" href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html">https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html</a>.</p>
 <p>This setting is required to create a Multi-AZ DB cluster.</p>
-<p><em>db_cluster_instance_class</em> require botocore &gt;= 1.23.44.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -543,7 +541,6 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <td><div class="ansible-option-cell"><p>The amount of Provisioned IOPS (input/output operations per second) to be initially allocated for each DB instance in the Multi-AZ DB cluster.</p>
 <p>This setting is required to create a Multi-AZ DB cluster</p>
 <p>Must be a multiple between .5 and 50 of the storage amount for the DB cluster.</p>
-<p><em>iops</em> require botocore &gt;= 1.23.44.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -920,7 +917,6 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <td><div class="ansible-option-cell"><p>Specifies the storage type to be associated with the DB cluster.</p>
 <p>This setting is required to create a Multi-AZ DB cluster.</p>
 <p>When specified, a value for the <em>iops</em> parameter is required.</p>
-<p><em>storage_type</em> require botocore &gt;= 1.23.44.</p>
 <p>Defaults to <code class="docutils literal notranslate"><span class="pre">io1</span></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
