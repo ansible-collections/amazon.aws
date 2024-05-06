@@ -4,6 +4,42 @@ amazon.aws Release Notes
 
 .. contents:: Topics
 
+v7.6.0
+======
+
+Release Summary
+---------------
+
+This release brings several bugfixes, minor changes and some new rds modules (``rds_cluster_param_group``, ``rds_cluster_param_group_info`` and ``rds_engine_versions_info``). It also introduces a deprecation for the ``cloudformation`` module.
+
+Minor Changes
+-------------
+
+- ec2_instance - add support for ``host`` option in placement.tenancy (https://github.com/ansible-collections/amazon.aws/pull/2026).
+- ec2_vol - Ensure volume state is not one of ``deleted`` or ``deleting`` when trying to delete volume, to guaranty idempotency (https://github.com/ansible-collections/amazon.aws/pull/2052).
+
+Deprecated Features
+-------------------
+
+- cloudformation - the ``template`` parameter has been deprecated and will be removed in a release after 2026-05-01.  The ``template_body`` parameter can be used in conjungtion with the lookup plugin (https://github.com/ansible-collections/amazon.aws/pull/2048).
+- module_utils.botocore - the ``boto3`` parameter for ``get_aws_connection_info()`` will be removed in a release after 2025-05-01. The ``boto3`` parameter has been ignored since release 4.0.0 (https://github.com/ansible-collections/amazon.aws/pull/2047).
+- module_utils.botocore - the ``boto3`` parameter for ``get_aws_region()`` will be removed in a release after 2025-05-01. The ``boto3`` parameter has been ignored since release 4.0.0 (https://github.com/ansible-collections/amazon.aws/pull/2047).
+- module_utils.ec2 - the ``boto3`` parameter for ``get_ec2_security_group_ids_from_names()`` will be removed in a release after 2025-05-01. The ``boto3`` parameter has been ignored since release 4.0.0 (https://github.com/ansible-collections/amazon.aws/pull/2047).
+
+Bugfixes
+--------
+
+- iam_managed_policy - fixes bug that causes ``ParamValidationError`` when attempting to delete a policy that's attached to a role or a user (https://github.com/ansible-collections/amazon.aws/issues/2067).
+- iam_role_info - fixes bug in handling paths missing the ``/`` prefix and/or suffix (https://github.com/ansible-collections/amazon.aws/issues/2065).
+- s3_object - fix idempotency issue when copying object uploaded using multipart upload (https://github.com/ansible-collections/amazon.aws/issues/2016).
+
+New Modules
+-----------
+
+- rds_cluster_param_group - Manage RDS cluster parameter groups
+- rds_cluster_param_group_info - Describes the properties of specific RDS cluster parameter group.
+- rds_engine_versions_info - Describes the properties of specific versions of DB engines.
+
 v7.5.0
 ======
 
