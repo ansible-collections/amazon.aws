@@ -69,13 +69,13 @@ options:
       batch_size:
         description:
           - The largest number of records that AWS Lambda will retrieve from your event source at the time of invoking your function.
-          - Amazon Kinesis - Default C(100). Max C(10000).
-          - Amazon DynamoDB Streams - Default C(100). Max C(10000).
-          - Amazon Simple Queue Service - Default C(10). For standard queues the max is C(10000). For FIFO queues the max is C(10).
-          - Amazon Managed Streaming for Apache Kafka - Default C(100). Max C(10000).
-          - Self-managed Apache Kafka - Default C(100). Max C(10000).
-          - Amazon MQ (ActiveMQ and RabbitMQ) - Default C(100). Max C(10000).
-          - DocumentDB - Default C(100). Max C(10000).
+          - Amazon Kinesis - Default V(100). Max V(10000).
+          - Amazon DynamoDB Streams - Default V(100). Max V(10000).
+          - Amazon Simple Queue Service - Default V(10). For standard queues the max is V(10000). For FIFO queues the max is V(10).
+          - Amazon Managed Streaming for Apache Kafka - Default V(100). Max V(10000).
+          - Self-managed Apache Kafka - Default C(100). Max V(10000).
+          - Amazon MQ (ActiveMQ and RabbitMQ) - Default V(100). Max V(10000).
+          - DocumentDB - Default V(100). Max V(10000).
         type: int
       starting_position:
         description:
@@ -93,10 +93,10 @@ options:
       maximum_batching_window_in_seconds:
         description:
           - The maximum amount of time, in seconds, that Lambda spends gathering records before invoking the function.
-          - You can configure I(maximum_batching_window_in_seconds) to any value from C(0) seconds to C(300) seconds in increments of seconds.
-          - For streams and Amazon SQS event sources, when I(batch_size) is set to a value greater than C(10), I(maximum_batching_window_in_seconds)
-            defaults to C(1).
-          - I(maximum_batching_window_in_seconds) is not supported by FIFO queues.
+          - You can configure O(source_params.maximum_batching_window_in_seconds) to any value from V(0) seconds to V(300) seconds in increments of seconds.
+          - For streams and Amazon SQS event sources, when O(source_params.batch_size) is set to a value greater than V(10),
+            O(source_params.maximum_batching_window_in_seconds) defaults to V(1).
+          - O(source_params.maximum_batching_window_in_seconds) is not supported by FIFO queues.
         type: int
         version_added: 8.0.0
     required: true
@@ -151,6 +151,7 @@ lambda_stream_events:
 """
 
 import re
+import copy
 
 try:
     from botocore.exceptions import BotoCoreError
@@ -243,6 +244,37 @@ def get_qualifier(module):
 # ---------------------------------------------------------------------------------------------------
 
 
+def set_default_values(module, source_params):
+    _source_params_cpy = copy.deepcopy(source_params)
+
+    if module.params["event_source"].lower() == "sqs":
+        # Default 10. For standard queues the max is 10,000. For FIFO queues the max is 10.
+        _source_params_cpy.setdefault("batch_size", 10)
+
+        if source_params["source_arn"].endswith(".fifo"):
+            if source_params["batch_size"] > 10:
+                module.fail_json(msg="For FIFO queues the maximum batch_size is 10.")
+            if source_params.get("maximum_batching_window_in_seconds"):
+                module.fail_json(
+                    msg="maximum_batching_window_in_seconds is not supported by Amazon SQS FIFO event sources."
+                )
+        else:
+            if not (100 <= source_params["batch_size"] <= 10000):
+                module.fail_json(msg="For standard queue batch_size must be between 100 and 10000.")
+
+    elif module.params["event_source"].lower() == "stream":
+        # Default 100.
+        _source_params_cpy.setdefault("batch_size", 100)
+
+        if not (100 <= _source_params_cpy["batch_size"] <= 10000):
+            module.fail_json(msg="batch_size for streams must be between 100 and 10000")
+
+    if _source_params_cpy["batch_size"] > 10 and not _source_params_cpy.get("maximum_batching_window_in_seconds"):
+        _source_params_cpy["maximum_batching_window_in_seconds"] = 1
+
+    return _source_params_cpy
+
+
 def lambda_event_stream(module, client):
     """
     Adds, updates or deletes lambda stream (DynamoDb, Kinesis) event notifications.
@@ -268,30 +300,7 @@ def lambda_event_stream(module, client):
         module.fail_json(msg="Source parameter 'source_arn' is required for stream event notification.")
 
     if state == "present":
-        if module.params["event_source"].lower() == "sqs":
-            # Default 10. For standard queues the max is 10,000. For FIFO queues the max is 10.
-            source_params.setdefault("batch_size", 10)
-
-            if source_params["source_arn"].endswith(".fifo"):
-                if source_params["batch_size"] > 10:
-                    module.fail_json(msg="For FIFO queues the maximum batch_size is 10.")
-                if source_params.get("maximum_batching_window_in_seconds"):
-                    module.fail_json(
-                        msg="maximum_batching_window_in_seconds is not supported by Amazon SQS FIFO event sources."
-                    )
-            else:
-                if not (100 <= source_params["batch_size"] <= 10000):
-                    module.fail_json(msg="For standard queue batch_size must be between 100 and 10000.")
-
-        elif module.params["event_source"].lower() == "stream":
-            # Default 100.
-            source_params.setdefault("batch_size", 100)
-
-            if not (100 <= source_params["batch_size"] <= 10000):
-                module.fail_json(msg="batch_size for streams must be between 100 and 10000")
-
-        if source_params["batch_size"] > 10 and not source_params.get("maximum_batching_window_in_seconds"):
-            source_params["maximum_batching_window_in_seconds"] = 1
+        source_params = set_default_values(module, source_params)
 
     # optional boolean value needs special treatment as not present does not imply False
     source_param_enabled = module.boolean(source_params.get("enabled", "True"))

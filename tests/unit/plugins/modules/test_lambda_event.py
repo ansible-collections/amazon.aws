@@ -7,12 +7,14 @@
 from copy import deepcopy
 from unittest.mock import MagicMock
 from unittest.mock import patch
+from contextlib import nullcontext as does_not_raise
 
 import pytest
 
 from ansible_collections.amazon.aws.plugins.modules.lambda_event import get_qualifier
 from ansible_collections.amazon.aws.plugins.modules.lambda_event import lambda_event_stream
 from ansible_collections.amazon.aws.plugins.modules.lambda_event import validate_params
+from ansible_collections.amazon.aws.plugins.modules.lambda_event import set_default_values
 
 mock_get_qualifier = "ansible_collections.amazon.aws.plugins.modules.lambda_event.get_qualifier"
 mock_camel_dict_to_snake_dict = "ansible_collections.amazon.aws.plugins.modules.lambda_event.camel_dict_to_snake_dict"
@@ -382,3 +384,143 @@ def test_lambda_event_stream_update_event(
         api_params.update({"FunctionName": function_name, "UUID": existing_event_source[0]["UUID"]})
         assert dict(changed=True, events=event_source_updated) == result
         client.update_event_source_mapping.assert_called_once_with(**api_params)
+
+
+@pytest.mark.parametrize(
+    "params, expected, exception, message, source_type",
+    [
+        (
+            {
+                "source_arn": "arn:aws:sqs:us-east-1:123456789012:ansible-test-28277052.fifo",
+                "enabled": True,
+                "batch_size": 100,
+                "starting_position": None,
+                "function_response_types": None,
+                "maximum_batching_window_in_seconds": None,
+            },
+            None,
+            pytest.raises(SystemExit),
+            "For FIFO queues the maximum batch_size is 10.",
+            "sqs",
+        ),
+        (
+            {
+                "source_arn": "arn:aws:sqs:us-east-1:123456789012:ansible-test-28277052.fifo",
+                "enabled": True,
+                "batch_size": 10,
+                "starting_position": None,
+                "function_response_types": None,
+                "maximum_batching_window_in_seconds": 1,
+            },
+            None,
+            pytest.raises(SystemExit),
+            "maximum_batching_window_in_seconds is not supported by Amazon SQS FIFO event sources.",
+            "sqs",
+        ),
+        (
+            {
+                "source_arn": "arn:aws:sqs:us-east-1:123456789012:ansible-test-28277052.fifo",
+                "enabled": True,
+                "batch_size": 10,
+                "starting_position": None,
+                "function_response_types": None,
+                "maximum_batching_window_in_seconds": None,
+            },
+            {
+                "source_arn": "arn:aws:sqs:us-east-1:123456789012:ansible-test-28277052.fifo",
+                "enabled": True,
+                "batch_size": 10,
+                "starting_position": None,
+                "function_response_types": None,
+                "maximum_batching_window_in_seconds": None,
+            },
+            does_not_raise(),
+            None,
+            "sqs",
+        ),
+        (
+            {
+                "source_arn": "arn:aws:sqs:us-east-1:123456789012:ansible-test-28277052",
+                "enabled": True,
+                "batch_size": 10,
+                "starting_position": None,
+                "function_response_types": None,
+                "maximum_batching_window_in_seconds": None,
+            },
+            None,
+            pytest.raises(SystemExit),
+            "For standard queue batch_size must be between 100 and 10000.",
+            "sqs",
+        ),
+        (
+            {
+                "source_arn": "arn:aws:sqs:us-east-1:123456789012:ansible-test-28277052",
+                "enabled": True,
+                "batch_size": 100,
+                "starting_position": None,
+                "function_response_types": None,
+                "maximum_batching_window_in_seconds": None,
+            },
+            {
+                "source_arn": "arn:aws:sqs:us-east-1:123456789012:ansible-test-28277052",
+                "enabled": True,
+                "batch_size": 100,
+                "starting_position": None,
+                "function_response_types": None,
+                "maximum_batching_window_in_seconds": 1,
+            },
+            does_not_raise(),
+            None,
+            "sqs",
+        ),
+        (
+            {
+                "source_arn": "arn:aws:sqs:us-east-1:123456789012:ansible-test-28277052",
+                "enabled": True,
+                "starting_position": None,
+                "function_response_types": None,
+                "maximum_batching_window_in_seconds": None,
+            },
+            {
+                "source_arn": "arn:aws:sqs:us-east-1:123456789012:ansible-test-28277052",
+                "enabled": True,
+                "batch_size": 100,
+                "starting_position": None,
+                "function_response_types": None,
+                "maximum_batching_window_in_seconds": 1,
+            },
+            does_not_raise(),
+            None,
+            "stream",
+        ),
+        (
+            {
+                "source_arn": "arn:aws:sqs:us-east-1:123456789012:ansible-test-28277052",
+                "enabled": True,
+                "batch_size": 10,
+                "starting_position": None,
+                "function_response_types": None,
+                "maximum_batching_window_in_seconds": None,
+            },
+            None,
+            pytest.raises(SystemExit),
+            "batch_size for streams must be between 100 and 10000",
+            "stream",
+        ),
+    ],
+)
+def test__set_default_values(params, expected, exception, message, source_type):
+    result = None
+    module = MagicMock()
+    module.check_mode = False
+    module.params = {
+        "event_source": source_type,
+        "source_params": params,
+    }
+    module.fail_json = MagicMock()
+    module.fail_json.side_effect = SystemExit(message)
+    with exception as e:
+        result = set_default_values(module, params)
+    assert message is None or message in str(e)
+    if expected is not None:
+        assert result == expected

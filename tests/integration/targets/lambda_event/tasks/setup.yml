@@ -41,7 +41,6 @@
       - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
       - arn:aws:iam::aws:policy/AWSLambdaInvocation-DynamoDB
       - arn:aws:iam::aws:policy/service-role/AWSLambdaDynamoDBExecutionRole
-      - arn:aws:iam::aws:policy/service-role/AWSLambdaSQSQueueExecutionRole
   register: iam_role
 - name: wait 10 seconds for role to become available
   ansible.builtin.pause:
@@ -78,22 +77,3 @@
 - name: Get lambda function ARN
   ansible.builtin.set_fact:
     lambda_function_arn: "{{ result.configuration.function_arn }}"
-
-- name: Create a FIFO SQS queue
-  community.aws.sqs_queue:
-    name: "{{ sqs_queue_name }}"
-    queue_type: "fifo"
-  register: queue
-
-- name: Set FIFO SQS ARN
-  ansible.builtin.set_fact:
-    sqs_arn_fifo: "{{ queue.queue_arn }}"
-
-- name: Create a standard SQS queue
-  community.aws.sqs_queue:
-    name: "{{ sqs_queue_name_standard }}"
-  register: queue
-
-- name: Set standard SQS ARN
-  ansible.builtin.set_fact:
-    sqs_arn_standard: "{{ queue.queue_arn }}"

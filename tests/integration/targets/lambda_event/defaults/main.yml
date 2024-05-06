@@ -4,8 +4,6 @@
 # we hash the resource_prefix to get a shorter, unique string
 lambda_function_name: test-lambda-{{ tiny_prefix }}
 lambda_role_name: ansible-test-{{ tiny_prefix }}-lambda
-sqs_queue_name: "{{ resource_prefix }}{{ 1000 | random }}"
-sqs_queue_name_standard: "{{ resource_prefix }}{{ 1000 | random }}-standard"
 
 dynamodb_table_name: ansible-test-{{ tiny_prefix }}
 

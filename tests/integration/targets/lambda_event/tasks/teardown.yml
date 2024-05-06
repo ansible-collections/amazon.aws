@@ -25,18 +25,6 @@
     name: "{{ dynamodb_table_name }}"
     state: absent
 
-- name: Delete SQS queue
-  community.aws.sqs_queue:
-    name: "{{ sqs_queue_name }}"
-    state: absent
-  ignore_errors: true
-
-- name: Delete SQS queue
-  community.aws.sqs_queue:
-    name: "{{ sqs_queue_name_standard }}"
-    state: absent
-  ignore_errors: true
-
 - name: Delete the role
   amazon.aws.iam_role:
     name: "{{ lambda_role_name }}"
