@@ -95,7 +95,7 @@ functions:
             elements: str
         architectures:
             description: The architectures supported by the function.
-            returned: successful run where botocore >= 1.21.51
+            returned: success
             type: list
             elements: str
             sample: ['arm64']
