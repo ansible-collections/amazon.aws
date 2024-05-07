@@ -150,8 +150,8 @@ lambda_stream_events:
     type: list
 """
 
-import re
 import copy
+import re
 
 try:
     from botocore.exceptions import BotoCoreError

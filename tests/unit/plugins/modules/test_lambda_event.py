@@ -4,17 +4,17 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+from contextlib import nullcontext as does_not_raise
 from copy import deepcopy
 from unittest.mock import MagicMock
 from unittest.mock import patch
-from contextlib import nullcontext as does_not_raise
 
 import pytest
 
 from ansible_collections.amazon.aws.plugins.modules.lambda_event import get_qualifier
 from ansible_collections.amazon.aws.plugins.modules.lambda_event import lambda_event_stream
-from ansible_collections.amazon.aws.plugins.modules.lambda_event import validate_params
 from ansible_collections.amazon.aws.plugins.modules.lambda_event import set_default_values
+from ansible_collections.amazon.aws.plugins.modules.lambda_event import validate_params
 
 mock_get_qualifier = "ansible_collections.amazon.aws.plugins.modules.lambda_event.get_qualifier"
 mock_camel_dict_to_snake_dict = "ansible_collections.amazon.aws.plugins.modules.lambda_event.camel_dict_to_snake_dict"
