@@ -399,11 +399,100 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-
 <tbody>
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-addresses"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eip-info-module-return-addresses"><strong>addresses</strong></p>
-<a class="ansibleOptionLink" href="#return-addresses" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+<a class="ansibleOptionLink" href="#return-addresses" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Properties of all Elastic IP addresses matching the provided filters. Each element is a dict with all the information related to an EIP.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> on success</p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[{&quot;allocation_id&quot;:</span> <span class="pre">&quot;eipalloc-64de1b01&quot;,</span> <span class="pre">&quot;association_id&quot;:</span> <span class="pre">&quot;eipassoc-0fe9ce90d6e983e97&quot;,</span> <span class="pre">&quot;domain&quot;:</span> <span class="pre">&quot;vpc&quot;,</span> <span class="pre">&quot;instance_id&quot;:</span> <span class="pre">&quot;i-01020cfeb25b0c84f&quot;,</span> <span class="pre">&quot;network_interface_id&quot;:</span> <span class="pre">&quot;eni-02fdeadfd4beef9323b&quot;,</span> <span class="pre">&quot;network_interface_owner_id&quot;:</span> <span class="pre">&quot;0123456789&quot;,</span> <span class="pre">&quot;private_ip_address&quot;:</span> <span class="pre">&quot;10.0.0.1&quot;,</span> <span class="pre">&quot;public_ip&quot;:</span> <span class="pre">&quot;54.81.104.1&quot;,</span> <span class="pre">&quot;tags&quot;:</span> <span class="pre">{&quot;Name&quot;:</span> <span class="pre">&quot;test-vm-54.81.104.1&quot;}}]</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-addresses/allocation_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eip-info-module-return-addresses-allocation-id"><strong>allocation_id</strong></p>
+<a class="ansibleOptionLink" href="#return-addresses/allocation_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ID representing the allocation of the address.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;eipalloc-64de1b01&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-addresses/association_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eip-info-module-return-addresses-association-id"><strong>association_id</strong></p>
+<a class="ansibleOptionLink" href="#return-addresses/association_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ID representing the association of the address with an instance.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;eipassoc-0fe9ce90d6e983e97&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-addresses/domain"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eip-info-module-return-addresses-domain"><strong>domain</strong></p>
+<a class="ansibleOptionLink" href="#return-addresses/domain" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The network ( vpc).</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;vpc&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-addresses/instance_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eip-info-module-return-addresses-instance-id"><strong>instance_id</strong></p>
+<a class="ansibleOptionLink" href="#return-addresses/instance_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ID of the instance that the address is associated with (if any).</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> if any instance is associated</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;i-01020cfeb25b0c84f&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-addresses/network_border_group"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eip-info-module-return-addresses-network-border-group"><strong>network_border_group</strong></p>
+<a class="ansibleOptionLink" href="#return-addresses/network_border_group" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The name of the unique set of Availability Zones, Local Zones, or Wavelength Zones from which Amazon Web Services advertises IP addresses.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> if any instance is associated</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;us-east-1&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-addresses/network_interface_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eip-info-module-return-addresses-network-interface-id"><strong>network_interface_id</strong></p>
+<a class="ansibleOptionLink" href="#return-addresses/network_interface_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ID of the network interface.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> if any instance is associated</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;eni-02fdeadfd4beef9323b&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-addresses/network_interface_owner_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eip-info-module-return-addresses-network-interface-owner-id"><strong>network_interface_owner_id</strong></p>
+<a class="ansibleOptionLink" href="#return-addresses/network_interface_owner_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ID of the network interface.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> if any instance is associated</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;0123456789&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-addresses/private_ip_address"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eip-info-module-return-addresses-private-ip-address"><strong>private_ip_address</strong></p>
+<a class="ansibleOptionLink" href="#return-addresses/private_ip_address" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The private IP address associated with the Elastic IP address.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;10.0.0.1&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-addresses/public_ip"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eip-info-module-return-addresses-public-ip"><strong>public_ip</strong></p>
+<a class="ansibleOptionLink" href="#return-addresses/public_ip" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The Elastic IP address.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> if any instance is associated</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;54.81.104.1&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-addresses/tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eip-info-module-return-addresses-tags"><strong>tags</strong></p>
+<a class="ansibleOptionLink" href="#return-addresses/tags" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Any tags assigned to the Elastic IP address.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;Name&quot;:</span> <span class="pre">&quot;test-vm-54.81.104.1&quot;}</span></code></p>
 </div></td>
 </tr>
 </tbody>

@@ -630,6 +630,15 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-interface/attachment"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eni-module-return-interface-attachment"><strong>attachment</strong></p>
+<a class="ansibleOptionLink" href="#return-interface/attachment" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The network interface attachment.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;attach_time&quot;:</span> <span class="pre">&quot;2024-04-25T20:57:20+00:00&quot;,</span> <span class="pre">&quot;attachment_id&quot;:</span> <span class="pre">&quot;eni-attach-0ddce58b341a1846f&quot;,</span> <span class="pre">&quot;delete_on_termination&quot;:</span> <span class="pre">true,</span> <span class="pre">&quot;device_index&quot;:</span> <span class="pre">0,</span> <span class="pre">&quot;instance_id&quot;:</span> <span class="pre">&quot;i-032cb1cceb29250d2&quot;,</span> <span class="pre">&quot;status&quot;:</span> <span class="pre">&quot;attached&quot;}</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-interface/description"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eni-module-return-interface-description"><strong>description</strong></p>
 <a class="ansibleOptionLink" href="#return-interface/description" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -638,16 +647,16 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;Firewall</span> <span class="pre">network</span> <span class="pre">interface&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-interface/groups"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eni-module-return-interface-groups"><strong>groups</strong></p>
-<a class="ansibleOptionLink" href="#return-interface/groups" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
+<a class="ansibleOptionLink" href="#return-interface/groups" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>list of security groups</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>dict of security groups</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[{&quot;sg-f8a8a9da&quot;:</span> <span class="pre">&quot;default&quot;}]</span></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;sg-f8a8a9da&quot;:</span> <span class="pre">&quot;default&quot;}</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-interface/id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eni-module-return-interface-id"><strong>id</strong></p>
 <a class="ansibleOptionLink" href="#return-interface/id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -656,7 +665,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;eni-1d889198&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-interface/mac_address"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eni-module-return-interface-mac-address"><strong>mac_address</strong></p>
 <a class="ansibleOptionLink" href="#return-interface/mac_address" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -665,7 +674,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;00:00:5E:00:53:23&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-interface/name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eni-module-return-interface-name"><strong>name</strong></p>
 <a class="ansibleOptionLink" href="#return-interface/name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -674,7 +683,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;my-eni-20&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-interface/owner_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eni-module-return-interface-owner-id"><strong>owner_id</strong></p>
 <a class="ansibleOptionLink" href="#return-interface/owner_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -683,7 +692,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;812381371&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-interface/private_ip_address"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eni-module-return-interface-private-ip-address"><strong>private_ip_address</strong></p>
 <a class="ansibleOptionLink" href="#return-interface/private_ip_address" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -692,7 +701,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;10.20.30.40&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-interface/private_ip_addresses"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eni-module-return-interface-private-ip-addresses"><strong>private_ip_addresses</strong></p>
 <a class="ansibleOptionLink" href="#return-interface/private_ip_addresses" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
 </div></td>
@@ -701,7 +710,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[{&quot;primary_address&quot;:</span> <span class="pre">true,</span> <span class="pre">&quot;private_ip_address&quot;:</span> <span class="pre">&quot;10.20.30.40&quot;}]</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-interface/source_dest_check"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eni-module-return-interface-source-dest-check"><strong>source_dest_check</strong></p>
 <a class="ansibleOptionLink" href="#return-interface/source_dest_check" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -710,7 +719,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">true</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-interface/status"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eni-module-return-interface-status"><strong>status</strong></p>
 <a class="ansibleOptionLink" href="#return-interface/status" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -719,7 +728,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;pending&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-interface/subnet_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eni-module-return-interface-subnet-id"><strong>subnet_id</strong></p>
 <a class="ansibleOptionLink" href="#return-interface/subnet_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -728,7 +737,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;subnet-b0a0393c&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-interface/tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eni-module-return-interface-tags"><strong>tags</strong></p>
 <a class="ansibleOptionLink" href="#return-interface/tags" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
@@ -737,7 +746,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;Name&quot;:</span> <span class="pre">&quot;my-eni&quot;,</span> <span class="pre">&quot;group&quot;:</span> <span class="pre">&quot;Finance&quot;}</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-interface/vpc_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eni-module-return-interface-vpc-id"><strong>vpc_id</strong></p>
 <a class="ansibleOptionLink" href="#return-interface/vpc_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>

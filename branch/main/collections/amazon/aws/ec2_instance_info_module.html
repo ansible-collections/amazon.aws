@@ -538,6 +538,23 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-instances/capacity_reservation_specification"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-capacity-reservation-specification"><strong>capacity_reservation_specification</strong></p>
+<a class="ansibleOptionLink" href="#return-instances/capacity_reservation_specification" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Information about the Capacity Reservation targeting option.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-instances/capacity_reservation_specification/capacity_reservation_preference"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-capacity-reservation-specification-capacity-reservation-preference"><strong>capacity_reservation_preference</strong></p>
+<a class="ansibleOptionLink" href="#return-instances/capacity_reservation_specification/capacity_reservation_preference" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Describes the Capacity Reservation preferences.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;open&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-instances/client_token"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-client-token"><strong>client_token</strong></p>
 <a class="ansibleOptionLink" href="#return-instances/client_token" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -573,10 +590,62 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-instances/current_instance_boot_mode"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-current-instance-boot-mode"><strong>current_instance_boot_mode</strong></p>
+<a class="ansibleOptionLink" href="#return-instances/current_instance_boot_mode" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The boot mode that is used to boot the instance at launch or start.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;legacy-bios&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-instances/ebs_optimized"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-ebs-optimized"><strong>ebs_optimized</strong></p>
 <a class="ansibleOptionLink" href="#return-instances/ebs_optimized" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Indicates whether the instance is optimized for EBS I/O.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">false</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-instances/ena_support"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-ena-support"><strong>ena_support</strong></p>
+<a class="ansibleOptionLink" href="#return-instances/ena_support" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Specifies whether enhanced networking with ENA is enabled.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">true</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-instances/enclave_options"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-enclave-options"><strong>enclave_options</strong></p>
+<a class="ansibleOptionLink" href="#return-instances/enclave_options" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Indicates whether the instance is enabled for Amazon Web Services Nitro Enclaves.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-instances/enclave_options/enabled"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-enclave-options-enabled"><strong>enabled</strong></p>
+<a class="ansibleOptionLink" href="#return-instances/enclave_options/enabled" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>If this parameter is set to true, the instance is enabled for Amazon Web Services Nitro Enclaves.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">false</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-instances/hibernation_options"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-hibernation-options"><strong>hibernation_options</strong></p>
+<a class="ansibleOptionLink" href="#return-instances/hibernation_options" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Indicates whether the instance is enabled for hibernation.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-instances/hibernation_options/configured"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-hibernation-options-configured"><strong>configured</strong></p>
+<a class="ansibleOptionLink" href="#return-instances/hibernation_options/configured" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>If true, your instance is enabled for hibernation; otherwise, it is not enabled for hibernation.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">false</span></code></p>
 </div></td>
@@ -595,7 +664,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <a class="ansibleOptionLink" href="#return-instances/iam_instance_profile" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The IAM instance profile associated with the instance, if applicable.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -662,6 +731,85 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-instances/maintenance_options"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-maintenance-options"><strong>maintenance_options</strong></p>
+<a class="ansibleOptionLink" href="#return-instances/maintenance_options" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Provides information on the recovery and maintenance options of your instance.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-instances/maintenance_options/auto_recovery"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-maintenance-options-auto-recovery"><strong>auto_recovery</strong></p>
+<a class="ansibleOptionLink" href="#return-instances/maintenance_options/auto_recovery" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Provides information on the current automatic recovery behavior of your instance.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;default&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-instances/metadata_options"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-metadata-options"><strong>metadata_options</strong></p>
+<a class="ansibleOptionLink" href="#return-instances/metadata_options" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The metadata options for the instance.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-instances/metadata_options/http_endpoint"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-metadata-options-http-endpoint"><strong>http_endpoint</strong></p>
+<a class="ansibleOptionLink" href="#return-instances/metadata_options/http_endpoint" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Indicates whether the HTTP metadata endpoint on your instances is enabled or disabled.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;enabled&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-instances/metadata_options/http_protocol_ipv6"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-metadata-options-http-protocol-ipv6"><strong>http_protocol_ipv6</strong></p>
+<a class="ansibleOptionLink" href="#return-instances/metadata_options/http_protocol_ipv6" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Indicates whether the IPv6 endpoint for the instance metadata service is enabled or disabled.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;disabled&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-instances/metadata_options/http_put_response_hop_limit"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-metadata-options-http-put-response-hop-limit"><strong>http_put_response_hop_limit</strong></p>
+<a class="ansibleOptionLink" href="#return-instances/metadata_options/http_put_response_hop_limit" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The maximum number of hops that the metadata token can travel.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">1</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-instances/metadata_options/http_tokens"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-metadata-options-http-tokens"><strong>http_tokens</strong></p>
+<a class="ansibleOptionLink" href="#return-instances/metadata_options/http_tokens" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Indicates whether IMDSv2 is required.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;optional&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-instances/metadata_options/instance_metadata_tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-metadata-options-instance-metadata-tags"><strong>instance_metadata_tags</strong></p>
+<a class="ansibleOptionLink" href="#return-instances/metadata_options/instance_metadata_tags" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Indicates whether access to instance tags from the instance metadata is enabled or disabled.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;disabled&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-instances/metadata_options/state"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-metadata-options-state"><strong>state</strong></p>
+<a class="ansibleOptionLink" href="#return-instances/metadata_options/state" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The state of the metadata option changes.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;applied&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-instances/monitoring"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-monitoring"><strong>monitoring</strong></p>
 <a class="ansibleOptionLink" href="#return-instances/monitoring" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
 </div></td>
@@ -669,7 +817,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-instances/monitoring/state"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-monitoring-state"><strong>state</strong></p>
 <a class="ansibleOptionLink" href="#return-instances/monitoring/state" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -678,7 +826,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;disabled&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-instances/network_interfaces"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-network-interfaces"><strong>network_interfaces</strong></p>
 <a class="ansibleOptionLink" href="#return-instances/network_interfaces" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
 </div></td>
@@ -686,7 +834,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-instances/network_interfaces/association"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-network-interfaces-association"><strong>association</strong></p>
 <a class="ansibleOptionLink" href="#return-instances/network_interfaces/association" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
 </div></td>
@@ -694,7 +842,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-instances/network_interfaces/association/ip_owner_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-network-interfaces-association-ip-owner-id"><strong>ip_owner_id</strong></p>
 <a class="ansibleOptionLink" href="#return-instances/network_interfaces/association/ip_owner_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -703,7 +851,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;amazon&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-instances/network_interfaces/association/public_dns_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-network-interfaces-association-public-dns-name"><strong>public_dns_name</strong></p>
 <a class="ansibleOptionLink" href="#return-instances/network_interfaces/association/public_dns_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -712,7 +860,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-instances/network_interfaces/association/public_ip"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-network-interfaces-association-public-ip"><strong>public_ip</strong></p>
 <a class="ansibleOptionLink" href="#return-instances/network_interfaces/association/public_ip" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -721,7 +869,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;1.2.3.4&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-instances/network_interfaces/attachment"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-network-interfaces-attachment"><strong>attachment</strong></p>
 <a class="ansibleOptionLink" href="#return-instances/network_interfaces/attachment" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
 </div></td>
@@ -729,7 +877,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-instances/network_interfaces/attachment/attach_time"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-network-interfaces-attachment-attach-time"><strong>attach_time</strong></p>
 <a class="ansibleOptionLink" href="#return-instances/network_interfaces/attachment/attach_time" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -738,7 +886,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2017-03-23T22:51:24+00:00&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-instances/network_interfaces/attachment/attachment_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-network-interfaces-attachment-attachment-id"><strong>attachment_id</strong></p>
 <a class="ansibleOptionLink" href="#return-instances/network_interfaces/attachment/attachment_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -747,7 +895,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;eni-attach-3aff3f&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-instances/network_interfaces/attachment/delete_on_termination"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-network-interfaces-attachment-delete-on-termination"><strong>delete_on_termination</strong></p>
 <a class="ansibleOptionLink" href="#return-instances/network_interfaces/attachment/delete_on_termination" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -756,11 +904,20 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">true</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-instances/network_interfaces/attachment/device_index"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-network-interfaces-attachment-device-index"><strong>device_index</strong></p>
 <a class="ansibleOptionLink" href="#return-instances/network_interfaces/attachment/device_index" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The index of the device on the instance for the network interface attachment.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">0</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-instances/network_interfaces/attachment/network_card_index"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-network-interfaces-attachment-network-card-index"><strong>network_card_index</strong></p>
+<a class="ansibleOptionLink" href="#return-instances/network_interfaces/attachment/network_card_index" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The index of the network card.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">0</span></code></p>
 </div></td>
@@ -810,6 +967,15 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-instances/network_interfaces/interface_type"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-network-interfaces-interface-type"><strong>interface_type</strong></p>
+<a class="ansibleOptionLink" href="#return-instances/network_interfaces/interface_type" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The type of network interface.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;interface&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-instances/network_interfaces/ipv6_addresses"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-network-interfaces-ipv6-addresses"><strong>ipv6_addresses</strong></p>
 <a class="ansibleOptionLink" href="#return-instances/network_interfaces/ipv6_addresses" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
 </div></td>
@@ -817,7 +983,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-instances/network_interfaces/ipv6_addresses/ipv6_address"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-network-interfaces-ipv6-addresses-ipv6-address"><strong>ipv6_address</strong></p>
 <a class="ansibleOptionLink" href="#return-instances/network_interfaces/ipv6_addresses/ipv6_address" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -826,7 +992,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2001:0db8:85a3:0000:0000:8a2e:0370:7334&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-instances/network_interfaces/mac_address"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-network-interfaces-mac-address"><strong>mac_address</strong></p>
 <a class="ansibleOptionLink" href="#return-instances/network_interfaces/mac_address" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -835,7 +1001,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;00:11:22:33:44:55&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-instances/network_interfaces/network_interface_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-network-interfaces-network-interface-id"><strong>network_interface_id</strong></p>
 <a class="ansibleOptionLink" href="#return-instances/network_interfaces/network_interface_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -844,13 +1010,22 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;eni-01234567&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-instances/network_interfaces/owner_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-network-interfaces-owner-id"><strong>owner_id</strong></p>
 <a class="ansibleOptionLink" href="#return-instances/network_interfaces/owner_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The AWS account ID of the owner of the network interface.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;01234567890&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-instances/network_interfaces/private_dns_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-network-interfaces-private-dns-name"><strong>private_dns_name</strong></p>
+<a class="ansibleOptionLink" href="#return-instances/network_interfaces/private_dns_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The private DNS hostname name assigned to the instance.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;ip-10-1-0-156.ec2.internal&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -875,7 +1050,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <a class="ansibleOptionLink" href="#return-instances/network_interfaces/private_ip_addresses/association" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The association information for an Elastic IP address (IPv4) associated with the network interface.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -915,6 +1090,15 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-instances/network_interfaces/private_ip_addresses/private_dns_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-network-interfaces-private-ip-addresses-private-dns-name"><strong>private_dns_name</strong></p>
+<a class="ansibleOptionLink" href="#return-instances/network_interfaces/private_ip_addresses/private_dns_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The private DNS hostname name assigned to the instance.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;ip-10-1-0-156.ec2.internal&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-instances/network_interfaces/private_ip_addresses/private_ip_address"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-network-interfaces-private-ip-addresses-private-ip-address"><strong>private_ip_address</strong></p>
 <a class="ansibleOptionLink" href="#return-instances/network_interfaces/private_ip_addresses/private_ip_address" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -923,7 +1107,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;10.0.0.1&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-instances/network_interfaces/source_dest_check"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-network-interfaces-source-dest-check"><strong>source_dest_check</strong></p>
 <a class="ansibleOptionLink" href="#return-instances/network_interfaces/source_dest_check" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -932,7 +1116,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">true</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-instances/network_interfaces/status"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-network-interfaces-status"><strong>status</strong></p>
 <a class="ansibleOptionLink" href="#return-instances/network_interfaces/status" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -941,7 +1125,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;in-use&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-instances/network_interfaces/subnet_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-network-interfaces-subnet-id"><strong>subnet_id</strong></p>
 <a class="ansibleOptionLink" href="#return-instances/network_interfaces/subnet_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -950,7 +1134,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;subnet-0123456&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-instances/network_interfaces/vpc_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-network-interfaces-vpc-id"><strong>vpc_id</strong></p>
 <a class="ansibleOptionLink" href="#return-instances/network_interfaces/vpc_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -959,7 +1143,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;vpc-0123456&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-instances/placement"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-placement"><strong>placement</strong></p>
 <a class="ansibleOptionLink" href="#return-instances/placement" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
 </div></td>
@@ -967,7 +1151,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-instances/placement/availability_zone"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-placement-availability-zone"><strong>availability_zone</strong></p>
 <a class="ansibleOptionLink" href="#return-instances/placement/availability_zone" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -976,7 +1160,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;ap-southeast-2a&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-instances/placement/group_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-placement-group-name"><strong>group_name</strong></p>
 <a class="ansibleOptionLink" href="#return-instances/placement/group_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -985,13 +1169,22 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-instances/placement/tenancy"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-placement-tenancy"><strong>tenancy</strong></p>
 <a class="ansibleOptionLink" href="#return-instances/placement/tenancy" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The tenancy of the instance (if the instance is running in a VPC).</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;default&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-instances/platform_details"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-platform-details"><strong>platform_details</strong></p>
+<a class="ansibleOptionLink" href="#return-instances/platform_details" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The platform details value for the instance.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;Linux/UNIX&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -1001,6 +1194,41 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The private DNS name.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;ip-10-0-0-1.ap-southeast-2.compute.internal&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-instances/private_dns_name_options"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-private-dns-name-options"><strong>private_dns_name_options</strong></p>
+<a class="ansibleOptionLink" href="#return-instances/private_dns_name_options" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The options for the instance hostname.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-instances/private_dns_name_options/enable_resource_name_dns_a_record"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-private-dns-name-options-enable-resource-name-dns-a-record"><strong>enable_resource_name_dns_a_record</strong></p>
+<a class="ansibleOptionLink" href="#return-instances/private_dns_name_options/enable_resource_name_dns_a_record" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Indicates whether to respond to DNS queries for instance hostnames with DNS A records.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">false</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-instances/private_dns_name_options/enable_resource_name_dns_aaaa_record"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-private-dns-name-options-enable-resource-name-dns-aaaa-record"><strong>enable_resource_name_dns_aaaa_record</strong></p>
+<a class="ansibleOptionLink" href="#return-instances/private_dns_name_options/enable_resource_name_dns_aaaa_record" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Indicates whether to respond to DNS queries for instance hostnames with DNS AAAA records.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">false</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-instances/private_dns_name_options/hostname_type"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-info-module-return-instances-private-dns-name-options-hostname-type"><strong>hostname_type</strong></p>
+<a class="ansibleOptionLink" href="#return-instances/private_dns_name_options/hostname_type" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The type of hostname to assign to an instance.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;ip-name&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
