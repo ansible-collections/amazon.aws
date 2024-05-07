@@ -339,6 +339,11 @@ description:
     returned: when AMI is created or already exists
     type: str
     sample: "nat-server"
+enhanced_networking:
+    description: Specifies whether enhanced networking with ENA is enabled.
+    returned: when AMI is created or already exists
+    type: bool
+    sample: true
 hypervisor:
     description: Type of hypervisor.
     returned: when AMI is created or already exists
@@ -349,11 +354,26 @@ image_id:
     returned: when AMI is created or already exists
     type: str
     sample: "ami-1234abcd"
+image_owner_alias:
+    description: The owner alias ( amazon | aws-marketplace).
+    returned: when AMI is created or already exists
+    type: str
+    sample: "amazon"
+image_type:
+    description: Type of image.
+    returned: when AMI is created or already exists
+    type: str
+    sample: "machine"
 is_public:
     description: Whether image is public.
     returned: when AMI is created or already exists
     type: bool
     sample: false
+kernel_id:
+    description: The kernel associated with the image, if any. Only applicable for machine images.
+    returned: when AMI is created or already exists
+    type: str
+    sample: "aki-88aa75e1"
 launch_permission:
     description: Permissions allowing other accounts to access the AMI.
     returned: when AMI is created or already exists
@@ -379,6 +399,16 @@ platform:
     description: Platform of image.
     returned: when AMI is created or already exists
     type: str
+    sample: "Windows"
+product_codes:
+    description: Any product codes associated with the AMI.
+    returned: when AMI is created or already exists
+    type: list
+    sample: []
+ramdisk_id:
+    description: The RAM disk associated with the image, if any. Only applicable for machine images.
+    returned: when AMI is created or already exists
+    type: str
     sample: null
 root_device_name:
     description: Root device name of image.
@@ -390,11 +420,24 @@ root_device_type:
     returned: when AMI is created or already exists
     type: str
     sample: "ebs"
+sriov_net_support:
+    description: Specifies whether enhanced networking with the Intel 82599 Virtual Function interface is enabled.
+    returned: when AMI is created or already exists
+    type: str
+    sample: "simple"
 state:
     description: State of image.
     returned: when AMI is created or already exists
     type: str
     sample: "available"
+state_reason:
+    description: The reason for the state change.
+    returned: when AMI is created or already exists
+    type: dict
+    sample: {
+                'Code': 'string',
+                'Message': 'string'
+            }
 tags:
     description: A dictionary of tags assigned to image.
     returned: when AMI is created or already exists

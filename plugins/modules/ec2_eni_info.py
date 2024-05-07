@@ -73,6 +73,7 @@ network_interfaces:
         device_index: 1,
         instance_id: "i-15b8d3cadbafa1234",
         instance_owner_id: "123456789012",
+        "network_card_index": 0,
         status: "attached"
       }
     availability_zone:
@@ -147,7 +148,6 @@ network_interfaces:
       sample: []
     requester_id:
       description: The ID of the entity that launched the ENI.
-      returned: always
       type: str
       sample: "AIDA12345EXAMPLE54321"
     requester_managed:

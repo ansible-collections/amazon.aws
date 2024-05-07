@@ -112,7 +112,6 @@ images:
       sample: '2017-10-16T19:22:13.000Z'
     description:
       description: The description of the AMI.
-      returned: always
       type: str
       sample: ''
     ena_support:
@@ -163,6 +162,11 @@ images:
       returned: always
       type: str
       sample: '123456789012'
+    platform_details:
+      description: Platform of image.
+      returned: always
+      type: str
+      sample: "Windows"
     public:
       description: Whether the image has public launch permissions.
       returned: always
@@ -180,7 +184,6 @@ images:
       sample: ebs
     sriov_net_support:
       description: Whether enhanced networking is enabled.
-      returned: always
       type: str
       sample: simple
     state:
@@ -192,6 +195,11 @@ images:
       description: Any tags assigned to the image.
       returned: always
       type: dict
+    usage_operation:
+      description: The operation of the Amazon EC2 instance and the billing code that is associated with the AMI.
+      returned: always
+      type: str
+      sample: "RunInstances"
     virtualization_type:
       description: The type of virtualization of the AMI.
       returned: always
