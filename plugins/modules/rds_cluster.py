@@ -187,13 +187,15 @@ options:
         description:
           - Specifies the storage type to be associated with the DB cluster.
           - This setting is required to create a Multi-AZ DB cluster.
-          - When specified I(storage_type=io1), a value for the I(iops) parameter is required.
-          - When I(engine) is set to aurora/aurora-mysql/aurora-postgresql, not specifying I(storage_type) defaults it to aurora standard.
+          - For multi-AZ DB clusters, I(storage_type) defaults to C(io1) and a value for the I(iops) parameter is required.
+          - For Aurora DB clusters, I(storage_type) defaults to C(aurora) standard.
+          - For mysql and postgres DB clusters, I(storage_type) defaults to C(io1).
           - I(storage_type) require botocore >= 1.23.44.
-          - Defaults to C(io1).
+          - Support for aurora and aurora-iopt1 was added in release 7.6.0.
         type: str
         choices:
           - io1
+          - aurora
           - aurora-iopt1
         version_added: 5.5.0
     iops:
