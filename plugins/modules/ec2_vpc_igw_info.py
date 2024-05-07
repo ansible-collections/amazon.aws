@@ -113,7 +113,7 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleEC2Error
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_internet_gateways
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
@@ -148,10 +148,13 @@ def list_internet_gateways(connection, module: AnsibleAWSModule) -> List[Dict[st
 
     try:
         all_internet_gateways = describe_internet_gateways(connection, **params)
-        if not all_internet_gateways:
-            module.fail_json("InternetGateway not found")
-    except AnsibleEC2Error as e:
-        module.fail_json_aws_error(e)
+    except is_boto3_error_code("InvalidInternetGatewayID.NotFound"):
+        module.fail_json("InternetGateway not found")
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, "Unable to describe internet gateways")
 
     return [get_internet_gateway_info(igw, convert_tags) for igw in all_internet_gateways]
 

@@ -201,6 +201,8 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import create_vpc_e
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import delete_vpc_endpoints
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_vpc_endpoints
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
+from ansible_collections.amazon.aws.plugins.module_utils.exceptions import AnsibleAWSError
+from ansible_collections.amazon.aws.plugins.module_utils.exceptions import is_ansible_aws_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
 from ansible_collections.amazon.aws.plugins.module_utils.waiters import wait_for_resource_state
@@ -334,11 +336,11 @@ def create_aws_vpc_endpoint(client, module):
                 VpcEndpointIds=[result["VpcEndpointId"]],
             )
 
-    except AnsibleEC2Error as e:
-        if e.is_boto3_error_code("IdempotentParameterMismatch"):
-            module.fail_json(msg="IdempotentParameterMismatch - updates of endpoints are not allowed by the API")
-        if e.is_boto3_error_code("RouteAlreadyExists"):
-            module.fail_json(msg="RouteAlreadyExists for one of the route tables - update is not allowed by the API")
+    except is_ansible_aws_error_code("IdempotentParameterMismatch"):
+        module.fail_json(msg="IdempotentParameterMismatch - updates of endpoints are not allowed by the API")
+    except is_ansible_aws_error_code("RouteAlreadyExists"):  # pylint: disable=duplicate-except
+        module.fail_json(msg="RouteAlreadyExists for one of the route tables - update is not allowed by the API")
+    except AnsibleAWSError as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to create VPC Endpoint.")
 
     # describe and normalize iso datetime fields in result after adding tags

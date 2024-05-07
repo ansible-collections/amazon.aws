@@ -257,9 +257,9 @@ options:
     type: str
   tenancy:
     description:
-      - Type of tenancy to allow an instance to use. Default is shared tenancy. Dedicated tenancy will incur additional charges.
-      - Support for I(tenancy=host) was added in amazon.aws 7.6.0.
-    choices: ['dedicated', 'default', 'Host']
+      - What type of tenancy to allow an instance to use. Default is shared tenancy. Dedicated tenancy will incur additional charges.
+      - This field is deprecated and will be removed in a release after 2025-12-01, use I(placement) instead.
+    choices: ['dedicated', 'default']
     type: str
   termination_protection:
     description:
@@ -359,10 +359,12 @@ options:
         type: int
         required: false
       tenancy:
-        description: Type of tenancy to allow an instance to use. Default is shared tenancy. Dedicated tenancy will incur additional charges.
+        description:
+          - Type of tenancy to allow an instance to use. Default is shared tenancy. Dedicated tenancy will incur additional charges.
+          - Support for I(tenancy=host) was added in amazon.aws 7.6.0.
         type: str
         required: false
-        choices: ['dedicated', 'default']
+        choices: ['dedicated', 'default', 'host']
   license_specifications:
     description:
       - The license specifications to be used for the instance.
@@ -1186,7 +1188,6 @@ instances:
 """
 
 import time
-import uuid
 from collections import namedtuple
 from typing import Any
 from typing import Dict
@@ -1199,55 +1200,28 @@ except ImportError:
     pass  # caught by AnsibleAWSModule
 
 
-from ansible.module_utils._text import to_native
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
-from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 from ansible.module_utils.six import string_types
 
 from ansible_collections.amazon.aws.plugins.module_utils.arn import validate_aws_arn
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleEC2Error
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import EC2InstanceModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import associate_iam_instance_profile
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import attach_network_interface
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_iam_instance_profile_associations
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_instance_attribute
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_instance_status
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_subnets
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_ec2_security_group_ids_from_names
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import modify_instance_attribute
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import modify_instance_metadata_options
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import replace_iam_instance_profile_association
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import run_instances
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import terminate_instances
-from ansible_collections.amazon.aws.plugins.module_utils.exceptions import AnsibleAWSError
+from ansible_collections.amazon.aws.plugins.module_utils.ec2_instance_utils import EC2InstanceModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2_instance_utils import build_run_instance_spec
+from ansible_collections.amazon.aws.plugins.module_utils.ec2_instance_utils import discover_security_groups
 from ansible_collections.amazon.aws.plugins.module_utils.iam import _get_iam_instance_profiles
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
-from ansible_collections.amazon.aws.plugins.module_utils.tower import tower_callback_script
-
-
-class Ec2InstanceAWSError(AnsibleAWSError):
-    pass
-
-
-def build_volume_spec(params):
-    volumes = params.get("volumes") or []
-    for volume in volumes:
-        if "ebs" in volume:
-            for int_value in ["volume_size", "iops"]:
-                if int_value in volume["ebs"]:
-                    volume["ebs"][int_value] = int(volume["ebs"][int_value])
-            if "volume_type" in volume["ebs"] and volume["ebs"]["volume_type"] == "gp3":
-                if not volume["ebs"].get("iops"):
-                    volume["ebs"]["iops"] = 3000
-                if "throughput" in volume["ebs"]:
-                    volume["ebs"]["throughput"] = int(volume["ebs"]["throughput"])
-                else:
-                    volume["ebs"]["throughput"] = 125
-
-    return [snake_dict_to_camel_dict(v, capitalize_first=True) for v in volumes]
 
 
 def add_or_update_instance_profile(
@@ -1296,113 +1270,6 @@ def add_or_update_instance_profile(
     return False
 
 
-def build_network_spec(module: EC2InstanceModule) -> List[Dict[str, Any]]:
-    """
-    Returns list of interfaces [complex]
-    Interface type: {
-        'AssociatePublicIpAddress': True|False,
-        'DeleteOnTermination': True|False,
-        'Description': 'string',
-        'DeviceIndex': 123,
-        'Groups': [
-            'string',
-        ],
-        'Ipv6AddressCount': 123,
-        'Ipv6Addresses': [
-            {
-                'Ipv6Address': 'string'
-            },
-        ],
-        'NetworkInterfaceId': 'string',
-        'PrivateIpAddress': 'string',
-        'PrivateIpAddresses': [
-            {
-                'Primary': True|False,
-                'PrivateIpAddress': 'string'
-            },
-        ],
-        'SecondaryPrivateIpAddressCount': 123,
-        'SubnetId': 'string'
-    },
-    """
-
-    interfaces = []
-    network = module.params.get("network") or {}
-    spec = dict()
-    if not network.get("interfaces"):
-        # they only specified one interface
-        spec = {
-            "DeviceIndex": 0,
-        }
-        if network.get("assign_public_ip") is not None:
-            spec["AssociatePublicIpAddress"] = network["assign_public_ip"]
-
-        if module.params.get("vpc_subnet_id"):
-            spec["SubnetId"] = module.params["vpc_subnet_id"]
-        else:
-            default_vpc = module.get_default_vpc()
-            if default_vpc is None:
-                module.fail_json(
-                    msg=(
-                        "No default subnet could be found - you must include a VPC subnet ID (vpc_subnet_id parameter)"
-                        " to create an instance"
-                    )
-                )
-            else:
-                sub = module.get_default_subnet(default_vpc, availability_zone=module.params.get("availability_zone"))
-                spec["SubnetId"] = (sub or {}).get("SubnetId")
-
-        if network.get("private_ip_address"):
-            spec["PrivateIpAddress"] = network["private_ip_address"]
-
-        if module.params.get("security_group") or module.params.get("security_groups"):
-            groups = discover_security_groups(module, subnet_id=spec["SubnetId"])
-            spec["Groups"] = groups
-        if network.get("description") is not None:
-            spec["Description"] = network["description"]
-        # TODO more special snowflake network things
-
-        return [spec]
-
-    # handle list of `network.interfaces` options
-    for idx, interface_params in enumerate(network.get("interfaces", [])):
-        spec = {
-            "DeviceIndex": idx,
-        }
-
-        if isinstance(interface_params, string_types):
-            # naive case where user gave
-            # network_interfaces: [eni-1234, eni-4567, ....]
-            # put into normal data structure so we don't dupe code
-            interface_params = {"id": interface_params}
-
-        if interface_params.get("id") is not None:
-            # if an ID is provided, we don't want to set any other parameters.
-            spec["NetworkInterfaceId"] = interface_params["id"]
-            interfaces.append(spec)
-            continue
-
-        spec["DeleteOnTermination"] = interface_params.get("delete_on_termination", True)
-
-        if interface_params.get("ipv6_addresses"):
-            spec["Ipv6Addresses"] = [{"Ipv6Address": a} for a in interface_params.get("ipv6_addresses", [])]
-
-        if interface_params.get("private_ip_address"):
-            spec["PrivateIpAddress"] = interface_params.get("private_ip_address")
-
-        if interface_params.get("description"):
-            spec["Description"] = interface_params.get("description")
-
-        if interface_params.get("subnet_id", module.params.get("vpc_subnet_id")):
-            spec["SubnetId"] = interface_params.get("subnet_id", module.params.get("vpc_subnet_id"))
-        elif not spec.get("SubnetId") and not interface_params["id"]:
-            # TODO grab a subnet from default VPC
-            raise ValueError(f"Failed to assign subnet to interface {interface_params}")
-
-        interfaces.append(spec)
-    return interfaces
-
-
 def warn_if_public_ip_assignment_changed(module: EC2InstanceModule, instance: Dict[str, Any]) -> None:
     # This is a non-modifiable attribute.
     assign_public_ip = (module.params.get("network") or {}).get("assign_public_ip")
@@ -1440,196 +1307,6 @@ def warn_if_cpu_options_changed(module: EC2InstanceModule, instance: Dict[str, A
             f"Unable to modify threads_per_core from {threads_per_core_curr} to {threads_per_core}. Assigning a number"
             " of threads per core is determined during instance creation."
         )
-
-
-def discover_security_groups(module: EC2InstanceModule, parent_vpc_id=None, subnet_id=None) -> List[Dict[str, Any]]:
-    if subnet_id is not None:
-        try:
-            sub = describe_subnets(module.ec2, SubnetIds=[subnet_id])
-        except AnsibleEC2Error as e:
-            if e.is_boto3_error_code("InvalidGroup.NotFound"):
-                module.fail_json(
-                    f"Could not find subnet {subnet_id} to associate security groups. Please check the vpc_subnet_id and"
-                    " security_groups parameters."
-                )
-            module.fail_json_aws(e, msg=f"Error while searching for subnet {subnet_id} parent VPC.")
-        parent_vpc_id = sub[0]["VpcId"]
-
-    group = module.params.get("security_group")
-    groups = module.params.get("security_groups")
-    if group:
-        return get_ec2_security_group_ids_from_names(group, module.ec2, vpc_id=parent_vpc_id)
-    if groups:
-        return get_ec2_security_group_ids_from_names(groups, module.ec2, vpc_id=parent_vpc_id)
-    return []
-
-
-def build_userdata(params):
-    if params.get("user_data") is not None:
-        return {"UserData": to_native(params.get("user_data"))}
-    if params.get("aap_callback"):
-        userdata = tower_callback_script(
-            tower_address=params.get("aap_callback").get("tower_address"),
-            job_template_id=params.get("aap_callback").get("job_template_id"),
-            host_config_key=params.get("aap_callback").get("host_config_key"),
-            windows=params.get("aap_callback").get("windows"),
-            passwd=params.get("aap_callback").get("set_password"),
-        )
-        return {"UserData": userdata}
-    return {}
-
-
-def build_top_level_options(module: EC2InstanceModule) -> Dict[str, Any]:
-    spec = {}
-    params = module.params
-    if params.get("image_id"):
-        spec["ImageId"] = params["image_id"]
-    elif isinstance(params.get("image"), dict):
-        image = params.get("image", {})
-        spec["ImageId"] = image.get("id")
-        if "ramdisk" in image:
-            spec["RamdiskId"] = image["ramdisk"]
-        if "kernel" in image:
-            spec["KernelId"] = image["kernel"]
-    if not spec.get("ImageId") and not params.get("launch_template"):
-        module.fail_json(
-            msg="You must include an image_id or image.id parameter to create an instance, or use a launch_template."
-        )
-
-    if params.get("key_name") is not None:
-        spec["KeyName"] = params.get("key_name")
-
-    spec.update(build_userdata(params))
-
-    if params.get("launch_template") is not None:
-        spec["LaunchTemplate"] = {}
-        if not params.get("launch_template").get("id") and not params.get("launch_template").get("name"):
-            module.fail_json(
-                msg=(
-                    "Could not create instance with launch template. Either launch_template.name or launch_template.id"
-                    " parameters are required"
-                )
-            )
-
-        if params.get("launch_template").get("id") is not None:
-            spec["LaunchTemplate"]["LaunchTemplateId"] = params.get("launch_template").get("id")
-        if params.get("launch_template").get("name") is not None:
-            spec["LaunchTemplate"]["LaunchTemplateName"] = params.get("launch_template").get("name")
-        if params.get("launch_template").get("version") is not None:
-            spec["LaunchTemplate"]["Version"] = to_native(params.get("launch_template").get("version"))
-
-    if params.get("detailed_monitoring", False):
-        spec["Monitoring"] = {"Enabled": True}
-    if params.get("cpu_credit_specification") is not None:
-        spec["CreditSpecification"] = {"CpuCredits": params.get("cpu_credit_specification")}
-    if params.get("tenancy") is not None:
-        spec["Placement"] = {"Tenancy": params.get("tenancy")}
-    if params.get("placement_group"):
-        if "Placement" in spec:
-            spec["Placement"]["GroupName"] = str(params.get("placement_group"))
-        else:
-            spec.setdefault("Placement", {"GroupName": str(params.get("placement_group"))})
-    if params.get("placement") is not None:
-        spec["Placement"] = {}
-        if params.get("placement").get("availability_zone") is not None:
-            spec["Placement"]["AvailabilityZone"] = params.get("placement").get("availability_zone")
-        if params.get("placement").get("affinity") is not None:
-            spec["Placement"]["Affinity"] = params.get("placement").get("affinity")
-        if params.get("placement").get("group_name") is not None:
-            spec["Placement"]["GroupName"] = params.get("placement").get("group_name")
-        if params.get("placement").get("host_id") is not None:
-            spec["Placement"]["HostId"] = params.get("placement").get("host_id")
-        if params.get("placement").get("host_resource_group_arn") is not None:
-            spec["Placement"]["HostResourceGroupArn"] = params.get("placement").get("host_resource_group_arn")
-        if params.get("placement").get("partition_number") is not None:
-            spec["Placement"]["PartitionNumber"] = params.get("placement").get("partition_number")
-        if params.get("placement").get("tenancy") is not None:
-            spec["Placement"]["Tenancy"] = params.get("placement").get("tenancy")
-    if params.get("ebs_optimized") is not None:
-        spec["EbsOptimized"] = params.get("ebs_optimized")
-    if params.get("instance_initiated_shutdown_behavior"):
-        spec["InstanceInitiatedShutdownBehavior"] = params.get("instance_initiated_shutdown_behavior")
-    if params.get("termination_protection") is not None:
-        spec["DisableApiTermination"] = params.get("termination_protection")
-    if params.get("hibernation_options") and params.get("volumes"):
-        for vol in params["volumes"]:
-            if vol.get("ebs") and vol["ebs"].get("encrypted"):
-                spec["HibernationOptions"] = {"Configured": True}
-            else:
-                module.fail_json(
-                    msg=(
-                        "Hibernation prerequisites not satisfied. Refer to"
-                        " https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/hibernating-prerequisites.html"
-                    )
-                )
-    if params.get("cpu_options") is not None:
-        spec["CpuOptions"] = {}
-        spec["CpuOptions"]["ThreadsPerCore"] = params.get("cpu_options").get("threads_per_core")
-        spec["CpuOptions"]["CoreCount"] = params.get("cpu_options").get("core_count")
-    if params.get("metadata_options"):
-        spec["MetadataOptions"] = {}
-        spec["MetadataOptions"]["HttpEndpoint"] = params.get("metadata_options").get("http_endpoint")
-        spec["MetadataOptions"]["HttpTokens"] = params.get("metadata_options").get("http_tokens")
-        spec["MetadataOptions"]["HttpPutResponseHopLimit"] = params.get("metadata_options").get(
-            "http_put_response_hop_limit"
-        )
-        spec["MetadataOptions"]["HttpProtocolIpv6"] = params.get("metadata_options").get("http_protocol_ipv6")
-        spec["MetadataOptions"]["InstanceMetadataTags"] = params.get("metadata_options").get("instance_metadata_tags")
-    if params.get("additional_info"):
-        spec["AdditionalInfo"] = params.get("additional_info")
-    if params.get("license_specifications"):
-        spec["LicenseSpecifications"] = []
-        for license_configuration in params.get("license_specifications"):
-            spec["LicenseSpecifications"].append(
-                {"LicenseConfigurationArn": license_configuration.get("license_configuration_arn")}
-            )
-    return spec
-
-
-def build_instance_tags(params):
-    tags = params.get("tags") or {}
-    if params.get("name") is not None:
-        tags["Name"] = params.get("name")
-    specs = boto3_tag_specifications(tags, ["volume", "instance"])
-    return specs
-
-
-def build_run_instance_spec(module: EC2InstanceModule, current_count=0) -> Dict[str, Any]:
-    spec = dict(
-        ClientToken=uuid.uuid4().hex,
-        MaxCount=1,
-        MinCount=1,
-    )
-    spec.update(**build_top_level_options(module))
-
-    spec["NetworkInterfaces"] = build_network_spec(module)
-    spec["BlockDeviceMappings"] = build_volume_spec(module.params)
-
-    tag_spec = build_instance_tags(module.params)
-    if tag_spec is not None:
-        spec["TagSpecifications"] = tag_spec
-
-    # IAM profile
-    if module.params.get("iam_instance_profile"):
-        spec["IamInstanceProfile"] = dict(Arn=determine_iam_role(module, module.params.get("iam_instance_profile")))
-
-    if module.params.get("exact_count"):
-        spec["MaxCount"] = module.params.get("exact_count") - current_count
-        spec["MinCount"] = module.params.get("exact_count") - current_count
-
-    if module.params.get("count"):
-        spec["MaxCount"] = module.params.get("count")
-        spec["MinCount"] = module.params.get("count")
-
-    if module.params.get("instance_type"):
-        spec["InstanceType"] = module.params["instance_type"]
-
-    if not (module.params.get("instance_type") or module.params.get("launch_template")):
-        raise Ec2InstanceAWSError(
-            "At least one of 'instance_type' and 'launch_template' must be passed when launching instances."
-        )
-
-    return spec
 
 
 def diff_instance_and_params(module: EC2InstanceModule, instance: Dict[str, Any], skip=None):
@@ -1692,7 +1369,9 @@ def diff_instance_and_params(module: EC2InstanceModule, instance: Dict[str, Any]
                 sub = module.get_default_subnet(default_vpc)
                 subnet_id = (sub or {}).get("SubnetId")
 
-        groups = discover_security_groups(module, subnet_id=subnet_id)
+        groups = discover_security_groups(
+            module.ec2, module.params.get("security_group"), module.params.get("security_groups"), subnet_id=subnet_id
+        )
         expected_groups = groups
         instance_groups = [g["GroupId"] for g in value["Groups"]]
         if set(instance_groups) != set(expected_groups):
@@ -2051,7 +1730,10 @@ def ensure_present(
         # otherwise the build_run_instance_spec() will raise issue for missing mandatory parameters
         return dict(changed=False, instances=[], instance_ids=[])
 
-    instance_spec = build_run_instance_spec(module, current_count)
+    iam_role_arn = None
+    if module.params.get("iam_instance_profile"):
+        iam_role_arn = determine_iam_role(module, module.params.get("iam_instance_profile"))
+    instance_spec = build_run_instance_spec(module.ec2, module.params, current_count, iam_role_arn)
     # If check mode is enabled,suspend 'ensure function'.
     if module.check_mode:
         if existing_matches:
@@ -2164,10 +1846,8 @@ def main() -> None:
             result = handle_existing(module, existing_matches, filters=filters)
         else:
             result = ensure_present(module=module, existing_matches=existing_matches, desired_module_state=state)
-    except Ec2InstanceAWSError as e:
-        if e.exception:
-            module.fail_json_aws(e.exception, msg=e.message)
-        module.fail_json(msg=e.message)
+    except AnsibleEC2Error as e:
+        module.fail_json_aws_error(e)
 
     module.exit_json(**result)
 

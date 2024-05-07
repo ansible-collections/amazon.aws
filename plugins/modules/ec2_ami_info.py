@@ -212,6 +212,8 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleEC2Error
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_image_attribute
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_images
+from ansible_collections.amazon.aws.plugins.module_utils.exceptions import AnsibleAWSError
+from ansible_collections.amazon.aws.plugins.module_utils.exceptions import is_ansible_aws_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
@@ -275,10 +277,10 @@ def list_ec2_images(ec2_client, module, request_args):
                     ec2_client, attribute="launchPermission", image_id=image["image_id"]
                 ).get("LaunchPermissions", [])
                 image["launch_permissions"] = [camel_dict_to_snake_dict(perm) for perm in launch_permissions]
-        except AnsibleEC2Error as e:
-            if e.is_boto3_error_code("AuthFailure"):
-                # describing launch permissions of images owned by others is not permitted, but shouldn't cause failures
-                pass
+        except is_ansible_aws_error_code("AuthFailure"):
+            # describing launch permissions of images owned by others is not permitted, but shouldn't cause failures
+            pass
+        except AnsibleAWSError as e:  # pylint: disable=duplicate-except
             raise AmiInfoFailure(e, "Failed to describe AMI")
 
     images.sort(key=lambda e: e.get("creation_date", ""))  # it may be possible that creation_date does not always exist

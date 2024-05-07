@@ -186,7 +186,7 @@ def main():
     try:
         module.exit_json(import_image=describe_import_image_tasks_as_snake_dict(client, **params))
     except AnsibleEC2Error as e:
-        module.fail_json_aws(e, msg="Failed to describe the import image")
+        module.fail_json_aws_error(e)
 
 
 if __name__ == "__main__":

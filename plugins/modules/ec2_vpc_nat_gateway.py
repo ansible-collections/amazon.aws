@@ -261,6 +261,8 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_ec2
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_nat_gateways
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import release_address
+from ansible_collections.amazon.aws.plugins.module_utils.exceptions import AnsibleAWSError
+from ansible_collections.amazon.aws.plugins.module_utils.exceptions import is_ansible_aws_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
 from ansible_collections.amazon.aws.plugins.module_utils.waiters import wait_for_resource_state
@@ -447,9 +449,9 @@ def get_eip_allocation_id_by_address(client, module, eip_address):
             else:
                 allocation_id = allocation.get("AllocationId")
 
-    except AnsibleEC2Error as e:
-        if e.is_boto3_error_code("InvalidAddress.Malformed"):
-            module.fail_json(msg=f"EIP address {eip_address} is invalid.")
+    except is_ansible_aws_error_code("InvalidAddress.Malformed"):
+        module.fail_json(msg=f"EIP address {eip_address} is invalid.")
+    except AnsibleAWSError as e:  # pylint: disable=duplicate-except
         module.fail_json_aws_error(e)
 
     return allocation_id, msg
@@ -617,14 +619,15 @@ def create(client, module, subnet_id, allocation_id, tags, client_token=None, wa
                 describe_nat_gateways(client, NatGatewayIds=[result["nat_gateway_id"]])[0]
             )
 
-    except AnsibleEC2Error as e:
-        if not e.is_boto3_error_code("IdempotentParameterMismatch"):
-            module.fail_json_aws_error(e)
+    except is_ansible_aws_error_code("IdempotentParameterMismatch") as e:
         msg = "NAT Gateway does not support update and token has already been provided:" + e
         changed = False
         result = None
+    except AnsibleAWSError as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws_error(e)
 
-    result["tags"] = describe_ec2_tags(client, module, result["nat_gateway_id"], resource_type="natgateway")
+    if result:
+        result["tags"] = describe_ec2_tags(client, module, result["nat_gateway_id"], resource_type="natgateway")
 
     return changed, result, msg
 

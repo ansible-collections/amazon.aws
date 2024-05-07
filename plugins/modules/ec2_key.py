@@ -330,7 +330,7 @@ def delete_key_pair(check_mode, ec2_client, name, finish_task=True):
         return result
     else:
         try:
-            delete_ec2_key_pair(ec2_client, key_name=name)
+            delete_ec2_key_pair(ec2_client, name)
         except AnsibleEC2Error as e:
             raise Ec2KeyFailure(e, "error deleting keypair")
         if not finish_task:

@@ -346,7 +346,7 @@ def absent(client, module: AnsibleAWSModule) -> None:
         try:
             changed = cancel_import_task(
                 client,
-                import_task_id=result["ImportTaskId"],
+                import_task_id=result["import_task_id"],
                 cancel_reason=module.params.get("cancel_reason"),
             )
             module.exit_json(changed=changed, import_image=result)

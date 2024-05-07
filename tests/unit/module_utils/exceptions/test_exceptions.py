@@ -7,6 +7,12 @@ from unittest.mock import sentinel
 
 import pytest
 
+try:
+    from botocore.exceptions import ClientError
+except ImportError:
+    # Handled by HAS_BOTO3
+    pass
+
 import ansible_collections.amazon.aws.plugins.module_utils.exceptions as aws_exceptions
 
 
@@ -99,3 +105,51 @@ def test_inheritence(utils_exceptions):
     assert isinstance(botocore_exception, Exception)
     assert isinstance(botocore_exception, utils_exceptions.AnsibleAWSError)
     assert isinstance(botocore_exception, utils_exceptions.AnsibleBotocoreError)
+
+
+def create_ansible_aws_error_with_botocore_exception(code=None, message=None):
+    boto_err = ClientError(
+        {
+            "Error": {"Code": code, "Message": message},
+        },
+        sentinel.ANSIBLE_AWS_ERROR_OPERATION,
+    )
+    return aws_exceptions.AnsibleAWSError(exception=boto_err)
+
+
+@pytest.mark.parametrize(
+    "input,expected",
+    [
+        ("InvalidGroup.Duplicate", True),
+        ("InvalidGroup.NotDuplicate", False),
+    ],
+)
+def test_is_ansible_aws_error_code(input, expected):
+    def _custom_run():
+        try:
+            raise create_ansible_aws_error_with_botocore_exception(code=input)
+        except aws_exceptions.is_ansible_aws_error_code("InvalidGroup.Duplicate"):
+            return True
+        except aws_exceptions.AnsibleAWSError:  # pylint: disable=duplicate-except
+            return False
+
+    assert _custom_run() == expected
+
+
+@pytest.mark.parametrize(
+    "input,expected",
+    [
+        ("This_is_not_valid", True),
+        ("This_is_valid_", False),
+    ],
+)
+def test_is_ansible_aws_error_message(input, expected):
+    def _custom_run():
+        try:
+            raise create_ansible_aws_error_with_botocore_exception(message=input)
+        except aws_exceptions.is_ansible_aws_error_message("This_is_not_valid"):
+            return True
+        except aws_exceptions.AnsibleAWSError:  # pylint: disable=duplicate-except
+            return False
+
+    assert _custom_run() == expected

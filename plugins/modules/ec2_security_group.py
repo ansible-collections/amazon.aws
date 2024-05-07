@@ -593,6 +593,8 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import revoke_secur
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import revoke_security_group_ingress
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import update_security_group_rule_descriptions_egress
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import update_security_group_rule_descriptions_ingress
+from ansible_collections.amazon.aws.plugins.module_utils.exceptions import AnsibleAWSError
+from ansible_collections.amazon.aws.plugins.module_utils.exceptions import is_ansible_aws_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.iam import get_aws_account_id
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
@@ -828,9 +830,7 @@ def _create_target_from_rule(
     try:
         group = _create_security_group_with_wait(client, module, group_name, rule["group_desc"], vpc_id, tags)
         changed = True
-    except AnsibleEC2Error as e:
-        if not e.is_boto3_error_code("InvalidGroup.Duplicate"):
-            raise SecurityGroupError(msg="Failed to create security group '{0}' in rule {1}", e=e)
+    except is_ansible_aws_error_code("InvalidGroup.Duplicate") as e:
         # The group exists, but didn't show up in any of our previous describe-security-groups calls
         # Try searching on a filter for the name, and allow a retry window for AWS to update
         # the model on their end.
@@ -841,6 +841,8 @@ def _create_target_from_rule(
         )
         group = _lookup_target_or_fail(client, group_name, vpc_id, fail_msg)
         changed = False
+    except AnsibleAWSError as e:  # pylint: disable=duplicate-except
+        raise SecurityGroupError(msg=f"Failed to create security group '{group_name}' in rule {rule}", e=e)
     return group, changed
 
 
