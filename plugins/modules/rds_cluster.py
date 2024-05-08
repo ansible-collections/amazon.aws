@@ -1242,7 +1242,7 @@ def main():
         engine_mode=dict(choices=["provisioned", "serverless", "parallelquery", "global", "multimaster"]),
         engine_version=dict(),
         allocated_storage=dict(type="int"),
-        storage_type=dict(type="str", choices=["io1", "aurora-iopt1"]),
+        storage_type=dict(type="str", choices=["io1", "aurora", "aurora-iopt1"]),
         iops=dict(type="int"),
         final_snapshot_identifier=dict(),
         force_backtrack=dict(type="bool"),
@@ -1329,7 +1329,7 @@ def main():
                 if not module.params.get("storage_type"):
                     module.params["storage_type"] = "io1"
 
-    if module.params.get("storage_type") and module.params["storage_type"] in ("aurora-iopt1"):
+    if module.params.get("storage_type") and module.params["storage_type"] in ("aurora", "aurora-iopt1"):
         if module.params.get("engine") not in ("aurora", "aurora-mysql", "aurora-postgresql"):
             module.fail_json(
                 f"storage_type={module.params['storage_type']} is only supported for aurora engines 'aurora', 'aurora-mysql', 'aurora-postgresql'"
