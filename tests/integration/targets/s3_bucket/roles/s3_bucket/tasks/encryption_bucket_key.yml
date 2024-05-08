@@ -97,6 +97,13 @@
   # ============================================================
   always:
     - name: Ensure all buckets are deleted
+      amazon.aws.s3_bucket_info:
+        name: "{{ local_bucket_name }}"
+        bucket_facts:
+          bucket_encryption: true
+      failed_when: false
+
+    - name: Ensure all buckets are deleted
       amazon.aws.s3_bucket:
         name: "{{ local_bucket_name }}"
         state: absent
