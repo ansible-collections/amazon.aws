@@ -138,6 +138,11 @@ subnet:
             returned: I(state=present)
             type: str
             sample: us-east-1a
+        availability_zone_id:
+            description: The AZ ID of the subnet.
+            returned: I(state=present)
+            type: str
+            sample: use1-az6
         state:
             description: state of the Subnet
             returned: I(state=present)
@@ -173,11 +178,20 @@ subnet:
             returned: I(state=present)
             type: bool
             sample: false
+        enable_dns64:
+            description:
+            - Indicates whether DNS queries made to the Amazon-provided DNS Resolver in this subnet should return synthetic IPv6 addresses for IPv4-only destinations.
+            type: bool
+            sample: false
         ipv6_association_id:
             description: The IPv6 association ID for the currently associated CIDR
             returned: I(state=present)
             type: str
             sample: subnet-cidr-assoc-b85c74d2
+        ipv6_native:
+            description: Indicates whether this is an IPv6 only subnet.
+            type: bool
+            sample: false
         ipv6_cidr_block_association_set:
             description: An array of IPv6 cidr block association set information.
             returned: I(state=present)
@@ -200,6 +214,27 @@ subnet:
                             description: The CIDR block association state.
                             returned: always
                             type: str
+        map_customer_owned_ip_on_launch:
+            description: Indicates whether a network interface created in this subnet (including a network interface created by RunInstances) receives a customer-owned IPv4 address.
+            type: bool
+            sample: flase
+        owner_id:
+            description: The ID of the Amazon Web Services account that owns the subnet.
+            type: str
+            sample: 12344567
+        private_dns_name_options_on_launch:
+            description: The type of hostnames to assign to instances in the subnet at launch. An instance hostname is based on the IPv4 address or ID of the instance.
+            type: dict
+            sample: "{
+                "enable_resource_name_dns_a_record": false,
+                "enable_resource_name_dns_aaaa_record": false,
+                "hostname_type": "ip-name"
+            }"
+        subnet_arn:
+            description: The Amazon Resource Name (ARN) of the subnet.
+            type: str
+            sample: arn:aws:ec2:us-east-1:xxx:subnet/subnet-xxx
+
 """
 
 

@@ -153,9 +153,113 @@ endpoints:
   description: The resulting endpoints from the module call
   returned: success
   type: list
+  elements: dict
+  contains:
+    creation_timestamp:
+      description: The date and time that the endpoint was created.
+      returned: always
+      type: str
+    dns_entries:
+      description: List of DNS entires for the endpoint.
+      returned: always
+      type: list
+      elements: dict
+      contains:
+        dns_name:
+          description: The DNS name.
+          returned: always
+          type: str
+        hosted_zone_id:
+          description: The ID of the private hosted zone.
+          type: str
+    groups:
+      description: List of security groups associated with the network interface.
+      returned: always
+      type: list
+      elements: dict
+      contains:
+        group_id:
+          description: The ID of the security group.
+          returned: always
+          type: str
+        group_name:
+          description: The name of the security group.
+          returned: always
+          type: str
+    ip_address_type:
+      description: The IP address type for the endpoint.
+      type: str
+    network_interface_ids:
+      description: List of network interfaces for the endpoint.
+      returned: always
+      type: list
+      elements: str
+    owner_id:
+      description: The ID of the AWS account that owns the endpoint.
+      returned: always
+      type: str
+    policy_document:
+      description: The policy document associated with the endpoint.
+      returned: always
+      type: str
+    private_dns_enabled:
+      description: Indicates whether the VPC is associated with a private hosted zone.
+      returned: always
+      type: bool
+    requester_managed:
+      description: Indicated whether the endpoint is being managed by its service.
+      returned: always
+      type: bool
+    route_table_ids:
+      description: List of route table IDs associated with the endpoint.
+      returned: always
+      type: list
+      elements: str
+    service_name:
+      description: The name of the service to which the endpoint is associated.
+      returned: always
+      type: str
+    state:
+      description: The state of the endpoint.
+      returned: always
+      type: str
+    subnet_ids:
+      description: List of subnets associated with the endpoint.
+      returned: always
+      type: list
+    tags:
+      description: List of tags associated with the endpoint.
+      returned: always
+      type: list
+      elements: dict
+    vpc_endpoint_id:
+      description: The ID of the endpoint.
+      returned: always
+      type: str
+    vpc_endpoint_type:
+      description: The type of endpoint.
+      returned: always
+      type: str
+    vpc_id:
+      description: The ID of the VPC.
+      returned: always
+      type: str
   sample: [
       {
         "creation_timestamp": "2017-02-20T05:04:15+00:00",
+        "dns_entries": [],
+        "dns_options": {
+            "dns_record_ip_type": "ipv4"
+        },
+        "groups": [
+            {
+                "group_id": "sg-03196a047b95d36ad",
+                "group_name": "default"
+            }
+        ],
+        "ip_address_type": "ipv4",
+        "network_interface_ids": [],
+        "owner_id": "721066863947",
         "policy_document": {
           "Id": "Policy1450910922815",
           "Statement": [
@@ -172,12 +276,17 @@ endpoints:
           ],
           "Version": "2012-10-17"
         },
-        "route_table_ids": [
-          "rtb-abcd1234"
-        ],
-        "service_name": "com.amazonaws.ap-southeast-2.s3",
-        "vpc_endpoint_id": "vpce-a1b2c3d4",
-        "vpc_id": "vpc-abbad0d0"
+        "private_dns_enabled": false,
+        "requester_managed"s: false,
+        "route_table_ids": [],
+        "service_name": "io.spotinst.vpce.us-east-1.linkapi",
+        "state": "pendingAcceptance",
+        "subnet_ids": [],
+        "tags": [],
+        "vpc_endpoint_id": "vpce-1234",
+        "vpc_endpoint_type": "Interface",
+        "vpc_id": "vpc-0ee1a4b203c587ffa"
+        "route_table_ids": [],
       }
     ]
 """

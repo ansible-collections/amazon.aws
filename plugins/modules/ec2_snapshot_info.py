@@ -117,16 +117,56 @@ snapshots:
     returned: success
     elements: dict
     contains:
+        create_volume_permissions:
+            description:
+              - The users and groups that have the permissions for creating volumes from the snapshot.
+              - The module will return empty list if the create volume permissions on snapshot are 'private'.
+            type: list
+            elements: dict
+            sample: [{"group": "all"}]
+        data_encryption_key_id:
+            description:
+              - The data encryption key identifier for the snapshot. This value is a unique identifier that
+                corresponds to the data encryption key that was used to encrypt the original volume or snapshot copy.
+            type: str
+            returned: always
+            sample: "arn:aws:kms:ap-southeast-2:123456789012:key/74c9742a-a1b2-45cb-b3fe-abcdef123456"
+        description:
+            description: The description for the snapshot.
+            type: str
+            returned: always
+            sample: "My important backup"
+        encrypted:
+            description: Indicates whether the snapshot is encrypted.
+            type: bool
+            returned: always
+            sample: "True"
+        kms_key_id:
+            description:
+              - The full ARN of the AWS Key Management Service (AWS KMS) customer master key (CMK) that was used to
+                protect the volume encryption key for the parent volume.
+            type: str
+            sample: "74c9742a-a1b2-45cb-b3fe-abcdef123456"
+        owner_id:
+            description: The AWS account ID of the EBS snapshot owner.
+            type: str
+            returned: always
+            sample: "123456789012"
+        progress:
+            description: The progress of the snapshot, as a percentage.
+            type: str
+            returned: always
+            sample: "100%"
         snapshot_id:
             description: The ID of the snapshot. Each snapshot receives a unique identifier when it is created.
             type: str
             returned: always
             sample: snap-01234567
-        volume_id:
-            description: The ID of the volume that was used to create the snapshot.
+        start_time:
+            description: The time stamp when the snapshot was initiated.
             type: str
             returned: always
-            sample: vol-01234567
+            sample: "2015-02-12T02:14:02+00:00"
         state:
             description: The snapshot state (completed, pending or error).
             type: str
@@ -138,69 +178,27 @@ snapshots:
                 AWS Key Management Service (AWS KMS) permissions are not obtained) this field displays error state details to help you diagnose why the
                 error occurred.
             type: str
-            returned: always
             sample:
-        start_time:
-            description: The time stamp when the snapshot was initiated.
-            type: str
+        storage_tier:
+            description: The storage tier in which the snapshot is stored.
+            type: string
             returned: always
-            sample: "2015-02-12T02:14:02+00:00"
-        progress:
-            description: The progress of the snapshot, as a percentage.
-            type: str
-            returned: always
-            sample: "100%"
-        owner_id:
-            description: The AWS account ID of the EBS snapshot owner.
-            type: str
-            returned: always
-            sample: "123456789012"
-        description:
-            description: The description for the snapshot.
-            type: str
-            returned: always
-            sample: "My important backup"
-        volume_size:
-            description: The size of the volume, in GiB.
-            type: int
-            returned: always
-            sample: 8
-        owner_alias:
-            description: The AWS account alias (for example, amazon, self) or AWS account ID that owns the snapshot.
-            type: str
-            returned: always
-            sample: "123456789012"
+            sample: standard
         tags:
             description: Any tags assigned to the snapshot.
             type: dict
             returned: always
             sample: "{ 'my_tag_key': 'my_tag_value' }"
-        encrypted:
-            description: Indicates whether the snapshot is encrypted.
-            type: bool
-            returned: always
-            sample: "True"
-        kms_key_id:
-            description:
-              - The full ARN of the AWS Key Management Service (AWS KMS) customer master key (CMK) that was used to
-                protect the volume encryption key for the parent volume.
+        volume_id:
+            description: The ID of the volume that was used to create the snapshot.
             type: str
             returned: always
-            sample: "74c9742a-a1b2-45cb-b3fe-abcdef123456"
-        data_encryption_key_id:
-            description:
-              - The data encryption key identifier for the snapshot. This value is a unique identifier that
-                corresponds to the data encryption key that was used to encrypt the original volume or snapshot copy.
-            type: str
+            sample: vol-01234567
+        volume_size:
+            description: The size of the volume, in GiB.
+            type: int
             returned: always
-            sample: "arn:aws:kms:ap-southeast-2:123456789012:key/74c9742a-a1b2-45cb-b3fe-abcdef123456"
-        create_volume_permissions:
-            description:
-              - The users and groups that have the permissions for creating volumes from the snapshot.
-              - The module will return empty list if the create volume permissions on snapshot are 'private'.
-            type: list
-            elements: dict
-            sample: [{"group": "all"}]
+            sample: 8
 next_token_id:
     description:
     - Contains the value returned from a previous paginated request where C(max_results) was used and the results exceeded the value of that parameter.

@@ -222,28 +222,67 @@ volume_type:
 volume:
     description: a dictionary containing detailed attributes of the volume
     returned: when success
-    type: str
-    sample: {
-        "attachment_set": [{
-            "attach_time": "2015-10-23T00:22:29.000Z",
-            "deleteOnTermination": "false",
-            "device": "/dev/sdf",
-            "instance_id": "i-8356263c",
-            "status": "attached"
-        }],
-        "create_time": "2015-10-21T14:36:08.870Z",
-        "encrypted": false,
-        "id": "vol-35b333d9",
-        "iops": null,
-        "size": 1,
-        "snapshot_id": "",
-        "status": "in-use",
-        "tags": {
-            "env": "dev"
-        },
-        "type": "standard",
-        "zone": "us-east-1b"
-    }
+    type: dict
+    contains:
+        attachment_set:
+                description:
+                    - Information about the volume attachments.
+                    - This was changed in version 2.0.0 from a dictionary to a list of dictionaries.
+                type: list
+                elements: dict
+                sample: [{
+                    "attach_time": "2015-10-23T00:22:29.000Z",
+                    "deleteOnTermination": "false",
+                    "device": "/dev/sdf",
+                    "instance_id": "i-8356263c",
+                    "status": "attached"
+                }]
+            create_time:
+                description: The time stamp when volume creation was initiated.
+                type: str
+                sample: "2015-10-21T14:36:08.870Z"
+            encrypted:
+                description: Indicates whether the volume is encrypted.
+                type: bool
+                sample: False
+            id:
+                description: The ID of the volume.
+                type: str
+                sample: "vol-35b333d9"
+            iops:
+                description: The number of I/O operations per second (IOPS) that the volume supports.
+                type: int
+                sample: null
+            size:
+                description: The size of the volume, in GiBs.
+                type: int
+                sample: 1
+            snapshot_id:
+                description: The snapshot from which the volume was created, if applicable.
+                type: str
+                sample: ""
+            status:
+                description: The volume state.
+                type: str
+                sample: "in-use"
+            tags:
+                description: Any tags assigned to the volume.
+                type: dict
+                sample: {
+                    env: "dev"
+                    }
+            type:
+                description: The volume type. This can be gp2, io1, st1, sc1, or standard.
+                type: str
+                sample: "standard"
+            zone:
+                description: The Availability Zone of the volume.
+                type: str
+                sample: "us-east-1b"
+            throughput:
+                description: The throughput that the volume supports, in MiB/s.
+                type: int
+                sample: 131
 """
 
 import time

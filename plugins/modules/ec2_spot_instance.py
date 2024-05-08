@@ -394,13 +394,12 @@ spot_request:
             "message": "Your Spot request has been submitted for review, and is pending evaluation.",
             "update_time": "2021-08-23T22:59:12+00:00"
         },
+        "tags": {},
         "type": "one-time"
-
         }
 
 cancelled_spot_request:
     description: The spot instance request details that has been cancelled
-    returned: always
     type: str
     sample: 'Spot requests with IDs: sir-1234abcd have been cancelled'
 """
