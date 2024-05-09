@@ -173,43 +173,53 @@ options:
     type: dict
     suboptions:
       destination:
+        description: Contains information about where to publish the inventory results.
         type: dict
         required: True
-        options:
+        suboptions:
           account_id:
+            description: The account ID that owns the destination S3 bucket. If no account ID is provided, the owner is not validated before exporting data.
             type: str
           bucket:
+            description: The Amazon Resource Name (ARN) of the bucket where inventory results will be published.
             type: str
             required: True
           format:
+            description: Specifies the output format of the inventory results.
             type: str
-            choices: [ 'CSV', 'OCR', 'Parquet' ]
+            choices: [ 'CSV', 'ORC', 'Parquet' ]
             default: CSV
           prefix:
+            description: The prefix that is prepended to all inventory results.
             type: str
       filter:
+        description: Specifies an inventory filter. The inventory only includes objects that meet the filter's criteria.
         type: str
       id:
+        description: The ID used to identify the inventory configuration
         type: str
         required: True
       schedule:
+        description: Specifies the schedule for generating inventory results.
         type: str
         default: Weekly
         choices: [ 'Daily', 'Weekly' ]
-      include_object_version:
+      included_object_versions:
+        description: Object versions to include in the inventory list. If set to All, the list includes all the object versions, which adds the version-related fields VersionId, IsLatest, and DeleteMarker to the list. If set to Current, the list does not contain these version-related fields.
         type: str
         default: All
         choices: [ 'All', 'Current' ]
       optional_fields:
+        description: Contains the optional fields that are included in the inventory results.
         type: list
         elements: str
+        default: []
         choices: [ "Size", "LastModifiedDate", "StorageClass", "ETag",
             "IsMultipartUploaded", "ReplicationStatus", "EncryptionStatus",
             "ObjectLockRetainUntilDate", "ObjectLockMode",
             "ObjectLockLegalHoldStatus", "IntelligentTieringAccessTier",
             "BucketKeyStatus", "ChecksumAlgorithm", "ObjectAccessControlList",
             "ObjectOwner" ]
-        
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
@@ -905,7 +915,7 @@ def handle_bucket_inventory(s3_client, module: AnsibleAWSModule, name: str) -> t
     ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to fetch bucket inventory setting state")
     else:
-        if not bucket_inventory_settings and bucket_inventory_status != {} :
+        if not bucket_inventory_settings and bucket_inventory_status != {}:
             inventory_id = bucket_inventory_status.get("Id", "")
             delete_bucket_inventory(s3_client, name, inventory_id)
             bucket_inventory_changed = True
@@ -914,9 +924,9 @@ def handle_bucket_inventory(s3_client, module: AnsibleAWSModule, name: str) -> t
             inventory_settings = {
                 "IsEnabled": True,
                 "Id": bucket_inventory_settings.get("id"),
-                "Destination": { "S3BucketDestination": { k: v for k, v in camel_destination.items() if v is not None} },
+                "Destination": {"S3BucketDestination": {k: v for k, v in camel_destination.items() if v is not None}},
                 "IncludedObjectVersions": bucket_inventory_settings.get("included_object_versions"),
-                "Schedule": {"Frequency": bucket_inventory_settings.get("schedule")}
+                "Schedule": {"Frequency": bucket_inventory_settings.get("schedule")},
             }
 
             for field in bucket_inventory_settings.get("optional_fields", []):
@@ -1094,9 +1104,11 @@ def put_bucket_inventory(s3_client, bucket_name: str, inventory: dict):
         bucket_name (str): The name of the S3 bucket.
         tags (dict): A dictionary containing the inventory settings to be set on the bucket.
     Returns:
-        None 
+        None
     """
-    s3_client.put_bucket_inventory_configuration(Bucket=bucket_name, InventoryConfiguration=inventory, Id=inventory.get("Id"))
+    s3_client.put_bucket_inventory_configuration(
+        Bucket=bucket_name, InventoryConfiguration=inventory, Id=inventory.get("Id")
+    )
 
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
@@ -1137,9 +1149,9 @@ def get_bucket_inventory(s3_client, bucket_name: str) -> dict:
         Current inventory settings.
     """
     try:
-        result = s3_client.list_bucket_inventory_configurations(Bucket=bucket_name) 
+        result = s3_client.list_bucket_inventory_configurations(Bucket=bucket_name)
         inventory_list = result.get("InventoryConfigurationList", [])
-        return inventory_list[0] if inventory_list else {} 
+        return inventory_list[0] if inventory_list else {}
     except is_boto3_error_code("NoSuchConfiguration"):  # pylint: disable=duplicate-except
         return {}
 
