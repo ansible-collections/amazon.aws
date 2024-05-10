@@ -70,7 +70,7 @@ backup_plans:
             description: Tags of the backup plan
             type: str
         version_id:
-            description: Version id of the backup plan
+            description: Version id of the backup plan.
             type: str
         backup_plan:
             returned: always
@@ -83,15 +83,15 @@ backup_plans:
                     type: str
                     sample: elastic
                 advanced_backup_settings:
-                    description: Advanced backup settings of the backup plan
+                    description: Advanced backup settings of the backup plan.
                     type: list
                     elements: dict
                     contains:
                         resource_type:
-                            description: Resource type of the advanced setting
+                            description: Resource type of the advanced setting.
                             type: str
                         backup_options:
-                            description: Options of the advanced setting
+                            description: Options of the advanced setting.
                             type: dict
                 rules:
                     description:

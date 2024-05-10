@@ -20,10 +20,11 @@ extends_documentation_fragment:
 author:
   - "Jim Dalton (@jsdalton) <jim.dalton@gmail.com>"
 notes:
-  - A rule must contain at least an I(event_pattern) or I(schedule_expression). A
-    rule can have both an I(event_pattern) and a I(schedule_expression), in which
+  - A rule must contain at least an O(event_pattern) or O(schedule_expression). A
+    rule can have both an O(event_pattern) and a O(schedule_expression), in which
     case the rule will trigger on matching events as well as on a schedule.
-  - When specifying targets, I(input), I(input_path), I(input_paths_map) and I(input_template)
+  - When specifying targets, O(targets.input), O(targets.input_path),
+    O(targets.input_transformer.input_paths_map) and O(targets.input_transformer.input_template)
     are mutually-exclusive and optional parameters.
 options:
   name:
@@ -83,14 +84,14 @@ options:
         type: json
         description:
           - A JSON object that will override the event data passed to the target.
-          - If neither I(input) nor I(input_path) nor I(input_transformer)
+          - If neither O(targets.input) nor O(targets.input_path) nor O(targets.input_transformer)
             is specified, then the entire event is passed to the target in JSON form.
       input_path:
         type: str
         description:
-          - A JSONPath string (e.g. C($.detail)) that specifies the part of the event data to be
+          - A JSONPath string (e.g. V($.detail)) that specifies the part of the event data to be
             passed to the target.
-          - If neither I(input) nor I(input_path) nor I(input_transformer)
+          - If neither O(targets.input) nor O(targets.input_path) nor O(targets.input_transformer)
             is specified, then the entire event is passed to the target in JSON form.
       input_transformer:
         type: dict
@@ -120,7 +121,7 @@ options:
             required: true
           task_count:
             type: int
-            description: The number of tasks to create based on I(task_definition).
+            description: The number of tasks to create based on task definition.
     required: false
 """
 

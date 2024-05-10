@@ -104,7 +104,7 @@ RETURN = r"""
 cloudformation:
     description:
         - Dictionary of dictionaries containing info of stack(s).
-        - Keys are I(stack_name)s.
+        - Keys are stack_name(s).
     returned: always
     type: dict
     contains:
@@ -249,24 +249,24 @@ cloudformation:
                 }
         stack_events:
             description: All stack events for the stack.
-            returned: only if all_facts or stack_events is true and the stack exists
+            returned: only if O(all_facts) or O(stack_events) is V(true) and the stack exists
             type: list
         stack_policy:
             description: Describes the stack policy for the stack.
-            returned: only if all_facts or stack_policy is true and the stack exists
+            returned: only if O(all_facts) or O(stack_policy) is V(true) and the stack exists
             type: dict
         stack_template:
             description: Describes the stack template for the stack.
-            returned: only if all_facts or stack_template is true and the stack exists
+            returned: only if O(all_facts) or O(stack_policy) is V(true) and the stack exists
             type: dict
         stack_resource_list:
             description: Describes stack resources for the stack.
-            returned: only if all_facts or stack_resources is true and the stack exists
+            returned: only if O(all_facts) or O(stack_policy) is V(true) and the stack exists
             type: list
         stack_resources:
             description: Dictionary of stack resources keyed by the value of each resource 'LogicalResourceId' parameter and corresponding value of each
                         resource 'PhysicalResourceId' parameter.
-            returned: only if all_facts or stack_resources is true and the stack exists
+            returned: only if O(all_facts) or O(stack_policy) is V(true) and the stack exists
             type: dict
             sample: {
                 "AutoScalingGroup": "dev-someapp-AutoscalingGroup-1SKEXXBCAN0S7",
@@ -275,11 +275,11 @@ cloudformation:
             }
         stack_change_sets:
             description: A list of stack change sets.  Each item in the list represents the details of a specific changeset.
-            returned: only if all_facts or stack_change_sets is true and the stack exists
+            returned: only if O(all_facts) or O(stack_policy) is V(true) and the stack exists
             type: list
         stack_tags:
             description: Dictionary of key value pairs of tags.
-            returned: only if all_facts or stack_resources is true and the stack exists
+            returned: only if O(all_facts) or O(stack_policy) is V(true) and the stack exists
             type: dict
             sample: {
                 'TagOne': 'ValueOne',

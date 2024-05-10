@@ -11,7 +11,7 @@ module: backup_plan
 version_added: 6.0.0
 short_description: Manage AWS Backup Plans
 description:
-  - Creates, updates, or deletes AWS Backup Plans
+  - Creates, updates, or deletes AWS Backup Plans.
   - For more information see the AWS documentation for Backup plans U(https://docs.aws.amazon.com/aws-backup/latest/devguide/about-backup-plans.html).
 author:
   - Kristof Imre Szabo (@krisek)
@@ -33,7 +33,7 @@ options:
   rules:
     description:
       - An array of BackupRule objects, each of which specifies a scheduled task that is used to back up a selection of resources.
-      - Required when I(state=present).
+      - Required when O(state=present).
     type: list
     elements: dict
     suboptions:
@@ -55,14 +55,14 @@ options:
           - A value in minutes after a backup is scheduled before a job will be
             canceled if it doesn't start successfully. If this value is included, it
             must be at least 60 minutes to avoid errors.
-          - AWS default if not supplied is 480.
+          - AWS default if not supplied is V(480).
         type: int
         default: 480
       completion_window_minutes:
         description:
           - A value in minutes after a backup job is successfully started before it
             must be completed or it will be canceled by Backup.
-          - AWS default if not supplied is 10080
+          - AWS default if not supplied is V(10080).
         type: int
         default: 10080
       lifecycle:
@@ -83,7 +83,7 @@ options:
           delete_after_days:
             description: Specifies the number of days after creation that a recovery
               point is deleted. Must be greater than 90 days plus
-              move_to_cold_storage_after_days.
+              O(rules.lifecycle.move_to_cold_storage_after_days).
             type: int
       recovery_point_tags:
         description: To help organize your resources, you can assign your own metadata to the resources that you create.
@@ -115,14 +115,14 @@ options:
               delete_after_days:
                 description: Specifies the number of days after creation that a
                   recovery point is deleted. Must be greater than 90 days plus
-                  move_to_cold_storage_after_days.
+                   O(rules.copy_actions.lifecycle.move_to_cold_storage_after_days).
                 type: int
       enable_continuous_backup:
         description:
           - Specifies whether Backup creates continuous backups. True causes Backup to
             create continuous backups capable of point-in-time restore (PITR). False
             (or not specified) causes Backup to create snapshot backups.
-          - AWS default if not supplied is false.
+          - AWS default if not supplied is V(false).
         type: bool
         default: false
       schedule_expression_timezone:
