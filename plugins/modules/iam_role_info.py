@@ -18,15 +18,15 @@ options:
     name:
         description:
             - Name of a role to search for.
-            - Mutually exclusive with I(path_prefix).
+            - Mutually exclusive with O(path_prefix).
         aliases:
             - role_name
         type: str
     path_prefix:
         description:
             - Prefix of role to restrict IAM role search for.
-            - Mutually exclusive with I(name).
-            - C(path) and C(prefix) were added as aliases in release 7.2.0.
+            - Mutually exclusive with O(name).
+            - O(path) and O(prefix) were added as aliases in release 7.2.0.
             - In a release after 2026-05-01 paths must begin and end with C(/).
               Prior to this paths will automatically have C(/) added as appropriate
               to ensure that they start and end with C(/).
@@ -54,7 +54,7 @@ EXAMPLES = r"""
 
 RETURN = r"""
 iam_roles:
-  description: List of IAM roles
+  description: List of IAM roles.
   returned: always
   type: complex
   contains:
@@ -65,7 +65,7 @@ iam_roles:
       sample: arn:aws:iam::123456789012:role/AnsibleTestRole
     assume_role_policy_document:
       description:
-        - The policy that grants an entity permission to assume the role
+        - The policy that grants an entity permission to assume the role.
         - |
           Note: the case of keys in this dictionary are no longer converted from CamelCase to
           snake_case.  This behaviour changed in release 8.0.0.
@@ -75,8 +75,8 @@ iam_roles:
       description:
         - |
           Note: this return value has been deprecated and will be removed in a release after
-          2026-05-01.  assume_role_policy_document and assume_role_policy_document_raw now use
-          the same format.
+          2026-05-01.  RV(iam_roles.assume_role_policy_document) and RV(iam_roles.assume_role_policy_document_raw)
+          now use the same format.
       returned: always
       type: dict
       version_added: 5.3.0

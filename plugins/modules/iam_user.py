@@ -20,10 +20,10 @@ options:
     description:
       - The name of the user.
       - >-
-        Note: user names are unique within an account.  Paths (I(path)) do B(not) affect
-        the uniqueness requirements of I(name).  For example it is not permitted to have both
+        Note: user names are unique within an account.  Paths (O(path)) do B(not) affect
+        the uniqueness requirements of O(name).  For example it is not permitted to have both
         C(/Path1/MyUser) and C(/Path2/MyUser) in the same account.
-      - C(user_name) was added as an alias in release 7.2.0.
+      - O(user_name) was added as an alias in release 7.2.0.
     required: true
     type: str
     aliases: ['user_name']
@@ -43,7 +43,7 @@ options:
         grant any policies in and of itself.
       - For more information on boundaries, see
         U(https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_boundaries.html).
-      - Set to the empty string C("") to remove the boundary policy.
+      - Set to the empty string V("") to remove the boundary policy.
     aliases: ["boundary_policy_arn", "permissions_boundary"]
     required: false
     type: str
@@ -69,15 +69,15 @@ options:
     choices: ['always', 'on_create']
     description:
       - When to update user passwords.
-      - I(update_password=always) will ensure the password is set to I(password).
-      - I(update_password=on_create) will only set the password for newly created users.
+      - O(update_password=always) will ensure the password is set to O(password).
+      - O(update_password=on_create) will only set the password for newly created users.
     type: str
     version_added: 2.2.0
     version_added_collection: community.aws
   remove_password:
     description:
       - Option to delete user login passwords.
-      - This field is mutually exclusive to I(password).
+      - This field is mutually exclusive to O(password).
     type: 'bool'
     version_added: 2.2.0
     version_added_collection: community.aws
@@ -98,14 +98,14 @@ options:
     type: str
   purge_policies:
     description:
-      - When I(purge_policies=true) any managed policies not listed in I(managed_policies) will be detached.
+      - When O(purge_policies=true) any managed policies not listed in O(managed_policies) will be detached.
     required: false
     default: false
     type: bool
     aliases: ['purge_policy', 'purge_managed_policies']
   wait:
     description:
-      - When I(wait=True) the module will wait for up to I(wait_timeout) seconds
+      - When O(wait=True) the module will wait for up to O(wait_timeout) seconds
         for IAM user creation before returning.
     default: True
     type: bool
@@ -119,7 +119,7 @@ options:
     version_added: 2.2.0
     version_added_collection: community.aws
 notes:
-  - Support for I(tags) and I(purge_tags) was added in release 2.1.0.
+  - Support for O(tags) and O(purge_tags) was added in release 2.1.0.
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
@@ -172,48 +172,48 @@ EXAMPLES = r"""
 
 RETURN = r"""
 user:
-    description: dictionary containing all the user information
+    description: Dictionary containing all the user information.
     returned: success
     type: complex
     contains:
         arn:
-            description: the Amazon Resource Name (ARN) specifying the user
+            description: The Amazon Resource Name (ARN) specifying the user.
             type: str
             sample: "arn:aws:iam::123456789012:user/testuser1"
         create_date:
-            description: the date and time, in ISO 8601 date-time format, when the user was created
+            description: The date and time, in ISO 8601 date-time format, when the user was created.
             type: str
             sample: "2017-02-08T04:36:28+00:00"
         user_id:
-            description: the stable and unique string identifying the user
+            description: The stable and unique string identifying the user.
             type: str
             sample: "AGPA12345EXAMPLE54321"
         user_name:
-            description: the friendly name that identifies the user
+            description: The friendly name that identifies the user.
             type: str
             sample: "testuser1"
         path:
-            description: the path to the user
+            description: The path to the user.
             type: str
             sample: "/"
         tags:
-            description: user tags
+            description: User tags.
             type: dict
             returned: always
             sample: {"Env": "Prod"}
         attached_policies:
             version_added: 7.2.0
             description:
-                - list containing basic information about managed policies attached to the group.
+                - List containing basic information about managed policies attached to the group.
             returned: success
             type: complex
             contains:
                 policy_arn:
-                    description: the Amazon Resource Name (ARN) specifying the managed policy.
+                    description: The Amazon Resource Name (ARN) specifying the managed policy.
                     type: str
                     sample: "arn:aws:iam::123456789012:policy/test_policy"
                 policy_name:
-                    description: the friendly name that identifies the policy.
+                    description: The friendly name that identifies the policy.
                     type: str
                     sample: test_policy
 """

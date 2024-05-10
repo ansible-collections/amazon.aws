@@ -10,7 +10,7 @@ module: elb_classic_lb
 version_added: 1.0.0
 description:
   - Creates, updates or destroys an Amazon Elastic Load Balancer (ELB).
-  - This module was renamed from C(amazon.aws.ec2_elb_lb) to M(amazon.aws.elb_classic_lb) in version
+  - This module was renamed from M(amazon.aws.ec2_elb_lb) to M(amazon.aws.elb_classic_lb) in version
     2.1.0 of the amazon.aws collection.
 short_description: Creates, updates or destroys an Amazon ELB
 author:
@@ -32,7 +32,7 @@ options:
   listeners:
     description:
       - List of ports/protocols for this ELB to listen on (see examples).
-      - Required when I(state=present) and the ELB doesn't exist.
+      - Required when O(state=present) and the ELB doesn't exist.
     type: list
     elements: dict
     suboptions:
@@ -53,20 +53,20 @@ options:
       protocol:
         description:
           - The transport protocol to use for routing.
-          - Valid values are C(HTTP), C(HTTPS), C(TCP), or C(SSL).
+          - Valid values are V(HTTP), V(HTTPS), V(TCP), or V(SSL).
         type: str
         required: True
       instance_protocol:
         description:
           - The protocol to use for routing traffic to instances.
-          - Valid values are C(HTTP), C(HTTPS), C(TCP), or C(SSL),
+          - Valid values are V(HTTP), V(HTTPS), V(TCP), or V(SSL),
         type: str
       proxy_protocol:
         description:
           - Enable proxy protocol for the listener.
           - Beware, ELB controls for the proxy protocol are based on the
-            I(instance_port).  If you have multiple listeners talking to
-            the same I(instance_port), this will affect all of them.
+            O(listeners.instance_port). If you have multiple listeners talking to
+            the same O(listeners.instance_port), this will affect all of them.
         type: bool
   purge_listeners:
     description:
@@ -80,18 +80,18 @@ options:
     elements: str
   purge_instance_ids:
     description:
-      - Purge existing instance ids on ELB that are not found in I(instance_ids).
+      - Purge existing instance ids on ELB that are not found in O(instance_ids).
     type: bool
     default: false
   zones:
     description:
       - List of availability zones to enable on this ELB.
-      - Mutually exclusive with I(subnets).
+      - Mutually exclusive with O(subnets).
     type: list
     elements: str
   purge_zones:
     description:
-      - Purge existing availability zones on ELB that are not found in I(zones).
+      - Purge existing availability zones on ELB that are not found in O(zones).
     type: bool
     default: false
   security_group_ids:
@@ -113,14 +113,14 @@ options:
         description:
         - The protocol which the ELB health check will use when performing a
           health check.
-        - Valid values are C('HTTP'), C('HTTPS'), C('TCP') and C('SSL').
+        - Valid values are V('HTTP'), V('HTTPS'), V('TCP') and V('SSL').
         required: true
         type: str
       ping_path:
         description:
         - The URI path which the ELB health check will query when performing a
           health check.
-        - Required when I(ping_protocol=HTTP) or I(ping_protocol=HTTPS).
+        - Required when O(health_check.ping_protocol=HTTP) or O(health_check.ping_protocol=HTTPS).
         required: false
         type: str
       ping_port:
@@ -159,9 +159,9 @@ options:
     suboptions:
       enabled:
         description:
-        - When set to C(True) will configure delivery of access logs to an S3
+        - When set to V(True) will configure delivery of access logs to an S3
           bucket.
-        - When set to C(False) will disable delivery of access logs.
+        - When set to V(False) will disable delivery of access logs.
         required: false
         type: bool
         default: true
@@ -170,13 +170,13 @@ options:
         - The S3 bucket to deliver access logs to.
         - See U(https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/enable-access-logs.html)
           for more information about the necessary S3 bucket policies.
-        - Required when I(enabled=True).
+        - Required when O(access_logs.enabled=True).
         required: false
         type: str
       s3_prefix:
         description:
         - Where in the S3 bucket to deliver the logs.
-        - If the prefix is not provided or set to C(""), the log is placed at the root level of the bucket.
+        - If the prefix is not provided or set to V(""), the log is placed at the root level of the bucket.
         required: false
         type: str
         default: ""
@@ -190,15 +190,15 @@ options:
   subnets:
     description:
       - A list of VPC subnets to use when creating the ELB.
-      - Mutually exclusive with I(zones).
+      - Mutually exclusive with O(zones).
     type: list
     elements: str
   purge_subnets:
     description:
-      - Purge existing subnets on the ELB that are not found in I(subnets).
+      - Purge existing subnets on the ELB that are not found in O(subnets).
       - Because it is not permitted to add multiple subnets from the same
         availability zone, subnets to be purged will be removed before new
-        subnets are added.  This may cause a brief outage if you try to replace
+        subnets are added. This may cause a brief outage if you try to replace
         all subnets at once.
     type: bool
     default: false
@@ -208,13 +208,13 @@ options:
       - For a private VPC-visible ELB use C(internal).
       - If you choose to update your scheme with a different value the ELB will be destroyed and
         a new ELB created.
-      - Defaults to I(scheme=internet-facing).
+      - Defaults to O(scheme=internet-facing).
     type: str
     choices: ["internal", "internet-facing"]
   connection_draining_timeout:
     description:
       - Wait a specified timeout allowing connections to drain before terminating an instance.
-      - Set to C(0) to disable connection draining.
+      - Set to V(0) to disable connection draining.
     type: int
   idle_timeout:
     description:
@@ -223,7 +223,7 @@ options:
   cross_az_load_balancing:
     description:
       - Distribute load across all configured Availability Zones.
-      - Defaults to C(false).
+      - Defaults to V(false).
     type: bool
   stickiness:
     description:
@@ -234,29 +234,29 @@ options:
       type:
         description:
           - The type of stickiness policy to apply.
-          - Required if I(enabled=true).
-          - Ignored if I(enabled=false).
+          - Required if O(stickiness.enabled=true).
+          - Ignored if O(stickiness.enabled=false).
         required: false
         type: 'str'
         choices: ['application','loadbalancer']
       enabled:
         description:
-          - When I(enabled=false) session stickiness will be disabled for all listeners.
+          - When O(stickiness.enabled=false) session stickiness will be disabled for all listeners.
         required: false
         type: bool
         default: true
       cookie:
         description:
           - The name of the application cookie used for stickiness.
-          - Required if I(enabled=true) and I(type=application).
-          - Ignored if I(enabled=false).
+          - Required if O(stickiness.enabled=true) and O(stickiness.type=application).
+          - Ignored if O(stickiness.enabled=false).
         required: false
         type: str
       expiration:
         description:
           - The time period, in seconds, after which the cookie should be considered stale.
           - If this parameter is not specified, the stickiness session lasts for the duration of the browser session.
-          - Ignored if I(enabled=false).
+          - Ignored if O(stickiness.enabled=false).
         required: false
         type: int
   wait:
@@ -275,9 +275,9 @@ options:
     default: 180
 
 notes:
-  - The ec2_elb fact previously set by this module was deprecated in release 2.1.0 and since release
+  - The I(ec2_elb) fact previously set by this module was deprecated in release 2.1.0 and since release
     4.0.0 is no longer set.
-  - Support for I(purge_tags) was added in release 2.1.0.
+  - Support for O(purge_tags) was added in release 2.1.0.
 
 extends_documentation_fragment:
   - amazon.aws.common.modules
@@ -490,7 +490,7 @@ EXAMPLES = r"""
 
 RETURN = r"""
 elb:
-  description: Load Balancer attributes
+  description: Load Balancer attributes.
   returned: always
   type: dict
   contains:
@@ -498,31 +498,31 @@ elb:
       description: The name of the policy used to control if the ELB is using a application cookie stickiness policy.
       type: str
       sample: ec2-elb-lb-AppCookieStickinessPolicyType
-      returned: when state is not 'absent'
+      returned: when O(state=present)
     backends:
       description: A description of the backend policy applied to the ELB (instance-port:policy-name).
       type: str
       sample: 8181:ProxyProtocol-policy
-      returned: when state is not 'absent'
+      returned: when O(state=present)
     connection_draining_timeout:
       description: The maximum time, in seconds, to keep the existing connections open before deregistering the instances.
       type: int
       sample: 25
-      returned: when state is not 'absent'
+      returned: when O(state=present)
     cross_az_load_balancing:
       description: Either C('yes') if cross-AZ load balancing is enabled, or C('no') if cross-AZ load balancing is disabled.
       type: str
       sample: 'yes'
-      returned: when state is not 'absent'
+      returned: when O(state=present)
     dns_name:
       description: The DNS name of the ELB.
       type: str
       sample: internal-ansible-test-935c585850ac-1516306744.us-east-1.elb.amazonaws.com
-      returned: when state is not 'absent'
+      returned: when O(state=present)
     health_check:
       description: A dictionary describing the health check used for the ELB.
       type: dict
-      returned: when state is not 'absent'
+      returned: when O(state=present)
       contains:
         healthy_threshold:
           description: The number of consecutive successful health checks before marking an instance as healthy.
@@ -548,59 +548,59 @@ elb:
       description: The ID of the Amazon Route 53 hosted zone for the load balancer.
       type: str
       sample: Z35SXDOTRQ7X7K
-      returned: when state is not 'absent'
+      returned: when O(state=present)
     hosted_zone_name:
       description: The DNS name of the load balancer when using a custom hostname.
       type: str
       sample: 'ansible-module.example'
-      returned: when state is not 'absent'
+      returned: when O(state=present)
     idle_timeout:
       description: The length of of time before an idle connection is dropped by the ELB.
       type: int
       sample: 50
-      returned: when state is not 'absent'
+      returned: when O(state=present)
     in_service_count:
       description: The number of instances attached to the ELB in an in-service state.
       type: int
       sample: 1
-      returned: when state is not 'absent'
+      returned: when O(state=present)
     instance_health:
       description: A list of dictionaries describing the health of each instance attached to the ELB.
       type: list
       elements: dict
-      returned: when state is not 'absent'
+      returned: when O(state=present)
       contains:
         description:
           description: A human readable description of why the instance is not in service.
           type: str
           sample: N/A
-          returned: when state is not 'absent'
+          returned: when O(state=present)
         instance_id:
           description: The ID of the instance.
           type: str
           sample: i-03dcc8953a03d6435
-          returned: when state is not 'absent'
+          returned: when O(state=present)
         reason_code:
           description: A code describing why the instance is not in service.
           type: str
           sample: N/A
-          returned: when state is not 'absent'
+          returned: when O(state=present)
         state:
           description: The current service state of the instance.
           type: str
           sample: InService
-          returned: when state is not 'absent'
+          returned: when O(state=present)
     instances:
       description: A list of the IDs of instances attached to the ELB.
       type: list
       elements: str
       sample: ['i-03dcc8953a03d6435']
-      returned: when state is not 'absent'
+      returned: when O(state=present)
     lb_cookie_policy:
       description: The name of the policy used to control if the ELB is using a cookie stickiness policy.
       type: str
       sample: ec2-elb-lb-LBCookieStickinessPolicyType
-      returned: when state is not 'absent'
+      returned: when O(state=present)
     listeners:
       description:
       - A list of lists describing the listeners attached to the ELB.
@@ -609,17 +609,17 @@ elb:
       type: list
       elements: list
       sample: [[22, 22, 'TCP', 'TCP'], [80, 8181, 'HTTP', 'HTTP']]
-      returned: when state is not 'absent'
+      returned: when O(state=present)
     name:
       description: The name of the ELB.  This name is unique per-region, per-account.
       type: str
       sample: ansible-test-935c585850ac
-      returned: when state is not 'absent'
+      returned: when O(state=present)
     out_of_service_count:
       description: The number of instances attached to the ELB in an out-of-service state.
       type: int
       sample: 0
-      returned: when state is not 'absent'
+      returned: when O(state=present)
     proxy_policy:
       description: The name of the policy used to control if the ELB operates using the Proxy protocol.
       type: str
@@ -634,15 +634,15 @@ elb:
       description: Whether the ELB is an C('internal') or a C('internet-facing') load balancer.
       type: str
       sample: internal
-      returned: when state is not 'absent'
+      returned: when O(state=present)
     security_group_ids:
       description: A list of the IDs of the Security Groups attached to the ELB.
       type: list
       elements: str
       sample: ['sg-0c12ebd82f2fb97dc', 'sg-01ec7378d0c7342e6']
-      returned: when state is not 'absent'
+      returned: when O(state=present)
     status:
-      description: A minimal description of the current state of the ELB.  Valid values are C('exists'), C('gone'), C('deleted'), C('created').
+      description: A minimal description of the current state of the ELB. Valid values are C('exists'), C('gone'), C('deleted'), C('created').
       type: str
       sample: exists
       returned: always
@@ -651,23 +651,23 @@ elb:
       type: list
       elements: str
       sample: ['subnet-00d9d0f70c7e5f63c', 'subnet-03fa5253586b2d2d5']
-      returned: when state is not 'absent'
+      returned: when O(state=present)
     tags:
       description: A dictionary describing the tags attached to the ELB.
       type: dict
       sample: {'Name': 'ansible-test-935c585850ac', 'ExampleTag': 'Example Value'}
-      returned: when state is not 'absent'
+      returned: when O(state=present)
     unknown_instance_state_count:
       description: The number of instances attached to the ELB in an unknown state.
       type: int
       sample: 0
-      returned: when state is not 'absent'
+      returned: when O(state=present)
     zones:
       description: A list of the AWS regions in which the ELB is running.
       type: list
       elements: str
       sample: ['us-east-1b', 'us-east-1a']
-      returned: when state is not 'absent'
+      returned: when O(state=present)
 """
 
 try:

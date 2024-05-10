@@ -18,7 +18,7 @@ options:
   access_logs_enabled:
     description:
       - Whether or not to enable access logs.
-      - When set, I(access_logs_s3_bucket) must also be set.
+      - When set, O(access_logs_s3_bucket) must also be set.
     type: bool
   access_logs_s3_bucket:
     description:
@@ -26,7 +26,7 @@ options:
       - The bucket must exist in the same
         region as the load balancer and have a bucket policy that grants Elastic Load Balancing permission to write to the bucket.
       - Required if access logs in Amazon S3 are enabled.
-      - When set, I(access_logs_enabled) must also be set.
+      - When set, O(access_logs_enabled) must also be set.
     type: str
   access_logs_s3_prefix:
     description:
@@ -37,17 +37,17 @@ options:
   deletion_protection:
     description:
       - Indicates whether deletion protection for the ALB is enabled.
-      - Defaults to C(False).
+      - Defaults to V(False).
     type: bool
   http2:
     description:
       - Indicates whether to enable HTTP2 routing.
-      - Defaults to C(True).
+      - Defaults to V(True).
     type: bool
   http_desync_mitigation_mode:
     description:
       - Determines how the load balancer handles requests that might pose a security risk to an application.
-      - Defaults to C('defensive')
+      - Defaults to V(defensive)
     type: str
     choices: ['monitor', 'defensive', 'strictest']
     version_added: 3.2.0
@@ -55,21 +55,21 @@ options:
   http_drop_invalid_header_fields:
     description:
       - Indicates whether HTTP headers with invalid header fields are removed by the load balancer C(True) or routed to targets C(False).
-      - Defaults to C(False).
+      - Defaults to V(False).
     type: bool
     version_added: 3.2.0
     version_added_collection: community.aws
   http_x_amzn_tls_version_and_cipher_suite:
     description:
       - Indicates whether the two headers are added to the client request before sending it to the target.
-      - Defaults to C(False).
+      - Defaults to V(False).
     type: bool
     version_added: 3.2.0
     version_added_collection: community.aws
   http_xff_client_port:
     description:
       - Indicates whether the X-Forwarded-For header should preserve the source port that the client used to connect to the load balancer.
-      - Defaults to C(False).
+      - Defaults to V(False).
     type: bool
     version_added: 3.2.0
     version_added_collection: community.aws
@@ -115,12 +115,12 @@ options:
                 TargetGroupArn:
                     description:
                       - The Amazon Resource Name (ARN) of the target group.
-                      - Mutually exclusive with I(TargetGroupName).
+                      - Mutually exclusive with O(listeners.DefaultActions.TargetGroupName).
                     type: str
                 TargetGroupName:
                     description:
                       - The name of the target group.
-                      - Mutually exclusive with I(TargetGroupArn).
+                      - Mutually exclusive with O(listeners.DefaultActions.TargetGroupArn).
         Rules:
             type: list
             elements: dict
@@ -129,8 +129,8 @@ options:
               - 'For the complete documentation of possible Conditions and Actions please see the boto3 documentation:'
               - 'https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/elbv2.html#ElasticLoadBalancingv2.Client.create_rule'
               - >
-                Keep in mind that AWS uses default values for parameters that are not requested. For example for I(Scope)
-                and I(SessionTimeout) when the action type is C(authenticate-oidc).
+                Keep in mind that AWS uses default values for parameters that are not requested. For example for V(Scope)
+                and V(SessionTimeout) when the action type is V(authenticate-oidc).
             suboptions:
                 Conditions:
                     type: list
@@ -151,22 +151,22 @@ options:
     type: str
   purge_listeners:
     description:
-      - If C(true), existing listeners will be purged from the ALB to match exactly what is defined by I(listeners) parameter.
-      - If the I(listeners) parameter is not set then listeners will not be modified.
+      - If V(true), existing listeners will be purged from the ALB to match exactly what is defined by O(listeners) parameter.
+      - If the O(listeners) parameter is not set then listeners will not be modified.
     default: true
     type: bool
   subnets:
     description:
       - A list of the IDs of the subnets to attach to the load balancer. You can specify only one subnet per Availability Zone. You must specify subnets from
         at least two Availability Zones.
-      - Required if I(state=present).
+      - Required if O(state=present).
     type: list
     elements: str
   security_groups:
     description:
       - A list of the names or IDs of the security groups to assign to the load balancer.
-      - Required if I(state=present).
-      - If C([]), the VPC's default security group will be used.
+      - Required if O(state=present).
+      - If V([]), the VPC's default security group will be used.
     type: list
     elements: str
   scheme:
@@ -189,11 +189,11 @@ options:
     type: bool
   wait_timeout:
     description:
-      - The time in seconds to use in conjunction with I(wait).
+      - The time in seconds to use in conjunction with O(wait).
     type: int
   purge_rules:
     description:
-      - When set to C(no), keep the existing load balancer rules in place. Will modify and add, but will not delete.
+      - When set to V(no), keep the existing load balancer rules in place. Will modify and add, but will not delete.
     default: true
     type: bool
   ip_address_type:
@@ -362,184 +362,184 @@ EXAMPLES = r"""
 RETURN = r"""
 access_logs_s3_bucket:
     description: The name of the S3 bucket for the access logs.
-    returned: when state is present
+    returned: when O(state=present)
     type: str
     sample: "mys3bucket"
 access_logs_s3_enabled:
     description: Indicates whether access logs stored in Amazon S3 are enabled.
-    returned: when state is present
+    returned: when O(state=present)
     type: bool
     sample: true
 access_logs_s3_prefix:
     description: The prefix for the location in the S3 bucket.
-    returned: when state is present
+    returned: when O(state=present)
     type: str
     sample: "my/logs"
 availability_zones:
     description: The Availability Zones for the load balancer.
-    returned: when state is present
+    returned: when O(state=present)
     type: list
     sample: [{ "load_balancer_addresses": [], "subnet_id": "subnet-aabbccddff", "zone_name": "ap-southeast-2a" }]
 canonical_hosted_zone_id:
     description: The ID of the Amazon Route 53 hosted zone associated with the load balancer.
-    returned: when state is present
+    returned: when O(state=present)
     type: str
     sample: "ABCDEF12345678"
 changed:
-    description: Whether an ALB was created/updated/deleted
+    description: Whether an ALB was created/updated/deleted.
     returned: always
     type: bool
     sample: true
 created_time:
     description: The date and time the load balancer was created.
-    returned: when state is present
+    returned: when O(state=present)
     type: str
     sample: "2015-02-12T02:14:02+00:00"
 deletion_protection_enabled:
     description: Indicates whether deletion protection is enabled.
-    returned: when state is present
+    returned: when O(state=present)
     type: bool
     sample: true
 dns_name:
     description: The public DNS name of the load balancer.
-    returned: when state is present
+    returned: when O(state=present)
     type: str
     sample: "internal-my-elb-123456789.ap-southeast-2.elb.amazonaws.com"
 idle_timeout_timeout_seconds:
     description: The idle timeout value, in seconds.
-    returned: when state is present
+    returned: when O(state=present)
     type: int
     sample: 60
 ip_address_type:
     description: The type of IP addresses used by the subnets for the load balancer.
-    returned: when state is present
+    returned: when O(state=present)
     type: str
     sample: "ipv4"
 listeners:
     description: Information about the listeners.
-    returned: when state is present
+    returned: when O(state=present)
     type: complex
     contains:
         listener_arn:
             description: The Amazon Resource Name (ARN) of the listener.
-            returned: when state is present
+            returned: when O(state=present)
             type: str
             sample: ""
         load_balancer_arn:
             description: The Amazon Resource Name (ARN) of the load balancer.
-            returned: when state is present
+            returned: when O(state=present)
             type: str
             sample: ""
         port:
             description: The port on which the load balancer is listening.
-            returned: when state is present
+            returned: when O(state=present)
             type: int
             sample: 80
         protocol:
             description: The protocol for connections from clients to the load balancer.
-            returned: when state is present
+            returned: when O(state=present)
             type: str
             sample: "HTTPS"
         certificates:
             description: The SSL server certificate.
-            returned: when state is present
+            returned: when O(state=present)
             type: complex
             contains:
                 certificate_arn:
                     description: The Amazon Resource Name (ARN) of the certificate.
-                    returned: when state is present
+                    returned: when O(state=present)
                     type: str
                     sample: ""
         ssl_policy:
             description: The security policy that defines which ciphers and protocols are supported.
-            returned: when state is present
+            returned: when O(state=present)
             type: str
             sample: ""
         default_actions:
             description: The default actions for the listener.
-            returned: when state is present
+            returned: when O(state=present)
             type: str
             contains:
                 type:
                     description: The type of action.
-                    returned: when state is present
+                    returned: when O(state=present)
                     type: str
                     sample: ""
                 target_group_arn:
                     description: The Amazon Resource Name (ARN) of the target group.
-                    returned: when state is present
+                    returned: when O(state=present)
                     type: str
                     sample: ""
 load_balancer_arn:
     description: The Amazon Resource Name (ARN) of the load balancer.
-    returned: when state is present
+    returned: when O(state=present)
     type: str
     sample: "arn:aws:elasticloadbalancing:ap-southeast-2:123456789012:loadbalancer/app/my-alb/001122334455"
 load_balancer_name:
     description: The name of the load balancer.
-    returned: when state is present
+    returned: when O(state=present)
     type: str
     sample: "my-alb"
 routing_http2_enabled:
     description: Indicates whether HTTP/2 is enabled.
-    returned: when state is present
+    returned: when O(state=present)
     type: bool
     sample: true
 routing_http_desync_mitigation_mode:
     description: Determines how the load balancer handles requests that might pose a security risk to an application.
-    returned: when state is present
+    returned: when O(state=present)
     type: str
     sample: "defensive"
 routing_http_drop_invalid_header_fields_enabled:
     description: Indicates whether HTTP headers with invalid header fields are removed by the load balancer (true) or routed to targets (false).
-    returned: when state is present
+    returned: when O(state=present)
     type: bool
     sample: false
 routing_http_x_amzn_tls_version_and_cipher_suite_enabled:
     description: Indicates whether the two headers are added to the client request before sending it to the target.
-    returned: when state is present
+    returned: when O(state=present)
     type: bool
     sample: false
 routing_http_xff_client_port_enabled:
     description: Indicates whether the X-Forwarded-For header should preserve the source port that the client used to connect to the load balancer.
-    returned: when state is present
+    returned: when O(state=present)
     type: bool
     sample: false
 scheme:
     description: Internet-facing or internal load balancer.
-    returned: when state is present
+    returned: when O(state=present)
     type: str
     sample: "internal"
 security_groups:
     description: The IDs of the security groups for the load balancer.
-    returned: when state is present
+    returned: when O(state=present)
     type: list
     sample: ['sg-0011223344']
 state:
     description: The state of the load balancer.
-    returned: when state is present
+    returned: when O(state=present)
     type: dict
     sample: {'code': 'active'}
 tags:
     description: The tags attached to the load balancer.
-    returned: when state is present
+    returned: when O(state=present)
     type: dict
     sample: {
         'Tag': 'Example'
     }
 type:
     description: The type of load balancer.
-    returned: when state is present
+    returned: when O(state=present)
     type: str
     sample: "application"
 vpc_id:
     description: The ID of the VPC for the load balancer.
-    returned: when state is present
+    returned: when O(state=present)
     type: str
     sample: "vpc-0011223344"
 waf_fail_open_enabled:
     description: Indicates whether to allow a AWS WAF-enabled load balancer to route requests to targets if it is unable to forward the request to AWS WAF.
-    returned: when state is present
+    returned: when O(state=present)
     type: bool
     sample: false
 """

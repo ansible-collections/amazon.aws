@@ -19,20 +19,20 @@ options:
   name:
     description:
       - The name of the IAM user to look for.
-      - C(user_name) was added as an alias in release 7.2.0.
+      - O(user_name) was added as an alias in release 7.2.0.
     required: false
     type: str
     aliases: ["user_name"]
   group:
     description:
       - The group name name of the IAM user to look for. Mutually exclusive with C(path).
-      - C(group_name) was added as an alias in release 7.2.0.
+      - O(group_name) was added as an alias in release 7.2.0.
     required: false
     type: str
     aliases: ["group_name"]
   path_prefix:
     description:
-      - The path to the IAM user. Mutually exclusive with C(group).
+      - The path to the IAM user. Mutually exclusive with O(group).
       - If specified, then would get all user names whose path starts with user provided value.
     required: false
     default: '/'
@@ -64,37 +64,37 @@ EXAMPLES = r"""
 
 RETURN = r"""
 iam_users:
-    description: list of maching iam users
+    description: List of maching iam users.
     returned: success
     type: complex
     contains:
         arn:
-            description: the ARN of the user
+            description: The ARN of the user.
             returned: if user exists
             type: str
             sample: "arn:aws:iam::123456789012:user/dev/test_user"
         create_date:
-            description: the datetime user was created
+            description: The datetime user was created.
             returned: if user exists
             type: str
             sample: "2016-05-24T12:24:59+00:00"
         password_last_used:
-            description: the last datetime the password was used by user
+            description: The last datetime the password was used by user.
             returned: if password was used at least once
             type: str
             sample: "2016-05-25T13:39:11+00:00"
         path:
-            description: the path to user
+            description: The path to user.
             returned: if user exists
             type: str
             sample: "/dev/"
         user_id:
-            description: the unique user id
+            description: The unique user id.
             returned: if user exists
             type: str
             sample: "AIDUIOOCQKTUGI6QJLGH2"
         user_name:
-            description: the user name
+            description: The user name.
             returned: if user exists
             type: str
             sample: "test_user"
