@@ -30,8 +30,8 @@ extends_documentation_fragment:
   - amazon.aws.region.modules
   - amazon.aws.boto3
 notes:
-  - Support for the C(query) parameter was dropped in release 6.0.0.  This module now only queries
-    for endpoints.  Information about endpoint services can be retrieved using the
+  - Support for the I(query) parameter was dropped in release 6.0.0.  This module now only queries
+    for endpoints. Information about endpoint services can be retrieved using the
     M(amazon.aws.ec2_vpc_endpoint_service_info) module.
 """
 

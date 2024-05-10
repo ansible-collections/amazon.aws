@@ -11,12 +11,12 @@ version_added: 1.0.0
 short_description: Create and attach a volume, return volume ID and device map
 description:
   - Creates an EBS volume and optionally attaches it to an instance.
-  - If both I(instance) and I(name) are given and the instance has a device at the device name, then no volume is created and no attachment is made.
+  - If both O(instance) and O(name) are given and the instance has a device at the device name, then no volume is created and no attachment is made.
 options:
   instance:
     description:
       - Instance ID if you wish to attach the volume.
-      - Set to C(None) to detach the volume.
+      - Set to v(None) to detach the volume.
     type: str
   name:
     description:
@@ -32,9 +32,9 @@ options:
     type: int
   volume_type:
     description:
-      - Type of EBS volume; C(standard) (magnetic), C(gp2) (SSD), C(gp3) (SSD), C(io1) (Provisioned IOPS), C(io2) (Provisioned IOPS),
-        C(st1) (Throughput Optimized HDD), C(sc1) (Cold HDD).
-      - C(standard) is the old EBS default and continues to remain the Ansible default for backwards compatibility.
+      - Type of EBS volume; V(standard) (magnetic), V(gp2) (SSD), V(gp3) (SSD), V(io1) (Provisioned IOPS), V(io2) (Provisioned IOPS),
+        V(st1) (Throughput Optimized HDD), V(sc1) (Cold HDD).
+      - V(standard) is the old EBS default and continues to remain the Ansible default for backwards compatibility.
     default: standard
     choices: ['standard', 'gp2', 'io1', 'st1', 'sc1', 'gp3', 'io2']
     type: str
@@ -72,15 +72,15 @@ options:
   state:
     description:
       - Whether to ensure the volume is present or absent.
-      - I(state=list) was deprecated in release 1.1.0 and is no longer available
+      - O(state=list) was deprecated in release 1.1.0 and is no longer available
         with release 4.0.0.
-      - The C(list) functionality has been moved to a dedicated module M(amazon.aws.ec2_vol_info).
+      - The V(list) functionality has been moved to a dedicated module M(amazon.aws.ec2_vol_info).
     default: present
     choices: ['absent', 'present']
     type: str
   modify_volume:
     description:
-      - The volume won't be modified unless this key is C(true).
+      - The volume won't be modified unless this key is V(true).
     type: bool
     default: false
     version_added: 1.4.0
@@ -93,7 +93,7 @@ options:
     version_added: 1.4.0
   multi_attach:
     description:
-      - If set to C(true), Multi-Attach will be enabled when creating the volume.
+      - If set to V(true), Multi-Attach will be enabled when creating the volume.
       - When you create a new volume, Multi-Attach is disabled by default.
       - This parameter is supported with io1 and io2 volumes only.
     type: bool
@@ -107,7 +107,7 @@ options:
 author:
   - "Lester Wade (@lwade)"
 notes:
-  - Support for I(purge_tags) was added in release 1.5.0.
+  - Support for O(purge_tags) was added in release 1.5.0.
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
@@ -205,22 +205,22 @@ EXAMPLES = r"""
 
 RETURN = r"""
 device:
-    description: device name of attached volume
+    description: Device name of attached volume.
     returned: when success
     type: str
     sample: "/dev/sdf"
 volume_id:
-    description: the id of volume
+    description: The id of volume.
     returned: when success
     type: str
     sample: "vol-35b333d9"
 volume_type:
-    description: the volume type
+    description: The volume type.
     returned: when success
     type: str
     sample: "standard"
 volume:
-    description: a dictionary containing detailed attributes of the volume
+    description: A dictionary containing detailed attributes of the volume.
     returned: when success
     type: dict
     contains:

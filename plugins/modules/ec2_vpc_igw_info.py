@@ -27,7 +27,7 @@ options:
   convert_tags:
     description:
       - Convert tags from boto3 format (list of dictionaries) to the standard dictionary format.
-      - Prior to release 4.0.0 this defaulted to C(False).
+      - Prior to release 4.0.0 this defaulted to V(False).
     default: True
     type: bool
     version_added: 1.3.0
