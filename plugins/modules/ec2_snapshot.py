@@ -35,7 +35,7 @@ options:
   snapshot_tags:
     description:
       - A dictionary of tags to add to the snapshot.
-      - If the volume has a C(Name) tag this will be automatically added to the
+      - If the volume has a V(Name) tag this will be automatically added to the
         snapshot.
     type: dict
     required: false
@@ -66,28 +66,28 @@ options:
     type: str
   last_snapshot_min_age:
     description:
-      - If the volume's most recent snapshot has started less than I(last_snapshot_min_age) minutes ago, a new snapshot will not be created.
+      - If the volume's most recent snapshot has started less than O(last_snapshot_min_age) minutes ago, a new snapshot will not be created.
     required: false
     default: 0
     type: int
   modify_create_vol_permission:
     description:
-      - If set to C(true), ec2 snapshot's createVolumePermissions can be modified.
+      - If set to V(true), ec2 snapshot's createVolumePermissions can be modified.
     required: false
     type: bool
     version_added: 6.1.0
   purge_create_vol_permission:
     description:
       - Whether unspecified group names or user IDs should be removed from the snapshot createVolumePermission.
-      - Must set I(modify_create_vol_permission) to C(True) for when I(purge_create_vol_permission) is set to C(True).
+      - Must set O(modify_create_vol_permission) to V(True) for when O(purge_create_vol_permission) is set to V(True).
     required: False
     type: bool
     default: False
     version_added: 6.1.0
   group_names:
     description:
-      - The group to be added or removed. The possible value is C(all).
-      - Mutually exclusive with I(user_ids).
+      - The group to be added or removed. The possible value is V(all).
+      - Mutually exclusive with O(user_ids).
     required: false
     type: list
     elements: str
@@ -96,9 +96,9 @@ options:
   user_ids:
     description:
       - The account user IDs to be added or removed.
-      - If createVolumePermission on snapshot is currently set to Public i.e. I(group_names=all),
-        providing I(user_ids) will not make createVolumePermission Private unless I(create_volume_permission) is set to C(true).
-      - Mutually exclusive with I(group_names).
+      - If createVolumePermission on snapshot is currently set to Public i.e. O(group_names=all),
+        providing O(user_ids) will not make createVolumePermission Private unless O(modify_create_vol_permission) is set to V(true).
+      - Mutually exclusive with O(group_names).
     required: false
     type: list
     elements: str

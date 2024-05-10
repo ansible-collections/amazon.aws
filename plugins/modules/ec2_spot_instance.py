@@ -50,7 +50,7 @@ options:
       security_groups:
         description:
           - Security group name (or list of group names) to use with the instance.
-          - Only supported with EC2 Classic. To launch in a VPC, use C(group_id)
+          - Only supported with EC2 Classic. To launch in a VPC, use O(launch_specification.security_group_ids).
         type: list
         elements: str
       key_name:
@@ -75,7 +75,7 @@ options:
         suboptions:
           device_name:
             description:
-              - The device name (for example, /dev/sdh or xvdh ).
+              - The device name (for example, /dev/sdh or xvdh).
             type: str
           virtual_name:
             description:
@@ -84,7 +84,7 @@ options:
           ebs:
             description:
               - Parameters used to automatically set up EBS volumes when the instance is launched,
-                see U(https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html#EC2.Client.request_spot_instances)
+                see U(https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html#EC2.Client.request_spot_instances).
             type: dict
           no_device:
             description:
@@ -103,12 +103,12 @@ options:
           arn:
             description:
               - The Amazon Resource Name (ARN) of the instance profile.
-              - Only one of I(arn) or I(name) may be specified.
+              - Only one of O(launch_specification.iam_instance_profile.arn) or I(launch_specification.iam_instance_profile.name) may be specified.
             type: str
           name:
             description:
               - The name of the instance profile.
-              - Only one of I(arn) or I(name) may be specified.
+              - Only one of O(launch_specification.iam_instance_profile.arn) or I(launch_specification.iam_instance_profile.name) may be specified.
             type: str
       image_id:
         description:
@@ -254,8 +254,8 @@ options:
   state:
     description:
       - Whether the spot request should be created or removed.
-      - When I(state=present), I(launch_specification) is required.
-      - When I(state=absent), I(spot_instance_request_ids) is required.
+      - When O(state=present), O(launch_specification) is required.
+      - When O(state=absent), O(spot_instance_request_ids) is required.
     default: 'present'
     choices: [ 'absent', 'present' ]
     type: str
@@ -267,7 +267,7 @@ options:
   spot_type:
     description:
       - The type of spot request.
-      - After being interrupted a C(persistent) spot instance will be started once there is capacity to fill the request again.
+      - After being interrupted a V(persistent) spot instance will be started once there is capacity to fill the request again.
     default: 'one-time'
     choices: [ "one-time", "persistent" ]
     type: str
@@ -283,7 +283,7 @@ options:
   terminate_instances:
     description:
       - Boolean value to set whether or not to terminate instances associated to spot request.
-      - Can be used only when I(state=absent).
+      - Can be used only when O(state=absent).
     default: False
     type: bool
     version_added: 5.4.0
@@ -341,7 +341,7 @@ EXAMPLES = r"""
 
 RETURN = r"""
 spot_request:
-    description: The spot instance request details after creation
+    description: The spot instance request details after creation.
     returned: when success
     type: dict
     sample: {
@@ -399,7 +399,7 @@ spot_request:
         }
 
 cancelled_spot_request:
-    description: The spot instance request details that has been cancelled
+    description: The spot instance request details that has been cancelled.
     returned: always
     type: str
     sample: 'Spot requests with IDs: sir-1234abcd have been cancelled'

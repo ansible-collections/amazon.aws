@@ -26,7 +26,7 @@ options:
 notes:
   - By default, the module will return all security groups in a region. To limit results use the
     appropriate filters.
-  - Prior to release 5.0.0 this module was called C(amazon.aws.ec2_group_info). The usage did not
+  - Prior to release 5.0.0 this module was called M(amazon.aws.ec2_group_info). The usage did not
     change.
 
 extends_documentation_fragment:
@@ -108,7 +108,7 @@ security_groups:
             elements: dict
             contains:
                 from_port:
-                    description: If the protocol is TCP or UDP, this is the start of the port range.
+                    description: If the Oprotocol is TCP or UDP, this is the start of the port range.
                     type: int
                     sample: 80
                 ip_protocol:
