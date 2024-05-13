@@ -138,7 +138,7 @@ subnets:
             sample: false
         enable_dns64:
             description:
-            - Indicates whether DNS queries made to the Amazon-provided DNS Resolver in this subnet should return synthetic IPv6 addresses for IPv4-only destinations.
+            - Indicates whether DNS queries made should return synthetic IPv6 addresses for IPv4-only destinations.
             type: bool
             sample: false
         ipv6_association_id:
@@ -173,7 +173,8 @@ subnets:
                             returned: always
                             type: str
         map_customer_owned_ip_on_launch:
-            description: Indicates whether a network interface created in this subnet (including a network interface created by RunInstances) receives a customer-owned IPv4 address.
+            description:
+            - Indicates whether a network interface receives a customer-owned IPv4 address.
             type: bool
             sample: flase
         owner_id:
@@ -181,13 +182,15 @@ subnets:
             type: str
             sample: 12344567
         private_dns_name_options_on_launch:
-            description: The type of hostnames to assign to instances in the subnet at launch. An instance hostname is based on the IPv4 address or ID of the instance.
+            description:
+            - The type of hostnames to assign to instances in the subnet at launch.
+            - An instance hostname is based on the IPv4 address or ID of the instance.
             type: dict
-            sample: "{
+            sample: {
                 "enable_resource_name_dns_a_record": false,
                 "enable_resource_name_dns_aaaa_record": false,
                 "hostname_type": "ip-name"
-            }"
+            }
         subnet_arn:
             description: The Amazon Resource Name (ARN) of the subnet.
             type: str

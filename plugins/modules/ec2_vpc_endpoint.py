@@ -244,51 +244,6 @@ endpoints:
       description: The ID of the VPC.
       returned: always
       type: str
-  sample: [
-      {
-        "creation_timestamp": "2017-02-20T05:04:15+00:00",
-        "dns_entries": [],
-        "dns_options": {
-            "dns_record_ip_type": "ipv4"
-        },
-        "groups": [
-            {
-                "group_id": "sg-03196a047b95d36ad",
-                "group_name": "default"
-            }
-        ],
-        "ip_address_type": "ipv4",
-        "network_interface_ids": [],
-        "owner_id": "721066863947",
-        "policy_document": {
-          "Id": "Policy1450910922815",
-          "Statement": [
-            {
-              "Action": "s3:*",
-              "Effect": "Allow",
-              "Principal": "*",
-              "Resource": [
-                "arn:aws:s3:::*/*",
-                "arn:aws:s3:::*"
-              ],
-              "Sid": "Stmt1450910920641"
-            }
-          ],
-          "Version": "2012-10-17"
-        },
-        "private_dns_enabled": false,
-        "requester_managed"s: false,
-        "route_table_ids": [],
-        "service_name": "io.spotinst.vpce.us-east-1.linkapi",
-        "state": "pendingAcceptance",
-        "subnet_ids": [],
-        "tags": [],
-        "vpc_endpoint_id": "vpce-1234",
-        "vpc_endpoint_type": "Interface",
-        "vpc_id": "vpc-0ee1a4b203c587ffa"
-        "route_table_ids": [],
-      }
-    ]
 """
 
 import datetime

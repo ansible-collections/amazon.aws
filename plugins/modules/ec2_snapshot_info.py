@@ -181,7 +181,7 @@ snapshots:
             sample:
         storage_tier:
             description: The storage tier in which the snapshot is stored.
-            type: string
+            type: str
             returned: always
             sample: standard
         tags:

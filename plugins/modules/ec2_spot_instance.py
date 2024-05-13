@@ -401,6 +401,7 @@ spot_request:
 cancelled_spot_request:
     description: The spot instance request details that has been cancelled
     type: str
+    returned: when cancellation is successful
     sample: 'Spot requests with IDs: sir-1234abcd have been cancelled'
 """
 

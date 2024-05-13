@@ -187,6 +187,7 @@ snapshot_id:
     sample: snap-01234567
 snapshots:
     description: List of snapshots.
+    returned: always
     type: list
     elements: dict
     contains:
@@ -217,13 +218,13 @@ snapshots:
             sample: snap-1234
         start_time:
             description: Time this snapshot was started. This is the same for all snapshots initiated by the same request.
-            type: datetime
+            type: str
             returned: always
-            sample: 2024-05-07T14:29:24.523000+00:00
+            sample: "2024-05-07T14:29:24.523000+00:00"
         state:
             description: Current state of the snapshot.
             type: str
-            return: always
+            returned: always
             sample: pending
         tags:
             description: Tags associated with this snapshot.
