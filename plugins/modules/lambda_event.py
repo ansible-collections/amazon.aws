@@ -252,15 +252,15 @@ def set_default_values(module, source_params):
         _source_params_cpy.setdefault("batch_size", 10)
 
         if source_params["source_arn"].endswith(".fifo"):
-            if source_params["batch_size"] > 10:
+            if _source_params_cpy["batch_size"] > 10:
                 module.fail_json(msg="For FIFO queues the maximum batch_size is 10.")
-            if source_params.get("maximum_batching_window_in_seconds"):
+            if _source_params_cpy.get("maximum_batching_window_in_seconds"):
                 module.fail_json(
                     msg="maximum_batching_window_in_seconds is not supported by Amazon SQS FIFO event sources."
                 )
         else:
-            if not (100 <= source_params["batch_size"] <= 10000):
-                module.fail_json(msg="For standard queue batch_size must be between 100 and 10000.")
+            if _source_params_cpy["batch_size"] >= 10000:
+                module.fail_json(msg="For standard queue batch_size must be between lower than 10000.")
 
     elif module.params["event_source"].lower() == "stream":
         # Default 100.

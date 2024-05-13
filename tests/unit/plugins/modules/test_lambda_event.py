@@ -442,14 +442,14 @@ def test_lambda_event_stream_update_event(
             {
                 "source_arn": "arn:aws:sqs:us-east-1:123456789012:ansible-test-28277052",
                 "enabled": True,
-                "batch_size": 10,
+                "batch_size": 11000,
                 "starting_position": None,
                 "function_response_types": None,
                 "maximum_batching_window_in_seconds": None,
             },
             None,
             pytest.raises(SystemExit),
-            "For standard queue batch_size must be between 100 and 10000.",
+            "For standard queue batch_size must be lower than 10000.",
             "sqs",
         ),
         (
@@ -492,6 +492,24 @@ def test_lambda_event_stream_update_event(
             does_not_raise(),
             None,
             "stream",
+        ),
+        (
+            {
+                "source_arn": "arn:aws:sqs:us-east-1:123456789012:ansible-test-28277052",
+                "enabled": True,
+                "starting_position": None,
+                "function_response_types": None,
+            },
+            {
+                "source_arn": "arn:aws:sqs:us-east-1:123456789012:ansible-test-28277052",
+                "enabled": True,
+                "batch_size": 10,
+                "starting_position": None,
+                "function_response_types": None,
+            },
+            does_not_raise(),
+            None,
+            "sqs",
         ),
         (
             {
