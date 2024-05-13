@@ -111,7 +111,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 
 
 def get_all_backup_plans_info(client):
-    paginator = client.get_paginator('list_backup_plans')
+    paginator = client.get_paginator("list_backup_plans")
     return paginator.paginate().build_full_result()
 
 
