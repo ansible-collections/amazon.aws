@@ -12,7 +12,7 @@ short_description: Execute an AWS Lambda function
 description:
   - This module executes AWS Lambda functions, allowing synchronous and asynchronous
     invocation.
-  - Prior to release 5.0.0 this module was called C(community.aws.execute_lambda).
+  - Prior to release 5.0.0 this module was called M(community.aws.execute_lambda).
     The usage did not change.
   - This module was originally added to C(community.aws) in release 1.0.0.
 extends_documentation_fragment:
@@ -22,15 +22,15 @@ extends_documentation_fragment:
 author:
   - "Ryan Scott Brown (@ryansb) <ryansb@redhat.com>"
 notes:
-  - Async invocation will always return an empty C(output) key.
+  - Async invocation will always return an empty RV(result.output)  key.
   - Synchronous invocation may result in a function timeout, resulting in an
-    empty C(output) key.
+    empty RV(result.output) key.
 options:
   name:
     description:
       - The name of the function to be invoked. This can only be used for
         invocations within the calling account. To invoke a function in another
-        account, use I(function_arn) to specify the full ARN.
+        account, use O(function_arn) to specify the full ARN.
     type: str
   function_arn:
     description:
@@ -38,17 +38,17 @@ options:
     type: str
   tail_log:
     description:
-      - If I(tail_log=true), the result of the task will include the last 4 KB
+      - If O(tail_log=true), the result of the task will include the last 4 KB
         of the CloudWatch log for the function execution. Log tailing only
-        works if you use synchronous invocation I(wait=true). This is usually
+        works if you use synchronous invocation O(wait=true). This is usually
         used for development or testing Lambdas.
     type: bool
     default: false
   wait:
     description:
-      - Whether to wait for the function results or not. If I(wait=no)
+      - Whether to wait for the function results or not. If O(wait=no)
         the task will not return any results. To wait for the Lambda function
-        to complete, set I(wait=true) and the result will be available in the
+        to complete, set O(wait=true) and the result will be available in the
         I(output) key.
     type: bool
     default: true
@@ -62,7 +62,7 @@ options:
   version_qualifier:
     description:
       - Which version/alias of the function to run. This defaults to the
-        C(LATEST) revision, but can be set to any existing version or alias.
+        V(LATEST) revision, but can be set to any existing version or alias.
         See U(https://docs.aws.amazon.com/lambda/latest/dg/versioning-aliases.html)
         for details.
     type: str
@@ -116,16 +116,16 @@ result:
     type: dict
     contains:
         output:
-            description: Function output if wait=true and the function returns a value
+            description: Function output if O(wait=true) and the function returns a value.
             returned: success
             type: dict
             sample: "{ 'output': 'something' }"
         logs:
-            description: The last 4KB of the function logs. Only provided if I(tail_log) is C(true)
+            description: The last 4KB of the function logs. Only provided if O(tail_log=true).
             type: str
-            returned: if I(tail_log) == true
+            returned: if O(tail_log=true)
         status:
-            description: C(StatusCode) of API call exit (200 for synchronous invokes, 202 for async)
+            description: C(StatusCode) of API call exit (200 for synchronous invokes, 202 for async).
             type: int
             sample: 200
             returned: always

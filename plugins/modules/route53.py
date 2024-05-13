@@ -23,12 +23,12 @@ options:
   zone:
     description:
       - The DNS zone to modify.
-      - This is a required parameter, if parameter I(hosted_zone_id) is not supplied.
+      - This is a required parameter, if parameter O(hosted_zone_id) is not supplied.
     type: str
   hosted_zone_id:
     description:
       - The Hosted Zone ID of the DNS zone to modify.
-      - This is a required parameter, if parameter I(zone) is not supplied.
+      - This is a required parameter, if parameter O(zone) is not supplied.
     type: str
   record:
     description:
@@ -38,7 +38,7 @@ options:
   ttl:
     description:
       - The TTL, in second, to give the new record.
-      - Mutually exclusive with I(alias).
+      - Mutually exclusive with O(alias).
     default: 3600
     type: int
   type:
@@ -50,8 +50,8 @@ options:
   alias:
     description:
       - Indicates if this is an alias record.
-      - Mutually exclusive with I(ttl).
-      - Defaults to C(false).
+      - Mutually exclusive with O(ttl).
+      - Defaults to V(false).
     type: bool
   alias_hosted_zone_id:
     description:
@@ -64,7 +64,7 @@ options:
     default: false
   value:
     description:
-      - The new value when creating a DNS record.  YAML lists or multiple comma-spaced values are allowed for non-alias records.
+      - The new value when creating a DNS record. YAML lists or multiple comma-spaced values are allowed for non-alias records.
     type: list
     elements: str
   overwrite:
@@ -74,12 +74,12 @@ options:
   retry_interval:
     description:
       - In the case that Route 53 is still servicing a prior request, this module will wait and try again after this many seconds.
-        If you have many domain names, the default of C(500) seconds may be too long.
+        If you have many domain names, the default of V(500) seconds may be too long.
     default: 500
     type: int
   private_zone:
     description:
-      - If set to C(true), the private zone matching the requested name within the domain will be used if there are both public and private zones.
+      - If set to V(true), the private zone matching the requested name within the domain will be used if there are both public and private zones.
       - The default is to use the public zone.
     type: bool
     default: false
@@ -94,7 +94,7 @@ options:
         have the same combination of DNS name and type, a value that
         determines what portion of traffic for the current resource record set
         is routed to the associated location.
-      - Mutually exclusive with I(region) and I(failover).
+      - Mutually exclusive with O(region) and O(failover).
     type: int
   region:
     description:
@@ -102,7 +102,7 @@ options:
         that have the same combination of DNS name and type, a value that
         determines which region this should be associated with for the
         latency-based routing
-      - Mutually exclusive with I(weight) and I(failover).
+      - Mutually exclusive with O(weight) and O(failover).
     type: str
   geo_location:
     description:
@@ -114,7 +114,8 @@ options:
       continent_code:
         description:
           - The two-letter code for the continent.
-          - Specifying I(continent_code) with either I(country_code) or I(subdivision_code) returns an InvalidInput error.
+          - Specifying O(geo_location.continent_code) with either I(geo_location.country_code) or O(geo_location.subdivision_code)
+            returns an InvalidInput error.
         type: str
       country_code:
         description:
@@ -124,7 +125,7 @@ options:
       subdivision_code:
         description:
           - The two-letter code for a state of the United States.
-          - To specify I(subdivision_code), I(country_code) must be set to C(US).
+          - To specify I(geo_location.subdivision_code), I(geo_location.country_code) must be set to V(US).
         type: str
     type: dict
     version_added: 3.3.0
@@ -136,8 +137,8 @@ options:
   failover:
     description:
       - Failover resource record sets only. Whether this is the primary or
-        secondary resource record set. Allowed values are PRIMARY and SECONDARY
-      - Mutually exclusive with I(weight) and I(region).
+        secondary resource record set. Allowed values are V(PRIMARY) and V(SECONDARY).
+      - Mutually exclusive with O(weight) and O(region).
     type: str
     choices: ['SECONDARY', 'PRIMARY']
   vpc_id:
@@ -189,14 +190,14 @@ resource_record_sets:
       type: str
       sample: "PRIMARY"
     geo_location:
-      description: geograpic location based on which Route53 resonds to DNS queries.
+      description: Geograpic location based on which Route53 resonds to DNS queries.
       returned: when configured
       type: dict
       sample: { continent_code: "NA", country_code: "US", subdivision_code: "CA" }
       version_added: 3.3.0
       version_added_collection: community.aws
     health_check:
-      description: health_check associated with this record.
+      description: Health check associated with this record.
       returned: always
       type: str
     identifier:

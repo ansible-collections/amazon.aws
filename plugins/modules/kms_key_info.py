@@ -11,7 +11,7 @@ version_added: 5.0.0
 short_description: Gather information about AWS KMS keys
 description:
   - Gather information about AWS KMS keys including tags and grants.
-  - Prior to release 5.0.0 this module was called C(community.aws.aws_kms_info).
+  - Prior to release 5.0.0 this module was called M(community.aws.aws_kms_info).
     The usage did not change.
   - This module was originally added to C(community.aws) in release 1.0.0.
 author:
@@ -20,7 +20,7 @@ options:
   alias:
     description:
       - Alias for key.
-      - Mutually exclusive with I(key_id) and I(filters).
+      - Mutually exclusive with O(key_id) and 0(filters).
     required: false
     aliases:
       - key_alias
@@ -30,7 +30,7 @@ options:
   key_id:
     description:
       - Key ID or ARN of the key.
-      - Mutually exclusive with I(alias) and I(filters).
+      - Mutually exclusive with O(alias) and O(filters).
     required: false
     aliases:
       - key_arn
@@ -41,9 +41,9 @@ options:
     description:
       - A dict of filters to apply. Each dict item consists of a filter key and a filter value.
         The filters aren't natively supported by boto3, but are supported to provide similar
-        functionality to other modules. Standard tag filters (C(tag-key), C(tag-value) and
-        C(tag:tagName)) are available, as are C(key-id) and C(alias)
-      - Mutually exclusive with I(alias) and I(key_id).
+        functionality to other modules. Standard tag filters (V(tag-key), V(tag-value) and
+        V(tag:tagName)) are available, as are V(key-id) and V(alias)
+      - Mutually exclusive with O(alias) and O(key_id).
     type: dict
   pending_deletion:
     description: Whether to get full details (tags, grants etc.) of keys pending deletion.
@@ -143,7 +143,7 @@ kms_keys:
       returned: always
       sample: "My Key for Protecting important stuff"
     enabled:
-      description: Whether the key is enabled. True if I(key_state) is C(Enabled).
+      description: Whether the key is enabled. True if RV(kms_keys.key_state) is C(Enabled).
       type: bool
       returned: always
       sample: false

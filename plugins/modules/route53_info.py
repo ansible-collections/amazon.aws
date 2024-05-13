@@ -6,10 +6,10 @@
 
 DOCUMENTATION = r"""
 module: route53_info
-short_description: Retrieves route53 details using AWS methods
+short_description: Retrieves Route 53 details using AWS methods
 version_added: 5.0.0
 description:
-  - Gets various details related to Route53 zone, record set or health check details.
+  - Gets various details related to Route 53 zone, record set or health check details.
   - This module was originally added to C(community.aws) in release 1.0.0.
 options:
   query:
@@ -31,14 +31,14 @@ options:
       - The value that you specify here is the value that
         ChangeResourceRecordSets returned in the Id element
         when you submitted the request.
-      - Required if I(query=change).
+      - Required if O(query=change).
     required: false
     type: str
   hosted_zone_id:
     description:
       - The Hosted Zone ID of the DNS zone.
-      - Required if I(query) is set to I(hosted_zone) and I(hosted_zone_method) is set to I(details).
-      - Required if I(query) is set to I(record_sets).
+      - Required if O(query) is set to V(hosted_zone) and O(hosted_zone_method) is set to V(details).
+      - Required if O(query) is set to V(record_sets).
     required: false
     type: str
   max_items:
@@ -49,7 +49,7 @@ options:
   next_marker:
     description:
       - "Some requests such as list_command: hosted_zones will return a maximum
-        number of entries - EG 100 or the number specified by I(max_items).
+        number of entries - EG 100 or the number specified by O(max_items).
         If the number of entries exceeds this maximum another request can be sent
         using the NextMarker entry from the first response to get the next page
         of results."
@@ -81,8 +81,8 @@ options:
   resource_id:
     description:
       - The ID/s of the specified resource/s.
-      - Required if I(query=health_check) and I(health_check_method=tags).
-      - Required if I(query=hosted_zone) and I(hosted_zone_method=tags).
+      - Required if O(query=health_check) and O(health_check_method=tags).
+      - Required if O(query=hosted_zone) and O(hosted_zone_method=tags).
     required: false
     aliases: ['resource_ids']
     type: list
@@ -90,8 +90,8 @@ options:
   health_check_id:
     description:
       - The ID of the health check.
-      - Required if C(query) is set to C(health_check) and
-        C(health_check_method) is set to C(details) or C(status) or C(failure_reason).
+      - Required if V(query) is set to V(health_check) and
+        O(health_check_method) is set to V(details) or V(status) or V(failure_reason).
     required: false
     type: str
   hosted_zone_method:
@@ -207,7 +207,7 @@ EXAMPLES = r"""
 RETURN = r"""
 resource_record_sets:
     description: A list of resource record sets returned by list_resource_record_sets in boto3.
-    returned: when I(query=record_sets)
+    returned: when O(query=record_sets)
     type: list
     elements: dict
     contains:
@@ -257,7 +257,7 @@ resource_record_sets:
     version_added_collection: community.aws
 hosted_zones:
     description: A list of hosted zones returned by list_hosted_zones in boto3.
-    returned: when I(query=hosted_zone)
+    returned: when O(query=hosted_zone)
     type: list
     elements: dict
     contains:
@@ -292,10 +292,10 @@ hosted_zones:
     version_added: 4.0.0
     version_added_collection: community.aws
 health_checks:
-    description: A list of Route53 health checks returned by list_health_checks in boto3.
+    description: A list of Route 53 health checks returned by list_health_checks in boto3.
     type: list
     elements: dict
-    returned: when I(query=health_check)
+    returned: when O(query=health_check)
     contains:
         id:
             description: The identifier that Amazon Route53 assigned to the health check at the time of creation.
@@ -322,7 +322,7 @@ health_checks:
                     type: bool
                     sample: true
                 failure_threshold:
-                    description: The number of consecutive health checks that an endpoint must pass/fail for Route53 to change current status of endpoint.
+                    description: The number of consecutive health checks that an endpoint must pass/fail for Route 53 to change current status of endpoint.
                     type: int
                     sample: 3
                 fully_qualified_domain_name:
@@ -354,7 +354,7 @@ health_checks:
                     type: str
                     sample: '/welcome.html'
                 search_string:
-                    description: The string that Route53 uses to search for in the response body from specified resource.
+                    description: The string that Route 53 uses to search for in the response body from specified resource.
                     type: str
                     sample: 'test-string-to-match'
                 type:
@@ -365,14 +365,14 @@ health_checks:
     version_added_collection: community.aws
 checker_ip_ranges:
     description: A list of IP ranges in CIDR format for Amazon Route 53 health checkers.
-    returned: when I(query=checker_ip_range)
+    returned: when O(query=checker_ip_range)
     type: list
     elements: str
     version_added: 4.1.0
     version_added_collection: community.aws
 delegation_sets:
     description: A list of dicts that contains information about the reusable delegation set.
-    returned: when I(query=reusable_delegation_set)
+    returned: when O(query=reusable_delegation_set)
     type: list
     elements: dict
     version_added: 4.1.0
@@ -380,10 +380,10 @@ delegation_sets:
 health_check:
     description: A dict of Route53 health check details returned by get_health_check in boto3.
     type: dict
-    returned: when I(query=health_check) and I(health_check_method=details)
+    returned: when O(query=health_check) and O(health_check_method=details)
     contains:
         id:
-            description: The identifier that Amazon Route53 assigned to the health check at the time of creation.
+            description: The identifier that Amazon Route 53 assigned to the health check at the time of creation.
             type: str
             sample: '12345cdc-2cc4-1234-bed2-123456abc1a2'
         health_check_version:
@@ -452,7 +452,7 @@ health_check_observations:
     description: A dict of Route53 health check details returned by get_health_check_status and get_health_check_last_failure_reason in boto3.
     type: list
     elements: dict
-    returned: when I(query=health_check) and I(health_check_method=status) or I(health_check_method=failure_reason)
+    returned: when O(query=health_check) and O(health_check_method=status) or O(health_check_method=failure_reason)
     contains:
         ip_address:
             description: The IP address of the Amazon Route 53 health checker that provided the failure reason in StatusReport.
@@ -479,14 +479,14 @@ ResourceRecordSets:
     description: A deprecated CamelCased list of resource record sets returned by list_resource_record_sets in boto3. \
                  This list contains same elements/parameters as it's snake_cased version mentioned above. \
                  This field is deprecated and will be removed in 6.0.0 version release.
-    returned: when I(query=record_sets)
+    returned: when O(query=record_sets)
     type: list
     elements: dict
 HostedZones:
     description: A deprecated CamelCased list of hosted zones returned by list_hosted_zones in boto3. \
                  This list contains same elements/parameters as it's snake_cased version mentioned above. \
                  This field is deprecated and will be removed in 6.0.0 version release.
-    returned: when I(query=hosted_zone)
+    returned: when O(query=hosted_zone)
     type: list
     elements: dict
 HealthChecks:
@@ -495,27 +495,27 @@ HealthChecks:
                  This field is deprecated and will be removed in 6.0.0 version release.
     type: list
     elements: dict
-    returned: when I(query=health_check)
+    returned: when O(query=health_check)
 CheckerIpRanges:
     description: A deprecated CamelCased list of IP ranges in CIDR format for Amazon Route 53 health checkers.\
                  This list contains same elements/parameters as it's snake_cased version mentioned abobe. \
                  This field is deprecated and will be removed in 6.0.0 version release.
     type: list
     elements: str
-    returned: when I(query=checker_ip_range)
+    returned: when O(query=checker_ip_range)
 DelegationSets:
     description: A deprecated CamelCased list of dicts that contains information about the reusable delegation set. \
                  This list contains same elements/parameters as it's snake_cased version mentioned above. \
                  This field is deprecated and will be removed in 6.0.0 version release.
     type: list
     elements: dict
-    returned: when I(query=reusable_delegation_set)
+    returned: when O(query=reusable_delegation_set)
 HealthCheck:
     description: A deprecated CamelCased dict of Route53 health check details returned by get_health_check in boto3. \
                  This dict contains same elements/parameters as it's snake_cased version mentioned above. \
                  This field is deprecated and will be removed in 6.0.0 version release.
     type: dict
-    returned: when I(query=health_check) and I(health_check_method=details)
+    returned: when O(query=health_check) and O(health_check_method=details)
 """
 
 try:
