@@ -16,7 +16,7 @@ options:
   instance:
     description:
       - Instance ID if you wish to attach the volume.
-      - Set to v(None) to detach the volume.
+      - Set to V(None) to detach the volume.
     type: str
   name:
     description:
