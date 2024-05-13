@@ -32,11 +32,11 @@ options:
   subnets:
     description:
       - List of subnet IDs that make up the database subnet group.
-      - Required when I(state=present).
+      - Required when O(state=present).
     type: list
     elements: str
 notes:
-  - Support for I(tags) and I(purge_tags) was added in release 3.2.0.
+  - Support for O(tags) and O(purge_tags) was added in release 3.2.0.
 author:
   - "Scott Anderson (@tastychutney)"
   - "Alina Buzachis (@alinabuzachis)"
@@ -82,49 +82,49 @@ changed:
     returned: always
     sample: "false"
 subnet_group:
-    description: Dictionary of DB subnet group values
-    returned: I(state=present)
+    description: Dictionary of DB subnet group values,
+    returned: O(state=present)
     type: complex
     contains:
         name:
-            description: The name of the DB subnet group (maintained for backward compatibility)
-            returned: I(state=present)
+            description: The name of the DB subnet group (maintained for backward compatibility).
+            returned: O(state=present)
             type: str
             sample: "ansible-test-mbp-13950442"
         db_subnet_group_name:
-            description: The name of the DB subnet group
-            returned: I(state=present)
+            description: The name of the DB subnet group.
+            returned: O(state=present)
             type: str
             sample: "ansible-test-mbp-13950442"
         description:
-            description: The description of the DB subnet group (maintained for backward compatibility)
-            returned: I(state=present)
+            description: The description of the DB subnet group (maintained for backward compatibility).
+            returned: O(state=present)
             type: str
             sample: "Simple description."
         db_subnet_group_description:
-            description: The description of the DB subnet group
-            returned: I(state=present)
+            description: The description of the DB subnet group.
+            returned: O(state=present)
             type: str
             sample: "Simple description."
         vpc_id:
-            description: The VpcId of the DB subnet group
-            returned: I(state=present)
+            description: The VPC Id of the DB subnet group.
+            returned: O(state=present)
             type: str
             sample: "vpc-0acb0ba033ff2119c"
         subnet_ids:
-            description: Contains a list of Subnet IDs
-            returned: I(state=present)
+            description: Contains a list of Subnet IDs.
+            returned: O(state=present)
             type: list
             sample:
                 "subnet-08c94870f4480797e"
         subnets:
-            description: Contains a list of Subnet elements (@see https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/rds.html#RDS.Client.describe_db_subnet_groups) # noqa
-            returned: I(state=present)
+            description: Contains a list of Subnet elements (@see https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/rds.html#RDS.Client.describe_db_subnet_groups). # noqa
+            returned: O(state=present)
             type: list
             contains:
                 subnet_availability_zone:
                     description: Contains Availability Zone information.
-                    returned: I(state=present)
+                    returned: O(state=present)
                     type: dict
                     version_added: 3.2.0
                     version_added_collection: community.aws
@@ -132,43 +132,43 @@ subnet_group:
                         name: "eu-north-1b"
                 subnet_identifier:
                     description: The identifier of the subnet.
-                    returned: I(state=present)
+                    returned: O(state=present)
                     type: str
                     version_added: 3.2.0
                     version_added_collection: community.aws
                     sample: "subnet-08c94870f4480797e"
                 subnet_outpost:
                     description: This value specifies the Outpost.
-                    returned: I(state=present)
+                    returned: O(state=present)
                     type: dict
                     version_added: 3.2.0
                     version_added_collection: community.aws
                     sample: {}
                 subnet_status:
                     description: The status of the subnet.
-                    returned: I(state=present)
+                    returned: O(state=present)
                     type: str
                     version_added: 3.2.0
                     version_added_collection: community.aws
                     sample: "Active"
         status:
-            description: The status of the DB subnet group (maintained for backward compatibility)
-            returned: I(state=present)
+            description: The status of the DB subnet group (maintained for backward compatibility).
+            returned: O(state=present)
             type: str
             sample: "Complete"
         subnet_group_status:
-            description: The status of the DB subnet group
-            returned: I(state=present)
+            description: The status of the DB subnet group.
+            returned: O(state=present)
             type: str
             sample: "Complete"
         db_subnet_group_arn:
-            description: The ARN of the DB subnet group
-            returned: I(state=present)
+            description: The ARN of the DB subnet group.
+            returned: O(state=present)
             type: str
             sample: "arn:aws:rds:eu-north-1:123456789012:subgrp:ansible-test-13950442"
         tags:
-            description: The tags associated with the subnet group
-            returned: I(state=present)
+            description: The tags associated with the subnet group.
+            returned: O(state=present)
             type: dict
             version_added: 3.2.0
             version_added_collection: community.aws

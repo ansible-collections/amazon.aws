@@ -18,7 +18,7 @@ author:
 options:
   state:
     description:
-      - Specifies whether the option group should be C(present) or C(absent).
+      - Specifies whether the option group should be V(present) or V(absent).
     required: true
     choices: [ 'present', 'absent' ]
     type: str
@@ -100,7 +100,7 @@ options:
                     required: false
                     type: str
                 is_modifiable:
-                    description: A Boolean value that, when C(true), indicates the option setting can be modified from the default.
+                    description: A Boolean value that, when V(true), indicates the option setting can be modified from the default.
                     required: false
                     type: bool
                 is_collection:
@@ -108,12 +108,12 @@ options:
                     required: false
                     type: bool
         db_security_group_memberships:
-            description: A list of C(DBSecurityGroupMembership) name strings used for this option.
+            description: A list of V(DBSecurityGroupMembership) name strings used for this option.
             required: false
             type: list
             elements: str
         vpc_security_group_memberships:
-            description: A list of C(VpcSecurityGroupMembership) name strings used for this option.
+            description: A list of V(VpcSecurityGroupMembership) name strings used for this option.
             required: false
             type: list
             elements: str
@@ -337,7 +337,7 @@ vpc_id:
     type: str
     sample: "vpc-bf07e9d6"
 tags:
-    description: The tags associated the Internet Gateway.
+    description: The tags associated the RDS option group.
     type: dict
     returned: always
     sample: {

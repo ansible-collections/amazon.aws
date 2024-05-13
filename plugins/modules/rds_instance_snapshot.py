@@ -55,7 +55,7 @@ options:
     version_added_collection: community.aws
   copy_tags:
     description:
-      - Whether to copy all tags from I(source_db_snapshot_identifier) to I(db_instance_identifier).
+      - Whether to copy all tags from O(source_db_snapshot_identifier) to O(db_instance_identifier).
     type: bool
     default: False
     version_added: 3.3.0
