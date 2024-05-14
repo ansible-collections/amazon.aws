@@ -545,7 +545,6 @@ class EC2InstanceModule(AnsibleAWSModule):
             filters["instance-id"] = instance_ids
         else:
             vpc_subnet_id = self.params.get("vpc_subnet_id")
-            filters["subnet-id"] = [vpc_subnet_id]
             if not vpc_subnet_id:
                 network = self.params.get("network")
                 if network:
@@ -558,14 +557,16 @@ class EC2InstanceModule(AnsibleAWSModule):
                                 i = i["id"]
                             filters["network-interface.network-interface-id"].append(i)
                 else:
-                    sub = (
-                        self.get_default_subnet(
-                            self.get_default_vpc() or {},
-                            availability_zone=self.params.get("availability_zone"),
+                    default_vpc = self.get_default_vpc()
+                    if default_vpc is None:
+                        raise AnsibleEC2Error(
+                            "No default subnet could be found - you must include a VPC subnet ID (vpc_subnet_id parameter)"
+                            " to create an instance"
                         )
-                        or {}
-                    )
+                    sub = self.get_default_subnet(default_vpc, availability_zone=self.params.get("availability_zone"))
                     filters["subnet-id"] = sub.get("SubnetId")
+            else:
+                filters["subnet-id"] = [vpc_subnet_id]
 
             name = self.params.get("name")
             tags = self.params.get("tags")

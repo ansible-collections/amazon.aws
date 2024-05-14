@@ -1220,6 +1220,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import terminate_in
 from ansible_collections.amazon.aws.plugins.module_utils.ec2_instance_utils import EC2InstanceModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2_instance_utils import build_run_instance_spec
 from ansible_collections.amazon.aws.plugins.module_utils.ec2_instance_utils import discover_security_groups
+from ansible_collections.amazon.aws.plugins.module_utils.exceptions import is_ansible_aws_error_message
 from ansible_collections.amazon.aws.plugins.module_utils.iam import _get_iam_instance_profiles
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 
@@ -1814,13 +1815,11 @@ def ensure_present(
 def run_ec2_instances(module: EC2InstanceModule, **instance_spec) -> Dict[str, Any]:
     try:
         result = run_instances(module.ec2, **instance_spec)
-    except AnsibleEC2Error as e:
-        if e.is_boto3_error_message("Invalid IAM Instance Profile ARN"):
-            # If the instance profile has just been created, it takes some time to be visible by ec2
-            # So we wait 10 second and retry the run_instances
-            time.sleep(10)
-            return run_instances(module.ec2, **instance_spec)
-        module.fail_json_aws(e, msg="Failed to run instances")
+    except is_ansible_aws_error_message("Invalid IAM Instance Profile ARN"):
+        # If the instance profile has just been created, it takes some time to be visible by ec2
+        # So we wait 10 second and retry the run_instances
+        time.sleep(10)
+        return run_instances(module.ec2, **instance_spec)
     return result
 
 
