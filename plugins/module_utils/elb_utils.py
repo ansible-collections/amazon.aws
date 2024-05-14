@@ -143,9 +143,7 @@ def create_listener(client, load_balancer_arn: str, **params) -> List[Dict[str, 
 def add_listener_certificates(
     client, listener_arn: str, certificates: List[Dict[str, str]]
 ) -> List[Dict[str, Union[str, bool]]]:
-    return client.add_listener_certificates(ListenerArn=listener_arn, Certificates=certificates)[
-        "Certificates"
-    ]
+    return client.add_listener_certificates(ListenerArn=listener_arn, Certificates=certificates)["Certificates"]
 
 
 # Listeners

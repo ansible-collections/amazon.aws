@@ -327,9 +327,7 @@ def list_load_balancers(connection, module: AnsibleAWSModule) -> None:
                     listener["rules"] = describe_rules(connection, ListenerArn=listener["ListenerArn"])
 
         # Turn the boto3 result in to ansible_friendly_snaked_names
-        snaked_load_balancers = [
-            camel_dict_to_snake_dict(load_balancer) for load_balancer in load_balancers
-        ]
+        snaked_load_balancers = [camel_dict_to_snake_dict(load_balancer) for load_balancer in load_balancers]
 
         # Get tags for each load balancer
         for snaked_load_balancer in snaked_load_balancers:
