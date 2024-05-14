@@ -78,62 +78,62 @@ subnets:
     contains:
         id:
             description: Subnet resource id
-            returned: I(state=present)
+            returned: always
             type: str
             sample: subnet-b883b2c4
         cidr_block:
             description: The IPv4 CIDR of the Subnet
-            returned: I(state=present)
+            returned: always
             type: str
             sample: "10.0.0.0/16"
         ipv6_cidr_block:
             description: The IPv6 CIDR block actively associated with the Subnet
-            returned: I(state=present)
+            returned: always
             type: str
             sample: "2001:db8:0:102::/64"
         availability_zone:
             description: Availability zone of the Subnet
-            returned: I(state=present)
+            returned: always
             type: str
             sample: us-east-1a
         availability_zone_id:
             description: The AZ ID of the subnet.
-            returned: I(state=present)
+            returned: always
             type: str
             sample: use1-az6
         state:
             description: state of the Subnet
-            returned: I(state=present)
+            returned: always
             type: str
             sample: available
         tags:
             description: tags attached to the Subnet, includes name
-            returned: I(state=present)
+            returned: always
             type: dict
             sample: {"Name": "My Subnet", "env": "staging"}
         map_public_ip_on_launch:
             description: whether public IP is auto-assigned to new instances
-            returned: I(state=present)
+            returned: always
             type: bool
             sample: false
         assign_ipv6_address_on_creation:
             description: whether IPv6 address is auto-assigned to new instances
-            returned: I(state=present)
+            returned: always
             type: bool
             sample: false
         vpc_id:
             description: the id of the VPC where this Subnet exists
-            returned: I(state=present)
+            returned: always
             type: str
             sample: vpc-67236184
         available_ip_address_count:
             description: number of available IPv4 addresses
-            returned: I(state=present)
+            returned: always
             type: str
             sample: 251
         default_for_az:
             description: indicates whether this is the default Subnet for this Availability Zone
-            returned: I(state=present)
+            returned: always
             type: bool
             sample: false
         enable_dns64:
@@ -143,7 +143,7 @@ subnets:
             sample: false
         ipv6_association_id:
             description: The IPv6 association ID for the currently associated CIDR
-            returned: I(state=present)
+            returned: always
             type: str
             sample: subnet-cidr-assoc-b85c74d2
         ipv6_native:
@@ -152,7 +152,7 @@ subnets:
             sample: false
         ipv6_cidr_block_association_set:
             description: An array of IPv6 cidr block association set information.
-            returned: I(state=present)
+            returned: always
             type: complex
             contains:
                 association_id:

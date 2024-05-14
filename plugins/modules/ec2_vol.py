@@ -230,6 +230,7 @@ volume:
                 - This was changed in version 2.0.0 from a dictionary to a list of dictionaries.
             type: list
             elements: dict
+            returned: when success
             sample: [{
                 "attach_time": "2015-10-23T00:22:29.000Z",
                 "deleteOnTermination": "false",
@@ -240,48 +241,59 @@ volume:
         create_time:
             description: The time stamp when volume creation was initiated.
             type: str
+            returned: when success
             sample: "2015-10-21T14:36:08.870Z"
         encrypted:
             description: Indicates whether the volume is encrypted.
             type: bool
+            returned: when success
             sample: False
         id:
             description: The ID of the volume.
             type: str
+            returned: when success
             sample: "vol-35b333d9"
         iops:
             description: The number of I/O operations per second (IOPS) that the volume supports.
             type: int
+            returned: when success
             sample: null
         size:
             description: The size of the volume, in GiBs.
             type: int
+            returned: when success
             sample: 1
         snapshot_id:
             description: The snapshot from which the volume was created, if applicable.
             type: str
+            returned: when success
             sample: ""
         status:
             description: The volume state.
             type: str
+            returned: when success
             sample: "in-use"
         tags:
             description: Any tags assigned to the volume.
             type: dict
+            returned: when success
             sample: {
                 env: "dev"
                 }
         type:
             description: The volume type. This can be gp2, io1, st1, sc1, or standard.
             type: str
+            returned: when success
             sample: "standard"
         zone:
             description: The Availability Zone of the volume.
             type: str
+            returned: when success
             sample: "us-east-1b"
         throughput:
             description: The throughput that the volume supports, in MiB/s.
             type: int
+            returned: when success
             sample: 131
 """
 
