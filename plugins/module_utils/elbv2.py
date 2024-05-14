@@ -17,16 +17,36 @@ from typing import Dict
 from typing import List
 from typing import Optional
 from typing import Tuple
-from typing import Union
 
 from .ec2 import get_ec2_security_group_ids_from_names
+from .elb_utils import AnsibleELBv2Error
+from .elb_utils import add_listener_certificates
+from .elb_utils import add_tags
 from .elb_utils import convert_tg_name_to_arn
+from .elb_utils import create_listener
+from .elb_utils import create_load_balancer
+from .elb_utils import create_rule
+from .elb_utils import delete_listener
+from .elb_utils import delete_load_balancer
+from .elb_utils import delete_rule
+from .elb_utils import describe_listeners
+from .elb_utils import describe_load_balancer_attributes
+from .elb_utils import describe_rules
+from .elb_utils import describe_tags
 from .elb_utils import get_elb
-from .elb_utils import get_elb_listener
+from .elb_utils import modify_listener
+from .elb_utils import modify_load_balancer_attributes
+from .elb_utils import modify_rule
+from .elb_utils import remove_tags
+from .elb_utils import set_ip_address_type
+from .elb_utils import set_rule_priorities
+from .elb_utils import set_security_groups
+from .elb_utils import set_subnets
 from .modules import AnsibleAWSModule
 from .retries import AWSRetry
 from .tagging import ansible_dict_to_boto3_tag_list
 from .tagging import boto3_tag_list_to_ansible_dict
+from .transformation import scrub_none_parameters
 from .waiters import get_waiter
 
 
@@ -139,6 +159,10 @@ def _sort_actions(actions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return sorted(actions, key=lambda x: x.get("Order", 0))
 
 
+def _sort_listener_actions(actions: List[Dict[str, str]]) -> List[Dict[str, str]]:
+    return sorted(actions, key=lambda x: (x["TargetGroupArn"], x["Type"]))
+
+
 class ElasticLoadBalancerV2:
     def __init__(self, connection: Any, module: AnsibleAWSModule) -> None:
         self.connection = connection
@@ -167,6 +191,12 @@ class ElasticLoadBalancerV2:
             self.elb_attributes = self.get_elb_attributes()
             self.elb_ip_addr_type = self.get_elb_ip_address_type()
             self.elb["tags"] = self.get_elb_tags()
+        self.check_mode = module.check_mode
+        self.exit_json = module.exit_json
+        self.fail_json = module.fail_json
+        self.fail_json_aws = module.fail_json_aws
+        self.fail_json_aws_error = module.fail_json_aws_error
+        self.params = module.params
 
     def wait_for_ip_type(self, elb_arn: str, ip_type: str) -> None:
         """
@@ -231,14 +261,9 @@ class ElasticLoadBalancerV2:
         :return:
         """
 
-        try:
-            attr_list = AWSRetry.jittered_backoff()(self.connection.describe_load_balancer_attributes)(
-                LoadBalancerArn=self.elb["LoadBalancerArn"]
-            )["Attributes"]
-
-            elb_attributes = boto3_tag_list_to_ansible_dict(attr_list)
-        except (BotoCoreError, ClientError) as e:
-            self.module.fail_json_aws(e)
+        elb_attributes = boto3_tag_list_to_ansible_dict(
+            describe_load_balancer_attributes(self.connection, self.elb["LoadBalancerArn"])
+        )
 
         # Replace '.' with '_' in attribute key names to make it more Ansibley
         return dict((k.replace(".", "_"), v) for k, v in elb_attributes.items())
@@ -267,10 +292,8 @@ class ElasticLoadBalancerV2:
         """
 
         try:
-            elb_tags = AWSRetry.jittered_backoff()(self.connection.describe_tags)(
-                ResourceArns=[self.elb["LoadBalancerArn"]]
-            )["TagDescriptions"][0]["Tags"]
-        except (BotoCoreError, ClientError) as e:
+            elb_tags = describe_tags(self.connection, resource_arns=[self.elb["LoadBalancerArn"]])[0]["Tags"]
+        except AnsibleELBv2Error as e:
             self.module.fail_json_aws(e)
         return elb_tags
 
@@ -282,13 +305,9 @@ class ElasticLoadBalancerV2:
         """
 
         try:
-            AWSRetry.jittered_backoff()(self.connection.remove_tags)(
-                ResourceArns=[self.elb["LoadBalancerArn"]], TagKeys=tags_to_delete
-            )
-        except (BotoCoreError, ClientError) as e:
+            self.changed = remove_tags(self.connection, [self.elb["LoadBalancerArn"]], tags_to_delete)
+        except AnsibleELBv2Error as e:
             self.module.fail_json_aws(e)
-
-        self.changed = True
 
     def modify_tags(self) -> None:
         """
@@ -298,13 +317,9 @@ class ElasticLoadBalancerV2:
         """
 
         try:
-            AWSRetry.jittered_backoff()(self.connection.add_tags)(
-                ResourceArns=[self.elb["LoadBalancerArn"]], Tags=self.tags
-            )
-        except (BotoCoreError, ClientError) as e:
+            self.changed = add_tags(self.connection, [self.elb["LoadBalancerArn"]], self.tags)
+        except AnsibleELBv2Error as e:
             self.module.fail_json_aws(e)
-
-        self.changed = True
 
     def delete(self) -> None:
         """
@@ -313,15 +328,11 @@ class ElasticLoadBalancerV2:
         """
 
         try:
-            AWSRetry.jittered_backoff()(self.connection.delete_load_balancer)(
-                LoadBalancerArn=self.elb["LoadBalancerArn"]
-            )
-        except (BotoCoreError, ClientError) as e:
+            self.changed = delete_load_balancer(self.connection, self.elb["LoadBalancerArn"])
+        except AnsibleELBv2Error as e:
             self.module.fail_json_aws(e)
-
-        self.wait_for_deletion(self.elb["LoadBalancerArn"])
-
-        self.changed = True
+        if self.changed:
+            self.wait_for_deletion(self.elb["LoadBalancerArn"])
 
     def compare_subnets(self) -> bool:
         """
@@ -363,14 +374,7 @@ class ElasticLoadBalancerV2:
         Modify elb subnets to match module parameters
         :return:
         """
-
-        try:
-            AWSRetry.jittered_backoff()(self.connection.set_subnets)(
-                LoadBalancerArn=self.elb["LoadBalancerArn"], Subnets=self.subnets
-            )
-        except (BotoCoreError, ClientError) as e:
-            self.module.fail_json_aws(e)
-
+        set_subnets(self.connection, self.elb["LoadBalancerArn"], Subnets=self.subnets)
         self.changed = True
 
     def update(self) -> None:
@@ -392,12 +396,7 @@ class ElasticLoadBalancerV2:
         if self.elb_ip_addr_type == ip_addr_type:
             return
 
-        try:
-            AWSRetry.jittered_backoff()(self.connection.set_ip_address_type)(
-                LoadBalancerArn=self.elb["LoadBalancerArn"], IpAddressType=ip_addr_type
-            )
-        except (BotoCoreError, ClientError) as e:
-            self.module.fail_json_aws(e)
+        set_ip_address_type(self.connection, self.elb["LoadBalancerArn"], ip_addr_type)
 
         self.changed = True
         self.wait_for_ip_type(self.elb["LoadBalancerArn"], ip_addr_type)
@@ -430,13 +429,10 @@ class ElasticLoadBalancerV2:
 
         params = self._elb_create_params()
 
-        try:
-            self.elb = AWSRetry.jittered_backoff()(self.connection.create_load_balancer)(**params)["LoadBalancers"][0]
-            self.changed = True
-            self.new_load_balancer = True
-        except (BotoCoreError, ClientError) as e:
-            self.module.fail_json_aws(e)
-
+        name = params.pop("Name")
+        self.elb = create_load_balancer(self.connection, name, **params)[0]
+        self.changed = True
+        self.new_load_balancer = True
         self.wait_for_status(self.elb["LoadBalancerArn"])
 
 
@@ -459,9 +455,9 @@ class ApplicationLoadBalancer(ElasticLoadBalancerV2):
                     module.params.get("security_groups"), self.connection_ec2
                 )
             except ValueError as e:
-                self.module.fail_json(msg=str(e), exception=traceback.format_exc())
+                self.fail_json(msg=str(e), exception=traceback.format_exc())
             except (BotoCoreError, ClientError) as e:
-                self.module.fail_json_aws(e)
+                self.fail_json_aws(e)
         else:
             self.security_groups = module.params.get("security_groups")
         self.access_logs_enabled = module.params.get("access_logs_enabled")
@@ -476,7 +472,7 @@ class ApplicationLoadBalancer(ElasticLoadBalancerV2):
         self.waf_fail_open = module.params.get("waf_fail_open")
 
         if self.elb is not None and self.elb["Type"] != "application":
-            self.module.fail_json(
+            self.fail_json(
                 msg="The load balancer type you are trying to manage is not application. Try elb_network_lb module instead.",
             )
 
@@ -653,17 +649,13 @@ class ApplicationLoadBalancer(ElasticLoadBalancerV2):
 
         if update_attributes:
             try:
-                AWSRetry.jittered_backoff()(self.connection.modify_load_balancer_attributes)(
-                    LoadBalancerArn=self.elb["LoadBalancerArn"], Attributes=update_attributes
-                )
+                modify_load_balancer_attributes(self.connection, self.elb["LoadBalancerArn"], update_attributes)
                 self.changed = True
-            except (BotoCoreError, ClientError) as e:
+            except AnsibleELBv2Error as e:
                 # Something went wrong setting attributes. If this ELB was created during this task, delete it to leave a consistent state
                 if self.new_load_balancer:
-                    AWSRetry.jittered_backoff()(self.connection.delete_load_balancer)(
-                        LoadBalancerArn=self.elb["LoadBalancerArn"]
-                    )
-                self.module.fail_json_aws(e)
+                    delete_load_balancer(self.connection, self.elb["LoadBalancerArn"])
+                self.fail_json_aws(e)
 
     def compare_security_groups(self) -> bool:
         """
@@ -674,22 +666,14 @@ class ApplicationLoadBalancer(ElasticLoadBalancerV2):
 
         if set(self.elb["SecurityGroups"]) != set(self.security_groups):
             return False
-        else:
-            return True
+        return True
 
     def modify_security_groups(self) -> None:
         """
         Modify elb security groups to match module parameters
         :return:
         """
-
-        try:
-            AWSRetry.jittered_backoff()(self.connection.set_security_groups)(
-                LoadBalancerArn=self.elb["LoadBalancerArn"], SecurityGroups=self.security_groups
-            )
-        except (BotoCoreError, ClientError) as e:
-            self.module.fail_json_aws(e)
-
+        set_security_groups(self.connection, self.elb["LoadBalancerArn"], self.security_groups)
         self.changed = True
 
 
@@ -709,7 +693,7 @@ class NetworkLoadBalancer(ElasticLoadBalancerV2):
         self.cross_zone_load_balancing = module.params.get("cross_zone_load_balancing")
 
         if self.elb is not None and self.elb["Type"] != "network":
-            self.module.fail_json(
+            self.fail_json(
                 msg="The load balancer type you are trying to manage is not network. Try elb_application_lb module instead.",
             )
 
@@ -746,17 +730,13 @@ class NetworkLoadBalancer(ElasticLoadBalancerV2):
 
         if update_attributes:
             try:
-                AWSRetry.jittered_backoff()(self.connection.modify_load_balancer_attributes)(
-                    LoadBalancerArn=self.elb["LoadBalancerArn"], Attributes=update_attributes
-                )
+                modify_load_balancer_attributes(self.connection, self.elb["LoadBalancerArn"], update_attributes)
                 self.changed = True
-            except (BotoCoreError, ClientError) as e:
+            except AnsibleELBv2Error as e:
                 # Something went wrong setting attributes. If this ELB was created during this task, delete it to leave a consistent state
                 if self.new_load_balancer:
-                    AWSRetry.jittered_backoff()(self.connection.delete_load_balancer)(
-                        LoadBalancerArn=self.elb["LoadBalancerArn"]
-                    )
-                self.module.fail_json_aws(e)
+                    delete_load_balancer(self.connection, LoadBalancerArn=self.elb["LoadBalancerArn"])
+                self.fail_json_aws(e)
 
     def modify_subnets(self):
         """
@@ -764,59 +744,7 @@ class NetworkLoadBalancer(ElasticLoadBalancerV2):
         :return:
         """
 
-        self.module.fail_json(msg="Modifying subnets and elastic IPs is not supported for Network Load Balancer")
-
-
-@AWSRetry.jittered_backoff()
-def _describe_listeners(connection: Any, module: AnsibleAWSModule, elb_arn: str) -> List[Dict[str, Any]]:
-    try:
-        paginator = connection.get_paginator("describe_listeners")
-        listeners = paginator.paginate(LoadBalancerArn=elb_arn).build_full_result()["Listeners"]
-    except (BotoCoreError, ClientError) as e:
-        module.fail_json_aws(e)
-    return listeners
-
-
-def _ensure_listeners_alpn_policy(listeners: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """This function converts 'AlpnPolicy' attribute of listener from string type to list
-    Example:
-        [{'AlpnPolicy': 'HTTP2Optional'}] -> [{'AlpnPolicy': ['HTTP2Optional']}]
-    """
-    result = []
-    for l in listeners:
-        update_listener = deepcopy(l)
-        if "AlpnPolicy" in l:
-            update_listener["AlpnPolicy"] = [update_listener["AlpnPolicy"]]
-        result.append(update_listener)
-    return result
-
-
-def _ensure_listeners_default_action_has_arn(
-    connection: Any, module: AnsibleAWSModule, listeners: List[Dict[str, Any]]
-) -> List[Dict[str, Any]]:
-    """
-    If a listener DefaultAction has been passed with a Target Group Name instead of ARN, lookup the ARN and
-    replace the name.
-
-    :param listeners: a list of listener dicts
-    :return: the same list of dicts ensuring that each listener DefaultActions dict has TargetGroupArn key. If a TargetGroupName key exists, it is removed.
-    """
-
-    if not listeners:
-        listeners = []
-
-    fixed_listeners = []
-    for listener in listeners:
-        fixed_actions = []
-        for action in listener["DefaultActions"]:
-            if "TargetGroupName" in action:
-                action["TargetGroupArn"] = convert_tg_name_to_arn(connection, module, action["TargetGroupName"])
-                del action["TargetGroupName"]
-            fixed_actions.append(action)
-        listener["DefaultActions"] = fixed_actions
-        fixed_listeners.append(listener)
-
-    return fixed_listeners
+        self.fail_json(msg="Modifying subnets and elastic IPs is not supported for Network Load Balancer")
 
 
 def _compare_listener(current_listener: Dict[str, Any], new_listener: Dict[str, Any]) -> Optional[Dict[str, Any]]:
@@ -867,12 +795,10 @@ def _compare_listener(current_listener: Dict[str, Any], new_listener: Dict[str, 
     new_default_actions = new_listener.get("DefaultActions")
     if new_default_actions:
         if current_default_actions and len(current_default_actions) == len(new_default_actions):
-            current_actions_sorted = _sort_actions(current_default_actions)
-            new_actions_sorted_no_secret = [_prune_secret(i) for i in _sort_actions(new_default_actions)]
-
-            if [_prune_ForwardConfig(i) for i in current_actions_sorted] != [
-                _prune_ForwardConfig(i) for i in new_actions_sorted_no_secret
-            ]:
+            current_actions_sorted = _sort_listener_actions(
+                [{"TargetGroupArn": x["TargetGroupArn"], "Type": x["Type"]} for x in current_default_actions]
+            )
+            if current_actions_sorted != _sort_listener_actions(new_default_actions):
                 modified_listener["DefaultActions"] = new_default_actions
         # If the action lengths are different, then replace with the new actions
         else:
@@ -929,23 +855,43 @@ def _group_listeners(
     return listeners_to_add, listeners_to_modify, listeners_to_delete
 
 
+def _prepare_listeners(
+    connection, module: AnsibleAWSModule, listeners: Optional[List[Dict[str, Any]]]
+) -> List[Dict[str, Any]]:
+    # This functions prepare listener defined in module parameters
+    # 1. Remove None elements from listener attribute
+    # 2. Tranform AlpnPolicy, value is set as string but API is expected a list
+    # 3. For listener defining Target group name, replaced them with the corresponding Target group ARN
+    updated_listeners = []
+    if not listeners:
+        return updated_listeners
+    target_group_mapping = {}
+    for item in listeners:
+        listener = deepcopy(item)
+        # Remove suboption argspec defaults of None from each listener
+        listener = scrub_none_parameters(listener, descend_into_lists=False)
+        # Converts 'AlpnPolicy' attribute of listener from string type to list
+        if "AlpnPolicy" in listener:
+            listener["AlpnPolicy"] = [listener["AlpnPolicy"]]
+        # If a listener DefaultAction has been passed with a Target Group Name instead of ARN,
+        # lookup the ARN and replace the name.
+        for action in listener["DefaultActions"]:
+            tg_name = action.pop("TargetGroupName", None)
+            if tg_name:
+                if tg_name not in target_group_mapping:
+                    target_group_mapping[tg_name] = convert_tg_name_to_arn(connection, module, tg_name)
+                action["TargetGroupArn"] = target_group_mapping[tg_name]
+        updated_listeners.append(listener)
+    return updated_listeners
+
+
 class ELBListeners:
     def __init__(self, connection: Any, module: AnsibleAWSModule, elb_arn: str) -> None:
         self.connection = connection
         self.module = module
         self.elb_arn = elb_arn
-        listeners = module.params.get("listeners")
-        if listeners is not None:
-            # Remove suboption argspec defaults of None from each listener
-            listeners = [
-                dict((x, listener_dict[x]) for x in listener_dict if listener_dict[x] is not None)
-                for listener_dict in listeners
-            ]
-            # AlpnPolicy is set as str into input but API is expected a list
-            # Transform a single item into a list of one element
-            listeners = _ensure_listeners_alpn_policy(listeners)
-        self.listeners = _ensure_listeners_default_action_has_arn(connection, module, listeners)
-        self.current_listeners = _describe_listeners(connection, module, elb_arn)
+        self.listeners = _prepare_listeners(connection, module, module.params.get("listeners"))
+        self.update()
         self.purge_listeners = module.params.get("purge_listeners")
         self.changed = False
 
@@ -955,7 +901,15 @@ class ELBListeners:
 
         :return:
         """
-        self.current_listeners = _describe_listeners(self.connection, self.module, self.elb_arn)
+        self.current_listeners = describe_listeners(self.connection, load_balancer_arn=self.elb_arn)
+
+    def get_listener_arn_from_listener_port(self, listener_port: int) -> Optional[str]:
+        listener_arn = None
+        for listener in self.current_listeners:
+            if listener["Port"] == listener_port:
+                listener_arn = listener["ListenerArn"]
+                break
+        return listener_arn
 
     def compare_listeners(self) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
         """This function call the _group_listeners method and update the listeners
@@ -988,22 +942,8 @@ class ELBListener:
         self.listener = listener
         self.elb_arn = elb_arn
 
-    @AWSRetry.jittered_backoff()
     def create_listener(self) -> str:
-        try:
-            listener_arn = self.connection.create_listener(LoadBalancerArn=self.elb_arn, **self.listener)["Listeners"][
-                0
-            ]["ListenerArn"]
-        except (BotoCoreError, ClientError) as e:
-            self.module.fail_json_aws(e)
-        return listener_arn
-
-    @AWSRetry.jittered_backoff()
-    def add_listener_certificates(self, listener_arn: str, cert: Dict[str, Union[str, bool]]) -> None:
-        try:
-            self.connection.add_listener_certificates(ListenerArn=listener_arn, Certificates=[cert])
-        except (BotoCoreError, ClientError) as e:
-            self.module.fail_json_aws(e)
+        return create_listener(self.connection, self.elb_arn, **self.listener)[0]["ListenerArn"]
 
     def add(self) -> None:
         # handle multiple certs by adding only 1 cert during listener creation and make calls to add_listener_certificates to add other certs
@@ -1016,21 +956,14 @@ class ELBListener:
         listener_arn = self.create_listener()
         # only one cert can be specified per call to add_listener_certificates
         for cert in other_certs:
-            self.add_listener_certificates(listener_arn=listener_arn, cert=cert)
+            add_listener_certificates(self.connection, listener_arn=listener_arn, certificates=[cert])
 
-    @AWSRetry.jittered_backoff()
     def modify(self) -> None:
-        try:
-            self.connection.modify_listener(**self.listener)
-        except (BotoCoreError, ClientError) as e:
-            self.module.fail_json_aws(e)
+        listener_arn = self.listener.pop("ListenerArn")
+        modify_listener(self.connection, listener_arn=listener_arn, **self.listener)
 
-    @AWSRetry.jittered_backoff()
     def delete(self) -> None:
-        try:
-            self.connection.delete_listener(ListenerArn=self.listener)
-        except (BotoCoreError, ClientError) as e:
-            self.module.fail_json_aws(e)
+        delete_listener(self.connection, self.listener)
 
 
 def _check_rule_condition(current_conditions: List[Dict[str, Any]], condition: Dict[str, Any]) -> bool:
@@ -1259,25 +1192,16 @@ class ELBListenerRules:
         self,
         connection: Any,
         module: AnsibleAWSModule,
-        elb_arn: str,
+        listener_arn: Optional[str],
         listener_rules: List[Dict[str, Any]],
-        listener_port: int,
     ) -> None:
         self.connection = connection
         self.module = module
-        self.elb_arn = elb_arn
         self.rules = self._ensure_rules_action_has_arn(listener_rules)
         self.changed = False
 
-        # Get listener based on port so we can use ARN
-        self.current_listener = get_elb_listener(connection, module, elb_arn, listener_port)
-        self.listener_arn = self.current_listener.get("ListenerArn")
-
-        # If the listener exists (i.e. has an ARN) get rules for the listener
-        if self.listener_arn:
-            self.current_rules = self._get_elb_listener_rules()
-        else:
-            self.current_rules = []
+        self.listener_arn = listener_arn
+        self.current_rules = describe_rules(self.connection, ListenerArn=listener_arn)
 
     def _ensure_rules_action_has_arn(self, rules: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
@@ -1302,15 +1226,6 @@ class ELBListenerRules:
             fixed_rules.append(rule)
 
         return fixed_rules
-
-    def _get_elb_listener_rules(self) -> List[Dict[str, Any]]:  # mypy ignore
-        try:
-            rules = AWSRetry.jittered_backoff()(self.connection.describe_rules)(
-                ListenerArn=self.current_listener["ListenerArn"]
-            )["Rules"]
-        except (BotoCoreError, ClientError) as e:
-            self.module.fail_json_aws(e)
-        return rules
 
     def compare_rules(
         self,
@@ -1347,59 +1262,52 @@ class ELBListenerRule:
         self.connection = connection
         self.module = module
 
-    @AWSRetry.jittered_backoff()
     def create(self, rule: Dict[str, Any]) -> None:
         """
         Create a listener rule
 
         :return:
         """
+        listener_arn = rule.pop("ListenerArn")
+        conditions = rule.pop("Conditions")
+        priority = rule.pop("Priority")
+        actions = rule.pop("Actions")
+        tags = rule.pop("Tags", None)
+        create_rule(
+            self.connection,
+            listener_arn=listener_arn,
+            conditions=conditions,
+            actions=actions,
+            tags=tags,
+            priority=priority,
+        )
 
-        try:
-            self.connection.create_rule(**rule)
-        except (BotoCoreError, ClientError) as e:
-            self.module.fail_json_aws(e)
-
-    @AWSRetry.jittered_backoff()
     def modify(self, rule: Dict[str, Any]) -> None:
         """
         Modify a listener rule
 
         :return:
         """
+        rule_arn = rule.pop("RuleArn")
+        modify_rule(self.connection, rule_arn=rule_arn, **rule)
 
-        try:
-            self.connection.modify_rule(**rule)
-        except (BotoCoreError, ClientError) as e:
-            self.module.fail_json_aws(e)
-
-    @AWSRetry.jittered_backoff()
     def delete(self, rule_arn: str) -> None:
         """
         Delete a listener rule
 
         :return:
         """
+        delete_rule(self.connection, rule_arn)
 
-        try:
-            self.connection.delete_rule(RuleArn=rule_arn)
-        except (BotoCoreError, ClientError) as e:
-            self.module.fail_json_aws(e)
-
-    @AWSRetry.jittered_backoff()
     def set_rule_priorities(self, rules: List[Dict[str, Any]]) -> None:
         """
         Sets the priorities of the specified rules.
 
         :return:
         """
-
-        try:
-            self.connection.set_rule_priorities(
-                RulePriorities=[{"RuleArn": rule["RuleArn"], "Priority": rule["Priority"]} for rule in rules]
-            )
-        except (BotoCoreError, ClientError) as e:
-            self.module.fail_json_aws(e)
+        set_rule_priorities(
+            self.connection, [{"RuleArn": rule["RuleArn"], "Priority": rule["Priority"]} for rule in rules]
+        )
 
     def process_rules(
         self,

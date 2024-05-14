@@ -551,6 +551,7 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import AnsibleELBv2Error
 from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import get_elb_listener_rules
 from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import ApplicationLoadBalancer
 from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import ELBListener
@@ -587,26 +588,26 @@ def find_default_sg(connection, module, vpc_id):
         module.fail_json(msg=f'Multiple security groups named "default" found for VPC {vpc_id}')
 
 
-def create_or_update_alb(alb_obj):
+def create_or_update_alb(alb_obj: ApplicationLoadBalancer) -> None:
     """Create ALB or modify main attributes. json_exit here"""
     if alb_obj.elb:
         # ALB exists so check subnets, security groups and tags match what has been passed
         # Subnets
         if not alb_obj.compare_subnets():
-            if alb_obj.module.check_mode:
-                alb_obj.module.exit_json(changed=True, msg="Would have updated ALB if not in check mode.")
+            if alb_obj.check_mode:
+                alb_obj.exit_json(changed=True, msg="Would have updated ALB if not in check mode.")
             alb_obj.modify_subnets()
 
         # Security Groups
         if not alb_obj.compare_security_groups():
-            if alb_obj.module.check_mode:
-                alb_obj.module.exit_json(changed=True, msg="Would have updated ALB if not in check mode.")
+            if alb_obj.check_mode:
+                alb_obj.exit_json(changed=True, msg="Would have updated ALB if not in check mode.")
             alb_obj.modify_security_groups()
 
         # ALB attributes
         if not alb_obj.compare_elb_attributes():
-            if alb_obj.module.check_mode:
-                alb_obj.module.exit_json(changed=True, msg="Would have updated ALB if not in check mode.")
+            if alb_obj.check_mode:
+                alb_obj.exit_json(changed=True, msg="Would have updated ALB if not in check mode.")
             alb_obj.update_elb_attributes()
             alb_obj.modify_elb_attributes()
 
@@ -619,8 +620,8 @@ def create_or_update_alb(alb_obj):
             )
 
             # Exit on check_mode
-            if alb_obj.module.check_mode and (tags_need_modify or tags_to_delete):
-                alb_obj.module.exit_json(changed=True, msg="Would have updated ALB if not in check mode.")
+            if alb_obj.check_mode and (tags_need_modify or tags_to_delete):
+                alb_obj.exit_json(changed=True, msg="Would have updated ALB if not in check mode.")
 
             # Delete necessary tags
             if tags_to_delete:
@@ -632,8 +633,8 @@ def create_or_update_alb(alb_obj):
 
     else:
         # Create load balancer
-        if alb_obj.module.check_mode:
-            alb_obj.module.exit_json(changed=True, msg="Would have created ALB if not in check mode.")
+        if alb_obj.check_mode:
+            alb_obj.exit_json(changed=True, msg="Would have created ALB if not in check mode.")
         alb_obj.create_elb()
 
         # Add ALB attributes
@@ -645,8 +646,8 @@ def create_or_update_alb(alb_obj):
     listeners_to_add, listeners_to_modify, listeners_to_delete = listeners_obj.compare_listeners()
 
     # Exit on check_mode
-    if alb_obj.module.check_mode and (listeners_to_add or listeners_to_modify or listeners_to_delete):
-        alb_obj.module.exit_json(changed=True, msg="Would have updated ALB if not in check mode.")
+    if alb_obj.check_mode and (listeners_to_add or listeners_to_modify or listeners_to_delete):
+        alb_obj.exit_json(changed=True, msg="Would have updated ALB if not in check mode.")
 
     # Delete listeners
     for listener_to_delete in listeners_to_delete:
@@ -678,18 +679,21 @@ def create_or_update_alb(alb_obj):
     for listener in listeners_obj.listeners:
         if "Rules" in listener:
             rules_obj = ELBListenerRules(
-                alb_obj.connection, alb_obj.module, alb_obj.elb["LoadBalancerArn"], listener["Rules"], listener["Port"]
+                connection=alb_obj.connection,
+                module=alb_obj.module,
+                listener_arn=listeners_obj.get_listener_arn_from_listener_port(listener["Port"]),
+                listener_rules=listener["Rules"],
             )
             rules_to_add, rules_to_set_priority, rules_to_modify, rules_to_delete = rules_obj.compare_rules()
 
             # Exit on check_mode
-            if alb_obj.module.check_mode and (
+            if alb_obj.check_mode and (
                 rules_to_add
                 or rules_to_modify
                 or rules_to_set_priority
-                or (alb_obj.module.params["purge_rules"] and rules_to_delete)
+                or (alb_obj.params["purge_rules"] and rules_to_delete)
             ):
-                alb_obj.module.exit_json(changed=True, msg="Would have updated ALB if not in check mode.")
+                alb_obj.exit_json(changed=True, msg="Would have updated ALB if not in check mode.")
 
             # Create/Update/Delete Listener Rules
             rule_obj = ELBListenerRule(alb_obj.connection, alb_obj.module)
@@ -698,18 +702,16 @@ def create_or_update_alb(alb_obj):
             )
 
     # Update ALB ip address type only if option has been provided
-    if alb_obj.module.params.get("ip_address_type") and alb_obj.elb_ip_addr_type != alb_obj.module.params.get(
-        "ip_address_type"
-    ):
+    if alb_obj.params.get("ip_address_type") and alb_obj.elb_ip_addr_type != alb_obj.params.get("ip_address_type"):
         # Exit on check_mode
-        if alb_obj.module.check_mode:
-            alb_obj.module.exit_json(changed=True, msg="Would have updated ALB if not in check mode.")
+        if alb_obj.check_mode:
+            alb_obj.exit_json(changed=True, msg="Would have updated ALB if not in check mode.")
 
-        alb_obj.modify_ip_address_type(alb_obj.module.params.get("ip_address_type"))
+        alb_obj.modify_ip_address_type(alb_obj.params.get("ip_address_type"))
 
     # Exit on check_mode - no changes
-    if alb_obj.module.check_mode:
-        alb_obj.module.exit_json(changed=False, msg="IN CHECK MODE - no changes to make to ALB specified.")
+    if alb_obj.check_mode:
+        alb_obj.exit_json(changed=False, msg="IN CHECK MODE - no changes to make to ALB specified.")
 
     # Get the ALB again
     alb_obj.update()
@@ -735,14 +737,14 @@ def create_or_update_alb(alb_obj):
     # ip address type
     snaked_alb["ip_address_type"] = alb_obj.get_elb_ip_address_type()
 
-    alb_obj.module.exit_json(changed=alb_obj.changed, **snaked_alb)
+    alb_obj.exit_json(changed=alb_obj.changed, **snaked_alb)
 
 
-def delete_alb(alb_obj):
+def delete_alb(alb_obj: ApplicationLoadBalancer) -> None:
     if alb_obj.elb:
         # Exit on check_mode
-        if alb_obj.module.check_mode:
-            alb_obj.module.exit_json(changed=True, msg="Would have deleted ALB if not in check mode.")
+        if alb_obj.check_mode:
+            alb_obj.exit_json(changed=True, msg="Would have deleted ALB if not in check mode.")
 
         listeners_obj = ELBListeners(alb_obj.connection, alb_obj.module, alb_obj.elb["LoadBalancerArn"])
         for listener_to_delete in [i["ListenerArn"] for i in listeners_obj.current_listeners]:
@@ -755,10 +757,10 @@ def delete_alb(alb_obj):
 
     else:
         # Exit on check_mode - no changes
-        if alb_obj.module.check_mode:
-            alb_obj.module.exit_json(changed=False, msg="IN CHECK MODE - ALB already absent.")
+        if alb_obj.check_mode:
+            alb_obj.exit_json(changed=False, msg="IN CHECK MODE - ALB already absent.")
 
-    alb_obj.module.exit_json(changed=alb_obj.changed)
+    alb_obj.exit_json(changed=alb_obj.changed)
 
 
 def main():
@@ -824,17 +826,20 @@ def main():
 
     state = module.params.get("state")
 
-    alb = ApplicationLoadBalancer(connection, connection_ec2, module)
-
-    # Update security group if default is specified
-    if alb.elb and module.params.get("security_groups") == []:
-        module.params["security_groups"] = [find_default_sg(connection_ec2, module, alb.elb["VpcId"])]
+    try:
         alb = ApplicationLoadBalancer(connection, connection_ec2, module)
 
-    if state == "present":
-        create_or_update_alb(alb)
-    elif state == "absent":
-        delete_alb(alb)
+        # Update security group if default is specified
+        if alb.elb and module.params.get("security_groups") == []:
+            module.params["security_groups"] = [find_default_sg(connection_ec2, module, alb.elb["VpcId"])]
+            alb = ApplicationLoadBalancer(connection, connection_ec2, module)
+
+        if state == "present":
+            create_or_update_alb(alb)
+        elif state == "absent":
+            delete_alb(alb)
+    except AnsibleELBv2Error as e:
+        module.fail_json_aws_error(e)
 
 
 if __name__ == "__main__":

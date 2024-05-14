@@ -13,18 +13,12 @@ from ansible_collections.amazon.aws.plugins.module_utils import elbv2
 
 @pytest.fixture
 def elb_listener_rules(mocker):
-    mocker.patch(
-        "ansible_collections.amazon.aws.plugins.module_utils.elbv2.get_elb_listener"
-    ).return_value = MagicMock()
-    mocker.patch(
-        "ansible_collections.amazon.aws.plugins.module_utils.elbv2.ELBListenerRules._get_elb_listener_rules"
-    ).return_value = MagicMock()
     module = MagicMock()
     connection = MagicMock()
-    elb_arn = MagicMock()
     rules = MagicMock()
+    listener_arn = MagicMock()
 
-    return elbv2.ELBListenerRules(connection, module, elb_arn, rules, 8009)
+    return elbv2.ELBListenerRules(connection, module, listener_arn, rules)
 
 
 example_arn = "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/nlb-123456789abc/abcdef0123456789"
@@ -733,37 +727,6 @@ def test_compare_rules(elb_listener_rules, current_rules, rules, expected):
         expected.get("to_set_priority", []), key=lambda x: x.get("Priority", 0)
     )
     assert sorted(rules_to_delete) == sorted(expected.get("to_delete", []))
-
-
-@pytest.mark.parametrize(
-    "rules,expected",
-    [
-        (
-            [{"Actions": [{"action": "forward"}], "tests": "units"}],
-            [{"Actions": [{"action": "forward"}], "tests": "units"}],
-        ),
-        (
-            [{"Actions": [{"action": "forward", "TargetGroupName": "a"}, {"action": "discard"}]}],
-            [
-                {
-                    "Actions": [
-                        {
-                            "action": "forward",
-                            "TargetGroupArn": "arn:aws:elasticloadbalancing:us-west-2:123456789012:targetgroup/ansible-test/000a",
-                        },
-                        {"action": "discard"},
-                    ]
-                }
-            ],
-        ),
-    ],
-)
-def test__ensure_rules_action_has_arn(elb_listener_rules, mocker, rules, expected):
-    target_group_arn_prefix = "arn:aws:elasticloadbalancing:us-west-2:123456789012:targetgroup/ansible-test/000"
-    mocker.patch("ansible_collections.amazon.aws.plugins.module_utils.elbv2.convert_tg_name_to_arn").side_effect = (
-        lambda connection, module, name: target_group_arn_prefix + name
-    )
-    assert elb_listener_rules._ensure_rules_action_has_arn(rules) == expected
 
 
 @pytest.mark.parametrize(

@@ -666,6 +666,7 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import describe_target_groups
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
@@ -883,7 +884,6 @@ def get_properties(autoscaling_group):
 
     if properties["target_group_arns"]:
         elbv2_connection = module.client("elbv2")
-        tg_paginator = elbv2_connection.get_paginator("describe_target_groups")
         # Limit of 20 similar to https://docs.aws.amazon.com/elasticloadbalancing/latest/APIReference/API_DescribeLoadBalancers.html
         tg_chunk_size = 20
         properties["target_group_names"] = []
@@ -892,8 +892,9 @@ def get_properties(autoscaling_group):
             for i in range(0, len(properties["target_group_arns"]), tg_chunk_size)
         ]  # fmt: skip
         for chunk in tg_chunks:
-            tg_result = tg_paginator.paginate(TargetGroupArns=chunk).build_full_result()
-            properties["target_group_names"].extend([tg["TargetGroupName"] for tg in tg_result["TargetGroups"]])
+            properties["target_group_names"].extend(
+                [tg["TargetGroupName"] for tg in describe_target_groups(elbv2_connection, TargetGroupArns=chunk)]
+            )
     else:
         properties["target_group_names"] = []
 
