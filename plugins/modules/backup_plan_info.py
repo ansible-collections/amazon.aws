@@ -133,7 +133,7 @@ def get_backup_plan_detail(client, module):
 
 def main():
     argument_spec = dict(
-        backup_plan_names=dict(type="list", elements="str", required=False),
+        backup_plan_names=dict(type="list", elements="str"),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
