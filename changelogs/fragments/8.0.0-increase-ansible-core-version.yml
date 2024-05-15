@@ -1,2 +1,2 @@
 breaking_changes:
-  - amazon.aws collection - Support for ansible-core < 2.14 has been dropped (https://github.com/ansible-collections/amazon.aws/pull/2041).
+  - amazon.aws collection - Support for ansible-core < 2.15 has been dropped (https://github.com/ansible-collections/amazon.aws/pull/2041).
