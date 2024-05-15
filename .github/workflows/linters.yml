@@ -4,9 +4,7 @@ name: Linters
 concurrency:
   group: ${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
-on:
-  push:
-  pull_request:
+on: [workflow_call]
 
 jobs:
   linters:
