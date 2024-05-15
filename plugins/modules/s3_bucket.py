@@ -176,10 +176,13 @@ options:
     description:
       - Default Object Lock configuration that will be applied by default to
         every new object placed in the specified bucket.
+      - I(object_lock_enabled) must be included and set to C(True)
+      - Object lock retention policy can't be removed.
     suboptions:
       mode:
         description: Type of retention modes
-        choices: [ 'GOVERNANCE', 'COMPLIANCE']
+        choices: [ 'GOVERNANCE', "['COMPLIANCE']"]
+        required: true
         type: str
       days:
         description:
@@ -192,7 +195,7 @@ options:
             - Mutually exclusive with I(days).
         type: int
     type: dict
-    version_added: 7.6.0
+    version_added: 8.1.0
 
 extends_documentation_fragment:
   - amazon.aws.common.modules
@@ -323,6 +326,7 @@ EXAMPLES = r"""
 - amazon.aws.s3_bucket:
     name: mys3bucket
     state: present
+    object_lock_enabled: true
     object_lock_default_retention:
       mode: governance
       days: 1
@@ -346,6 +350,15 @@ object_ownership:
     type: str
     returned: when O(state=present)
     sample: "BucketOwnerPreferred"
+object_lock_default_retention:
+    description: S3 bucket's object lock retention policy.
+    type: dict
+    returned: I(state=present)
+    sample: {
+        "Days": 1,
+        "Mode": "GOVERNANCE",
+        "Years": 0,
+    }
 policy:
     description: S3 bucket's policy.
     type: dict
@@ -1984,13 +1997,14 @@ def main():
                 years=dict(type="int"),
                 days=dict(type="int"),
             ),
-            mutually_exclusive=["days", "years"],
+            mutually_exclusive=[("days", "years")],
             required_one_of=[('days', 'years')],
         )
     )
 
     required_by = dict(
         encryption_key_id=("encryption",),
+        object_lock_default_retention="object_lock_enabled",
     )
 
     mutually_exclusive = [
@@ -2001,7 +2015,6 @@ def main():
 
     required_if = [
         ["ceph", True, ["endpoint_url"]],
-        ["object_lock_default_retention", True, ["object_lock_enabled"]]
     ]
 
     module = AnsibleAWSModule(
