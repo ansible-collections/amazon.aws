@@ -31,7 +31,7 @@ extends_documentation_fragment:
 EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 - name: Gather information about all backup plans
-  amazon.aws.backup_plan_info
+  amazon.aws.backup_plan_info:
 
 - name: Gather information about a particular backup plan
   amazon.aws.backup_plan_info:
