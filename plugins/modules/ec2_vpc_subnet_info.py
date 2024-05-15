@@ -77,22 +77,22 @@ subnets:
     type: complex
     contains:
         id:
-            description: Subnet resource id
+            description: Subnet resource id.
             returned: always
             type: str
             sample: subnet-b883b2c4
         cidr_block:
-            description: The IPv4 CIDR of the Subnet
+            description: The IPv4 CIDR of the Subnet.
             returned: always
             type: str
             sample: "10.0.0.0/16"
         ipv6_cidr_block:
-            description: The IPv6 CIDR block actively associated with the Subnet
+            description: The IPv6 CIDR block actively associated with the Subnet.
             returned: always
             type: str
             sample: "2001:db8:0:102::/64"
         availability_zone:
-            description: Availability zone of the Subnet
+            description: Availability zone of the Subnet.
             returned: always
             type: str
             sample: us-east-1a
@@ -102,12 +102,12 @@ subnets:
             type: str
             sample: use1-az6
         state:
-            description: state of the Subnet
+            description: state of the Subnet.
             returned: always
             type: str
             sample: available
         tags:
-            description: tags attached to the Subnet, includes name
+            description: tags attached to the Subnet, includes name.
             returned: always
             type: dict
             sample: {"Name": "My Subnet", "env": "staging"}
@@ -117,22 +117,22 @@ subnets:
             type: bool
             sample: false
         assign_ipv6_address_on_creation:
-            description: whether IPv6 address is auto-assigned to new instances
+            description: whether IPv6 address is auto-assigned to new instances.
             returned: always
             type: bool
             sample: false
         vpc_id:
-            description: the id of the VPC where this Subnet exists
+            description: the id of the VPC where this Subnet exists.
             returned: always
             type: str
             sample: vpc-67236184
         available_ip_address_count:
-            description: number of available IPv4 addresses
+            description: number of available IPv4 addresses.
             returned: always
             type: str
             sample: 251
         default_for_az:
-            description: indicates whether this is the default Subnet for this Availability Zone
+            description: indicates whether this is the default Subnet for this Availability Zone.
             returned: always
             type: bool
             sample: false
@@ -142,7 +142,7 @@ subnets:
             type: bool
             sample: false
         ipv6_association_id:
-            description: The IPv6 association ID for the currently associated CIDR
+            description: The IPv6 association ID for the currently associated CIDR.
             returned: always
             type: str
             sample: subnet-cidr-assoc-b85c74d2
@@ -156,7 +156,7 @@ subnets:
             type: complex
             contains:
                 association_id:
-                    description: The association ID
+                    description: The association ID.
                     returned: always
                     type: str
                 ipv6_cidr_block:
