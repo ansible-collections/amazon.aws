@@ -351,7 +351,13 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-e
 <a class="ansibleOptionLink" href="#parameter-source_params/batch_size" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The largest number of records that AWS Lambda will retrieve from your event source at the time of invoking your function.</p>
-<p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">100</span></code></p>
+<p>Amazon Kinesis - Default <code class="ansible-value docutils literal notranslate"><span class="pre">100</span></code>. Max <code class="ansible-value docutils literal notranslate"><span class="pre">10000</span></code>.</p>
+<p>Amazon DynamoDB Streams - Default <code class="ansible-value docutils literal notranslate"><span class="pre">100</span></code>. Max <code class="ansible-value docutils literal notranslate"><span class="pre">10000</span></code>.</p>
+<p>Amazon Simple Queue Service - Default <code class="ansible-value docutils literal notranslate"><span class="pre">10</span></code>. For standard queues the max is <code class="ansible-value docutils literal notranslate"><span class="pre">10000</span></code>. For FIFO queues the max is <code class="ansible-value docutils literal notranslate"><span class="pre">10</span></code>.</p>
+<p>Amazon Managed Streaming for Apache Kafka - Default <code class="ansible-value docutils literal notranslate"><span class="pre">100</span></code>. Max <code class="ansible-value docutils literal notranslate"><span class="pre">10000</span></code>.</p>
+<p>Self-managed Apache Kafka - Default <code class="docutils literal notranslate"><span class="pre">100</span></code>. Max <code class="ansible-value docutils literal notranslate"><span class="pre">10000</span></code>.</p>
+<p>Amazon MQ (ActiveMQ and RabbitMQ) - Default <code class="ansible-value docutils literal notranslate"><span class="pre">100</span></code>. Max <code class="ansible-value docutils literal notranslate"><span class="pre">10000</span></code>.</p>
+<p>DocumentDB - Default <code class="ansible-value docutils literal notranslate"><span class="pre">100</span></code>. Max <code class="ansible-value docutils literal notranslate"><span class="pre">10000</span></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -379,13 +385,24 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-e
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-source_params/maximum_batching_window_in_seconds"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-parameter-source-params-maximum-batching-window-in-seconds"><strong>maximum_batching_window_in_seconds</strong></p>
+<a class="ansibleOptionLink" href="#parameter-source_params/maximum_batching_window_in_seconds" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 8.0.0</em></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The maximum amount of time, in seconds, that Lambda spends gathering records before invoking the function.</p>
+<p>You can configure <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-event-module-parameter-source-params-maximum-batching-window-in-seconds"><span class="std std-ref"><span class="pre">source_params.maximum_batching_window_in_seconds</span></span></a></strong></code> to any value from <code class="ansible-value docutils literal notranslate"><span class="pre">0</span></code> seconds to <code class="ansible-value docutils literal notranslate"><span class="pre">300</span></code> seconds in increments of seconds.</p>
+<p>For streams and Amazon SQS event sources, when <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-event-module-parameter-source-params-batch-size"><span class="std std-ref"><span class="pre">source_params.batch_size</span></span></a></strong></code> is set to a value greater than <code class="ansible-value docutils literal notranslate"><span class="pre">10</span></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-event-module-parameter-source-params-maximum-batching-window-in-seconds"><span class="std std-ref"><span class="pre">source_params.maximum_batching_window_in_seconds</span></span></a></strong></code> defaults to <code class="ansible-value docutils literal notranslate"><span class="pre">1</span></code>.</p>
+<p><code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-event-module-parameter-source-params-maximum-batching-window-in-seconds"><span class="std std-ref"><span class="pre">source_params.maximum_batching_window_in_seconds</span></span></a></strong></code> is not supported by FIFO queues.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-source_params/source_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-parameter-source-params-source-arn"><strong>source_arn</strong></p>
 <a class="ansibleOptionLink" href="#parameter-source_params/source_arn" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The Amazon Resource Name (ARN) of the SQS queue, Kinesis stream or DynamoDB stream that is the event source.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-source_params/starting_position"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-parameter-source-params-starting-position"><strong>starting_position</strong></p>
 <a class="ansibleOptionLink" href="#parameter-source_params/starting_position" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -398,7 +415,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-e
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-state"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-parameter-state"><strong>state</strong></p>
 <a class="ansibleOptionLink" href="#parameter-state" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -410,7 +427,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-e
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-validate_certs"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-parameter-validate-certs"><strong>validate_certs</strong></p>
 <a class="ansibleOptionLink" href="#parameter-validate_certs" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -423,7 +440,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-e
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-version"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-parameter-version"><strong>version</strong></p>
 <a class="ansibleOptionLink" href="#parameter-version" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
