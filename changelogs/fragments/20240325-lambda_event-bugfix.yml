@@ -1,0 +1,11 @@
+breaking_changes:
+  - lambda_event - |
+      ``batch_size`` no longer defaults to 100. According to the boto3 API
+      (https://boto3.amazonaws.com/v1/documentation/api/1.26.78/reference/services/lambda.html#Lambda.Client.create_event_source_mapping), ``batch_size`` defaults to 10 for sqs sources and to 100
+      for stream sources (https://github.com/ansible-collections/amazon.aws/pull/2025).
+
+bugfixes:
+  - lambda_event - Fix when ``batch_size`` is greater than 10, by enabling support for setting ``maximum_batching_window_in_seconds`` (https://github.com/ansible-collections/amazon.aws/pull/2025).
+
+minor_changes:
+  - lambda_event - Add support for setting the ``maximum_batching_window_in_seconds`` option (https://github.com/ansible-collections/amazon.aws/pull/2025).
