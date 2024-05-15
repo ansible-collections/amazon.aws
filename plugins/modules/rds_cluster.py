@@ -1104,6 +1104,10 @@ def changing_cluster_options(modify_params, current_cluster):
             changing_params["DBClusterParameterGroupName"] = desired_db_cluster_parameter_group
 
     for param in modify_params:
+        # describe_db_clusters does not return StorageType for clusters with storage config as "aurora standard"
+        if param == "StorageType":
+            changing_params[param] = modify_params[param]
+            continue
         if modify_params[param] != current_cluster[param]:
             changing_params[param] = modify_params[param]
 
