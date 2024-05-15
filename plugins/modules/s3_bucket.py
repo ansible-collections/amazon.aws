@@ -171,7 +171,7 @@ options:
       - Enables Amazon S3 Transfer Acceleration, sent data will be routed to Amazon S3 over an optimized network path.
     type: bool
     default: false
-    version_added: 7.6.0
+    version_added: 8.1.0
 
 extends_documentation_fragment:
   - amazon.aws.common.modules
@@ -297,7 +297,7 @@ EXAMPLES = r"""
 - amazon.aws.s3_bucket:
     name: mys3bucket
     state: present
-    accelerate: true
+    accelerate_enabled: true
 """
 
 RETURN = r"""
@@ -403,6 +403,11 @@ public_access_block:
                 RestrictPublicBuckets:
                     description: Specifies whether Amazon S3 should restrict public bucket policies for this bucket.
                     type: bool
+accelerate_enabled:
+    description: S3 bucket acceleration status.
+    type: bool
+    returned: O(state=present)
+    sample: true
 """
 
 import json
@@ -898,7 +903,7 @@ def handle_bucket_accelerate(s3_client, module: AnsibleAWSModule, name: str) -> 
         and a dictionary containing the updated transfer accelerate setting.
     """
     accelerate_enabled = module.params.get("accelerate_enabled")
-    accelerate_enabled_result = {}
+    accelerate_enabled_result = False
     accelerate_enabled_changed = False
     try:
         accelerate_status = get_bucket_accelerate_status(s3_client, name)
@@ -915,18 +920,17 @@ def handle_bucket_accelerate(s3_client, module: AnsibleAWSModule, name: str) -> 
     ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to fetch bucket transfer acceleration state")
     else:
-        if accelerate_status is not None:
-            try:
-                if not accelerate_enabled and accelerate_status:
-                    delete_bucket_accelerate_configuration(s3_client, name)
-                    accelerate_enabled_changed = True
-                    accelerate_enabled_result = False
-                if accelerate_enabled and not accelerate_status:
-                    put_bucket_accelerate_configuration(s3_client, name)
-                    accelerate_enabled_changed = True
-                    accelerate_enabled_result = True
-            except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-                module.fail_json_aws(e, msg="Failed to update bucket transfer acceleration")
+        try:
+            if not accelerate_enabled and accelerate_status:
+                delete_bucket_accelerate_configuration(s3_client, name)
+                accelerate_enabled_changed = True
+                accelerate_enabled_result = False
+            if accelerate_enabled and not accelerate_status:
+                put_bucket_accelerate_configuration(s3_client, name)
+                accelerate_enabled_changed = True
+                accelerate_enabled_result = True
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+            module.fail_json_aws(e, msg="Failed to update bucket transfer acceleration")
     return accelerate_enabled_changed, accelerate_enabled_result
 
 

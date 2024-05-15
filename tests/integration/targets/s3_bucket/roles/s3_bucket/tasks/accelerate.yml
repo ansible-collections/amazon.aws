@@ -47,6 +47,20 @@
           - output.changed
           - output.accelerate_enabled
 
+    - name: Assert transfer acceleration enabled
+      amazon.aws.s3_bucket_info:
+        name: "{{ local_bucket_name }}"
+        bucket_facts:
+          bucket_accelerate_configuration: true
+      register: output
+
+    - ansible.builtin.assert:
+        that:
+          - item.bucket_accelerate_configuration["Status"] == "Enabled"
+      loop: "{{ output.buckets }}"
+      loop_control:
+        label: "{{ item.name }}"
+
     - name: Re-Enable transfer acceleration (idempotency)
       amazon.aws.s3_bucket:
         name: "{{ local_bucket_name }}"
@@ -58,6 +72,20 @@
         that:
           - not output.changed
           - output.accelerate_enabled
+
+    - name: Assert transfer acceleration enabled
+      amazon.aws.s3_bucket_info:
+        name: "{{ local_bucket_name }}"
+        bucket_facts:
+          bucket_accelerate_configuration: true
+      register: output
+
+    - ansible.builtin.assert:
+        that:
+          - item.bucket_accelerate_configuration["Status"] == "Enabled"
+      loop: "{{ output.buckets }}"
+      loop_control:
+        label: "{{ item.name }}"
 
     - name: Delete test s3 bucket
       amazon.aws.s3_bucket:
@@ -83,6 +111,20 @@
           - output.changed
           - output.accelerate_enabled
 
+    - name: Assert transfer acceleration enabled
+      amazon.aws.s3_bucket_info:
+        name: "{{ local_bucket_name }}"
+        bucket_facts:
+          bucket_accelerate_configuration: true
+      register: output
+
+    - ansible.builtin.assert:
+        that:
+          - item.bucket_accelerate_configuration["Status"] == "Enabled"
+      loop: "{{ output.buckets }}"
+      loop_control:
+        label: "{{ item.name }}"
+
     - name: Disable transfer accelerate
       amazon.aws.s3_bucket:
         name: "{{ local_bucket_name }}-2"
@@ -96,6 +138,20 @@
           - output.changed
           - not output.accelerate_enabled
 
+    - name: Assert transfer acceleration disabled
+      amazon.aws.s3_bucket_info:
+        name: "{{ local_bucket_name }}"
+        bucket_facts:
+          bucket_accelerate_configuration: true
+      register: output
+
+    - ansible.builtin.assert:
+        that:
+          - item.bucket_accelerate_configuration["Status"] == "Disabled"
+      loop: "{{ output.buckets }}"
+      loop_control:
+        label: "{{ item.name }}"
+
     - name: Re-Enable transfer accelerate (idempotency)
       amazon.aws.s3_bucket:
         name: "{{ local_bucket_name }}-2"
@@ -107,6 +163,20 @@
         that:
           - output.changed
           - output.accelerate_enabled
+
+    - name: Assert transfer acceleration enabled
+      amazon.aws.s3_bucket_info:
+        name: "{{ local_bucket_name }}"
+        bucket_facts:
+          bucket_accelerate_configuration: true
+      register: output
+
+    - ansible.builtin.assert:
+        that:
+          - item.bucket_accelerate_configuration["Status"] == "Enabled"
+      loop: "{{ output.buckets }}"
+      loop_control:
+        label: "{{ item.name }}"
 
     - name: Touch bucket with transfer accelerate enabled (idempotency)
       amazon.aws.s3_bucket:
