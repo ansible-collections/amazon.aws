@@ -1,11 +1,19 @@
 ---
-name: changelog and linters
+name: Linters
 
-on: [workflow_call] # allow this workflow to be called from other workflows
+concurrency:
+  group: ${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+on:
+  push:
+  pull_request:
 
 jobs:
   linters:
-    uses: ansible-network/github_actions/.github/workflows/tox.yml@main
-    with:
-      envname: ""
-      labelname: lint
+    uses: ansible-network/github_actions/.github/workflows/tox-linters.yml@main
+  ansible-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run ansible-lint
+        uses: ansible/ansible-lint@v6.22.1
