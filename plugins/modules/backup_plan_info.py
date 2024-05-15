@@ -20,7 +20,6 @@ options:
   backup_plan_names:
     type: list
     elements: str
-    required: false
     description:
       - Specifies a list of plan names.
 extends_documentation_fragment:
@@ -122,8 +121,8 @@ def get_backup_plan_detail(client, module):
     if backup_plan_names is None:
         backup_plan_names = []
         backup_plan_list_info = get_all_backup_plans_info(client)["BackupPlansList"]
-        for mylist in backup_plan_list_info:
-            backup_plan_names.append(mylist["BackupPlanName"])
+        for backup_plan in backup_plan_list_info:
+            backup_plan_names.append(backup_plan["BackupPlanName"])
 
     for name in backup_plan_names:
         backup_plan_list.extend(get_plan_details(module, client, name))
