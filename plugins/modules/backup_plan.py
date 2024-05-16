@@ -240,7 +240,7 @@ backup_plan:
   type: dict
   contains:
     backup_plan_name:
-      description: Name of the backup plan.
+      description: The display name of a backup plan.
       returned: always
       type: str
       sample: elastic
@@ -271,25 +271,34 @@ backup_plan:
             - A value in minutes after a backup is scheduled before a job will be canceled if it
               doesn't start successfully.
           type: int
+          returned: always
           sample: 480
         completion_window_minutes:
           description:
             - A value in minutes after a backup job is successfully started before it must be
               completed or it will be canceled by Backup.
           type: int
+          returned: always
           sample: 10080
         lifecycle:
           description:
-            - The lifecycle defines when a protected resource is transitioned to cold storage and when
-              it expires.
+            - Defines when a protected resource is transitioned to cold storage and when it expires.
           type: dict
-          sample: {}
+          returned: when lifecycle configured
+          sample: {
+                    "delete_after_days": 100,
+                    "move_to_cold_storage_after_days": 10
+                  }
         recovery_point_tags:
           description:
             - An array of key-value pair strings that are assigned to resources that are associated with
               this rule when restored from backup.
           type: dict
-          sample: {}
+          returned: when recovery_point_tags configured
+          sample: {
+                    "Tagkey1": "TagValue1",
+                    "Tagkey2": "TagValue2"
+                  }
         rule_id:
           description:
             - Uniquely identifies a rule that is used to schedule the backup of a selection of resources.
@@ -298,9 +307,18 @@ backup_plan:
           sample: "973621ef-d863-41ef-b5c3-9e943a64ad0c"
         copy_actions:
           description: An array of CopyAction objects, which contains the details of the copy operation.
+          returned: when copy_actions configured
           type: list
-          returned: always
-          sample: []
+          elements: dict
+          sample: [
+                    {
+                      "destination_backup_vault_arn": "arn:aws:backup:us-west-2:123456789012:backup-vault:my-test-vault",
+                      "lifecycle": {
+                          "delete_after_days": 100,
+                          "move_to_cold_storage_after_days": 10
+                      }
+                    }
+                  ]
         enable_continous_backup:
           description: Specifies whether Backup creates continuous backups.
           type: bool
@@ -319,17 +337,33 @@ backup_plan:
       returned: when configured
       type: list
       elements: dict
+      sample: [
+                {
+                  "backup_options": {
+                      "windows_vss": "enabled"
+                  },
+                  "resource_type": "EC2"
+                }
+              ]
       contains:
         resource_type:
           description: Resource type of the advanced settings.
           type: str
+          sample: EC2
         backup_options:
           description: Backup options of the advanced settings.
           type: dict
+          sample: {
+                    "windows_vss": "enabled"
+                  }
     tags:
       description: Tags of the backup plan.
       returned: on create/update
       type: str
+      sample: {
+                "TagKey1": "TagValue1",
+                "TagKey2": "TagValue2"
+              }
 """
 
 import json
