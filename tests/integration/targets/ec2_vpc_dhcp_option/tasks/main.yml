@@ -393,7 +393,7 @@
     - ansible.builtin.assert:
         that:
           - dhcp_options.failed
-          - '"does not exist" in dhcp_options.error.message'
+          - '"does not exist" in dhcp_options.msg'
 
     - ansible.builtin.set_fact:
         original_dhcp_options_id: "{{ new_dhcp_options_id }}"
@@ -461,7 +461,7 @@
     - ansible.builtin.assert:
         that:
           - dhcp_options.failed
-          - '"does not exist" in dhcp_options.error.message'
+          - '"does not exist" in dhcp_options.msg'
 
     - ansible.builtin.set_fact:
         original_dhcp_options_id: "{{ new_dhcp_options_id }}"

@@ -174,6 +174,10 @@ vpc_endpoints:
       vpc_id: "vpc-1111ffff"
 """
 
+from typing import Any
+from typing import Dict
+from typing import List
+
 try:
     import botocore
 except ImportError:
@@ -181,40 +185,33 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import normalize_boto3_result
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleEC2Error
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_vpc_endpoints
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 
 
-@AWSRetry.jittered_backoff()
-def _describe_endpoints(client, **params):
-    paginator = client.get_paginator("describe_vpc_endpoints")
-    return paginator.paginate(**params).build_full_result()
-
-
-def get_endpoints(client, module):
+def get_endpoints(client, module: AnsibleAWSModule) -> Dict[str, List[Dict[str, Any]]]:
     results = list()
     params = dict()
     params["Filters"] = ansible_dict_to_boto3_filter_list(module.params.get("filters"))
     if module.params.get("vpc_endpoint_ids"):
         params["VpcEndpointIds"] = module.params.get("vpc_endpoint_ids")
     try:
-        results = _describe_endpoints(client, **params)["VpcEndpoints"]
+        results = describe_vpc_endpoints(client, **params)
+        if not results:
+            module.exit_json(
+                msg=f"VpcEndpoint {module.params.get('vpc_endpoint_ids')} does not exist", vpc_endpoints=[]
+            )
         results = normalize_boto3_result(results)
-    except is_boto3_error_code("InvalidVpcEndpointId.NotFound"):
-        module.exit_json(msg=f"VpcEndpoint {module.params.get('vpc_endpoint_ids')} does not exist", vpc_endpoints=[])
-    except (
-        botocore.exceptions.BotoCoreError,
-        botocore.exceptions.ClientError,
-    ) as e:  # pylint: disable=duplicate-except
+    except AnsibleEC2Error as e:
         module.fail_json_aws(e, msg="Failed to get endpoints")
 
     return dict(vpc_endpoints=[camel_dict_to_snake_dict(result) for result in results])
 
 
-def main():
+def main() -> None:
     argument_spec = dict(
         filters=dict(default={}, type="dict"),
         vpc_endpoint_ids=dict(type="list", elements="str"),

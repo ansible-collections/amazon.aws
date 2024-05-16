@@ -1273,7 +1273,7 @@ def ensure_ec2_tags(client, module, resource_id, resource_type=None, tags=None, 
     return changed
 
 
-def normalize_ec2_vpc_dhcp_config(option_config: List[Dict[str, Any]]):
+def normalize_ec2_vpc_dhcp_config(option_config: List[Dict[str, Any]]) -> Dict[str, Any]:
     """
     The boto2 module returned a config dict, but boto3 returns a list of dicts
     Make the data we return look like the old way, so we don't break users.

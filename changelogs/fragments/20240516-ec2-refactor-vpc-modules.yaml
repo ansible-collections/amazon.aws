@@ -1,0 +1,7 @@
+---
+minor_changes:
+  - ec2_vpc_dhcp_option_info - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2097).
+  - ec2_vpc_dhcp_option - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2097).
+  - ec2_vpc_endpoint_info - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2097).
+  - ec2_vpc_endpoint - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2097).
+  - ec2_vpc_endpoint_service_info - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2097).
