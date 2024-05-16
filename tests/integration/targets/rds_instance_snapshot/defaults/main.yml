@@ -8,7 +8,7 @@ password: "{{ lookup('password', '/dev/null') }}"
 db_instance_class: db.t3.micro
 allocated_storage: 10
 engine: mariadb
-mariadb_engine_version: 10.6.10
+mariadb_engine_version: 10.11.7
 
 # Create snapshot
 snapshot_id: "{{ instance_id }}-snapshot"
