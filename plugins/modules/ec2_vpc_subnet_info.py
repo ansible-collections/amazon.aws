@@ -112,7 +112,7 @@ subnets:
             type: dict
             sample: {"Name": "My Subnet", "env": "staging"}
         map_public_ip_on_launch:
-            description: whether public IP is auto-assigned to new instances
+            description: whether public IP is auto-assigned to new instances.
             returned: always
             type: bool
             sample: false
