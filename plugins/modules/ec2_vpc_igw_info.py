@@ -102,6 +102,10 @@ internet_gateways:
                     "Ansible": "Test"
 """
 
+from typing import Any
+from typing import Dict
+from typing import List
+
 try:
     import botocore
 except ImportError:
@@ -110,13 +114,13 @@ except ImportError:
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_internet_gateways
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 
 
-def get_internet_gateway_info(internet_gateway, convert_tags):
+def get_internet_gateway_info(internet_gateway: Dict[str, Any], convert_tags: bool) -> Dict[str, Any]:
     if convert_tags:
         tags = boto3_tag_list_to_ansible_dict(internet_gateway["Tags"])
         ignore_list = ["Tags"]
@@ -133,7 +137,7 @@ def get_internet_gateway_info(internet_gateway, convert_tags):
     return internet_gateway_info
 
 
-def list_internet_gateways(connection, module):
+def list_internet_gateways(connection, module: AnsibleAWSModule) -> List[Dict[str, Any]]:
     params = dict()
 
     params["Filters"] = ansible_dict_to_boto3_filter_list(module.params.get("filters"))
@@ -143,7 +147,7 @@ def list_internet_gateways(connection, module):
         params["InternetGatewayIds"] = module.params.get("internet_gateway_ids")
 
     try:
-        all_internet_gateways = connection.describe_internet_gateways(aws_retry=True, **params)
+        all_internet_gateways = describe_internet_gateways(connection, **params)
     except is_boto3_error_code("InvalidInternetGatewayID.NotFound"):
         module.fail_json("InternetGateway not found")
     except (
@@ -152,10 +156,10 @@ def list_internet_gateways(connection, module):
     ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, "Unable to describe internet gateways")
 
-    return [get_internet_gateway_info(igw, convert_tags) for igw in all_internet_gateways["InternetGateways"]]
+    return [get_internet_gateway_info(igw, convert_tags) for igw in all_internet_gateways]
 
 
-def main():
+def main() -> None:
     argument_spec = dict(
         filters=dict(type="dict", default=dict()),
         internet_gateway_ids=dict(type="list", default=None, elements="str"),
@@ -166,7 +170,7 @@ def main():
 
     # Validate Requirements
     try:
-        connection = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff())
+        connection = module.client("ec2")
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to connect to AWS")
 

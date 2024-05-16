@@ -259,21 +259,26 @@ volume_size:
 """
 
 import datetime
-
-try:
-    import botocore
-except ImportError:
-    pass  # Taken care of by AnsibleAWSModule
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleEC2Error
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import create_snapshot
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import delete_snapshot
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_snapshot_attribute
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_snapshots
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_volumes
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import modify_snapshot_attribute
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import reset_snapshot_attribute
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
-from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
+from ansible_collections.amazon.aws.plugins.module_utils.waiters import wait_for_resource_state
 
 
 def _get_most_recent_snapshot(snapshots, max_snapshot_age_secs=None, now=None):
@@ -302,11 +307,11 @@ def _get_most_recent_snapshot(snapshots, max_snapshot_age_secs=None, now=None):
     return youngest_snapshot
 
 
-def get_volume_by_instance(module, ec2, device_name, instance_id):
+def get_volume_by_instance(module: AnsibleAWSModule, ec2, device_name: str, instance_id: str) -> Dict[str, Any]:
     try:
         _filter = {"attachment.instance-id": instance_id, "attachment.device": device_name}
-        volumes = ec2.describe_volumes(aws_retry=True, Filters=ansible_dict_to_boto3_filter_list(_filter))["Volumes"]
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        volumes = describe_volumes(ec2, Filters=ansible_dict_to_boto3_filter_list(_filter))
+    except AnsibleEC2Error as e:
         module.fail_json_aws(e, msg="Failed to describe Volume")
 
     if not volumes:
@@ -316,61 +321,40 @@ def get_volume_by_instance(module, ec2, device_name, instance_id):
     return volume
 
 
-def get_volume_by_id(module, ec2, volume):
+def get_volume_by_id(module: AnsibleAWSModule, ec2, volume: str) -> Dict[str, Any]:
     try:
-        volumes = ec2.describe_volumes(
-            aws_retry=True,
-            VolumeIds=[volume],
-        )["Volumes"]
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        volumes = describe_volumes(ec2, VolumeIds=[volume])
+    except AnsibleEC2Error as e:
         module.fail_json_aws(e, msg="Failed to describe Volume")
 
     if not volumes:
         module.fail_json(msg=f"Could not find volume with id {volume}")
 
-    volume = volumes[0]
-    return volume
+    return volumes[0]
 
 
-@AWSRetry.jittered_backoff()
-def _describe_snapshots(ec2, **params):
-    paginator = ec2.get_paginator("describe_snapshots")
-    return paginator.paginate(**params).build_full_result()
-
-
-# Handle SnapshotCreationPerVolumeRateExceeded separately because we need a much
-# longer delay than normal
-@AWSRetry.jittered_backoff(catch_extra_error_codes=["SnapshotCreationPerVolumeRateExceeded"], delay=15)
-def _create_snapshot(ec2, **params):
-    # Fast retry on common failures ('global' rate limits)
-    return ec2.create_snapshot(aws_retry=True, **params)
-
-
-def get_snapshots_by_volume(module, ec2, volume_id):
+def get_snapshots_by_volume(module: AnsibleAWSModule, ec2, volume_id: str) -> Optional[List[Dict[str, Any]]]:
     _filter = {"volume-id": volume_id}
     try:
-        results = _describe_snapshots(ec2, Filters=ansible_dict_to_boto3_filter_list(_filter))
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        results = describe_snapshots(ec2, Filters=ansible_dict_to_boto3_filter_list(_filter))
+    except AnsibleEC2Error as e:
         module.fail_json_aws(e, msg="Failed to describe snapshots from volume")
 
-    return results["Snapshots"]
+    return results.get("Snapshots", [])
 
 
-def create_snapshot(
-    module,
-    ec2,
-    description=None,
-    wait=None,
-    wait_timeout=None,
-    volume_id=None,
-    instance_id=None,
-    snapshot_id=None,
-    device_name=None,
-    snapshot_tags=None,
-    last_snapshot_min_age=None,
-):
+def _create_snapshot(module, ec2):
     snapshot = None
     changed = False
+
+    volume_id = module.params.get("volume_id")
+    description = module.params.get("description")
+    instance_id = module.params.get("instance_id")
+    device_name = module.params.get("device_name")
+    wait = module.params.get("wait")
+    wait_timeout = module.params.get("wait_timeout")
+    last_snapshot_min_age = module.params.get("last_snapshot_min_age")
+    snapshot_tags = module.params.get("snapshot_tags")
 
     if instance_id:
         volume = get_volume_by_instance(module, ec2, device_name, instance_id)
@@ -411,18 +395,20 @@ def create_snapshot(
                     volume_id=volume["VolumeId"],
                     volume_size=volume["Size"],
                 )
-            snapshot = _create_snapshot(ec2, **params)
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+            volume_id = params.pop("VolumeId")
+            snapshot = create_snapshot(ec2, volume_id=volume_id, **params)
+        except AnsibleEC2Error as e:
             module.fail_json_aws(e, msg="Failed to create snapshot")
         changed = True
     if wait:
-        waiter = get_waiter(ec2, "snapshot_completed")
-        try:
-            waiter.wait(SnapshotIds=[snapshot["SnapshotId"]], WaiterConfig=dict(Delay=3, MaxAttempts=wait_timeout // 3))
-        except botocore.exceptions.WaiterError as e:
-            module.fail_json_aws(e, msg="Timed out while creating snapshot")
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-            module.fail_json_aws(e, msg="Error while waiting for snapshot creation")
+        wait_for_resource_state(
+            ec2,
+            module,
+            "snapshot_completed",
+            delay=3,
+            max_attempts=wait_timeout // 3,
+            SnapshotIds=[snapshot["SnapshotId"]],
+        )
 
     _tags = boto3_tag_list_to_ansible_dict(snapshot["Tags"])
     _snapshot = camel_dict_to_snake_dict(snapshot)
@@ -438,37 +424,23 @@ def create_snapshot(
     module.exit_json(changed=changed, **results)
 
 
-def delete_snapshot(module, ec2, snapshot_id):
+def _delete_snapshot(module: AnsibleAWSModule, connection) -> None:
+    snapshot_id = module.params.get("snapshot_id")
     if module.check_mode:
         try:
-            _describe_snapshots(ec2, SnapshotIds=[(snapshot_id)])
+            snapshots = describe_snapshots(connection, SnapshotIds=[(snapshot_id)])
+            if not snapshots:
+                module.exit_json(changed=False, msg="snapshot not found")
             module.exit_json(changed=True, msg="Would have deleted snapshot if not in check mode")
-        except is_boto3_error_code("InvalidSnapshot.NotFound"):
-            module.exit_json(changed=False, msg="Invalid snapshot ID - snapshot not found")
+        except AnsibleEC2Error as e:
+            module.fail_json_aws(e, msg="Failed to describe snapshots")
     try:
-        ec2.delete_snapshot(aws_retry=True, SnapshotId=snapshot_id)
-    except is_boto3_error_code("InvalidSnapshot.NotFound"):
-        module.exit_json(changed=False)
-    except (
-        botocore.exceptions.BotoCoreError,
-        botocore.exceptions.ClientError,
-    ) as e:  # pylint: disable=duplicate-except
+        changed = delete_snapshot(connection, snapshot_id)
+    except AnsibleEC2Error as e:
         module.fail_json_aws(e, msg="Failed to delete snapshot")
 
     # successful delete
-    module.exit_json(changed=True)
-
-
-def _describe_snapshot_attribute(module, ec2, snapshot_id):
-    try:
-        response = ec2.describe_snapshot_attribute(Attribute="createVolumePermission", SnapshotId=snapshot_id)
-    except (
-        botocore.exceptions.BotoCoreError,
-        botocore.exceptions.ClientError,
-    ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Failed to describe snapshot attribute createVolumePermission")
-
-    return response["CreateVolumePermissions"]
+    module.exit_json(changed=changed)
 
 
 def build_modify_createVolumePermission_params(module):
@@ -493,8 +465,13 @@ def build_modify_createVolumePermission_params(module):
     return params
 
 
-def check_user_or_group_update_needed(module, ec2):
-    existing_create_vol_permission = _describe_snapshot_attribute(module, ec2, module.params.get("snapshot_id"))
+def check_user_or_group_update_needed(module: AnsibleAWSModule, ec2) -> bool:
+    try:
+        existing_create_vol_permission = describe_snapshot_attribute(
+            ec2, snapshot_id=module.params.get("snapshot_id"), attribute="createVolumePermission"
+        )["CreateVolumePermissions"]
+    except AnsibleEC2Error as e:
+        module.fail_json_aws(e, failed="Failed to describe snapshot attribute")
     purge_permission = module.params.get("purge_create_vol_permission")
     supplied_group_names = module.params.get("group_names")
     supplied_user_ids = module.params.get("user_ids")
@@ -523,14 +500,21 @@ def check_user_or_group_update_needed(module, ec2):
     return True
 
 
-def _modify_snapshot_createVolumePermission(module, ec2, snapshot_id, purge_create_vol_permission):
+def _modify_snapshot_createVolumePermission(module: AnsibleAWSModule, ec2) -> None:
+    snapshot_id = module.params.get("snapshot_id")
+    purge_create_vol_permission = module.params.get("purge_create_vol_permission")
     update_needed = check_user_or_group_update_needed(module, ec2)
 
     if not update_needed:
         module.exit_json(changed=False, msg="Supplied CreateVolumePermission already applied, update not needed")
 
-    if purge_create_vol_permission is True:
-        _reset_snapshpot_attribute(module, ec2, snapshot_id)
+    if purge_create_vol_permission:
+        if module.check_mode:
+            module.exit_json(changed=True, msg="Would have reset CreateVolumePermission")
+        try:
+            reset_snapshot_attribute(ec2, attribute="createVolumePermission", snapshot_id=snapshot_id)
+        except AnsibleEC2Error as e:
+            module.fail_json_aws(e, msg="Failed to reset createVolumePermission")
         if not module.params.get("user_ids") and not module.params.get("group_names"):
             module.exit_json(changed=True, msg="Reset createVolumePermission successfully")
 
@@ -540,29 +524,15 @@ def _modify_snapshot_createVolumePermission(module, ec2, snapshot_id, purge_crea
         module.exit_json(changed=True, msg="Would have modified CreateVolumePermission")
 
     try:
-        ec2.modify_snapshot_attribute(**params)
-    except (
-        botocore.exceptions.BotoCoreError,
-        botocore.exceptions.ClientError,
-    ) as e:  # pylint: disable=duplicate-except
+        snapshot_id = params.pop("SnapshotId")
+        modify_snapshot_attribute(ec2, snapshot_id=snapshot_id, **params)
+    except AnsibleEC2Error as e:
         module.fail_json_aws(e, msg="Failed to modify createVolumePermission")
 
     module.exit_json(changed=True, msg="Successfully modified CreateVolumePermission")
 
 
-def _reset_snapshpot_attribute(module, ec2, snapshot_id):
-    if module.check_mode:
-        module.exit_json(changed=True, msg="Would have reset CreateVolumePermission")
-    try:
-        response = ec2.reset_snapshot_attribute(Attribute="createVolumePermission", SnapshotId=snapshot_id)
-    except (
-        botocore.exceptions.BotoCoreError,
-        botocore.exceptions.ClientError,
-    ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Failed to reset createVolumePermission")
-
-
-def create_snapshot_ansible_module():
+def create_snapshot_ansible_module() -> AnsibleAWSModule:
     argument_spec = dict(
         volume_id=dict(),
         description=dict(),
@@ -609,43 +579,17 @@ def create_snapshot_ansible_module():
 def main():
     module = create_snapshot_ansible_module()
 
-    volume_id = module.params.get("volume_id")
-    snapshot_id = module.params.get("snapshot_id")
-    description = module.params.get("description")
-    instance_id = module.params.get("instance_id")
-    device_name = module.params.get("device_name")
-    wait = module.params.get("wait")
-    wait_timeout = module.params.get("wait_timeout")
-    last_snapshot_min_age = module.params.get("last_snapshot_min_age")
-    snapshot_tags = module.params.get("snapshot_tags")
     state = module.params.get("state")
     modify_create_vol_permission = module.params.get("modify_create_vol_permission")
-    purge_create_vol_permission = module.params.get("purge_create_vol_permission")
 
-    ec2 = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff(retries=10))
+    ec2 = module.client("ec2")
 
     if state == "absent":
-        delete_snapshot(
-            module=module,
-            ec2=ec2,
-            snapshot_id=snapshot_id,
-        )
+        _delete_snapshot(module, ec2)
     elif modify_create_vol_permission is True:
-        _modify_snapshot_createVolumePermission(module, ec2, snapshot_id, purge_create_vol_permission)
+        _modify_snapshot_createVolumePermission(module, ec2)
     elif state == "present":
-        create_snapshot(
-            module=module,
-            description=description,
-            wait=wait,
-            wait_timeout=wait_timeout,
-            ec2=ec2,
-            volume_id=volume_id,
-            instance_id=instance_id,
-            snapshot_id=snapshot_id,
-            device_name=device_name,
-            snapshot_tags=snapshot_tags,
-            last_snapshot_min_age=last_snapshot_min_age,
-        )
+        _create_snapshot(module, ec2)
 
 
 if __name__ == "__main__":
