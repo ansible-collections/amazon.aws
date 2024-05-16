@@ -1,3 +1,0 @@
-trivial:
-    - rds_cluster - Remove any requirement for botocore >= 1.23.44 as we require botocore >= 1.29.0.
-    - lambda_info - Remove any requirement for botocore >= 1.21.51 as we require botocore >= 1.29.0.
