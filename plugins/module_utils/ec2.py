@@ -38,6 +38,10 @@ up in this module because "that's where the AWS code was" (originally).
 """
 
 import re
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
 
 import ansible.module_utils.common.warnings as ansible_warnings
 from ansible.module_utils.ansible_release import __version__
@@ -60,7 +64,9 @@ from .botocore import boto3_inventory_conn  # pylint: disable=unused-import
 from .botocore import boto_exception  # pylint: disable=unused-import
 from .botocore import get_aws_connection_info  # pylint: disable=unused-import
 from .botocore import get_aws_region  # pylint: disable=unused-import
+from .botocore import is_boto3_error_code
 from .botocore import paginated_query_with_retries
+from .errors import AWSErrorHandler
 
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.exceptions
 from .exceptions import AnsibleAWSError  # pylint: disable=unused-import
@@ -80,6 +86,7 @@ from .retries import AWSRetry  # pylint: disable=unused-import
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.tagging
 from .tagging import ansible_dict_to_boto3_tag_list  # pylint: disable=unused-import
 from .tagging import boto3_tag_list_to_ansible_dict  # pylint: disable=unused-import
+from .tagging import boto3_tag_specifications
 from .tagging import compare_aws_tags  # pylint: disable=unused-import
 
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.transformation
@@ -90,6 +97,248 @@ try:
     import botocore
 except ImportError:
     pass  # Handled by HAS_BOTO3
+
+
+class AnsibleEC2Error(AnsibleAWSError):
+    pass
+
+
+# EC2 VPC DHCP Option
+class EC2VpcDhcpOptionErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleEC2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code(["InvalidDhcpOptionsID.NotFound", "InvalidDhcpOptionID.NotFound"])
+
+
+@EC2VpcDhcpOptionErrorHandler.common_error_handler("associate dhcp options")
+@AWSRetry.jittered_backoff()
+def associate_dhcp_options(client, dhcp_options_id: str, vpc_id: str) -> bool:
+    client.associate_dhcp_options(DhcpOptionsId=dhcp_options_id, VpcId=vpc_id)
+    return True
+
+
+# EC2 VPC Subnets
+class EC2VpcSubnetErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleEC2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code("InvalidSubnetID.NotFound")
+
+
+@EC2VpcSubnetErrorHandler.deletion_error_handler("delete subnet")
+@AWSRetry.jittered_backoff()
+def delete_subnet(client, subnet_id: str) -> bool:
+    client.delete_subnet(SubnetId=subnet_id)
+    return True
+
+
+@EC2VpcSubnetErrorHandler.list_error_handler("describe subnets", [])
+@AWSRetry.jittered_backoff()
+def describe_subnets(client, **params: Dict[str, Any]) -> List[Dict[str, Any]]:
+    paginator = client.get_paginator("describe_subnets")
+    return paginator.paginate(**params).build_full_result()["Subnets"]
+
+
+@EC2VpcSubnetErrorHandler.common_error_handler("create subnet")
+@AWSRetry.jittered_backoff()
+def create_subnet(client, **params: Dict[str, Any]) -> Dict[str, Any]:
+    return client.create_subnet(**params)["Subnet"]
+
+
+@EC2VpcSubnetErrorHandler.common_error_handler("modify subnet")
+@AWSRetry.jittered_backoff()
+def modify_subnet_attribute(client, subnet_id: str, **params: Dict[str, Any]) -> None:
+    client.modify_subnet_attribute(SubnetId=subnet_id, **params)
+
+
+@EC2VpcSubnetErrorHandler.common_error_handler("disassociate subnet cidr block")
+@AWSRetry.jittered_backoff()
+def disassociate_subnet_cidr_block(client, association_id: str) -> None:
+    client.disassociate_subnet_cidr_block(AssociationId=association_id)
+
+
+@EC2VpcSubnetErrorHandler.common_error_handler("associate subnet cidr block")
+@AWSRetry.jittered_backoff()
+def associate_subnet_cidr_block(client, subnet_id: str, **params) -> Dict[str, Any]:
+    return client.associate_subnet_cidr_block(SubnetId=subnet_id, **params)["Ipv6CidrBlockAssociation"]
+
+
+# EC2 VPC Route table
+class EC2VpcRouteTableErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleEC2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code("InvalidRouteTableID.NotFound")
+
+
+@EC2VpcRouteTableErrorHandler.list_error_handler("describe route tables", [])
+@AWSRetry.jittered_backoff()
+def describe_route_tables(client, **params: Dict[str, Any]) -> List[Dict[str, Any]]:
+    paginator = client.get_paginator("describe_route_tables")
+    return paginator.paginate(**params).build_full_result()["RouteTables"]
+
+
+@EC2VpcRouteTableErrorHandler.common_error_handler("disassociate route table")
+@AWSRetry.jittered_backoff()
+def disassociate_route_table(client, association_id: str) -> None:
+    client.disassociate_route_table(AssociationId=association_id)
+
+
+@EC2VpcRouteTableErrorHandler.common_error_handler("associate route table")
+@AWSRetry.jittered_backoff()
+def associate_route_table(client, route_table_id: str, **params: Dict[str, str]) -> Dict[str, Any]:
+    return client.associate_route_table(RouteTableId=route_table_id, **params)
+
+
+@EC2VpcRouteTableErrorHandler.common_error_handler("enable vgw route propagation")
+@AWSRetry.jittered_backoff()
+def enable_vgw_route_propagation(client, gateway_id: str, route_table_id: str) -> None:
+    client.enable_vgw_route_propagation(RouteTableId=route_table_id, GatewayId=gateway_id)
+
+
+@EC2VpcRouteTableErrorHandler.deletion_error_handler("delete route table")
+@AWSRetry.jittered_backoff()
+def delete_route_table(client, route_table_id: str) -> bool:
+    client.delete_route_table(RouteTableId=route_table_id)
+    return True
+
+
+@EC2VpcRouteTableErrorHandler.common_error_handler("create route table")
+@AWSRetry.jittered_backoff()
+def create_route_table(client, vpc_id: str, tags: Optional[Dict[str, str]]) -> Dict[str, Any]:
+    params = {"VpcId": vpc_id}
+    if tags:
+        params["TagSpecifications"] = boto3_tag_specifications(tags, types="route-table")
+    return client.create_route_table(**params)["RouteTable"]
+
+
+# EC2 VPC Route table Route
+class EC2VpcRouteTableRouteErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleEC2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code("InvalidRoute.NotFound")
+
+
+@EC2VpcRouteTableRouteErrorHandler.deletion_error_handler("delete route")
+@AWSRetry.jittered_backoff()
+def delete_route(client, route_table_id: str, **params: Dict[str, str]) -> bool:
+    client.delete_route(RouteTableId=route_table_id, **params)
+    return True
+
+
+@EC2VpcRouteTableRouteErrorHandler.common_error_handler("replace route")
+@AWSRetry.jittered_backoff()
+def replace_route(client, route_table_id: str, **params: Dict[str, str]) -> None:
+    client.replace_route(RouteTableId=route_table_id, **params)
+
+
+@EC2VpcRouteTableRouteErrorHandler.common_error_handler("create route")
+@AWSRetry.jittered_backoff()
+def create_route(client, route_table_id: str, **params: Dict[str, str]) -> None:
+    client.create_route(RouteTableId=route_table_id, **params)
+
+
+# EC2 VPC
+class EC2VpcErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleEC2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code("InvalidVpcID.NotFound")
+
+
+@EC2VpcErrorHandler.list_error_handler("describe vpcs", [])
+@AWSRetry.jittered_backoff()
+def describe_vpcs(client, **params: Dict[str, Any]) -> List[Dict[str, Any]]:
+    paginator = client.get_paginator("describe_vpcs")
+    return paginator.paginate(**params).build_full_result()["Vpcs"]
+
+
+@EC2VpcErrorHandler.deletion_error_handler("delete vpc")
+@AWSRetry.jittered_backoff()
+def delete_vpc(client, vpc_id: str) -> bool:
+    client.delete_vpc(VpcId=vpc_id)
+    return True
+
+
+@EC2VpcErrorHandler.common_error_handler("describe vpc attribute")
+@AWSRetry.jittered_backoff()
+def describe_vpc_attribute(client, vpc_id: str, attribute: str) -> Dict[str, Any]:
+    return client.describe_vpc_attribute(VpcId=vpc_id, Attribute=attribute)
+
+
+@EC2VpcErrorHandler.common_error_handler("modify vpc attribute")
+@AWSRetry.jittered_backoff()
+def modify_vpc_attribute(client, vpc_id: str, **params) -> None:
+    client.modify_vpc_attribute(VpcId=vpc_id, **params)
+
+
+@EC2VpcErrorHandler.common_error_handler("create vpc")
+@AWSRetry.jittered_backoff()
+def create_vpc(client, **params) -> Dict[str, Any]:
+    return client.create_vpc(**params)["Vpc"]
+
+
+@EC2VpcErrorHandler.common_error_handler("associate vpc cidr block")
+@AWSRetry.jittered_backoff()
+def associate_vpc_cidr_block(client, vpc_id: str, **params) -> None:
+    client.associate_vpc_cidr_block(VpcId=vpc_id, **params)
+
+
+@EC2VpcErrorHandler.common_error_handler("disassociate vpc cidr block")
+@AWSRetry.jittered_backoff()
+def disassociate_vpc_cidr_block(client, association_id: str) -> None:
+    client.disassociate_vpc_cidr_block(AssociationId=association_id)
+
+
+# EC2 Internet Gateway
+class EC2InternetGatewayErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleEC2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code("InvalidInternetGatewayID.NotFound")
+
+
+@AWSRetry.jittered_backoff()
+def describe_internet_gateways(client, **params: Dict[str, Any]) -> List[Dict[str, Any]]:
+    return client.describe_internet_gateways(**params)["InternetGateways"]
+
+
+@EC2InternetGatewayErrorHandler.common_error_handler("create internet gateway")
+@AWSRetry.jittered_backoff()
+def create_internet_gateway(client, tags: Optional[List[Dict[str, str]]]) -> Dict[str, Any]:
+    params = {}
+    if tags:
+        params["TagSpecifications"] = boto3_tag_specifications(tags, types="internet-gateway")
+    return client.create_internet_gateway(**params)["InternetGateway"]
+
+
+@EC2InternetGatewayErrorHandler.common_error_handler("detach internet gateway")
+@AWSRetry.jittered_backoff()
+def detach_internet_gateway(client, internet_gateway_id: str, vpc_id: str) -> bool:
+    client.detach_internet_gateway(InternetGatewayId=internet_gateway_id, VpcId=vpc_id)
+    return True
+
+
+@EC2InternetGatewayErrorHandler.common_error_handler("attach internet gateway")
+@AWSRetry.jittered_backoff()
+def attach_internet_gateway(client, internet_gateway_id: str, vpc_id: str) -> bool:
+    client.attach_internet_gateway(InternetGatewayId=internet_gateway_id, VpcId=vpc_id)
+    return True
+
+
+@EC2InternetGatewayErrorHandler.deletion_error_handler("delete internet gateway")
+@AWSRetry.jittered_backoff()
+def delete_internet_gateway(client, internet_gateway_id: str) -> bool:
+    client.delete_internet_gateway(InternetGatewayId=internet_gateway_id)
+    return True
 
 
 def get_ec2_security_group_ids_from_names(sec_group_list, ec2_connection, vpc_id=None, boto3=None):
@@ -272,7 +521,7 @@ def ensure_ec2_tags(client, module, resource_id, resource_type=None, tags=None, 
     return changed
 
 
-def normalize_ec2_vpc_dhcp_config(option_config):
+def normalize_ec2_vpc_dhcp_config(option_config: List[Dict[str, Any]]):
     """
     The boto2 module returned a config dict, but boto3 returns a list of dicts
     Make the data we return look like the old way, so we don't break users.
