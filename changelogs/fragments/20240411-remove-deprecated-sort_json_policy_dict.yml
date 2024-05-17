@@ -1,5 +1,0 @@
----
-removed_features:
-  - module_utils.policy - the previously deprecated ``sort_json_policy_dict()`` function has been removed, consider using ``compare_policies()`` instead (https://github.com/ansible-collections/amazon.aws/pull/2052).
-minor_changes:
-  - ec2_vol - Ensure volume state is not one of ``deleted`` or ``deleting`` when trying to delete volume, to guaranty idempotency (https://github.com/ansible-collections/amazon.aws/pull/2052).

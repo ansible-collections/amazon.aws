@@ -1,3 +1,0 @@
----
-minor_changes:
-  - module_utils/elbv2 - Add support for adding listener with multiple certificates during ALB creation. Allows elb_application_elb module to handle mentioned use case. (https://github.com/ansible-collections/amazon.aws/pull/1950).
