@@ -282,8 +282,9 @@ def convert_tg_name_to_arn(connection, module, tg_name):
     """
 
     try:
-        tg_arn = describe_target_groups(connection, Names=[tg_name])[0]["TargetGroupArn"]
+        target_groups = describe_target_groups(connection, Names=[tg_name])
+        if not target_groups:
+            module.fail_json_aws(msg=f"Target group '{tg_name}' does not exist.")
+        return target_groups[0]["TargetGroupArn"]
     except AnsibleELBv2Error as e:
         module.fail_json_aws(e)
-
-    return tg_arn
