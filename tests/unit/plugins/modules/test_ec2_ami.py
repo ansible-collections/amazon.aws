@@ -1,6 +1,7 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+from unittest.mock import ANY
 from unittest.mock import MagicMock
 from unittest.mock import call
 from unittest.mock import patch
@@ -12,8 +13,9 @@ from ansible_collections.amazon.aws.plugins.modules import ec2_ami
 module_name = "ansible_collections.amazon.aws.plugins.modules.ec2_ami"
 
 
+@patch(module_name + ".register_image")
 @patch(module_name + ".get_image_by_id")
-def test_create_image_uefi_data(m_get_image_by_id):
+def test_create_image_uefi_data(m_get_image_by_id, m_register_image):
     module = MagicMock()
     connection = MagicMock()
 
@@ -31,11 +33,11 @@ def test_create_image_uefi_data(m_get_image_by_id):
     }
 
     ec2_ami.CreateImage.do(module, connection, None)
-    assert connection.register_image.call_count == 1
-    connection.register_image.assert_has_calls(
+    assert m_register_image.call_count == 1
+    m_register_image.assert_has_calls(
         [
             call(
-                aws_retry=True,
+                connection,
                 Name="my-image",
                 BootMode="uefi",
                 TpmSupport="v2.0",
@@ -51,19 +53,21 @@ def test_get_block_device_mapping_virtual_name():
     assert block_device == {"/dev/sdc": {"virtual_name": "ephemeral0"}}
 
 
-def test_get_image_by_id_found():
+@patch(module_name + ".describe_image_attribute")
+@patch(module_name + ".describe_images")
+def test_get_image_by_id_found(m_describe_images, m_describe_image_attribute):
     connection = MagicMock()
 
-    connection.describe_images.return_value = {"Images": [{"ImageId": "ami-0c7a795306730b288"}]}
+    m_describe_images.return_value = [{"ImageId": "ami-0c7a795306730b288"}]
 
     image = ec2_ami.get_image_by_id(connection, "ami-0c7a795306730b288")
     assert image["ImageId"] == "ami-0c7a795306730b288"
-    assert connection.describe_images.call_count == 1
-    assert connection.describe_image_attribute.call_count == 2
-    connection.describe_images.assert_has_calls(
+    assert m_describe_images.call_count == 1
+    assert m_describe_image_attribute.call_count == 2
+    m_describe_images.assert_has_calls(
         [
             call(
-                aws_retry=True,
+                connection,
                 ImageIds=["ami-0c7a795306730b288"],
             )
         ]
@@ -84,18 +88,21 @@ def test_get_image_by_too_many():
         ec2_ami.get_image_by_id(connection, "ami-0c7a795306730b288")
 
 
-def test_get_image_missing():
+@patch(
+    module_name + ".describe_images",
+)
+def test_get_image_missing(m_describe_images):
     connection = MagicMock()
 
-    connection.describe_images.return_value = {"Images": []}
+    m_describe_images.return_value = []
 
-    image = ec2_ami.get_image_by_id(connection, "ami-0c7a795306730b288")
-    assert image is None
-    assert connection.describe_images.call_count == 1
-    connection.describe_images.assert_has_calls(
+    assert ec2_ami.get_image_by_id(connection, "ami-0c7a795306730b288") is None
+
+    assert m_describe_images.call_count == 1
+    m_describe_images.assert_has_calls(
         [
             call(
-                aws_retry=True,
+                connection,
                 ImageIds=["ami-0c7a795306730b288"],
             )
         ]
@@ -103,9 +110,12 @@ def test_get_image_missing():
 
 
 @patch(
+    module_name + ".create_image",
+)
+@patch(
     module_name + ".get_image_by_id",
 )
-def test_create_image_minimal(m_get_image_by_id):
+def test_create_image_minimal(m_get_image_by_id, m_create_image):
     module = MagicMock()
     connection = MagicMock()
 
@@ -116,11 +126,11 @@ def test_create_image_minimal(m_get_image_by_id):
         "image_id": "ami-0c7a795306730b288",
     }
     ec2_ami.CreateImage.do(module, connection, None)
-    assert connection.create_image.call_count == 1
-    connection.create_image.assert_has_calls(
+    assert m_create_image.call_count == 1
+    m_create_image.assert_has_calls(
         [
             call(
-                aws_retry=True,
+                connection,
                 InstanceId="i-123456789",
                 Name="my-image",
             )
@@ -170,13 +180,14 @@ def test_rename_item_if_exists():
     assert dict_object == {"Cities": {"Abidjan": "bar"}}
 
 
-def test_DeregisterImage_defer_purge_snapshots():
+@patch(module_name + ".delete_snapshot")
+def test_DeregisterImage_defer_purge_snapshots(m_delete_snapshot):
     image = {"BlockDeviceMappings": [{"Ebs": {"SnapshotId": "My_snapshot"}}, {}]}
     func = ec2_ami.DeregisterImage.defer_purge_snapshots(image)
 
     connection = MagicMock()
     assert list(func(connection)) == ["My_snapshot"]
-    connection.delete_snapshot.assert_called_with(aws_retry=True, SnapshotId="My_snapshot")
+    m_delete_snapshot.assert_called_with(connection, "My_snapshot")
 
 
 @patch(module_name + ".get_image_by_id")
@@ -230,16 +241,17 @@ def test_UpdateImage_set_launch_permission_check_mode_with_change():
     assert connection.modify_image_attribute.call_count == 0
 
 
-def test_UpdateImage_set_launch_permission_with_change():
+@patch(module_name + ".modify_image_attribute")
+def test_UpdateImage_set_launch_permission_with_change(m_modify_image_attribute):
     connection = MagicMock()
     image = {"ImageId": "ami-0c7a795306730b288", "LaunchPermissions": {}}
     launch_permissions = {"user_ids": ["123456789012"], "group_names": ["foo", "bar"]}
     changed = ec2_ami.UpdateImage.set_launch_permission(connection, image, launch_permissions, check_mode=False)
     assert changed is True
-    assert connection.modify_image_attribute.call_count == 1
-    connection.modify_image_attribute.assert_called_with(
-        aws_retry=True,
-        ImageId="ami-0c7a795306730b288",
+    assert m_modify_image_attribute.call_count == 1
+    m_modify_image_attribute.assert_called_with(
+        connection,
+        image_id="ami-0c7a795306730b288",
         Attribute="launchPermission",
         LaunchPermission={
             "Add": [{"Group": "bar"}, {"Group": "foo"}, {"UserId": "123456789012"}],
@@ -248,7 +260,8 @@ def test_UpdateImage_set_launch_permission_with_change():
     )
 
 
-def test_UpdateImage_set_description():
+@patch(module_name + ".modify_image_attribute")
+def test_UpdateImage_set_description(m_modify_image_attribute):
     connection = MagicMock()
     module = MagicMock()
     module.check_mode = False
@@ -258,10 +271,10 @@ def test_UpdateImage_set_description():
 
     changed = ec2_ami.UpdateImage.set_description(connection, module, image, "New description")
     assert changed is True
-    assert connection.modify_image_attribute.call_count == 1
-    connection.modify_image_attribute.assert_called_with(
-        aws_retry=True,
-        ImageId="ami-0c7a795306730b288",
+    assert m_modify_image_attribute.call_count == 1
+    m_modify_image_attribute.assert_called_with(
+        connection,
+        image_id="ami-0c7a795306730b288",
         Attribute="Description",
         Description={"Value": "New description"},
     )
@@ -342,19 +355,22 @@ def test_CreateImage_do_check_mode_with_change():
     module.exit_json.assert_called_with(changed=True, msg="Would have created a AMI if not in check mode.")
 
 
-@patch(module_name + ".get_waiter")
-def test_CreateImage_wait(m_get_waiter):
+@patch(module_name + ".wait_for_resource_state")
+def test_CreateImage_wait(m_wait_for_resource_state):
     connection = MagicMock()
     m_waiter = MagicMock()
-    m_get_waiter.return_value = m_waiter
+    m_wait_for_resource_state.return_value = m_waiter
+    module = MagicMock()
+    module.params = {"wait": True, "wait_timeout": 0}
+    assert ec2_ami.CreateImage.wait(connection, module, image_id=ANY) is None
+    m_wait_for_resource_state.assert_not_called()
 
-    assert ec2_ami.CreateImage.wait(connection, wait_timeout=0, image_id=None) is None
-
-    ec2_ami.CreateImage.wait(connection, wait_timeout=600, image_id="ami-0c7a795306730b288")
-    assert m_waiter.wait.call_count == 1
-    m_waiter.wait.assert_called_with(
-        ImageIds=["ami-0c7a795306730b288"],
-        WaiterConfig={"Delay": 15, "MaxAttempts": 40},
+    module.params = {"wait": True, "wait_timeout": 600}
+    image_id = "ami-0c7a795306730b288"
+    ec2_ami.CreateImage.wait(connection, module, image_id=image_id)
+    assert m_wait_for_resource_state.call_count == 1
+    m_wait_for_resource_state.assert_called_with(
+        connection, module, "image_available", delay=15, max_attempts=40, ImageIds=[image_id]
     )
 
 
@@ -385,16 +401,17 @@ def test_CreateImage_set_tags(m_get_image_by_id, m_add_ec2_tags):
     m_add_ec2_tags.assert_called_with(connection, module, "snap-066877671789bd71b", tags)
 
 
-def test_CreateInage_set_launch_permissions():
+@patch(module_name + ".modify_image_attribute")
+def test_CreateInage_set_launch_permissions(m_modify_image_attribute):
     connection = MagicMock()
     launch_permissions = {"user_ids": ["123456789012"], "group_names": ["foo", "bar"]}
     image_id = "ami-0c7a795306730b288"
     ec2_ami.CreateImage.set_launch_permissions(connection, launch_permissions, image_id)
 
-    assert connection.modify_image_attribute.call_count == 1
-    connection.modify_image_attribute.assert_called_with(
+    assert m_modify_image_attribute.call_count == 1
+    m_modify_image_attribute.assert_called_with(
+        connection,
+        image_id="ami-0c7a795306730b288",
         Attribute="LaunchPermission",
-        ImageId="ami-0c7a795306730b288",
         LaunchPermission={"Add": [{"Group": "foo"}, {"Group": "bar"}, {"UserId": "123456789012"}]},
-        aws_retry=True,
     )

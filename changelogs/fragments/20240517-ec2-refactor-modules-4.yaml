@@ -1,0 +1,18 @@
+---
+minor_changes:
+  - ec2_ami - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2098).
+  - ec2_ami_info - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2098).
+  - ec2_eip - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2098).
+  - ec2_eip_info - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2098).
+  - ec2_eni - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2098).
+  - ec2_eni_info - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2098).
+  - ec2_import_image - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2098).
+  - ec2_import_image_info - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2098).
+  - ec2_key - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2098).
+  - ec2_key_info - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2098).
+  - ec2_security_group - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2098).
+  - ec2_security_group_info - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2098).
+  - aws_az_info - move shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2098).
+  - aws_region_info - move shared code into module_utils (https://github.com/ansible-collections/amazon.aws/pull/2098).
+  - ec2_vol - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils (https://github.com/ansible-collections/amazon.aws/pull/2103).
+  - ec2_vol_info - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils (https://github.com/ansible-collections/amazon.aws/pull/2103).

@@ -1,0 +1,254 @@
+---
+- name: Test EIP tagging
+  block:
+    # ------------------------------------------------------------------------------------------
+    # Test tagging
+    # ------------------------------------------------------------------------------------------
+    - name: Get current state of EIPs
+      amazon.aws.ec2_eip_info:
+      register: eip_info_start
+
+    - name: Allocate a new eip
+      amazon.aws.ec2_eip:
+        state: present
+      register: eip
+
+    - name: Tag EIP - check_mode
+      amazon.aws.ec2_eip:
+        state: present
+        public_ip: "{{ eip.public_ip }}"
+        tags:
+          AnsibleEIPTestPrefix: "{{ resource_prefix }}"
+          another_tag: another Value {{ resource_prefix }}
+      register: tag_eip
+      check_mode: true
+
+    - ansible.builtin.assert:
+        that:
+          - tag_eip is changed
+
+    - name: Tag EIP
+      amazon.aws.ec2_eip:
+        state: present
+        public_ip: "{{ eip.public_ip }}"
+        tags:
+          AnsibleEIPTestPrefix: "{{ resource_prefix }}"
+          another_tag: another Value {{ resource_prefix }}
+      register: tag_eip
+
+    - amazon.aws.ec2_eip_info:
+        filters:
+          public-ip: "{{ eip.public_ip }}"
+      register: eip_info
+
+    - ansible.builtin.assert:
+        that:
+          - tag_eip is changed
+          - '"AnsibleEIPTestPrefix" in eip_info.addresses[0].tags'
+          - '"another_tag" in eip_info.addresses[0].tags'
+          - eip_info.addresses[0].tags['AnsibleEIPTestPrefix'] == resource_prefix
+          - eip_info.addresses[0].tags['another_tag'] == 'another Value ' + resource_prefix
+          - ( eip_info_start.addresses | length ) + 1 == ( eip_info.addresses | length )
+
+    - name: Tag EIP (idempotence) - check_mode
+      amazon.aws.ec2_eip:
+        state: present
+        public_ip: "{{ eip.public_ip }}"
+        tags:
+          AnsibleEIPTestPrefix: "{{ resource_prefix }}"
+          another_tag: another Value {{ resource_prefix }}
+      register: tag_eip
+      check_mode: true
+
+    - ansible.builtin.assert:
+        that:
+          - tag_eip is not changed
+
+    - name: Tag EIP (idempotence)
+      amazon.aws.ec2_eip:
+        state: present
+        public_ip: "{{ eip.public_ip }}"
+        tags:
+          AnsibleEIPTestPrefix: "{{ resource_prefix }}"
+          another_tag: another Value {{ resource_prefix }}
+      register: tag_eip
+
+    - amazon.aws.ec2_eip_info:
+        filters:
+          public-ip: "{{ eip.public_ip }}"
+      register: eip_info
+
+    - ansible.builtin.assert:
+        that:
+          - tag_eip is not changed
+          - '"AnsibleEIPTestPrefix" in eip_info.addresses[0].tags'
+          - '"another_tag" in eip_info.addresses[0].tags'
+          - eip_info.addresses[0].tags['AnsibleEIPTestPrefix'] == resource_prefix
+          - eip_info.addresses[0].tags['another_tag'] == 'another Value ' + resource_prefix
+          - ( eip_info_start.addresses | length ) + 1 == ( eip_info.addresses | length )
+
+    # ------------------------------------------------------------------------------------------
+    # Test updating tags
+    # ------------------------------------------------------------------------------------------
+    - name: Get current state of EIPs
+      amazon.aws.ec2_eip_info:
+      register: eip_info_start
+
+    - name: Add another Tag - check_mode
+      amazon.aws.ec2_eip:
+        state: present
+        public_ip: "{{ eip.public_ip }}"
+        tags:
+          third tag: Third tag - {{ resource_prefix }}
+        purge_tags: false
+      register: tag_eip
+      check_mode: true
+
+    - ansible.builtin.assert:
+        that:
+          - tag_eip is changed
+
+    - name: Add another Tag
+      amazon.aws.ec2_eip:
+        state: present
+        public_ip: "{{ eip.public_ip }}"
+        tags:
+          third tag: Third tag - {{ resource_prefix }}
+        purge_tags: false
+      register: tag_eip
+
+    - amazon.aws.ec2_eip_info:
+        filters:
+          public-ip: "{{ eip.public_ip }}"
+      register: eip_info
+
+    - ansible.builtin.assert:
+        that:
+          - tag_eip is changed
+          - '"AnsibleEIPTestPrefix" in eip_info.addresses[0].tags'
+          - '"another_tag" in eip_info.addresses[0].tags'
+          - '"third tag" in eip_info.addresses[0].tags'
+          - eip_info.addresses[0].tags['AnsibleEIPTestPrefix'] == resource_prefix
+          - eip_info.addresses[0].tags['another_tag'] == 'another Value ' + resource_prefix
+          - eip_info.addresses[0].tags['third tag'] == 'Third tag - ' + resource_prefix
+          - ( eip_info_start.addresses | length ) == ( eip_info.addresses | length )
+
+    - name: Add another Tag (idempotence) - check_mode
+      amazon.aws.ec2_eip:
+        state: present
+        public_ip: "{{ eip.public_ip }}"
+        tags:
+          third tag: Third tag - {{ resource_prefix }}
+        purge_tags: false
+      register: tag_eip
+      check_mode: true
+
+    - ansible.builtin.assert:
+        that:
+          - tag_eip is not changed
+
+    - name: Add another Tag (idempotence)
+      amazon.aws.ec2_eip:
+        state: present
+        public_ip: "{{ eip.public_ip }}"
+        tags:
+          third tag: Third tag - {{ resource_prefix }}
+        purge_tags: false
+      register: tag_eip
+
+    - amazon.aws.ec2_eip_info:
+        filters:
+          public-ip: "{{ eip.public_ip }}"
+      register: eip_info
+
+    - ansible.builtin.assert:
+        that:
+          - tag_eip is not changed
+          - '"AnsibleEIPTestPrefix" in eip_info.addresses[0].tags'
+          - '"another_tag" in eip_info.addresses[0].tags'
+          - '"third tag" in eip_info.addresses[0].tags'
+          - eip_info.addresses[0].tags['AnsibleEIPTestPrefix'] == resource_prefix
+          - eip_info.addresses[0].tags['another_tag'] == 'another Value ' + resource_prefix
+          - eip_info.addresses[0].tags['third tag'] == 'Third tag - ' + resource_prefix
+
+    # ------------------------------------------------------------------------------------------
+    # Test purge_tags
+    # ------------------------------------------------------------------------------------------
+    - name: Purge tags - check_mode
+      amazon.aws.ec2_eip:
+        state: present
+        public_ip: "{{ eip.public_ip }}"
+        tags:
+          third tag: Third tag - {{ resource_prefix }}
+        purge_tags: true
+      register: tag_eip
+      check_mode: true
+
+    - ansible.builtin.assert:
+        that:
+          - tag_eip is changed
+
+    - name: Purge tags
+      amazon.aws.ec2_eip:
+        state: present
+        public_ip: "{{ eip.public_ip }}"
+        tags:
+          third tag: Third tag - {{ resource_prefix }}
+        purge_tags: true
+      register: tag_eip
+
+    - amazon.aws.ec2_eip_info:
+        filters:
+          public-ip: "{{ eip.public_ip }}"
+      register: eip_info
+
+    - ansible.builtin.assert:
+        that:
+          - tag_eip is changed
+          - '"AnsibleEIPTestPrefix" not in eip_info.addresses[0].tags'
+          - '"another_tag" not in eip_info.addresses[0].tags'
+          - '"third tag" in eip_info.addresses[0].tags'
+          - eip_info.addresses[0].tags['third tag'] == 'Third tag - ' + resource_prefix
+
+    - name: Purge tags (idempotence) - check_mode
+      amazon.aws.ec2_eip:
+        state: present
+        public_ip: "{{ eip.public_ip }}"
+        tags:
+          third tag: Third tag - {{ resource_prefix }}
+        purge_tags: true
+      register: tag_eip
+      check_mode: true
+
+    - ansible.builtin.assert:
+        that:
+          - tag_eip is not changed
+
+    - name: Purge tags (idempotence)
+      amazon.aws.ec2_eip:
+        state: present
+        public_ip: "{{ eip.public_ip }}"
+        tags:
+          third tag: Third tag - {{ resource_prefix }}
+        purge_tags: true
+      register: tag_eip
+
+    - amazon.aws.ec2_eip_info:
+        filters:
+          public-ip: "{{ eip.public_ip }}"
+      register: eip_info
+
+    - ansible.builtin.assert:
+        that:
+          - tag_eip is not changed
+          - '"AnsibleEIPTestPrefix" not in eip_info.addresses[0].tags'
+          - '"another_tag" not in eip_info.addresses[0].tags'
+          - '"third tag" in eip_info.addresses[0].tags'
+          - eip_info.addresses[0].tags['third tag'] == 'Third tag - ' + resource_prefix
+
+  always:
+    - name: Release EIP
+      amazon.aws.ec2_eip:
+        state: absent
+        public_ip: "{{ eip.public_ip }}"
+      when: eip is defined

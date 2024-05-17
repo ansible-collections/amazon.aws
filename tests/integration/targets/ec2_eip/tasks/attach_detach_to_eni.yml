@@ -1,0 +1,331 @@
+---
+- name: Test attach EIP
+  block:
+    - name: Allocate a new EIP with no conditions
+      amazon.aws.ec2_eip:
+        state: present
+        tags:
+          AnsibleEIPTestPrefix: "{{ resource_prefix }}"
+      register: eip
+
+    # ------------------------------------------------------------------------------------------
+    # Test attach EIP to ENI
+    # ------------------------------------------------------------------------------------------
+    - name: Attach EIP to ENI A - check_mode
+      amazon.aws.ec2_eip:
+        public_ip: "{{ eip.public_ip }}"
+        device_id: "{{ eni_create_a.interface.id }}"
+      register: associate_eip
+      check_mode: true
+
+    - ansible.builtin.assert:
+        that:
+          - associate_eip is changed
+
+    - name: Attach EIP to ENI A
+      amazon.aws.ec2_eip:
+        public_ip: "{{ eip.public_ip }}"
+        device_id: "{{ eni_create_a.interface.id }}"
+      register: associate_eip
+
+    - amazon.aws.ec2_eip_info:
+        filters:
+          public-ip: "{{ eip.public_ip }}"
+      register: eip_info
+
+    - ansible.builtin.assert:
+        that:
+          - associate_eip is changed
+          - eip_info.addresses | length == 1
+          - associate_eip.public_ip is defined and eip.public_ip == associate_eip.public_ip
+          - associate_eip.allocation_id is defined and eip.allocation_id == associate_eip.allocation_id
+          - eip_info.addresses[0].allocation_id == eip.allocation_id
+          - eip_info.addresses[0].domain == "vpc"
+          - eip_info.addresses[0].public_ip == eip.public_ip
+          - eip_info.addresses[0].association_id is defined and eip_info.addresses[0].association_id.startswith("eipassoc-")
+          - eip_info.addresses[0].network_interface_id == eni_create_a.interface.id
+          - eip_info.addresses[0].private_ip_address is defined and ( eip_info.addresses[0].private_ip_address | ansible.utils.ipaddr )
+          - eip_info.addresses[0].network_interface_owner_id == caller_info.account
+
+    - name: Attach EIP to ENI A (idempotence) - check_mode
+      amazon.aws.ec2_eip:
+        public_ip: "{{ eip.public_ip }}"
+        device_id: "{{ eni_create_a.interface.id }}"
+      register: associate_eip
+      check_mode: true
+
+    - ansible.builtin.assert:
+        that:
+          - associate_eip is not changed
+
+    - name: Attach EIP to ENI A (idempotence)
+      amazon.aws.ec2_eip:
+        public_ip: "{{ eip.public_ip }}"
+        device_id: "{{ eni_create_a.interface.id }}"
+      register: associate_eip
+
+    - amazon.aws.ec2_eip_info:
+        filters:
+          public-ip: "{{ eip.public_ip }}"
+      register: eip_info
+
+    - ansible.builtin.assert:
+        that:
+          - associate_eip is not changed
+          - associate_eip.public_ip is defined and eip.public_ip == associate_eip.public_ip
+          - associate_eip.allocation_id is defined and eip.allocation_id == associate_eip.allocation_id
+          - eip_info.addresses | length == 1
+          - eip_info.addresses[0].allocation_id == eip.allocation_id
+          - eip_info.addresses[0].domain == "vpc"
+          - eip_info.addresses[0].public_ip == eip.public_ip
+          - eip_info.addresses[0].association_id is defined and eip_info.addresses[0].association_id.startswith("eipassoc-")
+          - eip_info.addresses[0].network_interface_id == eni_create_a.interface.id
+          - eip_info.addresses[0].private_ip_address is defined and ( eip_info.addresses[0].private_ip_address | ansible.utils.ipaddr )
+
+    # ------------------------------------------------------------------------------------------
+    # Test attach EIP already attached
+    # ------------------------------------------------------------------------------------------
+    - name: Attach EIP to ENI B (should fail, already associated)
+      amazon.aws.ec2_eip:
+        public_ip: "{{ eip.public_ip }}"
+        device_id: "{{ eni_create_b.interface.id }}"
+      register: associate_eip
+      ignore_errors: true
+
+    - amazon.aws.ec2_eip_info:
+        filters:
+          public-ip: "{{ eip.public_ip }}"
+      register: eip_info
+
+    - ansible.builtin.assert:
+        that:
+          - associate_eip is failed
+          - eip_info.addresses | length == 1
+          - eip_info.addresses[0].allocation_id == eip.allocation_id
+          - eip_info.addresses[0].domain == "vpc"
+          - eip_info.addresses[0].public_ip == eip.public_ip
+          - eip_info.addresses[0].association_id is defined and eip_info.addresses[0].association_id.startswith("eipassoc-")
+          - eip_info.addresses[0].network_interface_id == eni_create_a.interface.id
+          - eip_info.addresses[0].private_ip_address is defined and ( eip_info.addresses[0].private_ip_address | ansible.utils.ipaddr )
+
+    - name: Attach EIP to ENI B - check_mode
+      amazon.aws.ec2_eip:
+        public_ip: "{{ eip.public_ip }}"
+        device_id: "{{ eni_create_b.interface.id }}"
+        allow_reassociation: true
+      register: associate_eip
+      check_mode: true
+
+    - ansible.builtin.assert:
+        that:
+          - associate_eip is changed
+
+    - name: Attach EIP to ENI B
+      amazon.aws.ec2_eip:
+        public_ip: "{{ eip.public_ip }}"
+        device_id: "{{ eni_create_b.interface.id }}"
+        allow_reassociation: true
+      register: associate_eip
+
+    - amazon.aws.ec2_eip_info:
+        filters:
+          public-ip: "{{ eip.public_ip }}"
+      register: eip_info
+
+    - ansible.builtin.assert:
+        that:
+          - associate_eip is changed
+          - associate_eip.public_ip is defined and eip.public_ip == associate_eip.public_ip
+          - associate_eip.allocation_id is defined and eip.allocation_id == associate_eip.allocation_id
+          - eip_info.addresses | length == 1
+          - eip_info.addresses[0].allocation_id == eip.allocation_id
+          - eip_info.addresses[0].domain == "vpc"
+          - eip_info.addresses[0].public_ip == eip.public_ip
+          - eip_info.addresses[0].association_id is defined and eip_info.addresses[0].association_id.startswith("eipassoc-")
+          - eip_info.addresses[0].network_interface_id == eni_create_b.interface.id
+          - eip_info.addresses[0].private_ip_address is defined and ( eip_info.addresses[0].private_ip_address | ansible.utils.ipaddr )
+
+    - name: Attach EIP to ENI B (idempotence) - check_mode
+      amazon.aws.ec2_eip:
+        public_ip: "{{ eip.public_ip }}"
+        device_id: "{{ eni_create_b.interface.id }}"
+        allow_reassociation: true
+      register: associate_eip
+      check_mode: true
+
+    - ansible.builtin.assert:
+        that:
+          - associate_eip is not changed
+
+    - name: Attach EIP to ENI B (idempotence)
+      amazon.aws.ec2_eip:
+        public_ip: "{{ eip.public_ip }}"
+        device_id: "{{ eni_create_b.interface.id }}"
+        allow_reassociation: true
+      register: associate_eip
+
+    - amazon.aws.ec2_eip_info:
+        filters:
+          public-ip: "{{ eip.public_ip }}"
+      register: eip_info
+
+    - ansible.builtin.assert:
+        that:
+          - associate_eip is not changed
+          - associate_eip.public_ip is defined and eip.public_ip == associate_eip.public_ip
+          - associate_eip.allocation_id is defined and eip.allocation_id == associate_eip.allocation_id
+          - eip_info.addresses | length == 1
+          - eip_info.addresses[0].allocation_id == eip.allocation_id
+          - eip_info.addresses[0].domain == "vpc"
+          - eip_info.addresses[0].public_ip == eip.public_ip
+          - eip_info.addresses[0].association_id is defined and eip_info.addresses[0].association_id.startswith("eipassoc-")
+          - eip_info.addresses[0].network_interface_id == eni_create_b.interface.id
+          - eip_info.addresses[0].private_ip_address is defined and ( eip_info.addresses[0].private_ip_address | ansible.utils.ipaddr )
+
+    # ------------------------------------------------------------------------------------------
+    # Detach EIP from ENI B without enabling release on disassociation
+    # ------------------------------------------------------------------------------------------
+    - name: Detach EIP from ENI B, without enabling release on disassociation - check_mode
+      amazon.aws.ec2_eip:
+        state: absent
+        public_ip: "{{ eip.public_ip }}"
+        device_id: "{{ eni_create_b.interface.id }}"
+      register: disassociate_eip
+      check_mode: true
+
+    - ansible.builtin.assert:
+        that:
+          - disassociate_eip is changed
+
+    - name: Detach EIP from ENI B, without enabling release on disassociation
+      amazon.aws.ec2_eip:
+        state: absent
+        public_ip: "{{ eip.public_ip }}"
+        device_id: "{{ eni_create_b.interface.id }}"
+      register: disassociate_eip
+
+    - amazon.aws.ec2_eip_info:
+        filters:
+          public-ip: "{{ eip.public_ip }}"
+      register: eip_info
+
+    - ansible.builtin.assert:
+        that:
+          - disassociate_eip.changed
+          - disassociate_eip.disassociated
+          - not disassociate_eip.released
+          - eip_info.addresses | length == 1
+
+    - name: Detach EIP from ENI B, without enabling release on disassociation (idempotence) - check_mode
+      amazon.aws.ec2_eip:
+        state: absent
+        public_ip: "{{ eip.public_ip }}"
+        device_id: "{{ eni_create_b.interface.id }}"
+      register: disassociate_eip
+      check_mode: true
+
+    - ansible.builtin.assert:
+        that:
+          - disassociate_eip is not changed
+
+    - name: Detach EIP from ENI B, without enabling release on disassociation (idempotence)
+      amazon.aws.ec2_eip:
+        state: absent
+        public_ip: "{{ eip.public_ip }}"
+        device_id: "{{ eni_create_b.interface.id }}"
+      register: disassociate_eip
+
+    - amazon.aws.ec2_eip_info:
+        filters:
+          public-ip: "{{ eip.public_ip }}"
+      register: eip_info
+
+    - ansible.builtin.assert:
+        that:
+          - not disassociate_eip.changed
+          - not disassociate_eip.disassociated
+          - not disassociate_eip.released
+          - eip_info.addresses | length == 1
+
+    # ------------------------------------------------------------------------------------------
+    # Detach EIP from ENI A enabling release on disassociation
+    # ------------------------------------------------------------------------------------------
+
+    - name: Attach EIP to ENI A
+      amazon.aws.ec2_eip:
+        public_ip: "{{ eip.public_ip }}"
+        device_id: "{{ eni_create_a.interface.id }}"
+      register: associate_eip
+
+    - name: Detach EIP from ENI A, enabling release on disassociation - check_mode
+      amazon.aws.ec2_eip:
+        state: absent
+        public_ip: "{{ eip.public_ip }}"
+        device_id: "{{ eni_create_a.interface.id }}"
+        release_on_disassociation: true
+      register: disassociate_eip
+      check_mode: true
+
+    - ansible.builtin.assert:
+        that:
+          - disassociate_eip is changed
+
+    - name: Detach EIP from ENI A, enabling release on disassociation
+      amazon.aws.ec2_eip:
+        state: absent
+        public_ip: "{{ eip.public_ip }}"
+        device_id: "{{ eni_create_a.interface.id }}"
+        release_on_disassociation: true
+      register: disassociate_eip
+
+    - amazon.aws.ec2_eip_info:
+        filters:
+          public-ip: "{{ eip.public_ip }}"
+      register: eip_info
+
+    - ansible.builtin.assert:
+        that:
+          - disassociate_eip.changed
+          - disassociate_eip.disassociated
+          - disassociate_eip.released
+          - eip_info.addresses | length == 0
+
+    - name: Detach EIP from ENI A, enabling release on disassociation (idempotence) - check_mode
+      amazon.aws.ec2_eip:
+        state: absent
+        public_ip: "{{ eip.public_ip }}"
+        device_id: "{{ eni_create_a.interface.id }}"
+        release_on_disassociation: true
+      register: disassociate_eip
+      check_mode: true
+
+    - ansible.builtin.assert:
+        that:
+          - disassociate_eip is not changed
+
+    - name: Detach EIP from ENI A, enabling release on disassociation (idempotence)
+      amazon.aws.ec2_eip:
+        state: absent
+        public_ip: "{{ eip.public_ip }}"
+        device_id: "{{ eni_create_a.interface.id }}"
+        release_on_disassociation: true
+      register: disassociate_eip
+
+    - amazon.aws.ec2_eip_info:
+        filters:
+          public-ip: "{{ eip.public_ip }}"
+      register: eip_info
+
+    - ansible.builtin.assert:
+        that:
+          - not disassociate_eip.changed
+          - not disassociate_eip.disassociated
+          - not disassociate_eip.released
+          - eip_info.addresses | length == 0
+
+  always:
+    - name: Release EIP
+      amazon.aws.ec2_eip:
+        state: absent
+        public_ip: "{{ eip.public_ip }}"
+      when: eip is defined

@@ -207,17 +207,14 @@ images:
       sample: hvm
 """
 
-try:
-    from botocore.exceptions import BotoCoreError
-    from botocore.exceptions import ClientError
-except ImportError:
-    pass  # Handled by AnsibleAWSModule
-
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleEC2Error
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_image_attribute
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_images
+from ansible_collections.amazon.aws.plugins.module_utils.exceptions import AnsibleAWSError
+from ansible_collections.amazon.aws.plugins.module_utils.exceptions import is_ansible_aws_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 
@@ -262,38 +259,29 @@ def build_request_args(executable_users, filters, image_ids, owners):
 
 def get_images(ec2_client, request_args):
     try:
-        images = ec2_client.describe_images(aws_retry=True, **request_args)
-    except (ClientError, BotoCoreError) as err:
-        raise AmiInfoFailure(err, "error describing images")
+        images = describe_images(ec2_client, **request_args)
+    except AnsibleEC2Error as e:
+        raise AmiInfoFailure(e, "error describing images")
     return images
 
 
-def get_image_attribute(ec2_client, image_id):
-    try:
-        launch_permissions = ec2_client.describe_image_attribute(
-            aws_retry=True, Attribute="launchPermission", ImageId=image_id
-        )
-    except (ClientError, BotoCoreError) as err:
-        raise AmiInfoFailure(err, "error describing image attribute")
-    return launch_permissions
-
-
 def list_ec2_images(ec2_client, module, request_args):
-    images = get_images(ec2_client, request_args)["Images"]
+    images = get_images(ec2_client, request_args)
     images = [camel_dict_to_snake_dict(image) for image in images]
 
     for image in images:
         try:
-            image_id = image["image_id"]
             image["tags"] = boto3_tag_list_to_ansible_dict(image.get("tags", []))
             if module.params.get("describe_image_attributes"):
-                launch_permissions = get_image_attribute(ec2_client, image_id).get("LaunchPermissions", [])
+                launch_permissions = describe_image_attribute(
+                    ec2_client, attribute="launchPermission", image_id=image["image_id"]
+                ).get("LaunchPermissions", [])
                 image["launch_permissions"] = [camel_dict_to_snake_dict(perm) for perm in launch_permissions]
-        except is_boto3_error_code("AuthFailure"):
+        except is_ansible_aws_error_code("AuthFailure"):
             # describing launch permissions of images owned by others is not permitted, but shouldn't cause failures
             pass
-        except (ClientError, BotoCoreError) as err:  # pylint: disable=duplicate-except
-            raise AmiInfoFailure(err, "Failed to describe AMI")
+        except AnsibleAWSError as e:  # pylint: disable=duplicate-except
+            raise AmiInfoFailure(e, "Failed to describe AMI")
 
     images.sort(key=lambda e: e.get("creation_date", ""))  # it may be possible that creation_date does not always exist
 
@@ -311,7 +299,7 @@ def main():
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
-    ec2_client = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff())
+    ec2_client = module.client("ec2")
 
     request_args = build_request_args(
         executable_users=module.params["executable_users"],
