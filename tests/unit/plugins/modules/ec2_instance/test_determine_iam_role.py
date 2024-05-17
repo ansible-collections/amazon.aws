@@ -5,6 +5,7 @@
 
 import sys
 from unittest.mock import MagicMock
+from unittest.mock import patch
 from unittest.mock import sentinel
 
 import pytest
@@ -33,18 +34,6 @@ def _client_error(code="GenericError"):
     )
 
 
-@pytest.fixture
-def params_object():
-    params = {
-        "instance_role": None,
-        "exact_count": None,
-        "count": None,
-        "launch_template": None,
-        "instance_type": None,
-    }
-    return params
-
-
 class FailJsonException(Exception):
     def __init__(self):
         pass
@@ -53,53 +42,63 @@ class FailJsonException(Exception):
 @pytest.fixture
 def ec2_instance(monkeypatch):
     monkeypatch.setattr(ec2_instance_module, "validate_aws_arn", lambda arn, service, resource_type: None)
-    monkeypatch.setattr(ec2_instance_module, "module", MagicMock())
-    ec2_instance_module.module.fail_json.side_effect = FailJsonException()
-    ec2_instance_module.module.fail_json_aws.side_effect = FailJsonException()
     return ec2_instance_module
 
 
-def test_determine_iam_role_arn(params_object, ec2_instance, monkeypatch):
+def test_determine_iam_role_arn(ec2_instance, monkeypatch):
     # Revert the default monkey patch to make it simple to try passing a valid ARNs
     monkeypatch.setattr(ec2_instance, "validate_aws_arn", utils_arn.validate_aws_arn)
+    module = MagicMock()
 
     # Simplest example, someone passes a valid instance profile ARN
-    arn = ec2_instance.determine_iam_role("arn:aws:iam::123456789012:instance-profile/myprofile")
+    arn = ec2_instance.determine_iam_role(module, "arn:aws:iam::123456789012:instance-profile/myprofile")
     assert arn == "arn:aws:iam::123456789012:instance-profile/myprofile"
 
 
-def test_determine_iam_role_name(params_object, ec2_instance):
-    profile_description = {"InstanceProfile": {"Arn": sentinel.IAM_PROFILE_ARN}}
-    iam_client = MagicMock(**{"get_instance_profile.return_value": profile_description})
-    ec2_instance_module.module.client.return_value = iam_client
+def test_determine_iam_role_name(ec2_instance, monkeypatch):
+    module = MagicMock()
+    module.client.return_value = MagicMock()
+    monkeypatch.setattr(
+        ec2_instance, "_get_iam_instance_profiles", lambda client, **params: {"Arn": sentinel.IAM_PROFILE_ARN}
+    )
 
-    arn = ec2_instance.determine_iam_role(sentinel.IAM_PROFILE_NAME)
+    arn = ec2_instance.determine_iam_role(module, sentinel.IAM_PROFILE_NAME)
     assert arn == sentinel.IAM_PROFILE_ARN
 
 
-def test_determine_iam_role_missing(params_object, ec2_instance):
+@patch("ansible_collections.amazon.aws.plugins.modules.ec2_instance._get_iam_instance_profiles")
+def test_determine_iam_role_missing(m_get_iam_instance_profiles, ec2_instance):
     missing_exception = _client_error("NoSuchEntity")
-    iam_client = MagicMock(**{"get_instance_profile.side_effect": missing_exception})
-    ec2_instance_module.module.client.return_value = iam_client
+    module = MagicMock()
+    module.client.return_value = MagicMock()
+    module.fail_json.side_effect = FailJsonException()
+    module.fail_json_aws.side_effect = FailJsonException()
+
+    m_get_iam_instance_profiles.side_effect = missing_exception
 
     with pytest.raises(FailJsonException):
-        ec2_instance.determine_iam_role(sentinel.IAM_PROFILE_NAME)
+        ec2_instance.determine_iam_role(module, sentinel.IAM_PROFILE_NAME)
 
-    assert ec2_instance_module.module.fail_json_aws.call_count == 1
-    assert ec2_instance_module.module.fail_json_aws.call_args.args[0] is missing_exception
-    assert "Could not find" in ec2_instance_module.module.fail_json_aws.call_args.kwargs["msg"]
+    assert module.fail_json_aws.call_count == 1
+    assert module.fail_json_aws.call_args.args[0] is missing_exception
+    assert "Could not find" in module.fail_json_aws.call_args.kwargs["msg"]
 
 
+@patch("ansible_collections.amazon.aws.plugins.modules.ec2_instance._get_iam_instance_profiles")
 @pytest.mark.skipif(sys.version_info < (3, 8), reason="call_args behaviour changed in Python 3.8")
-def test_determine_iam_role_missing(params_object, ec2_instance):
+def test_determine_iam_role_missing(m_get_iam_instance_profiles, ec2_instance):
     missing_exception = _client_error()
-    iam_client = MagicMock(**{"get_instance_profile.side_effect": missing_exception})
-    ec2_instance_module.module.client.return_value = iam_client
+    module = MagicMock()
+    module.client.return_value = MagicMock()
+    module.fail_json.side_effect = FailJsonException()
+    module.fail_json_aws.side_effect = FailJsonException()
+
+    m_get_iam_instance_profiles.side_effect = missing_exception
 
     with pytest.raises(FailJsonException):
-        ec2_instance.determine_iam_role(sentinel.IAM_PROFILE_NAME)
+        ec2_instance.determine_iam_role(module, sentinel.IAM_PROFILE_NAME)
 
-    assert ec2_instance_module.module.fail_json_aws.call_count == 1
-    assert ec2_instance_module.module.fail_json_aws.call_args.args[0] is missing_exception
-    assert "An error occurred while searching" in ec2_instance_module.module.fail_json_aws.call_args.kwargs["msg"]
-    assert "Please try supplying the full ARN" in ec2_instance_module.module.fail_json_aws.call_args.kwargs["msg"]
+    assert module.fail_json_aws.call_count == 1
+    assert module.fail_json_aws.call_args.args[0] is missing_exception
+    assert "An error occurred while searching" in module.fail_json_aws.call_args.kwargs["msg"]
+    assert "Please try supplying the full ARN" in module.fail_json_aws.call_args.kwargs["msg"]
