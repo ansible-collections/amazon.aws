@@ -147,7 +147,7 @@ metric_alarms:
             type: str
         namespace:
             description:
-                - Name of the appropriate namespace (AWS/EC2, System/Linux, etc.).
+                - Name of the appropriate namespace (V(AWS/EC2), V(System/Linux), etc.).
                 - Determines the category it will appear under in CloudWatch.
             returned: always
             type: str

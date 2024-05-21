@@ -61,7 +61,7 @@ options:
     default: ''
   no_reboot:
     description:
-      - Flag indicating that the bundling process should not attempt to shutdown the instance before bundling. If this flag is V(True), the
+      - Flag indicating that the bundling process should not attempt to shutdown the instance before bundling. If this flag is V(true), the
         responsibility of maintaining file system integrity is left to the owner of the instance.
     default: false
     type: bool
@@ -100,7 +100,7 @@ options:
         description: The ID of the Snapshot.
       iops:
         type: int
-        description: When using an O(device_mapping.volume_type=io1), this sets the number of IOPS provisioned for the volume.
+        description: When using O(device_mapping.volume_type=io1), this sets the number of IOPS provisioned for the volume.
       encrypted:
         type: bool
         description: Whether the volume should be encrypted.

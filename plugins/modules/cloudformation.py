@@ -32,7 +32,7 @@ options:
     type: str
   create_timeout:
     description:
-      - The amount of time (in minutes) that can pass before the stack status becomes CREATE_FAILED.
+      - The amount of time (in minutes) that can pass before the stack status becomes V(CREATE_FAILED).
     type: int
   template_parameters:
     description:
@@ -58,7 +58,7 @@ options:
       - If O(state=present), the stack does exist, and neither O(template),
         O(template_body) nor O(template_url) are specified, the previous template will be reused.
       - The O(template) parameter has been deprecated and will be remove in a release after
-        2026-05-01. It is recommended to use O(template_body) with the lookup plugin.
+        2026-05-01. It is recommended to use O(template_body) with the P(ansible.builtin.template#lookup) lookup plugin.
     type: path
   notification_arns:
     description:
@@ -98,8 +98,8 @@ options:
     description:
       - If stack already exists create a changeset instead of directly applying changes.  See the AWS Change Sets docs
         U(https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks-changesets.html).
-      - "WARNING: if the stack does not exist, it will be created without changeset. If O(state=absent), the stack will be
-        deleted immediately with no changeset."
+      - B(WARNING:) if the stack does not exist, it will be created without changeset. If O(state=absent), the stack will be
+        deleted immediately with no changeset.
     type: bool
     default: false
   changeset_name:

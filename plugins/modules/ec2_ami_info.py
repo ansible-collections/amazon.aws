@@ -8,9 +8,9 @@ DOCUMENTATION = r"""
 ---
 module: ec2_ami_info
 version_added: 1.0.0
-short_description: Gather information about ec2 AMIs
+short_description: Gather information about EC2 AMIs
 description:
-  - Gather information about ec2 AMIs.
+  - Gather information about EC2 AMIs.
 author:
   - Prasad Katti (@prasadkatti)
 options:
