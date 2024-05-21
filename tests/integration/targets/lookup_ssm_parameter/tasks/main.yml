@@ -138,36 +138,36 @@
         description: "{{ path_description }}"
         value: "{{ path_value_c }}"
 
-  - name: Create nested key/value pair in aws parameter store (4)
-    ssm_parameter:
-      name: '{{ path_name_d }}'
-      description: '{{ path_description }}'
-      value: '{{ path_value_d }}'
+    - name: Create nested key/value pair in aws parameter store (4)
+      ssm_parameter:
+        name: '{{ path_name_d }}'
+        description: '{{ path_description }}'
+        value: '{{ path_value_d }}'
 
   # ============================================================
-  - name: Lookup a keys using bypath
-   ansible.builtin.set_fact:
-      lookup_value: "{{ lookup('amazon.aws.aws_ssm', path_name, bypath=True, wantlist=True, **connection_args ) | first }}"
-  - ansible.builtin.assert:
-      that:
-      - path_name_a in lookup_value
-      - lookup_value[path_name_a] == path_value_a
-      - path_name_b in lookup_value
-      - lookup_value[path_name_b] == path_value_b
-      - lookup_value | length == 2
+    - name: Lookup a keys using bypath
+     ansible.builtin.set_fact:
+        lookup_value: "{{ lookup('amazon.aws.aws_ssm', path_name, bypath=True, wantlist=True, **connection_args ) | first }}"
+    - ansible.builtin.assert:
+        that:
+        - path_name_a in lookup_value
+        - lookup_value[path_name_a] == path_value_a
+        - path_name_b in lookup_value
+        - lookup_value[path_name_b] == path_value_b
+        - lookup_value | length == 2
 
-  - name: Lookup a keys using bypath and recursive
-    ansible.builtin.set_fact:
-      lookup_value: "{{ lookup('amazon.aws.aws_ssm', path_name, bypath=True, recursive=True, wantlist=True, **connection_args ) | first }}"
-  - ansible.builtin.assert:
-      that:
-      - path_name_a in lookup_value
-      - lookup_value[path_name_a] == path_value_a
-      - path_name_b in lookup_value
-      - lookup_value[path_name_b] == path_value_b
-      - path_name_c in lookup_value
-      - lookup_value[path_name_c] == path_value_c
-      - lookup_value | length == 4
+    - name: Lookup a keys using bypath and recursive
+      ansible.builtin.set_fact:
+        lookup_value: "{{ lookup('amazon.aws.aws_ssm', path_name, bypath=True, recursive=True, wantlist=True, **connection_args ) | first }}"
+    - ansible.builtin.assert:
+        that:
+        - path_name_a in lookup_value
+        - lookup_value[path_name_a] == path_value_a
+        - path_name_b in lookup_value
+        - lookup_value[path_name_b] == path_value_b
+        - path_name_c in lookup_value
+        - lookup_value[path_name_c] == path_value_c
+        - lookup_value | length == 4
 
     - name: Lookup a keys using bypath and shortname
       ansible.builtin.set_fact:
@@ -193,20 +193,20 @@
           - lookup_value[path_shortname_c] == path_value_c
           - lookup_value | length == 3
 
-  - name: Lookup a keys using bypath and recursive and droppath
-     ansible.builtin.set_fact:
-      lookup_value: "{{ lookup('amazon.aws.aws_ssm', path_name, bypath=True, recursive=True, droppath=True, wantlist=True, **connection_args ) | first }}"
-  - ansible.builtin.assert:
-      that:
-      - path_droppath_name_a in lookup_value
-      - lookup_value[path_droppath_name_a] == path_value_a
-      - path_droppath_name_b in lookup_value
-      - lookup_value[path_droppath_name_b] == path_value_b
-      - path_droppath_name_c in lookup_value
-      - lookup_value[path_droppath_name_c] == path_value_c
-      - path_droppath_name_d in lookup_value
-      - lookup_value[path_droppath_name_d] == path_value_d
-      - lookup_value | length == 4
+    - name: Lookup a keys using bypath and recursive and droppath
+      ansible.builtin.set_fact:
+        lookup_value: "{{ lookup('amazon.aws.aws_ssm', path_name, bypath=True, recursive=True, droppath=True, wantlist=True, **connection_args ) | first }}"
+    - ansible.builtin.assert:
+        that:
+          - path_droppath_name_a in lookup_value
+          - lookup_value[path_droppath_name_a] == path_value_a
+          - path_droppath_name_b in lookup_value
+          - lookup_value[path_droppath_name_b] == path_value_b
+          - path_droppath_name_c in lookup_value
+          - lookup_value[path_droppath_name_c] == path_value_c
+          - path_droppath_name_d in lookup_value
+          - lookup_value[path_droppath_name_d] == path_value_d
+          - lookup_value | length == 4
 
   # ============================================================
 
