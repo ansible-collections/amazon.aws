@@ -39,17 +39,18 @@ up in this module because "that's where the AWS code was" (originally).
 
 import re
 
+import ansible.module_utils.common.warnings as ansible_warnings
 from ansible.module_utils.ansible_release import __version__
-from ansible.module_utils.six import string_types
-from ansible.module_utils.six import integer_types
 
 # Used to live here, moved into ansible.module_utils.common.dict_transformations
 from ansible.module_utils.common.dict_transformations import _camel_to_snake  # pylint: disable=unused-import
 from ansible.module_utils.common.dict_transformations import _snake_to_camel  # pylint: disable=unused-import
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict  # pylint: disable=unused-import
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict  # pylint: disable=unused-import
+from ansible.module_utils.six import integer_types
+from ansible.module_utils.six import string_types
 
-# Used to live here, moved into # ansible_collections.amazon.aws.plugins.module_utils.arn
+# Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.arn
 from .arn import is_outpost_arn as is_outposts_arn  # pylint: disable=unused-import
 
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.botocore
@@ -57,9 +58,8 @@ from .botocore import HAS_BOTO3  # pylint: disable=unused-import
 from .botocore import boto3_conn  # pylint: disable=unused-import
 from .botocore import boto3_inventory_conn  # pylint: disable=unused-import
 from .botocore import boto_exception  # pylint: disable=unused-import
-from .botocore import get_aws_region  # pylint: disable=unused-import
 from .botocore import get_aws_connection_info  # pylint: disable=unused-import
-
+from .botocore import get_aws_region  # pylint: disable=unused-import
 from .botocore import paginated_query_with_retries
 
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.exceptions
@@ -70,6 +70,13 @@ from .exceptions import AnsibleAWSError  # pylint: disable=unused-import
 from .modules import _aws_common_argument_spec as aws_common_argument_spec  # pylint: disable=unused-import
 from .modules import aws_argument_spec as ec2_argument_spec  # pylint: disable=unused-import
 
+# Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.policy
+from .policy import _py3cmp as py3cmp  # pylint: disable=unused-import
+from .policy import compare_policies  # pylint: disable=unused-import
+
+# Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.retries
+from .retries import AWSRetry  # pylint: disable=unused-import
+
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.tagging
 from .tagging import ansible_dict_to_boto3_tag_list  # pylint: disable=unused-import
 from .tagging import boto3_tag_list_to_ansible_dict  # pylint: disable=unused-import
@@ -78,14 +85,6 @@ from .tagging import compare_aws_tags  # pylint: disable=unused-import
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.transformation
 from .transformation import ansible_dict_to_boto3_filter_list  # pylint: disable=unused-import
 from .transformation import map_complex_type  # pylint: disable=unused-import
-
-# Used to live here, moved into # ansible_collections.amazon.aws.plugins.module_utils.policy
-from .policy import _py3cmp as py3cmp  # pylint: disable=unused-import
-from .policy import compare_policies  # pylint: disable=unused-import
-from .policy import sort_json_policy_dict  # pylint: disable=unused-import
-
-# Used to live here, moved into # ansible_collections.amazon.aws.plugins.module_utils.retries
-from .retries import AWSRetry  # pylint: disable=unused-import
 
 try:
     import botocore
@@ -100,11 +99,21 @@ def get_ec2_security_group_ids_from_names(sec_group_list, ec2_connection, vpc_id
     a try block
     """
 
-    def get_sg_name(sg, boto3=None):
+    def get_sg_name(sg):
         return str(sg["GroupName"])
 
-    def get_sg_id(sg, boto3=None):
+    def get_sg_id(sg):
         return str(sg["GroupId"])
+
+    if boto3 is not None:
+        ansible_warnings.deprecate(
+            (
+                "The boto3 parameter for get_ec2_security_group_ids_from_names() has been deprecated."
+                "The parameter has been ignored since release 4.0.0."
+            ),
+            date="2025-05-01",
+            collection_name="amazon.aws",
+        )
 
     sec_group_id_list = []
 
@@ -125,7 +134,7 @@ def get_ec2_security_group_ids_from_names(sec_group_list, ec2_connection, vpc_id
     else:
         all_sec_groups = ec2_connection.describe_security_groups()["SecurityGroups"]
 
-    unmatched = set(sec_group_list).difference(str(get_sg_name(all_sg, boto3)) for all_sg in all_sec_groups)
+    unmatched = set(sec_group_list).difference(str(get_sg_name(all_sg)) for all_sg in all_sec_groups)
     sec_group_name_list = list(set(sec_group_list) - set(unmatched))
 
     if len(unmatched) > 0:
@@ -304,3 +313,12 @@ def normalize_ec2_vpc_dhcp_config(option_config):
                 config_data[option] = [val["Value"] for val in config_item["Values"]]
 
     return config_data
+
+
+@AWSRetry.jittered_backoff(retries=10)
+def helper_describe_import_image_tasks(client, module, **params):
+    try:
+        paginator = client.get_paginator("describe_import_image_tasks")
+        return paginator.paginate(**params).build_full_result()["ImportImageTasks"]
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Failed to describe the import image")

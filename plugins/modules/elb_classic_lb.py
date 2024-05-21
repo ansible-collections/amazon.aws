@@ -302,7 +302,7 @@ EXAMPLES = r"""
       - protocol: http # options are http, https, ssl, tcp
         load_balancer_port: 80
         instance_port: 80
-        proxy_protocol: True
+        proxy_protocol: true
       - protocol: https
         load_balancer_port: 443
         instance_protocol: http # optional, defaults to value of protocol setting
@@ -338,17 +338,17 @@ EXAMPLES = r"""
         load_balancer_port: 80
         instance_port: 80
     health_check:
-        ping_protocol: http # options are http, https, ssl, tcp
-        ping_port: 80
-        ping_path: "/index.html" # not required for tcp or ssl
-        response_timeout: 5 # seconds
-        interval: 30 # seconds
-        unhealthy_threshold: 2
-        healthy_threshold: 10
+      ping_protocol: http # options are http, https, ssl, tcp
+      ping_port: 80
+      ping_path: "/index.html" # not required for tcp or ssl
+      response_timeout: 5 # seconds
+      interval: 30 # seconds
+      unhealthy_threshold: 2
+      healthy_threshold: 10
     access_logs:
-        interval: 5 # minutes (defaults to 60)
-        s3_location: "my-bucket" # This value is required if access_logs is set
-        s3_prefix: "logs"
+      interval: 5 # minutes (defaults to 60)
+      s3_location: "my-bucket" # This value is required if access_logs is set
+      s3_prefix: "logs"
 
 # Ensure ELB is gone
 - amazon.aws.elb_classic_lb:
@@ -675,18 +675,18 @@ try:
 except ImportError:
     pass  # Taken care of by AnsibleAWSModule
 
-from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_ec2_security_group_ids_from_names
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
+from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
+from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
 from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
 
 
@@ -1412,7 +1412,7 @@ class ElbManager:
         if not self.health_check:
             return False
 
-        """Set health check values on ELB as needed"""
+        # Set health check values on ELB as needed
         health_check_config = self._format_healthcheck()
 
         if self.elb and health_check_config == self.elb["HealthCheck"]:
@@ -1489,14 +1489,6 @@ class ElbManager:
 
     def _policy_name(self, policy_type):
         return f"ec2-elb-lb-{policy_type}"
-
-    def _get_listener_policies(self):
-        """Get a list of listener policies mapped to the LoadBalancerPort"""
-        if not self.elb:
-            return {}
-        listener_descriptions = self.elb.get("ListenerDescriptions", [])
-        policies = {l["LoadBalancerPort"]: l["PolicyNames"] for l in listener_descriptions}
-        return policies
 
     def _set_listener_policies(self, port, policies):
         self.changed = True
@@ -1705,7 +1697,7 @@ class ElbManager:
             proxy_protocol = listener.get("proxy_protocol", None)
             # Only look at the listeners for which proxy_protocol is defined
             if proxy_protocol is None:
-                next
+                continue
             instance_port = listener.get("instance_port")
             if proxy_ports.get(instance_port, None) is not None:
                 if proxy_ports[instance_port] != proxy_protocol:
@@ -1725,10 +1717,10 @@ class ElbManager:
         if any(proxy_ports.values()):
             changed |= self._set_proxy_protocol_policy(proxy_policy_name)
 
-        for port in proxy_ports:
+        for port, port_policy in proxy_ports.items():
             current_policies = set(backend_policies.get(port, []))
             new_policies = list(current_policies - proxy_policies)
-            if proxy_ports[port]:
+            if port_policy:
                 new_policies.append(proxy_policy_name)
 
             changed |= self._set_backend_policy(port, new_policies)

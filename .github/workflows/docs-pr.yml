@@ -1,3 +1,4 @@
+---
 name: Collection Docs
 concurrency:
   group: docs-${{ github.head_ref }}
@@ -5,7 +6,6 @@ concurrency:
 on:
   pull_request_target:
     types: [opened, synchronize, reopened, closed]
-
 env:
   GHP_BASE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
 
@@ -21,6 +21,7 @@ jobs:
       intersphinx-links: |
         community_aws:https://ansible-collections.github.io/community.aws/branch/main/
         ansible_devel:https://docs.ansible.com/ansible-core/devel/
+      artifact-name: ${{ github.event.repository.name }}_validate_docs_${{ github.event.pull_request.head.sha }}
 
 
   build-docs:
@@ -45,7 +46,7 @@ jobs:
       - name: PR comment
         uses: ansible-community/github-docs-build/actions/ansible-docs-build-comment@main
         with:
-          body-includes: '## Docs Build'
+          body-includes: "## Docs Build"
           reactions: heart
           action: ${{ needs.build-docs.outputs.changed != 'true' && 'remove' || '' }}
           on-closed-action: remove

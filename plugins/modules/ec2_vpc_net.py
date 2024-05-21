@@ -107,9 +107,14 @@ EXAMPLES = r"""
   amazon.aws.ec2_vpc_net:
     name: Module_dev2
     cidr_block: 10.10.0.0/16
-    ipv6_cidr: True
+    ipv6_cidr: true
     region: us-east-1
     tenancy: dedicated
+
+- name: Delete an existing VPC
+  amazon.aws.ec2_vpc_net:
+    vpc_id: vpc-0123456789abcdef0
+    state: absent
 """
 
 RETURN = r"""
@@ -207,16 +212,16 @@ try:
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
-from ansible.module_utils.common.network import to_subnet
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+from ansible.module_utils.common.network import to_subnet
 
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
+from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
 
 

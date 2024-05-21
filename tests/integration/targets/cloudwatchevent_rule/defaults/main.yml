@@ -1,5 +1,5 @@
 ---
-name_pattern: "cloudwatch_event_rule-{{ tiny_prefix }}"
+name_pattern: cloudwatch_event_rule-{{ tiny_prefix }}
 
 test_event_names:
   - "{{ name_pattern }}-1"

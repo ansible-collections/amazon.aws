@@ -1123,3 +1123,26 @@ We also provide a ``tox`` configuration which allow you to run one specific test
 .. code-block:: shell
 
     $ tox -e py3 -- tests/unit/plugins/modules/test_s3_object.py
+
+
+Code formatting
+===============
+
+To improve the consistency of our code we use a number of formatters and linters.  These tools can
+be run locally by using tox:
+
+.. code-block:: shell
+
+    $ tox -m format
+
+.. code-block:: shell
+
+    $ tox -m lint
+
+More information about each of the tools we use can be found on their websites:
+
+- `black <https://black.readthedocs.io/en/stable/>`_ - opinionated code formatter.
+- `isort <https://pycqa.github.io/isort/>`_ - groups and sorts imports.
+- `flynt <https://github.com/ikamensh/flynt>`_ - encourages the use of f-strings over alternatives such as concatination, ``%``, ``str.format()``, and ``string.Template``.
+- `flake8 <https://flake8.pycqa.org/en/latest/>`_ - encourages following the PEP8 recommendations.
+- `pylint <https://pylint.readthedocs.io/en/latest/>`_ - a static code anaylsys tool.

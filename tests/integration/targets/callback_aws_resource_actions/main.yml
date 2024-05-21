@@ -1,7 +1,8 @@
+---
 - hosts: localhost
-  gather_facts: no
+  gather_facts: false
   collections:
-  - amazon.aws
+    - amazon.aws
   module_defaults:
     group/aws:
       access_key: "{{ aws_access_key }}"
@@ -9,27 +10,27 @@
       session_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
   tasks:
-  - ec2_instance_info:
-    register: ec2_info
+    - amazon.aws.ec2_instance_info:
+      register: ec2_info
 
-  - assert:
-      that:
-      - '"resource_actions" in ec2_info'
-      - '"ec2:DescribeInstances" in ec2_info.resource_actions'
+    - ansible.builtin.assert:
+        that:
+          - '"resource_actions" in ec2_info'
+          - '"ec2:DescribeInstances" in ec2_info.resource_actions'
 
-  - aws_az_info:
-    register: az_info
+    - amazon.aws.aws_az_info:
+      register: az_info
 
-  - assert:
-      that:
-      - '"resource_actions" in az_info'
-      - '"ec2:DescribeAvailabilityZones" in az_info.resource_actions'
+    - ansible.builtin.assert:
+        that:
+          - '"resource_actions" in az_info'
+          - '"ec2:DescribeAvailabilityZones" in az_info.resource_actions'
 
-  - aws_caller_info:
-    register: caller_info
+    - amazon.aws.aws_caller_info:
+      register: caller_info
 
-  - assert:
-      that:
-      - '"resource_actions" in caller_info'
-      - '"sts:GetCallerIdentity" in caller_info.resource_actions'
-      - '"iam:ListAccountAliases" in caller_info.resource_actions'
+    - ansible.builtin.assert:
+        that:
+          - '"resource_actions" in caller_info'
+          - '"sts:GetCallerIdentity" in caller_info.resource_actions'
+          - '"iam:ListAccountAliases" in caller_info.resource_actions'

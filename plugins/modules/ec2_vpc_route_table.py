@@ -287,8 +287,8 @@ route_table:
 """
 
 import re
-from time import sleep
 from ipaddress import ip_network
+from time import sleep
 
 try:
     import botocore
@@ -298,12 +298,13 @@ except ImportError:
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_ec2_tags
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
+from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
 
 
@@ -778,7 +779,10 @@ def ensure_route_table_present(connection, module):
         changed = True
         if not module.check_mode:
             try:
-                route_table = connection.create_route_table(aws_retry=True, VpcId=vpc_id)["RouteTable"]
+                create_params = {"VpcId": vpc_id}
+                if tags:
+                    create_params["TagSpecifications"] = boto3_tag_specifications(tags, types="route-table")
+                route_table = connection.create_route_table(aws_retry=True, **create_params)["RouteTable"]
                 # try to wait for route table to be present before moving on
                 get_waiter(connection, "route_table_exists").wait(
                     RouteTableIds=[route_table["RouteTableId"]],
@@ -839,7 +843,8 @@ def ensure_route_table_present(connection, module):
     if changed:
         # pause to allow route table routes/subnets/associations to be updated before exiting with final state
         sleep(5)
-    module.exit_json(changed=changed, route_table=get_route_table_info(connection, module, route_table))
+
+    return dict(changed=changed, route_table=get_route_table_info(connection, module, route_table))
 
 
 def main():

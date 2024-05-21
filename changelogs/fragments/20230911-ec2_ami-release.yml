@@ -1,2 +1,0 @@
-trivial:
-- ec2_ami - fix version_added for org owners.

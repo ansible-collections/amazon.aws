@@ -1,0 +1,6 @@
+---
+# defaults file for ec2_instance_block_devices
+ec2_instance_type: t3.micro
+ec2_instance_tag_TestId: "{{ resource_prefix }}-license-specifications"
+ec2_host_resource_group_arn: arn:aws:resource-groups:{{ aws_region }}:123456789012:group/{{ resource_prefix }}-resource-group
+ec2_license_configuration_arn: arn:aws:license-manager:{{ aws_region }}:123456789012:license-configuration:lic-0123456789

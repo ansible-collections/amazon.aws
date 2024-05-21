@@ -4,6 +4,426 @@ amazon.aws Release Notes
 
 .. contents:: Topics
 
+v8.0.0
+======
+
+Release Summary
+---------------
+
+This major release brings several new features, bug fixes, and deprecated features. It also includes the removal of some functionality for ``iam_role, iam_role_info`` and ``module_utils.policy`` that were previously deprecated. We have also removed support for ``ansible-core<2.15``.
+
+Minor Changes
+-------------
+
+- autoscaling_group - removed unused code (https://github.com/ansible-collections/amazon.aws/pull/1996).
+- cloudformation - apply automatic retries when paginating through stack events without a filter (https://github.com/ansible-collections/amazon.aws/pull/2049).
+- cloudtrail - removed unused code (https://github.com/ansible-collections/amazon.aws/pull/1996).
+- ec2_instance - removed unused code (https://github.com/ansible-collections/amazon.aws/pull/1996).
+- ec2_vol - Ensure volume state is not one of ``deleted`` or ``deleting`` when trying to delete volume, to guaranty idempotency (https://github.com/ansible-collections/amazon.aws/pull/2052).
+- ec2_vol - removed unused code (https://github.com/ansible-collections/amazon.aws/pull/1996).
+- elb_classic_lb - removed unused code (https://github.com/ansible-collections/amazon.aws/pull/1996).
+- kms_key - removed unused code (https://github.com/ansible-collections/amazon.aws/pull/1996).
+- lambda_event - Add support for setting the ``maximum_batching_window_in_seconds`` option (https://github.com/ansible-collections/amazon.aws/pull/2025).
+- module_uils/botocore - support sets and tuples of errors as well as lists (https://github.com/ansible-collections/amazon.aws/pull/1829).
+- module_utils/elbv2 - Add support for adding listener with multiple certificates during ALB creation. Allows elb_application_elb module to handle mentioned use case. (https://github.com/ansible-collections/amazon.aws/pull/1950).
+- module_utils/elbv2 - Add the possibility to update ``SslPolicy``, ``Certificates`` and ``AlpnPolicy`` for TLS listeners (https://github.com/ansible-collections/amazon.aws/issues/1198).
+- rds_instance - Allow passing empty list to ``enable_cloudwatch_logs_exports`` in order to remove all existing exports (https://github.com/ansible-collections/amazon.aws/pull/1917).
+- s3_bucket - refactor s3_bucket module code for improved readability and maintainability (https://github.com/ansible-collections/amazon.aws/pull/2057).
+- s3_object - removed unused code (https://github.com/ansible-collections/amazon.aws/pull/1996).
+
+Breaking Changes / Porting Guide
+--------------------------------
+
+- amazon.aws collection - Support for ansible-core < 2.15 has been dropped (https://github.com/ansible-collections/amazon.aws/pull/2093).
+- iam_role - ``iam_role.assume_role_policy_document`` is no longer converted from CamelCase to snake_case (https://github.com/ansible-collections/amazon.aws/pull/2040).
+- iam_role_info - ``iam_role.assume_role_policy_document`` is no longer converted from CamelCase to snake_case (https://github.com/ansible-collections/amazon.aws/pull/2040).
+- kms_key - the ``policies`` return value has been renamed to ``key_policies`` the contents has not been changed (https://github.com/ansible-collections/amazon.aws/pull/2040).
+- kms_key_info - the ``policies`` return value has been renamed to ``key_policies`` the contents has not been changed (https://github.com/ansible-collections/amazon.aws/pull/2040).
+- lambda_event - | ``batch_size`` no longer defaults to 100. According to the boto3 API (https://boto3.amazonaws.com/v1/documentation/api/1.26.78/reference/services/lambda.html#Lambda.Client.create_event_source_mapping), ``batch_size`` defaults to 10 for sqs sources and to 100 for stream sources (https://github.com/ansible-collections/amazon.aws/pull/2025).
+
+Deprecated Features
+-------------------
+
+- aws_ec2 inventory plugin - removal of the previously deprecated ``include_extra_api_calls`` option has been assigned to release 9.0.0 (https://github.com/ansible-collections/amazon.aws/pull/2040).
+- cloudformation - the ``template`` parameter has been deprecated and will be removed in a release after 2026-05-01.  The ``template_body`` parameter can be used in conjungtion with the lookup plugin (https://github.com/ansible-collections/amazon.aws/pull/2048).
+- iam_policy - removal of the previously deprecated ``policies`` return key has been assigned to release 9.0.0.  Use the ``policy_names`` return key instead (https://github.com/ansible-collections/amazon.aws/pull/2040).
+- module_utils.botocore - the ``boto3`` parameter for ``get_aws_connection_info()`` will be removed in a release after 2025-05-01. The ``boto3`` parameter has been ignored since release 4.0.0 (https://github.com/ansible-collections/amazon.aws/pull/2047).
+- module_utils.botocore - the ``boto3`` parameter for ``get_aws_region()`` will be removed in a release after 2025-05-01. The ``boto3`` parameter has been ignored since release 4.0.0 (https://github.com/ansible-collections/amazon.aws/pull/2047).
+- module_utils.ec2 - the ``boto3`` parameter for ``get_ec2_security_group_ids_from_names()`` will be removed in a release after 2025-05-01. The ``boto3`` parameter has been ignored since release 4.0.0 (https://github.com/ansible-collections/amazon.aws/pull/2047).
+- rds_param_group - the ``rds_param_group`` module has been renamed to ``rds_instance_param_group``. The usage of the module has not changed. The rds_param_group alias will be removed in version 10.0.0 (https://github.com/ansible-collections/amazon.aws/pull/2058).
+
+Removed Features (previously deprecated)
+----------------------------------------
+
+- iam_role - the ``iam_role.assume_role_policy_document_raw`` return value has been deprecated.  ``iam_role.assume_role_policy_document`` now returns the same format as ``iam_role.assume_role_policy_document_raw`` (https://github.com/ansible-collections/amazon.aws/pull/2040).
+- iam_role_info - the ``iam_role.assume_role_policy_document_raw`` return value has been deprecated.  ``iam_role.assume_role_policy_document`` now returns the same format as ``iam_role.assume_role_policy_document_raw`` (https://github.com/ansible-collections/amazon.aws/pull/2040).
+- module_utils.policy - the previously deprecated ``sort_json_policy_dict()`` function has been removed, consider using ``compare_policies()`` instead (https://github.com/ansible-collections/amazon.aws/pull/2052).
+
+Bugfixes
+--------
+
+- elb_classic_lb - fixes bug where ``proxy_protocol`` not being set or being set to ``None`` may result in unexpected behaviour or errors (https://github.com/ansible-collections/amazon.aws/pull/2049).
+- lambda_event - Fix when ``batch_size`` is greater than 10, by enabling support for setting ``maximum_batching_window_in_seconds`` (https://github.com/ansible-collections/amazon.aws/pull/2025).
+- lambda_event - Retrieve function ARN using AWS API (get_function) instead of building it with AWS account information (https://github.com/ansible-collections/amazon.aws/issues/1859).
+
+v7.6.0
+======
+
+Release Summary
+---------------
+
+This release brings several bugfixes, minor changes and some new rds modules (``rds_cluster_param_group``, ``rds_cluster_param_group_info`` and ``rds_engine_versions_info``). It also introduces a deprecation for the ``cloudformation`` module.
+
+Minor Changes
+-------------
+
+- ec2_instance - add support for ``host`` option in placement.tenancy (https://github.com/ansible-collections/amazon.aws/pull/2026).
+- ec2_vol - Ensure volume state is not one of ``deleted`` or ``deleting`` when trying to delete volume, to guaranty idempotency (https://github.com/ansible-collections/amazon.aws/pull/2052).
+
+Deprecated Features
+-------------------
+
+- cloudformation - the ``template`` parameter has been deprecated and will be removed in a release after 2026-05-01.  The ``template_body`` parameter can be used in conjungtion with the lookup plugin (https://github.com/ansible-collections/amazon.aws/pull/2048).
+- module_utils.botocore - the ``boto3`` parameter for ``get_aws_connection_info()`` will be removed in a release after 2025-05-01. The ``boto3`` parameter has been ignored since release 4.0.0 (https://github.com/ansible-collections/amazon.aws/pull/2047).
+- module_utils.botocore - the ``boto3`` parameter for ``get_aws_region()`` will be removed in a release after 2025-05-01. The ``boto3`` parameter has been ignored since release 4.0.0 (https://github.com/ansible-collections/amazon.aws/pull/2047).
+- module_utils.ec2 - the ``boto3`` parameter for ``get_ec2_security_group_ids_from_names()`` will be removed in a release after 2025-05-01. The ``boto3`` parameter has been ignored since release 4.0.0 (https://github.com/ansible-collections/amazon.aws/pull/2047).
+
+Bugfixes
+--------
+
+- iam_managed_policy - fixes bug that causes ``ParamValidationError`` when attempting to delete a policy that's attached to a role or a user (https://github.com/ansible-collections/amazon.aws/issues/2067).
+- iam_role_info - fixes bug in handling paths missing the ``/`` prefix and/or suffix (https://github.com/ansible-collections/amazon.aws/issues/2065).
+- s3_object - fix idempotency issue when copying object uploaded using multipart upload (https://github.com/ansible-collections/amazon.aws/issues/2016).
+
+New Modules
+-----------
+
+- rds_cluster_param_group - Manage RDS cluster parameter groups
+- rds_cluster_param_group_info - Describes the properties of specific RDS cluster parameter group.
+- rds_engine_versions_info - Describes the properties of specific versions of DB engines.
+
+v7.5.0
+======
+
+Release Summary
+---------------
+
+This release includes a new feature for the ``iam_user_info`` module, bugfixes for the ``cloudwatchlogs_log_group_info`` and ``s3_object`` modules and the inventory plugins, and some internal refactoring of ``module_utils``.
+
+Minor Changes
+-------------
+
+- iam_user_info - Add ``login_profile`` to return info that is get from a user, to know if they can login from AWS console (https://github.com/ansible-collections/amazon.aws/pull/2012).
+- module_utils.iam - refactored normalization functions to use ``boto3_resource_to_ansible_dict()`` and ``boto3_resource_list_to_ansible_dict()`` (https://github.com/ansible-collections/amazon.aws/pull/2006).
+- module_utils.transformations - add ``boto3_resource_to_ansible_dict()`` and ``boto3_resource_list_to_ansible_dict()`` helpers (https://github.com/ansible-collections/amazon.aws/pull/2006).
+
+Bugfixes
+--------
+
+- cloudwatchlogs_log_group_info - Implement exponential backoff when making API calls to prevent throttling exceptions (https://github.com/ansible-collections/amazon.aws/issues/2011).
+- plugin_utils.inventory - Ensure templated options in lookup plugins are converted (https://github.com/ansible-collections/amazon.aws/issues/1955).
+- s3_object - Fix the issue when copying an object with overriding metadata. (https://github.com/ansible-collections/amazon.aws/issues/1991).
+
+v7.4.0
+======
+
+Release Summary
+---------------
+
+This release brings several bugfixes and minor changes. It also introduces a deprecation for the ``iam_role_info`` plugin.
+
+Minor Changes
+-------------
+
+- AnsibeAWSModule - added ``fail_json_aws_error()`` as a wrapper for ``fail_json()`` and ``fail_json_aws()`` when passed an ``AnsibleAWSError`` exception (https://github.com/ansible-collections/amazon.aws/pull/1997).
+- iam_access_key - refactored code to use ``AnsibleIAMError`` and ``IAMErrorHandler`` as well as moving shared code into module_utils.iam (https://github.com/ansible-collections/amazon.aws/pull/1998).
+- iam_access_key_info - refactored code to use ``AnsibleIAMError`` and ``IAMErrorHandler`` as well as moving shared code into module_utils.iam (https://github.com/ansible-collections/amazon.aws/pull/1998).
+- iam_group - refactored code to use ``AnsibleIAMError`` and ``IAMErrorHandler`` as well as moving shared code into module_utils.iam (https://github.com/ansible-collections/amazon.aws/pull/1998).
+- iam_instance_profile - refactored code to use ``AnsibleIAMError`` and ``IAMErrorHandler`` as well as moving shared code into module_utils.iam (https://github.com/ansible-collections/amazon.aws/pull/1998).
+- iam_instance_profile_info - refactored code to use ``AnsibleIAMError`` and ``IAMErrorHandler`` as well as moving shared code into module_utils.iam (https://github.com/ansible-collections/amazon.aws/pull/1998).
+- iam_managed_policy - refactored code to use ``AnsibleIAMError`` and ``IAMErrorHandler`` as well as moving shared code into module_utils.iam (https://github.com/ansible-collections/amazon.aws/pull/1998).
+- iam_mfa_device_info - refactored code to use ``AnsibleIAMError`` and ``IAMErrorHandler`` as well as moving shared code into module_utils.iam (https://github.com/ansible-collections/amazon.aws/pull/1998).
+- iam_role - refactored code to use ``AnsibleIAMError`` and ``IAMErrorHandler`` as well as moving shared code into module_utils.iam (https://github.com/ansible-collections/amazon.aws/pull/1998).
+- iam_role_info - refactored code to use ``AnsibleIAMError`` and ``IAMErrorHandler`` as well as moving shared code into module_utils.iam (https://github.com/ansible-collections/amazon.aws/pull/1998).
+- iam_user - refactored code to use ``AnsibleIAMError`` and ``IAMErrorHandler`` as well as moving shared code into module_utils.iam (https://github.com/ansible-collections/amazon.aws/pull/1998).
+- iam_user_info - refactored code to use ``AnsibleIAMError`` and ``IAMErrorHandler`` as well as moving shared code into module_utils.iam (https://github.com/ansible-collections/amazon.aws/pull/1998).
+
+Deprecated Features
+-------------------
+
+- iam_role_info - in a release after 2026-05-01 paths must begin and end with ``/`` (https://github.com/ansible-collections/amazon.aws/pull/1998).
+
+Bugfixes
+--------
+
+- cloudwatchevent_rule - Fix to avoid adding quotes to JSON input for provided input_template (https://github.com/ansible-collections/amazon.aws/pull/1883).
+- lookup/secretsmanager_secret - fix the issue when the nested secret is missing and on_missing is set to warn, the lookup was raising an error instead of a warning message (https://github.com/ansible-collections/amazon.aws/issues/1781).
+- module_utils/elbv2 - Fix issue when creating or modifying Load balancer rule type authenticate-oidc using ``ClientSecret`` parameter and ``UseExistingClientSecret=true`` (https://github.com/ansible-collections/amazon.aws/issues/1877).
+
+v7.3.0
+======
+
+Release Summary
+---------------
+
+The amazon.aws 7.3.0 release includes a number of minor bugfixes, some new features and improvements.
+
+Minor Changes
+-------------
+
+- backup_plan - Let user to set ``schedule_expression_timezone`` for backup plan rules when when using botocore >= 1.31.36 (https://github.com/ansible-collections/amazon.aws/issues/1952).
+- iam_user - refactored error handling to use a decorator (https://github.com/ansible-collections/amazon.aws/pull/1951).
+- lambda - added support for using ECR images for the function (https://github.com/ansible-collections/amazon.aws/pull/1939).
+- module_utils.errors - added a basic error handler decorator (https://github.com/ansible-collections/amazon.aws/pull/1951).
+- rds_cluster - Add support for ServerlessV2ScalingConfiguration to create and modify cluster operations (https://github.com/ansible-collections/amazon.aws/pull/1839).
+- s3_bucket_info - add parameter ``bucket_versioning`` to return the versioning state of a bucket (https://github.com/ansible-collections/amazon.aws/pull/1919).
+- s3_object_info - fix exception raised when listing objects from empty bucket (https://github.com/ansible-collections/amazon.aws/pull/1919).
+
+Bugfixes
+--------
+
+- backup_plan - Fix idempotency issue when using botocore >= 1.31.36 (https://github.com/ansible-collections/amazon.aws/issues/1952).
+- plugins/inventory/aws_ec2 - Fix failure when retrieving information for more than 40 instances with use_ssm_inventory (https://github.com/ansible-collections/amazon.aws/issues/1713).
+
+v7.2.0
+======
+
+Release Summary
+---------------
+
+This release includes new features and a bugfix.
+
+Minor Changes
+-------------
+
+- ec2_instance - Add support for modifying metadata options of an existing instance (https://github.com/ansible-collections/amazon.aws/pull/1918).
+- iam_group - Basic testing of ``name`` and ``path`` has been added to improve error messages (https://github.com/ansible-collections/amazon.aws/pull/1933).
+- iam_group - ``group_name`` has been added as an alias to ``name`` for consistency with other IAM modules (https://github.com/ansible-collections/amazon.aws/pull/1933).
+- iam_instance_profile - Basic testing of ``name`` and ``path`` has been added to improve error messages (https://github.com/ansible-collections/amazon.aws/pull/1933).
+- iam_instance_profile - Basic testing of ``name`` and ``path`` has been added to improve error messages (https://github.com/ansible-collections/amazon.aws/pull/1933).
+- iam_instance_profile - attempting to change the ``path`` for an existing profile will now generate a warning, previously this was silently ignored (https://github.com/ansible-collections/amazon.aws/pull/1933).
+- iam_instance_profile - the ``prefix`` parameter has been renamed ``path`` for consistency with other IAM modules, ``prefix`` remains as an alias. No change to playbooks is required (https://github.com/ansible-collections/amazon.aws/pull/1933).
+- iam_instance_profile - the default value for ``path`` has been removed.  New instances will still be created with a default path of ``/``. No change to playbooks is required (https://github.com/ansible-collections/amazon.aws/pull/1933).
+- iam_managed_policy - Basic testing of ``name`` and ``path`` has been added to improve error messages (https://github.com/ansible-collections/amazon.aws/pull/1933).
+- iam_managed_policy - ``description`` attempting to update the description now results in a warning, previously it was simply ignored (https://github.com/ansible-collections/amazon.aws/pull/1936).
+- iam_managed_policy - ``policy`` is no longer a required parameter (https://github.com/ansible-collections/amazon.aws/pull/1936).
+- iam_managed_policy - added support for tagging managed policies (https://github.com/ansible-collections/amazon.aws/pull/1936).
+- iam_managed_policy - more consistently perform retries on rate limiting errors (https://github.com/ansible-collections/amazon.aws/pull/1936).
+- iam_managed_policy - support for setting ``path`` (https://github.com/ansible-collections/amazon.aws/pull/1936).
+- iam_managed_policy - the ``policy_description`` parameter has been renamed ``description`` for consistency with other IAM modules, ``policy_description`` remains as an alias. No change to playbooks is required (https://github.com/ansible-collections/amazon.aws/pull/1933).
+- iam_managed_policy - the ``policy_name`` parameter has been renamed ``name`` for consistency with other IAM modules, ``policy_name`` remains as an alias. No change to playbooks is required (https://github.com/ansible-collections/amazon.aws/pull/1933).
+- iam_role - Basic testing of ``name`` and ``path`` has been added to improve error messages (https://github.com/ansible-collections/amazon.aws/pull/1933).
+- iam_role - ``prefix`` and ``path_prefix`` have been added as aliases to ``path`` for consistency with other IAM modules (https://github.com/ansible-collections/amazon.aws/pull/1933).
+- iam_role - ``role_name`` has been added as an alias to ``name`` for consistency with other IAM modules (https://github.com/ansible-collections/amazon.aws/pull/1933).
+- iam_role - attempting to change the ``path`` for an existing profile will now generate a warning, previously this was silently ignored (https://github.com/ansible-collections/amazon.aws/pull/1933).
+- iam_role - the default value for ``path`` has been removed.  New roles will still be created with a default path of ``/``. No change to playbooks is required (https://github.com/ansible-collections/amazon.aws/pull/1933).
+- iam_role_info - ``path`` and ``prefix`` have been added as aliases to ``path_prefix`` for consistency with other IAM modules (https://github.com/ansible-collections/amazon.aws/pull/1933).
+- iam_user - Basic testing of ``name`` and ``path`` has been added to improve error messages (https://github.com/ansible-collections/amazon.aws/pull/1933).
+- iam_user - ``user_name`` has been added as an alias to ``name`` for consistency with other IAM modules (https://github.com/ansible-collections/amazon.aws/pull/1933).
+- iam_user - add ``boundary`` parameter to support managing boundary policy on users (https://github.com/ansible-collections/amazon.aws/pull/1912).
+- iam_user - add ``path`` parameter to support managing user path (https://github.com/ansible-collections/amazon.aws/pull/1912).
+- iam_user - added ``attached_policies`` to return value (https://github.com/ansible-collections/amazon.aws/pull/1912).
+- iam_user - refactored code to reduce complexity (https://github.com/ansible-collections/amazon.aws/pull/1912).
+- iam_user_info - ``prefix`` has been added as an alias to ``path_prefix`` for consistency with other IAM modules (https://github.com/ansible-collections/amazon.aws/pull/1933).
+- iam_user_info - the ``path`` parameter has been renamed ``path_prefix`` for consistency with other IAM modules, ``path`` remains as an alias. No change to playbooks is required (https://github.com/ansible-collections/amazon.aws/pull/1933).
+
+Bugfixes
+--------
+
+- iam_managed_policy - fixed an issue where only partial results were returned (https://github.com/ansible-collections/amazon.aws/pull/1936).
+
+v7.1.0
+======
+
+Release Summary
+---------------
+
+This release brings some new features and several bugfixes.
+
+Minor Changes
+-------------
+
+- autoscaling_group - minor PEP8 whitespace sanity fixes (https://github.com/ansible-collections/amazon.aws/pull/1846).
+- ec2_ami_info - simplify parameters to ``get_image_attribute`` to only pass ID of image (https://github.com/ansible-collections/amazon.aws/pull/1846).
+- ec2_eip - use ``ResourceTags`` to set initial tags upon creation (https://github.com/ansible-collections/amazon.aws/issues/1843)
+- ec2_instance - add support for AdditionalInfo option when creating an instance (https://github.com/ansible-collections/amazon.aws/pull/1828).
+- ec2_security_group - use ``ResourceTags`` to set initial tags upon creation (https://github.com/ansible-collections/amazon.aws/pull/1844)
+- ec2_vpc_igw - use ``ResourceTags`` to set initial tags upon creation (https://github.com/ansible-collections/amazon.aws/issues/1843)
+- ec2_vpc_route_table - use ``ResourceTags`` to set initial tags upon creation (https://github.com/ansible-collections/amazon.aws/issues/1843)
+- ec2_vpc_subnet - the default value for ``tags`` has been changed from ``{}`` to ``None``, to remove tags from a subnet an empty map must be explicitly passed to the module (https://github.com/ansible-collections/amazon.aws/pull/1876).
+- ec2_vpc_subnet - use ``ResourceTags`` to set initial tags upon creation (https://github.com/ansible-collections/amazon.aws/issues/1843)
+- ec2_vpc_subnet - use ``wait_timeout`` to also control maximum time to wait for initial creation of subnets (https://github.com/ansible-collections/amazon.aws/pull/1848).
+- iam_group - add support for setting group path (https://github.com/ansible-collections/amazon.aws/pull/1892).
+- iam_group - adds attached_policies return value (https://github.com/ansible-collections/amazon.aws/pull/1892).
+- iam_group - code refactored to avoid single long function (https://github.com/ansible-collections/amazon.aws/pull/1892).
+- rds_instance_snapshot - minor PEP8 whitespace sanity fixes (https://github.com/ansible-collections/amazon.aws/pull/1846).
+
+Bugfixes
+--------
+
+- ec2_vpc_subnet - cleanly handle failure when subnet isn't created in time (https://github.com/ansible-collections/amazon.aws/pull/1848).
+- s3_object - Fix typo that caused false deprecation warning when setting ``overwrite=latest`` (https://github.com/ansible-collections/amazon.aws/pull/1847).
+- s3_object - when doing a put and specifying ``Content-Type`` in metadata, this module (since 6.0.0) erroneously set the ``Content-Type`` to ``None`` causing the put to fail. Fix now correctly honours the specified ``Content-Type`` (https://github.com/ansible-collections/amazon.aws/issues/1881).
+
+v7.0.0
+======
+
+Release Summary
+---------------
+
+This major release brings a new set of supported modules that have been promoted from community.aws, several bugfixes, minor changes and deprecated features. We also dropped support for ``botocore<1.29.0`` and ``boto3<1.26.0``. Due to the AWS SDKs announcing the end of support for Python less than 3.7 (https://aws.amazon.com/blogs/developer/python-support-policy-updates-for-aws-sdks-and-tools/), support for Python less than 3.7 by this collection was deprecated in release 6.0.0 and removed in this release.
+
+Major Changes
+-------------
+
+- aws_region_info - The module has been migrated from the ``community.aws`` collection. Playbooks using the Fully Qualified Collection Name for this module should be updated to use ``amazon.aws.aws_region_info``.
+- aws_s3_bucket_info - The module has been migrated from the ``community.aws`` collection. Playbooks using the Fully Qualified Collection Name for this module should be updated to use ``amazon.aws.aws_s3_bucket_info``.
+- iam_access_key - The module has been migrated from the ``community.aws`` collection. Playbooks using the Fully Qualified Collection Name for this module should be updated to use ``amazon.aws.iam_access_key``.
+- iam_access_key_info - The module has been migrated from the ``community.aws`` collection. Playbooks using the Fully Qualified Collection Name for this module should be updated to use ``amazon.aws.iam_access_key_info``.
+- iam_group - The module has been migrated from the ``community.aws`` collection. Playbooks using the Fully Qualified Collection Name for this module should be updated to use ``amazon.aws.iam_group`` (https://github.com/ansible-collections/amazon.aws/pull/1755).
+- iam_managed_policy - The module has been migrated from the ``community.aws`` collection. Playbooks using the Fully Qualified Collection Name for this module should be updated to use ``amazon.aws.iam_managed_policy`` (https://github.com/ansible-collections/amazon.aws/pull/1762).
+- iam_mfa_device_info - The module has been migrated from the ``community.aws`` collection. Playbooks using the Fully Qualified Collection Name for this module should be updated to use ``amazon.aws.iam_mfa_device_info`` (https://github.com/ansible-collections/amazon.aws/pull/1761).
+- iam_password_policy - The module has been migrated from the ``community.aws`` collection. Playbooks using the Fully Qualified Collection Name for this module should be updated to use ``amazon.aws.iam_password_policy``.
+- iam_role - The module has been migrated from the ``community.aws`` collection. Playbooks using the Fully Qualified Collection Name for this module should be updated to use ``amazon.aws.iam_role`` (https://github.com/ansible-collections/amazon.aws/pull/1760).
+- iam_role_info - The module has been migrated from the ``community.aws`` collection. Playbooks using the Fully Qualified Collection Name for this module should be updated to use ``amazon.aws.iam_role_info`` (https://github.com/ansible-collections/amazon.aws/pull/1760).
+- s3_bucket_info - The module has been migrated from the ``community.aws`` collection. Playbooks using the Fully Qualified Collection Name for this module should be updated to use ``amazon.aws.s3_bucket_info``.
+- sts_assume_role - The module has been migrated from the ``community.aws`` collection. Playbooks using the Fully Qualified Collection Name for this module should be updated to use ``amazon.aws.sts_assume_role``.
+
+Minor Changes
+-------------
+
+- amazon.aws collection - apply isort code formatting to ensure consistent formatting of code (https://github.com/ansible-collections/amazon.aws/pull/1771).
+- ec2_instance - add support for additional ``placement`` options and ``license_specifications`` in run instance spec (https://github.com/ansible-collections/amazon.aws/issues/1824).
+- ec2_instance_info - add new parameter ``include_attributes`` to describe instance attributes (https://github.com/ansible-collections/amazon.aws/pull/1577).
+- ec2_metadata_facts - use fstrings where appropriate (https://github.com/ansible-collections/amazon.aws/pull/1802).
+- ec2_vpc_igw - Add ability to attach/detach VPC to/from internet gateway (https://github.com/ansible-collections/amazon.aws/pull/1786).
+- ec2_vpc_igw - Add ability to change VPC attached to internet gateway (https://github.com/ansible-collections/amazon.aws/pull/1786).
+- ec2_vpc_igw - Add ability to create an internet gateway without attaching a VPC (https://github.com/ansible-collections/amazon.aws/pull/1786).
+- ec2_vpc_igw - Add ability to delete a vpc internet gateway using the id of the gateway (https://github.com/ansible-collections/amazon.aws/pull/1786).
+- elb_application_lb_info - add new parameters ``include_attributes``, ``include_listeners`` and  ``include_listener_rules`` to optionally speed up module by fetching less information (https://github.com/ansible-collections/amazon.aws/pull/1778).
+- module_utils.botocore - migrate from vendored copy of LooseVersion to packaging.version.Version (https://github.com/ansible-collections/amazon.aws/pull/1587).
+- rds_cluster - Add support for removing cluster from global db (https://github.com/ansible-collections/amazon.aws/pull/1705).
+- rds_cluster - add support for another ``state`` choice called ``started``. This starts the rds cluster (https://github.com/ansible-collections/amazon.aws/pull/1647/files).
+- rds_cluster - add support for another ``state`` choice called ``stopped``. This stops the rds cluster (https://github.com/ansible-collections/amazon.aws/pull/1647/files).
+- route53 - add a ``wait_id`` return value when a change is done (https://github.com/ansible-collections/amazon.aws/pull/1683).
+- route53_health_check - add support for a string list parameter called ``child_health_checks`` to specify health checks that must be healthy for the calculated health check (https://github.com/ansible-collections/amazon.aws/pull/1631).
+- route53_health_check - add support for an integer parameter called ``health_threshold`` to specify the minimum number of healthy child health checks that must be healthy for the calculated health check (https://github.com/ansible-collections/amazon.aws/pull/1631).
+- route53_health_check - add support for another ``type`` choice called ``CALCULATED`` (https://github.com/ansible-collections/amazon.aws/pull/1631).
+- s3_object - Allow recursive copy of objects in S3 bucket (https://github.com/ansible-collections/amazon.aws/issues/1379).
+- s3_object - use fstrings where appropriate (https://github.com/ansible-collections/amazon.aws/pull/1802).
+
+Breaking Changes / Porting Guide
+--------------------------------
+
+- The amazon.aws collection has dropped support for ``botocore<1.29.0`` and ``boto3<1.26.0``. Most modules will continue to work with older versions of the AWS SDK, however compatability with older versions of the SDK is not guaranteed and will not be tested. When using older versions of the SDK a warning will be emitted by Ansible (https://github.com/ansible-collections/amazon.aws/pull/1763).
+- amazon.aws collection - due to the AWS SDKs announcing the end of support for Python less than 3.7 (https://aws.amazon.com/blogs/developer/python-support-policy-updates-for-aws-sdks-and-tools/) support for Python less than 3.7 by this collection wss been deprecated in release 6.0.0 and removed in release 7.0.0. (https://github.com/ansible-collections/amazon.aws/pull/1763).
+- module_utils - ``module_utils.urls`` was previously deprecated and has been removed (https://github.com/ansible-collections/amazon.aws/pull/1540).
+- module_utils._version - vendored copy of distutils.version has been dropped (https://github.com/ansible-collections/amazon.aws/pull/1587).
+
+Deprecated Features
+-------------------
+
+- ec2_instance - deprecation of ``tenancy`` and ``placement_group`` in favor of ``placement`` attribute  (https://github.com/ansible-collections/amazon.aws/pull/1825).
+
+Bugfixes
+--------
+
+- aws_ec2 inventory plugin - fix ``NoRegionError`` when no regions are provided and region isn't specified (https://github.com/ansible-collections/amazon.aws/issues/1551).
+- ec2_instance - retry API call if we get ``InvalidInstanceID.NotFound`` error (https://github.com/ansible-collections/amazon.aws/pull/1650).
+- ec2_vpc_route_table_info - default filters to empty dictionary (https://github.com/ansible-collections/amazon.aws/issues/1668).
+- s3_bucket - fixes issue when deleting a bucket with unversioned objects (https://github.com/ansible-collections/amazon.aws/issues/1533).
+- s3_object - fixed ``NoSuchTagSet`` error when S3 endpoint doesn't support tags (https://github.com/ansible-collections/amazon.aws/issues/1607).
+- s3_object - fixes regression related to objects with a leading ``/`` (https://github.com/ansible-collections/amazon.aws/issues/1548).
+
+New Modules
+-----------
+
+- ec2_import_image - Manage AWS EC2 import image tasks
+- ec2_import_image_info - Gather information about import virtual machine tasks
+- rds_global_cluster_info - Obtain information about Aurora global database clusters
+
+v6.5.4
+======
+
+Release Summary
+---------------
+
+This release includes bugfixes for the ``cloudwatchlogs_log_group_info`` module and the inventory plugins.
+
+Bugfixes
+--------
+
+- cloudwatchlogs_log_group_info - Implement exponential backoff when making API calls to prevent throttling exceptions (https://github.com/ansible-collections/amazon.aws/issues/2011).
+- plugin_utils.inventory - Ensure templated options in lookup plugins are converted (https://github.com/ansible-collections/amazon.aws/issues/1955).
+
+v6.5.3
+======
+
+Release Summary
+---------------
+
+This release includes bugfixes for the``cloudwatchevent_rule`` module and ``secretsmanager_secret`` lookup plugin.
+
+Bugfixes
+--------
+
+- cloudwatchevent_rule - Fix to avoid adding quotes to JSON input for provided input_template (https://github.com/ansible-collections/amazon.aws/pull/1883).
+- lookup/secretsmanager_secret - fix the issue when the nested secret is missing and on_missing is set to warn, the lookup was raising an error instead of a warning message (https://github.com/ansible-collections/amazon.aws/issues/1781).
+
+v6.5.2
+======
+
+Release Summary
+---------------
+
+This release includes a bugfix for the ``amazon.aws.aws_ec2`` inventory plugin when retrieving information for more than 40 instances with ``use_ssm_inventory``.
+
+Bugfixes
+--------
+
+- plugins/inventory/aws_ec2 - Fix failure when retrieving information for more than 40 instances with use_ssm_inventory (https://github.com/ansible-collections/amazon.aws/issues/1713).
+
+v6.5.1
+======
+
+Release Summary
+---------------
+
+This release includes several bugfixes.
+
+Minor Changes
+-------------
+
+- ec2_vpc_subnet - use ``wait_timeout`` to also control maximum time to wait for initial creation of subnets (https://github.com/ansible-collections/amazon.aws/pull/1848).
+
+Bugfixes
+--------
+
+- ec2_instance - retry API call if we get ``InvalidInstanceID.NotFound`` error (https://github.com/ansible-collections/amazon.aws/pull/1650).
+- ec2_vpc_subnet - cleanly handle failure when subnet isn't created in time (https://github.com/ansible-collections/amazon.aws/pull/1848).
+- s3_object - Fix typo that caused false deprecation warning when setting ``overwrite=latest`` (https://github.com/ansible-collections/amazon.aws/pull/1847).
+- s3_object - fixed ``NoSuchTagSet`` error when S3 endpoint doesn't support tags (https://github.com/ansible-collections/amazon.aws/issues/1607).
+- s3_object - when doing a put and specifying ``Content-Type`` in metadata, this module (since 6.0.0) erroneously set the ``Content-Type`` to ``None`` causing the put to fail. Fix now correctly honours the specified ``Content-Type`` (https://github.com/ansible-collections/amazon.aws/issues/1881).
+
+v6.5.0
+======
+
+Release Summary
+---------------
+
+This release is the last planned minor release of ``amazon.aws`` prior to the release of 7.0.0.
+It includes documentation fixes as well as minor changes and bug fixes for the ``ec2_ami`` and ``elb_application_lb_info`` modules.
+
+Minor Changes
+-------------
+
+- ec2_ami - add support for ``org_arns`` and ``org_unit_arns`` in launch_permissions (https://github.com/ansible-collections/amazon.aws/pull/1690).
+- elb_application_lb_info - drop redundant ``describe_load_balancers`` call fetching ``ip_address_type`` (https://github.com/ansible-collections/amazon.aws/pull/1768).
+
+Bugfixes
+--------
+
+- elb_application_lb_info - ensure all API queries use the retry decorator (https://github.com/ansible-collections/amazon.aws/issues/1767).
 
 v6.4.0
 ======
@@ -325,7 +745,6 @@ Release Summary
 
 This release brings few bugfixes.
 
-
 Bugfixes
 --------
 
@@ -345,7 +764,6 @@ Release Summary
 ---------------
 
 This release contains a number of bugfixes, new features and new modules.  This is the last planned minor release prior to the release of version 6.0.0.
-
 
 Minor Changes
 -------------
@@ -440,7 +858,6 @@ Release Summary
 ---------------
 
 A minor release containing bugfixes for the ``ec2_eni_info`` module and the ``aws_rds`` inventory plugin, as well as improvements to the ``rds_instance`` module.
-
 
 Minor Changes
 -------------
@@ -665,7 +1082,6 @@ Release Summary
 
 This release contains a minor bugfix for the ``ec2_vol`` module, some minor work on the ``ec2_key`` module, and various documentation fixes.  This is the last planned release of the 4.x series.
 
-
 Minor Changes
 -------------
 
@@ -704,7 +1120,6 @@ Release Summary
 The amazon.aws 4.3.0 release includes a number of minor bug fixes and improvements.
 Following the release of amazon.aws 5.0.0, backports to the 4.x series will be limited to
 security issues and bugfixes.
-
 
 Minor Changes
 -------------
@@ -859,7 +1274,6 @@ Release Summary
 ---------------
 
 Following the release of amazon.aws 5.0.0, 3.5.0 is a bugfix release and the final planned release for the 3.x series.
-
 
 Minor Changes
 -------------

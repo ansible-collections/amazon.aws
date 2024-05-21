@@ -1,0 +1,127 @@
+- name: Run tests
+  block:
+    - name: Generate private key for local certs
+      community.crypto.openssl_privatekey:
+        path: "{{ item.priv_key }}"
+        type: RSA
+        size: 2048
+      with_items: "{{ local_certs }}"
+
+    - name: Generate an OpenSSL Certificate Signing Request for own certs
+      community.crypto.openssl_csr:
+        path: "{{ item.csr }}"
+        privatekey_path: "{{ item.priv_key }}"
+        common_name: "{{ item.domain }}"
+      with_items: "{{ local_certs }}"
+
+    - name: Generate a Self Signed OpenSSL certificate for own certs
+      community.crypto.x509_certificate:
+        provider: selfsigned
+        path: "{{ item.cert }}"
+        csr_path: "{{ item.csr }}"
+        privatekey_path: "{{ item.priv_key }}"
+        selfsigned_digest: sha256
+      register: cert_create_result
+      with_items: "{{ local_certs }}"
+
+    - name: upload certificates
+      community.aws.acm_certificate:
+        name_tag: "{{ item.name }}"
+        certificate: "{{ lookup('file', item.cert ) }}"
+        private_key: "{{ lookup('file', item.priv_key ) }}"
+        state: present
+        tags:
+          Application: search
+          Environment: development
+        purge_tags: false
+      register: upload
+      with_items: "{{ local_certs }}"
+      until: upload is succeeded
+      retries: 5
+      delay: 10
+
+    - ansible.builtin.set_fact:
+        cert_1_arn: "{{ upload.results[0].certificate.arn }}"
+        cert_2_arn: "{{ upload.results[1].certificate.arn }}"
+
+    - name: Create a target group for testing
+      community.aws.elb_target_group:
+        name: "{{ tg_name }}"
+        protocol: http
+        port: 80
+        vpc_id: "{{ vpc_id }}"
+        state: present
+
+    - name: Create an ALB with listener having multiple certificates
+      amazon.aws.elb_application_lb:
+        name: "{{ alb_name_multiple_listener_test }}"
+        subnets: "{{ public_subnets }}"
+        security_groups: "{{ sec_group.group_id }}"
+        state: present
+        purge_listeners: False
+        listeners:
+          - Protocol: HTTPS
+            Port: 446
+            SslPolicy: ELBSecurityPolicy-TLS13-1-2-2021-06
+            Certificates: # The ARN of the certificate
+              - CertificateArn: "{{ cert_1_arn }}"
+              - CertificateArn: "{{ cert_2_arn }}"
+            DefaultActions:
+              - Type: forward
+                TargetGroupName: "{{ tg_name }}"
+      register: alb
+
+    - name: Gather information about a particular ALB given its ARN #returns only default cert
+      amazon.aws.elb_application_lb_info:
+        load_balancer_arns:
+          - "{{ alb.load_balancer_arn }}"
+      register: alb_info
+
+    - name: obtain information about a certificate 1
+      community.aws.acm_certificate_info:
+        certificate_arn:  "{{ cert_1_arn }}"
+      register: cert_1_info
+
+    - name: obtain information about a certificate 2
+      community.aws.acm_certificate_info:
+        certificate_arn:  "{{ cert_2_arn }}"
+      register: cert_2_info
+
+    - name: Assert that both certificiates are in use by test load balancer
+      ansible.builtin.assert:
+        that:
+          - cert_1_info.certificates[0].in_use_by[0] == alb_info.load_balancers[0].load_balancer_arn
+          - cert_2_info.certificates[0].in_use_by[0] == alb_info.load_balancers[0].load_balancer_arn
+
+  always:
+    - name: Delete test ALB
+      amazon.aws.elb_application_lb:
+        name: "{{ alb_name_multiple_listener_test }}"
+        subnets: "{{ public_subnets }}"
+        security_groups: "{{ sec_group.group_id }}"
+        state: absent
+        purge_listeners: False
+        listeners:
+          - Protocol: HTTPS
+            Port: 446
+            SslPolicy: ELBSecurityPolicy-TLS13-1-2-2021-06
+            Certificates: # The ARN of the certificate
+              - CertificateArn: "{{ cert_1_arn }}"
+              - CertificateArn: "{{ cert_2_arn }}"
+            DefaultActions:
+              - Type: forward
+                TargetGroupName: "{{ tg_name }}"
+      ignore_errors: true
+
+    - name: delete a certificate with a particular ARN
+      community.aws.acm_certificate:
+        certificate_arn: "{{ item }}"
+        state: absent
+      register: delete_acm
+      with_items:
+        - "{{ cert_1_arn }}"
+        - "{{ cert_2_arn }}"
+      retries: 5
+      delay: 5
+      until: delete_acm is not failed
+      ignore_errors: true

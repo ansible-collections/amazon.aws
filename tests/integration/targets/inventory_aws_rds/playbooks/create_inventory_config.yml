@@ -1,16 +1,16 @@
 ---
 - hosts: 127.0.0.1
   connection: local
-  gather_facts: no
+  gather_facts: false
 
   vars:
-    template_name: "../templates/{{ template | default('inventory.j2') }}"
+    template_name: ../templates/{{ template | default('inventory.j2') }}
 
   vars_files:
     - vars/main.yml
 
   tasks:
     - name: write inventory config file
-      copy:
+      ansible.builtin.copy:
         dest: ../test.aws_rds.yml
         content: "{{ lookup('template', template_name) }}"

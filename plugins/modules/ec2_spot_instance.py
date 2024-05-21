@@ -313,22 +313,22 @@ EXAMPLES = r"""
       block_device_mappings:
         - device_name: /dev/sdb
           ebs:
-            delete_on_termination: True
+            delete_on_termination: true
             volume_type: gp3
             volume_size: 5
         - device_name: /dev/sdc
           ebs:
-            delete_on_termination: True
+            delete_on_termination: true
             volume_type: io2
             volume_size: 30
       network_interfaces:
-        - associate_public_ip_address: False
-          delete_on_termination: True
+        - associate_public_ip_address: false
+          delete_on_termination: true
           device_index: 0
       placement:
         availability_zone: us-west-2a
       monitoring:
-        enabled: False
+        enabled: false
     spot_price: 0.002
     tags:
       Environment: Testing
@@ -413,13 +413,14 @@ try:
     import botocore
 except ImportError:
     pass  # Handled by AnsibleAWSModule
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
+
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
-from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
-from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 
 
 def build_launch_specification(launch_spec):

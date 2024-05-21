@@ -1,0 +1,66 @@
+---
+- name: Update Max Session Duration (CHECK MODE)
+  amazon.aws.iam_role:
+    name: "{{ test_role }}"
+    max_session_duration: 43200
+  check_mode: true
+  register: iam_role
+- ansible.builtin.assert:
+    that:
+      - iam_role is changed
+
+- name: Update Max Session Duration
+  amazon.aws.iam_role:
+    name: "{{ test_role }}"
+    max_session_duration: 43200
+  register: iam_role
+- ansible.builtin.assert:
+    that:
+      - iam_role is changed
+      - iam_role.iam_role.role_name == test_role
+      - iam_role.iam_role.max_session_duration == 43200
+
+- name: Update Max Session Duration (no change)
+  amazon.aws.iam_role:
+    name: "{{ test_role }}"
+    max_session_duration: 43200
+  register: iam_role
+- ansible.builtin.assert:
+    that:
+      - iam_role is not changed
+
+- name: Update Max Session Duration (no change) - check mode
+  amazon.aws.iam_role:
+    name: "{{ test_role }}"
+    max_session_duration: 43200
+  register: iam_role
+  check_mode: true
+- ansible.builtin.assert:
+    that:
+      - iam_role is not changed
+
+- name: iam_role_info after updating Max Session Duration
+  amazon.aws.iam_role_info:
+    name: "{{ test_role }}"
+  register: role_info
+- ansible.builtin.assert:
+    that:
+      - role_info is succeeded
+      - role_info.iam_roles | length == 1
+      - role_info.iam_roles[0].arn.startswith("arn")
+      - role_info.iam_roles[0].arn.endswith("role/" + test_role )
+      - '"assume_role_policy_document" in role_info.iam_roles[0]'
+      - '"create_date" in role_info.iam_roles[0]'
+      - '"description" not in role_info.iam_roles[0]'
+      - role_info.iam_roles[0].inline_policies | length == 0
+      - role_info.iam_roles[0].instance_profiles | length == 1
+      - role_info.iam_roles[0].instance_profiles[0].instance_profile_name == test_role
+      - role_info.iam_roles[0].instance_profiles[0].arn.startswith("arn")
+      - role_info.iam_roles[0].instance_profiles[0].arn.endswith("instance-profile/" + test_role)
+      - role_info.iam_roles[0].managed_policies | length == 0
+      - role_info.iam_roles[0].max_session_duration == 43200
+      - role_info.iam_roles[0].path == '/'
+      - '"permissions_boundary" not in role_info.iam_roles[0]'
+      - role_info.iam_roles[0].role_id == iam_role.iam_role.role_id
+      - role_info.iam_roles[0].role_name == test_role
+      - role_info.iam_roles[0].tags | length == 0

@@ -19,20 +19,25 @@ options:
   name:
     description:
       - The name of the IAM user to look for.
+      - C(user_name) was added as an alias in release 7.2.0.
     required: false
     type: str
+    aliases: ["user_name"]
   group:
     description:
       - The group name name of the IAM user to look for. Mutually exclusive with C(path).
+      - C(group_name) was added as an alias in release 7.2.0.
     required: false
     type: str
-  path:
+    aliases: ["group_name"]
+  path_prefix:
     description:
       - The path to the IAM user. Mutually exclusive with C(group).
       - If specified, then would get all user names whose path starts with user provided value.
     required: false
     default: '/'
     type: str
+    aliases: ["path", "prefix"]
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
@@ -98,87 +103,79 @@ iam_users:
             type: dict
             returned: if user exists
             sample: '{"Env": "Prod"}'
+        login_profile:
+            description: Detailed login profile information if the user has access to log in from AWS default console. Returns an empty object {} if no access.
+            returned: always
+            type: dict
+            sample: {"create_date": "2024-03-20T12:50:56+00:00", "password_reset_required": false, "user_name": "i_am_a_user"}
 """
 
-try:
-    from botocore.exceptions import BotoCoreError, ClientError
-except ImportError:
-    pass  # caught by AnsibleAWSModule
-
-from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
-
+from ansible_collections.amazon.aws.plugins.module_utils.iam import AnsibleIAMError
+from ansible_collections.amazon.aws.plugins.module_utils.iam import IAMErrorHandler
+from ansible_collections.amazon.aws.plugins.module_utils.iam import get_iam_group
+from ansible_collections.amazon.aws.plugins.module_utils.iam import get_iam_user
+from ansible_collections.amazon.aws.plugins.module_utils.iam import list_iam_users
+from ansible_collections.amazon.aws.plugins.module_utils.iam import normalize_iam_user
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 
 
-@AWSRetry.exponential_backoff()
-def list_iam_users_with_backoff(client, operation, **kwargs):
-    paginator = client.get_paginator(operation)
-    return paginator.paginate(**kwargs).build_full_result()
+@IAMErrorHandler.list_error_handler("get login profile", {})
+@AWSRetry.jittered_backoff()
+def check_console_access(connection, user_name):
+    return connection.get_login_profile(UserName=user_name)["LoginProfile"]
 
 
-def describe_iam_user(user):
-    tags = boto3_tag_list_to_ansible_dict(user.pop("Tags", []))
-    user = camel_dict_to_snake_dict(user)
-    user["tags"] = tags
-    return user
-
-
-def list_iam_users(connection, module):
-    name = module.params.get("name")
-    group = module.params.get("group")
-    path = module.params.get("path")
-
-    params = dict()
-    iam_users = []
-
-    if not group and not path:
-        if name:
-            params["UserName"] = name
-        try:
-            iam_users.append(connection.get_user(**params)["User"])
-        except is_boto3_error_code("NoSuchEntity"):
-            pass
-        except (ClientError, BotoCoreError) as e:  # pylint: disable=duplicate-except
-            module.fail_json_aws(e, msg=f"Couldn't get IAM user info for user {name}")
+def _list_users(connection, name, group, path):
+    # name but not path or group
+    if name and not (path or group):
+        return [get_iam_user(connection, name)]
 
     if group:
-        params["GroupName"] = group
-        try:
-            iam_users = list_iam_users_with_backoff(connection, "get_group", **params)["Users"]
-        except is_boto3_error_code("NoSuchEntity"):
-            pass
-        except (ClientError, BotoCoreError) as e:  # pylint: disable=duplicate-except
-            module.fail_json_aws(e, msg=f"Couldn't get IAM user info for group {group}")
-        if name:
-            iam_users = [user for user in iam_users if user["UserName"] == name]
+        iam_users = get_iam_group(connection, group)["Users"]
+    else:
+        iam_users = list_iam_users(connection, path=path)
 
-    if path and not group:
-        params["PathPrefix"] = path
-        try:
-            iam_users = list_iam_users_with_backoff(connection, "list_users", **params)["Users"]
-        except is_boto3_error_code("NoSuchEntity"):
-            pass
-        except (ClientError, BotoCoreError) as e:  # pylint: disable=duplicate-except
-            module.fail_json_aws(e, msg=f"Couldn't get IAM user info for path {path}")
-        if name:
-            iam_users = [user for user in iam_users if user["UserName"] == name]
+    if not iam_users:
+        return []
 
-    module.exit_json(iam_users=[describe_iam_user(user) for user in iam_users])
+    # filter by name when a path or group was specified
+    if name:
+        iam_users = [u for u in iam_users if u["UserName"] == name]
+
+    return iam_users
+
+
+def list_users(connection, name, group, path):
+    users = _list_users(connection, name, group, path)
+    users = [u for u in users if u is not None]
+    for user in users:
+        user["LoginProfile"] = check_console_access(connection, user["UserName"])
+    return [normalize_iam_user(user) for user in users]
 
 
 def main():
-    argument_spec = dict(name=dict(), group=dict(), path=dict(default="/"))
-
-    module = AnsibleAWSModule(
-        argument_spec=argument_spec, mutually_exclusive=[["group", "path"]], supports_check_mode=True
+    argument_spec = dict(
+        name=dict(aliases=["user_name"]),
+        group=dict(aliases=["group_name"]),
+        path_prefix=dict(aliases=["path", "prefix"], default="/"),
     )
 
-    connection = module.client("iam")
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        mutually_exclusive=[["group", "path_prefix"]],
+        supports_check_mode=True,
+    )
 
-    list_iam_users(connection, module)
+    name = module.params.get("name")
+    group = module.params.get("group")
+    path = module.params.get("path_prefix")
+
+    connection = module.client("iam")
+    try:
+        module.exit_json(changed=False, iam_users=list_users(connection, name, group, path))
+    except AnsibleIAMError as e:
+        module.fail_json_aws_error(e)
 
 
 if __name__ == "__main__":

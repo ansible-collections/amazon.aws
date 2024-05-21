@@ -40,7 +40,7 @@ EXAMPLES = r"""
 - name: List all EIP addresses for a VM.
   amazon.aws.ec2_eip_info:
     filters:
-       instance-id: i-123456789
+      instance-id: i-123456789
   register: my_vm_eips
 
 - ansible.builtin.debug:
@@ -49,9 +49,9 @@ EXAMPLES = r"""
 - name: List all EIP addresses for several VMs.
   amazon.aws.ec2_eip_info:
     filters:
-       instance-id:
-         - i-123456789
-         - i-987654321
+      instance-id:
+        - i-123456789
+        - i-987654321
   register: my_vms_eips
 
 - name: List all EIP addresses using the 'Name' tag as a filter.
@@ -79,23 +79,63 @@ addresses:
   description: Properties of all Elastic IP addresses matching the provided filters. Each element is a dict with all the information related to an EIP.
   returned: on success
   type: list
-  sample: [{
-        "allocation_id": "eipalloc-64de1b01",
-        "association_id": "eipassoc-0fe9ce90d6e983e97",
-        "domain": "vpc",
-        "instance_id": "i-01020cfeb25b0c84f",
-        "network_interface_id": "eni-02fdeadfd4beef9323b",
-        "network_interface_owner_id": "0123456789",
-        "private_ip_address": "10.0.0.1",
-        "public_ip": "54.81.104.1",
-        "tags": {
+  elements: dict
+  contains:
+    "allocation_id":
+      description: The ID representing the allocation of the address.
+      returned: always
+      type: str
+      sample: "eipalloc-64de1b01"
+    "association_id":
+      description: The ID representing the association of the address with an instance.
+      type: str
+      sample: "eipassoc-0fe9ce90d6e983e97"
+    "domain":
+      description: The network ( vpc).
+      type: str
+      returned: always
+      sample: "vpc"
+    "instance_id":
+      description: The ID of the instance that the address is associated with (if any).
+      returned: if any instance is associated
+      type: str
+      sample: "i-01020cfeb25b0c84f"
+    "network_border_group":
+      description: The name of the unique set of Availability Zones, Local Zones, or Wavelength Zones from which Amazon Web Services advertises IP addresses.
+      returned: if any instance is associated
+      type: str
+      sample: "us-east-1"
+    "network_interface_id":
+      description: The ID of the network interface.
+      returned: if any instance is associated
+      type: str
+      sample: "eni-02fdeadfd4beef9323b"
+    "network_interface_owner_id":
+      description: The ID of the network interface.
+      returned: if any instance is associated
+      type: str
+      sample: "0123456789"
+    "private_ip_address":
+      description: The private IP address associated with the Elastic IP address.
+      returned: always
+      type: str
+      sample: "10.0.0.1"
+    "public_ip":
+      description: The Elastic IP address.
+      returned: if any instance is associated
+      type: str
+      sample: "54.81.104.1"
+    "tags":
+      description: Any tags assigned to the Elastic IP address.
+      type: dict
+      sample: {
             "Name": "test-vm-54.81.104.1"
         }
-    }]
 """
 
 try:
-    from botocore.exceptions import BotoCoreError, ClientError
+    from botocore.exceptions import BotoCoreError
+    from botocore.exceptions import ClientError
 except ImportError:
     pass  # caught by imported AnsibleAWSModule
 
@@ -103,8 +143,8 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 
 
 def get_eips_details(module):

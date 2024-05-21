@@ -1,5 +1,4 @@
 ---
 # defaults file for test_backup_vault
-backup_vault_name: '{{ tiny_prefix }}-backup-vault'
-kms_key_alias: ansible-test-{{ inventory_hostname | replace('_','-') }}{{ tiny_prefix
-  }}
+backup_vault_name: "{{ tiny_prefix }}-backup-vault"
+kms_key_alias: ansible-test-{{ inventory_hostname | replace('_','-') }}{{ tiny_prefix }}

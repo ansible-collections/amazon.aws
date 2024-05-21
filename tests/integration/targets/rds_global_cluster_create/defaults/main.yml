@@ -1,0 +1,13 @@
+---
+# defaults file for rds_global_cluster_create
+
+# Create cluster
+global_cluster_id: global-cluster-{{ resource_prefix }}
+primary_cluster_id: primary-cluster-{{ resource_prefix }}
+primary_instance_id: primary-instance-{{ resource_prefix }}
+secondary_cluster_id: secondary-cluster-{{ resource_prefix }}
+instance_class: db.r5.large
+username: testrdsusername
+password: testrdspassword
+engine: aurora-mysql
+engine_version: 5.7

@@ -1,0 +1,103 @@
+---
+- name: Run tests related to multi-region keys
+  block:
+    # ============================================================
+    #   PREPARATION
+    #
+    # Get some information about who we are before starting our tests
+    # we'll need this as soon as we start working on the policies
+    - name: Get ARN of calling user
+      amazon.aws.aws_caller_info:
+      register: aws_caller_info
+    - name: See whether key exists and its current state
+      amazon.aws.kms_key_info:
+        alias: "{{ kms_key_alias }}"
+    - name: Create a multi region key - check mode
+      amazon.aws.kms_key:
+        alias: "{{ kms_key_alias }}-check"
+        tags:
+          Hello: World
+        state: present
+        multi_region: true
+        enabled: true
+      register: key_check
+      check_mode: true
+    - name: Find facts about the check mode key
+      amazon.aws.kms_key_info:
+        alias: "{{ kms_key_alias }}-check"
+      register: check_key
+    - name: Ensure that check mode worked as expected
+      ansible.builtin.assert:
+        that:
+          - check_key.kms_keys | length == 0
+          - key_check is changed
+
+    - name: Create a multi region key
+      amazon.aws.kms_key:
+        alias: "{{ kms_key_alias }}"
+        tags:
+          Hello: World
+        state: present
+        enabled: true
+        multi_region: true
+        enable_key_rotation: false
+      register: key
+    - name: Assert that state is enabled
+      ansible.builtin.assert:
+        that:
+          - key is changed
+          - '"key_id" in key'
+          - key.key_id | length >= 36
+          - not key.key_id.startswith("arn:aws")
+          - '"key_arn" in key'
+          - key.key_arn.endswith(key.key_id)
+          - key.key_arn.startswith("arn:aws")
+          - key.key_state == "Enabled"
+          - key.enabled == True
+          - key.tags | length == 1
+          - key.tags['Hello'] == 'World'
+          - key.enable_key_rotation == false
+          - key.key_usage == 'ENCRYPT_DECRYPT'
+          - key.customer_master_key_spec == 'SYMMETRIC_DEFAULT'
+          - key.grants | length == 0
+          - key.key_policies | length == 1
+          - key.key_policies[0].Id == 'key-default-1'
+          - key.description == ''
+          - key.multi_region == True
+
+    - name: Sleep to wait for updates to propagate
+      ansible.builtin.wait_for:
+        timeout: 45
+
+    - name: Create a key (expect failure)
+      amazon.aws.kms_key:
+        alias: "{{ kms_key_alias }}"
+        tags:
+          Hello: World
+        state: present
+        enabled: true
+        multi_region: true
+      register: result
+      ignore_errors: true # noqa: ignore-errors
+
+    - name: Assert that we failed with a friendly message
+      ansible.builtin.assert:
+        that:
+          - result is failed
+          - result.msg != "MODULE FAILURE"
+          - result.changed == False
+          - '"You cannot change the multi-region property on an existing key." in result.msg'
+
+  always:
+    # ============================================================
+    #   CLEAN-UP
+    - name: Finish off by deleting keys
+      amazon.aws.kms_key:
+        state: absent
+        alias: "{{ item }}"
+        pending_window: 7
+      ignore_errors: true # noqa: ignore-errors
+      loop:
+        - "{{ kms_key_alias }}"
+        - "{{ kms_key_alias }}-diff-spec-usage"
+        - "{{ kms_key_alias }}-check"

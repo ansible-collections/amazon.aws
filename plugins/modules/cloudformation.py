@@ -57,6 +57,8 @@ options:
         must be specified (but only one of them).
       - If I(state=present), the stack does exist, and neither I(template),
         I(template_body) nor I(template_url) are specified, the previous template will be reused.
+      - The I(template) parameter has been deprecated and will be remove in a release after
+        2026-05-01.  It is recommended to use I(template_body) with the lookup plugin.
     type: path
   notification_arns:
     description:
@@ -172,7 +174,9 @@ EXAMPLES = r"""
     state: "present"
     region: "us-east-1"
     disable_rollback: true
-    template: "files/cloudformation-example.json"
+    # The template parameter has been deprecated, use template_body with lookup instead.
+    # template: "files/cloudformation-example.json"
+    template_body: "{{ lookup('file', 'cloudformation-example.json') }}"
     template_parameters:
       KeyName: "jmartin"
       DiskType: "ephemeral"
@@ -188,7 +192,9 @@ EXAMPLES = r"""
     state: "present"
     region: "us-east-1"
     disable_rollback: true
-    template: "roles/cloudformation/files/cloudformation-example.json"
+    # The template parameter has been deprecated, use template_body with lookup instead.
+    # template: "roles/cloudformation/files/cloudformation-example.json"
+    template_body: "{{ lookup('file', 'cloudformation-example.json') }}"
     role_arn: 'arn:aws:iam::123456789012:role/cloudformation-iam-role'
 
 - name: delete a stack
@@ -241,10 +247,10 @@ EXAMPLES = r"""
     template: "files/cloudformation-example.json"
     template_parameters:
       DBSnapshotIdentifier:
-        use_previous_value: True
+        use_previous_value: true
         value: arn:aws:rds:es-east-1:123456789012:snapshot:rds:my-db-snapshot
       DBName:
-        use_previous_value: True
+        use_previous_value: true
     tags:
       Stack: "ansible-cloudformation"
 
@@ -333,15 +339,23 @@ except ImportError:
 from ansible.module_utils._text import to_bytes
 from ansible.module_utils._text import to_native
 
-from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import boto_exception
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_message
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import boto_exception
 
-# Set a default, mostly for our integration tests.  This will be overridden in
-# the main() loop to match the parameters we're passed
-retry_decorator = AWSRetry.jittered_backoff()
+
+@AWSRetry.jittered_backoff()
+def _search_events(cfn, stack_name, events_limit, token_filter):
+    pg = cfn.get_paginator("describe_stack_events").paginate(
+        StackName=stack_name,
+        PaginationConfig={"MaxItems": events_limit},
+    )
+    if token_filter is None:
+        return list(pg.search("StackEvents[*]"))
+
+    return list(pg.search(f"StackEvents[?ClientRequestToken == '{token_filter}']"))
 
 
 def get_stack_events(cfn, stack_name, events_limit, token_filter=None):
@@ -349,13 +363,7 @@ def get_stack_events(cfn, stack_name, events_limit, token_filter=None):
     ret = {"events": [], "log": []}
 
     try:
-        pg = cfn.get_paginator("describe_stack_events").paginate(
-            StackName=stack_name, PaginationConfig={"MaxItems": events_limit}
-        )
-        if token_filter is not None:
-            events = list(retry_decorator(pg.search)(f"StackEvents[?ClientRequestToken == '{token_filter}']"))
-        else:
-            events = list(pg.search("StackEvents[*]"))
+        events = _search_events(cfn, stack_name, events_limit, token_filter)
     except is_boto3_error_message("does not exist"):
         ret["log"].append("Stack does not exist.")
         return ret
@@ -640,7 +648,13 @@ def main():
         stack_name=dict(required=True),
         template_parameters=dict(required=False, type="dict", default={}),
         state=dict(default="present", choices=["present", "absent"]),
-        template=dict(default=None, required=False, type="path"),
+        template=dict(
+            default=None,
+            required=False,
+            type="path",
+            removed_at_date="2026-05-01",
+            removed_from_collection="amazon.aws",
+        ),
         notification_arns=dict(default=None, required=False),
         stack_policy=dict(default=None, required=False),
         stack_policy_body=dict(default=None, required=False, type="json"),

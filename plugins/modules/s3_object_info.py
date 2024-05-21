@@ -642,7 +642,7 @@ def list_bucket_objects(connection, module, bucket_name):
 
     if len(list_objects_response) != 0:
         # convert to snake_case
-        for response_list_item in list_objects_response["Contents"]:
+        for response_list_item in list_objects_response.get("Contents", []):
             result.append(response_list_item["Key"])
 
     return result
@@ -741,8 +741,10 @@ def main():
             result.append(object_details)
         elif object_name is None:
             object_list = list_bucket_objects(connection, module, bucket_name)
-            for object in object_list:
-                result.append(get_object_details(connection, module, bucket_name, object, requested_object_details))
+            for bucket_object in object_list:
+                result.append(
+                    get_object_details(connection, module, bucket_name, bucket_object, requested_object_details)
+                )
 
     elif not requested_object_details and object_name:
         # if specific details are not requested, return object metadata

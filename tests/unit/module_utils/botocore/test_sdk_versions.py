@@ -3,24 +3,23 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-import pytest
 import warnings
 from unittest.mock import sentinel
 
+import pytest
+
 try:
-    import botocore
     import boto3
+    import botocore
 except ImportError:
     # Handled by HAS_BOTO3
     pass
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOTO3
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import botocore_at_least
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import boto3_at_least
-
-from ansible_collections.amazon.aws.plugins.module_utils.exceptions import AnsibleBotocoreError
-
 from ansible_collections.amazon.aws.plugins.module_utils import botocore as botocore_utils
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOTO3
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import boto3_at_least
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import botocore_at_least
+from ansible_collections.amazon.aws.plugins.module_utils.exceptions import AnsibleBotocoreError
 
 DUMMY_VERSION = "5.5.5.5"
 

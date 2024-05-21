@@ -1,0 +1,180 @@
+---
+# ------------------------------------------------------------------------------------------
+## Test tags creation / updates
+- name: Add Tag (check mode)
+  amazon.aws.iam_user:
+    name: "{{ test_user }}"
+    state: present
+    tags:
+      TagA: ValueA
+  register: iam_user
+  check_mode: true
+- name: Assert would change
+  ansible.builtin.assert:
+    that:
+      - iam_user is changed
+
+- name: Add Tag
+  amazon.aws.iam_user:
+    name: "{{ test_user }}"
+    state: present
+    tags:
+      TagA: ValueA
+  register: iam_user
+- name: Assert tags updated
+  ansible.builtin.assert:
+    that:
+      - iam_user is changed
+      - iam_user.iam_user.user.user_name == test_user
+      - iam_user.iam_user.user.tags | length == 1
+      - '"TagA" in iam_user.iam_user.user.tags'
+      - iam_user.iam_user.user.tags.TagA == "ValueA"
+
+- name: Add Tag (no change - check mode)
+  amazon.aws.iam_user:
+    name: "{{ test_user }}"
+    state: present
+    tags:
+      TagA: ValueA
+  register: iam_user
+  check_mode: true
+- name: Assert would not change
+  ansible.builtin.assert:
+    that:
+      - iam_user is not changed
+
+- name: Add Tag (no change)
+  amazon.aws.iam_user:
+    name: "{{ test_user }}"
+    state: present
+    tags:
+      TagA: ValueA
+  register: iam_user
+- name: Assert no change
+  ansible.builtin.assert:
+    that:
+      - iam_user is not changed
+      - iam_user.iam_user.user.user_name == test_user
+      - iam_user.iam_user.user.tags | length == 1
+      - '"TagA" in iam_user.iam_user.user.tags'
+      - iam_user.iam_user.user.tags.TagA == "ValueA"
+
+- name: Extend Tags
+  amazon.aws.iam_user:
+    name: "{{ test_user }}"
+    state: present
+    purge_tags: false
+    tags:
+      tag_b: value_b
+      Tag C: Value C
+      tag d: value d
+  register: iam_user
+- name: Assert tags updated
+  ansible.builtin.assert:
+    that:
+      - iam_user is changed
+      - iam_user.iam_user.user.user_name == test_user
+      - iam_user.iam_user.user.tags | length == 4
+      - '"TagA" in iam_user.iam_user.user.tags'
+      - '"tag_b" in iam_user.iam_user.user.tags'
+      - '"Tag C" in iam_user.iam_user.user.tags'
+      - '"tag d" in iam_user.iam_user.user.tags'
+      - iam_user.iam_user.user.tags.TagA == "ValueA"
+      - iam_user.iam_user.user.tags.tag_b == "value_b"
+      - iam_user.iam_user.user.tags["Tag C"] == "Value C"
+      - iam_user.iam_user.user.tags["tag d"] == "value d"
+
+- name: Create user without Tag (no change)
+  amazon.aws.iam_user:
+    name: "{{ test_user }}"
+    state: present
+  register: iam_user
+- name: Assert user created
+  ansible.builtin.assert:
+    that:
+      - iam_user is not changed
+      - iam_user.iam_user.user.user_name == test_user
+      - iam_user.iam_user.user.tags | length == 4
+
+- name: Remove all Tags (check mode)
+  amazon.aws.iam_user:
+    name: "{{ test_user }}"
+    state: present
+    tags: {}
+  check_mode: true
+  register: iam_user
+- name: Assert tags would be removed
+  ansible.builtin.assert:
+    that:
+      - iam_user is changed
+
+- name: Remove 3 Tags
+  amazon.aws.iam_user:
+    name: "{{ test_user }}"
+    state: present
+    tags:
+      TagA: ValueA
+  register: iam_user
+- name: Assert tags removed
+  ansible.builtin.assert:
+    that:
+      - iam_user is changed
+      - iam_user.iam_user.user.user_name == test_user
+      - iam_user.iam_user.user.tags | length == 1
+      - '"TagA" in iam_user.iam_user.user.tags'
+      - iam_user.iam_user.user.tags.TagA == "ValueA"
+
+- name: Change Tag (check mode)
+  amazon.aws.iam_user:
+    name: "{{ test_user }}"
+    state: present
+    tags:
+      TagA: AnotherValueA
+  register: iam_user
+  check_mode: true
+- name: Assert tag would be updated
+  ansible.builtin.assert:
+    that:
+      - iam_user is changed
+
+- name: Change Tag
+  amazon.aws.iam_user:
+    name: "{{ test_user }}"
+    state: present
+    tags:
+      TagA: AnotherValueA
+  register: iam_user
+- name: Assert tag was updated
+  ansible.builtin.assert:
+    that:
+      - iam_user is changed
+      - iam_user.iam_user.user.user_name == test_user
+      - iam_user.iam_user.user.tags | length == 1
+      - '"TagA" in iam_user.iam_user.user.tags'
+      - iam_user.iam_user.user.tags.TagA == "AnotherValueA"
+
+- name: Remove All Tags
+  amazon.aws.iam_user:
+    name: "{{ test_user }}"
+    state: present
+    tags: {}
+  register: iam_user
+- name: Assert all tags removed
+  ansible.builtin.assert:
+    that:
+      - iam_user is changed
+      - iam_user.iam_user.user.user_name == test_user
+      - iam_user.iam_user.user.tags | length == 0
+
+- name: Remove All Tags (no change)
+  amazon.aws.iam_user:
+    name: "{{ test_user }}"
+    state: present
+    tags: {}
+  register: iam_user
+- name: Assert no change
+  ansible.builtin.assert:
+    that:
+      - iam_user is not changed
+      - iam_user.iam_user.user.user_name == test_user
+      - iam_user.iam_user.user.tags | length == 0

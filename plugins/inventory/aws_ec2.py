@@ -154,6 +154,8 @@ plugin: amazon.aws.aws_ec2
 regions:
   - us-east-1
 
+---
+
 # Example using filters, ignoring permission errors, and specifying the hostname precedence
 plugin: amazon.aws.aws_ec2
 # The values for profile, access key, secret key and token can be hardcoded like:
@@ -165,15 +167,16 @@ regions:
   - us-east-1
   - us-east-2
 filters:
-  # All instances with their `Environment` tag set to `dev`
-  tag:Environment: dev
+  ## All instances with their `Environment` tag set to `dev`
+  # tag:Environment: dev
+
   # All dev and QA hosts
   tag:Environment:
     - dev
     - qa
   instance.group-id: sg-xxxxxxxx
 # Ignores 403 errors rather than failing
-strict_permissions: False
+strict_permissions: false
 # Note: I(hostnames) sets the inventory_hostname. To modify ansible_host without modifying
 # inventory_hostname use compose (see example below).
 hostnames:
@@ -189,7 +192,9 @@ hostnames:
     prefix: 'aws'
 
 # Returns all the hostnames for a given instance
-allow_duplicated_hosts: False
+allow_duplicated_hosts: false
+
+---
 
 # Example using constructed features to create groups and set ansible_host
 plugin: amazon.aws.aws_ec2
@@ -197,7 +202,7 @@ regions:
   - us-east-1
   - us-west-1
 # keyed_groups may be used to create custom groups
-strict: False
+strict: false
 keyed_groups:
   # Add e.g. x86_64 hosts to an arch_x86_64 group
   - prefix: arch
@@ -227,19 +232,23 @@ compose:
   # (note: this does not modify inventory_hostname, which is set via I(hostnames))
   ansible_host: private_ip_address
 
+---
+
 # Example using include_filters and exclude_filters to compose the inventory.
 plugin: amazon.aws.aws_ec2
 regions:
   - us-east-1
   - us-west-1
 include_filters:
-- tag:Name:
-  - 'my_second_tag'
-- tag:Name:
-  - 'my_third_tag'
+  - tag:Name:
+      - 'my_second_tag'
+  - tag:Name:
+      - 'my_third_tag'
 exclude_filters:
-- tag:Name:
-  - 'my_first_tag'
+  - tag:Name:
+      - 'my_first_tag'
+
+---
 
 # Example using groups to assign the running hosts to a group based on vpc_id
 plugin: amazon.aws.aws_ec2
@@ -257,6 +266,9 @@ compose:
   ansible_host: public_dns_name
 groups:
   libvpc: vpc_id == 'vpc-####'
+
+---
+
 # Define prefix and suffix for host variables coming from AWS.
 plugin: amazon.aws.aws_ec2
 regions:
@@ -275,12 +287,10 @@ except ImportError:
 from ansible.module_utils._text import to_text
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.plugin_utils.inventory import AWSInventoryBase
-
 
 # The mappings give an array of keys to get from the filter name to the value
 # returned by boto3's EC2 describe_instances method.
@@ -623,17 +633,17 @@ class InventoryModule(AWSInventoryBase):
         """
         instances = []
         ids_to_ignore = []
-        for filter in exclude_filters:
+        for filter_dict in exclude_filters:
             for i in self._get_instances_by_region(
                 regions,
-                ansible_dict_to_boto3_filter_list(filter),
+                ansible_dict_to_boto3_filter_list(filter_dict),
                 strict_permissions,
             ):
                 ids_to_ignore.append(i["InstanceId"])
-        for filter in include_filters:
+        for filter_dict in include_filters:
             for i in self._get_instances_by_region(
                 regions,
-                ansible_dict_to_boto3_filter_list(filter),
+                ansible_dict_to_boto3_filter_list(filter_dict),
                 strict_permissions,
             ):
                 if i["InstanceId"] not in ids_to_ignore:
@@ -649,8 +659,8 @@ class InventoryModule(AWSInventoryBase):
         return {"aws_ec2": instances}
 
     def _add_ssm_information(self, connection, instances):
-        filters = [{"Key": "AWS:InstanceInformation.InstanceId", "Values": [x["InstanceId"] for x in instances]}]
-        result = _get_ssm_information(connection, filters)
+        instance_ids = [x["InstanceId"] for x in instances]
+        result = self._get_multiple_ssm_inventories(connection, instance_ids)
         for entity in result.get("Entities", []):
             for x in instances:
                 if x["InstanceId"] == entity["Id"]:
@@ -658,6 +668,19 @@ class InventoryModule(AWSInventoryBase):
                     if content:
                         x["SsmInventory"] = content[0]
                     break
+
+    def _get_multiple_ssm_inventories(self, connection, instance_ids):
+        result = {}
+        # SSM inventory filters Values list can contain a maximum of 40 items so we need to retrieve 40 at a time
+        # https://docs.aws.amazon.com/systems-manager/latest/APIReference/API_InventoryFilter.html
+        while len(instance_ids) > 40:
+            filters = [{"Key": "AWS:InstanceInformation.InstanceId", "Values": instance_ids[:40]}]
+            result.update(_get_ssm_information(connection, filters))
+            instance_ids = instance_ids[40:]
+        if instance_ids:
+            filters = [{"Key": "AWS:InstanceInformation.InstanceId", "Values": instance_ids}]
+            result.update(_get_ssm_information(connection, filters))
+        return result
 
     def _populate(
         self,
@@ -782,8 +805,8 @@ class InventoryModule(AWSInventoryBase):
 
         if self.get_option("include_extra_api_calls"):
             self.display.deprecate(
-                "The include_extra_api_calls option has been deprecated and will be removed in release 6.0.0.",
-                date="2024-09-01",
+                "The include_extra_api_calls option has been deprecated and will be removed in release 9.0.0.",
+                version="9.0.0",
                 collection_name="amazon.aws",
             )
 

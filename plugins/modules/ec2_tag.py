@@ -63,7 +63,7 @@ EXAMPLES = r"""
 
 - name: Ensure all volumes are tagged
   amazon.aws.ec2_tag:
-    region:  eu-west-1
+    region: eu-west-1
     resource: '{{ item.id }}'
     state: present
     tags:
@@ -92,7 +92,7 @@ EXAMPLES = r"""
     region: eu-west-1
     resource: i-xxxxxxxxxxxxxxxxx
     tags:
-        Name: ''
+      Name: ''
     state: absent
     purge_tags: true
 """
@@ -112,11 +112,11 @@ removed_tags:
   type: dict
 """
 
-from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_ec2_tags
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import remove_ec2_tags
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
 
 
 def main():

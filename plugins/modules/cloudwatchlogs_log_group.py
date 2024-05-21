@@ -72,12 +72,16 @@ EXAMPLES = r"""
 - amazon.aws.cloudwatchlogs_log_group:
     state: present
     log_group_name: test-log-group
-    tags: { "Name": "test-log-group", "Env" : "QA" }
+    tags:
+      Name: "test-log-group"
+      Env: "QA"
 
 - amazon.aws.cloudwatchlogs_log_group:
     state: present
     log_group_name: test-log-group
-    tags: { "Name": "test-log-group", "Env" : "QA" }
+    tags:
+      Name: "test-log-group"
+      Env: QA
     kms_key_id: arn:aws:kms:region:account-id:key/key-id
 
 - amazon.aws.cloudwatchlogs_log_group:
@@ -134,8 +138,8 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
 
 

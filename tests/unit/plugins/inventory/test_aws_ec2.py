@@ -17,8 +17,11 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 
+from unittest.mock import MagicMock
+from unittest.mock import call
+from unittest.mock import patch
+
 import pytest
-from unittest.mock import MagicMock, patch, call
 
 try:
     import botocore
@@ -27,13 +30,12 @@ except ImportError:
     pass
 
 from ansible.errors import AnsibleError
-from ansible_collections.amazon.aws.plugins.inventory.aws_ec2 import (
-    InventoryModule,
-    _get_tag_hostname,
-    _prepare_host_vars,
-    _compile_values,
-    _get_boto_attr_chain,
-)
+
+from ansible_collections.amazon.aws.plugins.inventory.aws_ec2 import InventoryModule
+from ansible_collections.amazon.aws.plugins.inventory.aws_ec2 import _compile_values
+from ansible_collections.amazon.aws.plugins.inventory.aws_ec2 import _get_boto_attr_chain
+from ansible_collections.amazon.aws.plugins.inventory.aws_ec2 import _get_tag_hostname
+from ansible_collections.amazon.aws.plugins.inventory.aws_ec2 import _prepare_host_vars
 
 
 @pytest.fixture()
@@ -238,6 +240,7 @@ def test_get_tag_hostname(preference, instance, expected):
 )
 def test_inventory_build_include_filters(inventory, _options, expected):
     inventory._options = _options
+    inventory.templar = None
     assert inventory.build_include_filters() == expected
 
 
@@ -649,3 +652,39 @@ def test_inventory__add_ssm_information(m_get_ssm_information, inventory):
 
     filters = [{"Key": "AWS:InstanceInformation.InstanceId", "Values": [x["InstanceId"] for x in instances]}]
     m_get_ssm_information.assert_called_once_with(connection, filters)
+
+
+@patch("ansible_collections.amazon.aws.plugins.inventory.aws_ec2._get_ssm_information")
+def test_inventory__get_multiple_ssm_inventories(m_get_ssm_information, inventory):
+    instances = [{"InstanceId": f"i-00{i}", "Name": f"instance {i}"} for i in range(41)]
+    result = {
+        "StatusCode": 200,
+        "Entities": [
+            {
+                "Id": f"i-00{i}",
+                "Data": {
+                    "AWS:InstanceInformation": {
+                        "Content": [{"os_type": "Linux", "os_name": "Fedora", "os_version": 37}]
+                    }
+                },
+            }
+            for i in range(41)
+        ],
+    }
+    m_get_ssm_information.return_value = result
+
+    connection = MagicMock()
+
+    expected = [
+        {
+            "InstanceId": f"i-00{i}",
+            "Name": f"instance {i}",
+            "SsmInventory": {"os_type": "Linux", "os_name": "Fedora", "os_version": 37},
+        }
+        for i in range(41)
+    ]
+
+    inventory._add_ssm_information(connection, instances)
+    assert expected == instances
+
+    assert 2 == m_get_ssm_information.call_count

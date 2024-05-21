@@ -258,6 +258,7 @@ options:
   tenancy:
     description:
       - What type of tenancy to allow an instance to use. Default is shared tenancy. Dedicated tenancy will incur additional charges.
+      - This field is deprecated and will be removed in a release after 2025-12-01, use I(placement) instead.
     choices: ['dedicated', 'default']
     type: str
   termination_protection:
@@ -325,7 +326,60 @@ options:
   placement_group:
     description:
       - The placement group that needs to be assigned to the instance.
+      - This field is deprecated and will be removed in a release after 2025-12-01, use I(placement) instead.
     type: str
+  placement:
+    description:
+      - The location where the instance launched, if applicable.
+    type: dict
+    version_added: 7.0.0
+    suboptions:
+      affinity:
+        description: The affinity setting for the instance on the Dedicated Host.
+        type: str
+        required: false
+      availability_zone:
+        description: The Availability Zone of the instance.
+        type: str
+        required: false
+      group_name:
+        description: The name of the placement group the instance is in.
+        type: str
+        required: false
+      host_id:
+        description: The ID of the Dedicated Host on which the instance resides.
+        type: str
+        required: false
+      host_resource_group_arn:
+        description: The ARN of the host resource group in which to launch the instances.
+        type: str
+        required: false
+      partition_number:
+        description: The number of the partition the instance is in.
+        type: int
+        required: false
+      tenancy:
+        description:
+          - Type of tenancy to allow an instance to use. Default is shared tenancy. Dedicated tenancy will incur additional charges.
+          - Support for I(tenancy=host) was added in amazon.aws 7.6.0.
+        type: str
+        required: false
+        choices: ['dedicated', 'default', 'host']
+  license_specifications:
+    description:
+      - The license specifications to be used for the instance.
+    type: list
+    elements: dict
+    suboptions:
+      license_configuration_arn:
+        description: The Amazon Resource Name (ARN) of the license configuration.
+        type: str
+        required: true
+  additional_info:
+    description:
+      - Reserved for Amazon's internal use.
+    type: str
+    version_added: 7.1.0
   metadata_options:
     description:
       - Modify the metadata options for the instance.
@@ -438,12 +492,12 @@ EXAMPLES = r"""
       Environment: Testing
     instance_type: c4.large
     volumes:
-    - device_name: /dev/sda1
-      ebs:
-        delete_on_termination: true
+      - device_name: /dev/sda1
+        ebs:
+          delete_on_termination: true
     cpu_options:
-        core_count: 1
-        threads_per_core: 1
+      core_count: 1
+      threads_per_core: 1
 
 - name: start an instance and have it begin a Tower callback on boot
   amazon.aws.ec2_instance:
@@ -474,9 +528,9 @@ EXAMPLES = r"""
     tags:
       Env: "eni_on"
     volumes:
-    - device_name: /dev/sda1
-      ebs:
-        delete_on_termination: true
+      - device_name: /dev/sda1
+        ebs:
+          delete_on_termination: true
     instance_type: t2.micro
     image_id: ami-123456
 
@@ -532,6 +586,22 @@ EXAMPLES = r"""
     state: present
     tags:
       foo: bar
+
+# launches a mac instance with HostResourceGroupArn and LicenseSpecifications
+- name: start a mac instance with a host resource group and license specifications
+  amazon.aws.ec2_instance:
+    name: "mac-compute-instance"
+    key_name: "prod-ssh-key"
+    vpc_subnet_id: subnet-5ca1ab1e
+    instance_type: mac1.metal
+    security_group: default
+    placement:
+      host_resource_group_arn: arn:aws:resource-groups:us-east-1:123456789012:group/MyResourceGroup
+    license_specifications:
+      - license_configuration_arn: arn:aws:license-manager:us-east-1:123456789012:license-configuration:lic-0123456789
+    image_id: ami-123456
+    tags:
+      Environment: Testing
 """
 
 RETURN = r"""
@@ -603,16 +673,67 @@ instances:
                             returned: always
                             type: str
                             sample: vol-12345678
+        capacity_reservation_specification:
+            description: Information about the Capacity Reservation targeting option.
+            type: complex
+            contains:
+                capacity_reservation_preference:
+                    description: Describes the Capacity Reservation preferences.
+                    type: str
+                    sample: open
         client_token:
             description: The idempotency token you provided when you launched the instance, if applicable.
             returned: always
             type: str
             sample: mytoken
+        cpu_options:
+            description: The CPU options for the instance.
+            type: complex
+            contains:
+                core_count:
+                    description: The number of CPU cores for the instance.
+                    type: int
+                    sample: 1
+                threads_per_core:
+                    description: The number of threads per CPU core.
+                    type: int
+                    sample: 2
+                amd_sev_snp:
+                    description: Indicates whether the instance is enabled for AMD SEV-SNP.
+                    type: str
+                    sample: enabled
+        current_instance_boot_mode:
+            description: The boot mode that is used to boot the instance at launch or start.
+            type: str
+            sample: legacy-bios
         ebs_optimized:
             description: Indicates whether the instance is optimized for EBS I/O.
             returned: always
             type: bool
             sample: false
+        ena_support:
+            description: Specifies whether enhanced networking with ENA is enabled.
+            returned: always
+            type: bool
+            sample: true
+        enclave_options:
+            description: Indicates whether the instance is enabled for Amazon Web Services Nitro Enclaves.
+            type: dict
+            contains:
+                enabled:
+                    description: If this parameter is set to true, the instance is enabled for Amazon Web Services Nitro Enclaves.
+                    returned: always
+                    type: bool
+                    sample: false
+        hibernation_options:
+            description: Indicates whether the instance is enabled for hibernation.
+            type: dict
+            contains:
+                configured:
+                    description: If true, your instance is enabled for hibernation; otherwise, it is not enabled for hibernation.
+                    returned: always
+                    type: bool
+                    sample: false
         hypervisor:
             description: The hypervisor type of the instance.
             returned: always
@@ -658,6 +779,46 @@ instances:
             returned: always
             type: str
             sample: "2017-03-23T22:51:24+00:00"
+        licenses:
+            description: The license configurations for the instance.
+            returned: When license specifications are provided.
+            type: list
+            elements: dict
+            contains:
+                license_configuration_arn:
+                    description: The Amazon Resource Name (ARN) of the license configuration.
+                    returned: always
+                    type: str
+                    sample: arn:aws:license-manager:us-east-1:123456789012:license-configuration:lic-0123456789
+        metadata_options:
+            description: The metadata options for the instance.
+            returned: always
+            type: complex
+            contains:
+                http_endpoint:
+                    description: Indicates whether the HTTP metadata endpoint on your instances is enabled or disabled.
+                    type: str
+                    sample: enabled
+                http_protocol_ipv6:
+                    description: Indicates whether the IPv6 endpoint for the instance metadata service is enabled or disabled.
+                    type: str
+                    sample: disabled
+                http_put_response_hop_limit:
+                    description: The maximum number of hops that the metadata token can travel.
+                    type: int
+                    sample: 1
+                http_tokens:
+                    description: Indicates whether IMDSv2 is required.
+                    type: str
+                    sample: optional
+                instance_metadata_tags:
+                    description: Indicates whether access to instance tags from the instance metadata is enabled or disabled.
+                    type: str
+                    sample: disabled
+                state:
+                    description: The state of the metadata option changes.
+                    type: str
+                    sample: applied
         monitoring:
             description: The monitoring for the instance.
             returned: always
@@ -671,7 +832,8 @@ instances:
         network_interfaces:
             description: One or more network interfaces for the instance.
             returned: always
-            type: complex
+            type: list
+            elements: dict
             contains:
                 association:
                     description: The association information for an Elastic IPv4 associated with the network interface.
@@ -718,6 +880,11 @@ instances:
                             returned: always
                             type: int
                             sample: 0
+                        network_card_index:
+                            description: The index of the network card.
+                            returned: always
+                            type: int
+                            sample: 0
                         status:
                             description: The attachment state.
                             returned: always
@@ -744,6 +911,11 @@ instances:
                             returned: always
                             type: str
                             sample: mygroup
+                interface_type:
+                    description: The type of network interface.
+                    returned: always
+                    type: str
+                    sample: interface
                 ipv6_addresses:
                     description: One or more IPv6 addresses associated with the network interface.
                     returned: always
@@ -770,6 +942,11 @@ instances:
                     returned: always
                     type: str
                     sample: 01234567890
+                private_dns_name:
+                    description: The private DNS hostname name assigned to the instance.
+                    type: str
+                    returned: always
+                    sample: ip-10-1-0-156.ec2.internal
                 private_ip_address:
                     description: The IPv4 address of the network interface within the subnet.
                     returned: always
@@ -783,7 +960,6 @@ instances:
                     contains:
                         association:
                             description: The association information for an Elastic IP address (IPv4) associated with the network interface.
-                            returned: always
                             type: complex
                             contains:
                                 ip_owner_id:
@@ -806,6 +982,11 @@ instances:
                             returned: always
                             type: bool
                             sample: true
+                        private_dns_name:
+                            description: The private DNS hostname name assigned to the instance.
+                            type: str
+                            returned: always
+                            sample: ip-10-1-0-156.ec2.internal
                         private_ip_address:
                             description: The private IPv4 address of the network interface.
                             returned: always
@@ -841,21 +1022,67 @@ instances:
                     returned: always
                     type: str
                     sample: ap-southeast-2a
+                affinity:
+                    description: The affinity setting for the instance on the Dedicated Host.
+                    returned: When a placement group is specified.
+                    type: str
+                group_id:
+                    description: The ID of the placement group the instance is in (for cluster compute instances).
+                    type: str
+                    sample: "pg-01234566"
                 group_name:
                     description: The name of the placement group the instance is in (for cluster compute instances).
                     returned: always
                     type: str
-                    sample: ""
+                    sample: "my-placement-group"
+                host_id:
+                    description: The ID of the Dedicated Host on which the instance resides.
+                    type: str
+                host_resource_group_arn:
+                    description:  The ARN of the host resource group in which the instance is in.
+                    type: str
+                    sample: "arn:aws:resource-groups:us-east-1:123456789012:group/MyResourceGroup"
+                partition_number:
+                    description: The number of the partition the instance is in.
+                    type: int
+                    sample: 1
                 tenancy:
-                    description: The tenancy of the instance (if the instance is running in a VPC).
+                    description: Type of tenancy to allow an instance to use. Default is shared tenancy. Dedicated tenancy will incur additional charges.
                     returned: always
                     type: str
                     sample: default
+        additional_info:
+            description: Reserved for Amazon's internal use.
+            returned: always
+            type: str
+            version_added: 7.1.0
+            sample:
+        platform_details:
+            description: The platform details value for the instance.
+            returned: always
+            type: str
+            sample: Linux/UNIX
         private_dns_name:
             description: The private DNS name.
             returned: always
             type: str
             sample: ip-10-0-0-1.ap-southeast-2.compute.internal
+        private_dns_name_options:
+            description: The options for the instance hostname.
+            type: dict
+            contains:
+                enable_resource_name_dns_a_record:
+                    description: Indicates whether to respond to DNS queries for instance hostnames with DNS A records.
+                    type: bool
+                    sample: false
+                enable_resource_name_dns_aaaa_record:
+                    description: Indicates whether to respond to DNS queries for instance hostnames with DNS AAAA records.
+                    type: bool
+                    sample: false
+                hostname_type:
+                    description: The type of hostname to assign to an instance.
+                    type: str
+                    sample: ip-name
         private_ip_address:
             description: The IPv4 address of the network interface within the subnet.
             returned: always
@@ -913,7 +1140,7 @@ instances:
                     returned: always
                     type: str
                     sample: my-security-group
-        network.source_dest_check:
+        source_dest_check:
             description: Indicates whether source/destination checking is enabled.
             returned: always
             type: bool
@@ -960,9 +1187,9 @@ instances:
             sample: vpc-0011223344
 """
 
-from collections import namedtuple
 import time
 import uuid
+from collections import namedtuple
 
 try:
     import botocore
@@ -1293,6 +1520,22 @@ def build_top_level_options(params):
             spec["Placement"]["GroupName"] = str(params.get("placement_group"))
         else:
             spec.setdefault("Placement", {"GroupName": str(params.get("placement_group"))})
+    if params.get("placement") is not None:
+        spec["Placement"] = {}
+        if params.get("placement").get("availability_zone") is not None:
+            spec["Placement"]["AvailabilityZone"] = params.get("placement").get("availability_zone")
+        if params.get("placement").get("affinity") is not None:
+            spec["Placement"]["Affinity"] = params.get("placement").get("affinity")
+        if params.get("placement").get("group_name") is not None:
+            spec["Placement"]["GroupName"] = params.get("placement").get("group_name")
+        if params.get("placement").get("host_id") is not None:
+            spec["Placement"]["HostId"] = params.get("placement").get("host_id")
+        if params.get("placement").get("host_resource_group_arn") is not None:
+            spec["Placement"]["HostResourceGroupArn"] = params.get("placement").get("host_resource_group_arn")
+        if params.get("placement").get("partition_number") is not None:
+            spec["Placement"]["PartitionNumber"] = params.get("placement").get("partition_number")
+        if params.get("placement").get("tenancy") is not None:
+            spec["Placement"]["Tenancy"] = params.get("placement").get("tenancy")
     if params.get("ebs_optimized") is not None:
         spec["EbsOptimized"] = params.get("ebs_optimized")
     if params.get("instance_initiated_shutdown_behavior"):
@@ -1323,11 +1566,18 @@ def build_top_level_options(params):
         )
         spec["MetadataOptions"]["HttpProtocolIpv6"] = params.get("metadata_options").get("http_protocol_ipv6")
         spec["MetadataOptions"]["InstanceMetadataTags"] = params.get("metadata_options").get("instance_metadata_tags")
-
+    if params.get("additional_info"):
+        spec["AdditionalInfo"] = params.get("additional_info")
+    if params.get("license_specifications"):
+        spec["LicenseSpecifications"] = []
+        for license_configuration in params.get("license_specifications"):
+            spec["LicenseSpecifications"].append(
+                {"LicenseConfigurationArn": license_configuration.get("license_configuration_arn")}
+            )
     return spec
 
 
-def build_instance_tags(params, propagate_tags_to_volumes=True):
+def build_instance_tags(params):
     tags = params.get("tags") or {}
     if params.get("name") is not None:
         tags["Name"] = params.get("name")
@@ -1497,6 +1747,46 @@ def diff_instance_and_params(instance, params, skip=None):
             )
 
     return changes_to_apply
+
+
+def change_instance_metadata_options(instance, params):
+    metadata_options_to_apply = params.get("metadata_options")
+
+    if metadata_options_to_apply is None:
+        return False
+
+    existing_metadata_options = camel_dict_to_snake_dict(instance.get("MetadataOptions"))
+
+    changes_to_apply = {
+        key: metadata_options_to_apply[key]
+        for key in set(existing_metadata_options) & set(metadata_options_to_apply)
+        if existing_metadata_options[key] != metadata_options_to_apply[key]
+    }
+
+    if not changes_to_apply:
+        return False
+
+    request_args = {
+        "InstanceId": instance["InstanceId"],
+        "HttpTokens": changes_to_apply.get("http_tokens") or existing_metadata_options.get("http_tokens"),
+        "HttpPutResponseHopLimit": changes_to_apply.get("http_put_response_hop_limit")
+        or existing_metadata_options.get("http_put_response_hop_limit"),
+        "HttpEndpoint": changes_to_apply.get("http_endpoint") or existing_metadata_options.get("http_endpoint"),
+        "HttpProtocolIpv6": changes_to_apply.get("http_protocol_ipv6")
+        or existing_metadata_options.get("http_protocol_ipv6"),
+        "InstanceMetadataTags": changes_to_apply.get("instance_metadata_tags")
+        or existing_metadata_options.get("instance_metadata_tags"),
+    }
+
+    if module.check_mode:
+        return True
+    try:
+        client.modify_instance_metadata_options(aws_retry=True, **request_args)
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        module.fail_json_aws(
+            e, msg=f"Failed to update instance metadata options for instance ID: {instance['InstanceId']}"
+        )
+    return True
 
 
 def change_network_attachments(instance, params):
@@ -1759,7 +2049,7 @@ def change_instance_state(filters, desired_module_state):
                 if inst["State"]["Name"] in ("pending", "running"):
                     unchanged.add(inst["InstanceId"])
                     continue
-                elif inst["State"]["Name"] == "stopping":
+                if inst["State"]["Name"] == "stopping":
                     await_instances([inst["InstanceId"]], desired_module_state="stopped", force_wait=True)
 
                 if module.check_mode:
@@ -1828,6 +2118,9 @@ def handle_existing(existing_matches, state, filters):
 
     for instance in existing_matches:
         changed |= ensure_ec2_tags(client, module, instance["InstanceId"], tags=tags, purge_tags=purge_tags)
+
+        changed |= change_instance_metadata_options(instance, module.params)
+
         changes = diff_instance_and_params(instance, module.params)
         for c in changes:
             if not module.check_mode:
@@ -1855,63 +2148,60 @@ def handle_existing(existing_matches, state, filters):
     return result
 
 
-def enforce_count(existing_matches, module, desired_module_state):
+def enforce_count(existing_matches, desired_module_state):
     exact_count = module.params.get("exact_count")
 
+    current_count = len(existing_matches)
+    if current_count == exact_count:
+        return dict(
+            changed=False,
+            instances=[pretty_instance(i) for i in existing_matches],
+            instance_ids=[i["InstanceId"] for i in existing_matches],
+            msg=f"{exact_count} instances already running, nothing to do.",
+        )
+
+    if current_count < exact_count:
+        # launch instances
+        return ensure_present(
+            existing_matches=existing_matches,
+            desired_module_state=desired_module_state,
+            current_count=current_count,
+        )
+
+    to_terminate = current_count - exact_count
+    # sort the instances from least recent to most recent based on launch time
+    existing_matches = sorted(existing_matches, key=lambda inst: inst["LaunchTime"])
+    # get the instance ids of instances with the count tag on them
+    all_instance_ids = [x["InstanceId"] for x in existing_matches]
+    terminate_ids = all_instance_ids[0:to_terminate]
+    if module.check_mode:
+        return dict(
+            changed=True,
+            terminated_ids=terminate_ids,
+            instance_ids=all_instance_ids,
+            msg=f"Would have terminated following instances if not in check mode {terminate_ids}",
+        )
+    # terminate instances
     try:
-        current_count = len(existing_matches)
-        if current_count == exact_count:
-            module.exit_json(
-                changed=False,
-                instances=[pretty_instance(i) for i in existing_matches],
-                instance_ids=[i["InstanceId"] for i in existing_matches],
-                msg=f"{exact_count} instances already running, nothing to do.",
-            )
+        client.terminate_instances(aws_retry=True, InstanceIds=terminate_ids)
+        await_instances(terminate_ids, desired_module_state="terminated", force_wait=True)
+    except is_boto3_error_code("InvalidInstanceID.NotFound"):
+        pass
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:  # pylint: disable=duplicate-except
+        module.fail_json(e, msg="Unable to terminate instances")
 
-        elif current_count < exact_count:
-            # launch instances
-            try:
-                ensure_present(
-                    existing_matches=existing_matches,
-                    desired_module_state=desired_module_state,
-                    current_count=current_count,
-                )
-            except botocore.exceptions.ClientError as e:
-                module.fail_json(e, msg="Unable to launch instances")
-        elif current_count > exact_count:
-            to_terminate = current_count - exact_count
-            # sort the instances from least recent to most recent based on launch time
-            existing_matches = sorted(existing_matches, key=lambda inst: inst["LaunchTime"])
-            # get the instance ids of instances with the count tag on them
-            all_instance_ids = [x["InstanceId"] for x in existing_matches]
-            terminate_ids = all_instance_ids[0:to_terminate]
-            if module.check_mode:
-                module.exit_json(
-                    changed=True,
-                    terminated_ids=terminate_ids,
-                    instance_ids=all_instance_ids,
-                    msg=f"Would have terminated following instances if not in check mode {terminate_ids}",
-                )
-            # terminate instances
-            try:
-                client.terminate_instances(aws_retry=True, InstanceIds=terminate_ids)
-                await_instances(terminate_ids, desired_module_state="terminated", force_wait=True)
-            except is_boto3_error_code("InvalidInstanceID.NotFound"):
-                pass
-            except botocore.exceptions.ClientError as e:  # pylint: disable=duplicate-except
-                module.fail_json(e, msg="Unable to terminate instances")
-            # include data for all matched instances in addition to the list of terminations
-            # allowing for recovery of metadata from the destructive operation
-            module.exit_json(
-                changed=True,
-                msg="Successfully terminated instances.",
-                terminated_ids=terminate_ids,
-                instance_ids=all_instance_ids,
-                instances=existing_matches,
-            )
-
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        module.fail_json_aws(e, msg="Failed to enforce instance count")
+    # include data for all matched instances in addition to the list of terminations
+    # allowing for recovery of metadata from the destructive operation
+    return dict(
+        changed=True,
+        msg="Successfully terminated instances.",
+        terminated_ids=terminate_ids,
+        instance_ids=all_instance_ids,
+        instances=existing_matches,
+    )
 
 
 def ensure_present(existing_matches, desired_module_state, current_count=None):
@@ -1926,7 +2216,7 @@ def ensure_present(existing_matches, desired_module_state, current_count=None):
         if module.check_mode:
             if existing_matches:
                 instance_ids = [x["InstanceId"] for x in existing_matches]
-                module.exit_json(
+                return dict(
                     changed=True,
                     instance_ids=instance_ids,
                     instances=existing_matches,
@@ -1934,7 +2224,7 @@ def ensure_present(existing_matches, desired_module_state, current_count=None):
                     msg="Would have launched instances if not in check_mode.",
                 )
             else:
-                module.exit_json(
+                return dict(
                     changed=True,
                     spec=instance_spec,
                     msg="Would have launched instances if not in check_mode.",
@@ -1970,14 +2260,14 @@ def ensure_present(existing_matches, desired_module_state, current_count=None):
             all_instance_ids = [x["InstanceId"] for x in existing_matches] + instance_ids
         if not module.params.get("wait"):
             if existing_matches:
-                module.exit_json(
+                return dict(
                     changed=True,
                     changed_ids=instance_ids,
                     instance_ids=all_instance_ids,
                     spec=instance_spec,
                 )
             else:
-                module.exit_json(
+                return dict(
                     changed=True,
                     instance_ids=instance_ids,
                     spec=instance_spec,
@@ -1987,7 +2277,7 @@ def ensure_present(existing_matches, desired_module_state, current_count=None):
 
         if existing_matches:
             all_instances = existing_matches + instances
-            module.exit_json(
+            return dict(
                 changed=True,
                 changed_ids=instance_ids,
                 instance_ids=all_instance_ids,
@@ -1995,7 +2285,7 @@ def ensure_present(existing_matches, desired_module_state, current_count=None):
                 spec=instance_spec,
             )
         else:
-            module.exit_json(
+            return dict(
                 changed=True,
                 instance_ids=instance_ids,
                 instances=[pretty_instance(i) for i in instances],
@@ -2106,6 +2396,13 @@ def main():
         purge_tags=dict(type="bool", default=True),
         filters=dict(type="dict", default=None),
         launch_template=dict(type="dict"),
+        license_specifications=dict(
+            type="list",
+            elements="dict",
+            options=dict(
+                license_configuration_arn=dict(type="str", required=True),
+            ),
+        ),
         key_name=dict(type="str"),
         cpu_credit_specification=dict(type="str", choices=["standard", "unlimited"]),
         cpu_options=dict(
@@ -2117,6 +2414,18 @@ def main():
         ),
         tenancy=dict(type="str", choices=["dedicated", "default"]),
         placement_group=dict(type="str"),
+        placement=dict(
+            type="dict",
+            options=dict(
+                affinity=dict(type="str"),
+                availability_zone=dict(type="str"),
+                group_name=dict(type="str"),
+                host_id=dict(type="str"),
+                host_resource_group_arn=dict(type="str"),
+                partition_number=dict(type="int"),
+                tenancy=dict(type="str", choices=["dedicated", "default", "host"]),
+            ),
+        ),
         instance_initiated_shutdown_behavior=dict(type="str", choices=["stop", "terminate"]),
         termination_protection=dict(type="bool"),
         hibernation_options=dict(type="bool", default=False),
@@ -2134,6 +2443,7 @@ def main():
                 instance_metadata_tags=dict(choices=["disabled", "enabled"], default="disabled"),
             ),
         ),
+        additional_info=dict(type="str"),
     )
     # running/present are synonyms
     # as are terminated/absent
@@ -2146,6 +2456,8 @@ def main():
             ["image_id", "image"],
             ["exact_count", "count"],
             ["exact_count", "instance_ids"],
+            ["tenancy", "placement"],
+            ["placement_group", "placement"],
         ],
         supports_check_mode=True,
     )
@@ -2159,12 +2471,27 @@ def main():
             if module.params.get("security_groups"):
                 module.fail_json(msg="Parameter network.interfaces can't be used with security_groups")
 
+    if module.params.get("placement_group"):
+        module.deprecate(
+            "The placement_group parameter has been deprecated, please use placement.group_name instead.",
+            date="2025-12-01",
+            collection_name="amazon.aws",
+        )
+
+    if module.params.get("tenancy"):
+        module.deprecate(
+            "The tenancy parameter has been deprecated, please use placement.tenancy instead.",
+            date="2025-12-01",
+            collection_name="amazon.aws",
+        )
+
     state = module.params.get("state")
 
     retry_decorator = AWSRetry.jittered_backoff(
         catch_extra_error_codes=[
             "IncorrectState",
             "InsuffienctInstanceCapacity",
+            "InvalidInstanceID.NotFound",
         ]
     )
     client = module.client("ec2", retry_decorator=retry_decorator)
@@ -2185,7 +2512,7 @@ def main():
                     changed=False,
                 )
         elif module.params.get("exact_count"):
-            enforce_count(existing_matches, module, desired_module_state=state)
+            result = enforce_count(existing_matches, desired_module_state=state)
         elif existing_matches and not module.params.get("count"):
             for match in existing_matches:
                 warn_if_public_ip_assignment_changed(match)

@@ -6,123 +6,123 @@
       session_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
   block:
-    - set_fact:
+    - ansible.builtin.set_fact:
         local_bucket_name: "{{ bucket_name | hash('md5')}}ownership"
 
-    - name: 'Create a simple bucket bad value for ownership controls'
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
+    - name: Create a simple bucket bad value for ownership controls
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
         state: present
         object_ownership: default
       ignore_errors: true
       register: output
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - output.failed
 
-    - name: 'Create bucket with object_ownership set to object_writer'
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
+    - name: Create bucket with object_ownership set to object_writer
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
         state: present
       ignore_errors: true
       register: output
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - output.changed
           - not output.object_ownership|bool
 
     - name: delete s3 bucket
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
         state: absent
 
-    - name: 'create s3 bucket with object ownership controls'
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
+    - name: create s3 bucket with object ownership controls
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
         state: present
         object_ownership: ObjectWriter
       register: output
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - output.changed
           - output.object_ownership
           - output.object_ownership == 'ObjectWriter'
 
-    - name: 'update s3 bucket ownership preferred controls'
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
+    - name: update s3 bucket ownership preferred controls
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
         state: present
         object_ownership: BucketOwnerPreferred
       register: output
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - output.changed
           - output.object_ownership
           - output.object_ownership == 'BucketOwnerPreferred'
 
-    - name: 'test idempotency update s3 bucket ownership preferred controls'
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
+    - name: test idempotency update s3 bucket ownership preferred controls
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
         state: present
         object_ownership: BucketOwnerPreferred
       register: output
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - output.changed is false
           - output.object_ownership
           - output.object_ownership == 'BucketOwnerPreferred'
 
-    - name: 'update s3 bucket ownership enforced controls'
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
+    - name: update s3 bucket ownership enforced controls
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
         state: present
         object_ownership: BucketOwnerEnforced
       register: output
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - output.changed
           - output.object_ownership
           - output.object_ownership == 'BucketOwnerEnforced'
 
-    - name: 'test idempotency update s3 bucket ownership preferred controls'
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
+    - name: test idempotency update s3 bucket ownership preferred controls
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
         state: present
         object_ownership: BucketOwnerEnforced
       register: output
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - output.changed is false
           - output.object_ownership
           - output.object_ownership == 'BucketOwnerEnforced'
 
-    - name: 'delete s3 bucket ownership controls'
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
+    - name: delete s3 bucket ownership controls
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
         state: present
         delete_object_ownership: true
       register: output
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - output.changed
           - not output.object_ownership|bool
 
-    - name: 'delete s3 bucket ownership controls once again (idempotency)'
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
+    - name: delete s3 bucket ownership controls once again (idempotency)
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
         state: present
         delete_object_ownership: true
       register: idempotency
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - not idempotency.changed
           - not idempotency.object_ownership|bool
@@ -130,14 +130,14 @@
   # ============================================================
   always:
     - name: delete s3 bucket ownership controls
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
         state: present
         delete_object_ownership: true
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: Ensure all buckets are deleted
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
         state: absent
-      ignore_errors: yes
+      ignore_errors: true

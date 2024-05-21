@@ -1,0 +1,76 @@
+---
+- name: Run tests for json input_template
+  block:
+
+    - name: Create SNS topic
+      community.aws.sns_topic:
+        name: TestSNSTopic-Json
+        state: present
+        display_name: Test SNS Topic
+      register: sns_topic_output
+
+    - name: Define JSON input_template
+      ansible.builtin.set_fact:
+        json_input_template: |
+          {
+            "instance" : "<instance>",
+            "state": "<state>"
+          }
+
+    - name: Create cloudwatch event rule with input transformer
+      amazon.aws.cloudwatchevent_rule:
+        name: "{{ input_transformer_event_name }}-Json"
+        description: Event rule with input transformer configuration
+        state: present
+        event_pattern: '{"source":["aws.ec2"],"detail-type":["EC2 Instance State-change Notification"],"detail":{"state":["pending"]}}'
+        targets:
+          - id: "{{ sns_topic_output.sns_topic.name }}"
+            arn: "{{ sns_topic_output.sns_topic.topic_arn }}"
+            input_transformer:
+              input_paths_map:
+                instance: $.detail.instance-id
+                state: $.detail.state
+              input_template: "{{ json_input_template }}"
+      register: event_rule_input_transformer_output
+
+    - name: Assert that input transformer event rule was created
+      ansible.builtin.assert:
+        that:
+          - event_rule_input_transformer_output.changed
+
+    - name: Assert that event rule is created with a valid json value for input_template
+      ansible.builtin.assert:
+        that:
+          - event_rule_input_transformer_output.targets[0].input_transformer.input_template | from_json
+
+    - name: Create cloudwatch event rule with input transformer (idempotent)
+      amazon.aws.cloudwatchevent_rule:
+        name: "{{ input_transformer_event_name }}-Json"
+        description: Event rule with input transformer configuration
+        state: present
+        event_pattern: '{"source":["aws.ec2"],"detail-type":["EC2 Instance State-change Notification"],"detail":{"state":["pending"]}}'
+        targets:
+          - id: "{{ sns_topic_output.sns_topic.name }}"
+            arn: "{{ sns_topic_output.sns_topic.topic_arn }}"
+            input_transformer:
+              input_paths_map:
+                instance: $.detail.instance-id
+                state: $.detail.state
+              input_template: "{{ json_input_template }}"
+      register: event_rule_input_transformer_output
+
+  always:
+    - name: Assert that no changes were made to the rule
+      ansible.builtin.assert:
+        that:
+          - event_rule_input_transformer_output is not changed
+
+    - name: Delete input transformer CloudWatch event rules
+      amazon.aws.cloudwatchevent_rule:
+        name: "{{ input_transformer_event_name }}-Json"
+        state: absent
+
+    - name: Delete SNS topic
+      community.aws.sns_topic:
+        name: TestSNSTopic-Json
+        state: absent

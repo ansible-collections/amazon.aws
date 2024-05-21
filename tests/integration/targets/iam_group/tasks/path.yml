@@ -1,0 +1,58 @@
+---
+# Path management
+
+- name: Set path (check_mode)
+  amazon.aws.iam_group:
+    name: "{{ test_group }}"
+    path: "{{ test_path }}"
+    state: present
+  register: iam_group
+  check_mode: true
+
+- ansible.builtin.assert:
+    that:
+      - iam_group is changed
+
+- name: Set path
+  amazon.aws.iam_group:
+    name: "{{ test_group }}"
+    path: "{{ test_path }}"
+    state: present
+  register: iam_group
+
+- ansible.builtin.assert:
+    that:
+      - iam_group is changed
+      - "'users' in iam_group.iam_group"
+      - "'group' in iam_group.iam_group"
+      - iam_group.iam_group.group.group_name == test_group
+      - iam_group.iam_group.group.path == test_path
+
+- name: Retry set path (check_mode)
+  amazon.aws.iam_group:
+    name: "{{ test_group }}"
+    path: "{{ test_path }}"
+    state: present
+  register: iam_group
+  check_mode: true
+
+- ansible.builtin.assert:
+    that:
+      - iam_group is not changed
+
+- name: Retry set path
+  amazon.aws.iam_group:
+    name: "{{ test_group }}"
+    path: "{{ test_path }}"
+    state: present
+  register: iam_group
+
+- ansible.builtin.assert:
+    that:
+      - iam_group is not changed
+      - "'users' in iam_group.iam_group"
+      - "'group' in iam_group.iam_group"
+      - iam_group.iam_group.group.group_name == test_group
+      - iam_group.iam_group.group.path == test_path
+
+# /end Path management

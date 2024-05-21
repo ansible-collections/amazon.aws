@@ -1,0 +1,64 @@
+---
+- name: Set up aws connection info
+  module_defaults:
+    group/aws:
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+  collections:
+    - amazon.aws
+  block:
+    - name: Ensure ansible user exists
+      amazon.aws.iam_user:
+        name: "{{ test_user }}"
+        state: present
+
+    - name: Create Safe IAM Managed Policy
+      amazon.aws.iam_managed_policy:
+        state: present
+        policy_name: "{{ custom_policy_name }}"
+        policy_description: A safe (deny-all) managed policy
+        policy: "{{ lookup('file', 'deny-all.json') }}"
+      register: create_managed_policy
+
+    - ansible.builtin.assert:
+        that:
+          - create_managed_policy is succeeded
+
+    - name: Ensure group exists
+      amazon.aws.iam_group:
+        name: "{{ test_group }}"
+        users:
+          - "{{ test_user }}"
+        state: present
+      register: iam_group
+
+    - ansible.builtin.assert:
+        that:
+          - "'users' in iam_group.iam_group"
+          - "'group' in iam_group.iam_group"
+          - "'attached_policies' in iam_group.iam_group"
+          - iam_group is changed
+          - iam_group.iam_group.group.group_name == test_group
+          - iam_group.iam_group.group.path == "/"
+
+    - ansible.builtin.include_tasks: users.yml
+    - ansible.builtin.include_tasks: path.yml
+    - ansible.builtin.include_tasks: policy_update.yml
+    - ansible.builtin.include_tasks: deletion.yml
+  always:
+    - name: Remove group
+      amazon.aws.iam_group:
+        name: "{{ test_group }}"
+        state: absent
+
+    - name: Remove Safe IAM Managed Policy
+      amazon.aws.iam_managed_policy:
+        state: absent
+        policy_name: "{{ custom_policy_name }}"
+
+    - name: Remove ansible user
+      amazon.aws.iam_user:
+        name: "{{ test_user }}"
+        state: absent

@@ -107,6 +107,10 @@ security_groups:
             type: list
             elements: dict
             contains:
+                from_port:
+                    description: If the protocol is TCP or UDP, this is the start of the port range.
+                    type: int
+                    sample: 80
                 ip_protocol:
                     description: The IP protocol name or number.
                     returned: always
@@ -141,6 +145,10 @@ security_groups:
                             description: The ID of the prefix.
                             returned: always
                             type: str
+                to_group:
+                    description: If the protocol is TCP or UDP, this is the end of the port range.
+                    type: int
+                    sample: 80
                 user_id_group_pairs:
                     description: The security group and AWS account ID pairs.
                     returned: always
@@ -248,7 +256,8 @@ security_groups:
 """
 
 try:
-    from botocore.exceptions import BotoCoreError, ClientError
+    from botocore.exceptions import BotoCoreError
+    from botocore.exceptions import ClientError
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
@@ -256,8 +265,8 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 
 
 def main():

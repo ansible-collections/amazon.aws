@@ -156,6 +156,7 @@ notes:
     This can cause issues when running duplicate tasks in succession or using the M(amazon.aws.kms_key_info) module to fetch key metadata
     shortly after modifying keys.
     For this reason, it is recommended to use the return data from this module (M(amazon.aws.kms_key)) to fetch a key's metadata.
+  - The C(policies) return key was removed in amazon.aws release 8.0.0.
 """
 
 EXAMPLES = r"""
@@ -281,41 +282,6 @@ aliases:
   sample:
     - aws/acm
     - aws/ebs
-policies:
-  description: List of policy documents for the key. Empty when access is denied even if there are policies.
-  type: list
-  returned: always
-  elements: str
-  sample:
-    Version: "2012-10-17"
-    Id: "auto-ebs-2"
-    Statement:
-    - Sid: "Allow access through EBS for all principals in the account that are authorized to use EBS"
-      Effect: "Allow"
-      Principal:
-        AWS: "*"
-      Action:
-      - "kms:Encrypt"
-      - "kms:Decrypt"
-      - "kms:ReEncrypt*"
-      - "kms:GenerateDataKey*"
-      - "kms:CreateGrant"
-      - "kms:DescribeKey"
-      Resource: "*"
-      Condition:
-        StringEquals:
-          kms:CallerAccount: "123456789012"
-          kms:ViaService: "ec2.ap-southeast-2.amazonaws.com"
-    - Sid: "Allow direct access to key metadata to the account"
-      Effect: "Allow"
-      Principal:
-        AWS: "arn:aws:iam::123456789012:root"
-      Action:
-      - "kms:Describe*"
-      - "kms:Get*"
-      - "kms:List*"
-      - "kms:RevokeGrant"
-      Resource: "*"
 key_policies:
   description: List of policy documents for the key. Empty when access is denied even if there are policies.
   type: list
@@ -435,14 +401,6 @@ multi_region:
   sample: False
 """
 
-# these mappings are used to go from simple labels to the actual 'Sid' values returned
-# by get_policy. They seem to be magic values.
-statement_label = {
-    "role": "Allow use of the key",
-    "role grant": "Allow attachment of persistent resources",
-    "admin": "Allow access for Key Administrators",
-}
-
 import json
 
 try:
@@ -450,20 +408,15 @@ try:
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
-from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.policy import compare_policies
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
-from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
-from ansible_collections.amazon.aws.plugins.module_utils.policy import compare_policies
-
-
-@AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
-def get_iam_roles_with_backoff(connection):
-    paginator = connection.get_paginator("list_roles")
-    return paginator.paginate().build_full_result()
 
 
 @AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
@@ -597,18 +550,9 @@ def get_key_details(connection, module, key_id):
         module.fail_json_aws(e, msg="Failed to obtain key grants")
     tags = get_kms_tags(connection, module, key_id)
     result["tags"] = boto3_tag_list_to_ansible_dict(tags, "TagKey", "TagValue")
-    result["policies"] = get_kms_policies(connection, module, key_id)
-    result["key_policies"] = [json.loads(policy) for policy in result["policies"]]
+    policies = get_kms_policies(connection, module, key_id)
+    result["key_policies"] = [json.loads(policy) for policy in policies]
     return result
-
-
-def get_kms_facts(connection, module):
-    try:
-        keys = get_kms_keys_with_backoff(connection)["Keys"]
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to obtain keys")
-
-    return [get_key_details(connection, module, key["KeyId"]) for key in keys]
 
 
 def convert_grant_params(grant, key):
@@ -946,13 +890,6 @@ def delete_key(connection, module, key_metadata):
     return result
 
 
-def get_arn_from_role_name(iam, rolename):
-    ret = iam.get_role(RoleName=rolename)
-    if ret.get("Role") and ret["Role"].get("Arn"):
-        return ret["Role"]["Arn"]
-    raise Exception(f"could not find arn for name {rolename}.")
-
-
 def canonicalize_alias_name(alias):
     if alias is None:
         return None
@@ -1035,15 +972,6 @@ def main():
     )
 
     kms = module.client("kms")
-
-    module.deprecate(
-        (
-            "The 'policies' return key is deprecated and will be replaced by 'key_policies'. Both values are returned"
-            " for now."
-        ),
-        date="2024-05-01",
-        collection_name="amazon.aws",
-    )
 
     key_metadata = fetch_key_metadata(kms, module, module.params.get("key_id"), module.params.get("alias"))
     validate_params(module, key_metadata)

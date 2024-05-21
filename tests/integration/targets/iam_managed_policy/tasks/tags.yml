@@ -1,0 +1,180 @@
+---
+# ------------------------------------------------------------------------------------------
+## Test tags creation / updates
+- name: Add Tag (check mode)
+  amazon.aws.iam_managed_policy:
+    name: "{{ policy_name }}"
+    state: present
+    tags:
+      TagA: ValueA
+  register: result
+  check_mode: true
+- name: Assert would change
+  ansible.builtin.assert:
+    that:
+      - result is changed
+
+- name: Add Tag
+  amazon.aws.iam_managed_policy:
+    name: "{{ policy_name }}"
+    state: present
+    tags:
+      TagA: ValueA
+  register: result
+- name: Assert tags updated
+  ansible.builtin.assert:
+    that:
+      - result is changed
+      - result.policy.policy_name == policy_name
+      - result.policy.tags | length == 1
+      - '"TagA" in result.policy.tags'
+      - result.policy.tags.TagA == "ValueA"
+
+- name: Add Tag (no change - check mode)
+  amazon.aws.iam_managed_policy:
+    name: "{{ policy_name }}"
+    state: present
+    tags:
+      TagA: ValueA
+  register: result
+  check_mode: true
+- name: Assert would not change
+  ansible.builtin.assert:
+    that:
+      - result is not changed
+
+- name: Add Tag (no change)
+  amazon.aws.iam_managed_policy:
+    name: "{{ policy_name }}"
+    state: present
+    tags:
+      TagA: ValueA
+  register: result
+- name: Assert no change
+  ansible.builtin.assert:
+    that:
+      - result is not changed
+      - result.policy.policy_name == policy_name
+      - result.policy.tags | length == 1
+      - '"TagA" in result.policy.tags'
+      - result.policy.tags.TagA == "ValueA"
+
+- name: Extend Tags
+  amazon.aws.iam_managed_policy:
+    name: "{{ policy_name }}"
+    state: present
+    purge_tags: false
+    tags:
+      tag_b: value_b
+      Tag C: Value C
+      tag d: value d
+  register: result
+- name: Assert tags updated
+  ansible.builtin.assert:
+    that:
+      - result is changed
+      - result.policy.policy_name == policy_name
+      - result.policy.tags | length == 4
+      - '"TagA" in result.policy.tags'
+      - '"tag_b" in result.policy.tags'
+      - '"Tag C" in result.policy.tags'
+      - '"tag d" in result.policy.tags'
+      - result.policy.tags.TagA == "ValueA"
+      - result.policy.tags.tag_b == "value_b"
+      - result.policy.tags["Tag C"] == "Value C"
+      - result.policy.tags["tag d"] == "value d"
+
+- name: Create policy without Tag (no change)
+  amazon.aws.iam_managed_policy:
+    name: "{{ policy_name }}"
+    state: present
+  register: result
+- name: Assert policy already created
+  ansible.builtin.assert:
+    that:
+      - result is not changed
+      - result.policy.policy_name == policy_name
+      - result.policy.tags | length == 4
+
+- name: Remove all Tags (check mode)
+  amazon.aws.iam_managed_policy:
+    name: "{{ policy_name }}"
+    state: present
+    tags: {}
+  check_mode: true
+  register: result
+- name: Assert tags would be removed
+  ansible.builtin.assert:
+    that:
+      - result is changed
+
+- name: Remove 3 Tags
+  amazon.aws.iam_managed_policy:
+    name: "{{ policy_name }}"
+    state: present
+    tags:
+      TagA: ValueA
+  register: result
+- name: Assert tags removed
+  ansible.builtin.assert:
+    that:
+      - result is changed
+      - result.policy.policy_name == policy_name
+      - result.policy.tags | length == 1
+      - '"TagA" in result.policy.tags'
+      - result.policy.tags.TagA == "ValueA"
+
+- name: Change Tag (check mode)
+  amazon.aws.iam_managed_policy:
+    name: "{{ policy_name }}"
+    state: present
+    tags:
+      TagA: AnotherValueA
+  register: result
+  check_mode: true
+- name: Assert tag would be updated
+  ansible.builtin.assert:
+    that:
+      - result is changed
+
+- name: Change Tag
+  amazon.aws.iam_managed_policy:
+    name: "{{ policy_name }}"
+    state: present
+    tags:
+      TagA: AnotherValueA
+  register: result
+- name: Assert tag was updated
+  ansible.builtin.assert:
+    that:
+      - result is changed
+      - result.policy.policy_name == policy_name
+      - result.policy.tags | length == 1
+      - '"TagA" in result.policy.tags'
+      - result.policy.tags.TagA == "AnotherValueA"
+
+- name: Remove All Tags
+  amazon.aws.iam_managed_policy:
+    name: "{{ policy_name }}"
+    state: present
+    tags: {}
+  register: result
+- name: Assert all tags removed
+  ansible.builtin.assert:
+    that:
+      - result is changed
+      - result.policy.policy_name == policy_name
+      - result.policy.tags | length == 0
+
+- name: Remove All Tags (no change)
+  amazon.aws.iam_managed_policy:
+    name: "{{ policy_name }}"
+    state: present
+    tags: {}
+  register: result
+- name: Assert no change
+  ansible.builtin.assert:
+    that:
+      - result is not changed
+      - result.policy.policy_name == policy_name
+      - result.policy.tags | length == 0

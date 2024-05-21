@@ -1,4 +1,4 @@
 ---
 # defaults file for ec2_instance_external_resource_attach
-ec2_instance_type: 't3.micro'
-ec2_instance_tag_TestId: '{{ resource_prefix }}-external-attach'
+ec2_instance_type: t3.micro
+ec2_instance_tag_TestId: "{{ resource_prefix }}-external-attach"

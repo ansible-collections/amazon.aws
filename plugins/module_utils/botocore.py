@@ -60,12 +60,12 @@ from ansible.module_utils.basic import missing_required_lib
 from ansible.module_utils.six import binary_type
 from ansible.module_utils.six import text_type
 
+from .common import get_collection_info
 from .exceptions import AnsibleBotocoreError
 from .retries import AWSRetry
-from .common import get_collection_info
 
-MINIMUM_BOTOCORE_VERSION = "1.25.0"
-MINIMUM_BOTO3_VERSION = "1.22.0"
+MINIMUM_BOTOCORE_VERSION = "1.29.0"
+MINIMUM_BOTO3_VERSION = "1.26.0"
 
 
 def _get_user_agent_string():
@@ -202,7 +202,14 @@ def _aws_region(params):
         return None
 
 
-def get_aws_region(module, boto3=None):
+def get_aws_region(module, boto3=None):  # pylint: disable=redefined-outer-name
+    if boto3 is not None:
+        module.deprecate(
+            "get_aws_region(): the boto3 parameter will be removed in a release after 2025-05-01. "
+            "The parameter has been ignored since release 4.0.0.",
+            date="2025-05-01",
+            collection_name="amazon.aws",
+        )
     try:
         return _aws_region(module.params)
     except AnsibleBotocoreError as e:
@@ -266,7 +273,14 @@ def _aws_connection_info(params):
     return region, endpoint_url, boto_params
 
 
-def get_aws_connection_info(module, boto3=None):
+def get_aws_connection_info(module, boto3=None):  # pylint: disable=redefined-outer-name
+    if boto3 is not None:
+        module.deprecate(
+            "get_aws_connection_info(): the boto3 parameter will be removed in a release after 2025-05-01. "
+            "The parameter has been ignored since release 4.0.0.",
+            date="2025-05-01",
+            collection_name="amazon.aws",
+        )
     try:
         return _aws_connection_info(module.params)
     except AnsibleBotocoreError as e:
@@ -335,7 +349,7 @@ def is_boto3_error_code(code, e=None):
         import sys
 
         dummy, e, dummy = sys.exc_info()
-    if not isinstance(code, list):
+    if not isinstance(code, (list, tuple, set)):
         code = [code]
     if isinstance(e, ClientError) and e.response["Error"]["Code"] in code:
         return ClientError
@@ -412,6 +426,7 @@ def enable_placebo(session):
         pill.record()
     if "_ANSIBLE_PLACEBO_REPLAY" in os.environ:
         import shutil
+
         import placebo
 
         existing_entries = sorted([int(i) for i in os.listdir(os.environ["_ANSIBLE_PLACEBO_REPLAY"])])

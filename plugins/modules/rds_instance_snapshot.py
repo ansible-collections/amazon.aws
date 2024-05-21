@@ -233,18 +233,20 @@ try:
 except ImportError:
     pass  # protected by AnsibleAWSModule
 
-# import module snippets
-from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import get_boto3_client_method_parameters
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
-from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
+# import module snippets
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.rds import arg_spec_to_rds_params
 from ansible_collections.amazon.aws.plugins.module_utils.rds import call_method
 from ansible_collections.amazon.aws.plugins.module_utils.rds import ensure_tags
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_rds_method_attribute
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_tags
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
 
 
 def get_snapshot(snapshot_id):
@@ -268,7 +270,7 @@ def get_parameters(parameters, method_name):
     required_options = get_boto3_client_method_parameters(client, method_name, required=True)
     if any(parameters.get(k) is None for k in required_options):
         method_description = get_rds_method_attribute(method_name, module).operation_description
-        module.fail_json(msg=f"To {method_description} requires the parameters: {*required_options,}")
+        module.fail_json(msg=f"To {method_description} requires the parameters: {*required_options, }")
     options = get_boto3_client_method_parameters(client, method_name)
     parameters = dict((k, v) for k, v in parameters.items() if k in options and v is not None)
 

@@ -1,0 +1,108 @@
+---
+- module_defaults:
+    group/aws:
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+  collections:
+    - amazon.aws
+  block:
+    - name: set iam password policy
+      amazon.aws.iam_password_policy:
+        state: present
+        min_pw_length: 8
+        require_symbols: false
+        require_numbers: true
+        require_uppercase: true
+        require_lowercase: true
+        allow_pw_change: true
+        pw_max_age: 60
+        pw_reuse_prevent: 5
+        pw_expire: false
+      register: result
+
+    - name: assert that changes were made
+      ansible.builtin.assert:
+        that:
+          - result.changed
+
+    - name: verify iam password policy has been created
+      amazon.aws.iam_password_policy:
+        state: present
+        min_pw_length: 8
+        require_symbols: false
+        require_numbers: true
+        require_uppercase: true
+        require_lowercase: true
+        allow_pw_change: true
+        pw_max_age: 60
+        pw_reuse_prevent: 5
+        pw_expire: false
+      register: result
+
+    - name: assert that no changes were made
+      ansible.builtin.assert:
+        that:
+          - not result.changed
+
+    - name: update iam password policy with different settings
+      amazon.aws.iam_password_policy:
+        state: present
+        min_pw_length: 15
+        require_symbols: true
+        require_numbers: true
+        require_uppercase: true
+        require_lowercase: true
+        allow_pw_change: true
+        pw_max_age: 30
+        pw_reuse_prevent: 10
+        pw_expire: true
+      register: result
+
+    - name: assert that updates were made
+      ansible.builtin.assert:
+        that:
+          - result.changed
+
+    # Test for regression of #59102
+    - name: update iam password policy without expiry
+      amazon.aws.iam_password_policy:
+        state: present
+        min_pw_length: 15
+        require_symbols: true
+        require_numbers: true
+        require_uppercase: true
+        require_lowercase: true
+        allow_pw_change: true
+      register: result
+
+    - name: assert that changes were made
+      ansible.builtin.assert:
+        that:
+          - result.changed
+
+    - name: remove iam password policy
+      amazon.aws.iam_password_policy:
+        state: absent
+      register: result
+
+    - name: assert password policy has been removed
+      ansible.builtin.assert:
+        that:
+          - result.changed
+
+    - name: verify password policy has been removed
+      amazon.aws.iam_password_policy:
+        state: absent
+      register: result
+
+    - name: assert no changes were made
+      ansible.builtin.assert:
+        that:
+          - not result.changed
+  always:
+    - name: remove iam password policy
+      amazon.aws.iam_password_policy:
+        state: absent
+      register: result

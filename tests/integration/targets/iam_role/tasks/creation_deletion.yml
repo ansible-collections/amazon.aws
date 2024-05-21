@@ -1,0 +1,411 @@
+---
+- name: Try running some rapid fire create/delete tests
+  block:
+    - name: Minimal IAM Role without instance profile (rapid)
+      amazon.aws.iam_role:
+        name: "{{ test_role }}"
+        create_instance_profile: false
+      register: iam_role
+    - name: Minimal IAM Role without instance profile (rapid)
+      amazon.aws.iam_role:
+        name: "{{ test_role }}"
+        create_instance_profile: false
+      register: iam_role_again
+    - ansible.builtin.assert:
+        that:
+          - iam_role is changed
+          - iam_role_again is not changed
+
+    - name: Remove IAM Role (rapid)
+      amazon.aws.iam_role:
+        state: absent
+        name: "{{ test_role }}"
+      register: iam_role
+    - name: Remove IAM Role (rapid)
+      amazon.aws.iam_role:
+        state: absent
+        name: "{{ test_role }}"
+      register: iam_role_again
+    - ansible.builtin.assert:
+        that:
+          - iam_role is changed
+          - iam_role_again is not changed
+
+    - name: Minimal IAM Role without instance profile (rapid)
+      amazon.aws.iam_role:
+        name: "{{ test_role }}"
+        create_instance_profile: false
+      register: iam_role
+    - name: Remove IAM Role (rapid)
+      amazon.aws.iam_role:
+        state: absent
+        name: "{{ test_role }}"
+      register: iam_role_again
+    - ansible.builtin.assert:
+        that:
+          - iam_role is changed
+          - iam_role_again is changed
+
+# ===================================================================
+# Role Creation
+# (without Instance profile)
+- name: iam_role_info before Role creation (no args)
+  amazon.aws.iam_role_info:
+  register: role_info
+- ansible.builtin.assert:
+    that:
+      - role_info is succeeded
+
+- name: iam_role_info before Role creation (search for test role)
+  amazon.aws.iam_role_info:
+    name: "{{ test_role }}"
+  register: role_info
+- ansible.builtin.assert:
+    that:
+      - role_info is succeeded
+      - role_info.iam_roles | length == 0
+
+- name: Minimal IAM Role (CHECK MODE)
+  amazon.aws.iam_role:
+    name: "{{ test_role }}"
+    create_instance_profile: false
+  register: iam_role
+  check_mode: true
+- ansible.builtin.assert:
+    that:
+      - iam_role is changed
+
+- name: iam_role_info after Role creation in check_mode
+  amazon.aws.iam_role_info:
+    name: "{{ test_role }}"
+  register: role_info
+- ansible.builtin.assert:
+    that:
+      - role_info is succeeded
+      - role_info.iam_roles | length == 0
+
+- name: Minimal IAM Role without instance profile
+  amazon.aws.iam_role:
+    name: "{{ test_role }}"
+    create_instance_profile: false
+  register: iam_role
+- ansible.builtin.assert:
+    that:
+      - iam_role is changed
+      - iam_role.iam_role.role_name == test_role
+      - iam_role.iam_role.arn.startswith("arn")
+      - iam_role.iam_role.arn.endswith("role/" + test_role )
+      - '"assume_role_policy_document" in iam_role.iam_role'
+      - '"assume_role_policy_document_raw" in iam_role.iam_role'
+      - iam_role.iam_role.assume_role_policy_document_raw == assume_deny_policy
+      - iam_role.iam_role.attached_policies | length == 0
+      - iam_role.iam_role.max_session_duration == 3600
+      - iam_role.iam_role.path == '/'
+      - iam_role.iam_role.role_name == test_role
+      - '"create_date" in iam_role.iam_role'
+      - '"role_id" in iam_role.iam_role'
+
+- name: Minimal IAM Role without instance profile (no change) - check mode
+  amazon.aws.iam_role:
+    name: "{{ test_role }}"
+    create_instance_profile: false
+  register: iam_role
+  check_mode: true
+- ansible.builtin.assert:
+    that:
+      - iam_role is not changed
+
+- name: Minimal IAM Role without instance profile (no change)
+  amazon.aws.iam_role:
+    name: "{{ test_role }}"
+    create_instance_profile: false
+  register: iam_role
+- ansible.builtin.assert:
+    that:
+      - iam_role is not changed
+      - iam_role.iam_role.role_name == test_role
+
+- name: iam_role_info after Role creation
+  amazon.aws.iam_role_info:
+    name: "{{ test_role }}"
+  register: role_info
+- ansible.builtin.assert:
+    that:
+      - role_info is succeeded
+      - role_info.iam_roles | length == 1
+      - role_info.iam_roles[0].arn.startswith("arn")
+      - role_info.iam_roles[0].arn.endswith("role/" + test_role )
+      - '"assume_role_policy_document" in role_info.iam_roles[0]'
+      - '"assume_role_policy_document_raw" in role_info.iam_roles[0]'
+      - '"create_date" in role_info.iam_roles[0]'
+      - '"description" not in role_info.iam_roles[0]'
+      - role_info.iam_roles[0].assume_role_policy_document_raw == assume_deny_policy
+      - role_info.iam_roles[0].inline_policies | length == 0
+      - role_info.iam_roles[0].instance_profiles | length == 0
+      - role_info.iam_roles[0].managed_policies | length == 0
+      - role_info.iam_roles[0].max_session_duration == 3600
+      - role_info.iam_roles[0].path == '/'
+      - '"permissions_boundary" not in role_info.iam_roles[0]'
+      - role_info.iam_roles[0].role_id == iam_role.iam_role.role_id
+      - role_info.iam_roles[0].role_name == test_role
+      - role_info.iam_roles[0].tags | length == 0
+
+- name: Remove IAM Role
+  amazon.aws.iam_role:
+    state: absent
+    name: "{{ test_role }}"
+    delete_instance_profile: true
+  register: iam_role
+- ansible.builtin.assert:
+    that:
+      - iam_role is changed
+
+- name: iam_role_info after Role deletion
+  amazon.aws.iam_role_info:
+    name: "{{ test_role }}"
+  register: role_info
+- ansible.builtin.assert:
+    that:
+      - role_info is succeeded
+      - role_info.iam_roles | length == 0
+
+# ------------------------------------------------------------------------------------------
+
+# (with path)
+- name: Minimal IAM Role with path (CHECK MODE)
+  amazon.aws.iam_role:
+    name: "{{ test_role }}"
+    path: "{{ test_path }}"
+  register: iam_role
+  check_mode: true
+- ansible.builtin.assert:
+    that:
+      - iam_role is changed
+
+- name: Minimal IAM Role with path
+  amazon.aws.iam_role:
+    name: "{{ test_role }}"
+    path: "{{ test_path }}"
+  register: iam_role
+- ansible.builtin.assert:
+    that:
+      - iam_role is changed
+      - iam_role.iam_role.role_name == test_role
+      - iam_role.iam_role.arn.startswith("arn")
+      - iam_role.iam_role.arn.endswith("role" + test_path + test_role )
+      # Would be nice to test the contents...
+      - '"assume_role_policy_document" in iam_role.iam_role'
+      - iam_role.iam_role.attached_policies | length == 0
+      - iam_role.iam_role.max_session_duration == 3600
+      - iam_role.iam_role.path == test_path
+      - iam_role.iam_role.role_name == test_role
+      - '"create_date" in iam_role.iam_role'
+      - '"role_id" in iam_role.iam_role'
+
+- name: Minimal IAM Role with path (no change) - check mode
+  amazon.aws.iam_role:
+    name: "{{ test_role }}"
+    path: "{{ test_path }}"
+  register: iam_role
+  check_mode: true
+- ansible.builtin.assert:
+    that:
+      - iam_role is not changed
+
+- name: Minimal IAM Role with path (no change)
+  amazon.aws.iam_role:
+    name: "{{ test_role }}"
+    path: "{{ test_path }}"
+  register: iam_role
+- ansible.builtin.assert:
+    that:
+      - iam_role is not changed
+      - iam_role.iam_role.role_name == test_role
+
+- name: Minimal IAM Role with updated path (no change)
+  amazon.aws.iam_role:
+    name: "{{ test_role }}"
+    path: "{{ test_path }}subpath/"
+  register: iam_role
+
+- ansible.builtin.assert:
+    that:
+      - iam_role is not changed
+      - iam_role.iam_role.role_name == test_role
+
+- name: iam_role_info after Role creation
+  amazon.aws.iam_role_info:
+    name: "{{ test_role }}"
+  register: role_info
+- ansible.builtin.assert:
+    that:
+      - role_info is succeeded
+      - role_info.iam_roles | length == 1
+      - role_info.iam_roles[0].arn.startswith("arn")
+      - role_info.iam_roles[0].arn.endswith("role" + test_path + test_role )
+      - '"assume_role_policy_document" in role_info.iam_roles[0]'
+      - '"create_date" in role_info.iam_roles[0]'
+      - '"description" not in role_info.iam_roles[0]'
+      - role_info.iam_roles[0].inline_policies | length == 0
+      - role_info.iam_roles[0].instance_profiles | length == 1
+      - role_info.iam_roles[0].instance_profiles[0].instance_profile_name == test_role
+      - role_info.iam_roles[0].instance_profiles[0].arn.startswith("arn")
+      - role_info.iam_roles[0].instance_profiles[0].arn.endswith("instance-profile" + test_path + test_role)
+      - role_info.iam_roles[0].managed_policies | length == 0
+      - role_info.iam_roles[0].max_session_duration == 3600
+      - role_info.iam_roles[0].path == test_path
+      - '"permissions_boundary" not in role_info.iam_roles[0]'
+      - role_info.iam_roles[0].role_id == iam_role.iam_role.role_id
+      - role_info.iam_roles[0].role_name == test_role
+      - role_info.iam_roles[0].tags | length == 0
+
+- name: iam_role_info after Role creation (searching a path)
+  amazon.aws.iam_role_info:
+    path_prefix: "{{ test_path }}"
+  register: role_info
+- ansible.builtin.assert:
+    that:
+      - role_info is succeeded
+      - role_info.iam_roles | length == 1
+      - role_info.iam_roles[0].arn.startswith("arn")
+      - role_info.iam_roles[0].arn.endswith("role" + test_path + test_role )
+      - '"assume_role_policy_document" in role_info.iam_roles[0]'
+      - '"create_date" in role_info.iam_roles[0]'
+      - '"description" not in role_info.iam_roles[0]'
+      - role_info.iam_roles[0].inline_policies | length == 0
+      - role_info.iam_roles[0].instance_profiles | length == 1
+      - role_info.iam_roles[0].instance_profiles[0].instance_profile_name == test_role
+      - role_info.iam_roles[0].instance_profiles[0].arn.startswith("arn")
+      - role_info.iam_roles[0].instance_profiles[0].arn.endswith("instance-profile" + test_path + test_role)
+      - role_info.iam_roles[0].managed_policies | length == 0
+      - role_info.iam_roles[0].max_session_duration == 3600
+      - '"permissions_boundary" not in role_info.iam_roles[0]'
+      - role_info.iam_roles[0].path == test_path
+      - role_info.iam_roles[0].role_id == iam_role.iam_role.role_id
+      - role_info.iam_roles[0].role_name == test_role
+      - role_info.iam_roles[0].tags | length == 0
+
+- name: iam_role_info after Role creation (searching a path without / prefix and suffix)
+  amazon.aws.iam_role_info:
+    path_prefix: "{{ bad_test_path }}"
+  register: role_info
+- ansible.builtin.assert:
+    that:
+      - role_info is succeeded
+      - role_info.iam_roles | length == 1
+      - role_info.iam_roles[0].arn.startswith("arn")
+      - role_info.iam_roles[0].arn.endswith("role" + test_path + test_role )
+      - '"assume_role_policy_document" in role_info.iam_roles[0]'
+      - '"create_date" in role_info.iam_roles[0]'
+      - '"description" not in role_info.iam_roles[0]'
+      - role_info.iam_roles[0].inline_policies | length == 0
+      - role_info.iam_roles[0].instance_profiles | length == 1
+      - role_info.iam_roles[0].instance_profiles[0].instance_profile_name == test_role
+      - role_info.iam_roles[0].instance_profiles[0].arn.startswith("arn")
+      - role_info.iam_roles[0].instance_profiles[0].arn.endswith("instance-profile" + test_path + test_role)
+      - role_info.iam_roles[0].managed_policies | length == 0
+      - role_info.iam_roles[0].max_session_duration == 3600
+      - '"permissions_boundary" not in role_info.iam_roles[0]'
+      - role_info.iam_roles[0].path == test_path
+      - role_info.iam_roles[0].role_id == iam_role.iam_role.role_id
+      - role_info.iam_roles[0].role_name == test_role
+      - role_info.iam_roles[0].tags | length == 0
+
+- name: Remove IAM Role
+  amazon.aws.iam_role:
+    state: absent
+    name: "{{ test_role }}"
+    path: "{{ test_path }}"
+    delete_instance_profile: true
+  register: iam_role
+- ansible.builtin.assert:
+    that:
+      - iam_role is changed
+
+- name: iam_role_info after Role deletion
+  amazon.aws.iam_role_info:
+    name: "{{ test_role }}"
+  register: role_info
+- ansible.builtin.assert:
+    that:
+      - role_info is succeeded
+      - role_info.iam_roles | length == 0
+
+# ------------------------------------------------------------------------------------------
+
+# (with Instance profile)
+- name: Minimal IAM Role with instance profile - check mode
+  amazon.aws.iam_role:
+    name: "{{ test_role }}"
+    create_instance_profile: true
+  register: iam_role
+  check_mode: true
+- ansible.builtin.assert:
+    that:
+      - iam_role is changed
+
+- name: Minimal IAM Role with instance profile
+  amazon.aws.iam_role:
+    name: "{{ test_role }}"
+    create_instance_profile: true
+  register: iam_role
+- ansible.builtin.assert:
+    that:
+      - iam_role is changed
+      - iam_role.iam_role.role_name == test_role
+      - iam_role.iam_role.arn.startswith("arn")
+      - iam_role.iam_role.arn.endswith("role/" + test_role )
+      # Would be nice to test the contents...
+      - '"assume_role_policy_document" in iam_role.iam_role'
+      - iam_role.iam_role.attached_policies | length == 0
+      - iam_role.iam_role.max_session_duration == 3600
+      - iam_role.iam_role.path == '/'
+      - iam_role.iam_role.role_name == test_role
+      - '"create_date" in iam_role.iam_role'
+      - '"role_id" in iam_role.iam_role'
+
+- name: Minimal IAM Role wth instance profile (no change) - check mode
+  amazon.aws.iam_role:
+    name: "{{ test_role }}"
+    create_instance_profile: true
+  register: iam_role
+  check_mode: true
+- ansible.builtin.assert:
+    that:
+      - iam_role is not changed
+
+- name: Minimal IAM Role wth instance profile (no change)
+  amazon.aws.iam_role:
+    name: "{{ test_role }}"
+    create_instance_profile: true
+  register: iam_role
+- ansible.builtin.assert:
+    that:
+      - iam_role is not changed
+      - iam_role.iam_role.role_name == test_role
+
+- name: iam_role_info after Role creation
+  amazon.aws.iam_role_info:
+    name: "{{ test_role }}"
+  register: role_info
+- ansible.builtin.assert:
+    that:
+      - role_info is succeeded
+      - role_info.iam_roles | length == 1
+      - role_info.iam_roles[0].arn.startswith("arn")
+      - role_info.iam_roles[0].arn.endswith("role/" + test_role )
+      - '"assume_role_policy_document" in role_info.iam_roles[0]'
+      - '"create_date" in role_info.iam_roles[0]'
+      - '"description" not in role_info.iam_roles[0]'
+      - role_info.iam_roles[0].inline_policies | length == 0
+      - role_info.iam_roles[0].instance_profiles | length == 1
+      - role_info.iam_roles[0].instance_profiles[0].instance_profile_name == test_role
+      - role_info.iam_roles[0].instance_profiles[0].arn.startswith("arn")
+      - role_info.iam_roles[0].instance_profiles[0].arn.endswith("instance-profile/" + test_role)
+      - role_info.iam_roles[0].managed_policies | length == 0
+      - role_info.iam_roles[0].max_session_duration == 3600
+      - role_info.iam_roles[0].path == '/'
+      - '"permissions_boundary" not in role_info.iam_roles[0]'
+      - role_info.iam_roles[0].role_id == iam_role.iam_role.role_id
+      - role_info.iam_roles[0].role_name == test_role
+      - role_info.iam_roles[0].tags | length == 0

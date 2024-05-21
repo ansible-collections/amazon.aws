@@ -6,6 +6,7 @@
 import pytest
 
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_tag_filter_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
@@ -37,6 +38,13 @@ class TestTagging:
             "lower case": "lower case value",
         }
 
+        self.tag_filter_dict = {
+            "tag:lowerCamel": "lowerCamelValue",
+            "tag:UpperCamel": "upperCamelValue",
+            "tag:Normal case": "Normal Value",
+            "tag:lower case": "lower case value",
+        }
+
         self.tag_minimal_boto3_list = [
             {"Key": "mykey", "Value": "myvalue"},
         ]
@@ -59,6 +67,14 @@ class TestTagging:
     def test_ansible_dict_to_boto3_tag_list_empty(self):
         assert ansible_dict_to_boto3_tag_list({}) == []
         assert ansible_dict_to_boto3_tag_list(None) == []
+
+    def test_ansible_dict_to_boto3_tag_list_boolean(self):
+        dict_with_bool = dict(boolean=True)
+        list_with_bool = [{"Key": "boolean", "Value": "True"}]
+        assert ansible_dict_to_boto3_tag_list(dict_with_bool) == list_with_bool
+        dict_with_bool = dict(boolean=False)
+        list_with_bool = [{"Key": "boolean", "Value": "False"}]
+        assert ansible_dict_to_boto3_tag_list(dict_with_bool) == list_with_bool
 
     # ========================================================
     #   tagging.boto3_tag_list_to_ansible_dict
@@ -138,6 +154,20 @@ class TestTagging:
         assert [] == keys_to_unset
         keys_to_set, keys_to_unset = compare_aws_tags(self.tag_example_dict, new_dict, purge_tags=True)
         assert new_keys == keys_to_set
+        assert [] == keys_to_unset
+
+    def test_compare_aws_tags_boolean(self):
+        dict_with_bool = dict(boolean=True)
+        dict_with_text_bool = dict(boolean="True")
+        # AWS always returns tag values as strings, so we only test this way around
+        keys_to_set, keys_to_unset = compare_aws_tags(dict_with_text_bool, dict_with_bool)
+        assert {} == keys_to_set
+        assert [] == keys_to_unset
+        keys_to_set, keys_to_unset = compare_aws_tags(dict_with_text_bool, dict_with_bool, purge_tags=False)
+        assert {} == keys_to_set
+        assert [] == keys_to_unset
+        keys_to_set, keys_to_unset = compare_aws_tags(dict_with_text_bool, dict_with_bool, purge_tags=True)
+        assert {} == keys_to_set
         assert [] == keys_to_unset
 
     def test_compare_aws_tags_complex_update(self):
@@ -221,3 +251,15 @@ class TestTagging:
         sorted_tag_spec = sorted(tag_specification, key=lambda i: (i["ResourceType"]))
         sorted_expected = sorted(expected_specification, key=lambda i: (i["ResourceType"]))
         assert sorted_tag_spec == sorted_expected
+
+    def test_ansible_dict_to_tag_filter_dict_empty(self):
+        assert ansible_dict_to_tag_filter_dict(None) == {}
+        assert ansible_dict_to_tag_filter_dict({}) == {}
+
+    def test_ansible_dict_to_tag_filter_dict_example(self):
+        assert ansible_dict_to_tag_filter_dict(self.tag_example_dict) == self.tag_filter_dict
+
+    def test_ansible_dict_to_tag_filter_dict_boolean(self):
+        dict_with_bool = {"boolean": True}
+        filter_dict_with_bool = {"tag:boolean": "True"}
+        assert ansible_dict_to_tag_filter_dict(dict_with_bool) == filter_dict_with_bool

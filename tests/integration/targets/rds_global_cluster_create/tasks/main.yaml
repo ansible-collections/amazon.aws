@@ -1,0 +1,109 @@
+---
+- module_defaults:
+    group/aws:
+      region: "{{ aws_region }}"
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
+    group/amazon.cloud.aws:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+  block:
+    - name: Create aurora global cluster
+      amazon.cloud.rds_global_cluster:
+        global_cluster_identifier: "{{ global_cluster_id }}"
+        engine: "{{ engine }}"
+        engine_version: "{{ engine_version }}"
+        region: "{{ aws_region }}"
+        state: present
+
+    - name: Create a primary cluster for global database
+      amazon.aws.rds_cluster:
+        db_cluster_identifier: "{{ primary_cluster_id }}"
+        engine: "{{ engine }}"
+        engine_version: "{{ engine_version }}"
+        master_username: "{{ username }}"
+        master_user_password: "{{ password }}"
+        global_cluster_identifier: "{{ global_cluster_id }}"
+        region: "{{ aws_region }}"
+      register: primary_cluster
+
+    - name: Create an instance connected to primary cluster
+      amazon.aws.rds_instance:
+        db_cluster_identifier: "{{ primary_cluster_id }}"
+        db_instance_identifier: "{{ primary_instance_id }}"
+        region: "{{ aws_region }}"
+        engine: "{{ engine }}"
+        db_instance_class: "{{ instance_class }}"
+
+    - name: Create a read replica cluster for global database
+      amazon.aws.rds_cluster:
+        db_cluster_identifier: "{{ secondary_cluster_id }}"
+        region: eu-north-1
+        engine: "{{ engine }}"
+        engine_version: "{{ engine_version }}"
+        global_cluster_identifier: "{{ global_cluster_id }}"
+      register: replica_cluster
+
+    - name: Get Global DB information
+      amazon.aws.rds_global_cluster_info:
+        global_cluster_identifier: "{{ global_cluster_id }}"
+        region: "{{ aws_region }}"
+      register: global_cluster_info
+
+    - name: Get primary cluster info
+      amazon.aws.rds_cluster_info:
+        db_cluster_identifier: "{{ primary_cluster_id }}"
+        region: "{{ aws_region }}"
+      register: primary_cluster_info_result
+
+    - name: Get secondary cluster info
+      amazon.aws.rds_cluster_info:
+        db_cluster_identifier: "{{ secondary_cluster_id }}"
+        region: eu-north-1
+      register: secondary_cluster_info_result
+
+    - name: Assert that the primary and secondary clusters are members of the global cluster
+      ansible.builtin.assert:
+        that:
+          - global_cluster_info.global_clusters[0].global_cluster_members[0].db_cluster_arn == primary_cluster_info_result.clusters[0].db_cluster_arn
+          - global_cluster_info.global_clusters[0].global_cluster_members[1].db_cluster_arn == secondary_cluster_info_result.clusters[0].db_cluster_arn
+          - global_cluster_info.global_clusters[0].engine == engine
+
+  always:
+    - name: Delete secondary cluster without creating a final snapshot
+      amazon.aws.rds_cluster:
+        cluster_id: "{{ secondary_cluster_id }}"
+        region: eu-north-1
+        global_cluster_identifier: "{{  global_cluster_id }}"
+        remove_from_global_db: true
+        skip_final_snapshot: true
+        state: absent
+      ignore_errors: true
+
+    - name: Delete instance attached to primary cluster
+      amazon.aws.rds_instance:
+        db_instance_identifier: "{{  primary_instance_id }}"
+        region: "{{ aws_region }}"
+        skip_final_snapshot: true
+        wait: false
+        state: absent
+      ignore_errors: true
+
+    - name: Delete primary cluster without creating a final snapshot
+      amazon.aws.rds_cluster:
+        cluster_id: "{{ primary_cluster_id }}"
+        global_cluster_identifier: "{{  global_cluster_id }}"
+        skip_final_snapshot: true
+        region: "{{ aws_region }}"
+        state: absent
+      ignore_errors: true
+
+    - name: Delete Global DB cluster
+      amazon.cloud.rds_global_cluster:
+        state: absent
+        global_cluster_identifier: "{{ global_cluster_id }}"
+        region: "{{ aws_region }}"
+      ignore_errors: true

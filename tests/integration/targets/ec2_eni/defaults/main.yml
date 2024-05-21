@@ -1,10 +1,10 @@
 ---
-availability_zone: '{{ ec2_availability_zone_names[0] }}'
+availability_zone: "{{ ec2_availability_zone_names[0] }}"
 
-vpc_seed_a: '{{ resource_prefix }}'
-vpc_seed_b: '{{ resource_prefix }}-ec2_eni'
-vpc_prefix: '10.{{ 256 | random(seed=vpc_seed_a) }}.{{ 256 | random(seed=vpc_seed_b ) }}'
-vpc_cidr: '{{ vpc_prefix}}.128/26'
+vpc_seed_a: "{{ resource_prefix }}"
+vpc_seed_b: "{{ resource_prefix }}-ec2_eni"
+vpc_prefix: 10.{{ 256 | random(seed=vpc_seed_a) }}.{{ 256 | random(seed=vpc_seed_b ) }}
+vpc_cidr: "{{ vpc_prefix}}.128/26"
 ip_1: "{{ vpc_prefix }}.132"
 ip_2: "{{ vpc_prefix }}.133"
 ip_3: "{{ vpc_prefix }}.134"
@@ -12,5 +12,5 @@ ip_4: "{{ vpc_prefix }}.135"
 ip_5: "{{ vpc_prefix }}.136"
 
 ec2_ips:
-- "{{ vpc_prefix }}.137"
-- "{{ vpc_prefix }}.138"
+  - "{{ vpc_prefix }}.137"
+  - "{{ vpc_prefix }}.138"

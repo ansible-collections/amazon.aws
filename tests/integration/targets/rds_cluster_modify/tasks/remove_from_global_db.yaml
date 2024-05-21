@@ -1,0 +1,243 @@
+---
+- name: Run tests for testing remove cluster from global db
+  block:
+    # Create global db -------------------------------------------------------------------------------
+
+    - name: Create rds global database
+      amazon.cloud.rds_global_cluster:
+        global_cluster_identifier: "{{ test_global_cluster_name }}"
+        engine: "{{ test_engine }}"
+        engine_version: "{{ test_engine_version }}"
+        region: "{{ test_primary_cluster_region }}"
+        state: present
+      register: create_global_result
+
+    # Create primary cluster with an instance ---------------------------------------------------------------
+
+    - name: Create a primary cluster for global database
+      amazon.aws.rds_cluster:
+        global_cluster_identifier: "{{ test_global_cluster_name }}"
+        db_cluster_identifier: "{{ test_primary_cluster_name }}"
+        region: "{{ test_primary_cluster_region }}"
+        engine: "{{ test_engine }}"
+        engine_version: "{{ test_engine_version }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+      register: create_primary_result
+
+    - name: Create an instance connected to primary cluster
+      amazon.aws.rds_instance:
+        db_cluster_identifier: "{{ test_primary_cluster_name }}"
+        db_instance_identifier: "{{ test_primary_cluster_name }}-instance"
+        region: "{{ test_primary_cluster_region }}"
+        engine: "{{ test_engine }}"
+        db_instance_class: "{{ test_instance_class }}"
+
+    - name: Get primary cluster info
+      amazon.aws.rds_cluster_info:
+        db_cluster_identifier: "{{ test_primary_cluster_name }}"
+        region: "{{ test_primary_cluster_region }}"
+      register: primary_cluster_info_result
+
+    - name: Get global db info
+      ansible.builtin.command: aws rds describe-global-clusters --global-cluster-identifier {{ test_global_cluster_name }}
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+        AWS_DEFAULT_REGION: "{{ test_primary_cluster_region }}"
+      register: global_cluster_info_result
+
+    - name: convert it to an object
+      ansible.builtin.set_fact:
+        global_cluster_info: "{{ global_cluster_info_result.stdout | from_json }}"
+
+    - name: Assert that primary cluster is a part of global db
+      ansible.builtin.assert:
+        that:
+          - global_cluster_info.GlobalClusters[0].GlobalClusterMembers[0].DBClusterArn == primary_cluster_info_result.clusters[0].db_cluster_arn
+
+    # Create replica cluster -------------------------------------------------------------------------------
+
+    - name: Create a replica cluster for global database
+      amazon.aws.rds_cluster:
+        global_cluster_identifier: "{{ test_global_cluster_name }}"
+        db_cluster_identifier: "{{ test_replica_cluster_name }}"
+        engine: "{{ test_engine }}"
+        engine_version: "{{ global_cluster_info.GlobalClusters[0].EngineVersion }}" # replica cluster engine version needs to be exact same as global db engine version
+        region: "{{ test_replica_cluster_region }}"
+      register: create_replica_result
+
+    - name: Get replica cluster info
+      amazon.aws.rds_cluster_info:
+        db_cluster_identifier: "{{ test_replica_cluster_name }}"
+        region: "{{ test_replica_cluster_region }}"
+      register: replica_cluster_info_result
+
+    - name: Get global db info
+      ansible.builtin.command: aws rds describe-global-clusters --global-cluster-identifier {{ test_global_cluster_name }}
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+        AWS_DEFAULT_REGION: "{{ test_primary_cluster_region }}"
+      register: global_cluster_info_result
+
+    - name: convert it to an object
+      ansible.builtin.set_fact:
+        global_cluster_info: "{{ global_cluster_info_result.stdout | from_json }}"
+
+    - name: Assert that replica cluster is a part of global db
+      ansible.builtin.assert:
+        that:
+          - global_cluster_info.GlobalClusters[0].GlobalClusterMembers[1].DBClusterArn == replica_cluster_info_result.clusters[0].db_cluster_arn
+
+    # Test delete on replica cluster part of global db----------------------------------------------------------------
+
+    - name: Delete DB cluster without final snapshot (fails as its a part of global db)
+      amazon.aws.rds_cluster:
+        db_cluster_identifier: "{{ test_replica_cluster_name }}"
+        global_cluster_identifier: "{{ test_global_cluster_name }}"
+        region: "{{ test_replica_cluster_region }}"
+        skip_final_snapshot: true
+        state: absent
+      register: delete_replica_cluster_result
+      ignore_errors: true
+
+    - name: Assert that deletion failed due to cluster being part of global db
+      ansible.builtin.assert:
+        that:
+          - delete_replica_cluster_result is failed
+          - delete_replica_cluster_result is not changed
+          - '"is a part of a global cluster, please remove it from global cluster" in delete_replica_cluster_result.error.message'
+
+    # Test modify replica DB cluster along with removing it from global db------------------------------------------------
+
+    - name: Remove replica DB cluster from global DB and modify cluster port
+      amazon.aws.rds_cluster:
+        db_cluster_identifier: "{{ test_replica_cluster_name }}"
+        global_cluster_identifier: "{{ test_global_cluster_name }}"
+        remove_from_global_db: true
+        state: present
+        port: 3389
+        region: "{{ test_replica_cluster_region }}"
+      register: modify_port_result
+
+    - name: Get replica cluster info
+      amazon.aws.rds_cluster_info:
+        db_cluster_identifier: "{{ test_replica_cluster_name }}"
+        region: "{{ test_replica_cluster_region }}"
+      register: replica_cluster_info_result
+
+    - ansible.builtin.assert:
+        that:
+          - modify_port_result is not failed
+          - modify_port_result is changed
+          - replica_cluster_info_result.clusters[0].port == 3389
+
+    - name: Get global db info
+      ansible.builtin.command: aws rds describe-global-clusters --global-cluster-identifier {{ test_global_cluster_name }}
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+        AWS_DEFAULT_REGION: "{{ test_primary_cluster_region }}"
+      register: global_cluster_info_result
+
+    - name: convert it to an object
+      ansible.builtin.set_fact:
+        global_cluster_info: "{{ global_cluster_info_result.stdout | from_json }}"
+
+    - name: Assert that replica cluster is NOT a part of global db
+      ansible.builtin.assert:
+        that:
+          - global_cluster_info.GlobalClusters[0].GlobalClusterMembers | length == 1
+          - global_cluster_info.GlobalClusters[0].GlobalClusterMembers[0].DBClusterArn != replica_cluster_info_result.clusters[0].db_cluster_arn
+
+    # Test delete on replica cluster as NOT a part of global db----------------------------------------------------------------
+
+    - name: Delete replica cluster
+      amazon.aws.rds_cluster:
+        db_cluster_identifier: "{{ test_replica_cluster_name }}"
+        global_cluster_identifier: "{{ test_global_cluster_name }}"
+        region: "{{ test_replica_cluster_region }}"
+        skip_final_snapshot: true
+        state: absent
+      register: delete_replica_cluster_result
+
+    - name: Assert that replica cluster deletion succeeded
+      ansible.builtin.assert:
+        that:
+          - delete_replica_cluster_result is not failed
+          - delete_replica_cluster_result is changed
+
+    # Test remove primary cluster from global db------------------------------------------------------------
+    - name: Remove primary cluster from global db
+      amazon.aws.rds_cluster:
+        global_cluster_identifier: "{{ test_global_cluster_name }}"
+        db_cluster_identifier: "{{ test_primary_cluster_name }}"
+        region: "{{ test_primary_cluster_region }}"
+        remove_from_global_db: true
+
+    - name: Get global db info
+      ansible.builtin.command: aws rds describe-global-clusters --global-cluster-identifier {{ test_global_cluster_name }}
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+        AWS_DEFAULT_REGION: "{{ test_primary_cluster_region }}"
+      register: global_cluster_info_result
+
+    - name: convert it to an object
+      ansible.builtin.set_fact:
+        global_cluster_info: "{{ global_cluster_info_result.stdout | from_json }}"
+
+    - name: Assert that primary cluster is NOT a part of global db
+      ansible.builtin.assert:
+        that:
+          - global_cluster_info.GlobalClusters[0].GlobalClusterMembers | length == 0
+
+  # Cleanup starts------------------------------------------------------------
+
+  always:
+    - name: Delete replica cluster
+      amazon.aws.rds_cluster:
+        db_cluster_identifier: "{{ test_replica_cluster_name }}"
+        global_cluster_identifier: "{{ test_global_cluster_name }}"
+        skip_final_snapshot: true
+        region: "{{ test_replica_cluster_region }}"
+        state: absent
+      ignore_errors: true
+
+    - name: Delete instance connected to primary cluster
+      amazon.aws.rds_instance:
+        db_cluster_identifier: "{{ test_primary_cluster_name }}"
+        db_instance_identifier: "{{ test_primary_cluster_name }}-instance"
+        engine: "{{ test_engine }}"
+        db_instance_class: "{{ test_instance_class }}"
+        skip_final_snapshot: true
+        region: "{{ test_primary_cluster_region }}"
+        state: absent
+      ignore_errors: true
+
+    - name: Delete primary cluster
+      amazon.aws.rds_cluster:
+        db_cluster_identifier: "{{ test_primary_cluster_name }}"
+        global_cluster_identifier: "{{ test_global_cluster_name }}"
+        engine: "{{ test_engine }}"
+        engine_version: "{{ test_engine_version }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        skip_final_snapshot: true
+        region: "{{ test_primary_cluster_region }}"
+        state: absent
+      ignore_errors: true
+
+    - name: Delete global db
+      amazon.cloud.rds_global_cluster:
+        global_cluster_identifier: "{{ test_global_cluster_name }}"
+        engine: "{{ test_engine }}"
+        engine_version: "{{ test_engine_version }}"
+        region: "{{ test_primary_cluster_region }}"
+        state: absent
+      ignore_errors: true

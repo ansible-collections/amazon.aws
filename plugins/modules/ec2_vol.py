@@ -248,17 +248,17 @@ volume:
 
 import time
 
-from ansible_collections.amazon.aws.plugins.module_utils.arn import is_outpost_arn
-from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
-from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
+
+from ansible_collections.amazon.aws.plugins.module_utils.arn import is_outpost_arn
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_ec2_tags
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
-
+from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 
 try:
     import botocore
@@ -327,22 +327,6 @@ def get_volume(module, ec2_conn, vol_id=None, fail_on_not_found=True):
         )
     vol = camel_dict_to_snake_dict(vols[0])
     return vol
-
-
-def get_volumes(module, ec2_conn):
-    instance = module.params.get("instance")
-
-    find_params = dict()
-    if instance:
-        find_params["Filters"] = ansible_dict_to_boto3_filter_list({"attachment.instance-id": instance})
-
-    vols = []
-    try:
-        vols_response = ec2_conn.describe_volumes(aws_retry=True, **find_params)
-        vols = [camel_dict_to_snake_dict(vol) for vol in vols_response.get("Volumes", [])]
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Error while getting EBS volumes")
-    return vols
 
 
 def delete_volume(module, ec2_conn, volume_id=None):
@@ -858,7 +842,7 @@ def main():
     elif state == "absent":
         if not name and not param_id:
             module.fail_json("A volume name or id is required for deletion")
-        if volume:
+        if volume and volume.get("state") not in ("deleting", "deleted"):
             if module.check_mode:
                 module.exit_json(changed=True, msg="Would have deleted volume if not in check mode.")
             detach_volume(module, ec2_conn, volume_dict=volume)

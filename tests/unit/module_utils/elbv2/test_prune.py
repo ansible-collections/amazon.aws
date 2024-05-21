@@ -153,6 +153,8 @@ simplified_oidc_action = dict(
         Scope="openid",
         SessionTimeout=604800,
         UseExistingClientSecret=True,
+        OnUnauthenticatedRequest="authenticate",
+        SessionCookieName="AWSELBAuthSessionCookie",
     ),
 )
 oidc_actions = [

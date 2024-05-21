@@ -73,6 +73,7 @@ network_interfaces:
         device_index: 1,
         instance_id: "i-15b8d3cadbafa1234",
         instance_owner_id: "123456789012",
+        "network_card_index": 0,
         status: "attached"
       }
     availability_zone:
@@ -147,7 +148,6 @@ network_interfaces:
       sample: []
     requester_id:
       description: The ID of the entity that launched the ENI.
-      returned: always
       type: str
       sample: "AIDA12345EXAMPLE54321"
     requester_managed:
@@ -196,11 +196,11 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 
 
 def build_request_args(eni_id, filters):

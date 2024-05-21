@@ -1,0 +1,7 @@
+---
+test_user: "{{ resource_prefix }}-user"
+test_group: "{{ resource_prefix }}-group"
+test_path: /{{ resource_prefix }}-prefix/
+
+safe_managed_policy: AWSDenyAll
+custom_policy_name: "{{ resource_prefix }}-denyall"

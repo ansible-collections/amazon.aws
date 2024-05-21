@@ -112,7 +112,6 @@ images:
       sample: '2017-10-16T19:22:13.000Z'
     description:
       description: The description of the AMI.
-      returned: always
       type: str
       sample: ''
     ena_support:
@@ -163,6 +162,11 @@ images:
       returned: always
       type: str
       sample: '123456789012'
+    platform_details:
+      description: Platform of image.
+      returned: always
+      type: str
+      sample: "Windows"
     public:
       description: Whether the image has public launch permissions.
       returned: always
@@ -180,7 +184,6 @@ images:
       sample: ebs
     sriov_net_support:
       description: Whether enhanced networking is enabled.
-      returned: always
       type: str
       sample: simple
     state:
@@ -192,6 +195,11 @@ images:
       description: Any tags assigned to the image.
       returned: always
       type: dict
+    usage_operation:
+      description: The operation of the Amazon EC2 instance and the billing code that is associated with the AMI.
+      returned: always
+      type: str
+      sample: "RunInstances"
     virtualization_type:
       description: The type of virtualization of the AMI.
       returned: always
@@ -200,17 +208,18 @@ images:
 """
 
 try:
-    from botocore.exceptions import ClientError, BotoCoreError
+    from botocore.exceptions import BotoCoreError
+    from botocore.exceptions import ClientError
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 
 
 class AmiInfoFailure(Exception):
@@ -259,10 +268,10 @@ def get_images(ec2_client, request_args):
     return images
 
 
-def get_image_attribute(ec2_client, image):
+def get_image_attribute(ec2_client, image_id):
     try:
         launch_permissions = ec2_client.describe_image_attribute(
-            aws_retry=True, Attribute="launchPermission", ImageId=image["image_id"]
+            aws_retry=True, Attribute="launchPermission", ImageId=image_id
         )
     except (ClientError, BotoCoreError) as err:
         raise AmiInfoFailure(err, "error describing image attribute")
@@ -275,9 +284,10 @@ def list_ec2_images(ec2_client, module, request_args):
 
     for image in images:
         try:
+            image_id = image["image_id"]
             image["tags"] = boto3_tag_list_to_ansible_dict(image.get("tags", []))
             if module.params.get("describe_image_attributes"):
-                launch_permissions = get_image_attribute(ec2_client, image).get("LaunchPermissions", [])
+                launch_permissions = get_image_attribute(ec2_client, image_id).get("LaunchPermissions", [])
                 image["launch_permissions"] = [camel_dict_to_snake_dict(perm) for perm in launch_permissions]
         except is_boto3_error_code("AuthFailure"):
             # describing launch permissions of images owned by others is not permitted, but shouldn't cause failures

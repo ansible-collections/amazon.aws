@@ -217,15 +217,25 @@ interface:
   returned: when state != absent
   type: complex
   contains:
+    attachment:
+      description: The network interface attachment.
+      type: dict
+      sample: {
+            "attach_time": "2024-04-25T20:57:20+00:00",
+            "attachment_id": "eni-attach-0ddce58b341a1846f",
+            "delete_on_termination": true,
+            "device_index": 0,
+            "instance_id": "i-032cb1cceb29250d2",
+            "status": "attached"
+        }
     description:
       description: interface description
       type: str
       sample: Firewall network interface
     groups:
-      description: list of security groups
-      type: list
-      elements: dict
-      sample: [ { "sg-f8a8a9da": "default" } ]
+      description: dict of security groups
+      type: dict
+      sample: { "sg-f8a8a9da": "default" }
     id:
       description: network interface id
       type: str
@@ -282,13 +292,13 @@ try:
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
-from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_ec2_security_group_ids_from_names
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
 from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
 
 
@@ -368,10 +378,7 @@ def correct_ip_count(connection, ip_count, module, eni_id):
         for ip in eni["PrivateIpAddresses"]:
             private_addresses.add(ip["PrivateIpAddress"])
 
-    if len(private_addresses) == ip_count:
-        return True
-    else:
-        return False
+    return bool(len(private_addresses) == ip_count)
 
 
 def wait_for(function_pointer, *args):
@@ -395,7 +402,7 @@ def create_eni(connection, vpc_id, module):
     private_ip_address = module.params.get("private_ip_address")
     description = module.params.get("description")
     security_groups = get_ec2_security_group_ids_from_names(
-        module.params.get("security_groups"), connection, vpc_id=vpc_id, boto3=True
+        module.params.get("security_groups"), connection, vpc_id=vpc_id
     )
     secondary_private_ip_addresses = module.params.get("secondary_private_ip_addresses")
     secondary_private_ip_address_count = module.params.get("secondary_private_ip_address_count")
@@ -510,7 +517,7 @@ def modify_eni(connection, module, eni):
                     )
                 changed = True
         if len(security_groups) > 0:
-            groups = get_ec2_security_group_ids_from_names(security_groups, connection, vpc_id=eni["VpcId"], boto3=True)
+            groups = get_ec2_security_group_ids_from_names(security_groups, connection, vpc_id=eni["VpcId"])
             if sorted(get_sec_group_list(eni["Groups"])) != sorted(groups):
                 if not module.check_mode:
                     connection.modify_network_interface_attribute(

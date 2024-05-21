@@ -295,7 +295,7 @@ EXAMPLES = r"""
     rules:
       - proto: tcp
         ports:
-        - 80
+          - 80
         cidr_ip: 0.0.0.0/0
         rule_desc: allow all on port 80
 
@@ -344,7 +344,7 @@ EXAMPLES = r"""
         group_id: sg-12345678
       - proto: icmp
         from_port: 8 # icmp type, -1 = any type
-        to_port:  -1 # icmp subtype, -1 = any subtype
+        to_port: -1 # icmp subtype, -1 = any subtype
         cidr_ip: 10.0.0.0/8
       - proto: all
         # the containing group name may be specified here
@@ -404,7 +404,7 @@ EXAMPLES = r"""
           - 64:ff9b::/96
         group_id:
           - sg-edcd9784
-  diff: True
+  diff: true
 
 - name: "Delete group by its id"
   amazon.aws.ec2_security_group:
@@ -413,8 +413,8 @@ EXAMPLES = r"""
 """
 
 RETURN = r"""
-group_name:
-  description: Security group name
+description:
+  description: Description of security group
   sample: My Security Group
   type: str
   returned: on create/update
@@ -423,10 +423,131 @@ group_id:
   sample: sg-abcd1234
   type: str
   returned: on create/update
-description:
-  description: Description of security group
+group_name:
+  description: Security group name
   sample: My Security Group
   type: str
+  returned: on create/update
+ip_permissions:
+    description: The inbound rules associated with the security group.
+    returned: always
+    type: list
+    elements: dict
+    contains:
+        from_port:
+            description: If the protocol is TCP or UDP, this is the start of the port range.
+            type: int
+            sample: 80
+        ip_protocol:
+            description: The IP protocol name or number.
+            returned: always
+            type: str
+        ip_ranges:
+            description: The IPv4 ranges.
+            returned: always
+            type: list
+            elements: dict
+            contains:
+                cidr_ip:
+                    description: The IPv4 CIDR range.
+                    returned: always
+                    type: str
+        ipv6_ranges:
+            description: The IPv6 ranges.
+            returned: always
+            type: list
+            elements: dict
+            contains:
+                cidr_ipv6:
+                    description: The IPv6 CIDR range.
+                    returned: always
+                    type: str
+        prefix_list_ids:
+            description: The prefix list IDs.
+            returned: always
+            type: list
+            elements: dict
+            contains:
+                prefix_list_id:
+                    description: The ID of the prefix.
+                    returned: always
+                    type: str
+        to_group:
+            description: If the protocol is TCP or UDP, this is the end of the port range.
+            type: int
+            sample: 80
+        user_id_group_pairs:
+            description: The security group and AWS account ID pairs.
+            returned: always
+            type: list
+            elements: dict
+            contains:
+                group_id:
+                    description: The security group ID of the pair.
+                    returned: always
+                    type: str
+                user_id:
+                    description: The user ID of the pair.
+                    returned: always
+                    type: str
+ip_permissions_egress:
+    description: The outbound rules associated with the security group.
+    returned: always
+    type: list
+    elements: dict
+    contains:
+        ip_protocol:
+            description: The IP protocol name or number.
+            returned: always
+            type: str
+        ip_ranges:
+            description: The IPv4 ranges.
+            returned: always
+            type: list
+            elements: dict
+            contains:
+                cidr_ip:
+                    description: The IPv4 CIDR range.
+                    returned: always
+                    type: str
+        ipv6_ranges:
+            description: The IPv6 ranges.
+            returned: always
+            type: list
+            elements: dict
+            contains:
+                cidr_ipv6:
+                    description: The IPv6 CIDR range.
+                    returned: always
+                    type: str
+        prefix_list_ids:
+            description: The prefix list IDs.
+            returned: always
+            type: list
+            elements: dict
+            contains:
+                prefix_list_id:
+                    description: The ID of the prefix.
+                    returned: always
+                    type: str
+        user_id_group_pairs:
+            description: The security group and AWS account ID pairs.
+            returned: always
+            type: list
+            elements: dict
+            contains:
+                group_id:
+                    description: The security group ID of the pair.
+                    returned: always
+                    type: str
+                user_id:
+                    description: The user ID of the pair.
+                    returned: always
+                    type: str
+owner_id:
+  description: AWS Account ID of the security group
+  sample: 123456789012
+  type: int
   returned: on create/update
 tags:
   description: Tags associated with the security group
@@ -440,35 +561,6 @@ vpc_id:
   sample: vpc-abcd1234
   type: str
   returned: on create/update
-ip_permissions:
-  description: Inbound rules associated with the security group.
-  sample:
-    - from_port: 8182
-      ip_protocol: tcp
-      ip_ranges:
-        - cidr_ip: "198.51.100.1/32"
-      ipv6_ranges: []
-      prefix_list_ids: []
-      to_port: 8182
-      user_id_group_pairs: []
-  type: list
-  returned: on create/update
-ip_permissions_egress:
-  description: Outbound rules associated with the security group.
-  sample:
-    - ip_protocol: -1
-      ip_ranges:
-        - cidr_ip: "0.0.0.0/0"
-          ipv6_ranges: []
-          prefix_list_ids: []
-          user_id_group_pairs: []
-  type: list
-  returned: on create/update
-owner_id:
-  description: AWS Account ID of the security group
-  sample: 123456789012
-  type: int
-  returned: on create/update
 """
 
 import itertools
@@ -481,7 +573,8 @@ from time import sleep
 
 try:
     import botocore
-    from botocore.exceptions import BotoCoreError, ClientError
+    from botocore.exceptions import BotoCoreError
+    from botocore.exceptions import ClientError
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
@@ -491,17 +584,17 @@ from ansible.module_utils.common.network import to_ipv6_subnet
 from ansible.module_utils.common.network import to_subnet
 from ansible.module_utils.six import string_types
 
-from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
 from ansible_collections.amazon.aws.plugins.module_utils.iam import get_aws_account_id
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
+from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
 from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
-
 
 Rule = namedtuple("Rule", ["port_range", "protocol", "target", "target_type", "description"])
 TARGET_TYPES_ALL = {"ipv4", "ipv6", "group", "ip_prefix"}
@@ -531,7 +624,7 @@ def rule_cmp(a, b):
             # equal protocols can interchange `(-1, -1)` and `(None, None)`
             if a.port_range in ((None, None), (-1, -1)) and b.port_range in ((None, None), (-1, -1)):
                 continue
-            elif getattr(a, prop) != getattr(b, prop):
+            if getattr(a, prop) != getattr(b, prop):
                 return False
         elif getattr(a, prop) != getattr(b, prop):
             return False
@@ -731,7 +824,7 @@ def _lookup_target_or_fail(client, group_name, vpc_id, groups, msg):
     return "group", (owner_id, group_id, None), False
 
 
-def _create_target_from_rule(client, rule, groups, vpc_id, check_mode):
+def _create_target_from_rule(client, rule, groups, vpc_id, tags, check_mode):
     owner_id = current_account_id
     # We can't create a group in check mode...
     if check_mode:
@@ -740,7 +833,7 @@ def _create_target_from_rule(client, rule, groups, vpc_id, check_mode):
     group_name = rule["group_name"]
 
     try:
-        created_group = _create_security_group_with_wait(client, group_name, rule["group_desc"], vpc_id)
+        created_group = _create_security_group_with_wait(client, group_name, rule["group_desc"], vpc_id, tags)
     except is_boto3_error_code("InvalidGroup.Duplicate"):
         # The group exists, but didn't show up in any of our previous describe-security-groups calls
         # Try searching on a filter for the name, and allow a retry window for AWS to update
@@ -761,7 +854,7 @@ def _create_target_from_rule(client, rule, groups, vpc_id, check_mode):
     return "group", (owner_id, group_id, None), True
 
 
-def _target_from_rule_with_group_name(client, rule, name, group, groups, vpc_id, check_mode):
+def _target_from_rule_with_group_name(client, rule, name, group, groups, vpc_id, tags, check_mode):
     group_name = rule["group_name"]
     owner_id = current_account_id
     if group_name == name:
@@ -797,10 +890,10 @@ def _target_from_rule_with_group_name(client, rule, name, group, groups, vpc_id,
         )
         return _lookup_target_or_fail(client, group_name, vpc_id, groups, fail_msg)
 
-    return _create_target_from_rule(client, rule, groups, vpc_id, check_mode)
+    return _create_target_from_rule(client, rule, groups, vpc_id, tags, check_mode)
 
 
-def get_target_from_rule(module, client, rule, name, group, groups, vpc_id):
+def get_target_from_rule(module, client, rule, name, group, groups, vpc_id, tags):
     """
     Returns tuple of (target_type, target, group_created) after validating rule params.
 
@@ -821,7 +914,7 @@ def get_target_from_rule(module, client, rule, name, group, groups, vpc_id):
         if rule.get("group_id"):
             return _target_from_rule_with_group_id(rule, groups)
         if "group_name" in rule:
-            return _target_from_rule_with_group_name(client, rule, name, group, groups, vpc_id, module.check_mode)
+            return _target_from_rule_with_group_name(client, rule, name, group, groups, vpc_id, tags, module.check_mode)
         if "cidr_ip" in rule:
             return "ipv4", validate_ip(module, rule["cidr_ip"]), False
         if "cidr_ipv6" in rule:
@@ -1054,10 +1147,12 @@ def update_rule_descriptions(
     return changed
 
 
-def _create_security_group_with_wait(client, name, description, vpc_id):
+def _create_security_group_with_wait(client, name, description, vpc_id, tags):
     params = dict(GroupName=name, Description=description)
     if vpc_id:
         params["VpcId"] = vpc_id
+    if tags:
+        params["TagSpecifications"] = boto3_tag_specifications(tags, ["security-group"])
 
     created_group = client.create_security_group(aws_retry=True, **params)
     get_waiter(
@@ -1069,11 +1164,13 @@ def _create_security_group_with_wait(client, name, description, vpc_id):
     return created_group
 
 
-def create_security_group(client, module, name, description, vpc_id):
+def create_security_group(client, module, name, description, vpc_id, tags):
     if not module.check_mode:
         params = dict(GroupName=name, Description=description)
         if vpc_id:
             params["VpcId"] = vpc_id
+        if tags:
+            params["TagSpecifications"] = boto3_tag_specifications(tags, ["security-group"])
         try:
             group = client.create_security_group(aws_retry=True, **params)
         except (BotoCoreError, ClientError) as e:
@@ -1291,8 +1388,7 @@ def flatten_nested_targets(module, rules):
                     date="2024-12-01",
                     collection_name="amazon.aws",
                 )
-                for t in _flatten(target):
-                    yield t
+                yield from _flatten(target)
             elif isinstance(target, string_types):
                 yield target
 
@@ -1408,7 +1504,7 @@ def ensure_present(module, client, group, groups):
         if module.check_mode:
             return True, None
 
-        group = create_security_group(client, module, name, description, vpc_id)
+        group = create_security_group(client, module, name, description, vpc_id, tags)
         group_created_new = True
         changed = True
 
@@ -1435,7 +1531,7 @@ def ensure_present(module, client, group, groups):
             continue
         for rule in new_rules:
             target_type, target, target_group_created = get_target_from_rule(
-                module, client, rule, name, group, groups, vpc_id
+                module, client, rule, name, group, groups, vpc_id, tags
             )
             changed |= target_group_created
 

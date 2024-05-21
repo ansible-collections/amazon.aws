@@ -158,7 +158,7 @@ EXAMPLES = r"""
     backup_plan_name: 1111f877-1ecf-4d79-9718-a861cd09df3b
     iam_role_arn: arn:aws:iam::111122223333:role/system-backup
     resources:
-    - arn:aws:elasticfilesystem:*:*:file-system/*
+      - arn:aws:elasticfilesystem:*:*:file-system/*
 """
 
 
@@ -223,12 +223,13 @@ try:
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.backup import get_selection_details
-from ansible_collections.amazon.aws.plugins.module_utils.backup import get_plan_details
-from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
+
+from ansible_collections.amazon.aws.plugins.module_utils.backup import get_plan_details
+from ansible_collections.amazon.aws.plugins.module_utils.backup import get_selection_details
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 
 
 def check_for_update(current_selection, backup_selection_data, iam_role_arn):

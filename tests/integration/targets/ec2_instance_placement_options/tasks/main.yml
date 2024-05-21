@@ -1,0 +1,81 @@
+---
+- module_defaults:
+    group/aws:
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+  block:
+    - name: New placement group
+      community.aws.ec2_placement_group:
+        name: "{{ ec2_placement_group_name }}"
+        strategy: partition
+        partition_count: 1
+        state: present
+
+    - name: New instance with placement group name
+      amazon.aws.ec2_instance:
+        state: running
+        name: "{{ resource_prefix }}-test-placement-group-name"
+        image_id: "{{ ec2_ami_id }}"
+        placement:
+          group_name: "{{ ec2_placement_group_name }}"
+        tags:
+          Name: "{{ resource_prefix }}-test-placement-group-name"
+          TestId: "{{ ec2_instance_tag_TestId }}"
+        security_group: default
+        instance_type: "{{ ec2_instance_type }}"
+        wait: true
+      ignore_errors: true
+      register: instance_creation
+
+    - name: Gather ec2 facts to check placement group options
+      amazon.aws.ec2_instance_info:
+        filters:
+          tag:Name: "{{ resource_prefix }}-test-placement-group-name"
+          tag:TestId: "{{ ec2_instance_tag_TestId }}"
+          instance-state-name: running
+      ignore_errors: true
+      register: instance_facts
+
+    - name: Validate instance with placement group name
+      ansible.builtin.assert:
+        that:
+          - instance_creation is success
+          - instance_creation is changed
+          - instance_facts.instances[0].placement.group_name == ec2_placement_group_name
+    # - instance_creation is failed
+    # - '"You are not authorized to perform this operation." in instance_creation.msg'
+
+    - name: New instance with dedicated tenancy
+      amazon.aws.ec2_instance:
+        state: running
+        name: "{{ resource_prefix }}-test-dedicated-tenancy"
+        image_id: "{{ ec2_ami_id }}"
+        placement:
+          tenancy: "{{ ec2_tenancy }}"
+        tags:
+          TestId: "{{ ec2_instance_tag_TestId }}"
+        security_group: default
+        instance_type: "{{ ec2_instance_type }}"
+        wait: true
+      ignore_errors: true
+      register: instance_creation
+
+    - name: Gather ec2 facts to check placement tenancy
+      amazon.aws.ec2_instance_info:
+        filters:
+          tag:Name: "{{ resource_prefix }}-test-dedicated-tenancy"
+          tag:TestId: "{{ ec2_instance_tag_TestId }}"
+          instance-state-name: running
+      ignore_errors: true
+      register: instance_facts
+
+    - name: Validate instance with dedicated tenancy
+      ansible.builtin.assert:
+        that:
+          - instance_creation is success
+          - instance_creation is changed
+          - instance_facts.instances[0].placement.tenancy == ec2_tenancy
+        # - instance_creation is failed
+        # - '"You are not authorized to perform this operation." in instance_creation.msg'

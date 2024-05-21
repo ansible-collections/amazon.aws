@@ -343,13 +343,13 @@ EXAMPLES = r"""
 
 - amazon.aws.autoscaling_group:
     name: special
-    load_balancers: [ 'lb1', 'lb2' ]
-    availability_zones: [ 'eu-west-1a', 'eu-west-1b' ]
+    load_balancers: ['lb1', 'lb2']
+    availability_zones: ['eu-west-1a', 'eu-west-1b']
     launch_config_name: 'lc-1'
     min_size: 1
     max_size: 10
     desired_capacity: 5
-    vpc_zone_identifier: [ 'subnet-abcd1234', 'subnet-1a2b3c4d' ]
+    vpc_zone_identifier: ['subnet-abcd1234', 'subnet-1a2b3c4d']
     tags:
       - environment: production
         propagate_at_launch: false
@@ -396,8 +396,8 @@ EXAMPLES = r"""
     health_check_period: 60
     health_check_type: ELB
     replace_instances:
-    - i-b345231
-    - i-24c2931
+      - i-b345231
+      - i-24c2931
     min_size: 5
     max_size: 5
     desired_capacity: 5
@@ -407,16 +407,16 @@ EXAMPLES = r"""
 
 - amazon.aws.autoscaling_group:
     name: special
-    load_balancers: [ 'lb1', 'lb2' ]
-    availability_zones: [ 'eu-west-1a', 'eu-west-1b' ]
+    load_balancers: ['lb1', 'lb2']
+    availability_zones: ['eu-west-1a', 'eu-west-1b']
     launch_template:
-        version: '1'
-        launch_template_name: 'lt-example'
-        launch_template_id: 'lt-123456'
+      version: '1'
+      launch_template_name: 'lt-example'
+      launch_template_id: 'lt-123456'
     min_size: 1
     max_size: 10
     desired_capacity: 5
-    vpc_zone_identifier: [ 'subnet-abcd1234', 'subnet-1a2b3c4d' ]
+    vpc_zone_identifier: ['subnet-abcd1234', 'subnet-1a2b3c4d']
     tags:
       - environment: production
         propagate_at_launch: false
@@ -425,24 +425,24 @@ EXAMPLES = r"""
 
 - amazon.aws.autoscaling_group:
     name: special
-    load_balancers: [ 'lb1', 'lb2' ]
-    availability_zones: [ 'eu-west-1a', 'eu-west-1b' ]
+    load_balancers: ['lb1', 'lb2']
+    availability_zones: ['eu-west-1a', 'eu-west-1b']
     launch_template:
-        version: '1'
-        launch_template_name: 'lt-example'
-        launch_template_id: 'lt-123456'
+      version: '1'
+      launch_template_name: 'lt-example'
+      launch_template_id: 'lt-123456'
     mixed_instances_policy:
-        instance_types:
-            - t3a.large
-            - t3.large
-            - t2.large
-        instances_distribution:
-            on_demand_percentage_above_base_capacity: 0
-            spot_allocation_strategy: capacity-optimized
+      instance_types:
+        - t3a.large
+        - t3.large
+        - t2.large
+      instances_distribution:
+        on_demand_percentage_above_base_capacity: 0
+        spot_allocation_strategy: capacity-optimized
     min_size: 1
     max_size: 10
     desired_capacity: 5
-    vpc_zone_identifier: [ 'subnet-abcd1234', 'subnet-1a2b3c4d' ]
+    vpc_zone_identifier: ['subnet-abcd1234', 'subnet-1a2b3c4d']
     tags:
       - environment: production
         propagate_at_launch: false
@@ -660,32 +660,13 @@ except ImportError:
     pass  # Handled by AnsibleAWSModule
 
 from ansible.module_utils._text import to_native
-
-from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
-from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 
-ASG_ATTRIBUTES = (
-    "AvailabilityZones",
-    "DefaultCooldown",
-    "DesiredCapacity",
-    "HealthCheckGracePeriod",
-    "HealthCheckType",
-    "LaunchConfigurationName",
-    "LoadBalancerNames",
-    "MaxInstanceLifetime",
-    "MaxSize",
-    "MinSize",
-    "AutoScalingGroupName",
-    "PlacementGroup",
-    "TerminationPolicies",
-    "VPCZoneIdentifier",
-)
-
-INSTANCE_ATTRIBUTES = ("instance_id", "health_status", "lifecycle_state", "launch_config_name")
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
 
 backoff_params = dict(retries=10, delay=3, backoff=1.5)
 
@@ -1109,7 +1090,7 @@ def wait_for_target_group(asg_connection, group_name):
 
 
 def suspend_processes(ec2_connection, as_group):
-    suspend_processes = set(module.params.get("suspend_processes"))
+    processes_to_suspend = set(module.params.get("suspend_processes"))
 
     try:
         suspended_processes = set([p["ProcessName"] for p in as_group["SuspendedProcesses"]])
@@ -1117,15 +1098,15 @@ def suspend_processes(ec2_connection, as_group):
         # New ASG being created, no suspended_processes defined yet
         suspended_processes = set()
 
-    if suspend_processes == suspended_processes:
+    if processes_to_suspend == suspended_processes:
         return False
 
-    resume_processes = list(suspended_processes - suspend_processes)
+    resume_processes = list(suspended_processes - processes_to_suspend)
     if resume_processes:
         resume_asg_processes(ec2_connection, module.params.get("name"), resume_processes)
 
-    if suspend_processes:
-        suspend_asg_processes(ec2_connection, module.params.get("name"), list(suspend_processes))
+    if processes_to_suspend:
+        suspend_asg_processes(ec2_connection, module.params.get("name"), list(processes_to_suspend))
 
     return True
 
@@ -1675,15 +1656,15 @@ def get_instances_by_launch_config(props, lc_check, initial_instances):
                 old_instances.append(i)
 
     else:
-        module.debug(f"Comparing initial instances with current: {*initial_instances,}")
+        module.debug(f"Comparing initial instances with current: {*initial_instances, }")
         for i in props["instances"]:
             if i not in initial_instances:
                 new_instances.append(i)
             else:
                 old_instances.append(i)
 
-    module.debug(f"New instances: {len(new_instances)}, {*new_instances,}")
-    module.debug(f"Old instances: {len(old_instances)}, {*old_instances,}")
+    module.debug(f"New instances: {len(new_instances)}, {*new_instances, }")
+    module.debug(f"Old instances: {len(old_instances)}, {*old_instances, }")
 
     return new_instances, old_instances
 
@@ -1702,15 +1683,15 @@ def get_instances_by_launch_template(props, lt_check, initial_instances):
             else:
                 old_instances.append(i)
     else:
-        module.debug(f"Comparing initial instances with current: {*initial_instances,}")
+        module.debug(f"Comparing initial instances with current: {*initial_instances, }")
         for i in props["instances"]:
             if i not in initial_instances:
                 new_instances.append(i)
             else:
                 old_instances.append(i)
 
-    module.debug(f"New instances: {len(new_instances)}, {*new_instances,}")
-    module.debug(f"Old instances: {len(old_instances)}, {*old_instances,}")
+    module.debug(f"New instances: {len(new_instances)}, {*new_instances, }")
+    module.debug(f"Old instances: {len(old_instances)}, {*old_instances, }")
 
     return new_instances, old_instances
 
@@ -1775,9 +1756,9 @@ def terminate_batch(connection, replace_instances, initial_instances, leftovers=
     instances_to_terminate = list_purgeable_instances(props, lc_check, lt_check, replace_instances, initial_instances)
 
     module.debug(f"new instances needed: {num_new_inst_needed}")
-    module.debug(f"new instances: {*new_instances,}")
-    module.debug(f"old instances: {*old_instances,}")
-    module.debug(f"batch instances: {*instances_to_terminate,}")
+    module.debug(f"new instances: {*new_instances, }")
+    module.debug(f"old instances: {*old_instances, }")
+    module.debug(f"batch instances: {*instances_to_terminate, }")
 
     if num_new_inst_needed == 0:
         decrement_capacity = True

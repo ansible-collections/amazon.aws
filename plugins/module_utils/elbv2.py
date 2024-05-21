@@ -7,17 +7,18 @@ import traceback
 from copy import deepcopy
 
 try:
-    from botocore.exceptions import BotoCoreError, ClientError
+    from botocore.exceptions import BotoCoreError
+    from botocore.exceptions import ClientError
 except ImportError:
     pass
 
-from .retries import AWSRetry
-from .tagging import ansible_dict_to_boto3_tag_list
-from .tagging import boto3_tag_list_to_ansible_dict
 from .ec2 import get_ec2_security_group_ids_from_names
 from .elb_utils import convert_tg_name_to_arn
 from .elb_utils import get_elb
 from .elb_utils import get_elb_listener
+from .retries import AWSRetry
+from .tagging import ansible_dict_to_boto3_tag_list
+from .tagging import boto3_tag_list_to_ansible_dict
 from .waiters import get_waiter
 
 
@@ -105,6 +106,12 @@ def _prune_secret(action):
 
     if action["AuthenticateOidcConfig"].get("UseExistingClientSecret", False):
         action["AuthenticateOidcConfig"].pop("ClientSecret", None)
+
+    if not action["AuthenticateOidcConfig"].get("OnUnauthenticatedRequest", False):
+        action["AuthenticateOidcConfig"]["OnUnauthenticatedRequest"] = "authenticate"
+
+    if not action["AuthenticateOidcConfig"].get("SessionCookieName", False):
+        action["AuthenticateOidcConfig"]["SessionCookieName"] = "AWSELBAuthSessionCookie"
 
     return action
 
@@ -442,7 +449,7 @@ class ApplicationLoadBalancer(ElasticLoadBalancerV2):
         if module.params.get("security_groups") is not None:
             try:
                 self.security_groups = AWSRetry.jittered_backoff()(get_ec2_security_group_ids_from_names)(
-                    module.params.get("security_groups"), self.connection_ec2, boto3=True
+                    module.params.get("security_groups"), self.connection_ec2
                 )
             except ValueError as e:
                 self.module.fail_json(msg=str(e), exception=traceback.format_exc())
@@ -768,6 +775,9 @@ class ELBListeners:
                 dict((x, listener_dict[x]) for x in listener_dict if listener_dict[x] is not None)
                 for listener_dict in listeners
             ]
+            # AlpnPolicy is set as str into input but API is expected a list
+            # Transform a single item into a list of one element
+            listeners = self._ensure_listeners_alpn_policy(listeners)
         self.listeners = self._ensure_listeners_default_action_has_arn(listeners)
         self.current_listeners = self._get_elb_listeners()
         self.purge_listeners = module.params.get("purge_listeners")
@@ -797,6 +807,16 @@ class ELBListeners:
             )["Listeners"]
         except (BotoCoreError, ClientError) as e:
             self.module.fail_json_aws(e)
+
+    @staticmethod
+    def _ensure_listeners_alpn_policy(listeners):
+        result = []
+        for l in listeners:
+            update_listener = deepcopy(l)
+            if "AlpnPolicy" in l:
+                update_listener["AlpnPolicy"] = [update_listener["AlpnPolicy"]]
+            result.append(update_listener)
+        return result
 
     def _ensure_listeners_default_action_has_arn(self, listeners):
         """
@@ -856,7 +876,8 @@ class ELBListeners:
 
         return listeners_to_add, listeners_to_modify, listeners_to_delete
 
-    def _compare_listener(self, current_listener, new_listener):
+    @staticmethod
+    def _compare_listener(current_listener, new_listener):
         """
         Compare two listeners.
 
@@ -875,43 +896,53 @@ class ELBListeners:
         if current_listener["Protocol"] != new_listener["Protocol"]:
             modified_listener["Protocol"] = new_listener["Protocol"]
 
-        # If Protocol is HTTPS, check additional attributes
-        if current_listener["Protocol"] == "HTTPS" and new_listener["Protocol"] == "HTTPS":
-            # Cert
-            if current_listener["SslPolicy"] != new_listener["SslPolicy"]:
-                modified_listener["SslPolicy"] = new_listener["SslPolicy"]
-            if (
-                current_listener["Certificates"][0]["CertificateArn"]
-                != new_listener["Certificates"][0]["CertificateArn"]
+        # If Protocol is HTTPS or TLS, check additional attributes
+        # SslPolicy
+        new_ssl_policy = new_listener.get("SslPolicy")
+        if new_ssl_policy and new_listener["Protocol"] in ("HTTPS", "TLS"):
+            current_ssl_policy = current_listener.get("SslPolicy")
+            if not current_ssl_policy or (current_ssl_policy and current_ssl_policy != new_ssl_policy):
+                modified_listener["SslPolicy"] = new_ssl_policy
+
+        # Certificates
+        new_certificates = new_listener.get("Certificates")
+        if new_certificates and new_listener["Protocol"] in ("HTTPS", "TLS"):
+            current_certificates = current_listener.get("Certificates")
+            if not current_certificates or (
+                current_certificates
+                and current_certificates[0]["CertificateArn"] != new_certificates[0]["CertificateArn"]
             ):
-                modified_listener["Certificates"] = []
-                modified_listener["Certificates"].append({})
-                modified_listener["Certificates"][0]["CertificateArn"] = new_listener["Certificates"][0][
-                    "CertificateArn"
-                ]
-        elif current_listener["Protocol"] != "HTTPS" and new_listener["Protocol"] == "HTTPS":
-            modified_listener["SslPolicy"] = new_listener["SslPolicy"]
-            modified_listener["Certificates"] = []
-            modified_listener["Certificates"].append({})
-            modified_listener["Certificates"][0]["CertificateArn"] = new_listener["Certificates"][0]["CertificateArn"]
+                modified_listener["Certificates"] = [{"CertificateArn": new_certificates[0]["CertificateArn"]}]
 
         # Default action
 
         # If the lengths of the actions are the same, we'll have to verify that the
         # contents of those actions are the same
-        if len(current_listener["DefaultActions"]) == len(new_listener["DefaultActions"]):
-            current_actions_sorted = _sort_actions(current_listener["DefaultActions"])
-            new_actions_sorted = _sort_actions(new_listener["DefaultActions"])
+        current_default_actions = current_listener.get("DefaultActions")
+        new_default_actions = new_listener.get("DefaultActions")
+        if new_default_actions:
+            if current_default_actions and len(current_default_actions) == len(new_default_actions):
+                current_actions_sorted = _sort_actions(current_default_actions)
+                new_actions_sorted = _sort_actions(new_default_actions)
 
-            new_actions_sorted_no_secret = [_prune_secret(i) for i in new_actions_sorted]
+                new_actions_sorted_no_secret = [_prune_secret(i) for i in new_actions_sorted]
 
-            if [_prune_ForwardConfig(i) for i in current_actions_sorted] != [
-                _prune_ForwardConfig(i) for i in new_actions_sorted_no_secret
-            ]:
-                modified_listener["DefaultActions"] = new_listener["DefaultActions"]
-        # If the action lengths are different, then replace with the new actions
-        else:
-            modified_listener["DefaultActions"] = new_listener["DefaultActions"]
+                if [_prune_ForwardConfig(i) for i in current_actions_sorted] != [
+                    _prune_ForwardConfig(i) for i in new_actions_sorted_no_secret
+                ]:
+                    modified_listener["DefaultActions"] = new_default_actions
+            # If the action lengths are different, then replace with the new actions
+            else:
+                modified_listener["DefaultActions"] = new_default_actions
+
+        new_alpn_policy = new_listener.get("AlpnPolicy")
+        if new_alpn_policy:
+            if current_listener["Protocol"] == "TLS" and new_listener["Protocol"] == "TLS":
+                current_alpn_policy = current_listener.get("AlpnPolicy")
+                if not current_alpn_policy or current_alpn_policy[0] != new_alpn_policy[0]:
+                    modified_listener["AlpnPolicy"] = new_alpn_policy
+            elif current_listener["Protocol"] != "TLS" and new_listener["Protocol"] == "TLS":
+                modified_listener["AlpnPolicy"] = new_alpn_policy
 
         if modified_listener:
             return modified_listener
@@ -939,7 +970,23 @@ class ELBListener:
             # Rules is not a valid parameter for create_listener
             if "Rules" in self.listener:
                 self.listener.pop("Rules")
-            AWSRetry.jittered_backoff()(self.connection.create_listener)(LoadBalancerArn=self.elb_arn, **self.listener)
+
+            # handle multiple certs by adding only 1 cert during listener creation and make calls to add_listener_certificates to add other certs
+            listener_certificates = self.listener.get("Certificates", [])
+            first_certificate, other_certs = [], []
+            if len(listener_certificates) > 0:
+                first_certificate, other_certs = listener_certificates[0], listener_certificates[1:]
+                self.listener["Certificates"] = [first_certificate]
+            # create listener
+            create_listener_result = AWSRetry.jittered_backoff()(self.connection.create_listener)(
+                LoadBalancerArn=self.elb_arn, **self.listener
+            )
+            # only one cert can be specified per call to add_listener_certificates
+            for cert in other_certs:
+                AWSRetry.jittered_backoff()(self.connection.add_listener_certificates)(
+                    ListenerArn=create_listener_result["Listeners"][0]["ListenerArn"], Certificates=[cert]
+                )
+
         except (BotoCoreError, ClientError) as e:
             self.module.fail_json_aws(e)
 
@@ -969,10 +1016,7 @@ class ELBListenerRules:
 
         # Get listener based on port so we can use ARN
         self.current_listener = get_elb_listener(connection, module, elb_arn, listener_port)
-        self.listener_arn = self.current_listener["ListenerArn"]
-        self.rules_to_add = deepcopy(self.rules)
-        self.rules_to_modify = []
-        self.rules_to_delete = []
+        self.listener_arn = self.current_listener.get("ListenerArn")
 
         # If the listener exists (i.e. has an ARN) get rules for the listener
         if "ListenerArn" in self.current_listener:
@@ -1100,8 +1144,9 @@ class ELBListenerRules:
         if len(current_rule["Actions"]) == len(new_rule["Actions"]):
             # if actions have just one element, compare the contents and then update if
             # they're different
+            copy_new_rule = deepcopy(new_rule)
             current_actions_sorted = _sort_actions(current_rule["Actions"])
-            new_actions_sorted = _sort_actions(new_rule["Actions"])
+            new_actions_sorted = _sort_actions(copy_new_rule["Actions"])
 
             new_current_actions_sorted = [_append_use_existing_client_secretn(i) for i in current_actions_sorted]
             new_actions_sorted_no_secret = [_prune_secret(i) for i in new_actions_sorted]
@@ -1134,10 +1179,41 @@ class ELBListenerRules:
         rules_to_modify = []
         rules_to_delete = []
         rules_to_add = deepcopy(self.rules)
+        rules_to_set_priority = []
 
-        for current_rule in self.current_rules:
+        # List rules to update priority, 'Actions' and 'Conditions' remain the same
+        # only the 'Priority' has changed
+        current_rules = deepcopy(self.current_rules)
+        remaining_rules = []
+        while current_rules:
+            current_rule = current_rules.pop(0)
+            # Skip the default rule, this one can't be modified
+            if current_rule.get("IsDefault", False):
+                continue
+            to_keep = True
+            for new_rule in rules_to_add:
+                modified_rule = self._compare_rule(current_rule, new_rule)
+                if not modified_rule:
+                    # The current rule has been passed with the same properties to the module
+                    # Remove it for later comparison
+                    rules_to_add.remove(new_rule)
+                    to_keep = False
+                    break
+                if modified_rule and list(modified_rule.keys()) == ["Priority"]:
+                    # if only the Priority has changed
+                    modified_rule["Priority"] = int(new_rule["Priority"])
+                    modified_rule["RuleArn"] = current_rule["RuleArn"]
+
+                    rules_to_set_priority.append(modified_rule)
+                    to_keep = False
+                    rules_to_add.remove(new_rule)
+                    break
+            if to_keep:
+                remaining_rules.append(current_rule)
+
+        for current_rule in remaining_rules:
             current_rule_passed_to_module = False
-            for new_rule in self.rules[:]:
+            for new_rule in rules_to_add:
                 if current_rule["Priority"] == str(new_rule["Priority"]):
                     current_rule_passed_to_module = True
                     # Remove what we match so that what is left can be marked as 'to be added'
@@ -1148,14 +1224,24 @@ class ELBListenerRules:
                         modified_rule["RuleArn"] = current_rule["RuleArn"]
                         modified_rule["Actions"] = new_rule["Actions"]
                         modified_rule["Conditions"] = new_rule["Conditions"]
+                        # You cannot both specify a client secret and set UseExistingClientSecret to true
+                        for action in modified_rule.get("Actions", []):
+                            if action.get("AuthenticateOidcConfig", {}).get("ClientSecret", False):
+                                action["AuthenticateOidcConfig"]["UseExistingClientSecret"] = False
                         rules_to_modify.append(modified_rule)
                     break
 
             # If the current rule was not matched against passed rules, mark for removal
-            if not current_rule_passed_to_module and not current_rule["IsDefault"]:
+            if not current_rule_passed_to_module and not current_rule.get("IsDefault", False):
                 rules_to_delete.append(current_rule["RuleArn"])
 
-        return rules_to_add, rules_to_modify, rules_to_delete
+        # For rules to create 'UseExistingClientSecret' should be set to False
+        for rule in rules_to_add:
+            for action in rule.get("Actions", []):
+                if action.get("AuthenticateOidcConfig", {}).get("UseExistingClientSecret", False):
+                    action["AuthenticateOidcConfig"]["UseExistingClientSecret"] = False
+
+        return rules_to_add, rules_to_modify, rules_to_delete, rules_to_set_priority
 
 
 class ELBListenerRule:
@@ -1206,6 +1292,24 @@ class ELBListenerRule:
 
         try:
             AWSRetry.jittered_backoff()(self.connection.delete_rule)(RuleArn=self.rule["RuleArn"])
+        except (BotoCoreError, ClientError) as e:
+            self.module.fail_json_aws(e)
+
+        self.changed = True
+
+    def set_rule_priorities(self):
+        """
+        Sets the priorities of the specified rules.
+
+        :return:
+        """
+
+        try:
+            rules = [self.rule]
+            if isinstance(self.rule, list):
+                rules = self.rule
+            rule_priorities = [{"RuleArn": rule["RuleArn"], "Priority": rule["Priority"]} for rule in rules]
+            AWSRetry.jittered_backoff()(self.connection.set_rule_priorities)(RulePriorities=rule_priorities)
         except (BotoCoreError, ClientError) as e:
             self.module.fail_json_aws(e)
 

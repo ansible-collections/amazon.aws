@@ -5,7 +5,7 @@
 
 # VPC should get cleaned up once all hosts have run
 - hosts: all
-  gather_facts: no
+  gather_facts: false
   strategy: free
   #serial: 10
   roles:

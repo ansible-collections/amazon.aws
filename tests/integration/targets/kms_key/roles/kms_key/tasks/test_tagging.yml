@@ -1,0 +1,192 @@
+---
+- name: Run tests related to tagging keys
+  block:
+    # ============================================================
+    #   PREPARATION
+    #
+    # Get some information about who we are before starting our tests
+    # we'll need this as soon as we start working on the policies
+    - name: Get ARN of calling user
+      amazon.aws.aws_caller_info:
+      register: aws_caller_info
+    - name: Create a key
+      amazon.aws.kms_key:
+        alias: "{{ kms_key_alias }}"
+        tags:
+          Hello: World
+        state: present
+        enabled: true
+        enable_key_rotation: false
+      register: key
+    - name: Assert that state is enabled
+      ansible.builtin.assert:
+        that:
+          - key is changed
+          - '"key_id" in key'
+          - key.key_id | length >= 36
+          - not key.key_id.startswith("arn:aws")
+          - '"key_arn" in key'
+          - key.key_arn.endswith(key.key_id)
+          - key.key_arn.startswith("arn:aws")
+          - key.key_state == "Enabled"
+          - key.enabled == True
+          - key.tags | length == 1
+          - key.tags['Hello'] == 'World'
+          - key.enable_key_rotation == false
+          - key.key_usage == 'ENCRYPT_DECRYPT'
+          - key.customer_master_key_spec == 'SYMMETRIC_DEFAULT'
+          - key.grants | length == 0
+          - key.key_policies | length == 1
+          - key.key_policies[0].Id == 'key-default-1'
+          - key.description == ''
+
+    # ------------------------------------------------------------------------------------------
+
+    - name: Tag encryption key
+      amazon.aws.kms_key:
+        alias: "{{ kms_key_alias }}"
+        state: present
+        tags:
+          tag_one: tag_one
+          tag_two: tag_two
+        purge_tags: false
+      register: key
+    - name: Assert tags added
+      ansible.builtin.assert:
+        that:
+          - key.changed
+          - '"key_id" in key'
+          - key.key_id | length >= 36
+          - not key.key_id.startswith("arn:aws")
+          - '"key_arn" in key'
+          - key.key_arn.endswith(key.key_id)
+          - key.key_arn.startswith("arn:aws")
+          - key.key_state == "Enabled"
+          - key.enabled == True
+          - key.tags | length == 3
+          - key.tags['Hello'] == 'World'
+          - key.enable_key_rotation == false
+          - key.key_usage == 'ENCRYPT_DECRYPT'
+          - key.customer_master_key_spec == 'SYMMETRIC_DEFAULT'
+          - key.grants | length == 0
+          - key.key_policies | length == 1
+          - key.key_policies[0].Id == 'key-default-1'
+          - key.description == ''
+          - "'tag_one' in key.tags"
+          - "'tag_two' in key.tags"
+
+    - name: Sleep to wait for updates to propagate
+      ansible.builtin.wait_for:
+        timeout: 45
+    - name: Modify tags - check mode
+      amazon.aws.kms_key:
+        alias: "{{ kms_key_alias }}"
+        state: present
+        purge_tags: true
+        tags:
+          tag_two: tag_two_updated
+          Tag Three: "{{ resource_prefix }}"
+      register: key
+      check_mode: true
+    - name: Assert that change is expected
+      ansible.builtin.assert:
+        that:
+          - key.changed
+
+    - name: Modify tags
+      amazon.aws.kms_key:
+        alias: "{{ kms_key_alias }}"
+        state: present
+        purge_tags: true
+        tags:
+          tag_two: tag_two_updated
+          Tag Three: "{{ resource_prefix }}"
+      register: key
+    - name: Assert tags correctly changed
+      ansible.builtin.assert:
+        that:
+          - key.changed
+          - '"key_id" in key'
+          - key.key_id | length >= 36
+          - not key.key_id.startswith("arn:aws")
+          - '"key_arn" in key'
+          - key.key_arn.endswith(key.key_id)
+          - key.key_arn.startswith("arn:aws")
+          - key.key_state == "Enabled"
+          - key.enabled == True
+          - key.tags | length == 2
+          - key.enable_key_rotation == false
+          - key.key_usage == 'ENCRYPT_DECRYPT'
+          - key.customer_master_key_spec == 'SYMMETRIC_DEFAULT'
+          - key.grants | length == 0
+          - key.key_policies | length == 1
+          - key.key_policies[0].Id == 'key-default-1'
+          - key.description == ''
+          - "'tag_one' not in key.tags"
+          - "'tag_two' in key.tags"
+          - key.tags.tag_two == 'tag_two_updated'
+          - "'Tag Three' in key.tags"
+          - key.tags['Tag Three'] == resource_prefix
+
+    - name: Sleep to wait for updates to propagate
+      ansible.builtin.wait_for:
+        timeout: 45
+    - name: Modify tags (idempotence) - check mode
+      amazon.aws.kms_key:
+        alias: "{{ kms_key_alias }}"
+        state: present
+        purge_tags: true
+        tags:
+          tag_two: tag_two_updated
+          Tag Three: "{{ resource_prefix }}"
+      register: key
+      check_mode: true
+    - name: Assert that no change is expected
+      ansible.builtin.assert:
+        that:
+          - not key.changed
+
+    - name: Modify tags (idempotence)
+      amazon.aws.kms_key:
+        alias: "{{ kms_key_alias }}"
+        state: present
+        purge_tags: true
+        tags:
+          tag_two: tag_two_updated
+          Tag Three: "{{ resource_prefix }}"
+      register: key
+    - name: Assert that no change occurred
+      ansible.builtin.assert:
+        that:
+          - not key.changed
+          - '"key_id" in key'
+          - key.key_id | length >= 36
+          - not key.key_id.startswith("arn:aws")
+          - '"key_arn" in key'
+          - key.key_arn.endswith(key.key_id)
+          - key.key_arn.startswith("arn:aws")
+          - key.key_state == "Enabled"
+          - key.enabled == True
+          - key.tags | length == 2
+          - key.enable_key_rotation == false
+          - key.key_usage == 'ENCRYPT_DECRYPT'
+          - key.customer_master_key_spec == 'SYMMETRIC_DEFAULT'
+          - key.grants | length == 0
+          - key.key_policies | length == 1
+          - key.key_policies[0].Id == 'key-default-1'
+          - key.description == ''
+          - "'tag_one' not in key.tags"
+          - "'tag_two' in key.tags"
+          - key.tags.tag_two == 'tag_two_updated'
+          - "'Tag Three' in key.tags"
+          - key.tags['Tag Three'] == resource_prefix
+
+  always:
+    # ============================================================
+    #   CLEAN-UP
+    - name: Finish off by deleting keys
+      amazon.aws.kms_key:
+        state: absent
+        alias: "{{ kms_key_alias }}"
+        pending_window: 7
+      ignore_errors: true # noqa: ignore-errors

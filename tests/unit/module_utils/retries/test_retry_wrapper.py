@@ -3,18 +3,19 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-import pytest
+from unittest.mock import MagicMock
 from unittest.mock import call
 from unittest.mock import sentinel
-from unittest.mock import MagicMock
+
+import pytest
 
 try:
     import botocore
 except ImportError:
     pass
 
-import ansible_collections.amazon.aws.plugins.module_utils.retries as util_retries
 import ansible_collections.amazon.aws.plugins.module_utils.botocore as util_botocore
+import ansible_collections.amazon.aws.plugins.module_utils.retries as util_retries
 
 
 @pytest.fixture

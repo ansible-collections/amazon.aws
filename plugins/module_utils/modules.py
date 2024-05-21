@@ -48,19 +48,19 @@ except ImportError:
     # Python 3
     from io import StringIO
 
+from ansible.module_utils._text import to_native
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.basic import env_fallback
 from ansible.module_utils.basic import missing_required_lib
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
-from ansible.module_utils._text import to_native
 
-from .botocore import boto3_conn
 from .botocore import boto3_at_least
+from .botocore import boto3_conn
 from .botocore import botocore_at_least
 from .botocore import check_sdk_version_supported
+from .botocore import gather_sdk_versions
 from .botocore import get_aws_connection_info
 from .botocore import get_aws_region
-from .botocore import gather_sdk_versions
 from .exceptions import AnsibleBotocoreError
 from .retries import RetryingBotoClientWrapper
 
@@ -84,11 +84,11 @@ class AnsibleAWSModule:
 
     def __init__(self, **kwargs):
         local_settings = {}
-        for key in AnsibleAWSModule.default_settings:
+        for key, default_value in AnsibleAWSModule.default_settings.items():
             try:
                 local_settings[key] = kwargs.pop(key)
             except KeyError:
-                local_settings[key] = AnsibleAWSModule.default_settings[key]
+                local_settings[key] = default_value
         self.settings = local_settings
 
         if local_settings["default_args"]:
@@ -192,21 +192,21 @@ class AnsibleAWSModule:
         return self._module.md5(*args, **kwargs)
 
     def client(self, service, retry_decorator=None, **extra_params):
-        region, endpoint_url, aws_connect_kwargs = get_aws_connection_info(self, boto3=True)
+        region, endpoint_url, aws_connect_kwargs = get_aws_connection_info(self)
         kw_args = dict(region=region, endpoint=endpoint_url, **aws_connect_kwargs)
         kw_args.update(extra_params)
         conn = boto3_conn(self, conn_type="client", resource=service, **kw_args)
         return conn if retry_decorator is None else RetryingBotoClientWrapper(conn, retry_decorator)
 
     def resource(self, service, **extra_params):
-        region, endpoint_url, aws_connect_kwargs = get_aws_connection_info(self, boto3=True)
+        region, endpoint_url, aws_connect_kwargs = get_aws_connection_info(self)
         kw_args = dict(region=region, endpoint=endpoint_url, **aws_connect_kwargs)
         kw_args.update(extra_params)
         return boto3_conn(self, conn_type="resource", resource=service, **kw_args)
 
     @property
     def region(self):
-        return get_aws_region(self, True)
+        return get_aws_region(self)
 
     def fail_json_aws(self, exception, msg=None, **kwargs):
         """call fail_json with processed exception
@@ -241,6 +241,12 @@ class AnsibleAWSModule:
             failure.update(**camel_dict_to_snake_dict(response))
 
         self.fail_json(**failure)
+
+    def fail_json_aws_error(self, exception):
+        """A helper to call the right failure mode after catching an AnsibleAWSError"""
+        if exception.exception:
+            self.fail_json_aws(exception.exception, msg=exception.message)
+        self.fail_json(msg=exception.message)
 
     def _gather_versions(self):
         """Gather AWS SDK (boto3 and botocore) dependency versions

@@ -1,0 +1,566 @@
+---
+- name: Run tests related to key state (rotation, deletion and deletion cancellation)
+  block:
+    # ============================================================
+    #   PREPARATION
+    #
+    # Get some information about who we are before starting our tests
+    # we'll need this as soon as we start working on the policies
+    - name: Get ARN of calling user
+      amazon.aws.aws_caller_info:
+      register: aws_caller_info
+    - name: See whether key exists and its current state
+      amazon.aws.kms_key_info:
+        alias: "{{ kms_key_alias }}"
+    - name: Create a key - check mode
+      amazon.aws.kms_key:
+        alias: "{{ kms_key_alias }}-check"
+        tags:
+          Hello: World
+        state: present
+        enabled: true
+      register: key_check
+      check_mode: true
+    - name: Find facts about the check mode key
+      amazon.aws.kms_key_info:
+        alias: "{{ kms_key_alias }}-check"
+      register: check_key
+    - name: Ensure that check mode worked as expected
+      ansible.builtin.assert:
+        that:
+          - check_key.kms_keys | length == 0
+          - key_check is changed
+
+    - name: Create a key
+      amazon.aws.kms_key:
+        alias: "{{ kms_key_alias }}"
+        tags:
+          Hello: World
+        state: present
+        enabled: true
+        enable_key_rotation: false
+      register: key
+    - name: Assert that state is enabled
+      ansible.builtin.assert:
+        that:
+          - key is changed
+          - '"key_id" in key'
+          - key.key_id | length >= 36
+          - not key.key_id.startswith("arn:aws")
+          - '"key_arn" in key'
+          - key.key_arn.endswith(key.key_id)
+          - key.key_arn.startswith("arn:aws")
+          - key.key_state == "Enabled"
+          - key.enabled == True
+          - key.tags | length == 1
+          - key.tags['Hello'] == 'World'
+          - key.enable_key_rotation == false
+          - key.key_usage == 'ENCRYPT_DECRYPT'
+          - key.customer_master_key_spec == 'SYMMETRIC_DEFAULT'
+          - key.grants | length == 0
+          - key.key_policies | length == 1
+          - key.key_policies[0].Id == 'key-default-1'
+          - key.description == ''
+          - key.multi_region == False
+
+    - name: Sleep to wait for updates to propagate
+      ansible.builtin.wait_for:
+        timeout: 45
+    - name: Create a key (idempotence) - check mode
+      amazon.aws.kms_key:
+        alias: "{{ kms_key_alias }}"
+        tags:
+          Hello: World
+        state: present
+        enabled: true
+      register: key
+      check_mode: true
+    - name: Assert that no change is expected
+      ansible.builtin.assert:
+        that:
+          - key is not changed
+
+    - name: Create a key (idempotence)
+      amazon.aws.kms_key:
+        alias: "{{ kms_key_alias }}"
+        tags:
+          Hello: World
+        state: present
+        enabled: true
+      register: key
+      check_mode: true
+    - name: Assert that no change occurred
+      ansible.builtin.assert:
+        that:
+          - key is not changed
+          - '"key_id" in key'
+          - key.key_id | length >= 36
+          - not key.key_id.startswith("arn:aws")
+          - '"key_arn" in key'
+          - key.key_arn.endswith(key.key_id)
+          - key.key_arn.startswith("arn:aws")
+          - key.key_state == "Enabled"
+          - key.enabled == True
+          - key.tags | length == 1
+          - key.tags['Hello'] == 'World'
+          - key.enable_key_rotation == false
+          - key.key_usage == 'ENCRYPT_DECRYPT'
+          - key.customer_master_key_spec == 'SYMMETRIC_DEFAULT'
+          - key.grants | length == 0
+          - key.key_policies | length == 1
+          - key.key_policies[0].Id == 'key-default-1'
+          - key.description == ''
+          - key.multi_region == False
+
+    # ------------------------------------------------------------------------------------------
+
+    - name: Save IDs for later
+      ansible.builtin.set_fact:
+        kms_key_id: "{{ key.key_id }}"
+        kms_key_arn: "{{ key.key_arn }}"
+
+    - name: Enable key rotation - check mode
+      amazon.aws.kms_key:
+        alias: "{{ kms_key_alias }}"
+        tags:
+          Hello: World
+        state: present
+        enabled: true
+        enable_key_rotation: true
+      register: key
+      check_mode: true
+    - name: Assert that we expect to make a change
+      ansible.builtin.assert:
+        that:
+          - key.changed
+
+    - name: Enable key rotation
+      amazon.aws.kms_key:
+        alias: "{{ kms_key_alias }}"
+        tags:
+          Hello: World
+        state: present
+        enabled: true
+        enable_key_rotation: true
+      register: key
+    - name: Assert that key rotation is enabled
+      ansible.builtin.assert:
+        that:
+          - key is changed
+          - '"key_id" in key'
+          - key.key_id | length >= 36
+          - not key.key_id.startswith("arn:aws")
+          - '"key_arn" in key'
+          - key.key_arn.endswith(key.key_id)
+          - key.key_arn.startswith("arn:aws")
+          - key.key_state == "Enabled"
+          - key.enabled == True
+          - key.tags | length == 1
+          - key.tags['Hello'] == 'World'
+          - key.enable_key_rotation == True
+          - key.key_usage == 'ENCRYPT_DECRYPT'
+          - key.customer_master_key_spec == 'SYMMETRIC_DEFAULT'
+          - key.grants | length == 0
+          - key.key_policies | length == 1
+          - key.key_policies[0].Id == 'key-default-1'
+          - key.description == ''
+
+    - name: Sleep to wait for updates to propagate
+      ansible.builtin.wait_for:
+        timeout: 45
+
+    - name: Enable key rotation (idempotence) - check mode
+      amazon.aws.kms_key:
+        alias: "{{ kms_key_alias }}"
+        tags:
+          Hello: World
+        state: present
+        enabled: true
+        enable_key_rotation: true
+      register: key
+      check_mode: true
+    - name: Assert that no change is expected
+      ansible.builtin.assert:
+        that:
+          - not key.changed
+
+    - name: Enable key rotation (idempotence)
+      amazon.aws.kms_key:
+        alias: "{{ kms_key_alias }}"
+        tags:
+          Hello: World
+        state: present
+        enabled: true
+        enable_key_rotation: true
+      register: key
+    - name: Assert that no change occurred
+      ansible.builtin.assert:
+        that:
+          - not key is changed
+          - '"key_id" in key'
+          - key.key_id | length >= 36
+          - not key.key_id.startswith("arn:aws")
+          - '"key_arn" in key'
+          - key.key_arn.endswith(key.key_id)
+          - key.key_arn.startswith("arn:aws")
+          - key.key_state == "Enabled"
+          - key.enabled == True
+          - key.tags | length == 1
+          - key.tags['Hello'] == 'World'
+          - key.enable_key_rotation == True
+          - key.key_usage == 'ENCRYPT_DECRYPT'
+          - key.customer_master_key_spec == 'SYMMETRIC_DEFAULT'
+          - key.grants | length == 0
+          - key.key_policies | length == 1
+          - key.key_policies[0].Id == 'key-default-1'
+          - key.description == ''
+
+    # ------------------------------------------------------------------------------------------
+
+    - name: Disable key - check mode
+      amazon.aws.kms_key:
+        alias: "{{ kms_key_alias }}"
+        state: present
+        enabled: false
+      register: key
+      check_mode: true
+    - name: Assert that change is expected
+      ansible.builtin.assert:
+        that:
+          - key.changed
+
+    - name: Disable key
+      amazon.aws.kms_key:
+        alias: "{{ kms_key_alias }}"
+        state: present
+        enabled: false
+      register: key
+    - name: Assert that state is disabled
+      ansible.builtin.assert:
+        that:
+          - key is changed
+          - '"key_id" in key'
+          - key.key_id | length >= 36
+          - not key.key_id.startswith("arn:aws")
+          - '"key_arn" in key'
+          - key.key_arn.endswith(key.key_id)
+          - key.key_arn.startswith("arn:aws")
+          - key.key_state == "Disabled"
+          - key.enabled == False
+          - key.tags | length == 1
+          - key.tags['Hello'] == 'World'
+          - key.enable_key_rotation == True
+          - key.key_usage == 'ENCRYPT_DECRYPT'
+          - key.customer_master_key_spec == 'SYMMETRIC_DEFAULT'
+          - key.grants | length == 0
+          - key.key_policies | length == 1
+          - key.key_policies[0].Id == 'key-default-1'
+          - key.description == ''
+
+    - name: Sleep to wait for updates to propagate
+      ansible.builtin.wait_for:
+        timeout: 45
+    - name: Disable key (idempotence) - check mode
+      amazon.aws.kms_key:
+        alias: "{{ kms_key_alias }}"
+        state: present
+        enabled: false
+      register: key
+      check_mode: true
+    - name: Assert no change is expected
+      ansible.builtin.assert:
+        that:
+          - not key.changed
+
+    - name: Disable key (idempotence)
+      amazon.aws.kms_key:
+        alias: "{{ kms_key_alias }}"
+        state: present
+        enabled: false
+      register: key
+    - name: Assert no change occurred
+      ansible.builtin.assert:
+        that:
+          - not key.changed
+          - '"key_id" in key'
+          - key.key_id | length >= 36
+          - not key.key_id.startswith("arn:aws")
+          - '"key_arn" in key'
+          - key.key_arn.endswith(key.key_id)
+          - key.key_arn.startswith("arn:aws")
+          - key.key_state == "Disabled"
+          - key.enabled == False
+          - key.tags | length == 1
+          - key.tags['Hello'] == 'World'
+          - key.enable_key_rotation == True
+          - key.key_usage == 'ENCRYPT_DECRYPT'
+          - key.customer_master_key_spec == 'SYMMETRIC_DEFAULT'
+          - key.grants | length == 0
+          - key.key_policies | length == 1
+          - key.key_policies[0].Id == 'key-default-1'
+          - key.description == ''
+
+    # ------------------------------------------------------------------------------------------
+
+    - name: Delete key - check mode
+      amazon.aws.kms_key:
+        alias: "{{ kms_key_alias }}"
+        state: absent
+      register: key
+      check_mode: true
+    - name: Assert that we expect a change
+      ansible.builtin.assert:
+        that:
+          - key is changed
+
+    - name: Delete key
+      amazon.aws.kms_key:
+        alias: "{{ kms_key_alias }}"
+        state: absent
+      register: key
+
+    - name: Assert that key was updated
+      ansible.builtin.assert:
+        that:
+          - key.changed
+          - '"key_id" in key'
+          - key.key_id | length >= 36
+          - not key.key_id.startswith("arn:aws")
+          - '"key_arn" in key'
+          - key.key_arn.endswith(key.key_id)
+          - key.key_arn.startswith("arn:aws")
+          - key.tags | length == 1
+          - key.tags['Hello'] == 'World'
+          - key.enable_key_rotation == False
+          - key.key_usage == 'ENCRYPT_DECRYPT'
+          - key.customer_master_key_spec == 'SYMMETRIC_DEFAULT'
+          - key.grants | length == 0
+          - key.key_policies | length == 1
+          - key.key_policies[0].Id == 'key-default-1'
+          - key.description == ''
+
+    - name: Sleep to wait for updates to propagate
+      ansible.builtin.wait_for:
+        timeout: 45
+
+    - name: Describe key
+      amazon.aws.kms_key_info:
+        alias: "{{ kms_key_alias }}"
+      register: key_info
+
+    - name: Assert that state is pending deletion
+      vars:
+        key_data: "{{ key_info.kms_keys[0] }}"
+        now_time: '{{ lookup("pipe", "date -u +%Y-%m-%d\ %H:%M:%S") }}'
+        deletion_time: '{{ key_data.deletion_date[:19] | to_datetime("%Y-%m-%dT%H:%M:%S") }}'
+      ansible.builtin.assert:
+        that:
+          - key_data.key_id | length >= 36
+          - not key_data.key_id.startswith("arn:aws")
+          - '"key_arn" in key_data'
+          - key_data.key_arn.endswith(key.key_id)
+          - key_data.key_arn.startswith("arn:aws")
+          - key_data.key_state == "PendingDeletion"
+          - key_data.enabled == False
+          - key_data.tags | length == 1
+          - key_data.tags['Hello'] == 'World'
+          - key_data.enable_key_rotation == False
+          - key_data.key_usage == 'ENCRYPT_DECRYPT'
+          - key_data.customer_master_key_spec == 'SYMMETRIC_DEFAULT'
+          - key_data.grants | length == 0
+          - key_data.key_policies | length == 1
+          - key_data.key_policies[0].Id == 'key-default-1'
+          - key_data.description == ''
+          # Times won't be perfect, allow a 24 hour window
+          - (( deletion_time | to_datetime ) - ( now_time | to_datetime )).days <= 30
+          - (( deletion_time | to_datetime ) - ( now_time | to_datetime )).days >= 29
+
+    - name: Delete key (idempotence) - check mode
+      amazon.aws.kms_key:
+        alias: "{{ kms_key_alias }}"
+        state: absent
+      register: key
+      check_mode: true
+    - name: Assert that no change is expected
+      ansible.builtin.assert:
+        that:
+          - not key.changed
+
+    - name: Delete key (idempotence)
+      amazon.aws.kms_key:
+        alias: "{{ kms_key_alias }}"
+        state: absent
+      register: key
+    - name: Assert no change occurred
+      vars:
+        now_time: '{{ lookup("pipe", "date -u +%Y-%m-%d\ %H:%M:%S") }}'
+        deletion_time: '{{ key.deletion_date[:19] | to_datetime("%Y-%m-%dT%H:%M:%S") }}'
+      ansible.builtin.assert:
+        that:
+          - not key.changed
+          - '"key_id" in key'
+          - key.key_id | length >= 36
+          - not key.key_id.startswith("arn:aws")
+          - '"key_arn" in key'
+          - key.key_arn.endswith(key.key_id)
+          - key.key_arn.startswith("arn:aws")
+          - key.key_state == "PendingDeletion"
+          - key.enabled == False
+          - key.tags | length == 1
+          - key.tags['Hello'] == 'World'
+          - key.enable_key_rotation == False
+          - key.key_usage == 'ENCRYPT_DECRYPT'
+          - key.customer_master_key_spec == 'SYMMETRIC_DEFAULT'
+          - key.grants | length == 0
+          - key.key_policies | length == 1
+          - key.key_policies[0].Id == 'key-default-1'
+          - key.description == ''
+          # Times won't be perfect, allow a 24 hour window
+          - (( deletion_time | to_datetime ) - ( now_time | to_datetime )).days <= 30
+          - (( deletion_time | to_datetime ) - ( now_time | to_datetime )).days >= 29
+
+    # ------------------------------------------------------------------------------------------
+
+    - name: Cancel key deletion - check mode
+      amazon.aws.kms_key:
+        alias: "{{ kms_key_alias }}"
+        state: present
+      register: key
+      check_mode: true
+    - name: Assert that change is expected
+      ansible.builtin.assert:
+        that:
+          - key.changed
+
+    - name: Cancel key deletion
+      amazon.aws.kms_key:
+        alias: "{{ kms_key_alias }}"
+        state: present
+      register: key
+    - name: Assert that deletion is cancelled
+      ansible.builtin.assert:
+        that:
+          - key.changed
+          - '"key_id" in key'
+          - key.key_id | length >= 36
+          - not key.key_id.startswith("arn:aws")
+          - '"key_arn" in key'
+          - key.key_arn.endswith(key.key_id)
+          - key.key_arn.startswith("arn:aws")
+          - key.key_state == "Enabled"
+          - key.enabled == True
+          - key.tags | length == 1
+          - key.tags['Hello'] == 'World'
+          - key.enable_key_rotation == True
+          - key.key_usage == 'ENCRYPT_DECRYPT'
+          - key.customer_master_key_spec == 'SYMMETRIC_DEFAULT'
+          - key.grants | length == 0
+          - key.key_policies | length == 1
+          - key.key_policies[0].Id == 'key-default-1'
+          - key.description == ''
+          - "'deletion_date' not in key"
+
+    - name: Sleep to wait for updates to propagate
+      ansible.builtin.wait_for:
+        timeout: 45
+    - name: Cancel key deletion (idempotence) - check mode
+      amazon.aws.kms_key:
+        alias: "{{ kms_key_alias }}"
+        state: present
+      register: key
+      check_mode: true
+    - name: Assert that no change is expected
+      ansible.builtin.assert:
+        that:
+          - not key.changed
+
+    - name: Cancel key deletion (idempotence)
+      amazon.aws.kms_key:
+        alias: "{{ kms_key_alias }}"
+        state: present
+      register: key
+    - name: Assert that no change occurred
+      ansible.builtin.assert:
+        that:
+          - not key.changed
+          - '"key_id" in key'
+          - key.key_id | length >= 36
+          - not key.key_id.startswith("arn:aws")
+          - '"key_arn" in key'
+          - key.key_arn.endswith(key.key_id)
+          - key.key_arn.startswith("arn:aws")
+          - key.key_state == "Enabled"
+          - key.enabled == True
+          - key.tags | length == 1
+          - key.tags['Hello'] == 'World'
+          - key.enable_key_rotation == True
+          - key.key_usage == 'ENCRYPT_DECRYPT'
+          - key.customer_master_key_spec == 'SYMMETRIC_DEFAULT'
+          - key.grants | length == 0
+          - key.key_policies | length == 1
+          - key.key_policies[0].Id == 'key-default-1'
+          - key.description == ''
+          - "'deletion_date' not in key"
+
+    # ------------------------------------------------------------------------------------------
+
+    - name: Delete the key with a specific deletion window
+      amazon.aws.kms_key:
+        alias: "{{ kms_key_alias }}"
+        state: absent
+        pending_window: 7
+      register: delete_kms
+
+    - name: Sleep to wait for updates to propagate
+      ansible.builtin.wait_for:
+        timeout: 45
+
+    - name: Assert that state is pending deletion
+      vars:
+        now_time: '{{ lookup("pipe", "date -u +%Y-%m-%d\ %H:%M:%S") }}'
+        deletion_time: '{{ delete_kms.deletion_date[:19] | to_datetime("%Y-%m-%dT%H:%M:%S") }}'
+      ansible.builtin.assert:
+        that:
+          - delete_kms.key_state == "PendingDeletion"
+          - delete_kms.changed
+          # Times won't be perfect, allow a 24 hour window
+          - (( deletion_time | to_datetime ) - ( now_time | to_datetime )).days <= 7
+          - (( deletion_time | to_datetime ) - ( now_time | to_datetime )).days >= 6
+
+    # ============================================================
+    # test different key usage and specs
+    - name: Create kms key with different specs
+      amazon.aws.kms_key:
+        alias: "{{ kms_key_alias }}-diff-spec-usage"
+        purge_grants: true
+        key_spec: ECC_NIST_P256
+        key_usage: SIGN_VERIFY
+      register: create_diff_kms
+    - name: Sleep to wait for updates to propagate
+      ansible.builtin.wait_for:
+        timeout: 45
+    - name: Verify different specs on kms key
+      ansible.builtin.assert:
+        that:
+          - '"key_id" in create_diff_kms'
+          - create_diff_kms.key_id | length >= 36
+          - not create_diff_kms.key_id.startswith("arn:aws")
+          - '"key_arn" in create_diff_kms'
+          - create_diff_kms.key_arn.endswith(create_diff_kms.key_id)
+          - create_diff_kms.key_arn.startswith("arn:aws")
+          - create_diff_kms.key_usage == 'SIGN_VERIFY'
+          - create_diff_kms.customer_master_key_spec == 'ECC_NIST_P256'
+
+  always:
+    # ============================================================
+    #   CLEAN-UP
+    - name: Finish off by deleting keys
+      amazon.aws.kms_key:
+        state: absent
+        alias: "{{ item }}"
+        pending_window: 7
+      ignore_errors: true # noqa: ignore-errors
+      loop:
+        - "{{ kms_key_alias }}"
+        - "{{ kms_key_alias }}-diff-spec-usage"
+        - "{{ kms_key_alias }}-check"

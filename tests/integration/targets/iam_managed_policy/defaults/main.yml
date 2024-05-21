@@ -1,0 +1,7 @@
+---
+policy_name: "{{ resource_prefix }}-policy"
+policy_path: "/ansible-test-{{ tiny_prefix }}/"
+policy_description: "An example Managed Policy description"
+test_role: "{{ resource_prefix }}-mp-role"
+test_user: "{{ resource_prefix }}-mp-user"
+test_group: "{{ resource_prefix }}-mp-group"

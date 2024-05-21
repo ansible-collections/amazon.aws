@@ -56,13 +56,12 @@ EXAMPLES = r"""
 - name: Gather information about a specific key pair
   amazon.aws.ec2_key_info:
     names:
-    - my-sample-key
+      - my-sample-key
 
 - name: Retrieve EC2 key pair by fingerprint
   amazon.aws.ec2_key_info:
     filters:
       fingerprint: "1bSd8jVye3In5oF4zZI4o8BcXfdbYN+daCt9O1fh3Qk="
-
 """
 
 RETURN = r"""
@@ -115,11 +114,11 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 
 
 def list_ec2_key_pairs(connection, module):

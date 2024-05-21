@@ -1,0 +1,235 @@
+---
+- name: Add Managed Policy (CHECK MODE)
+  amazon.aws.iam_role:
+    name: "{{ test_role }}"
+    purge_policies: false
+    managed_policy:
+      - "{{ safe_managed_policy }}"
+  check_mode: true
+  register: iam_role
+- ansible.builtin.assert:
+    that:
+      - iam_role is changed
+
+- name: Add Managed Policy
+  amazon.aws.iam_role:
+    name: "{{ test_role }}"
+    purge_policies: false
+    managed_policy:
+      - "{{ safe_managed_policy }}"
+  register: iam_role
+- ansible.builtin.assert:
+    that:
+      - iam_role is changed
+      - iam_role.iam_role.role_name == test_role
+
+- name: Add Managed Policy (no change) - check mode
+  amazon.aws.iam_role:
+    name: "{{ test_role }}"
+    purge_policies: false
+    managed_policy:
+      - "{{ safe_managed_policy }}"
+  register: iam_role
+  check_mode: true
+- ansible.builtin.assert:
+    that:
+      - iam_role is not changed
+
+- name: Add Managed Policy (no change)
+  amazon.aws.iam_role:
+    name: "{{ test_role }}"
+    purge_policies: false
+    managed_policy:
+      - "{{ safe_managed_policy }}"
+  register: iam_role
+- ansible.builtin.assert:
+    that:
+      - iam_role is not changed
+      - iam_role.iam_role.role_name == test_role
+
+- name: iam_role_info after adding Managed Policy
+  amazon.aws.iam_role_info:
+    name: "{{ test_role }}"
+  register: role_info
+- ansible.builtin.assert:
+    that:
+      - role_info is succeeded
+      - role_info.iam_roles | length == 1
+      - role_info.iam_roles[0].arn.startswith("arn")
+      - role_info.iam_roles[0].arn.endswith("role/" + test_role )
+      - '"assume_role_policy_document" in role_info.iam_roles[0]'
+      - '"create_date" in role_info.iam_roles[0]'
+      - role_info.iam_roles[0].description == 'Ansible Test Role (updated) '+resource_prefix
+      - role_info.iam_roles[0].inline_policies | length == 0
+      - role_info.iam_roles[0].instance_profiles | length == 1
+      - role_info.iam_roles[0].instance_profiles[0].instance_profile_name == test_role
+      - role_info.iam_roles[0].instance_profiles[0].arn.startswith("arn")
+      - role_info.iam_roles[0].instance_profiles[0].arn.endswith("instance-profile/" + test_role)
+      - role_info.iam_roles[0].managed_policies | length == 1
+      - safe_managed_policy in ( role_info | community.general.json_query("iam_roles[*].managed_policies[*].policy_name") | list | flatten )
+      - custom_policy_name not in ( role_info | community.general.json_query("iam_roles[*].managed_policies[*].policy_name") | list | flatten )
+      - role_info.iam_roles[0].max_session_duration == 43200
+      - role_info.iam_roles[0].path == '/'
+      - '"permissions_boundary" not in role_info.iam_roles[0]'
+      - role_info.iam_roles[0].role_id == iam_role.iam_role.role_id
+      - role_info.iam_roles[0].role_name == test_role
+      - role_info.iam_roles[0].tags | length == 1
+      - '"TagB" in role_info.iam_roles[0].tags'
+      - role_info.iam_roles[0].tags.TagB == "ValueB"
+
+# ------------------------------------------------------------------------------------------
+
+- name: Update Managed Policy without purge (CHECK MODE)
+  amazon.aws.iam_role:
+    name: "{{ test_role }}"
+    purge_policies: false
+    managed_policy:
+      - "{{ custom_policy_name }}"
+  check_mode: true
+  register: iam_role
+- ansible.builtin.assert:
+    that:
+      - iam_role is changed
+
+- name: Update Managed Policy without purge
+  amazon.aws.iam_role:
+    name: "{{ test_role }}"
+    purge_policies: false
+    managed_policy:
+      - "{{ custom_policy_name }}"
+  register: iam_role
+- ansible.builtin.assert:
+    that:
+      - iam_role is changed
+      - iam_role.iam_role.role_name == test_role
+
+- name: Update Managed Policy without purge (no change) - check mode
+  amazon.aws.iam_role:
+    name: "{{ test_role }}"
+    purge_policies: false
+    managed_policy:
+      - "{{ custom_policy_name }}"
+  register: iam_role
+  check_mode: true
+- ansible.builtin.assert:
+    that:
+      - iam_role is not changed
+
+- name: Update Managed Policy without purge (no change)
+  amazon.aws.iam_role:
+    name: "{{ test_role }}"
+    purge_policies: false
+    managed_policy:
+      - "{{ custom_policy_name }}"
+  register: iam_role
+- ansible.builtin.assert:
+    that:
+      - iam_role is not changed
+      - iam_role.iam_role.role_name == test_role
+
+- name: iam_role_info after updating Managed Policy without purge
+  amazon.aws.iam_role_info:
+    name: "{{ test_role }}"
+  register: role_info
+- ansible.builtin.assert:
+    that:
+      - role_info is succeeded
+      - role_info.iam_roles | length == 1
+      - role_info.iam_roles[0].arn.startswith("arn")
+      - role_info.iam_roles[0].arn.endswith("role/" + test_role )
+      - '"assume_role_policy_document" in role_info.iam_roles[0]'
+      - '"create_date" in role_info.iam_roles[0]'
+      - role_info.iam_roles[0].description == 'Ansible Test Role (updated) '+resource_prefix
+      - role_info.iam_roles[0].inline_policies | length == 0
+      - role_info.iam_roles[0].instance_profiles | length == 1
+      - role_info.iam_roles[0].instance_profiles[0].instance_profile_name == test_role
+      - role_info.iam_roles[0].instance_profiles[0].arn.startswith("arn")
+      - role_info.iam_roles[0].instance_profiles[0].arn.endswith("instance-profile/" + test_role)
+      - role_info.iam_roles[0].managed_policies | length == 2
+      - safe_managed_policy in ( role_info | community.general.json_query("iam_roles[*].managed_policies[*].policy_name") | list | flatten )
+      - custom_policy_name in ( role_info | community.general.json_query("iam_roles[*].managed_policies[*].policy_name") | list | flatten )
+      - role_info.iam_roles[0].max_session_duration == 43200
+      - role_info.iam_roles[0].path == '/'
+      - '"permissions_boundary" not in role_info.iam_roles[0]'
+      - role_info.iam_roles[0].role_id == iam_role.iam_role.role_id
+      - role_info.iam_roles[0].role_name == test_role
+      - role_info.iam_roles[0].tags | length == 1
+      - '"TagB" in role_info.iam_roles[0].tags'
+      - role_info.iam_roles[0].tags.TagB == "ValueB"
+
+# ------------------------------------------------------------------------------------------
+
+# Managed Policies are purged by default
+- name: Update Managed Policy with purge (CHECK MODE)
+  amazon.aws.iam_role:
+    name: "{{ test_role }}"
+    managed_policy:
+      - "{{ custom_policy_name }}"
+  check_mode: true
+  register: iam_role
+- ansible.builtin.assert:
+    that:
+      - iam_role is changed
+
+- name: Update Managed Policy with purge
+  amazon.aws.iam_role:
+    name: "{{ test_role }}"
+    managed_policy:
+      - "{{ custom_policy_name }}"
+  register: iam_role
+- ansible.builtin.assert:
+    that:
+      - iam_role is changed
+      - iam_role.iam_role.role_name == test_role
+
+- name: Update Managed Policy with purge (no change) - check mode
+  amazon.aws.iam_role:
+    name: "{{ test_role }}"
+    managed_policy:
+      - "{{ custom_policy_name }}"
+  register: iam_role
+  check_mode: true
+- ansible.builtin.assert:
+    that:
+      - iam_role is not changed
+
+- name: Update Managed Policy with purge (no change)
+  amazon.aws.iam_role:
+    name: "{{ test_role }}"
+    managed_policy:
+      - "{{ custom_policy_name }}"
+  register: iam_role
+- ansible.builtin.assert:
+    that:
+      - iam_role is not changed
+      - iam_role.iam_role.role_name == test_role
+
+- name: iam_role_info after updating Managed Policy with purge
+  amazon.aws.iam_role_info:
+    name: "{{ test_role }}"
+  register: role_info
+- ansible.builtin.assert:
+    that:
+      - role_info is succeeded
+      - role_info.iam_roles | length == 1
+      - role_info.iam_roles[0].arn.startswith("arn")
+      - role_info.iam_roles[0].arn.endswith("role/" + test_role )
+      - '"assume_role_policy_document" in role_info.iam_roles[0]'
+      - '"create_date" in role_info.iam_roles[0]'
+      - role_info.iam_roles[0].description == 'Ansible Test Role (updated) '+resource_prefix
+      - role_info.iam_roles[0].inline_policies | length == 0
+      - role_info.iam_roles[0].instance_profiles | length == 1
+      - role_info.iam_roles[0].instance_profiles[0].instance_profile_name == test_role
+      - role_info.iam_roles[0].instance_profiles[0].arn.startswith("arn")
+      - role_info.iam_roles[0].instance_profiles[0].arn.endswith("instance-profile/" + test_role)
+      - role_info.iam_roles[0].managed_policies | length == 1
+      - safe_managed_policy not in ( role_info | community.general.json_query("iam_roles[*].managed_policies[*].policy_name") | list | flatten )
+      - custom_policy_name in ( role_info | community.general.json_query("iam_roles[*].managed_policies[*].policy_name") | list | flatten )
+      - role_info.iam_roles[0].max_session_duration == 43200
+      - role_info.iam_roles[0].path == '/'
+      - '"permissions_boundary" not in role_info.iam_roles[0]'
+      - role_info.iam_roles[0].role_id == iam_role.iam_role.role_id
+      - role_info.iam_roles[0].role_name == test_role
+      - role_info.iam_roles[0].tags | length == 1
+      - '"TagB" in role_info.iam_roles[0].tags'
+      - role_info.iam_roles[0].tags.TagB == "ValueB"

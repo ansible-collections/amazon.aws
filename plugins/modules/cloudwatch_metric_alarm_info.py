@@ -68,14 +68,14 @@ EXAMPLES = r"""
 - name: describe the metric alarm based on alarm names
   amazon.aws.cloudwatch_metric_alarm_info:
     alarm_names:
-        - my-test-alarm-1
-        - my-test-alarm-2
+      - my-test-alarm-1
+      - my-test-alarm-2
 
 - name: describe the metric alarm based alarm names and state value
   amazon.aws.cloudwatch_metric_alarm_info:
     alarm_names:
-        - my-test-alarm-1
-        - my-test-alarm-2
+      - my-test-alarm-1
+      - my-test-alarm-2
     state_value: OK
 
 - name: describe the metric alarm based alarm names prefix
@@ -227,9 +227,10 @@ try:
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
-from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 
 @AWSRetry.jittered_backoff(retries=10)

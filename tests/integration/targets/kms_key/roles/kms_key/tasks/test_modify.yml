@@ -1,0 +1,292 @@
+---
+- name: Run tests related to basic key modification
+  block:
+    # ============================================================
+    #   PREPARATION
+    #
+    # Get some information about who we are before starting our tests
+    # we'll need this as soon as we start working on the policies
+    - name: Get ARN of calling user
+      amazon.aws.aws_caller_info:
+      register: aws_caller_info
+    - name: Create an IAM role that can do nothing
+      amazon.aws.iam_role:
+        name: "{{ kms_key_alias }}"
+        state: present
+        assume_role_policy_document:
+          Version: "2012-10-17"
+          Statement:
+            Action: "sts:AssumeRole"
+            Principal:
+              Service: "ec2.amazonaws.com"
+            Effect: "Deny"
+      register: iam_role_result
+    - name: Create a key
+      amazon.aws.kms_key:
+        alias: "{{ kms_key_alias }}"
+        tags:
+          Hello: World
+        state: present
+        enabled: true
+        enable_key_rotation: false
+      register: key
+    - name: Assert that state is enabled
+      ansible.builtin.assert:
+        that:
+          - key is changed
+          - '"key_id" in key'
+          - key.key_id | length >= 36
+          - not key.key_id.startswith("arn:aws")
+          - '"key_arn" in key'
+          - key.key_arn.endswith(key.key_id)
+          - key.key_arn.startswith("arn:aws")
+          - key.key_state == "Enabled"
+          - key.enabled == True
+          - key.tags | length == 1
+          - key.tags['Hello'] == 'World'
+          - key.enable_key_rotation == false
+          - key.key_usage == 'ENCRYPT_DECRYPT'
+          - key.customer_master_key_spec == 'SYMMETRIC_DEFAULT'
+          - key.grants | length == 0
+          - key.key_policies | length == 1
+          - key.key_policies[0].Id == 'key-default-1'
+          - key.description == ''
+
+    # ------------------------------------------------------------------------------------------
+
+    - name: Save IDs for later
+      ansible.builtin.set_fact:
+        kms_key_id: "{{ key.key_id }}"
+        kms_key_arn: "{{ key.key_arn }}"
+    - name: Find facts about the key (by ID)
+      amazon.aws.kms_key_info:
+        key_id: "{{ kms_key_id }}"
+      register: new_key
+    - name: Check that a key was found
+      ansible.builtin.assert:
+        that:
+          - '"key_id" in new_key.kms_keys[0]'
+          - new_key.kms_keys[0].key_id | length >= 36
+          - not new_key.kms_keys[0].key_id.startswith("arn:aws")
+          - '"key_arn" in new_key.kms_keys[0]'
+          - new_key.kms_keys[0].key_arn.endswith(new_key.kms_keys[0].key_id)
+          - new_key.kms_keys[0].key_arn.startswith("arn:aws")
+          - new_key.kms_keys[0].key_state == "Enabled"
+          - new_key.kms_keys[0].enabled == True
+          - new_key.kms_keys[0].tags | length == 1
+          - new_key.kms_keys[0].tags['Hello'] == 'World'
+          - new_key.kms_keys[0].enable_key_rotation == False
+          - new_key.kms_keys[0].key_usage == 'ENCRYPT_DECRYPT'
+          - new_key.kms_keys[0].customer_master_key_spec == 'SYMMETRIC_DEFAULT'
+          - new_key.kms_keys[0].grants | length == 0
+          - new_key.kms_keys[0].key_policies | length == 1
+          - new_key.kms_keys[0].key_policies[0].Id == 'key-default-1'
+          - new_key.kms_keys[0].description == ''
+
+    - name: Update policy - check mode
+      amazon.aws.kms_key:
+        key_id: "{{ kms_key_id }}"
+        policy: "{{ lookup('template', 'console-policy.j2') }}"
+      register: key
+      check_mode: true
+    - name: Assert that change is expected
+      ansible.builtin.assert:
+        that:
+          - key is changed
+
+    - name: Update policy
+      amazon.aws.kms_key:
+        key_id: "{{ kms_key_id }}"
+        policy: "{{ lookup('template', 'console-policy.j2') }}"
+      register: key
+    - name: Policy should have been changed
+      ansible.builtin.assert:
+        that:
+          - key is changed
+          - '"key_id" in key'
+          - key.key_id | length >= 36
+          - not key.key_id.startswith("arn:aws")
+          - '"key_arn" in key'
+          - key.key_arn.endswith(key.key_id)
+          - key.key_arn.startswith("arn:aws")
+          - key.key_state == "Enabled"
+          - key.enabled == True
+          - key.tags | length == 1
+          - key.tags['Hello'] == 'World'
+          - key.enable_key_rotation == false
+          - key.key_usage == 'ENCRYPT_DECRYPT'
+          - key.customer_master_key_spec == 'SYMMETRIC_DEFAULT'
+          - key.grants | length == 0
+          - key.key_policies | length == 1
+          - key.key_policies[0].Id == 'key-consolepolicy-3'
+          - key.description == ''
+
+    - name: Sleep to wait for updates to propagate
+      ansible.builtin.wait_for:
+        timeout: 45
+    - name: Update policy (idempotence) - check mode
+      amazon.aws.kms_key:
+        alias: alias/{{ kms_key_alias }}
+        policy: "{{ lookup('template', 'console-policy.j2') }}"
+      register: key
+      check_mode: true
+    - name: Assert no change expected
+      ansible.builtin.assert:
+        that:
+          - not key.changed
+
+    - name: Update policy (idempotence)
+      amazon.aws.kms_key:
+        alias: alias/{{ kms_key_alias }}
+        policy: "{{ lookup('template', 'console-policy.j2') }}"
+      register: key
+    - name: Assert that no changes occurred
+      ansible.builtin.assert:
+        that:
+          - not key.changed
+          - '"key_id" in key'
+          - key.key_id | length >= 36
+          - not key.key_id.startswith("arn:aws")
+          - '"key_arn" in key'
+          - key.key_arn.endswith(key.key_id)
+          - key.key_arn.startswith("arn:aws")
+          - key.key_state == "Enabled"
+          - key.enabled == True
+          - key.tags | length == 1
+          - key.tags['Hello'] == 'World'
+          - key.enable_key_rotation == false
+          - key.key_usage == 'ENCRYPT_DECRYPT'
+          - key.customer_master_key_spec == 'SYMMETRIC_DEFAULT'
+          - key.grants | length == 0
+          - key.key_policies | length == 1
+          - key.key_policies[0].Id == 'key-consolepolicy-3'
+          - key.description == ''
+
+    # ------------------------------------------------------------------------------------------
+
+    - name: Update description - check mode
+      amazon.aws.kms_key:
+        alias: "{{ kms_key_alias }}"
+        state: present
+        description: test key for testing
+      register: key
+      check_mode: true
+    - name: Assert change expected
+      ansible.builtin.assert:
+        that:
+          - key.changed
+
+    - name: Update description
+      amazon.aws.kms_key:
+        alias: "{{ kms_key_alias }}"
+        state: present
+        description: test key for testing
+      register: key
+    - name: Assert that description changed
+      ansible.builtin.assert:
+        that:
+          - key.changed
+          - '"key_id" in key'
+          - key.key_id | length >= 36
+          - not key.key_id.startswith("arn:aws")
+          - '"key_arn" in key'
+          - key.key_arn.endswith(key.key_id)
+          - key.key_arn.startswith("arn:aws")
+          - key.key_state == "Enabled"
+          - key.enabled == True
+          - key.tags | length == 1
+          - key.tags['Hello'] == 'World'
+          - key.enable_key_rotation == false
+          - key.key_usage == 'ENCRYPT_DECRYPT'
+          - key.customer_master_key_spec == 'SYMMETRIC_DEFAULT'
+          - key.grants | length == 0
+          - key.key_policies | length == 1
+          - key.key_policies[0].Id == 'key-consolepolicy-3'
+          - key.description == 'test key for testing'
+
+    - name: Sleep to wait for updates to propagate
+      ansible.builtin.wait_for:
+        timeout: 45
+    - name: Update description (idempotence) - check mode
+      amazon.aws.kms_key:
+        alias: "{{ kms_key_alias }}"
+        state: present
+        description: test key for testing
+      register: key
+      check_mode: true
+    - name: Assert that no change was expected
+      ansible.builtin.assert:
+        that:
+          - not key.changed
+
+    - name: Update description (idempotence)
+      amazon.aws.kms_key:
+        alias: "{{ kms_key_alias }}"
+        state: present
+        description: test key for testing
+      register: key
+    - name: Assert no change occurred
+      ansible.builtin.assert:
+        that:
+          - not key.changed
+          - '"key_id" in key'
+          - key.key_id | length >= 36
+          - not key.key_id.startswith("arn:aws")
+          - '"key_arn" in key'
+          - key.key_arn.endswith(key.key_id)
+          - key.key_arn.startswith("arn:aws")
+          - key.key_state == "Enabled"
+          - key.enabled == True
+          - key.tags | length == 1
+          - key.tags['Hello'] == 'World'
+          - key.enable_key_rotation == false
+          - key.key_usage == 'ENCRYPT_DECRYPT'
+          - key.customer_master_key_spec == 'SYMMETRIC_DEFAULT'
+          - key.grants | length == 0
+          - key.key_policies | length == 1
+          - key.key_policies[0].Id == 'key-consolepolicy-3'
+          - key.description == 'test key for testing'
+
+    # ------------------------------------------------------------------------------------------
+
+    - name: Update policy to remove access to key rotation status
+      amazon.aws.kms_key:
+        alias: alias/{{ kms_key_alias }}
+        policy: "{{ lookup('template', 'console-policy-no-key-rotation.j2') }}"
+      register: key
+    - name: Assert that policy was updated
+      ansible.builtin.assert:
+        that:
+          - '"key_id" in key'
+          - key.key_id | length >= 36
+          - not key.key_id.startswith("arn:aws")
+          - '"key_arn" in key'
+          - key.key_arn.endswith(key.key_id)
+          - key.key_arn.startswith("arn:aws")
+          - key.key_state == "Enabled"
+          - key.enabled == True
+          - key.tags | length == 1
+          - key.tags['Hello'] == 'World'
+          - key.enable_key_rotation is none
+          - key.key_usage == 'ENCRYPT_DECRYPT'
+          - key.customer_master_key_spec == 'SYMMETRIC_DEFAULT'
+          - key.grants | length == 0
+          - key.key_policies | length == 1
+          - key.key_policies[0].Id == 'key-consolepolicy-3'
+          - key.description == 'test key for testing'
+          - "'Disable access to key rotation status' in (key.key_policies[0].Statement | map(attribute='Sid'))"
+
+  always:
+    # ============================================================
+    #   CLEAN-UP
+    - name: Finish off by deleting keys
+      amazon.aws.kms_key:
+        state: absent
+        alias: "{{ kms_key_alias }}"
+        pending_window: 7
+      ignore_errors: true # noqa: ignore-errors
+    - name: Remove the IAM role
+      amazon.aws.iam_role:
+        name: "{{ kms_key_alias }}"
+        state: absent
+      ignore_errors: true # noqa: ignore-errors

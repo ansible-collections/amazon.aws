@@ -244,7 +244,8 @@ trail:
 """
 
 try:
-    from botocore.exceptions import ClientError, BotoCoreError
+    from botocore.exceptions import BotoCoreError
+    from botocore.exceptions import ClientError
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
@@ -331,19 +332,6 @@ def tag_trail(module, client, tags, trail_arn, curr_tags=None, purge_tags=True):
             module.fail_json_aws(err, msg="Failed to add tags to Trail")
 
     return True
-
-
-def get_tag_list(keys, tags):
-    """
-    Returns a list of dicts with tags to act on
-    keys : set of keys to get the values for
-    tags : the dict of tags to turn into a list
-    """
-    tag_list = []
-    for k in keys:
-        tag_list.append({"Key": k, "Value": tags[k]})
-
-    return tag_list
 
 
 def set_logging(module, client, name, action):

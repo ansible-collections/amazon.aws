@@ -325,7 +325,7 @@ EXAMPLES = r"""
     record: elb.foo.com
     type: A
     value: "{{ elb_dns_name }}"
-    alias: True
+    alias: true
     alias_hosted_zone_id: "{{ elb_zone_id }}"
 - name: Retrieve the details for elb.foo.com
   amazon.aws.route53:
@@ -342,7 +342,7 @@ EXAMPLES = r"""
     ttl: "{{ rec.set.ttl }}"
     type: "{{ rec.set.type }}"
     value: "{{ rec.set.value }}"
-    alias: True
+    alias: true
     alias_hosted_zone_id: "{{ rec.set.alias_hosted_zone_id }}"
 - name: Add an alias record that points to an Amazon ELB and evaluates it health
   amazon.aws.route53:
@@ -351,9 +351,9 @@ EXAMPLES = r"""
     record: elb.foo.com
     type: A
     value: "{{ elb_dns_name }}"
-    alias: True
+    alias: true
     alias_hosted_zone_id: "{{ elb_zone_id }}"
-    alias_evaluate_target_health: True
+    alias_evaluate_target_health: true
 - name: Add an AAAA record with Hosted Zone ID
   amazon.aws.route53:
     state: present
@@ -420,10 +420,10 @@ except ImportError:
 from ansible.module_utils._text import to_native
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_message
-from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
 from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
 
 MAX_AWS_RETRIES = 10  # How many retries to perform when an API call is failing

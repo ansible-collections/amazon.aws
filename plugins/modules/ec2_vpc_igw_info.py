@@ -51,7 +51,7 @@ EXAMPLES = r"""
     region: ap-southeast-2
     profile: production
     filters:
-        "tag:Name": "igw-123"
+      "tag:Name": "igw-123"
   register: igw_info
 
 - name: Gather information about a specific internet gateway by InternetGatewayId
@@ -107,12 +107,13 @@ try:
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
-from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
-from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 
 def get_internet_gateway_info(internet_gateway, convert_tags):

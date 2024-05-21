@@ -1,7 +1,8 @@
+---
 # defaults file for lambda integration test
 # IAM role names have to be less than 64 characters
 # we hash the resource_prefix to get a shorter, unique string
-lambda_function_name: '{{ tiny_prefix }}'
+lambda_function_name: "{{ tiny_prefix }}"
 lambda_role_name: ansible-test-{{ tiny_prefix }}-lambda
 
 lambda_python_runtime: python3.9
@@ -9,5 +10,5 @@ lambda_python_handler: mini_lambda.handler
 lambda_python_layers_names:
   - "{{ tiny_prefix }}-layer-01"
   - "{{ tiny_prefix }}-layer-02"
-lambda_function_name_with_layer: '{{ tiny_prefix }}-func-with-layer'
-lambda_function_name_with_multiple_layer: '{{ tiny_prefix }}-func-with-mutiplelayer'
+lambda_function_name_with_layer: "{{ tiny_prefix }}-func-with-layer"
+lambda_function_name_with_multiple_layer: "{{ tiny_prefix }}-func-with-mutiplelayer"

@@ -1,2 +1,3 @@
+---
 dependencies:
-- role: setup_ec2_vpc
+  - role: setup_ec2_vpc

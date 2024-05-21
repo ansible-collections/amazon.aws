@@ -1,0 +1,29 @@
+---
+- name: Test s3_bucket_info
+  module_defaults:
+    group/aws:
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+  block:
+    - name: Create a simple s3_bucket
+      amazon.aws.s3_bucket:
+        name: "{{ item }}"
+        state: present
+        versioning: true
+        tags:
+          lowercase spaced: hello cruel world
+          Title Case: Hello Cruel World
+          CamelCase: SimpleCamelCase
+          snake_case: simple_snake_case
+      register: output
+      loop: "{{ testing_buckets }}"
+    - ansible.builtin.include_tasks: basic.yml
+    - ansible.builtin.include_tasks: bucket_ownership_controls.yml
+  always:
+    - name: Delete simple s3_buckets
+      amazon.aws.s3_bucket:
+        name: "{{ item }}"
+        state: absent
+      loop: "{{ testing_buckets }}"

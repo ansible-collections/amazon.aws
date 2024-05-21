@@ -216,7 +216,7 @@ EXAMPLES = r"""
 - name: Basic AMI Creation, without waiting
   amazon.aws.ec2_ami:
     instance_id: i-xxxxxx
-    wait: no
+    wait: false
     name: newtest
 
 - name: AMI Registration from EBS Snapshot
@@ -238,26 +238,26 @@ EXAMPLES = r"""
     instance_id: i-xxxxxx
     name: newtest
     device_mapping:
-        - device_name: /dev/sda1
-          size: XXX
-          delete_on_termination: true
-          volume_type: gp2
-        - device_name: /dev/sdb
-          size: YYY
-          delete_on_termination: false
-          volume_type: gp2
+      - device_name: /dev/sda1
+        size: XXX
+        delete_on_termination: true
+        volume_type: gp2
+      - device_name: /dev/sdb
+        size: YYY
+        delete_on_termination: false
+        volume_type: gp2
 
 - name: AMI Creation, excluding a volume attached at /dev/sdb
   amazon.aws.ec2_ami:
     instance_id: i-xxxxxx
     name: newtest
     device_mapping:
-        - device_name: /dev/sda1
-          size: XXX
-          delete_on_termination: true
-          volume_type: gp2
-        - device_name: /dev/sdb
-          no_device: true
+      - device_name: /dev/sda1
+        size: XXX
+        delete_on_termination: true
+        volume_type: gp2
+      - device_name: /dev/sdb
+        no_device: true
 
 - name: AMI Creation with boot_mode and tpm_support
   amazon.aws.ec2_ami:
@@ -267,9 +267,9 @@ EXAMPLES = r"""
     virtualization_type: hvm
     root_device_name: /dev/sda1
     device_mapping:
-        - device_name: /dev/sda1
-          snapshot_id: "{{ snapshot_id }}"
-    wait: yes
+      - device_name: /dev/sda1
+        snapshot_id: "{{ snapshot_id }}"
+    wait: true
     region: us-east-1
     boot_mode: uefi
     uefi_data: data_file.bin
@@ -278,13 +278,13 @@ EXAMPLES = r"""
 - name: Deregister/Delete AMI (keep associated snapshots)
   amazon.aws.ec2_ami:
     image_id: "{{ instance.image_id }}"
-    delete_snapshot: False
+    delete_snapshot: false
     state: absent
 
 - name: Deregister AMI (delete associated snapshots too)
   amazon.aws.ec2_ami:
     image_id: "{{ instance.image_id }}"
-    delete_snapshot: True
+    delete_snapshot: true
     state: absent
 
 - name: Update AMI Launch Permissions, making it public
@@ -339,6 +339,11 @@ description:
     returned: when AMI is created or already exists
     type: str
     sample: "nat-server"
+enhanced_networking:
+    description: Specifies whether enhanced networking with ENA is enabled.
+    returned: when AMI is created or already exists
+    type: bool
+    sample: true
 hypervisor:
     description: Type of hypervisor.
     returned: when AMI is created or already exists
@@ -349,11 +354,26 @@ image_id:
     returned: when AMI is created or already exists
     type: str
     sample: "ami-1234abcd"
+image_owner_alias:
+    description: The owner alias ( amazon | aws-marketplace).
+    returned: when AMI is created or already exists
+    type: str
+    sample: "amazon"
+image_type:
+    description: Type of image.
+    returned: when AMI is created or already exists
+    type: str
+    sample: "machine"
 is_public:
     description: Whether image is public.
     returned: when AMI is created or already exists
     type: bool
     sample: false
+kernel_id:
+    description: The kernel associated with the image, if any. Only applicable for machine images.
+    returned: when AMI is created or already exists
+    type: str
+    sample: "aki-88aa75e1"
 launch_permission:
     description: Permissions allowing other accounts to access the AMI.
     returned: when AMI is created or already exists
@@ -379,6 +399,16 @@ platform:
     description: Platform of image.
     returned: when AMI is created or already exists
     type: str
+    sample: "Windows"
+product_codes:
+    description: Any product codes associated with the AMI.
+    returned: when AMI is created or already exists
+    type: list
+    sample: []
+ramdisk_id:
+    description: The RAM disk associated with the image, if any. Only applicable for machine images.
+    returned: when AMI is created or already exists
+    type: str
     sample: null
 root_device_name:
     description: Root device name of image.
@@ -390,11 +420,24 @@ root_device_type:
     returned: when AMI is created or already exists
     type: str
     sample: "ebs"
+sriov_net_support:
+    description: Specifies whether enhanced networking with the Intel 82599 Virtual Function interface is enabled.
+    returned: when AMI is created or already exists
+    type: str
+    sample: "simple"
 state:
     description: State of image.
     returned: when AMI is created or already exists
     type: str
     sample: "available"
+state_reason:
+    description: The reason for the state change.
+    returned: when AMI is created or already exists
+    type: dict
+    sample: {
+                'Code': 'string',
+                'Message': 'string'
+            }
 tags:
     description: A dictionary of tags assigned to image.
     returned: when AMI is created or already exists
@@ -427,11 +470,11 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import add_ec2_tags
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
 from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
@@ -558,10 +601,6 @@ def validate_params(
     if not (image_id or name):
         module.fail_json("one of the following is required: name, image_id")
 
-    if tpm_support or uefi_data:
-        module.require_botocore_at_least(
-            "1.26.0", reason="required for ec2.register_image with tpm_support or uefi_data"
-        )
     if tpm_support and boot_mode != "uefi":
         module.fail_json("To specify 'tpm_support', 'boot_mode' must be 'uefi'.")
 

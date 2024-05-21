@@ -170,7 +170,6 @@ options:
           - For the full list of DB instance classes and availability for your engine visit
             U(https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html).
           - This setting is required to create a Multi-AZ DB cluster.
-          - I(db_cluster_instance_class) require botocore >= 1.23.44.
         type: str
         version_added: 5.5.0
     enable_iam_database_authentication:
@@ -182,7 +181,6 @@ options:
         description:
           - The amount of storage in gibibytes (GiB) to allocate to each DB instance in the Multi-AZ DB cluster.
           - This setting is required to create a Multi-AZ DB cluster.
-          - I(allocated_storage) require botocore >= 1.23.44.
         type: int
         version_added: 5.5.0
     storage_type:
@@ -190,7 +188,6 @@ options:
           - Specifies the storage type to be associated with the DB cluster.
           - This setting is required to create a Multi-AZ DB cluster.
           - When specified, a value for the I(iops) parameter is required.
-          - I(storage_type) require botocore >= 1.23.44.
           - Defaults to C(io1).
         type: str
         choices:
@@ -201,7 +198,6 @@ options:
           - The amount of Provisioned IOPS (input/output operations per second) to be initially allocated for each DB instance in the Multi-AZ DB cluster.
           - This setting is required to create a Multi-AZ DB cluster
           - Must be a multiple between .5 and 50 of the storage amount for the DB cluster.
-          - I(iops) require botocore >= 1.23.44.
         type: int
         version_added: 5.5.0
     engine:
@@ -305,6 +301,13 @@ options:
         aliases:
           - maintenance_window
         type: str
+    remove_from_global_db:
+        description:
+          - If set to C(true), the cluster will be removed from global DB.
+          - Parameters I(global_cluster_identifier), I(db_cluster_identifier) must be specified when I(remove_from_global_db=true).
+        type: bool
+        required: false
+        version_added: 6.5.0
     replication_source_identifier:
         description:
           - The Amazon Resource Name (ARN) of the source DB instance or DB cluster if this DB cluster is created as a Read Replica.
@@ -343,6 +346,24 @@ options:
           - The prefix for all of the file names that contain the data used to create the Amazon Aurora DB cluster.
           - If you do not specify a SourceS3Prefix value, then the Amazon Aurora DB cluster is created by using all of the files in the Amazon S3 bucket.
         type: str
+    serverless_v2_scaling_configuration:
+        description:
+          - Contains the scaling configuration of an Aurora Serverless v2 DB cluster.
+        type: dict
+        suboptions:
+          min_capacity:
+            description:
+              - The minimum number of Aurora capacity units (ACUs) for a DB instance in an Aurora Serverless v2 cluster.
+              - ACU values can be specified in in half-step increments, such as C(8), C(8.5), C(9), and so on.
+              - The smallest possible value is C(0.5).
+            type: float
+          max_capacity:
+            description:
+              - The maximum number of Aurora capacity units (ACUs) for a DB instance in an Aurora Serverless v2 cluster.
+              - ACU values can be specified in in half-step increments, such as C(40), C(40.5), C(41), and so on.
+              - The largest possible value is C(128).
+            type: float
+        version_added: 7.3.0
     skip_final_snapshot:
         description:
           - Whether a final DB cluster snapshot is created before the DB cluster is deleted.
@@ -433,7 +454,7 @@ EXAMPLES = r"""
     password: "{{ password }}"
     username: "{{ username }}"
     cluster_id: "{{ cluster_id }}"
-    skip_final_snapshot: True
+    skip_final_snapshot: true
     tags:
       Name: "cluster-{{ resource_prefix }}"
       Created_By: "Ansible_rds_cluster_integration_test"
@@ -463,6 +484,42 @@ EXAMPLES = r"""
     engine: aurora-postgresql
     state: present
     db_instance_class: 'db.t3.medium'
+
+- name: Remove a cluster from global DB (do not delete)
+  amazon.aws.rds_cluster:
+    db_cluster_identifier: '{{ cluster_id }}'
+    global_cluster_identifier: '{{ global_cluster_id }}'
+    remove_from_global_db: true
+
+- name: Remove a cluster from global DB and Delete without creating a final snapshot
+  amazon.aws.rds_cluster:
+    engine: aurora
+    password: "{{ password }}"
+    username: "{{ username }}"
+    cluster_id: "{{ cluster_id }}"
+    skip_final_snapshot: true
+    remove_from_global_db: true
+    wait: true
+    state: absent
+
+- name: Update cluster port and WAIT for remove secondary DB cluster from global DB to complete
+  amazon.aws.rds_cluster:
+    db_cluster_identifier: "{{ secondary_cluster_name }}"
+    global_cluster_identifier: "{{ global_cluster_name }}"
+    remove_from_global_db: true
+    state: present
+    port: 3389
+    region: "{{ secondary_cluster_region }}"
+
+- name: Update cluster port and DO NOT WAIT for remove secondary DB cluster from global DB to complete
+  amazon.aws.rds_cluster:
+    db_cluster_identifier: "{{ secondary_cluster_name }}"
+    global_cluster_identifier: "{{ global_cluster_name }}"
+    remove_from_global_db: true
+    state: present
+    port: 3389
+    region: "{{ secondary_cluster_region }}"
+    wait: false
 """
 
 RETURN = r"""
@@ -647,6 +704,15 @@ reader_endpoint:
   returned: always
   type: str
   sample: rds-cluster-demo.cluster-ro-cvlrtwiennww.us-east-1.rds.amazonaws.com
+serverless_v2_scaling_configuration:
+  description: The scaling configuration for an Aurora Serverless v2 DB cluster.
+  returned: when configured
+  type: dict
+  sample: {
+      "max_capacity": 4.5,
+      "min_capacity": 2.5
+  }
+  version_added: 7.3.0
 status:
   description: The status of the DB cluster.
   returned: always
@@ -699,15 +765,15 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.rds import arg_spec_to_rds_params
+from ansible_collections.amazon.aws.plugins.module_utils.rds import call_method
+from ansible_collections.amazon.aws.plugins.module_utils.rds import ensure_tags
+from ansible_collections.amazon.aws.plugins.module_utils.rds import get_tags
+from ansible_collections.amazon.aws.plugins.module_utils.rds import wait_for_cluster_status
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
-from ansible_collections.amazon.aws.plugins.module_utils.rds import wait_for_cluster_status
-from ansible_collections.amazon.aws.plugins.module_utils.rds import arg_spec_to_rds_params
-from ansible_collections.amazon.aws.plugins.module_utils.rds import get_tags
-from ansible_collections.amazon.aws.plugins.module_utils.rds import ensure_tags
-from ansible_collections.amazon.aws.plugins.module_utils.rds import call_method
 
 
 @AWSRetry.jittered_backoff(retries=10)
@@ -778,6 +844,7 @@ def get_create_options(params_dict):
         "StorageType",
         "Iops",
         "EngineMode",
+        "ServerlessV2ScalingConfiguration",
     ]
 
     return dict((k, v) for k, v in params_dict.items() if k in options and v is not None)
@@ -812,6 +879,7 @@ def get_modify_options(params_dict, force_update_password):
         "StorageType",
         "Iops",
         "EngineMode",
+        "ServerlessV2ScalingConfiguration",
     ]
     modify_options = dict((k, v) for k, v in params_dict.items() if k in options and v is not None)
     if not force_update_password:
@@ -1102,6 +1170,33 @@ def ensure_present(cluster, parameters, method_name, method_options_name):
     return changed
 
 
+def handle_remove_from_global_db(cluster):
+    global_cluster_id = module.params.get("global_cluster_identifier")
+    db_cluster_id = module.params.get("db_cluster_identifier")
+    db_cluster_arn = cluster["DBClusterArn"]
+
+    if module.check_mode:
+        return True
+
+    try:
+        client.remove_from_global_cluster(DbClusterIdentifier=db_cluster_arn, GlobalClusterIdentifier=global_cluster_id)
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        module.fail_json_aws(
+            e, msg=f"Failed to remove cluster {db_cluster_id} from global DB cluster {global_cluster_id}."
+        )
+
+    # for replica cluster - wait for cluster to change status from 'available' to 'promoting'
+    # only replica/secondary clusters have "GlobalWriteForwardingStatus" field
+    if "GlobalWriteForwardingStatus" in cluster:
+        wait_for_cluster_status(client, module, db_cluster_id, "db_cluster_promoting")
+
+    # if wait=true, wait for db cluster remove from global db operation to complete
+    if module.params.get("wait"):
+        wait_for_cluster_status(client, module, db_cluster_id, "cluster_available")
+
+    return True
+
+
 def main():
     global module
     global client
@@ -1154,6 +1249,7 @@ def main():
         port=dict(type="int"),
         preferred_backup_window=dict(aliases=["backup_window"]),
         preferred_maintenance_window=dict(aliases=["maintenance_window"]),
+        remove_from_global_db=dict(type="bool"),
         replication_source_identifier=dict(aliases=["replication_src_id"]),
         restore_to_time=dict(),
         restore_type=dict(choices=["full-copy", "copy-on-write"]),
@@ -1161,6 +1257,13 @@ def main():
         s3_bucket_name=dict(),
         s3_ingestion_role_arn=dict(),
         s3_prefix=dict(),
+        serverless_v2_scaling_configuration=dict(
+            type="dict",
+            options=dict(
+                min_capacity=dict(type="float"),
+                max_capacity=dict(type="float"),
+            ),
+        ),
         skip_final_snapshot=dict(type="bool", default=False),
         snapshot_identifier=dict(),
         source_db_cluster_identifier=dict(),
@@ -1190,6 +1293,7 @@ def main():
         required_if=[
             ["creation_source", "snapshot", ["snapshot_identifier", "engine"]],
             ["creation_source", "s3", required_by_s3_creation_source],
+            ["remove_from_global_db", True, ["global_cluster_identifier", "db_cluster_identifier"]],
         ],
         mutually_exclusive=[
             ["s3_bucket_name", "source_db_cluster_identifier", "snapshot_identifier"],
@@ -1206,7 +1310,6 @@ def main():
         module.fail_json_aws(e, msg="Failed to connect to AWS.")
 
     if module.params.get("engine") and module.params["engine"] in ("mysql", "postgres"):
-        module.require_botocore_at_least("1.23.44", reason="to use mysql and postgres engines")
         if module.params["state"] == "present":
             if not (
                 module.params.get("allocated_storage")
@@ -1245,12 +1348,17 @@ def main():
             msg="skip_final_snapshot is False but all of the following are missing: final_snapshot_identifier"
         )
 
-    parameters = arg_spec_to_rds_params(dict((k, module.params[k]) for k in module.params if k in parameter_options))
     changed = False
+
+    parameters = arg_spec_to_rds_params(dict((k, module.params[k]) for k in module.params if k in parameter_options))
     method_name, method_options_name = get_rds_method_attribute_name(cluster)
 
     if method_name:
         if method_name == "delete_db_cluster":
+            if cluster and module.params.get("remove_from_global_db"):
+                if cluster["Engine"] in ["aurora", "aurora-mysql", "aurora-postgresql"]:
+                    changed = handle_remove_from_global_db(cluster)
+
             call_method(client, module, method_name, eval(method_options_name)(parameters))
             changed = True
         else:
@@ -1260,6 +1368,12 @@ def main():
         cluster_id = module.params["new_db_cluster_identifier"]
     else:
         cluster_id = module.params["db_cluster_identifier"]
+
+    if cluster_id and get_cluster(cluster_id) and module.params.get("remove_from_global_db"):
+        if cluster["Engine"] in ["aurora", "aurora-mysql", "aurora-postgresql"]:
+            if changed:
+                wait_for_cluster_status(client, module, cluster_id, "cluster_available")
+        changed |= handle_remove_from_global_db(cluster)
 
     result = camel_dict_to_snake_dict(get_cluster(cluster_id))
 

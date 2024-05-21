@@ -1,0 +1,137 @@
+---
+# ------------------------------------------------------------------------------------------
+- name: Ensure group exists
+  amazon.aws.iam_group:
+    name: "{{ test_group }}"
+    users:
+      - "{{ test_user }}"
+    state: present
+  register: iam_group
+- name: Assert successful creation
+  ansible.builtin.assert:
+    that:
+      - iam_group.changed
+      - iam_group.iam_group.users
+
+- name: Get info on IAM user(s) in group
+  amazon.aws.iam_user_info:
+    group: "{{ test_group }}"
+    name: "{{ test_user }}"
+  register: iam_user_info
+- name: Assert user found
+  ansible.builtin.assert:
+    that:
+      - iam_user_info.iam_users | length == 1
+      - iam_user_info.iam_users[0].arn == test_iam_user.arn
+      - iam_user_info.iam_users[0].create_date == test_iam_user.create_date
+      - iam_user_info.iam_users[0].path == test_iam_user.path
+      - iam_user_info.iam_users[0].user_id == test_iam_user.user_id
+      - iam_user_info.iam_users[0].user_name == test_iam_user.user_name
+      - iam_user_info.iam_users[0].tags | length == 0
+
+- name: Remove user from group
+  amazon.aws.iam_group:
+    name: "{{ test_group }}"
+    purge_users: true
+    users: []
+    state: present
+  register: iam_group
+- name: Get info on IAM user(s) after removing from group
+  amazon.aws.iam_user_info:
+    group: "{{ test_group }}"
+    name: "{{ test_user }}"
+  register: iam_user_info
+- name: Assert empty list of users for group are returned
+  ansible.builtin.assert:
+    that:
+      - iam_user_info.iam_users | length == 0
+
+- name: Ensure ansible users exist
+  amazon.aws.iam_user:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ test_users }}"
+- name: Get info on multiple IAM user(s)
+  amazon.aws.iam_user_info:
+  register: iam_user_info
+- name: Assert results returned
+  ansible.builtin.assert:
+    that:
+      - iam_user_info.iam_users | length != 0
+
+- name: Ensure multiple user group exists with single user
+  amazon.aws.iam_group:
+    name: "{{ test_group }}"
+    users:
+      - "{{ test_user }}"
+    state: present
+  register: iam_group
+- name: Get info on IAM user(s) in group
+  amazon.aws.iam_user_info:
+    group: "{{ test_group }}"
+  register: iam_user_info
+- name: Assert single user returned
+  ansible.builtin.assert:
+    that:
+      - iam_user_info.iam_users | length == 1
+
+- name: Add all users to group
+  amazon.aws.iam_group:
+    name: "{{ test_group }}"
+    users: "{{ test_users }}"
+    state: present
+  register: iam_group
+- name: Get info on multiple IAM user(s) in group
+  amazon.aws.iam_user_info:
+    group: "{{ test_group }}"
+  register: iam_user_info
+- name: Assert expected number of users returned
+  ansible.builtin.assert:
+    that:
+      - iam_user_info.iam_users | length == test_users | length
+
+- name: Purge users from group
+  amazon.aws.iam_group:
+    name: "{{ test_group }}"
+    purge_users: true
+    users: []
+    state: present
+  register: iam_group
+- name: Ensure info is empty for empty group
+  amazon.aws.iam_user_info:
+    group: "{{ test_group }}"
+  register: iam_user_info
+- name: Assert no users returned
+  ansible.builtin.assert:
+    that:
+      - iam_user_info.iam_users | length == 0
+
+- name: Get info on IAM user(s) after removing from group
+  amazon.aws.iam_user_info:
+    group: "{{ test_group }}"
+  register: iam_user_info
+- name: Assert empty list of users for group are returned
+  ansible.builtin.assert:
+    that:
+      - iam_user_info.iam_users | length == 0
+
+- name: Remove group
+  amazon.aws.iam_group:
+    name: "{{ test_group }}"
+    state: absent
+  register: iam_group
+- name: Assert that group was removed
+  ansible.builtin.assert:
+    that:
+      - iam_group.changed
+      - iam_group
+
+- name: Test remove group again (idempotency)
+  amazon.aws.iam_group:
+    name: "{{ test_group }}"
+    state: absent
+  register: iam_group
+- name: Assert that group remove is not changed
+  ansible.builtin.assert:
+    that:
+      - not iam_group.changed

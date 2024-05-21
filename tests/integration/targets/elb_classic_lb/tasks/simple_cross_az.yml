@@ -2,49 +2,49 @@
 # ===========================================================
 
 - name: disable cross-az balancing on ELB (check_mode)
-  elb_classic_lb:
+  amazon.aws.elb_classic_lb:
     name: "{{ elb_name }}"
     state: present
-    cross_az_load_balancing: False
+    cross_az_load_balancing: false
   register: result
   check_mode: true
 
-- assert:
+- ansible.builtin.assert:
     that:
       - result is changed
 
 - name: disable cross-az balancing on ELB
-  elb_classic_lb:
+  amazon.aws.elb_classic_lb:
     name: "{{ elb_name }}"
     state: present
-    cross_az_load_balancing: False
+    cross_az_load_balancing: false
   register: result
 
-- assert:
+- ansible.builtin.assert:
     that:
       - result is changed
       - result.elb.cross_az_load_balancing == 'no'
 
 - name: disable cross-az balancing on ELB - idempotency (check_mode)
-  elb_classic_lb:
+  amazon.aws.elb_classic_lb:
     name: "{{ elb_name }}"
     state: present
-    cross_az_load_balancing: False
+    cross_az_load_balancing: false
   register: result
   check_mode: true
 
-- assert:
+- ansible.builtin.assert:
     that:
       - result is not changed
 
 - name: disable cross-az balancing on ELB - idempotency
-  elb_classic_lb:
+  amazon.aws.elb_classic_lb:
     name: "{{ elb_name }}"
     state: present
-    cross_az_load_balancing: False
+    cross_az_load_balancing: false
   register: result
 
-- assert:
+- ansible.builtin.assert:
     that:
       - result is not changed
       - result.elb.cross_az_load_balancing == 'no'
@@ -52,49 +52,49 @@
 # ===========================================================
 
 - name: re-enable cross-az balancing on ELB (check_mode)
-  elb_classic_lb:
+  amazon.aws.elb_classic_lb:
     name: "{{ elb_name }}"
     state: present
-    cross_az_load_balancing: True
+    cross_az_load_balancing: true
   register: result
   check_mode: true
 
-- assert:
+- ansible.builtin.assert:
     that:
       - result is changed
 
 - name: re-enable cross-az balancing on ELB
-  elb_classic_lb:
+  amazon.aws.elb_classic_lb:
     name: "{{ elb_name }}"
     state: present
-    cross_az_load_balancing: True
+    cross_az_load_balancing: true
   register: result
 
-- assert:
+- ansible.builtin.assert:
     that:
       - result is changed
       - result.elb.cross_az_load_balancing == 'yes'
 
 - name: re-enable cross-az balancing on ELB - idempotency (check_mode)
-  elb_classic_lb:
+  amazon.aws.elb_classic_lb:
     name: "{{ elb_name }}"
     state: present
-    cross_az_load_balancing: True
+    cross_az_load_balancing: true
   register: result
   check_mode: true
 
-- assert:
+- ansible.builtin.assert:
     that:
       - result is not changed
 
 - name: re-enable cross-az balancing on ELB - idempotency
-  elb_classic_lb:
+  amazon.aws.elb_classic_lb:
     name: "{{ elb_name }}"
     state: present
-    cross_az_load_balancing: True
+    cross_az_load_balancing: true
   register: result
 
-- assert:
+- ansible.builtin.assert:
     that:
       - result is not changed
       - result.elb.cross_az_load_balancing == 'yes'

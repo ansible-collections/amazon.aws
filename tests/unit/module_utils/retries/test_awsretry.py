@@ -11,8 +11,8 @@ except ImportError:
 
 import pytest
 
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOTO3
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 
 if not HAS_BOTO3:
     pytestmark = pytest.mark.skip("test_awsretry.py requires the python modules 'boto3' and 'botocore'")

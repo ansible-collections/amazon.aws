@@ -38,17 +38,19 @@ options:
         type: str
     force_update_password:
         description:
-          - Set to C(True) to update your instance password with I(master_user_password). Since comparing passwords to determine
-            if it needs to be updated is not possible this is set to False by default to allow idempotence.
+          - Set to C(true) to update your instance password with I(master_user_password). Since comparing passwords to determine
+            if it needs to be updated is not possible this is set to c(false) by default to allow idempotence.
         type: bool
-        default: False
+        default: false
     purge_cloudwatch_logs_exports:
-        description: Set to False to retain any enabled cloudwatch logs that aren't specified in the task and are associated with the instance.
+        description:
+          - Set to C(false) to retain any enabled cloudwatch logs that aren't specified in the task and are associated with the instance.
+          - Set I(enable_cloudwatch_logs_exports) to an empty list to disable all.
         type: bool
-        default: True
+        default: true
     read_replica:
         description:
-          - Set to C(False) to promote a read replica instance or true to create one. When creating a read replica C(creation_source) should
+          - Set to C(false) to promote a read replica instance or C(true) to create one. When creating a read replica C(creation_source) should
             be set to 'instance' or not provided. C(source_db_instance_identifier) must be provided with this option.
         type: bool
     wait:
@@ -57,9 +59,9 @@ options:
             Following each API call to create/modify/delete the instance a waiter is used with a 60 second delay 30 times until the instance reaches
             the expected state (available/stopped/deleted). The total task time may also be influenced by AWSRetry which helps stabilize if the
             instance is in an invalid state to operate on to begin with (such as if you try to stop it when it is in the process of rebooting).
-            If setting this to False task retries and delays may make your playbook execution better handle timeouts for major modifications.
+            If setting this to C(false) task retries and delays may make your playbook execution better handle timeouts for major modifications.
         type: bool
-        default: True
+        default: true
 
     # Options that have a corresponding boto3 parameter
     allocated_storage:
@@ -73,10 +75,10 @@ options:
     apply_immediately:
         description:
           - A value that specifies whether modifying an instance with I(new_db_instance_identifier) and I(master_user_password)
-            should be applied as soon as possible, regardless of the I(preferred_maintenance_window) setting. If false, changes
+            should be applied as soon as possible, regardless of the I(preferred_maintenance_window) setting. If C(false), changes
             are applied during the next maintenance window.
         type: bool
-        default: False
+        default: false
     auto_minor_version_upgrade:
         description:
           - Whether minor version upgrades are applied automatically to the DB instance during the maintenance window.
@@ -106,7 +108,7 @@ options:
     copy_tags_to_snapshot:
         description:
           - Whether or not to copy all tags from the DB instance to snapshots of the instance. When initially creating
-            a DB instance the RDS API defaults this to false if unspecified.
+            a DB instance the RDS API defaults this to C(false) if unspecified.
         type: bool
     db_cluster_identifier:
         description:
@@ -130,7 +132,7 @@ options:
         aliases:
           - instance_id
           - id
-        required: True
+        required: true
         type: str
     db_name:
         description:
@@ -185,7 +187,7 @@ options:
     enable_iam_database_authentication:
         description:
           - Enable mapping of AWS Identity and Access Management (IAM) accounts to database accounts.
-            If this option is omitted when creating the instance, Amazon RDS sets this to False.
+            If this option is omitted when creating the instance, Amazon RDS sets this to C(false).
         type: bool
     enable_performance_insights:
         description:
@@ -199,18 +201,18 @@ options:
         type: str
     engine_version:
         description:
-          - The version number of the database engine to use. For Aurora MySQL that could be 5.6.10a , 5.7.12.
-            Aurora PostgreSQL example, 9.6.3
+          - The version number of the database engine to use. For Aurora MySQL that could be C(5.6.10a) , C(5.7.12).
+            Aurora PostgreSQL example, C(9.6.3)
         type: str
     final_db_snapshot_identifier:
         description:
-          - The DB instance snapshot identifier of the new DB instance snapshot created when I(skip_final_snapshot) is false.
+          - The DB instance snapshot identifier of the new DB instance snapshot created when I(skip_final_snapshot) is C(false).
         aliases:
           - final_snapshot_identifier
         type: str
     force_failover:
         description:
-          - Set to true to conduct the reboot through a MultiAZ failover.
+          - Set to C(true) to conduct the reboot through a MultiAZ failover.
         type: bool
     iam_roles:
         description:
@@ -239,7 +241,7 @@ options:
           - The ARN of the AWS KMS key identifier for an encrypted DB instance. If you are creating a DB instance with the
             same AWS account that owns the KMS encryption key used to encrypt the new DB instance, then you can use the KMS key
             alias instead of the ARN for the KM encryption key.
-          - If I(storage_encrypted) is true and and this option is not provided, the default encryption key is used.
+          - If I(storage_encrypted) is C(true) and and this option is not provided, the default encryption key is used.
         type: str
     license_model:
         description:
@@ -268,7 +270,7 @@ options:
     monitoring_interval:
         description:
           - The interval, in seconds, when Enhanced Monitoring metrics are collected for the DB instance. To disable collecting
-            metrics, specify 0. Amazon RDS defaults this to 0 if omitted when initially creating a DB instance.
+            metrics, specify C(0). Amazon RDS defaults this to 0 if omitted when initially creating a DB instance.
         type: int
     monitoring_role_arn:
         description:
@@ -337,22 +339,22 @@ options:
         type: int
     publicly_accessible:
         description:
-          - Specifies the accessibility options for the DB instance. A value of true specifies an Internet-facing instance with
-            a publicly resolvable DNS name, which resolves to a public IP address. A value of false specifies an internal
+          - Specifies the accessibility options for the DB instance. A value of C(true) specifies an Internet-facing instance with
+            a publicly resolvable DNS name, which resolves to a public IP address. A value of C(false) specifies an internal
             instance with a DNS name that resolves to a private IP address.
         type: bool
     purge_iam_roles:
         description:
-          - Set to C(True) to remove any IAM roles that aren't specified in the task and are associated with the instance.
+          - Set to C(true) to remove any IAM roles that aren't specified in the task and are associated with the instance.
         type: bool
-        default: False
+        default: false
         version_added: 3.3.0
         version_added_collection: community.aws
     restore_time:
         description:
           - If using I(creation_source=instance) this indicates the UTC date and time to restore from the source instance.
             For example, "2009-09-07T23:45:00Z".
-          - May alternatively set I(use_latest_restore_time=True).
+          - May alternatively set I(use_latest_restore_time=true).
           - Only one of I(use_latest_restorable_time) and I(restore_time) may be provided.
         type: str
     s3_bucket_name:
@@ -371,7 +373,7 @@ options:
         type: str
     skip_final_snapshot:
         description:
-          - Whether a final DB instance snapshot is created before the DB instance is deleted. If this is false I(final_db_snapshot_identifier)
+          - Whether a final DB instance snapshot is created before the DB instance is deleted. If this is C(false) I(final_db_snapshot_identifier)
             must be provided.
         type: bool
         default: false
@@ -447,10 +449,10 @@ options:
         elements: str
     purge_security_groups:
         description:
-          - Set to False to retain any enabled security groups that aren't specified in the task and are associated with the instance.
+          - Set to C(false) to retain any enabled security groups that aren't specified in the task and are associated with the instance.
           - Can be applied to I(vpc_security_group_ids) and I(db_security_groups)
         type: bool
-        default: True
+        default: true
         version_added: 1.5.0
         version_added_collection: community.aws
 """
@@ -471,7 +473,7 @@ EXAMPLES = r"""
     id: test-encrypted-db
     state: present
     engine: mariadb
-    storage_encrypted: True
+    storage_encrypted: true
     db_instance_class: db.t2.medium
     username: "{{ username }}"
     password: "{{ password }}"
@@ -481,7 +483,7 @@ EXAMPLES = r"""
   amazon.aws.rds_instance:
     id: "{{ instance_id }}"
     state: absent
-    skip_final_snapshot: True
+    skip_final_snapshot: true
 
 - name: remove the DB instance with a final snapshot
   amazon.aws.rds_instance:
@@ -500,7 +502,7 @@ EXAMPLES = r"""
 
 # Add IAM role to db instance
 - name: Create IAM policy
-  community.aws.iam_managed_policy:
+  amazon.aws.iam_managed_policy:
     policy_name: "my-policy"
     policy: "{{ lookup('file','files/policy.json') }}"
     state: present
@@ -692,7 +694,7 @@ dbi_resource_id:
   type: str
   sample: db-UHV3QRNWX4KB6GALCIGRML6QFA
 deletion_protection:
-  description: C(True) if the DB instance has deletion protection enabled, C(False) if not.
+  description: C(true) if the DB instance has deletion protection enabled, C(False) if not.
   returned: always
   type: bool
   sample: False
@@ -801,7 +803,7 @@ pending_modified_values:
   type: complex
   contains: {}
 performance_insights_enabled:
-  description: True if Performance Insights is enabled for the DB instance, and otherwise false.
+  description: true if Performance Insights is enabled for the DB instance, and otherwise false.
   returned: always
   type: bool
   sample: false
@@ -817,7 +819,7 @@ preferred_maintenance_window:
   sample: sun:09:31-sun:10:01
 publicly_accessible:
   description:
-    - True for an Internet-facing instance with a publicly resolvable DNS name, False to indicate an
+    - C(True) for an Internet-facing instance with a publicly resolvable DNS name, C(False) to indicate an
       internal instance with a DNS name that resolves to a private IP address.
   returned: always
   type: bool
@@ -871,13 +873,10 @@ from ansible.module_utils._text import to_text
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils.six import string_types
 
-from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import get_boto3_client_method_parameters
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_message
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import get_boto3_client_method_parameters
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.rds import arg_spec_to_rds_params
 from ansible_collections.amazon.aws.plugins.module_utils.rds import call_method
 from ansible_collections.amazon.aws.plugins.module_utils.rds import compare_iam_roles
@@ -886,7 +885,9 @@ from ansible_collections.amazon.aws.plugins.module_utils.rds import get_final_id
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_rds_method_attribute
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_tags
 from ansible_collections.amazon.aws.plugins.module_utils.rds import update_iam_roles
-
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 
 valid_engines = [
     "aurora",
@@ -1029,7 +1030,7 @@ def get_options_with_changing_values(client, module, parameters):
         parameters["DBPortNumber"] = port
     if not force_update_password:
         parameters.pop("MasterUserPassword", None)
-    if cloudwatch_logs_enabled:
+    if cloudwatch_logs_enabled is not None:
         parameters["CloudwatchLogsExportConfiguration"] = cloudwatch_logs_enabled
     if not module.params["storage_type"]:
         parameters.pop("Iops", None)
@@ -1055,17 +1056,13 @@ def get_options_with_changing_values(client, module, parameters):
             parameters["Iops"] = new_iops
 
     if instance.get("StorageType") == "gp3":
-        if module.botocore_at_least("1.29.0"):
-            GP3_THROUGHPUT = True
-            current_storage_throughput = instance.get("PendingModifiedValues", {}).get(
-                "StorageThroughput", instance["StorageThroughput"]
-            )
-            new_storage_throughput = module.params.get("storage_throughput") or current_storage_throughput
-            if new_storage_throughput != current_storage_throughput:
-                parameters["StorageThroughput"] = new_storage_throughput
-        else:
-            GP3_THROUGHPUT = False
-            module.warn("gp3 volumes require botocore >= 1.29.0. storage_throughput will be ignored.")
+        GP3_THROUGHPUT = True
+        current_storage_throughput = instance.get("PendingModifiedValues", {}).get(
+            "StorageThroughput", instance["StorageThroughput"]
+        )
+        new_storage_throughput = module.params.get("storage_throughput") or current_storage_throughput
+        if new_storage_throughput != current_storage_throughput:
+            parameters["StorageThroughput"] = new_storage_throughput
 
         current_iops = instance.get("PendingModifiedValues", {}).get("Iops", instance["Iops"])
         # when you just change from gp2 to gp3, you may not add the iops parameter
@@ -1167,8 +1164,7 @@ def get_current_attributes_with_inconsistent_keys(instance):
 def get_changing_options_with_inconsistent_keys(modify_params, instance, purge_cloudwatch_logs, purge_security_groups):
     changing_params = {}
     current_options = get_current_attributes_with_inconsistent_keys(instance)
-    for option in current_options:
-        current_option = current_options[option]
+    for option, current_option in current_options.items():
         desired_option = modify_params.pop(option, None)
         if desired_option is None:
             continue
@@ -1570,8 +1566,7 @@ def main():
                     instance = get_instance(client, module, instance_id)
                     if instance:
                         break
-                    else:
-                        sleep(5)
+                    sleep(5)
 
         if state == "absent" and changed and not module.params["skip_final_snapshot"]:
             instance.update(
