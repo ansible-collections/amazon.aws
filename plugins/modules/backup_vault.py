@@ -58,36 +58,56 @@ EXAMPLES = r"""
 
 RETURN = r"""
 exists:
-    description: whether the resource exists
+    description: Whether the Backup Vault exists
     returned: always
     type: bool
     sample: true
-backup_vault:
-    description: BackupVault resource details
+vault:
+    description: Backup Vault details.
     returned: always
     type: complex
     sample: hash/dictionary of values
     contains:
         backup_vault_name:
             description: The name of a logical container where backups are stored.
-            returned: success
+            returned: always
             type: str
             sample: default-name
         backup_vault_arn:
             description: An Amazon Resource Name (ARN) that uniquely identifies a backup vault.
-            returned: success
+            returned: always
             type: str
             sample: arn:aws:backup:us-east-1:123456789012:vault:aBackupVault
         creation_date:
             description: The date and time a backup vault is created, in Unix format and Coordinated Universal Time (UTC).
-            returned: success
+            returned: always
             type: str
-            sample: 1516925490.087 (represents Friday, January 26, 2018 12:11:30.087 AM).
+            sample: "2024-05-21T13:21:10.062000-07:00"
+        encryption_key_arn:
+            description: The server-side encryption key that is used to protect your backups.
+            returned: always
+            type: str
+            sample: arn:aws:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab
+        locked:
+            description:
+                - A Boolean that indicates whether Backup Vault Lock is currently protecting the backup vault.
+                - True means that Vault Lock causes delete or update operations on the recovery points stored in the vault to fail.
+            returned: always
+            type: bool
+            sample: false
+        number_of_recovery_points:
+            description: The number of recovery points that are stored in a backup vault.
+            returned: always
+            type: int
+            sample: 0
         tags:
-            description: hash/dictionary of tags applied to this resource
-            returned: success
-            type: dict
-            sample: {'environment': 'dev', 'Name': 'default'}
+        description: Tags of the backup vault.
+        returned: on create/update
+        type: str
+        sample: {
+                    "TagKey1": "TagValue1",
+                    "TagKey2": "TagValue2"
+                }
 """
 
 
@@ -187,6 +207,19 @@ def get_vault_facts(module, client, vault_name):
             resource = resp.get("BackupVaultArn")
             resp["tags"] = get_backup_resource_tags(module, client, resource)
 
+        # Check for non-existent values and populate with None
+        optional_vals = set(
+            [
+                "S3KeyPrefix",
+                "SnsTopicName",
+                "SnsTopicARN",
+                "CloudWatchLogsLogGroupArn",
+                "CloudWatchLogsRoleArn",
+                "KmsKeyId",
+            ]
+        )
+        for v in optional_vals - set(resp.keys()):
+            resp[v] = None
         return resp
 
     else:
