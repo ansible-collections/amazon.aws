@@ -19,8 +19,8 @@
       session_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
   vars:
-    skip: 'skip'
-    warn: 'warn'
+    skip: skip
+    warn: warn
     simple_name: /{{ ssm_key_prefix }}/Simple
     simple_description: This is a simple example
     simple_value: A simple VALue
