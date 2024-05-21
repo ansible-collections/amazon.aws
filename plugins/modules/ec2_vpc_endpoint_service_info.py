@@ -109,6 +109,10 @@ service_details:
       - The verification state of the VPC endpoint service.
       - Consumers of an endpoint service cannot use the private name when the state is not C(verified).
       type: str
+    supported_ip_address_types:
+      returned: success
+      description: The supported IP address types.
+      type: str
 """
 
 try:

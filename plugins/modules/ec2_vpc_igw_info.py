@@ -75,27 +75,27 @@ internet_gateways:
     contains:
         attachments:
             description: Any VPCs attached to the internet gateway.
-            returned: I(state=present)
+            returned: always
             type: complex
             contains:
                 state:
                     description: The current state of the attachment.
-                    returned: I(state=present)
+                    returned: always
                     type: str
                     sample: available
                 vpc_id:
                     description: The ID of the VPC.
-                    returned: I(state=present)
+                    returned: always
                     type: str
                     sample: vpc-02123b67
         internet_gateway_id:
             description: The ID of the internet gateway.
-            returned: I(state=present)
+            returned: always
             type: str
             sample: igw-2123634d
         tags:
             description: Any tags assigned to the internet gateway.
-            returned: I(state=present)
+            returned: always
             type: dict
             sample:
                 tags:
