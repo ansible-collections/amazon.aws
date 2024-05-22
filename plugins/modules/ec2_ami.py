@@ -61,7 +61,7 @@ options:
     default: ''
   no_reboot:
     description:
-      - Flag indicating that the bundling process should not attempt to shutdown the instance before bundling. If this flag is True, the
+      - Flag indicating that the bundling process should not attempt to shutdown the instance before bundling. If this flag is V(true), the
         responsibility of maintaining file system integrity is left to the owner of the instance.
     default: false
     type: bool
@@ -78,7 +78,7 @@ options:
       device_name:
         type: str
         description:
-          - The device name. For example C(/dev/sda).
+          - The device name. For example V(/dev/sda).
         required: true
       virtual_name:
         type: str
@@ -91,7 +91,7 @@ options:
           - Suppresses the specified device included in the block device mapping of the AMI.
       volume_type:
         type: str
-        description: The volume type.  Defaults to C(gp2) when not set.
+        description: The volume type. Defaults to V(gp2) when not set.
       delete_on_termination:
         type: bool
         description: Whether the device should be automatically deleted when the Instance is terminated.
@@ -100,7 +100,7 @@ options:
         description: The ID of the Snapshot.
       iops:
         type: int
-        description: When using an C(io1) I(volume_type) this sets the number of IOPS provisioned for the volume.
+        description: When using O(device_mapping.volume_type=io1), this sets the number of IOPS provisioned for the volume.
       encrypted:
         type: bool
         description: Whether the volume should be encrypted.
@@ -172,18 +172,16 @@ options:
     version_added: 5.5.0
   tpm_support:
     description:
-      - Set to v2.0 to enable Trusted Platform Module (TPM) support.
-      - If the image is configured for NitroTPM support, the value is v2.0 .
-      - Requires I(boot_mode) to be set to 'uefi'.
+      - Set to V(v2.0) to enable Trusted Platform Module (TPM) support.
+      - If the image is configured for NitroTPM support, the value is V(v2.0).
+      - Requires O(boot_mode) to be set to V(uefi).
       - Requires an instance type that is compatible with Nitro.
-      - Requires minimum botocore version 1.26.0.
       - See the AWS documentation for more detail U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nitrotpm.html).
     type: str
     version_added: 5.5.0
   uefi_data:
     description:
       - Base64 representation of the non-volatile UEFI variable store.
-      - Requires minimum botocore version 1.26.0.
       - See the AWS documentation for more detail U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/uefi-secure-boot.html).
     type: str
     version_added: 5.5.0
