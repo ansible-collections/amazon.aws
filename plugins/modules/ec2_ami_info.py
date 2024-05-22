@@ -8,9 +8,9 @@ DOCUMENTATION = r"""
 ---
 module: ec2_ami_info
 version_added: 1.0.0
-short_description: Gather information about ec2 AMIs
+short_description: Gather information about EC2 AMIs
 description:
-  - Gather information about ec2 AMIs
+  - Gather information about EC2 AMIs.
 author:
   - Prasad Katti (@prasadkatti)
 options:
@@ -141,7 +141,7 @@ images:
       sample: machine
     launch_permissions:
       description: A List of AWS accounts may launch the AMI.
-      returned: When image is owned by calling account and I(describe_image_attributes=true).
+      returned: When image is owned by calling account and O(describe_image_attributes=true).
       type: list
       elements: dict
       contains:
