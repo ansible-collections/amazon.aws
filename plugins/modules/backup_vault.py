@@ -58,7 +58,7 @@ EXAMPLES = r"""
 
 RETURN = r"""
 exists:
-    description: Whether the Backup Vault exists
+    description: Whether the Backup Vault exists.
     returned: always
     type: bool
     sample: true

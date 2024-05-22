@@ -155,7 +155,7 @@ backup_plans:
                           description:
                             - Defines when a protected resource is transitioned to cold storage and when it expires.
                           type: dict
-                          returned: when lifecycle configured
+                          returned: when O(rules.lifecycle) configured
                           sample: {
                                     "delete_after_days": 100,
                                     "move_to_cold_storage_after_days": 10
@@ -165,7 +165,7 @@ backup_plans:
                             - An array of key-value pair strings that are assigned to resources that are associated with
                               this rule when restored from backup.
                           type: dict
-                          returned: when recovery_point_tags configured
+                          returned: returned: when O(rules.recovery_point_tags) configured
                           sample: {
                                     "Tagkey1": "TagValue1",
                                     "Tagkey2": "TagValue2"
@@ -178,7 +178,7 @@ backup_plans:
                           sample: "973621ef-d863-41ef-b5c3-9e943a64ad0c"
                       copy_actions:
                           description: An array of CopyAction objects, which contains the details of the copy operation.
-                          returned: when copy_actions configured
+                          returned: when O(rules.copy_actions) configured
                           type: list
                           elements: dict
                           sample: [
