@@ -79,6 +79,12 @@ result:
   returned: suceess
   type: list
   contains:
+    connectivity_type:
+        description:
+          - Indicates whether the NAT gateway supports public or private connectivity.
+        returned: always
+        type: str
+        sample: public
     create_time:
         description: The date and time the NAT gateway was created.
         returned: always
@@ -99,6 +105,16 @@ result:
                 returned: always
                 type: str
                 sample: eipalloc-0853e66a40803da76
+            association_id:
+                description: The association ID of the Elastic IP address that is associated with the NAT gateway.
+                returned: always
+                type: str
+                sample: eipassoc-0d6365c7eeb7d4932
+            is_primary:
+                description: Defines if the IP address is the primary address.
+                returned: always
+                type: bool
+                sample: true
             network_interface_id:
                 description: The ID of the network interface associated with the NAT gateway.
                 returned: always
@@ -114,6 +130,11 @@ result:
                 returned: always
                 type: str
                 sample: 34.204.123.52
+            status:
+                description: The address status.
+                returned: always
+                type: str
+                sample: succeeded
     nat_gateway_id:
         description: The ID of the NAT gateway.
         returned: always

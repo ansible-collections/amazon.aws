@@ -153,33 +153,97 @@ endpoints:
   description: The resulting endpoints from the module call
   returned: success
   type: list
-  sample: [
-      {
-        "creation_timestamp": "2017-02-20T05:04:15+00:00",
-        "policy_document": {
-          "Id": "Policy1450910922815",
-          "Statement": [
-            {
-              "Action": "s3:*",
-              "Effect": "Allow",
-              "Principal": "*",
-              "Resource": [
-                "arn:aws:s3:::*/*",
-                "arn:aws:s3:::*"
-              ],
-              "Sid": "Stmt1450910920641"
-            }
-          ],
-          "Version": "2012-10-17"
-        },
-        "route_table_ids": [
-          "rtb-abcd1234"
-        ],
-        "service_name": "com.amazonaws.ap-southeast-2.s3",
-        "vpc_endpoint_id": "vpce-a1b2c3d4",
-        "vpc_id": "vpc-abbad0d0"
-      }
-    ]
+  elements: dict
+  contains:
+    creation_timestamp:
+      description: The date and time that the endpoint was created.
+      returned: always
+      type: str
+    dns_entries:
+      description: List of DNS entires for the endpoint.
+      returned: always
+      type: list
+      elements: dict
+      contains:
+        dns_name:
+          description: The DNS name.
+          returned: always
+          type: str
+        hosted_zone_id:
+          description: The ID of the private hosted zone.
+          type: str
+    groups:
+      description: List of security groups associated with the network interface.
+      returned: always
+      type: list
+      elements: dict
+      contains:
+        group_id:
+          description: The ID of the security group.
+          returned: always
+          type: str
+        group_name:
+          description: The name of the security group.
+          returned: always
+          type: str
+    ip_address_type:
+      description: The IP address type for the endpoint.
+      type: str
+    network_interface_ids:
+      description: List of network interfaces for the endpoint.
+      returned: always
+      type: list
+      elements: str
+    owner_id:
+      description: The ID of the AWS account that owns the endpoint.
+      returned: always
+      type: str
+    policy_document:
+      description: The policy document associated with the endpoint.
+      returned: always
+      type: str
+    private_dns_enabled:
+      description: Indicates whether the VPC is associated with a private hosted zone.
+      returned: always
+      type: bool
+    requester_managed:
+      description: Indicated whether the endpoint is being managed by its service.
+      returned: always
+      type: bool
+    route_table_ids:
+      description: List of route table IDs associated with the endpoint.
+      returned: always
+      type: list
+      elements: str
+    service_name:
+      description: The name of the service to which the endpoint is associated.
+      returned: always
+      type: str
+    state:
+      description: The state of the endpoint.
+      returned: always
+      type: str
+    subnet_ids:
+      description: List of subnets associated with the endpoint.
+      returned: always
+      type: list
+    tags:
+      description: List of tags associated with the endpoint.
+      returned: always
+      type: list
+      elements: dict
+    vpc_endpoint_id:
+      description: The ID of the endpoint.
+      returned: always
+      type: str
+    vpc_endpoint_type:
+      description: The type of endpoint.
+      returned: always
+      type: str
+    vpc_id:
+      description: The ID of the VPC.
+      returned: always
+      type: str
 """
 
 import datetime
