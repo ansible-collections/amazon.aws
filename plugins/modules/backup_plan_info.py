@@ -165,7 +165,7 @@ backup_plans:
                             - An array of key-value pair strings that are assigned to resources that are associated with
                               this rule when restored from backup.
                           type: dict
-                          returned: returned: when O(rules.recovery_point_tags) configured
+                          returned: when O(rules.recovery_point_tags) configured
                           sample: {
                                     "Tagkey1": "TagValue1",
                                     "Tagkey2": "TagValue2"
