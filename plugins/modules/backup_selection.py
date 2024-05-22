@@ -204,7 +204,7 @@ backup_selection:
       type: str
       sample: elastic
     conditions:
-      description:A list of conditions that defines how resources are assigned to backup plans using tags.
+      description: A list of conditions that defines how resources are assigned to backup plans using tags.
       returned: always
       type: dict
       sample: {
@@ -246,9 +246,9 @@ backup_selection:
                     "condition_value": "Dev"
                 }
             ]
-      contain:
+      contains:
         condition_key:
-          description:The key in a key-value pair.
+          description: The key in a key-value pair.
           returned: always
           type: str
           sample: Environment

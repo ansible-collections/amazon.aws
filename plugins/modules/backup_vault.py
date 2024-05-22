@@ -101,13 +101,13 @@ vault:
             type: int
             sample: 0
         tags:
-        description: Tags of the backup vault.
-        returned: on create/update
-        type: str
-        sample: {
-                    "TagKey1": "TagValue1",
-                    "TagKey2": "TagValue2"
-                }
+            description: Tags of the backup vault.
+            returned: on create/update
+            type: str
+            sample: {
+                        "TagKey1": "TagValue1",
+                        "TagKey2": "TagValue2"
+                    }
 """
 
 
