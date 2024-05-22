@@ -473,7 +473,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudfor
 <a class="ansibleOptionLink" href="#return-cloudformation" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Dictionary of dictionaries containing info of stack(s).</p>
-<p>Keys are <em>stack_name</em>s.</p>
+<p>Keys are stack_name(s).</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 </div></td>
 </tr>
@@ -482,7 +482,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudfor
 <a class="ansibleOptionLink" href="#return-cloudformation/stack_change_sets" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A list of stack change sets.  Each item in the list represents the details of a specific changeset.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> only if all_facts or stack_change_sets is true and the stack exists</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> only if <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-info-module-parameter-all-facts"><span class="std std-ref"><span class="pre">all_facts</span></span></a></strong></code> or <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-info-module-parameter-stack-policy"><span class="std std-ref"><span class="pre">stack_policy</span></span></a></strong></code> is <code class="ansible-value docutils literal notranslate"><span class="pre">true</span></code> and the stack exists</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -706,7 +706,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudfor
 <a class="ansibleOptionLink" href="#return-cloudformation/stack_events" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>All stack events for the stack.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> only if all_facts or stack_events is true and the stack exists</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> only if <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-info-module-parameter-all-facts"><span class="std std-ref"><span class="pre">all_facts</span></span></a></strong></code> or <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-info-module-parameter-stack-events"><span class="std std-ref"><span class="pre">stack_events</span></span></a></strong></code> is <code class="ansible-value docutils literal notranslate"><span class="pre">true</span></code> and the stack exists</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -732,7 +732,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudfor
 <a class="ansibleOptionLink" href="#return-cloudformation/stack_policy" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Describes the stack policy for the stack.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> only if all_facts or stack_policy is true and the stack exists</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> only if <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-info-module-parameter-all-facts"><span class="std std-ref"><span class="pre">all_facts</span></span></a></strong></code> or <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-info-module-parameter-stack-policy"><span class="std std-ref"><span class="pre">stack_policy</span></span></a></strong></code> is <code class="ansible-value docutils literal notranslate"><span class="pre">true</span></code> and the stack exists</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -740,7 +740,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudfor
 <a class="ansibleOptionLink" href="#return-cloudformation/stack_resource_list" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Describes stack resources for the stack.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> only if all_facts or stack_resources is true and the stack exists</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> only if <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-info-module-parameter-all-facts"><span class="std std-ref"><span class="pre">all_facts</span></span></a></strong></code> or <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-info-module-parameter-stack-policy"><span class="std std-ref"><span class="pre">stack_policy</span></span></a></strong></code> is <code class="ansible-value docutils literal notranslate"><span class="pre">true</span></code> and the stack exists</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -748,7 +748,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudfor
 <a class="ansibleOptionLink" href="#return-cloudformation/stack_resources" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Dictionary of stack resources keyed by the value of each resource ‘LogicalResourceId’ parameter and corresponding value of each resource ‘PhysicalResourceId’ parameter.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> only if all_facts or stack_resources is true and the stack exists</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> only if <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-info-module-parameter-all-facts"><span class="std std-ref"><span class="pre">all_facts</span></span></a></strong></code> or <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-info-module-parameter-stack-policy"><span class="std std-ref"><span class="pre">stack_policy</span></span></a></strong></code> is <code class="ansible-value docutils literal notranslate"><span class="pre">true</span></code> and the stack exists</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;ApplicationDatabase&quot;:</span> <span class="pre">&quot;dazvlpr01xj55a&quot;,</span> <span class="pre">&quot;AutoScalingGroup&quot;:</span> <span class="pre">&quot;dev-someapp-AutoscalingGroup-1SKEXXBCAN0S7&quot;,</span> <span class="pre">&quot;AutoScalingSecurityGroup&quot;:</span> <span class="pre">&quot;sg-abcd1234&quot;}</span></code></p>
 </div></td>
 </tr>
@@ -757,7 +757,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudfor
 <a class="ansibleOptionLink" href="#return-cloudformation/stack_tags" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Dictionary of key value pairs of tags.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> only if all_facts or stack_resources is true and the stack exists</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> only if <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-info-module-parameter-all-facts"><span class="std std-ref"><span class="pre">all_facts</span></span></a></strong></code> or <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-info-module-parameter-stack-policy"><span class="std std-ref"><span class="pre">stack_policy</span></span></a></strong></code> is <code class="ansible-value docutils literal notranslate"><span class="pre">true</span></code> and the stack exists</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;TagOne&quot;:</span> <span class="pre">&quot;ValueOne&quot;,</span> <span class="pre">&quot;TagTwo&quot;:</span> <span class="pre">&quot;ValueTwo&quot;}</span></code></p>
 </div></td>
 </tr>
@@ -766,7 +766,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudfor
 <a class="ansibleOptionLink" href="#return-cloudformation/stack_template" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Describes the stack template for the stack.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> only if all_facts or stack_template is true and the stack exists</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> only if <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-info-module-parameter-all-facts"><span class="std std-ref"><span class="pre">all_facts</span></span></a></strong></code> or <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-info-module-parameter-stack-policy"><span class="std std-ref"><span class="pre">stack_policy</span></span></a></strong></code> is <code class="ansible-value docutils literal notranslate"><span class="pre">true</span></code> and the stack exists</p>
 </div></td>
 </tr>
 </tbody>

@@ -213,7 +213,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 <a class="ansibleOptionLink" href="#parameter-alarm_name_prefix" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>An alarm name prefix to retrieve information about alarms that have names that start with this prefix.</p>
-<p>Can not be used with <em>alarm_names</em>.</p>
+<p>Can not be used with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-cloudwatch-metric-alarm-info-module-parameter-alarm-names"><span class="std std-ref"><span class="pre">alarm_names</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -228,7 +228,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 <a class="ansibleOptionLink" href="#parameter-alarm_type" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Specify this to return metric alarms or composite alarms.</p>
-<p>Module is defaulted to return metric alarms but can return composite alarms if <em>alarm_type=CompositeAlarm</em>.</p>
+<p>Module is defaulted to return metric alarms but can return composite alarms if <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-cloudwatch-metric-alarm-info-module-parameter-alarm-type"><span class="std std-ref"><span class="pre">alarm_type=CompositeAlarm</span></span></a></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;CompositeAlarm&quot;</span></code></p></li>
@@ -577,7 +577,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 <div class="ansibleOptionAnchor" id="return-metric_alarms/namespace"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-info-module-return-metric-alarms-namespace"><strong>namespace</strong></p>
 <a class="ansibleOptionLink" href="#return-metric_alarms/namespace" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Name of the appropriate namespace (<code class="docutils literal notranslate"><span class="pre">AWS/EC2</span></code>, <code class="docutils literal notranslate"><span class="pre">System/Linux</span></code>, etc.).</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Name of the appropriate namespace (<code class="ansible-value docutils literal notranslate"><span class="pre">AWS/EC2</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">System/Linux</span></code>, etc.).</p>
 <p>Determines the category it will appear under in CloudWatch.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 </div></td>

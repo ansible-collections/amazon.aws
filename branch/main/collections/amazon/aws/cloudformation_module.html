@@ -247,7 +247,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudfor
 <a class="ansibleOptionLink" href="#parameter-capabilities" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Specify capabilities that stack template contains.</p>
-<p>Valid values are <code class="docutils literal notranslate"><span class="pre">CAPABILITY_IAM</span></code>, <code class="docutils literal notranslate"><span class="pre">CAPABILITY_NAMED_IAM</span></code> and <code class="docutils literal notranslate"><span class="pre">CAPABILITY_AUTO_EXPAND</span></code>.</p>
+<p>Valid values are <code class="ansible-value docutils literal notranslate"><span class="pre">CAPABILITY_IAM</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">CAPABILITY_NAMED_IAM</span></code> and <code class="ansible-value docutils literal notranslate"><span class="pre">CAPABILITY_AUTO_EXPAND</span></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[&quot;CAPABILITY_IAM&quot;,</span> <span class="pre">&quot;CAPABILITY_NAMED_IAM&quot;]</span></code></p>
 </div></td>
 </tr>
@@ -256,7 +256,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudfor
 <a class="ansibleOptionLink" href="#parameter-changeset_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Name given to the changeset when creating a changeset.</p>
-<p>Only used when <em>create_changeset=true</em>.</p>
+<p>Only used when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-module-parameter-create-changeset"><span class="std std-ref"><span class="pre">create_changeset=true</span></span></a></code>.</p>
 <p>By default a name prefixed with Ansible-STACKNAME is generated based on input parameters. See the AWS Change Sets docs for more information <a class="reference external" href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks-changesets.html">https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks-changesets.html</a></p>
 </div></td>
 </tr>
@@ -265,7 +265,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudfor
 <a class="ansibleOptionLink" href="#parameter-create_changeset" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>If stack already exists create a changeset instead of directly applying changes.  See the AWS Change Sets docs <a class="reference external" href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks-changesets.html">https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks-changesets.html</a>.</p>
-<p>WARNING: if the stack does not exist, it will be created without changeset. If <em>state=absent</em>, the stack will be deleted immediately with no changeset.</p>
+<p><strong>WARNING:</strong> if the stack does not exist, it will be created without changeset. If <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-module-parameter-state"><span class="std std-ref"><span class="pre">state=absent</span></span></a></code>, the stack will be deleted immediately with no changeset.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -277,7 +277,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudfor
 <div class="ansibleOptionAnchor" id="parameter-create_timeout"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudformation-module-parameter-create-timeout"><strong>create_timeout</strong></p>
 <a class="ansibleOptionLink" href="#parameter-create_timeout" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>The amount of time (in minutes) that can pass before the stack status becomes CREATE_FAILED</p>
+<td><div class="ansible-option-cell"><p>The amount of time (in minutes) that can pass before the stack status becomes <code class="ansible-value docutils literal notranslate"><span class="pre">CREATE_FAILED</span></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -338,7 +338,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudfor
 <div class="ansibleOptionAnchor" id="parameter-on_create_failure"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudformation-module-parameter-on-create-failure"><strong>on_create_failure</strong></p>
 <a class="ansibleOptionLink" href="#parameter-on_create_failure" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Action to take upon failure of stack creation. Incompatible with the <em>disable_rollback</em> option.</p>
+<td><div class="ansible-option-cell"><p>Action to take upon failure of stack creation. Incompatible with the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-module-parameter-disable-rollback"><span class="std std-ref"><span class="pre">disable_rollback</span></span></a></strong></code> option.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;DO_NOTHING&quot;</span></code></p></li>
@@ -443,16 +443,16 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudfor
 <a class="ansibleOptionLink" href="#parameter-stack_policy_on_update_body" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">json</span></p>
 <p><em class="ansible-option-versionadded">added in amazon.aws 1.5.0</em></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>the body of the cloudformation stack policy only applied during this update.</p>
+<td><div class="ansible-option-cell"><p>The body of the cloudformation stack policy only applied during this update.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-state"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudformation-module-parameter-state"><strong>state</strong></p>
 <a class="ansibleOptionLink" href="#parameter-state" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>If <em>state=present</em>, stack will be created.</p>
-<p>If <em>state=present</em> and if stack exists and template has changed, it will be updated.</p>
-<p>If <em>state=absent</em>, stack will be removed.</p>
+<td><div class="ansible-option-cell"><p>If <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code>, stack will be created.</p>
+<p>If <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code> and if stack exists and template has changed, it will be updated.</p>
+<p>If <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-module-parameter-state"><span class="std std-ref"><span class="pre">state=absent</span></span></a></code>, stack will be removed.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">&quot;present&quot;</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -473,10 +473,10 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudfor
 <a class="ansibleOptionLink" href="#parameter-template" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">path</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The local path of the CloudFormation template.</p>
-<p>This must be the full path to the file, relative to the working directory. If using roles this may look like <code class="docutils literal notranslate"><span class="pre">roles/cloudformation/files/cloudformation-example.json</span></code>.</p>
-<p>If <em>state=present</em> and the stack does not exist yet, either <em>template</em>, <em>template_body</em> or <em>template_url</em> must be specified (but only one of them).</p>
-<p>If <em>state=present</em>, the stack does exist, and neither <em>template</em>, <em>template_body</em> nor <em>template_url</em> are specified, the previous template will be reused.</p>
-<p>The <em>template</em> parameter has been deprecated and will be remove in a release after 2026-05-01.  It is recommended to use <em>template_body</em> with the lookup plugin.</p>
+<p>This must be the full path to the file, relative to the working directory. If using roles this may look like <code class="ansible-value docutils literal notranslate"><span class="pre">roles/cloudformation/files/cloudformation-example.json</span></code>.</p>
+<p>If <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code> and the stack does not exist yet, either <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-module-parameter-template"><span class="std std-ref"><span class="pre">template</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-module-parameter-template-body"><span class="std std-ref"><span class="pre">template_body</span></span></a></strong></code> or <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-module-parameter-template-url"><span class="std std-ref"><span class="pre">template_url</span></span></a></strong></code> must be specified (but only one of them).</p>
+<p>If <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code>, the stack does exist, and neither <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-module-parameter-template"><span class="std std-ref"><span class="pre">template</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-module-parameter-template-body"><span class="std std-ref"><span class="pre">template_body</span></span></a></strong></code> nor <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-module-parameter-template-url"><span class="std std-ref"><span class="pre">template_url</span></span></a></strong></code> are specified, the previous template will be reused.</p>
+<p>The <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-module-parameter-template"><span class="std std-ref"><span class="pre">template</span></span></a></strong></code> parameter has been deprecated and will be remove in a release after 2026-05-01. It is recommended to use <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-module-parameter-template-body"><span class="std std-ref"><span class="pre">template_body</span></span></a></strong></code> with the <a class="reference external" href="https://docs.ansible.com/ansible-core/devel/collections/ansible/builtin/template_lookup.html#ansible-collections-ansible-builtin-template-lookup" title="(in Ansible Core vdevel)"><span class="xref std std-ref">ansible.builtin.template</span></a> lookup plugin.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -484,8 +484,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudfor
 <a class="ansibleOptionLink" href="#parameter-template_body" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Template body. Use this to pass in the actual body of the CloudFormation template.</p>
-<p>If <em>state=present</em> and the stack does not exist yet, either <em>template</em>, <em>template_body</em> or <em>template_url</em> must be specified (but only one of them).</p>
-<p>If <em>state=present</em>, the stack does exist, and neither <em>template</em>, <em>template_body</em> nor <em>template_url</em> are specified, the previous template will be reused.</p>
+<p>If <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code> and the stack does not exist yet, either <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-module-parameter-template"><span class="std std-ref"><span class="pre">template</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-module-parameter-template-body"><span class="std std-ref"><span class="pre">template_body</span></span></a></strong></code> or <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-module-parameter-template-url"><span class="std std-ref"><span class="pre">template_url</span></span></a></strong></code> must be specified (but only one of them).</p>
+<p>If <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code>, the stack does exist, and neither <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-module-parameter-template"><span class="std std-ref"><span class="pre">template</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-module-parameter-template-body"><span class="std std-ref"><span class="pre">template_body</span></span></a></strong></code> nor <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-module-parameter-template-url"><span class="std std-ref"><span class="pre">template_url</span></span></a></strong></code> are specified, the previous template will be reused.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -502,8 +502,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudfor
 <a class="ansibleOptionLink" href="#parameter-template_url" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Location of file containing the template body. The URL must point to a template (max size 307,200 bytes) located in an S3 bucket in the same region as the stack.</p>
-<p>If <em>state=present</em> and the stack does not exist yet, either <em>template</em>, <em>template_body</em> or <em>template_url</em> must be specified (but only one of them).</p>
-<p>If <em>state=present</em>, the stack does exist, and neither <em>template</em>, <em>template_body</em> nor <em>template_url</em> are specified, the previous template will be reused.</p>
+<p>If <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code> and the stack does not exist yet, either <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-module-parameter-template"><span class="std std-ref"><span class="pre">template</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-module-parameter-template-body"><span class="std std-ref"><span class="pre">template_body</span></span></a></strong></code> or <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-module-parameter-template-url"><span class="std std-ref"><span class="pre">template_url</span></span></a></strong></code> must be specified (but only one of them).</p>
+<p>If <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code>, the stack does exist, and neither <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-module-parameter-template"><span class="std std-ref"><span class="pre">template</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-module-parameter-template-body"><span class="std std-ref"><span class="pre">template_body</span></span></a></strong></code> nor <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-module-parameter-template-url"><span class="std std-ref"><span class="pre">template_url</span></span></a></strong></code> are specified, the previous template will be reused.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -679,7 +679,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudfor
 <a class="ansibleOptionLink" href="#return-change_set_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The ID of the stack change set if one was created</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <em>state=present</em> and <em>create_changeset=true</em></p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code> and <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-module-parameter-create-changeset"><span class="std std-ref"><span class="pre">create_changeset=true</span></span></a></code></p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:cloudformation:us-east-1:123456789012:changeSet/Ansible-StackName-f4496805bd1b2be824d1e315c6884247ede41eb0&quot;</span></code></p>
 </div></td>
 </tr>

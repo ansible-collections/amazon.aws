@@ -25,7 +25,7 @@
     <script src="../../../_static/js/theme.js"></script>
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="amazon.aws.cloudwatch_metric_alarm_info module – Gather information about the alarms for the specified metric" href="cloudwatch_metric_alarm_info_module.html" />
-    <link rel="prev" title="amazon.aws.cloudtrail_info module – Gather information about trails in AWS Cloud Trail." href="cloudtrail_info_module.html" /><!-- extra head elements for Ansible beyond RTD Sphinx Theme -->
+    <link rel="prev" title="amazon.aws.cloudtrail_info module – Gather information about trails in AWS Cloud Trail" href="cloudtrail_info_module.html" /><!-- extra head elements for Ansible beyond RTD Sphinx Theme -->
 
 
 
@@ -164,7 +164,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 <ul class="simple">
 <li><p>Can create or delete AWS CloudWatch metric alarms.</p></li>
 <li><p>Metrics you wish to alarm on must already exist.</p></li>
-<li><p>Prior to release 5.0.0 this module was called <code class="docutils literal notranslate"><span class="pre">community.aws.ec2_metric_alarm</span></code>. The usage did not change.</p></li>
+<li><p>Prior to release 5.0.0 this module was called <a class="reference external" href="https://ansible-collections.github.io/community.aws/branch/main/collections/community/aws/ec2_metric_alarm_module.html#ansible-collections-community-aws-ec2-metric-alarm-module" title="(in Ansible collections)"><span class="xref std std-ref">community.aws.ec2_metric_alarm</span></a>. The usage did not change.</p></li>
 <li><p>This module was originally added to <code class="docutils literal notranslate"><span class="pre">community.aws</span></code> in release 1.0.0.</p></li>
 </ul>
 <p>Aliases: ec2_metric_alarm</p>
@@ -208,7 +208,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 <div class="ansibleOptionAnchor" id="parameter-alarm_actions"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-alarm-actions"><strong>alarm_actions</strong></p>
 <a class="ansibleOptionLink" href="#parameter-alarm_actions" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>A list of the names action(s) taken when the alarm is in the <code class="docutils literal notranslate"><span class="pre">alarm</span></code> status, denoted as Amazon Resource Name(s).</p>
+<td><div class="ansible-option-cell"><p>A list of the names action(s) taken when the alarm is in the <code class="ansible-value docutils literal notranslate"><span class="pre">alarm</span></code> status, denoted as Amazon Resource Name(s).</p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[]</span></code></p>
 </div></td>
 </tr>
@@ -304,7 +304,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 <div class="ansibleOptionAnchor" id="parameter-insufficient_data_actions"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-insufficient-data-actions"><strong>insufficient_data_actions</strong></p>
 <a class="ansibleOptionLink" href="#parameter-insufficient_data_actions" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>A list of the names of action(s) to take when the alarm is in the <code class="docutils literal notranslate"><span class="pre">insufficient_data</span></code> status.</p>
+<td><div class="ansible-option-cell"><p>A list of the names of action(s) to take when the alarm is in the <code class="ansible-value docutils literal notranslate"><span class="pre">insufficient_data</span></code> status.</p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[]</span></code></p>
 </div></td>
 </tr>
@@ -314,7 +314,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 <a class="ansibleOptionLink" href="#parameter-metric_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: metric</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Name of the monitored metric (e.g. <code class="docutils literal notranslate"><span class="pre">CPUUtilization</span></code>).</p>
+<td><div class="ansible-option-cell"><p>Name of the monitored metric (e.g. <code class="ansible-value docutils literal notranslate"><span class="pre">CPUUtilization</span></code>).</p>
 <p>Metric must already exist.</p>
 </div></td>
 </tr>
@@ -373,7 +373,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 <div class="ansibleOptionAnchor" id="parameter-metrics/metric_stat/metric/dimensions"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-metrics-metric-stat-metric-dimensions"><strong>dimensions</strong></p>
 <a class="ansibleOptionLink" href="#parameter-metrics/metric_stat/metric/dimensions" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>a name/value pair that is part of the identity of a metric.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A name/value pair that is part of the identity of a metric.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -455,14 +455,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 <div class="ansibleOptionAnchor" id="parameter-namespace"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-namespace"><strong>namespace</strong></p>
 <a class="ansibleOptionLink" href="#parameter-namespace" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Name of the appropriate namespace (<code class="docutils literal notranslate"><span class="pre">AWS/EC2</span></code>, <code class="docutils literal notranslate"><span class="pre">System/Linux</span></code>, etc.), which determines the category it will appear under in CloudWatch.</p>
+<td><div class="ansible-option-cell"><p>Name of the appropriate namespace (<code class="ansible-value docutils literal notranslate"><span class="pre">AWS/EC2</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">System/Linux</span></code>, etc.), which determines the category it will appear under in CloudWatch.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-ok_actions"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-ok-actions"><strong>ok_actions</strong></p>
 <a class="ansibleOptionLink" href="#parameter-ok_actions" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>A list of the names of action(s) to take when the alarm is in the <code class="docutils literal notranslate"><span class="pre">ok</span></code> status, denoted as Amazon Resource Name(s).</p>
+<td><div class="ansible-option-cell"><p>A list of the names of action(s) to take when the alarm is in the <code class="ansible-value docutils literal notranslate"><span class="pre">ok</span></code> status, denoted as Amazon Resource Name(s).</p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[]</span></code></p>
 </div></td>
 </tr>
@@ -552,7 +552,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 <a class="ansibleOptionLink" href="#parameter-statistic" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Operation applied to the metric.</p>
-<p>Works in conjunction with <em>period</em> and <em>evaluation_periods</em> to determine the comparison value.</p>
+<p>Works in conjunction with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-period"><span class="std std-ref"><span class="pre">period</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-evaluation-periods"><span class="std std-ref"><span class="pre">evaluation_periods</span></span></a></strong></code> to determine the comparison value.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;SampleCount&quot;</span></code></p></li>
@@ -727,7 +727,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
           
 
 <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="cloudtrail_info_module.html" class="btn btn-neutral float-left" title="amazon.aws.cloudtrail_info module – Gather information about trails in AWS Cloud Trail." accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="cloudtrail_info_module.html" class="btn btn-neutral float-left" title="amazon.aws.cloudtrail_info module – Gather information about trails in AWS Cloud Trail" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="cloudwatch_metric_alarm_info_module.html" class="btn btn-neutral float-right" title="amazon.aws.cloudwatch_metric_alarm_info module – Gather information about the alarms for the specified metric" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

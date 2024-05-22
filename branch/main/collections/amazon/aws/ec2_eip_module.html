@@ -25,7 +25,7 @@
     <script src="../../../_static/js/theme.js"></script>
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="amazon.aws.ec2_eip_info module – List EC2 EIP details" href="ec2_eip_info_module.html" />
-    <link rel="prev" title="amazon.aws.ec2_ami_info module – Gather information about ec2 AMIs" href="ec2_ami_info_module.html" /><!-- extra head elements for Ansible beyond RTD Sphinx Theme -->
+    <link rel="prev" title="amazon.aws.ec2_ami_info module – Gather information about EC2 AMIs" href="ec2_ami_info_module.html" /><!-- extra head elements for Ansible beyond RTD Sphinx Theme -->
 
 
 
@@ -250,7 +250,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-
 </div></td>
 <td><div class="ansible-option-cell"><p>The id of the device for the EIP.</p>
 <p>Can be an EC2 Instance id or Elastic Network Interface (ENI) id.</p>
-<p>When specifying an ENI id, <em>in_vpc</em> must be <code class="docutils literal notranslate"><span class="pre">true</span></code></p>
+<p>When specifying an ENI id, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-module-parameter-in-vpc"><span class="std std-ref"><span class="pre">in_vpc</span></span></a></strong></code> must be <code class="ansible-value docutils literal notranslate"><span class="pre">true</span></code>.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">instance_id</span></code> alias was removed in release 6.0.0.</p>
 </div></td>
 </tr>
@@ -273,7 +273,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-
 <a class="ansibleOptionLink" href="#parameter-in_vpc" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Allocate an EIP inside a VPC or not.</p>
-<p>Required if specifying an ENI with <em>device_id</em>.</p>
+<p>Required if specifying an ENI with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-module-parameter-device-id"><span class="std std-ref"><span class="pre">device_id</span></span></a></strong></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -307,15 +307,15 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The IP address of a previously allocated EIP.</p>
-<p>When <em>state=present</em> and device is specified, the EIP is associated with the device.</p>
-<p>When <em>state=absent</em> and device is specified, the EIP is disassociated from the device.</p>
+<p>When <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code> and device is specified, the EIP is associated with the device.</p>
+<p>When <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-module-parameter-state"><span class="std std-ref"><span class="pre">state=absent</span></span></a></code> and device is specified, the EIP is disassociated from the device.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-public_ipv4_pool"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eip-module-parameter-public-ipv4-pool"><strong>public_ipv4_pool</strong></p>
 <a class="ansibleOptionLink" href="#parameter-public_ipv4_pool" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Allocates the new Elastic IP from the provided public IPv4 pool (BYOIP) only applies to newly allocated Elastic IPs, isn’t validated when <em>reuse_existing_ip_allowed=true</em>.</p>
+<td><div class="ansible-option-cell"><p>Allocates the new Elastic IP from the provided public IPv4 pool (BYOIP) only applies to newly allocated Elastic IPs, isn’t validated when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-module-parameter-reuse-existing-ip-allowed"><span class="std std-ref"><span class="pre">reuse_existing_ip_allowed=true</span></span></a></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -410,8 +410,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-
 <div class="ansibleOptionAnchor" id="parameter-state"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eip-module-parameter-state"><strong>state</strong></p>
 <a class="ansibleOptionLink" href="#parameter-state" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>When <code class="docutils literal notranslate"><span class="pre">state=present</span></code>, allocate an EIP or associate an existing EIP with a device.</p>
-<p>When <code class="docutils literal notranslate"><span class="pre">state=absent</span></code>, disassociate the EIP from the device and optionally release it.</p>
+<td><div class="ansible-option-cell"><p>When <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code>, allocate an EIP or associate an existing EIP with a device.</p>
+<p>When <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-module-parameter-state"><span class="std std-ref"><span class="pre">state=absent</span></span></a></code>, disassociate the EIP from the device and optionally release it.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">&quot;present&quot;</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -423,14 +423,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-
 <div class="ansibleOptionAnchor" id="parameter-tag_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eip-module-parameter-tag-name"><strong>tag_name</strong></p>
 <a class="ansibleOptionLink" href="#parameter-tag_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>When <em>reuse_existing_ip_allowed=true</em>, supplement with this option to only reuse an Elastic IP if it is tagged with <em>tag_name</em>.</p>
+<td><div class="ansible-option-cell"><p>When <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-module-parameter-reuse-existing-ip-allowed"><span class="std std-ref"><span class="pre">reuse_existing_ip_allowed=true</span></span></a></code>, supplement with this option to only reuse an Elastic IP if it is tagged with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-module-parameter-tag-name"><span class="std std-ref"><span class="pre">tag_name</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-tag_value"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eip-module-parameter-tag-value"><strong>tag_value</strong></p>
 <a class="ansibleOptionLink" href="#parameter-tag_value" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Supplements <em>tag_name</em> but also checks that the value of the tag provided in <em>tag_name</em> matches <em>tag_value</em>.</p>
+<td><div class="ansible-option-cell"><p>Supplements <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-module-parameter-tag-name"><span class="std std-ref"><span class="pre">tag_name</span></span></a></strong></code> but also checks that the value of the tag provided in <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-module-parameter-tag-name"><span class="std std-ref"><span class="pre">tag_name</span></span></a></strong></code> matches <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-module-parameter-tag-value"><span class="std std-ref"><span class="pre">tag_value</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -466,7 +466,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-
 <ul class="simple">
 <li><p>There may be a delay between the time the EIP is assigned and when the cloud instance is reachable via the new address. Use wait_for and pause to delay further playbook execution until the instance is reachable, if necessary.</p></li>
 <li><p>This module returns multiple changed statuses on disassociation or release. It returns an overall status based on any changes occurring. It also returns individual changed statuses for disassociation and release.</p></li>
-<li><p>Support for <em>tags</em> and <em>purge_tags</em> was added in release 2.1.0.</p></li>
+<li><p>Support for <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-module-parameter-tags"><span class="std std-ref"><span class="pre">tags</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-module-parameter-purge-tags"><span class="std std-ref"><span class="pre">purge_tags</span></span></a></strong></code> was added in release 2.1.0.</p></li>
 <li><p><strong>Caution:</strong> For modules, environment variables and configuration files are read from the Ansible ‘host’ context and not the ‘controller’ context. As such, files may need to be explicitly copied to the ‘host’.  For lookup and connection plugins, environment variables and configuration files are read from the Ansible ‘controller’ context and not the ‘host’ context.</p></li>
 <li><p>The AWS SDK (boto3) that Ansible uses may also read defaults for credentials and other settings, such as the region, from its configuration files in the Ansible ‘host’ context (typically <code class="docutils literal notranslate"><span class="pre">~/.aws/credentials</span></code>). See <a class="reference external" href="https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html">https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html</a> for more information.</p></li>
 </ul>
@@ -596,7 +596,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-
 <div class="ansibleOptionAnchor" id="return-allocation_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eip-module-return-allocation-id"><strong>allocation_id</strong></p>
 <a class="ansibleOptionLink" href="#return-allocation_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>allocation_id of the elastic ip</p>
+<td><div class="ansible-option-cell"><p>Allocation id of the elastic ip.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> on success</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;eipalloc-51aa3a6c&quot;</span></code></p>
 </div></td>
@@ -605,7 +605,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-
 <div class="ansibleOptionAnchor" id="return-public_ip"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eip-module-return-public-ip"><strong>public_ip</strong></p>
 <a class="ansibleOptionLink" href="#return-public_ip" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>an elastic ip address</p>
+<td><div class="ansible-option-cell"><p>An elastic ip address.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> on success</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;52.88.159.209&quot;</span></code></p>
 </div></td>
@@ -635,7 +635,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-
           
 
 <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="ec2_ami_info_module.html" class="btn btn-neutral float-left" title="amazon.aws.ec2_ami_info module – Gather information about ec2 AMIs" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ec2_ami_info_module.html" class="btn btn-neutral float-left" title="amazon.aws.ec2_ami_info module – Gather information about EC2 AMIs" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="ec2_eip_info_module.html" class="btn btn-neutral float-right" title="amazon.aws.ec2_eip_info module – List EC2 EIP details" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

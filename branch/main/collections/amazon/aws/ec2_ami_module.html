@@ -24,7 +24,7 @@
         <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="amazon.aws.ec2_ami_info module – Gather information about ec2 AMIs" href="ec2_ami_info_module.html" />
+    <link rel="next" title="amazon.aws.ec2_ami_info module – Gather information about EC2 AMIs" href="ec2_ami_info_module.html" />
     <link rel="prev" title="amazon.aws.cloudwatchlogs_log_group_metric_filter module – Manage CloudWatch log group metric filter" href="cloudwatchlogs_log_group_metric_filter_module.html" /><!-- extra head elements for Ansible beyond RTD Sphinx Theme -->
 
 
@@ -302,7 +302,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 <div class="ansibleOptionAnchor" id="parameter-device_mapping/device_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-device-mapping-device-name"><strong>device_name</strong></p>
 <a class="ansibleOptionLink" href="#parameter-device_mapping/device_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The device name. For example <code class="docutils literal notranslate"><span class="pre">/dev/sda</span></code>.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The device name. For example <code class="ansible-value docutils literal notranslate"><span class="pre">/dev/sda</span></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -321,7 +321,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 <div class="ansibleOptionAnchor" id="parameter-device_mapping/iops"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-device-mapping-iops"><strong>iops</strong></p>
 <a class="ansibleOptionLink" href="#parameter-device_mapping/iops" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>When using an <code class="docutils literal notranslate"><span class="pre">io1</span></code> <em>volume_type</em> this sets the number of IOPS provisioned for the volume.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>When using <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-module-parameter-device-mapping-volume-type"><span class="std std-ref"><span class="pre">device_mapping.volume_type=io1</span></span></a></code>, this sets the number of IOPS provisioned for the volume.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -364,7 +364,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 <div class="ansibleOptionAnchor" id="parameter-device_mapping/volume_type"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-device-mapping-volume-type"><strong>volume_type</strong></p>
 <a class="ansibleOptionLink" href="#parameter-device_mapping/volume_type" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The volume type.  Defaults to <code class="docutils literal notranslate"><span class="pre">gp2</span></code> when not set.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The volume type. Defaults to <code class="ansible-value docutils literal notranslate"><span class="pre">gp2</span></code> when not set.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -470,7 +470,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 <div class="ansibleOptionAnchor" id="parameter-no_reboot"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-ami-module-parameter-no-reboot"><strong>no_reboot</strong></p>
 <a class="ansibleOptionLink" href="#parameter-no_reboot" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Flag indicating that the bundling process should not attempt to shutdown the instance before bundling. If this flag is True, the responsibility of maintaining file system integrity is left to the owner of the instance.</p>
+<td><div class="ansible-option-cell"><p>Flag indicating that the bundling process should not attempt to shutdown the instance before bundling. If this flag is <code class="ansible-value docutils literal notranslate"><span class="pre">true</span></code>, the responsibility of maintaining file system integrity is left to the owner of the instance.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -602,11 +602,10 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 <a class="ansibleOptionLink" href="#parameter-tpm_support" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 <p><em class="ansible-option-versionadded">added in amazon.aws 5.5.0</em></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Set to v2.0 to enable Trusted Platform Module (TPM) support.</p>
-<p>If the image is configured for NitroTPM support, the value is v2.0 .</p>
-<p>Requires <em>boot_mode</em> to be set to ‘uefi’.</p>
+<td><div class="ansible-option-cell"><p>Set to <code class="ansible-value docutils literal notranslate"><span class="pre">v2.0</span></code> to enable Trusted Platform Module (TPM) support.</p>
+<p>If the image is configured for NitroTPM support, the value is <code class="ansible-value docutils literal notranslate"><span class="pre">v2.0</span></code>.</p>
+<p>Requires <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-module-parameter-boot-mode"><span class="std std-ref"><span class="pre">boot_mode</span></span></a></strong></code> to be set to <code class="ansible-value docutils literal notranslate"><span class="pre">uefi</span></code>.</p>
 <p>Requires an instance type that is compatible with Nitro.</p>
-<p>Requires minimum botocore version 1.26.0.</p>
 <p>See the AWS documentation for more detail <a class="reference external" href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nitrotpm.html">https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nitrotpm.html</a>.</p>
 </div></td>
 </tr>
@@ -616,7 +615,6 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 <p><em class="ansible-option-versionadded">added in amazon.aws 5.5.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Base64 representation of the non-volatile UEFI variable store.</p>
-<p>Requires minimum botocore version 1.26.0.</p>
 <p>See the AWS documentation for more detail <a class="reference external" href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/uefi-secure-boot.html">https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/uefi-secure-boot.html</a>.</p>
 </div></td>
 </tr>
@@ -1057,7 +1055,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 
 <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="cloudwatchlogs_log_group_metric_filter_module.html" class="btn btn-neutral float-left" title="amazon.aws.cloudwatchlogs_log_group_metric_filter module – Manage CloudWatch log group metric filter" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="ec2_ami_info_module.html" class="btn btn-neutral float-right" title="amazon.aws.ec2_ami_info module – Gather information about ec2 AMIs" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="ec2_ami_info_module.html" class="btn btn-neutral float-right" title="amazon.aws.ec2_ami_info module – Gather information about EC2 AMIs" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
