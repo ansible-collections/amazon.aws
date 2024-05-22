@@ -108,7 +108,7 @@ security_groups:
             elements: dict
             contains:
                 from_port:
-                    description: If the Oprotocol is TCP or UDP, this is the start of the port range.
+                    description: If the protocol is TCP or UDP, this is the start of the port range.
                     type: int
                     sample: 80
                 ip_protocol:
