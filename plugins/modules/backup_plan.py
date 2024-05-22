@@ -82,7 +82,7 @@ options:
             type: int
           delete_after_days:
             description: Specifies the number of days after creation that a recovery
-              point is deleted. Must be greater than 90 days plus
+              point is deleted. Must be greater than V(90) days plus
               O(rules.lifecycle.move_to_cold_storage_after_days).
             type: int
       recovery_point_tags:
@@ -114,7 +114,7 @@ options:
                 type: int
               delete_after_days:
                 description: Specifies the number of days after creation that a
-                  recovery point is deleted. Must be greater than 90 days plus
+                  recovery point is deleted. Must be greater than V(90) days plus
                    O(rules.copy_actions.lifecycle.move_to_cold_storage_after_days).
                 type: int
       enable_continuous_backup:

@@ -91,7 +91,7 @@ options:
           - Suppresses the specified device included in the block device mapping of the AMI.
       volume_type:
         type: str
-        description: The volume type. Defaults to v(gp2) when not set.
+        description: The volume type. Defaults to V(gp2) when not set.
       delete_on_termination:
         type: bool
         description: Whether the device should be automatically deleted when the Instance is terminated.
