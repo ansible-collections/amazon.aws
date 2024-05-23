@@ -15,7 +15,7 @@ options:
   query:
     description:
       - Specifies the query action to take.
-    required: True
+    required: true
     choices: [
             'change',
             'checker_ip_range',
