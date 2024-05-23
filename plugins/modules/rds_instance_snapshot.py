@@ -57,14 +57,14 @@ options:
     description:
       - Whether to copy all tags from O(source_db_snapshot_identifier) to O(db_instance_identifier).
     type: bool
-    default: False
+    default: false
     version_added: 3.3.0
     version_added_collection: community.aws
   wait:
     description:
       - Whether or not to wait for snapshot creation or deletion.
     type: bool
-    default: False
+    default: false
   wait_timeout:
     description:
       - how long before wait gives up, in seconds.
