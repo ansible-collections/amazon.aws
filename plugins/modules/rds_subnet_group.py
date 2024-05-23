@@ -80,7 +80,7 @@ changed:
     description: True if listing the RDS subnet group succeeds.
     type: bool
     returned: always
-    sample: "false"
+    sample: false
 subnet_group:
     description: Dictionary of DB subnet group values,
     returned: O(state=present)
