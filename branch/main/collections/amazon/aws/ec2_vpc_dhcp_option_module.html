@@ -286,7 +286,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <div class="ansibleOptionAnchor" id="parameter-inherit_existing"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-module-parameter-inherit-existing"><strong>inherit_existing</strong></p>
 <a class="ansibleOptionLink" href="#parameter-inherit_existing" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>For any DHCP options not specified in these parameters, whether to inherit them from the options set already applied to <em>vpc_id</em>, or to reset them to be empty.</p>
+<td><div class="ansible-option-cell"><p>For any DHCP options not specified in these parameters, whether to inherit them from the options set already applied to <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-dhcp-option-module-parameter-vpc-id"><span class="std std-ref"><span class="pre">vpc_id</span></span></a></strong></code>, or to reset them to be empty.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -442,7 +442,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <ul class="simple">
-<li><p>Support for <em>purge_tags</em> was added in release 2.0.0.</p></li>
+<li><p>Support for <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-dhcp-option-module-parameter-purge-tags"><span class="std std-ref"><span class="pre">purge_tags</span></span></a></strong></code> was added in release 2.0.0.</p></li>
 <li><p><strong>Caution:</strong> For modules, environment variables and configuration files are read from the Ansible ‘host’ context and not the ‘controller’ context. As such, files may need to be explicitly copied to the ‘host’.  For lookup and connection plugins, environment variables and configuration files are read from the Ansible ‘controller’ context and not the ‘host’ context.</p></li>
 <li><p>The AWS SDK (boto3) that Ansible uses may also read defaults for credentials and other settings, such as the region, from its configuration files in the Ansible ‘host’ context (typically <code class="docutils literal notranslate"><span class="pre">~/.aws/credentials</span></code>). See <a class="reference external" href="https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html">https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html</a> for more information.</p></li>
 </ul>

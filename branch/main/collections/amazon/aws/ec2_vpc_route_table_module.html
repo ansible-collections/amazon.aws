@@ -25,7 +25,7 @@
     <script src="../../../_static/js/theme.js"></script>
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="amazon.aws.ec2_vpc_route_table_info module – Gather information about ec2 VPC route tables in AWS" href="ec2_vpc_route_table_info_module.html" />
-    <link rel="prev" title="amazon.aws.ec2_vpc_net_info module – Gather information about ec2 VPCs in AWS" href="ec2_vpc_net_info_module.html" /><!-- extra head elements for Ansible beyond RTD Sphinx Theme -->
+    <link rel="prev" title="amazon.aws.ec2_vpc_net_info module – Gather information about EC2 VPCs in AWS" href="ec2_vpc_net_info_module.html" /><!-- extra head elements for Ansible beyond RTD Sphinx Theme -->
 
 
 
@@ -250,18 +250,18 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <p><em class="ansible-option-versionadded">added in amazon.aws 3.2.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The ID of the gateway to associate with the route table.</p>
-<p>If <em>gateway_id</em> is <code class="docutils literal notranslate"><span class="pre">'None'</span></code> or <code class="docutils literal notranslate"><span class="pre">''</span></code>, gateway will be disassociated with the route table.</p>
+<p>If <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-route-table-module-parameter-gateway-id"><span class="std std-ref"><span class="pre">gateway_id</span></span></a></strong></code> is <code class="ansible-value docutils literal notranslate"><span class="pre">'None'</span></code> or <code class="ansible-value docutils literal notranslate"><span class="pre">''</span></code>, gateway will be disassociated with the route table.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-lookup"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-route-table-module-parameter-lookup"><strong>lookup</strong></p>
 <a class="ansibleOptionLink" href="#parameter-lookup" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Look up route table by either <em>tags</em> or by <em>route_table_id</em>.</p>
-<p>If <em>lookup=tag</em> and <em>tags</em> is not specified then no lookup for an existing route table is performed and a new route table will be created.</p>
-<p>When using <em>lookup=tag</em>, multiple matches being found will result in a failure and no changes will be made.</p>
-<p>To change the tags of a route table use <em>lookup=id</em>.</p>
-<p><em>vpc_id</em> must be specified when <em>lookup=tag</em>.</p>
+<td><div class="ansible-option-cell"><p>Look up route table by either <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-route-table-module-parameter-tags"><span class="std std-ref"><span class="pre">tags</span></span></a></strong></code> or by <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-route-table-module-parameter-route-table-id"><span class="std std-ref"><span class="pre">route_table_id</span></span></a></strong></code>.</p>
+<p>If <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-route-table-module-parameter-lookup"><span class="std std-ref"><span class="pre">lookup=tag</span></span></a></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-route-table-module-parameter-tags"><span class="std std-ref"><span class="pre">tags</span></span></a></strong></code> is not specified then no lookup for an existing route table is performed and a new route table will be created.</p>
+<p>When using <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-route-table-module-parameter-lookup"><span class="std std-ref"><span class="pre">lookup=tag</span></span></a></code>, multiple matches being found will result in a failure and no changes will be made.</p>
+<p>To change the tags of a route table use <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-route-table-module-parameter-lookup"><span class="std std-ref"><span class="pre">lookup=id</span></span></a></code>.</p>
+<p><code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-route-table-module-parameter-vpc-id"><span class="std std-ref"><span class="pre">vpc_id</span></span></a></strong></code> must be specified when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-route-table-module-parameter-lookup"><span class="std std-ref"><span class="pre">lookup=tag</span></span></a></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">&quot;tag&quot;</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -347,7 +347,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <a class="ansibleOptionLink" href="#parameter-route_table_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The ID of the route table to update or delete.</p>
-<p>Required when <em>lookup=id</em>.</p>
+<p>Required when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-route-table-module-parameter-lookup"><span class="std std-ref"><span class="pre">lookup=id</span></span></a></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -355,9 +355,9 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <a class="ansibleOptionLink" href="#parameter-routes" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>List of routes in the route table.</p>
-<p>Routes are specified as dicts containing the keys <code class="docutils literal notranslate"><span class="pre">dest</span></code> and one of <code class="docutils literal notranslate"><span class="pre">gateway_id</span></code>, <code class="docutils literal notranslate"><span class="pre">instance_id</span></code>, <code class="docutils literal notranslate"><span class="pre">network_interface_id</span></code>, or <code class="docutils literal notranslate"><span class="pre">vpc_peering_connection_id</span></code>.</p>
-<p>The value of <code class="docutils literal notranslate"><span class="pre">dest</span></code> is used for the destination match. It may be a IPv4 CIDR block or a IPv6 CIDR block.</p>
-<p>If <em>gateway_id</em> is specified, you can refer to the VPC’s IGW by using the value <code class="docutils literal notranslate"><span class="pre">igw</span></code>.</p>
+<p>Routes are specified as dicts containing the keys <code class="ansible-value docutils literal notranslate"><span class="pre">dest</span></code> and one of <code class="ansible-value docutils literal notranslate"><span class="pre">gateway_id</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">instance_id</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">network_interface_id</span></code>, or <code class="ansible-value docutils literal notranslate"><span class="pre">vpc_peering_connection_id</span></code>.</p>
+<p>The value of <code class="ansible-value docutils literal notranslate"><span class="pre">dest</span></code> is used for the destination match. It may be a IPv4 CIDR block or a IPv6 CIDR block.</p>
+<p>If <code class="ansible-value docutils literal notranslate"><span class="pre">gateway_id</span></code> is specified, you can refer to the VPC’s IGW by using the value <code class="ansible-value docutils literal notranslate"><span class="pre">igw</span></code>.</p>
 <p>Routes are required for present states.</p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[]</span></code></p>
 </div></td>
@@ -444,7 +444,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <a class="ansibleOptionLink" href="#parameter-vpc_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>VPC ID of the VPC in which to create the route table.</p>
-<p>Required when <em>state=present</em> or <em>lookup=tag</em>.</p>
+<p>Required when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-route-table-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code> or <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-route-table-module-parameter-lookup"><span class="std std-ref"><span class="pre">lookup=tag</span></span></a></code>.</p>
 </div></td>
 </tr>
 </tbody>
@@ -455,7 +455,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <ul class="simple">
-<li><p>Tags are used to uniquely identify route tables within a VPC when the <em>route_table_id</em> is not supplied.</p></li>
+<li><p>Tags are used to uniquely identify route tables within a VPC when the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-route-table-module-parameter-route-table-id"><span class="std std-ref"><span class="pre">route_table_id</span></span></a></strong></code> is not supplied.</p></li>
 <li><p><strong>Caution:</strong> For modules, environment variables and configuration files are read from the Ansible ‘host’ context and not the ‘controller’ context. As such, files may need to be explicitly copied to the ‘host’.  For lookup and connection plugins, environment variables and configuration files are read from the Ansible ‘controller’ context and not the ‘host’ context.</p></li>
 <li><p>The AWS SDK (boto3) that Ansible uses may also read defaults for credentials and other settings, such as the region, from its configuration files in the Ansible ‘host’ context (typically <code class="docutils literal notranslate"><span class="pre">~/.aws/credentials</span></code>). See <a class="reference external" href="https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html">https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html</a> for more information.</p></li>
 </ul>
@@ -630,7 +630,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <div class="ansibleOptionAnchor" id="return-route_table/id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-route-table-module-return-route-table-id"><strong>id</strong></p>
 <a class="ansibleOptionLink" href="#return-route_table/id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>ID of the route table (same as route_table_id for backwards compatibility).</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>ID of the route table (same as <code class="ansible-return-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-route-table-module-return-route-table-route-table-id"><span class="std std-ref"><span class="pre">route_table.route_table_id</span></span></a></code> for backwards compatibility).</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;rtb-bf779ed7&quot;</span></code></p>
 </div></td>
@@ -797,7 +797,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
           
 
 <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="ec2_vpc_net_info_module.html" class="btn btn-neutral float-left" title="amazon.aws.ec2_vpc_net_info module – Gather information about ec2 VPCs in AWS" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ec2_vpc_net_info_module.html" class="btn btn-neutral float-left" title="amazon.aws.ec2_vpc_net_info module – Gather information about EC2 VPCs in AWS" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="ec2_vpc_route_table_info_module.html" class="btn btn-neutral float-right" title="amazon.aws.ec2_vpc_route_table_info module – Gather information about ec2 VPC route tables in AWS" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

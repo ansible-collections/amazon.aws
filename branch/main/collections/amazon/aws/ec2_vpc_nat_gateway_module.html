@@ -262,9 +262,9 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <a class="ansibleOptionLink" href="#parameter-default_create" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 <p><em class="ansible-option-versionadded">added in amazon.aws 6.2.0</em></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>When <em>default_create=True</em> and <em>eip_address</em> has been set, but not yet allocated, the NAT gateway is created and a new EIP is automatically allocated.</p>
-<p>When <em>default_create=False</em> and <em>eip_address</em> has been set, but not yet allocated, the module will fail.</p>
-<p>If <em>eip_address</em> has not been set, this parameter has no effect.</p>
+<td><div class="ansible-option-cell"><p>When <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-nat-gateway-module-parameter-default-create"><span class="std std-ref"><span class="pre">default_create=true</span></span></a></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-nat-gateway-module-parameter-eip-address"><span class="std std-ref"><span class="pre">eip_address</span></span></a></strong></code> has been set, but not yet allocated, the NAT gateway is created and a new EIP is automatically allocated.</p>
+<p>When <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-nat-gateway-module-parameter-default-create"><span class="std std-ref"><span class="pre">default_create=false</span></span></a></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-nat-gateway-module-parameter-eip-address"><span class="std std-ref"><span class="pre">eip_address</span></span></a></strong></code> has been set, but not yet allocated, the module will fail.</p>
+<p>If <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-nat-gateway-module-parameter-eip-address"><span class="std std-ref"><span class="pre">eip_address</span></span></a></strong></code> has not been set, this parameter has no effect.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -276,7 +276,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <div class="ansibleOptionAnchor" id="parameter-eip_address"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-module-parameter-eip-address"><strong>eip_address</strong></p>
 <a class="ansibleOptionLink" href="#parameter-eip_address" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>The elastic IP address of the EIP you want attached to this NAT Gateway. If this is not passed and the allocation_id is not passed, an EIP is generated for this NAT Gateway.</p>
+<td><div class="ansible-option-cell"><p>The elastic IP address of the EIP you want attached to this NAT Gateway. If this is not passed and the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-nat-gateway-module-parameter-allocation-id"><span class="std std-ref"><span class="pre">allocation_id</span></span></a></strong></code> is not passed, an EIP is generated for this NAT Gateway.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -297,7 +297,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <div class="ansibleOptionAnchor" id="parameter-if_exist_do_not_create"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-module-parameter-if-exist-do-not-create"><strong>if_exist_do_not_create</strong></p>
 <a class="ansibleOptionLink" href="#parameter-if_exist_do_not_create" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>if a NAT Gateway exists already in the subnet_id, then do not create a new one.</p>
+<td><div class="ansible-option-cell"><p>If a NAT Gateway exists already in the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-nat-gateway-module-parameter-subnet-id"><span class="std std-ref"><span class="pre">subnet_id</span></span></a></strong></code>, then do not create a new one.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -472,7 +472,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <ul class="simple">
-<li><p>Support for <em>tags</em> and <em>purge_tags</em> was added in release 1.4.0.</p></li>
+<li><p>Support for <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-nat-gateway-module-parameter-tags"><span class="std std-ref"><span class="pre">tags</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-nat-gateway-module-parameter-purge-tags"><span class="std std-ref"><span class="pre">purge_tags</span></span></a></strong></code> was added in release 1.4.0.</p></li>
 <li><p><strong>Caution:</strong> For modules, environment variables and configuration files are read from the Ansible ‘host’ context and not the ‘controller’ context. As such, files may need to be explicitly copied to the ‘host’.  For lookup and connection plugins, environment variables and configuration files are read from the Ansible ‘controller’ context and not the ‘host’ context.</p></li>
 <li><p>The AWS SDK (boto3) that Ansible uses may also read defaults for credentials and other settings, such as the region, from its configuration files in the Ansible ‘host’ context (typically <code class="docutils literal notranslate"><span class="pre">~/.aws/credentials</span></code>). See <a class="reference external" href="https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html">https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html</a> for more information.</p></li>
 </ul>
@@ -601,7 +601,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <a class="ansibleOptionLink" href="#return-create_time" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The ISO 8601 date time format in UTC.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> In all cases.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2016-03-05T05:19:20.282000+00:00'&quot;</span></code></p>
 </div></td>
 </tr>
@@ -610,7 +610,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <a class="ansibleOptionLink" href="#return-nat_gateway_addresses" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>List of dictionaries containing the public_ip, network_interface_id, private_ip, and allocation_id.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> In all cases.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[{&quot;allocation_id&quot;:</span> <span class="pre">&quot;eipalloc-08ec128d03629671d&quot;,</span> <span class="pre">&quot;association_id&quot;:</span> <span class="pre">&quot;eipassoc-0d6365c7eeb7d4932&quot;,</span> <span class="pre">&quot;is_primary&quot;:</span> <span class="pre">true,</span> <span class="pre">&quot;network_interface_id&quot;:</span> <span class="pre">&quot;eni-095104e630881bad6&quot;,</span> <span class="pre">&quot;private_ip&quot;:</span> <span class="pre">&quot;10.1.0.250&quot;,</span> <span class="pre">&quot;public_ip&quot;:</span> <span class="pre">&quot;34.202.90.172&quot;,</span> <span class="pre">&quot;status&quot;:</span> <span class="pre">&quot;succeeded&quot;}]</span></code></p>
 </div></td>
 </tr>
@@ -681,8 +681,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <div class="ansibleOptionAnchor" id="return-nat_gateway_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-module-return-nat-gateway-id"><strong>nat_gateway_id</strong></p>
 <a class="ansibleOptionLink" href="#return-nat_gateway_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>id of the VPC NAT Gateway</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> In all cases.</p>
+<td><div class="ansible-option-cell"><p>Id of the VPC NAT Gateway.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;nat-0d1e3a878585988f8&quot;</span></code></p>
 </div></td>
 </tr>
@@ -691,7 +691,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <a class="ansibleOptionLink" href="#return-state" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The current state of the NAT Gateway.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> In all cases.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;available&quot;</span></code></p>
 </div></td>
 </tr>
@@ -699,8 +699,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <div class="ansibleOptionAnchor" id="return-subnet_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-module-return-subnet-id"><strong>subnet_id</strong></p>
 <a class="ansibleOptionLink" href="#return-subnet_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>id of the Subnet</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> In all cases.</p>
+<td><div class="ansible-option-cell"><p>Id of the Subnet.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;subnet-12345&quot;</span></code></p>
 </div></td>
 </tr>
@@ -717,8 +717,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <div class="ansibleOptionAnchor" id="return-vpc_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-module-return-vpc-id"><strong>vpc_id</strong></p>
 <a class="ansibleOptionLink" href="#return-vpc_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>id of the VPC.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> In all cases.</p>
+<td><div class="ansible-option-cell"><p>Id of the VPC.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;vpc-12345&quot;</span></code></p>
 </div></td>
 </tr>
