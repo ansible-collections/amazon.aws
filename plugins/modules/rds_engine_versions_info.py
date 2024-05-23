@@ -45,7 +45,7 @@ options:
           - Specifies whether to return only the default version of the specified engine
             or the engine and major version combination.
         type: bool
-        default: False
+        default: false
     filters:
         description:
             - A filter that specifies one or more DB engine versions to describe.
