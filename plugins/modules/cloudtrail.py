@@ -20,9 +20,9 @@ options:
   state:
     description:
       - Add or remove CloudTrail configuration.
-      - 'The following states have been preserved for backwards compatibility: I(state=enabled) and I(state=disabled).'
-      - I(state=enabled) is equivalet to I(state=present).
-      - I(state=disabled) is equivalet to I(state=absent).
+      - 'The following states have been preserved for backwards compatibility: O(state=enabled) and O(state=disabled).'
+      - O(state=enabled) is equivalet to O(state=present).
+      - O(state=disabled) is equivalet to O(state=absent).
     type: str
     choices: ['present', 'absent', 'enabled', 'disabled']
     default: present
@@ -42,7 +42,7 @@ options:
       - An existing S3 bucket where CloudTrail will deliver log files.
       - This bucket should exist and have the proper policy.
       - See U(https://docs.aws.amazon.com/awscloudtrail/latest/userguide/aggregating_logs_regions_bucket_policy.html).
-      - Required when I(state=present).
+      - Required when O(state=present).
     type: str
   s3_key_prefix:
     description:
@@ -73,23 +73,23 @@ options:
     description:
       - Specifies a full ARN for an IAM role that assigns the proper permissions for CloudTrail to create and write to the log group.
       - See U(https://docs.aws.amazon.com/awscloudtrail/latest/userguide/send-cloudtrail-events-to-cloudwatch-logs.html).
-      - Required when C(cloudwatch_logs_log_group_arn).
+      - Required when O(cloudwatch_logs_log_group_arn).
     type: str
   cloudwatch_logs_log_group_arn:
     description:
       - A full ARN specifying a valid CloudWatch log group to which CloudTrail logs will be delivered. The log group should already exist.
       - See U(https://docs.aws.amazon.com/awscloudtrail/latest/userguide/send-cloudtrail-events-to-cloudwatch-logs.html).
-      - Required when C(cloudwatch_logs_role_arn).
+      - Required when O(cloudwatch_logs_role_arn).
     type: str
   kms_key_id:
     description:
       - Specifies the KMS key ID to use to encrypt the logs delivered by CloudTrail. This also has the effect of enabling log file encryption.
       - The value can be an alias name prefixed by "alias/", a fully specified ARN to an alias, a fully specified ARN to a key, or a globally unique identifier.
-      - Encryption can be disabled by setting I(kms_key_id="").
+      - Encryption can be disabled by setting O(kms_key_id="").
       - See U(https://docs.aws.amazon.com/awscloudtrail/latest/userguide/encrypting-cloudtrail-log-files-with-aws-kms.html).
     type: str
 notes:
-  - The I(purge_tags) option was added in release 4.0.0
+  - The O(purge_tags) option was added in release 4.0.0.
 
 extends_documentation_fragment:
   - amazon.aws.common.modules
@@ -151,53 +151,53 @@ EXAMPLES = r"""
 
 RETURN = r"""
 exists:
-    description: whether the resource exists
+    description: whether the resource exists.
     returned: always
     type: bool
     sample: true
 trail:
-    description: CloudTrail resource details
+    description: CloudTrail resource details.
     returned: always
     type: complex
     sample: hash/dictionary of values
     contains:
         trail_arn:
-            description: Full ARN of the CloudTrail resource
+            description: Full ARN of the CloudTrail resource.
             returned: success
             type: str
             sample: arn:aws:cloudtrail:us-east-1:123456789012:trail/default
         name:
-            description: Name of the CloudTrail resource
+            description: Name of the CloudTrail resource.
             returned: success
             type: str
             sample: default
         is_logging:
-            description: Whether logging is turned on or paused for the Trail
+            description: Whether logging is turned on or paused for the Trail.
             returned: success
             type: bool
             sample: True
         s3_bucket_name:
-            description: S3 bucket name where log files are delivered
+            description: S3 bucket name where log files are delivered.
             returned: success
             type: str
             sample: myBucket
         s3_key_prefix:
-            description: Key prefix in bucket where log files are delivered (if any)
+            description: Key prefix in bucket where log files are delivered (if any).
             returned: success when present
             type: str
             sample: myKeyPrefix
         log_file_validation_enabled:
-            description: Whether log file validation is enabled on the trail
+            description: Whether log file validation is enabled on the trail.
             returned: success
             type: bool
             sample: true
         include_global_service_events:
-            description: Whether global services (IAM, STS) are logged with this trail
+            description: Whether global services (IAM, STS) are logged with this trail.
             returned: success
             type: bool
             sample: true
         is_multi_region_trail:
-            description: Whether the trail applies to all regions or just one
+            description: Whether the trail applies to all regions or just one.
             returned: success
             type: bool
             sample: true

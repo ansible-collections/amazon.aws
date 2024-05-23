@@ -1,0 +1,2 @@
+bugfixes:
+  - s3_object - fixed issue which was causing ``MemoryError`` exceptions when downloading large files (https://github.com/ansible-collections/amazon.aws/issues/2107).

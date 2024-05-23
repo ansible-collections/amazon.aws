@@ -23,13 +23,13 @@ options:
   alarm_name_prefix:
     description:
       - An alarm name prefix to retrieve information about alarms that have names that start with this prefix.
-      - Can not be used with I(alarm_names).
+      - Can not be used with O(alarm_names).
     required: false
     type: str
   alarm_type:
     description:
       - Specify this to return metric alarms or composite alarms.
-      - Module is defaulted to return metric alarms but can return composite alarms if I(alarm_type=CompositeAlarm).
+      - Module is defaulted to return metric alarms but can return composite alarms if O(alarm_type=CompositeAlarm).
     required: false
     type: str
     default: MetricAlarm
@@ -147,7 +147,7 @@ metric_alarms:
             type: str
         namespace:
             description:
-                - Name of the appropriate namespace (C(AWS/EC2), C(System/Linux), etc.).
+                - Name of the appropriate namespace (V(AWS/EC2), V(System/Linux), etc.).
                 - Determines the category it will appear under in CloudWatch.
             returned: always
             type: str

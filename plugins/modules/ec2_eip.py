@@ -18,28 +18,28 @@ options:
     description:
       - The id of the device for the EIP.
       - Can be an EC2 Instance id or Elastic Network Interface (ENI) id.
-      - When specifying an ENI id, I(in_vpc) must be C(true)
+      - When specifying an ENI id, O(in_vpc) must be V(true).
       - The C(instance_id) alias was removed in release 6.0.0.
     required: false
     type: str
   public_ip:
     description:
       - The IP address of a previously allocated EIP.
-      - When I(state=present) and device is specified, the EIP is associated with the device.
-      - When I(state=absent) and device is specified, the EIP is disassociated from the device.
+      - When O(state=present) and device is specified, the EIP is associated with the device.
+      - When O(state=absent) and device is specified, the EIP is disassociated from the device.
     aliases: [ ip ]
     type: str
   state:
     description:
-      - When C(state=present), allocate an EIP or associate an existing EIP with a device.
-      - When C(state=absent), disassociate the EIP from the device and optionally release it.
+      - When O(state=present), allocate an EIP or associate an existing EIP with a device.
+      - When O(state=absent), disassociate the EIP from the device and optionally release it.
     choices: ['present', 'absent']
     default: present
     type: str
   in_vpc:
     description:
       - Allocate an EIP inside a VPC or not.
-      - Required if specifying an ENI with I(device_id).
+      - Required if specifying an ENI with O(device_id).
     default: false
     type: bool
   reuse_existing_ip_allowed:
@@ -64,17 +64,17 @@ options:
     type: bool
   tag_name:
     description:
-      - When I(reuse_existing_ip_allowed=true), supplement with this option to only reuse
-        an Elastic IP if it is tagged with I(tag_name).
+      - When O(reuse_existing_ip_allowed=true), supplement with this option to only reuse
+        an Elastic IP if it is tagged with O(tag_name).
     type: str
   tag_value:
     description:
-      - Supplements I(tag_name) but also checks that the value of the tag provided in I(tag_name) matches I(tag_value).
+      - Supplements O(tag_name) but also checks that the value of the tag provided in O(tag_name) matches O(tag_value).
     type: str
   public_ipv4_pool:
     description:
       - Allocates the new Elastic IP from the provided public IPv4 pool (BYOIP)
-        only applies to newly allocated Elastic IPs, isn't validated when I(reuse_existing_ip_allowed=true).
+        only applies to newly allocated Elastic IPs, isn't validated when O(reuse_existing_ip_allowed=true).
     type: str
 extends_documentation_fragment:
   - amazon.aws.common.modules
@@ -92,7 +92,7 @@ notes:
   - This module returns multiple changed statuses on disassociation or release.
     It returns an overall status based on any changes occurring. It also returns
     individual changed statuses for disassociation and release.
-  - Support for I(tags) and I(purge_tags) was added in release 2.1.0.
+  - Support for O(tags) and O(purge_tags) was added in release 2.1.0.
 """
 
 EXAMPLES = r"""
@@ -205,12 +205,12 @@ EXAMPLES = r"""
 
 RETURN = r"""
 allocation_id:
-  description: allocation_id of the elastic ip
+  description: Allocation id of the elastic ip.
   returned: on success
   type: str
   sample: eipalloc-51aa3a6c
 public_ip:
-  description: an elastic ip address
+  description: An elastic ip address.
   returned: on success
   type: str
   sample: 52.88.159.209
