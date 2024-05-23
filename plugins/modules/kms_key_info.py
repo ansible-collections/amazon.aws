@@ -47,7 +47,7 @@ options:
     type: dict
   pending_deletion:
     description: Whether to get full details (tags, grants etc.) of keys pending deletion.
-    default: False
+    default: false
     type: bool
 notes:
   - The C(policies) return key was removed in amazon.aws release 8.0.0.
