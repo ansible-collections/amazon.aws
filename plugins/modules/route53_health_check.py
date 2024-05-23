@@ -105,7 +105,7 @@ options:
       - Name of the Health Check.
       - Used together with O(use_unique_names) to set/make use of O(health_check_name) as a unique identifier.
     type: str
-    required: False
+    required: false
     aliases: ['name']
     version_added: 4.1.0
     version_added_collection: community.aws
@@ -113,7 +113,7 @@ options:
     description:
       - Used together with O(health_check_name) to set/make use of O(health_check_name) as a unique identifier.
     type: bool
-    required: False
+    required: false
     version_added: 4.1.0
     version_added_collection: community.aws
   health_check_id:
@@ -121,7 +121,7 @@ options:
       - ID of the health check to be update or deleted.
       - If provided, a health check can be updated or deleted based on the ID as unique identifier.
     type: str
-    required: False
+    required: false
     aliases: ['id']
     version_added: 4.1.0
     version_added_collection: community.aws
@@ -131,7 +131,7 @@ options:
       - Value of O(measure_latency) is immutable and can not be modified after creating a health check.
         See U(https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/monitoring-health-check-latency.html)
     type: bool
-    required: False
+    required: false
     version_added: 5.4.0
 author:
   - "zimbatm (@zimbatm)"
