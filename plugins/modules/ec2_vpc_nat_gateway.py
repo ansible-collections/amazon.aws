@@ -79,7 +79,7 @@ options:
     description:
       - When O(default_create=True) and O(eip_address) has been set, but not yet
         allocated, the NAT gateway is created and a new EIP is automatically allocated.
-      - When O(default_create=False) and O(eip_address) has been set, but not yet
+      - When O(default_create=false) and O(eip_address) has been set, but not yet
         allocated, the module will fail.
       - If O(eip_address) has not been set, this parameter has no effect.
     default: false

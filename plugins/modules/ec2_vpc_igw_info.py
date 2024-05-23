@@ -27,8 +27,8 @@ options:
   convert_tags:
     description:
       - Convert tags from boto3 format (list of dictionaries) to the standard dictionary format.
-      - Prior to release 4.0.0 this defaulted to V(False).
-    default: True
+      - Prior to release 4.0.0 this defaulted to V(false).
+    default: true
     type: bool
     version_added: 1.3.0
 extends_documentation_fragment:
@@ -67,7 +67,7 @@ changed:
     description: True if listing the internet gateways succeeds.
     type: bool
     returned: always
-    sample: "false"
+    sample: false
 internet_gateways:
     description: The internet gateways for the account.
     returned: always
