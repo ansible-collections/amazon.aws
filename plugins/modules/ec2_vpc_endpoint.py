@@ -106,7 +106,7 @@ author:
   - Karen Cheng (@Etherdaemon)
 notes:
   - Support for O(tags) and I(purge_tags) was added in release 1.5.0.
-  - The i(policy_file) paramater was removed in release 6.0.0 please use the
+  - The I(policy_file) paramater was removed in release 6.0.0 please use the
     O(policy) option and a file lookup instead.
 extends_documentation_fragment:
   - amazon.aws.common.modules
