@@ -27,7 +27,7 @@ options:
     type: str
   state:
     description:
-      - Create or terminate the IGW
+      - Create or terminate the IGW.
     default: present
     choices: [ 'present', 'absent' ]
     type: str
@@ -37,13 +37,13 @@ options:
       - Force attaching VPC to O(vpc_id).
       - Setting this option to true will detach an existing VPC attachment and attach to the supplied O(vpc_id).
       - Ignored when O(state=absent).
-      - O(vpc_id) must be specified when O(force_attach) is true
+      - O(vpc_id) must be specified when O(force_attach=true).
     default: false
     type: bool
   detach_vpc:
     version_added: 7.0.0
     description:
-      - Remove attached VPC from gateway
+      - Remove attached VPC from gateway.
     default: false
     type: bool
 notes:
