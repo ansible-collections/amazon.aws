@@ -18,20 +18,20 @@ options:
   name:
     description:
       - Name of the security group.
-      - One of and only one of I(name) or I(group_id) is required.
-      - Required if I(state=present).
+      - One of and only one of O(name) or O(group_id) is required.
+      - Required if O(state=present).
     required: false
     type: str
   group_id:
     description:
       - Id of group to delete (works only with absent).
-      - One of and only one of I(name) or I(group_id) is required.
+      - One of and only one of O(name) or O(group_id) is required.
     required: false
     type: str
   description:
     description:
       - Description of the security group.
-      - Required when I(state) is C(present).
+      - Required when O(state) is V(present).
     required: false
     type: str
   vpc_id:
@@ -42,7 +42,7 @@ options:
   rules:
     description:
       - List of firewall inbound rules to enforce in this group (see example). If none are supplied,
-        no inbound rules will be enabled. Rules list may include its own name in I(group_name).
+        no inbound rules will be enabled. Rules list may include its own name in O(rules.group_name).
         This allows idempotent loopback additions (e.g. allow group to access itself).
     required: false
     type: list
@@ -53,18 +53,18 @@ options:
           elements: raw
           description:
             - The IPv4 CIDR range traffic is coming from.
-            - You can specify only one of I(cidr_ip), I(cidr_ipv6), I(ip_prefix), I(group_id)
+            - You can specify only one of O(rules.cidr_ip), O(rules.cidr_ipv6), O(rules.ip_prefix), O(rules.group_id)
               and I(group_name).
-            - Support for passing nested lists of strings to I(cidr_ip) has been deprecated and will
+            - Support for passing nested lists of strings to O(rules.cidr_ip) has been deprecated and will
               be removed in a release after 2024-12-01.
         cidr_ipv6:
           type: list
           elements: raw
           description:
             - The IPv6 CIDR range traffic is coming from.
-            - You can specify only one of I(cidr_ip), I(cidr_ipv6), I(ip_prefix), I(group_id)
-              and I(group_name).
-            - Support for passing nested lists of strings to I(cidr_ipv6) has been deprecated and will
+            - You can specify only one of O(rules.cidr_ip), O(rules.cidr_ipv6), O(rules.ip_prefix), O(rules.group_id)
+              and I(rules.group_name).
+            - Support for passing nested lists of strings to O(rules.cidr_ipv6) has been deprecated and will
               be removed in a release after 2024-12-01.
         ip_prefix:
           type: list
@@ -72,74 +72,74 @@ options:
           description:
             - The IP Prefix U(https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-prefix-lists.html)
               that traffic is coming from.
-            - You can specify only one of I(cidr_ip), I(cidr_ipv6), I(ip_prefix), I(group_id)
-              and I(group_name).
+            - You can specify only one of O(rules.cidr_ip), O(rules.cidr_ipv6), O(rules.ip_prefix), O(rules.group_id)
+              and O(rules.group_name).
         group_id:
           type: list
           elements: str
           description:
             - The ID of the Security Group that traffic is coming from.
-            - You can specify only one of I(cidr_ip), I(cidr_ipv6), I(ip_prefix), I(group_id)
-              and I(group_name).
+            - You can specify only one of O(rules.cidr_ip), O(rules.cidr_ipv6), O(rules.ip_prefix), O(rules.group_id)
+              and O(rules.group_name).
         group_name:
           type: list
           elements: str
           description:
             - Name of the Security Group that traffic is coming from.
             - If the Security Group doesn't exist a new Security Group will be
-              created with I(group_desc) as the description.
-            - I(group_name) can accept values of type str and list.
-            - You can specify only one of I(cidr_ip), I(cidr_ipv6), I(ip_prefix), I(group_id)
-              and I(group_name).
+              created with O(rules.group_desc) as the description.
+            - O(rules.group_name) can accept values of type str and list.
+            - You can specify only one of O(rules.cidr_ip), O(rules.cidr_ipv6), O(rules.ip_prefix), O(rules.group_id)
+              and O(rules.group_name).
         group_desc:
           type: str
           description:
-            - If the I(group_name) is set and the Security Group doesn't exist a new Security Group will be
-              created with I(group_desc) as the description.
+            - If the O(rules.group_name) is set and the Security Group doesn't exist a new Security Group will be
+              created with O(rules.group_desc) as the description.
         proto:
           type: str
           description:
-            - The IP protocol name (C(tcp), C(udp), C(icmp), C(icmpv6)) or
+            - The IP protocol name (V(tcp), V(udp), V(icmp), V(icmpv6)) or
               number (U(https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers)).
-          default: 'tcp'
+          default: tcp
         from_port:
           type: int
           description:
             - The start of the range of ports that traffic is going to.
-            - A value can be between C(0) to C(65535).
-            - When I(proto=icmp) a value of C(-1) indicates all ports.
-            - Mutually exclusive with I(icmp_code), I(icmp_type) and I(ports).
+            - A value can be between V(0) to V(65535).
+            - When O(rules.proto=icmp) a value of V(-1) indicates all ports.
+            - Mutually exclusive with O(rules.icmp_code), O(rules.icmp_type) and O(rules.ports).
         to_port:
           type: int
           description:
             - The end of the range of ports that traffic is going to.
-            - A value can be between C(0) to C(65535).
-            - When I(proto=icmp) a value of C(-1) indicates all ports.
-            - Mutually exclusive with I(icmp_code), I(icmp_type) and I(ports).
+            - A value can be between V(0) to V(65535).
+            - When O(rules.proto=icmp) a value of V(-1) indicates all ports.
+            - Mutually exclusive with O(rules.icmp_code), O(rules.icmp_type) and O(rules.ports).
         ports:
           type: list
           elements: str
           description:
             - A list of ports that traffic is going to.
-            - Elements of the list can be a single port (for example C(8080)), or a range of ports
-              specified as C(<START>-<END>), (for example C(1011-1023)).
-            - Mutually exclusive with I(icmp_code), I(icmp_type), I(from_port) and I(to_port).
+            - Elements of the list can be a single port (for example V(8080)), or a range of ports
+              specified as V(<START>-<END>), (for example V(1011-1023)).
+            - Mutually exclusive with O(rules.icmp_code), O(rules.icmp_type), O(rules.from_port) and O(rules.to_port).
         icmp_type:
           version_added: 3.3.0
           type: int
           description:
             - The ICMP type of the packet.
-            - A value of C(-1) indicates all ICMP types.
-            - Requires I(proto=icmp) or I(proto=icmpv6).
-            - Mutually exclusive with I(ports), I(from_port) and I(to_port).
+            - A value of V(-1) indicates all ICMP types.
+            - Requires O(rules.proto=icmp) or O(rules.proto=icmpv6).
+            - Mutually exclusive withot O(rules.ports), O(rules.from_port) and O(rules.to_port).
         icmp_code:
           version_added: 3.3.0
           type: int
           description:
             - The ICMP code of the packet.
-            - A value of C(-1) indicates all ICMP codes.
-            - Requires I(proto=icmp) or I(proto=icmpv6).
-            - Mutually exclusive with I(ports), I(from_port) and I(to_port).
+            - A value of V(-1) indicates all ICMP codes.
+            - Requires O(rules.proto=icmp) or O(rules.proto=icmpv6).
+            - Mutually exclusive with O(rules.ports), O(rules.from_port) and O(rules.to_port).
         rule_desc:
           type: str
           description: A description for the rule.
@@ -158,18 +158,18 @@ options:
           elements: raw
           description:
             - The IPv4 CIDR range traffic is going to.
-            - You can specify only one of I(cidr_ip), I(cidr_ipv6), I(ip_prefix), I(group_id)
-              and I(group_name).
-            - Support for passing nested lists of strings to I(cidr_ip) has been deprecated and will
+            - You can specify only one of O(rules_egress.cidr_ip), O(rules_egress.cidr_ipv6), O(rules_egress.ip_prefix), O(rules_egress.group_id)
+              and I(rules_egress.group_name).
+            - Support for passing nested lists of strings to O(rules_egress.cidr_ip) has been deprecated and will
               be removed in a release after 2024-12-01.
         cidr_ipv6:
           type: list
           elements: raw
           description:
             - The IPv6 CIDR range traffic is going to.
-            - You can specify only one of I(cidr_ip), I(cidr_ipv6), I(ip_prefix), I(group_id)
-              and I(group_name).
-            - Support for passing nested lists of strings to I(cidr_ipv6) has been deprecated and will
+            - You can specify only one of O(rules_egress.cidr_ip), O(rules_egress.cidr_ipv6), O(rules_egress.ip_prefix), O(rules_egress.group_id)
+              and O(rules_egress.group_name).
+            - Support for passing nested lists of strings to O(rules_egress.cidr_ipv6) has been deprecated and will
               be removed in a release after 2024-12-01.
         ip_prefix:
           type: list
@@ -177,73 +177,73 @@ options:
           description:
             - The IP Prefix U(https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-prefix-lists.html)
               that traffic is going to.
-            - You can specify only one of I(cidr_ip), I(cidr_ipv6), I(ip_prefix), I(group_id)
-              and I(group_name).
+            - You can specify only one of O(rules_egress.cidr_ip), O(rules_egress.cidr_ipv6), O(rules_egress.ip_prefix), O(rules_egress.group_id)
+              and O(rules_egress.group_name).
         group_id:
           type: list
           elements: str
           description:
             - The ID of the Security Group that traffic is going to.
-            - You can specify only one of I(cidr_ip), I(cidr_ipv6), I(ip_prefix), I(group_id)
-              and I(group_name).
+            - You can specify only one of O(rules_egress.cidr_ip), O(rules_egress.cidr_ipv6), O(rules_egress.ip_prefix), O(rules_egress.group_id)
+              and O(rules_egress.group_name).
         group_name:
           type: list
           elements: str
           description:
             - Name of the Security Group that traffic is going to.
             - If the Security Group doesn't exist a new Security Group will be
-              created with I(group_desc) as the description.
-            - You can specify only one of I(cidr_ip), I(cidr_ipv6), I(ip_prefix), I(group_id)
-              and I(group_name).
+              created with O(rules_egress.group_desc) as the description.
+            - You can specify only one of O(rules_egress.cidr_ip), O(rules_egress.cidr_ipv6), O(rules_egress.ip_prefix), O(rules_egress.group_id)
+              and O(rules_egress.group_name).
         group_desc:
           type: str
           description:
-            - If the I(group_name) is set and the Security Group doesn't exist a new Security Group will be
-              created with I(group_desc) as the description.
+            - If the O(rules_egress.group_name) is set and the Security Group doesn't exist a new Security Group will be
+              created with O(rules_egress.group_desc) as the description.
         proto:
           type: str
           description:
-            - The IP protocol name (C(tcp), C(udp), C(icmp), C(icmpv6)) or
+            - The IP protocol name (V(tcp), V(udp), V(icmp), V(icmpv6)) or
               number (U(https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers)).
           default: 'tcp'
         from_port:
           type: int
           description:
             - The start of the range of ports that traffic is going to.
-            - A value can be between C(0) to C(65535).
-            - When I(proto=icmp) a value of C(-1) indicates all ports.
-            - Mutually exclusive with I(icmp_code), I(icmp_type) and I(ports).
+            - A value can be between V(0) to V(65535).
+            - When O(rules_egress.proto=icmp) a value of V(-1) indicates all ports.
+            - Mutually exclusive with O(rules_egress.icmp_code), O(rules_egress.icmp_type) and O(rules_egress.ports).
         to_port:
           type: int
           description:
             - The end of the range of ports that traffic is going to.
             - A value can be between C(0) to C(65535).
-            - When I(proto=icmp) a value of C(-1) indicates all ports.
-            - Mutually exclusive with I(icmp_code), I(icmp_type) and I(ports).
+            - When O(rules_egress.proto=icmp) a value of V(-1) indicates all ports.
+            - Mutually exclusive with O(rules_egress.icmp_code), O(rules_egress.icmp_type) and O(rules_egress.ports).
         ports:
           type: list
           elements: str
           description:
             - A list of ports that traffic is going to.
-            - Elements of the list can be a single port (for example C(8080)), or a range of ports
-              specified as C(<START>-<END>), (for example C(1011-1023)).
-            - Mutually exclusive with I(icmp_code), I(icmp_type), I(from_port) and I(to_port).
+            - Elements of the list can be a single port (for example V(8080)), or a range of ports
+              specified as V(<START>-<END>), (for example V(1011-1023)).
+            - Mutually exclusive with O(rules_egress.icmp_code), O(rules_egress.icmp_type), O(rules_egress.from_port) and O(rules_egress.to_port).
         icmp_type:
           version_added: 3.3.0
           type: int
           description:
             - The ICMP type of the packet.
-            - A value of C(-1) indicates all ICMP types.
-            - Requires I(proto=icmp) or I(proto=icmpv6).
-            - Mutually exclusive with I(ports), I(from_port) and I(to_port).
+            - A value of CV(-1) indicates all ICMP types.
+            - Requires O(rules_egress.proto=icmp) or O(rules_egress.proto=icmpv6).
+            - Mutually exclusive with O(rules_egress.ports), O(rules_egress.from_port) and O(rules_egress.to_port).
         icmp_code:
           version_added: 3.3.0
           type: int
           description:
             - The ICMP code of the packet.
-            - A value of C(-1) indicates all ICMP codes.
-            - Requires I(proto=icmp) or I(proto=icmpv6).
-            - Mutually exclusive with I(ports), I(from_port) and I(to_port).
+            - A value of V(-1) indicates all ICMP codes.
+            - Requires O(rules_egress.proto=icmp) or O(rules_egress.proto=icmpv6).
+            - Mutually exclusive with O(rules_egress.ports), O(rules_egress.from_port) and O(rules_egress.to_port).
         rule_desc:
             type: str
             description: A description for the rule.
@@ -280,7 +280,7 @@ notes:
   - If a rule declares a group_name and that group doesn't exist, it will be
     automatically created. In that case, group_desc should be provided as well.
     The module will refuse to create a depended-on group without a description.
-  - Prior to release 5.0.0 this module was called C(amazon.aws.ec2_group_info).  The usage did not
+  - Prior to release 5.0.0 this module was called M(amazon.aws.ec2_group_info).  The usage did not
     change.
 """
 
@@ -414,17 +414,17 @@ EXAMPLES = r"""
 
 RETURN = r"""
 description:
-  description: Description of security group
+  description: Description of security group.
   sample: My Security Group
   type: str
   returned: on create/update
 group_id:
-  description: Security group id
+  description: Security group id.
   sample: sg-abcd1234
   type: str
   returned: on create/update
 group_name:
-  description: Security group name
+  description: Security group name.
   sample: My Security Group
   type: str
   returned: on create/update
@@ -545,19 +545,19 @@ ip_permissions_egress:
                     returned: always
                     type: str
 owner_id:
-  description: AWS Account ID of the security group
+  description: AWS Account ID of the security group.
   sample: 123456789012
   type: int
   returned: on create/update
 tags:
-  description: Tags associated with the security group
+  description: Tags associated with the security group.
   sample:
     Name: My Security Group
     Purpose: protecting stuff
   type: dict
   returned: on create/update
 vpc_id:
-  description: ID of VPC to which the security group belongs
+  description: ID of VPC to which the security group belongs.
   sample: vpc-abcd1234
   type: str
   returned: on create/update
