@@ -47,7 +47,7 @@ options:
   http_desync_mitigation_mode:
     description:
       - Determines how the load balancer handles requests that might pose a security risk to an application.
-      - Defaults to V(defensive)
+      - Defaults to V(defensive).
     type: str
     choices: ['monitor', 'defensive', 'strictest']
     version_added: 3.2.0
@@ -127,7 +127,7 @@ options:
             description:
               - A list of ALB Listener Rules.
               - 'For the complete documentation of possible Conditions and Actions please see the boto3 documentation:'
-              - 'https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/elbv2.html#ElasticLoadBalancingv2.Client.create_rule'
+              - 'U(https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/elbv2.html#ElasticLoadBalancingv2.Client.create_rule)'
               - >
                 Keep in mind that AWS uses default values for parameters that are not requested. For example for V(Scope)
                 and V(SessionTimeout) when the action type is V(authenticate-oidc).
@@ -193,7 +193,7 @@ options:
     type: int
   purge_rules:
     description:
-      - When set to V(no), keep the existing load balancer rules in place. Will modify and add, but will not delete.
+      - When set to V(false), keep the existing load balancer rules in place. Will modify and add, but will not delete.
     default: true
     type: bool
   ip_address_type:
