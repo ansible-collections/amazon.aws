@@ -47,7 +47,7 @@ options:
       - Whether a key should be present or absent.
       - Note that making an existing key V(absent) only schedules a key for deletion.
       - Passing a key that is scheduled for deletion with O(state=present) will cancel key deletion.
-    required: False
+    required: false
     choices:
       - present
       - absent
@@ -55,7 +55,7 @@ options:
     type: str
   enabled:
     description: Whether or not a key is enabled.
-    default: True
+    default: true
     type: bool
   description:
     description:
@@ -65,7 +65,7 @@ options:
   multi_region:
     description:
       -  Whether to create a multi-Region primary key or not.
-    default: False
+    default: false
     type: bool
     version_added: 5.5.0
   pending_window:
@@ -81,7 +81,7 @@ options:
   purge_grants:
     description:
       - Whether the O(grants) argument should cause grants not in the list to be removed.
-    default: False
+    default: false
     type: bool
   grants:
     description:
