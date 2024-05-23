@@ -69,7 +69,7 @@ options:
   wait_timeout:
     description:
       - Number of seconds to wait for changes to complete
-      - Ignored unless O(wait=True).
+      - Ignored unless O(wait=true).
     default: 300
     type: int
 extends_documentation_fragment:
