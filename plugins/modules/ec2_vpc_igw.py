@@ -10,7 +10,7 @@ module: ec2_vpc_igw
 version_added: 1.0.0
 short_description: Manage an AWS VPC Internet gateway
 description:
-    - Manage an AWS VPC Internet gateway
+    - Manage an AWS VPC Internet gateway.
 author: Robert Estelle (@erydo)
 options:
   internet_gateway_id:
@@ -21,33 +21,33 @@ options:
     type: str
   vpc_id:
     description:
-      - The VPC ID for the VPC to attach (when state=present)
-      - VPC ID can also be provided to find the internet gateway to manage that the VPC is attached to
+      - The VPC ID for the VPC to attach (when O(state=present)).
+      - VPC ID can also be provided to find the internet gateway to manage that the VPC is attached to.
     required: false
     type: str
   state:
     description:
-      - Create or terminate the IGW
+      - Create or terminate the IGW.
     default: present
     choices: [ 'present', 'absent' ]
     type: str
   force_attach:
     version_added: 7.0.0
     description:
-      - Force attaching VPC to I(vpc_id).
-      - Setting this option to true will detach an existing VPC attachment and attach to the supplied I(vpc_id).
-      - Ignored when I(state=absent).
-      - I(vpc_id) must be specified when I(force_attach) is true
+      - Force attaching VPC to O(vpc_id).
+      - Setting this option to true will detach an existing VPC attachment and attach to the supplied O(vpc_id).
+      - Ignored when O(state=absent).
+      - O(vpc_id) must be specified when O(force_attach=true).
     default: false
     type: bool
   detach_vpc:
     version_added: 7.0.0
     description:
-      - Remove attached VPC from gateway
+      - Remove attached VPC from gateway.
     default: false
     type: bool
 notes:
-- Support for I(purge_tags) was added in release 1.3.0.
+- Support for O(purge_tags) was added in release 1.3.0.
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
@@ -118,20 +118,20 @@ changed:
 gateway_id:
   description: The unique identifier for the Internet Gateway.
   type: str
-  returned: I(state=present)
+  returned: O(state=present)
   sample:
     gateway_id: "igw-XXXXXXXX"
 tags:
   description: The tags associated the Internet Gateway.
   type: dict
-  returned: I(state=present)
+  returned: O(state=present)
   sample:
     tags:
       "Ansible": "Test"
 vpc_id:
   description: The VPC ID associated with the Internet Gateway.
   type: str
-  returned: I(state=present)
+  returned: O(state=present)
   sample:
     vpc_id: "vpc-XXXXXXXX"
 """
