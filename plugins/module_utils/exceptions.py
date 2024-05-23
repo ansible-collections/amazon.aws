@@ -30,5 +30,65 @@ class AnsibleAWSError(Exception):
         self.kwargs = kwargs or {}
 
 
+def is_ansible_aws_error_code(code, e=None):
+    """Check if the AnsibleAWSError exception is raised by a botocore exception with specific error code.
+
+    Returns AnsibleAWSError if the error code matches, a dummy exception if it does not have an error code or does not match
+
+    Example:
+    try:
+        describe_instances(connection, InstanceIds=['potato'])
+    except is_ansible_aws_error_code('InvalidInstanceID.Malformed'):
+        # handle the error for that code case
+    except AnsibleAWSError as e:
+        # handle the generic error case for all other codes
+    """
+    from botocore.exceptions import ClientError
+
+    if e is None:
+        import sys
+
+        dummy, e, dummy = sys.exc_info()
+    if not isinstance(code, (list, tuple, set)):
+        code = [code]
+    if (
+        isinstance(e, AnsibleAWSError)
+        and e.exception
+        and isinstance(e.exception, ClientError)
+        and e.exception.response["Error"]["Code"] in code
+    ):
+        return AnsibleAWSError
+    return type("NeverEverRaisedException", (Exception,), {})
+
+
+def is_ansible_aws_error_message(msg, e=None):
+    """Check if the AnsibleAWSError exception raised by a botocore exception contains a specific error message.
+
+    Returns AnsibleAWSError if the error code matches, a dummy exception if it does not have an error code or does not match
+
+    Example:
+    try:
+        describe_vpc_classic_link(connection, VpcIds=[vpc_id])
+    except is_ansible_aws_error_message('The functionality you requested is not available in this region.'):
+        # handle the error for that error message
+    except AnsibleAWSError as e:
+        # handle the generic error case for all other codes
+    """
+    from botocore.exceptions import ClientError
+
+    if e is None:
+        import sys
+
+        dummy, e, dummy = sys.exc_info()
+    if (
+        isinstance(e, AnsibleAWSError)
+        and e.exception
+        and isinstance(e.exception, ClientError)
+        and msg in e.exception.response["Error"]["Message"]
+    ):
+        return AnsibleAWSError
+    return type("NeverEverRaisedException", (Exception,), {})
+
+
 class AnsibleBotocoreError(AnsibleAWSError):
     pass

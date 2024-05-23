@@ -668,26 +668,22 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleEC2Error
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_instance_attribute
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_instances
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 
 
-@AWSRetry.jittered_backoff()
-def _describe_instances(connection, **params):
-    paginator = connection.get_paginator("describe_instances")
-    return paginator.paginate(**params).build_full_result()
-
-
-def list_ec2_instances(connection, module):
+def list_ec2_instances(connection, module: AnsibleAWSModule) -> None:
     instance_ids = module.params.get("instance_ids")
     uptime = module.params.get("minimum_uptime")
     filters = ansible_dict_to_boto3_filter_list(module.params.get("filters"))
 
     try:
-        reservations = _describe_instances(connection, InstanceIds=instance_ids, Filters=filters)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        reservations = describe_instances(connection, InstanceIds=instance_ids, Filters=filters)
+    except AnsibleEC2Error as e:
         module.fail_json_aws(e, msg="Failed to list ec2 instances")
 
     instances = []
@@ -696,21 +692,36 @@ def list_ec2_instances(connection, module):
         timedelta = int(uptime) if uptime else 0
         oldest_launch_time = datetime.datetime.utcnow() - datetime.timedelta(minutes=timedelta)
         # Get instances from reservations
-        for reservation in reservations["Reservations"]:
+        for reservation in reservations:
             instances += [
                 instance
                 for instance in reservation["Instances"]
                 if instance["LaunchTime"].replace(tzinfo=None) < oldest_launch_time
             ]
     else:
-        for reservation in reservations["Reservations"]:
+        for reservation in reservations:
             instances = instances + reservation["Instances"]
 
     # include instances attributes
     attributes = module.params.get("include_attributes")
     if attributes:
         for instance in instances:
-            instance["attributes"] = describe_instance_attributes(connection, instance["InstanceId"], attributes)
+            instance["attributes"] = {}
+            for attr in attributes:
+                try:
+                    response = describe_instance_attribute(
+                        connection, instance_id=instance["InstanceId"], attribute=attr
+                    )
+                    response.pop("InstanceId")
+                    response.pop("ResponseMetadata")
+                    instance["attributes"].update(response)
+                except AnsibleEC2Error as e:
+                    module.fail_json_aws(
+                        e,
+                        msg="Failed to describe instance attribute. Attribute={0} InstanceId={1}".format(
+                            attr, instance["InstanceId"]
+                        ),
+                    )
 
     # Turn the boto3 result in to ansible_friendly_snaked_names
     snaked_instances = [camel_dict_to_snake_dict(instance) for instance in instances]
@@ -720,16 +731,6 @@ def list_ec2_instances(connection, module):
         instance["tags"] = boto3_tag_list_to_ansible_dict(instance.get("tags", []), "key", "value")
 
     module.exit_json(instances=snaked_instances)
-
-
-def describe_instance_attributes(connection, instance_id, attributes):
-    result = {}
-    for attr in attributes:
-        response = connection.describe_instance_attribute(Attribute=attr, InstanceId=instance_id)
-        for key in response:
-            if key not in ("InstanceId", "ResponseMetadata"):
-                result[key] = response[key]
-    return result
 
 
 def main():
