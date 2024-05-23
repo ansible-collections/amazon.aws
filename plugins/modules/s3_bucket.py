@@ -91,19 +91,19 @@ options:
       block_public_acls:
         description: Sets BlockPublicAcls value.
         type: bool
-        default: False
+        default: false
       block_public_policy:
         description: Sets BlockPublicPolicy value.
         type: bool
-        default: False
+        default: false
       ignore_public_acls:
         description: Sets IgnorePublicAcls value.
         type: bool
-        default: False
+        default: false
       restrict_public_buckets:
         description: Sets RestrictPublicAcls value.
         type: bool
-        default: False
+        default: false
     type: dict
     version_added: 1.3.0
   delete_public_access:
@@ -133,7 +133,7 @@ options:
   object_lock_enabled:
     description:
       - Whether S3 Object Lock to be enabled.
-      - Defaults to V(False) when creating a new bucket.
+      - Defaults to V(false) when creating a new bucket.
     type: bool
     version_added: 5.3.0
   delete_object_ownership:
@@ -158,7 +158,7 @@ options:
       - See https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html
     type: bool
     version_added: 3.1.0
-    default: True
+    default: true
   dualstack:
     description:
       - Enables Amazon S3 Dual-Stack Endpoints, allowing S3 communications using both IPv4 and IPv6.
@@ -177,7 +177,7 @@ notes:
   - If C(requestPayment), C(policy), C(tagging) or C(versioning)
     operations/API aren't implemented by the endpoint, module doesn't fail
     if each parameter satisfies the following condition.
-    O(requester_pays) is V(False), O(policy), O(tags), and O(versioning) are V(None).
+    O(requester_pays) is V(false), O(policy), O(tags), and O(versioning) are V(None).
   - In release 5.0.0 the O(s3_url) parameter was merged into the O(endpoint_url) parameter,
     O(s3_url) remains as an alias for O(endpoint_url).
   - For Walrus O(endpoint_url) should be set to the FQDN of the endpoint with neither scheme nor path.
