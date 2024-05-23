@@ -50,7 +50,7 @@ options:
         default: true
     read_replica:
         description:
-          - Set to V(false) to promote a read replica instance or C(true) to create one. When creating a read replica O(creation_source) should
+          - Set to V(false) to promote a read replica instance or V(true) to create one. When creating a read replica O(creation_source) should
             be set to 'instance' or not provided. O(source_db_instance_identifier) must be provided with this option.
         type: bool
     wait:
@@ -345,7 +345,7 @@ options:
         type: bool
     purge_iam_roles:
         description:
-          - Set to C(true) to remove any IAM roles that aren't specified in the task and are associated with the instance.
+          - Set to V(true) to remove any IAM roles that aren't specified in the task and are associated with the instance.
         type: bool
         default: false
         version_added: 3.3.0
