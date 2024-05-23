@@ -385,7 +385,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-impo
 <a class="ansibleOptionLink" href="#parameter-encrypted" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Specifies whether the destination AMI of the imported image should be encrypted.</p>
-<p>The default KMS key for EBS is used unless you specify a non-default KMS key using <em>kms_key_id</em>.</p>
+<p>The default KMS key for EBS is used unless you specify a non-default KMS key using <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-import-image-module-parameter-kms-key-id"><span class="std std-ref"><span class="pre">kms_key_id</span></span></a></strong></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
@@ -422,7 +422,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-impo
 <div class="ansibleOptionAnchor" id="parameter-kms_key_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-import-image-module-parameter-kms-key-id"><strong>kms_key_id</strong></p>
 <a class="ansibleOptionLink" href="#parameter-kms_key_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>An identifier for the symmetric KMS key to use when creating the encrypted AMI. This parameter is only required if you want to use a non-default KMS key; if this parameter is not specified, the default KMS key for EBS is used. If a <em>kms_key_id</em> is specified, the <em>encrypted</em> flag must also be set.</p>
+<td><div class="ansible-option-cell"><p>An identifier for the symmetric KMS key to use when creating the encrypted AMI. This parameter is only required if you want to use a non-default KMS key; if this parameter is not specified, the default KMS key for EBS is used. If a <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-import-image-module-parameter-kms-key-id"><span class="std std-ref"><span class="pre">kms_key_id</span></span></a></strong></code> is specified, the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-import-image-module-parameter-encrypted"><span class="std std-ref"><span class="pre">encrypted</span></span></a></strong></code> flag must also be set.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -531,8 +531,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-impo
 <div class="ansibleOptionAnchor" id="parameter-state"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-import-image-module-parameter-state"><strong>state</strong></p>
 <a class="ansibleOptionLink" href="#parameter-state" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Use <em>state=present</em> to import single or multi-volume disk images or EBS snapshots into an Amazon Machine Image (AMI).</p>
-<p>Use <em>state=absent</em> to cancel an in-process import virtual machine task.</p>
+<td><div class="ansible-option-cell"><p>Use <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-import-image-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code> to import single or multi-volume disk images or EBS snapshots into an Amazon Machine Image (AMI).</p>
+<p>Use <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-import-image-module-parameter-state"><span class="std std-ref"><span class="pre">state=absent</span></span></a></code> to cancel an in-process import virtual machine task.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">&quot;present&quot;</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>

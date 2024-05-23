@@ -263,8 +263,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snap
 <a class="ansibleOptionLink" href="#parameter-group_names" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 <p><em class="ansible-option-versionadded">added in amazon.aws 6.1.0</em></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>The group to be added or removed. The possible value is <code class="docutils literal notranslate"><span class="pre">all</span></code>.</p>
-<p>Mutually exclusive with <em>user_ids</em>.</p>
+<td><div class="ansible-option-cell"><p>The group to be added or removed. The possible value is <code class="ansible-value docutils literal notranslate"><span class="pre">all</span></code>.</p>
+<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snapshot-module-parameter-user-ids"><span class="std std-ref"><span class="pre">user_ids</span></span></a></strong></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;all&quot;</span></code></p></li>
@@ -282,7 +282,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snap
 <div class="ansibleOptionAnchor" id="parameter-last_snapshot_min_age"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-snapshot-module-parameter-last-snapshot-min-age"><strong>last_snapshot_min_age</strong></p>
 <a class="ansibleOptionLink" href="#parameter-last_snapshot_min_age" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>If the volume’s most recent snapshot has started less than <em>last_snapshot_min_age</em> minutes ago, a new snapshot will not be created.</p>
+<td><div class="ansible-option-cell"><p>If the volume’s most recent snapshot has started less than <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snapshot-module-parameter-last-snapshot-min-age"><span class="std std-ref"><span class="pre">last_snapshot_min_age</span></span></a></strong></code> minutes ago, a new snapshot will not be created.</p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">0</span></code></p>
 </div></td>
 </tr>
@@ -291,7 +291,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snap
 <a class="ansibleOptionLink" href="#parameter-modify_create_vol_permission" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 <p><em class="ansible-option-versionadded">added in amazon.aws 6.1.0</em></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>If set to <code class="docutils literal notranslate"><span class="pre">true</span></code>, ec2 snapshot’s createVolumePermissions can be modified.</p>
+<td><div class="ansible-option-cell"><p>If set to <code class="ansible-value docutils literal notranslate"><span class="pre">true</span></code>, ec2 snapshot’s createVolumePermissions can be modified.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
@@ -317,7 +317,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snap
 <p><em class="ansible-option-versionadded">added in amazon.aws 6.1.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Whether unspecified group names or user IDs should be removed from the snapshot createVolumePermission.</p>
-<p>Must set <em>modify_create_vol_permission</em> to <code class="docutils literal notranslate"><span class="pre">True</span></code> for when <em>purge_create_vol_permission</em> is set to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
+<p>Must set <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snapshot-module-parameter-modify-create-vol-permission"><span class="std std-ref"><span class="pre">modify_create_vol_permission</span></span></a></strong></code> to <code class="ansible-value docutils literal notranslate"><span class="pre">True</span></code> for when <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snapshot-module-parameter-purge-create-vol-permission"><span class="std std-ref"><span class="pre">purge_create_vol_permission</span></span></a></strong></code> is set to <code class="ansible-value docutils literal notranslate"><span class="pre">True</span></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -387,7 +387,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snap
 <a class="ansibleOptionLink" href="#parameter-snapshot_tags" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A dictionary of tags to add to the snapshot.</p>
-<p>If the volume has a <code class="docutils literal notranslate"><span class="pre">Name</span></code> tag this will be automatically added to the snapshot.</p>
+<p>If the volume has a <code class="ansible-value docutils literal notranslate"><span class="pre">Name</span></code> tag this will be automatically added to the snapshot.</p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">{}</span></code></p>
 </div></td>
 </tr>
@@ -409,8 +409,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snap
 <p><em class="ansible-option-versionadded">added in amazon.aws 6.1.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The account user IDs to be added or removed.</p>
-<p>If createVolumePermission on snapshot is currently set to Public i.e. <em>group_names=all</em>, providing <em>user_ids</em> will not make createVolumePermission Private unless <em>create_volume_permission</em> is set to <code class="docutils literal notranslate"><span class="pre">true</span></code>.</p>
-<p>Mutually exclusive with <em>group_names</em>.</p>
+<p>If createVolumePermission on snapshot is currently set to Public i.e. <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snapshot-module-parameter-group-names"><span class="std std-ref"><span class="pre">group_names=all</span></span></a></code>, providing <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snapshot-module-parameter-user-ids"><span class="std std-ref"><span class="pre">user_ids</span></span></a></strong></code> will not make createVolumePermission Private unless <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snapshot-module-parameter-modify-create-vol-permission"><span class="std std-ref"><span class="pre">modify_create_vol_permission</span></span></a></strong></code> is set to <code class="ansible-value docutils literal notranslate"><span class="pre">true</span></code>.</p>
+<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snapshot-module-parameter-group-names"><span class="std std-ref"><span class="pre">group_names</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">

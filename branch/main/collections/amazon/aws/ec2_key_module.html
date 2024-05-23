@@ -250,9 +250,9 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-
 <p><em class="ansible-option-versionadded">added in amazon.aws 6.4.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Name of the file where the generated private key will be saved.</p>
-<p>When provided, the <em>key.private_key</em> attribute will be removed from the return value.</p>
+<p>When provided, the <code class="ansible-return-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-module-return-key-private-key"><span class="std std-ref"><span class="pre">key.private_key</span></span></a></code> attribute will be removed from the return value.</p>
 <p>The file is written out on the ‘host’ side rather than the ‘controller’ side.</p>
-<p>Ignored when <em>state=absent</em> or <em>key_material</em> is provided.</p>
+<p>Ignored when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-module-parameter-state"><span class="std std-ref"><span class="pre">state=absent</span></span></a></code> or <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-module-parameter-key-material"><span class="std std-ref"><span class="pre">key_material</span></span></a></strong></code> is provided.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -282,7 +282,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-
 <td><div class="ansible-option-cell"><p>The type of key pair to create.</p>
 <p>Note that ED25519 keys are not supported for Windows instances, EC2 Instance Connect, and EC2 Serial Console.</p>
 <p>By default Amazon will create an RSA key.</p>
-<p>Mutually exclusive with parameter <em>key_material</em>.</p>
+<p>Mutually exclusive with parameter <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-module-parameter-key-material"><span class="std std-ref"><span class="pre">key_material</span></span></a></strong></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;rsa&quot;</span></code></p></li>
@@ -416,8 +416,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <ul class="simple">
-<li><p>Support for <em>tags</em> and <em>purge_tags</em> was added in release 2.1.0.</p></li>
-<li><p>For security reasons, this module should be used with <strong>no_log=true</strong> and (register) functionalities when creating new key pair without providing <em>key_material</em>.</p></li>
+<li><p>Support for <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-module-parameter-tags"><span class="std std-ref"><span class="pre">tags</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-module-parameter-purge-tags"><span class="std std-ref"><span class="pre">purge_tags</span></span></a></strong></code> was added in release 2.1.0.</p></li>
+<li><p>For security reasons, this module should be used with <strong>no_log=true</strong> and (register) functionalities when creating new key pair without providing <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-module-parameter-key-material"><span class="std std-ref"><span class="pre">key_material</span></span></a></strong></code>.</p></li>
 <li><p><strong>Caution:</strong> For modules, environment variables and configuration files are read from the Ansible ‘host’ context and not the ‘controller’ context. As such, files may need to be explicitly copied to the ‘host’.  For lookup and connection plugins, environment variables and configuration files are read from the Ansible ‘controller’ context and not the ‘host’ context.</p></li>
 <li><p>The AWS SDK (boto3) that Ansible uses may also read defaults for credentials and other settings, such as the region, from its configuration files in the Ansible ‘host’ context (typically <code class="docutils literal notranslate"><span class="pre">~/.aws/credentials</span></code>). See <a class="reference external" href="https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html">https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html</a> for more information.</p></li>
 </ul>
@@ -479,7 +479,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-
 <div class="ansibleOptionAnchor" id="return-changed"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-key-module-return-changed"><strong>changed</strong></p>
 <a class="ansibleOptionLink" href="#return-changed" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>whether a keypair was created/deleted</p>
+<td><div class="ansible-option-cell"><p>Whether a keypair was created/deleted.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">true</span></code></p>
 </div></td>
@@ -488,7 +488,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-
 <div class="ansibleOptionAnchor" id="return-key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-key-module-return-key"><strong>key</strong></p>
 <a class="ansibleOptionLink" href="#return-key" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>details of the keypair (this is set to null when state is absent)</p>
+<td><div class="ansible-option-cell"><p>Details of the keypair (this is set to null when state is absent).</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 </div></td>
 </tr>
@@ -496,8 +496,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-
 <div class="ansibleOptionAnchor" id="return-key/fingerprint"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-key-module-return-key-fingerprint"><strong>fingerprint</strong></p>
 <a class="ansibleOptionLink" href="#return-key/fingerprint" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>fingerprint of the key</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when state is present</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Fingerprint of the key.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;b0:22:49:61:d9:44:9d:0c:7e:ac:8a:32:93:21:6c:e8:fb:59:62:43&quot;</span></code></p>
 </div></td>
 </tr>
@@ -505,8 +505,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-
 <div class="ansibleOptionAnchor" id="return-key/id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-key-module-return-key-id"><strong>id</strong></p>
 <a class="ansibleOptionLink" href="#return-key/id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>id of the keypair</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when state is present</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Id of the keypair.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;key-123456789abc&quot;</span></code></p>
 </div></td>
 </tr>
@@ -514,8 +514,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-
 <div class="ansibleOptionAnchor" id="return-key/name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-key-module-return-key-name"><strong>name</strong></p>
 <a class="ansibleOptionLink" href="#return-key/name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>name of the keypair</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when state is present</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Name of the keypair.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;my_keypair&quot;</span></code></p>
 </div></td>
 </tr>
@@ -523,8 +523,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-
 <div class="ansibleOptionAnchor" id="return-key/private_key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-key-module-return-key-private-key"><strong>private_key</strong></p>
 <a class="ansibleOptionLink" href="#return-key/private_key" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>private key of a newly created keypair</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when a new keypair is created by AWS (<em>key_material</em> is not provided) and <em>file_name</em> is not provided.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Private key of a newly created keypair.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when a new keypair is created by AWS (<code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-module-parameter-key-material"><span class="std std-ref"><span class="pre">key_material</span></span></a></strong></code> is not provided) and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-module-parameter-file-name"><span class="std std-ref"><span class="pre">file_name</span></span></a></strong></code> is not provided.</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;-----BEGIN</span> <span class="pre">RSA</span> <span class="pre">PRIVATE</span> <span class="pre">KEY-----</span> <span class="pre">MIIEowIBAAKC...</span> <span class="pre">-----END</span> <span class="pre">RSA</span> <span class="pre">PRIVATE</span> <span class="pre">KEY-----&quot;</span></code></p>
 </div></td>
 </tr>
@@ -532,8 +532,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-
 <div class="ansibleOptionAnchor" id="return-key/tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-key-module-return-key-tags"><strong>tags</strong></p>
 <a class="ansibleOptionLink" href="#return-key/tags" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>a dictionary representing the tags attached to the key pair</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when state is present</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A dictionary representing the tags attached to the key pair.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;my_key&quot;:</span> <span class="pre">&quot;my</span> <span class="pre">value&quot;}</span></code></p>
 </div></td>
 </tr>
@@ -542,7 +542,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-
 <a class="ansibleOptionLink" href="#return-key/type" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 <p><em class="ansible-option-versionadded">added in amazon.aws 3.1.0</em></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>type of a newly created keypair</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Type of a newly created keypair.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when a new keypair is created by AWS</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;rsa&quot;</span></code></p>
 </div></td>
@@ -551,7 +551,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-
 <div class="ansibleOptionAnchor" id="return-msg"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-key-module-return-msg"><strong>msg</strong></p>
 <a class="ansibleOptionLink" href="#return-msg" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>short message describing the action taken</p>
+<td><div class="ansible-option-cell"><p>Short message describing the action taken.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;key</span> <span class="pre">pair</span> <span class="pre">created&quot;</span></code></p>
 </div></td>

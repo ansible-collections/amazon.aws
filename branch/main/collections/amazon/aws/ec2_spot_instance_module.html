@@ -297,14 +297,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-spot
 <div class="ansibleOptionAnchor" id="parameter-launch_specification/block_device_mappings/device_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-spot-instance-module-parameter-launch-specification-block-device-mappings-device-name"><strong>device_name</strong></p>
 <a class="ansibleOptionLink" href="#parameter-launch_specification/block_device_mappings/device_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The device name (for example, /dev/sdh or xvdh ).</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The device name (for example, /dev/sdh or xvdh).</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-launch_specification/block_device_mappings/ebs"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-spot-instance-module-parameter-launch-specification-block-device-mappings-ebs"><strong>ebs</strong></p>
 <a class="ansibleOptionLink" href="#parameter-launch_specification/block_device_mappings/ebs" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Parameters used to automatically set up EBS volumes when the instance is launched, see <a class="reference external" href="https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html#EC2.Client.request_spot_instances">https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html#EC2.Client.request_spot_instances</a></p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Parameters used to automatically set up EBS volumes when the instance is launched, see <a class="reference external" href="https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html#EC2.Client.request_spot_instances">https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html#EC2.Client.request_spot_instances</a>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -345,7 +345,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-spot
 <a class="ansibleOptionLink" href="#parameter-launch_specification/iam_instance_profile/arn" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The Amazon Resource Name (ARN) of the instance profile.</p>
-<p>Only one of <em>arn</em> or <em>name</em> may be specified.</p>
+<p>Only one of <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-spot-instance-module-parameter-launch-specification-iam-instance-profile-arn"><span class="std std-ref"><span class="pre">launch_specification.iam_instance_profile.arn</span></span></a></strong></code> or <em>launch_specification.iam_instance_profile.name</em> may be specified.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -353,7 +353,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-spot
 <a class="ansibleOptionLink" href="#parameter-launch_specification/iam_instance_profile/name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The name of the instance profile.</p>
-<p>Only one of <em>arn</em> or <em>name</em> may be specified.</p>
+<p>Only one of <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-spot-instance-module-parameter-launch-specification-iam-instance-profile-arn"><span class="std std-ref"><span class="pre">launch_specification.iam_instance_profile.arn</span></span></a></strong></code> or <em>launch_specification.iam_instance_profile.name</em> may be specified.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -628,7 +628,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-spot
 <a class="ansibleOptionLink" href="#parameter-launch_specification/security_groups" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Security group name (or list of group names) to use with the instance.</p>
-<p>Only supported with EC2 Classic. To launch in a VPC, use <code class="docutils literal notranslate"><span class="pre">group_id</span></code></p>
+<p>Only supported with EC2 Classic. To launch in a VPC, use <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-spot-instance-module-parameter-launch-specification-security-group-ids"><span class="std std-ref"><span class="pre">launch_specification.security_group_ids</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -727,7 +727,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-spot
 <a class="ansibleOptionLink" href="#parameter-spot_type" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The type of spot request.</p>
-<p>After being interrupted a <code class="docutils literal notranslate"><span class="pre">persistent</span></code> spot instance will be started once there is capacity to fill the request again.</p>
+<p>After being interrupted a <code class="ansible-value docutils literal notranslate"><span class="pre">persistent</span></code> spot instance will be started once there is capacity to fill the request again.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">&quot;one-time&quot;</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -740,8 +740,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-spot
 <a class="ansibleOptionLink" href="#parameter-state" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Whether the spot request should be created or removed.</p>
-<p>When <em>state=present</em>, <em>launch_specification</em> is required.</p>
-<p>When <em>state=absent</em>, <em>spot_instance_request_ids</em> is required.</p>
+<p>When <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-spot-instance-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-spot-instance-module-parameter-launch-specification"><span class="std std-ref"><span class="pre">launch_specification</span></span></a></strong></code> is required.</p>
+<p>When <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-spot-instance-module-parameter-state"><span class="std std-ref"><span class="pre">state=absent</span></span></a></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-spot-instance-module-parameter-spot-instance-request-ids"><span class="std std-ref"><span class="pre">spot_instance_request_ids</span></span></a></strong></code> is required.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;absent&quot;</span></code></p></li>
@@ -762,7 +762,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-spot
 <p><em class="ansible-option-versionadded">added in amazon.aws 5.4.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Boolean value to set whether or not to terminate instances associated to spot request.</p>
-<p>Can be used only when <em>state=absent</em>.</p>
+<p>Can be used only when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-spot-instance-module-parameter-state"><span class="std std-ref"><span class="pre">state=absent</span></span></a></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -866,7 +866,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-spot
 <div class="ansibleOptionAnchor" id="return-cancelled_spot_request"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-spot-instance-module-return-cancelled-spot-request"><strong>cancelled_spot_request</strong></p>
 <a class="ansibleOptionLink" href="#return-cancelled_spot_request" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>The spot instance request details that has been cancelled</p>
+<td><div class="ansible-option-cell"><p>Details of the cancelled spot instance request.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when cancellation is successful</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;Spot</span> <span class="pre">requests</span> <span class="pre">with</span> <span class="pre">IDs:</span> <span class="pre">sir-1234abcd</span> <span class="pre">have</span> <span class="pre">been</span> <span class="pre">cancelled&quot;</span></code></p>
 </div></td>
@@ -875,7 +875,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-spot
 <div class="ansibleOptionAnchor" id="return-spot_request"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-spot-instance-module-return-spot-request"><strong>spot_request</strong></p>
 <a class="ansibleOptionLink" href="#return-spot_request" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>The spot instance request details after creation</p>
+<td><div class="ansible-option-cell"><p>The spot instance request details after creation.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when success</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;create_time&quot;:</span> <span class="pre">&quot;2021-08-23T22:59:12+00:00&quot;,</span> <span class="pre">&quot;instance_interruption_behavior&quot;:</span> <span class="pre">&quot;terminate&quot;,</span> <span class="pre">&quot;launch_specification&quot;:</span> <span class="pre">{&quot;block_device_mappings&quot;:</span> <span class="pre">[{&quot;device_name&quot;:</span> <span class="pre">&quot;/dev/sdb&quot;,</span> <span class="pre">&quot;ebs&quot;:</span> <span class="pre">{&quot;delete_on_termination&quot;:</span> <span class="pre">true,</span> <span class="pre">&quot;volume_size&quot;:</span> <span class="pre">5,</span> <span class="pre">&quot;volume_type&quot;:</span> <span class="pre">&quot;gp3&quot;}}],</span> <span class="pre">&quot;ebs_optimized&quot;:</span> <span class="pre">false,</span> <span class="pre">&quot;iam_instance_profile&quot;:</span> <span class="pre">{&quot;arn&quot;:</span> <span class="pre">&quot;arn:aws:iam::EXAMPLE:instance-profile/myinstanceprofile&quot;},</span> <span class="pre">&quot;image_id&quot;:</span> <span class="pre">&quot;ami-083ac7c7ecf9bb9b0&quot;,</span> <span class="pre">&quot;instance_type&quot;:</span> <span class="pre">&quot;t2.small&quot;,</span> <span class="pre">&quot;key_name&quot;:</span> <span class="pre">&quot;mykey&quot;,</span> <span class="pre">&quot;monitoring&quot;:</span> <span class="pre">{&quot;enabled&quot;:</span> <span class="pre">false},</span> <span class="pre">&quot;network_interfaces&quot;:</span> <span class="pre">[{&quot;associate_public_ip_address&quot;:</span> <span class="pre">false,</span> <span class="pre">&quot;delete_on_termination&quot;:</span> <span class="pre">true,</span> <span class="pre">&quot;device_index&quot;:</span> <span class="pre">0}],</span> <span class="pre">&quot;placement&quot;:</span> <span class="pre">{&quot;availability_zone&quot;:</span> <span class="pre">&quot;us-west-2a&quot;,</span> <span class="pre">&quot;tenancy&quot;:</span> <span class="pre">&quot;default&quot;},</span> <span class="pre">&quot;security_groups&quot;:</span> <span class="pre">[{&quot;group_name&quot;:</span> <span class="pre">&quot;default&quot;}]},</span> <span class="pre">&quot;product_description&quot;:</span> <span class="pre">&quot;Linux/UNIX&quot;,</span> <span class="pre">&quot;spot_instance_request_id&quot;:</span> <span class="pre">&quot;sir-1234abcd&quot;,</span> <span class="pre">&quot;spot_price&quot;:</span> <span class="pre">&quot;0.00600&quot;,</span> <span class="pre">&quot;state&quot;:</span> <span class="pre">&quot;open&quot;,</span> <span class="pre">&quot;status&quot;:</span> <span class="pre">{&quot;code&quot;:</span> <span class="pre">&quot;pending-evaluation&quot;,</span> <span class="pre">&quot;message&quot;:</span> <span class="pre">&quot;Your</span> <span class="pre">Spot</span> <span class="pre">request</span> <span class="pre">has</span> <span class="pre">been</span> <span class="pre">submitted</span> <span class="pre">for</span> <span class="pre">review,</span> <span class="pre">and</span> <span class="pre">is</span> <span class="pre">pending</span> <span class="pre">evaluation.&quot;,</span> <span class="pre">&quot;update_time&quot;:</span> <span class="pre">&quot;2021-08-23T22:59:12+00:00&quot;},</span> <span class="pre">&quot;tags&quot;:</span> <span class="pre">{},</span> <span class="pre">&quot;type&quot;:</span> <span class="pre">&quot;one-time&quot;}</span></code></p>
 </div></td>

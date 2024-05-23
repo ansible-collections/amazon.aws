@@ -164,8 +164,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-
 <h2><a class="toc-backref" href="#id1" role="doc-backlink">Synopsis</a><a class="headerlink" href="#synopsis" title="Link to this heading"></a></h2>
 <ul class="simple">
 <li><p>Create and optionally attach an Elastic Network Interface (ENI) to an instance.</p></li>
-<li><p>If <em>eni_id</em> or <em>private_ip</em> is provided, the existing ENI (if any) will be modified.</p></li>
-<li><p>The <em>attached</em> parameter controls the attachment status of the network interface.</p></li>
+<li><p>If <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-module-parameter-eni-id"><span class="std std-ref"><span class="pre">eni_id</span></span></a></strong></code> or <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-module-parameter-private-ip-address"><span class="std std-ref"><span class="pre">private_ip_address</span></span></a></strong></code> is provided, the existing ENI (if any) will be modified.</p></li>
+<li><p>The <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-module-parameter-attached"><span class="std std-ref"><span class="pre">attached</span></span></a></strong></code> parameter controls the attachment status of the network interface.</p></li>
 </ul>
 </section>
 <section id="requirements">
@@ -302,14 +302,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-
 <a class="ansibleOptionLink" href="#parameter-eni_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The ID of the ENI (to modify).</p>
-<p>If <em>eni_id=None</em> and <em>state=present</em>, a new ENI will be created.</p>
+<p>If <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-module-parameter-eni-id"><span class="std std-ref"><span class="pre">eni_id=None</span></span></a></code> and <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code>, a new ENI will be created.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-force_detach"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eni-module-parameter-force-detach"><strong>force_detach</strong></p>
 <a class="ansibleOptionLink" href="#parameter-force_detach" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Force detachment of the interface. This applies either when explicitly detaching the interface by setting <em>instance_id=None</em> or when deleting an interface with <em>state=absent</em>.</p>
+<td><div class="ansible-option-cell"><p>Force detachment of the interface. This applies either when explicitly detaching the interface by setting <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-module-parameter-instance-id"><span class="std std-ref"><span class="pre">instance_id=None</span></span></a></code> or when deleting an interface with <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-module-parameter-state"><span class="std std-ref"><span class="pre">state=absent</span></span></a></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -328,9 +328,9 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-
 <div class="ansibleOptionAnchor" id="parameter-name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eni-module-parameter-name"><strong>name</strong></p>
 <a class="ansibleOptionLink" href="#parameter-name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Name for the ENI. This will create a tag with the key <code class="docutils literal notranslate"><span class="pre">Name</span></code> and the value assigned here.</p>
-<p>This can be used in conjunction with <em>subnet_id</em> as another means of identifiying a network interface.</p>
-<p>AWS does not enforce unique <code class="docutils literal notranslate"><span class="pre">Name</span></code> tags, so duplicate names are possible if you configure it that way. If that is the case, you will need to provide other identifying information such as <em>private_ip_address</em> or <em>eni_id</em>.</p>
+<td><div class="ansible-option-cell"><p>Name for the ENI. This will create a tag with the key <code class="ansible-value docutils literal notranslate"><span class="pre">Name</span></code> and the value assigned here.</p>
+<p>This can be used in conjunction with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-module-parameter-subnet-id"><span class="std std-ref"><span class="pre">subnet_id</span></span></a></strong></code> as another means of identifiying a network interface.</p>
+<p>AWS does not enforce unique <code class="ansible-value docutils literal notranslate"><span class="pre">Name</span></code> tags, so duplicate names are possible if you configure it that way. If that is the case, you will need to provide other identifying information such as <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-module-parameter-private-ip-address"><span class="std std-ref"><span class="pre">private_ip_address</span></span></a></strong></code> or <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-module-parameter-eni-id"><span class="std std-ref"><span class="pre">eni_id</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -356,8 +356,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-
 <div class="ansibleOptionAnchor" id="parameter-purge_secondary_private_ip_addresses"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eni-module-parameter-purge-secondary-private-ip-addresses"><strong>purge_secondary_private_ip_addresses</strong></p>
 <a class="ansibleOptionLink" href="#parameter-purge_secondary_private_ip_addresses" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>To be used with <em>secondary_private_ip_addresses</em> to determine whether or not to remove any secondary IP addresses other than those specified.</p>
-<p>Set <em>secondary_private_ip_addresses=[]</em> to purge all secondary addresses.</p>
+<td><div class="ansible-option-cell"><p>To be used with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-module-parameter-secondary-private-ip-addresses"><span class="std std-ref"><span class="pre">secondary_private_ip_addresses</span></span></a></strong></code> to determine whether or not to remove any secondary IP addresses other than those specified.</p>
+<p>Set <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-module-parameter-secondary-private-ip-addresses"><span class="std std-ref"><span class="pre">secondary_private_ip_addresses=[]</span></span></a></code> to purge all secondary addresses.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -399,7 +399,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-
 <a class="ansibleOptionLink" href="#parameter-secondary_private_ip_address_count" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The number of secondary IP addresses to assign to the network interface.</p>
-<p>This option is mutually exclusive of <em>secondary_private_ip_addresses</em>.</p>
+<p>This option is mutually exclusive of <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-module-parameter-secondary-private-ip-addresses"><span class="std std-ref"><span class="pre">secondary_private_ip_addresses</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -407,7 +407,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-
 <a class="ansibleOptionLink" href="#parameter-secondary_private_ip_addresses" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A list of IP addresses to assign as secondary IP addresses to the network interface.</p>
-<p>This option is mutually exclusive of <em>secondary_private_ip_address_count</em>.</p>
+<p>This option is mutually exclusive of <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-module-parameter-secondary-private-ip-address-count"><span class="std std-ref"><span class="pre">secondary_private_ip_address_count</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -432,7 +432,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-
 <a class="ansibleOptionLink" href="#parameter-security_groups" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>List of security groups associated with the interface.</p>
-<p>Ignored when <em>state=absent</em>.</p>
+<p>Ignored when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-module-parameter-state"><span class="std std-ref"><span class="pre">state=absent</span></span></a></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[]</span></code></p>
 </div></td>
 </tr>
@@ -516,8 +516,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <ul class="simple">
-<li><p>This module identifies and ENI based on either the <em>eni_id</em>, a combination of <em>private_ip_address</em> and <em>subnet_id</em>, or a combination of <em>instance_id</em> and <em>device_id</em>. Any of these options will let you specify a particular ENI.</p></li>
-<li><p>Support for <em>tags</em> and <em>purge_tags</em> was added in release 1.3.0.</p></li>
+<li><p>This module identifies and ENI based on either the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-module-parameter-eni-id"><span class="std std-ref"><span class="pre">eni_id</span></span></a></strong></code>, a combination of <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-module-parameter-private-ip-address"><span class="std std-ref"><span class="pre">private_ip_address</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-module-parameter-subnet-id"><span class="std std-ref"><span class="pre">subnet_id</span></span></a></strong></code>, or a combination of <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-module-parameter-instance-id"><span class="std std-ref"><span class="pre">instance_id</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-module-parameter-device-index"><span class="std std-ref"><span class="pre">device_index</span></span></a></strong></code>. Any of these options will let you specify a particular ENI.</p></li>
+<li><p>Support for <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-module-parameter-tags"><span class="std std-ref"><span class="pre">tags</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-module-parameter-purge-tags"><span class="std std-ref"><span class="pre">purge_tags</span></span></a></strong></code> was added in release 1.3.0.</p></li>
 <li><p><strong>Caution:</strong> For modules, environment variables and configuration files are read from the Ansible ‘host’ context and not the ‘controller’ context. As such, files may need to be explicitly copied to the ‘host’.  For lookup and connection plugins, environment variables and configuration files are read from the Ansible ‘controller’ context and not the ‘host’ context.</p></li>
 <li><p>The AWS SDK (boto3) that Ansible uses may also read defaults for credentials and other settings, such as the region, from its configuration files in the Ansible ‘host’ context (typically <code class="docutils literal notranslate"><span class="pre">~/.aws/credentials</span></code>). See <a class="reference external" href="https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html">https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html</a> for more information.</p></li>
 </ul>
@@ -625,7 +625,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-
 <div class="ansibleOptionAnchor" id="return-interface"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eni-module-return-interface"><strong>interface</strong></p>
 <a class="ansibleOptionLink" href="#return-interface" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Network interface attributes</p>
+<td><div class="ansible-option-cell"><p>Network interface attributes.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when state != absent</p>
 </div></td>
 </tr>
@@ -642,7 +642,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-
 <div class="ansibleOptionAnchor" id="return-interface/description"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eni-module-return-interface-description"><strong>description</strong></p>
 <a class="ansibleOptionLink" href="#return-interface/description" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>interface description</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Interface description.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;Firewall</span> <span class="pre">network</span> <span class="pre">interface&quot;</span></code></p>
 </div></td>
@@ -651,7 +651,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-
 <div class="ansibleOptionAnchor" id="return-interface/groups"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eni-module-return-interface-groups"><strong>groups</strong></p>
 <a class="ansibleOptionLink" href="#return-interface/groups" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>dict of security groups</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Dict of security groups.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;sg-f8a8a9da&quot;:</span> <span class="pre">&quot;default&quot;}</span></code></p>
 </div></td>
@@ -660,7 +660,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-
 <div class="ansibleOptionAnchor" id="return-interface/id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eni-module-return-interface-id"><strong>id</strong></p>
 <a class="ansibleOptionLink" href="#return-interface/id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>network interface id</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Network interface id.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;eni-1d889198&quot;</span></code></p>
 </div></td>
@@ -669,7 +669,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-
 <div class="ansibleOptionAnchor" id="return-interface/mac_address"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eni-module-return-interface-mac-address"><strong>mac_address</strong></p>
 <a class="ansibleOptionLink" href="#return-interface/mac_address" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>interface’s physical address</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Interface’s physical address.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;00:00:5E:00:53:23&quot;</span></code></p>
 </div></td>
@@ -678,7 +678,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-
 <div class="ansibleOptionAnchor" id="return-interface/name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eni-module-return-interface-name"><strong>name</strong></p>
 <a class="ansibleOptionLink" href="#return-interface/name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The name of the ENI</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The name of the ENI.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;my-eni-20&quot;</span></code></p>
 </div></td>
@@ -687,7 +687,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-
 <div class="ansibleOptionAnchor" id="return-interface/owner_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eni-module-return-interface-owner-id"><strong>owner_id</strong></p>
 <a class="ansibleOptionLink" href="#return-interface/owner_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>aws account id</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>AWS account id.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;812381371&quot;</span></code></p>
 </div></td>
@@ -696,7 +696,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-
 <div class="ansibleOptionAnchor" id="return-interface/private_ip_address"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eni-module-return-interface-private-ip-address"><strong>private_ip_address</strong></p>
 <a class="ansibleOptionLink" href="#return-interface/private_ip_address" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>primary ip address of this interface</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Primary ip address of this interface.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;10.20.30.40&quot;</span></code></p>
 </div></td>
@@ -705,7 +705,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-
 <div class="ansibleOptionAnchor" id="return-interface/private_ip_addresses"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eni-module-return-interface-private-ip-addresses"><strong>private_ip_addresses</strong></p>
 <a class="ansibleOptionLink" href="#return-interface/private_ip_addresses" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>list of all private ip addresses associated to this interface</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>List of all private ip addresses associated to this interface.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[{&quot;primary_address&quot;:</span> <span class="pre">true,</span> <span class="pre">&quot;private_ip_address&quot;:</span> <span class="pre">&quot;10.20.30.40&quot;}]</span></code></p>
 </div></td>
@@ -714,7 +714,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-
 <div class="ansibleOptionAnchor" id="return-interface/source_dest_check"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eni-module-return-interface-source-dest-check"><strong>source_dest_check</strong></p>
 <a class="ansibleOptionLink" href="#return-interface/source_dest_check" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>value of source/dest check flag</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Value of source/dest check flag.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">true</span></code></p>
 </div></td>
@@ -723,7 +723,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-
 <div class="ansibleOptionAnchor" id="return-interface/status"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eni-module-return-interface-status"><strong>status</strong></p>
 <a class="ansibleOptionLink" href="#return-interface/status" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>network interface status</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Network interface status.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;pending&quot;</span></code></p>
 </div></td>
@@ -732,7 +732,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-
 <div class="ansibleOptionAnchor" id="return-interface/subnet_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eni-module-return-interface-subnet-id"><strong>subnet_id</strong></p>
 <a class="ansibleOptionLink" href="#return-interface/subnet_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>which vpc subnet the interface is bound</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Which vpc subnet the interface is bound.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;subnet-b0a0393c&quot;</span></code></p>
 </div></td>
@@ -741,7 +741,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-
 <div class="ansibleOptionAnchor" id="return-interface/tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eni-module-return-interface-tags"><strong>tags</strong></p>
 <a class="ansibleOptionLink" href="#return-interface/tags" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The dictionary of tags associated with the ENI</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The dictionary of tags associated with the ENI.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;Name&quot;:</span> <span class="pre">&quot;my-eni&quot;,</span> <span class="pre">&quot;group&quot;:</span> <span class="pre">&quot;Finance&quot;}</span></code></p>
 </div></td>
@@ -750,7 +750,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-
 <div class="ansibleOptionAnchor" id="return-interface/vpc_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eni-module-return-interface-vpc-id"><strong>vpc_id</strong></p>
 <a class="ansibleOptionLink" href="#return-interface/vpc_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>which vpc this network interface is bound</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Which vpc this network interface is bound.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;vpc-9a9a9da&quot;</span></code></p>
 </div></td>
