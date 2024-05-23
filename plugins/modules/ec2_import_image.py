@@ -16,8 +16,8 @@ description:
 options:
   state:
     description:
-      - Use I(state=present) to import single or multi-volume disk images or EBS snapshots into an Amazon Machine Image (AMI).
-      - Use I(state=absent) to cancel an in-process import virtual machine task.
+      - Use O(state=present) to import single or multi-volume disk images or EBS snapshots into an Amazon Machine Image (AMI).
+      - Use O(state=absent) to cancel an in-process import virtual machine task.
     default: "present"
     choices: ["present", "absent"]
     type: str
@@ -101,7 +101,7 @@ options:
   encrypted:
     description:
       - Specifies whether the destination AMI of the imported image should be encrypted.
-      - The default KMS key for EBS is used unless you specify a non-default KMS key using I(kms_key_id).
+      - The default KMS key for EBS is used unless you specify a non-default KMS key using O(kms_key_id).
     type: bool
   hypervisor:
     description:
@@ -113,7 +113,7 @@ options:
       - An identifier for the symmetric KMS key to use when creating the encrypted AMI.
         This parameter is only required if you want to use a non-default KMS key;
         if this parameter is not specified, the default KMS key for EBS is used.
-        If a I(kms_key_id) is specified, the I(encrypted) flag must also be set.
+        If a O(kms_key_id) is specified, the O(encrypted) flag must also be set.
     type: str
   license_type:
     description:

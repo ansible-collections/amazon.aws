@@ -10,7 +10,7 @@ module: ec2_instance_info
 version_added: 1.0.0
 short_description: Gather information about ec2 instances in AWS
 description:
-    - Gather information about ec2 instances in AWS
+    - Gather information about EC2 instances in AWS.
 author:
   - Michael Schuett (@michaeljs1990)
   - Rob White (@wimnat)
@@ -32,7 +32,7 @@ options:
     type: dict
   minimum_uptime:
     description:
-      - Minimum running uptime in minutes of instances.  For example if I(uptime) is C(60) return all instances that have run more than 60 minutes.
+      - Minimum running uptime in minutes of instances.  For example if O(uptime) is V(60) return all instances that have run more than 60 minutes.
     required: false
     aliases: ['uptime']
     type: int
@@ -645,7 +645,7 @@ instances:
             sample: vpc-0011223344
         attributes:
             description: The details of the instance attribute specified on input.
-            returned: when include_attribute is specified
+            returned: when O(include_attributes) is specified
             type: dict
             sample:
                 {

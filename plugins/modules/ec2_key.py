@@ -41,7 +41,7 @@ options:
       - Note that ED25519 keys are not supported for Windows instances,
         EC2 Instance Connect, and EC2 Serial Console.
       - By default Amazon will create an RSA key.
-      - Mutually exclusive with parameter I(key_material).
+      - Mutually exclusive with parameter O(key_material).
     type: str
     choices:
       - rsa
@@ -50,15 +50,15 @@ options:
   file_name:
     description:
       - Name of the file where the generated private key will be saved.
-      - When provided, the I(key.private_key) attribute will be removed from the return value.
+      - When provided, the RV(key.private_key) attribute will be removed from the return value.
       - The file is written out on the 'host' side rather than the 'controller' side.
-      - Ignored when I(state=absent) or I(key_material) is provided.
+      - Ignored when O(state=absent) or O(key_material) is provided.
     type: path
     version_added: 6.4.0
 notes:
-  - Support for I(tags) and I(purge_tags) was added in release 2.1.0.
+  - Support for O(tags) and O(purge_tags) was added in release 2.1.0.
   - For security reasons, this module should be used with B(no_log=true) and (register) functionalities
-    when creating new key pair without providing I(key_material).
+    when creating new key pair without providing O(key_material).
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
@@ -112,49 +112,49 @@ EXAMPLES = r"""
 
 RETURN = r"""
 changed:
-  description: whether a keypair was created/deleted
+  description: Whether a keypair was created/deleted.
   returned: always
   type: bool
   sample: true
 msg:
-  description: short message describing the action taken
+  description: Short message describing the action taken.
   returned: always
   type: str
   sample: key pair created
 key:
-  description: details of the keypair (this is set to null when state is absent)
+  description: Details of the keypair (this is set to null when state is absent).
   returned: always
   type: complex
   contains:
     fingerprint:
-      description: fingerprint of the key
-      returned: when state is present
+      description: Fingerprint of the key.
+      returned: when O(state=present)
       type: str
       sample: 'b0:22:49:61:d9:44:9d:0c:7e:ac:8a:32:93:21:6c:e8:fb:59:62:43'
     name:
-      description: name of the keypair
-      returned: when state is present
+      description: Name of the keypair.
+      returned: when O(state=present)
       type: str
       sample: my_keypair
     id:
-      description: id of the keypair
-      returned: when state is present
+      description: Id of the keypair.
+      returned: when O(state=present)
       type: str
       sample: key-123456789abc
     tags:
-      description: a dictionary representing the tags attached to the key pair
-      returned: when state is present
+      description: A dictionary representing the tags attached to the key pair.
+      returned: when O(state=present)
       type: dict
       sample: '{"my_key": "my value"}'
     private_key:
-      description: private key of a newly created keypair
-      returned: when a new keypair is created by AWS (I(key_material) is not provided) and I(file_name) is not provided.
+      description: Private key of a newly created keypair.
+      returned: when a new keypair is created by AWS (O(key_material) is not provided) and O(file_name) is not provided.
       type: str
       sample: '-----BEGIN RSA PRIVATE KEY-----
         MIIEowIBAAKC...
         -----END RSA PRIVATE KEY-----'
     type:
-      description: type of a newly created keypair
+      description: Type of a newly created keypair.
       returned: when a new keypair is created by AWS
       type: str
       sample: rsa
