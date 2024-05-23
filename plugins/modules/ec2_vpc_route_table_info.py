@@ -10,7 +10,7 @@ module: ec2_vpc_route_table_info
 version_added: 1.0.0
 short_description: Gather information about ec2 VPC route tables in AWS
 description:
-    - Gather information about ec2 VPC route tables in AWS.
+    - Gather information about EC2 VPC route tables in AWS.
 author:
 - "Rob White (@wimnat)"
 - "Mark Chappell (@tremble)"
