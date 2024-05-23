@@ -10,7 +10,7 @@ module: ec2_instance_info
 version_added: 1.0.0
 short_description: Gather information about ec2 instances in AWS
 description:
-    - Gather information about ec2 instances in AWS.
+    - Gather information about EC2 instances in AWS.
 author:
   - Michael Schuett (@michaeljs1990)
   - Rob White (@wimnat)

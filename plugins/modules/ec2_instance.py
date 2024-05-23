@@ -606,25 +606,25 @@ EXAMPLES = r"""
 
 RETURN = r"""
 instance_ids:
-    description: A list of ec2 instance IDs matching the provided specification and filters.
+    description: A list of EC2 instance IDs matching the provided specification and filters.
     returned: always
     type: list
     sample: ["i-0123456789abcdef0", "i-0123456789abcdef1"]
     version_added: 5.3.0
 changed_ids:
-    description: A list of the set of ec2 instance IDs changed by the module action.
+    description: A list of the set of EC2 instance IDs changed by the module action.
     returned: when instances that must be present are launched
     type: list
     sample: ["i-0123456789abcdef0"]
     version_added: 5.3.0
 terminated_ids:
-    description: A list of the set of ec2 instance IDs terminated by the module action.
+    description: A list of the set of EC2 instance IDs terminated by the module action.
     returned: when instances that must be absent are terminated
     type: list
     sample: ["i-0123456789abcdef1"]
     version_added: 5.3.0
 instances:
-    description: A list of ec2 instances.
+    description: A list of EC2 instances.
     returned: when O(wait=true) or when matching instances already exist
     type: complex
     contains:
