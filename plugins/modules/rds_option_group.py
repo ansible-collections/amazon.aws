@@ -120,7 +120,7 @@ options:
   wait:
     description: Whether to wait for the cluster to be available or deleted.
     type: bool
-    default: True
+    default: true
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
