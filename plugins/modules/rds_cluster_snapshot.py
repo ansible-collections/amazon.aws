@@ -54,7 +54,7 @@ options:
     description:
       - Whether to copy all tags from O(source_db_cluster_snapshot_identifier) to O(db_cluster_snapshot_identifier).
     type: bool
-    default: False
+    default: false
   wait:
     description:
       - Whether or not to wait for snapshot creation or deletion.
