@@ -1,0 +1,5 @@
+---
+minor_changes:
+  - cloudwatch_metric_alarm - add `evaluate_low_sample_count_percentile`.
+trivial:
+  - cloudwatch_metric_alarm - add return block to the module doc.
