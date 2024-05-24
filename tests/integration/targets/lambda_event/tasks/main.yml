@@ -6,11 +6,10 @@
       secret_key: "{{ aws_secret_key }}"
       session_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
-  collections:
-    - community.general
   block:
     - name: Create test resources setup
       ansible.builtin.import_tasks: setup.yml
+
     - name: Create DynamoDB stream event mapping (trigger) - check_mode
       amazon.aws.lambda_event:
         state: present

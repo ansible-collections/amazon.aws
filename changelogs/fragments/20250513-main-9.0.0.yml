@@ -1,0 +1,2 @@
+trivial:
+  - galaxy.yml - bump ``release`` for main branch to ``9.0.0-dev0``.

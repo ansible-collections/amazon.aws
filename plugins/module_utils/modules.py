@@ -84,11 +84,11 @@ class AnsibleAWSModule:
 
     def __init__(self, **kwargs):
         local_settings = {}
-        for key in AnsibleAWSModule.default_settings:
+        for key, default_value in AnsibleAWSModule.default_settings.items():
             try:
                 local_settings[key] = kwargs.pop(key)
             except KeyError:
-                local_settings[key] = AnsibleAWSModule.default_settings[key]
+                local_settings[key] = default_value
         self.settings = local_settings
 
         if local_settings["default_args"]:
@@ -192,21 +192,21 @@ class AnsibleAWSModule:
         return self._module.md5(*args, **kwargs)
 
     def client(self, service, retry_decorator=None, **extra_params):
-        region, endpoint_url, aws_connect_kwargs = get_aws_connection_info(self, boto3=True)
+        region, endpoint_url, aws_connect_kwargs = get_aws_connection_info(self)
         kw_args = dict(region=region, endpoint=endpoint_url, **aws_connect_kwargs)
         kw_args.update(extra_params)
         conn = boto3_conn(self, conn_type="client", resource=service, **kw_args)
         return conn if retry_decorator is None else RetryingBotoClientWrapper(conn, retry_decorator)
 
     def resource(self, service, **extra_params):
-        region, endpoint_url, aws_connect_kwargs = get_aws_connection_info(self, boto3=True)
+        region, endpoint_url, aws_connect_kwargs = get_aws_connection_info(self)
         kw_args = dict(region=region, endpoint=endpoint_url, **aws_connect_kwargs)
         kw_args.update(extra_params)
         return boto3_conn(self, conn_type="resource", resource=service, **kw_args)
 
     @property
     def region(self):
-        return get_aws_region(self, True)
+        return get_aws_region(self)
 
     def fail_json_aws(self, exception, msg=None, **kwargs):
         """call fail_json with processed exception

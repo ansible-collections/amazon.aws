@@ -182,9 +182,9 @@ class LookupModule(AWSLookupBase):
             secrets = {}
             for term in terms:
                 try:
-                    for object in _list_secrets(client, term):
-                        if "SecretList" in object:
-                            for secret_obj in object["SecretList"]:
+                    for secret_wrapper in _list_secrets(client, term):
+                        if "SecretList" in secret_wrapper:
+                            for secret_obj in secret_wrapper["SecretList"]:
                                 secrets.update(
                                     {
                                         secret_obj["Name"]: self.get_secret_value(

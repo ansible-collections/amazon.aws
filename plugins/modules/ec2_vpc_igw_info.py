@@ -27,8 +27,8 @@ options:
   convert_tags:
     description:
       - Convert tags from boto3 format (list of dictionaries) to the standard dictionary format.
-      - Prior to release 4.0.0 this defaulted to C(False).
-    default: True
+      - Prior to release 4.0.0 this defaulted to V(false).
+    default: true
     type: bool
     version_added: 1.3.0
 extends_documentation_fragment:
@@ -67,7 +67,7 @@ changed:
     description: True if listing the internet gateways succeeds.
     type: bool
     returned: always
-    sample: "false"
+    sample: false
 internet_gateways:
     description: The internet gateways for the account.
     returned: always
@@ -75,27 +75,27 @@ internet_gateways:
     contains:
         attachments:
             description: Any VPCs attached to the internet gateway.
-            returned: I(state=present)
+            returned: always
             type: complex
             contains:
                 state:
                     description: The current state of the attachment.
-                    returned: I(state=present)
+                    returned: always
                     type: str
                     sample: available
                 vpc_id:
                     description: The ID of the VPC.
-                    returned: I(state=present)
+                    returned: always
                     type: str
                     sample: vpc-02123b67
         internet_gateway_id:
             description: The ID of the internet gateway.
-            returned: I(state=present)
+            returned: always
             type: str
             sample: igw-2123634d
         tags:
             description: Any tags assigned to the internet gateway.
-            returned: I(state=present)
+            returned: always
             type: dict
             sample:
                 tags:

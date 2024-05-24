@@ -30,8 +30,8 @@ extends_documentation_fragment:
   - amazon.aws.region.modules
   - amazon.aws.boto3
 notes:
-  - Support for the C(query) parameter was dropped in release 6.0.0.  This module now only queries
-    for endpoints.  Information about endpoint services can be retrieved using the
+  - Support for the I(query) parameter was dropped in release 6.0.0.  This module now only queries
+    for endpoints. Information about endpoint services can be retrieved using the
     M(amazon.aws.ec2_vpc_endpoint_service_info) module.
 """
 
@@ -86,7 +86,6 @@ vpc_endpoints:
           type: str
         hosted_zone_id:
           description: The ID of the private hosted zone.
-          returned: always
           type: str
     groups:
       description: List of security groups associated with the network interface.
@@ -102,6 +101,9 @@ vpc_endpoints:
           description: The name of the security group.
           returned: always
           type: str
+    ip_address_type:
+      description: The IP address type for the endpoint.
+      type: str
     network_interface_ids:
       description: List of network interfaces for the endpoint.
       returned: always
@@ -139,7 +141,7 @@ vpc_endpoints:
     subnet_ids:
       description: List of subnets associated with the endpoint.
       returned: always
-      type: str
+      type: list
     tags:
       description: List of tags associated with the endpoint.
       returned: always

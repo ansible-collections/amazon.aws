@@ -10,7 +10,7 @@ module: ec2_vpc_route_table_info
 version_added: 1.0.0
 short_description: Gather information about ec2 VPC route tables in AWS
 description:
-    - Gather information about ec2 VPC route tables in AWS
+    - Gather information about EC2 VPC route tables in AWS.
 author:
 - "Rob White (@wimnat)"
 - "Mark Chappell (@tremble)"
@@ -103,7 +103,7 @@ route_tables:
           type: str
           sample: subnet-82055af9
     id:
-      description: ID of the route table (same as route_table_id for backwards compatibility).
+      description: ID of the route table (same as RV(route_tables.route_table_id) for backwards compatibility).
       returned: always
       type: str
       sample: rtb-bf779ed7

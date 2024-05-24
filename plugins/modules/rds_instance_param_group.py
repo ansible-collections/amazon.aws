@@ -6,7 +6,7 @@
 
 DOCUMENTATION = r"""
 ---
-module: rds_param_group
+module: rds_instance_param_group
 version_added: 5.0.0
 short_description: manage RDS parameter groups
 description:
@@ -31,8 +31,7 @@ options:
   engine:
     description:
       - The type of database for this group.
-      - Please use following command to get list of all supported db engines and their respective versions.
-      - '# aws rds describe-db-engine-versions --query "DBEngineVersions[].DBParameterGroupFamily"'
+      - Please use M(amazon.aws.rds_engine_versions_info) to get list of all supported db engines and their respective versions.
       - The DB parameter group family is immutable and can't be changed when updating a DB parameter group.
         See U(https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-rds-dbparametergroup.html)
       - Required for I(state=present).
@@ -61,7 +60,7 @@ extends_documentation_fragment:
 
 EXAMPLES = r"""
 - name: Add or change a parameter group, in this case setting auto_increment_increment to 42 * 1024
-  amazon.aws.rds_param_group:
+  amazon.aws.rds_instance_param_group:
       state: present
       name: norwegian-blue
       description: 'My Fancy Ex Parrot Group'
@@ -73,7 +72,7 @@ EXAMPLES = r"""
           Application: parrot
 
 - name: Remove a parameter group
-  amazon.aws.rds_param_group:
+  amazon.aws.rds_instance_param_group:
       state: absent
       name: norwegian-blue
 """
@@ -149,9 +148,9 @@ def convert_parameter(param, value):
     if param["DataType"] == "integer":
         if isinstance(value, string_types):
             try:
-                for modifier in INT_MODIFIERS.keys():
-                    if value.endswith(modifier):
-                        converted_value = int(value[:-1]) * INT_MODIFIERS[modifier]
+                for name, modifier in INT_MODIFIERS.items():
+                    if value.endswith(name):
+                        converted_value = int(value[:-1]) * modifier
             except ValueError:
                 # may be based on a variable (ie. {foo*3/4}) so
                 # just pass it on through to the AWS SDK

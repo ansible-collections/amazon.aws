@@ -19,18 +19,18 @@ options:
   gateway_id:
     description:
       - The ID of the gateway to associate with the route table.
-      - If I(gateway_id) is C('None') or C(''), gateway will be disassociated with the route table.
+      - If O(gateway_id) is V('None') or V(''), gateway will be disassociated with the route table.
     type: str
     version_added: 3.2.0
   lookup:
     description:
-      - Look up route table by either I(tags) or by I(route_table_id).
-      - If I(lookup=tag) and I(tags) is not specified then no lookup for an
+      - Look up route table by either O(tags) or by O(route_table_id).
+      - If O(lookup=tag) and O(tags) is not specified then no lookup for an
         existing route table is performed and a new route table will be created.
-      - When using I(lookup=tag), multiple matches being found will result in
+      - When using O(lookup=tag), multiple matches being found will result in
         a failure and no changes will be made.
-      - To change the tags of a route table use I(lookup=id).
-      - I(vpc_id) must be specified when I(lookup=tag).
+      - To change the tags of a route table use O(lookup=id).
+      - O(vpc_id) must be specified when O(lookup=tag).
     default: tag
     choices: [ 'tag', 'id' ]
     type: str
@@ -51,16 +51,16 @@ options:
   route_table_id:
     description:
       - The ID of the route table to update or delete.
-      - Required when I(lookup=id).
+      - Required when O(lookup=id).
     type: str
   routes:
     description:
       - List of routes in the route table.
-      - Routes are specified as dicts containing the keys C(dest) and one of C(gateway_id),
-        C(instance_id), C(network_interface_id), or C(vpc_peering_connection_id).
-      - The value of C(dest) is used for the destination match. It may be a IPv4 CIDR block
+      - Routes are specified as dicts containing the keys V(dest) and one of V(gateway_id),
+        V(instance_id), V(network_interface_id), or V(vpc_peering_connection_id).
+      - The value of V(dest) is used for the destination match. It may be a IPv4 CIDR block
         or a IPv6 CIDR block.
-      - If I(gateway_id) is specified, you can refer to the VPC's IGW by using the value C(igw).
+      - If V(gateway_id) is specified, you can refer to the VPC's IGW by using the value V(igw).
       - Routes are required for present states.
     type: list
     elements: dict
@@ -78,10 +78,10 @@ options:
   vpc_id:
     description:
       - VPC ID of the VPC in which to create the route table.
-      - Required when I(state=present) or I(lookup=tag).
+      - Required when O(state=present) or O(lookup=tag).
     type: str
 notes:
-  - Tags are used to uniquely identify route tables within a VPC when the I(route_table_id) is not supplied.
+  - Tags are used to uniquely identify route tables within a VPC when the O(route_table_id) is not supplied.
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
@@ -207,10 +207,14 @@ route_table:
           type: str
           sample: subnet-82055af9
     id:
-      description: ID of the route table (same as route_table_id for backwards compatibility).
+      description: ID of the route table (same as RV(route_table.route_table_id) for backwards compatibility).
       returned: always
       type: str
       sample: rtb-bf779ed7
+    owner_id:
+        description: AWS account owning resource.
+        type: str
+        sample: 123456789012
     propagating_vgws:
       description: List of Virtual Private Gateways propagating routes.
       returned: always
@@ -843,7 +847,8 @@ def ensure_route_table_present(connection, module):
     if changed:
         # pause to allow route table routes/subnets/associations to be updated before exiting with final state
         sleep(5)
-    module.exit_json(changed=changed, route_table=get_route_table_info(connection, module, route_table))
+
+    return dict(changed=changed, route_table=get_route_table_info(connection, module, route_table))
 
 
 def main():

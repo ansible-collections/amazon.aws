@@ -43,12 +43,12 @@ options:
   eip_address:
     description:
       - The elastic IP address of the EIP you want attached to this NAT Gateway.
-        If this is not passed and the allocation_id is not passed,
+        If this is not passed and the O(allocation_id) is not passed,
         an EIP is generated for this NAT Gateway.
     type: str
   if_exist_do_not_create:
     description:
-      - if a NAT Gateway exists already in the subnet_id, then do not create a new one.
+      - If a NAT Gateway exists already in the O(subnet_id), then do not create a new one.
     required: false
     default: false
     type: bool
@@ -77,11 +77,11 @@ options:
     type: str
   default_create:
     description:
-      - When I(default_create=True) and I(eip_address) has been set, but not yet
+      - When O(default_create=true) and O(eip_address) has been set, but not yet
         allocated, the NAT gateway is created and a new EIP is automatically allocated.
-      - When I(default_create=False) and I(eip_address) has been set, but not yet
+      - When O(default_create=false) and O(eip_address) has been set, but not yet
         allocated, the module will fail.
-      - If I(eip_address) has not been set, this parameter has no effect.
+      - If O(eip_address) has not been set, this parameter has no effect.
     default: false
     type: bool
     version_added: 6.2.0
@@ -91,7 +91,7 @@ author:
   - Karen Cheng (@Etherdaemon)
   - Alina Buzachis (@alinabuzachis)
 notes:
-  - Support for I(tags) and I(purge_tags) was added in release 1.4.0.
+  - Support for O(tags) and O(purge_tags) was added in release 1.4.0.
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
@@ -197,24 +197,30 @@ EXAMPLES = r"""
 """
 
 RETURN = r"""
+connectivity_type:
+    description:
+      - Indicates whether the NAT gateway supports public or private connectivity.
+    returned: always
+    type: str
+    sample: public
 create_time:
   description: The ISO 8601 date time format in UTC.
-  returned: In all cases.
+  returned: always
   type: str
   sample: "2016-03-05T05:19:20.282000+00:00'"
 nat_gateway_id:
-  description: id of the VPC NAT Gateway
-  returned: In all cases.
+  description: Id of the VPC NAT Gateway.
+  returned: always
   type: str
   sample: "nat-0d1e3a878585988f8"
 subnet_id:
-  description: id of the Subnet
-  returned: In all cases.
+  description: Id of the Subnet.
+  returned: always
   type: str
   sample: "subnet-12345"
 state:
   description: The current state of the NAT Gateway.
-  returned: In all cases.
+  returned: always
   type: str
   sample: "available"
 tags:
@@ -225,21 +231,60 @@ tags:
     tags:
         "Ansible": "Test"
 vpc_id:
-  description: id of the VPC.
-  returned: In all cases.
+  description: Id of the VPC.
+  returned: always
   type: str
   sample: "vpc-12345"
 nat_gateway_addresses:
   description: List of dictionaries containing the public_ip, network_interface_id, private_ip, and allocation_id.
-  returned: In all cases.
-  type: str
+  returned: always
+  type: complex
+  contains:
+    allocation_id:
+        description: The allocation ID of the Elastic IP address that's associated with the NAT gateway.
+        returned: always
+        type: str
+        sample: eipalloc-0853e66a40803da76
+    association_id:
+        description: The association ID of the Elastic IP address that is associated with the NAT gateway.
+        returned: always
+        type: str
+        sample: eipassoc-0d6365c7eeb7d4932
+    is_primary:
+        description: Defines if the IP address is the primary address.
+        returned: always
+        type: bool
+        sample: true
+    network_interface_id:
+        description: The ID of the network interface associated with the NAT gateway.
+        returned: always
+        type: str
+        sample: eni-0a37acdbe306c661c
+    private_ip:
+        description: The private IP address associated with the Elastic IP address.
+        returned: always
+        type: str
+        sample: 10.0.238.227
+    public_ip:
+        description: The Elastic IP address associated with the NAT gateway.
+        returned: always
+        type: str
+        sample: 34.204.123.52
+    status:
+        description: The address status.
+        returned: always
+        type: str
+        sample: succeeded
   sample: [
-      {
-        'public_ip': '52.52.52.52',
-        'network_interface_id': 'eni-12345',
-        'private_ip': '10.0.0.100',
-        'allocation_id': 'eipalloc-12345'
-      }
+       {
+            "allocation_id": "eipalloc-08ec128d03629671d",
+            "association_id": "eipassoc-0d6365c7eeb7d4932",
+            "is_primary": true,
+            "network_interface_id": "eni-095104e630881bad6",
+            "private_ip": "10.1.0.250",
+            "public_ip": "34.202.90.172",
+            "status": "succeeded"
+        }
   ]
 """
 

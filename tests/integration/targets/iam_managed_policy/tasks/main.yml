@@ -9,6 +9,21 @@
   collections:
     - amazon.aws
   block:
+    - name: Create IAM group
+      amazon.aws.iam_group:
+        name: "{{ test_group }}"
+        state: present
+    - name: Create IAM user
+      amazon.aws.iam_user:
+        name: "{{ test_user }}"
+        state: present
+    - name: Create IAM role
+      amazon.aws.iam_role:
+        name: "{{ test_role }}"
+        assume_role_policy_document: '{{ lookup("file", "deny-assume.json") }}'
+        create_instance_profile: false
+        state: present
+
     ## Test policy creation
     - name: Create IAM managed policy - check mode
       amazon.aws.iam_managed_policy:
@@ -448,9 +463,42 @@
           - result.policy.tags["Tag C"] == "Value C"
           - result.policy.tags["tag d"] == "value d"
 
+    - name: Attach managed policy to group
+      amazon.aws.iam_group:
+        name: "{{ test_group }}"
+        state: present
+        managed_policies:
+          - "{{ policy_name }}"
+    - name: Attach managed policy to user
+      amazon.aws.iam_user:
+        name: "{{ test_user }}"
+        state: present
+        managed_policies:
+          - "{{ policy_name }}"
+    - name: Attach managed policy to role
+      amazon.aws.iam_role:
+        name: "{{ test_role }}"
+        state: present
+        assume_role_policy_document: '{{ lookup("file", "deny-assume.json") }}'
+        managed_policies:
+          - "{{ policy_name }}"
+
     - name: Delete IAM managed policy
       amazon.aws.iam_managed_policy:
         policy_name: "{{ policy_name }}"
+        state: absent
+
+    - name: Delete IAM group
+      amazon.aws.iam_group:
+        name: "{{ test_group }}"
+        state: absent
+    - name: Delete IAM user
+      amazon.aws.iam_user:
+        name: "{{ test_user }}"
+        state: absent
+    - name: Delete IAM role
+      amazon.aws.iam_role:
+        name: "{{ test_role }}"
         state: absent
 
   always:
@@ -459,3 +507,16 @@
         policy_name: "{{ policy_name }}"
         state: absent
       ignore_errors: true # noqa: ignore-errors
+
+    - name: Delete IAM group
+      amazon.aws.iam_group:
+        name: "{{ test_group }}"
+        state: absent
+    - name: Delete IAM user
+      amazon.aws.iam_user:
+        name: "{{ test_user }}"
+        state: absent
+    - name: Delete IAM role
+      amazon.aws.iam_role:
+        name: "{{ test_role }}"
+        state: absent

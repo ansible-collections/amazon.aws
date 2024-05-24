@@ -24,7 +24,7 @@ options:
     type: bool
   on_create_failure:
     description:
-      - Action to take upon failure of stack creation. Incompatible with the I(disable_rollback) option.
+      - Action to take upon failure of stack creation. Incompatible with the O(disable_rollback) option.
     choices:
       - DO_NOTHING
       - ROLLBACK
@@ -32,7 +32,7 @@ options:
     type: str
   create_timeout:
     description:
-      - The amount of time (in minutes) that can pass before the stack status becomes CREATE_FAILED
+      - The amount of time (in minutes) that can pass before the stack status becomes V(CREATE_FAILED).
     type: int
   template_parameters:
     description:
@@ -42,9 +42,9 @@ options:
     type: dict
   state:
     description:
-      - If I(state=present), stack will be created.
-      - If I(state=present) and if stack exists and template has changed, it will be updated.
-      - If I(state=absent), stack will be removed.
+      - If O(state=present), stack will be created.
+      - If O(state=present) and if stack exists and template has changed, it will be updated.
+      - If O(state=absent), stack will be removed.
     default: present
     choices: [ present, absent ]
     type: str
@@ -52,13 +52,13 @@ options:
     description:
       - The local path of the CloudFormation template.
       - This must be the full path to the file, relative to the working directory. If using roles this may look
-        like C(roles/cloudformation/files/cloudformation-example.json).
-      - If I(state=present) and the stack does not exist yet, either I(template), I(template_body) or I(template_url)
+        like V(roles/cloudformation/files/cloudformation-example.json).
+      - If O(state=present) and the stack does not exist yet, either O(template), O(template_body) or O(template_url)
         must be specified (but only one of them).
-      - If I(state=present), the stack does exist, and neither I(template),
-        I(template_body) nor I(template_url) are specified, the previous template will be reused.
-      - The I(template) parameter has been deprecated and will be remove in a release after
-        2026-05-01.  It is recommended to use I(template_body) with the lookup plugin.
+      - If O(state=present), the stack does exist, and neither O(template),
+        O(template_body) nor O(template_url) are specified, the previous template will be reused.
+      - The O(template) parameter has been deprecated and will be remove in a release after
+        2026-05-01. It is recommended to use O(template_body) with the P(ansible.builtin.template#lookup) lookup plugin.
     type: path
   notification_arns:
     description:
@@ -77,7 +77,7 @@ options:
     version_added: 1.5.0
   stack_policy_on_update_body:
     description:
-      - the body of the cloudformation stack policy only applied during this update.
+      - The body of the cloudformation stack policy only applied during this update.
     type: json
     version_added: 1.5.0
   tags:
@@ -89,23 +89,23 @@ options:
     description:
       - Location of file containing the template body. The URL must point to a template (max size 307,200 bytes) located in an
         S3 bucket in the same region as the stack.
-      - If I(state=present) and the stack does not exist yet, either I(template), I(template_body) or I(template_url)
+      - If O(state=present) and the stack does not exist yet, either O(template), O(template_body) or O(template_url)
         must be specified (but only one of them).
-      - If I(state=present), the stack does exist, and neither I(template), I(template_body) nor I(template_url) are specified,
+      - If O(state=present), the stack does exist, and neither O(template), O(template_body) nor O(template_url) are specified,
         the previous template will be reused.
     type: str
   create_changeset:
     description:
-      - "If stack already exists create a changeset instead of directly applying changes.  See the AWS Change Sets docs
-        U(https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks-changesets.html)."
-      - "WARNING: if the stack does not exist, it will be created without changeset. If I(state=absent), the stack will be
-        deleted immediately with no changeset."
+      - If stack already exists create a changeset instead of directly applying changes.  See the AWS Change Sets docs
+        U(https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks-changesets.html).
+      - B(WARNING:) if the stack does not exist, it will be created without changeset. If O(state=absent), the stack will be
+        deleted immediately with no changeset.
     type: bool
     default: false
   changeset_name:
     description:
       - Name given to the changeset when creating a changeset.
-      - Only used when I(create_changeset=true).
+      - Only used when O(create_changeset=true).
       - By default a name prefixed with Ansible-STACKNAME is generated based on input parameters.
         See the AWS Change Sets docs for more information
         U(https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks-changesets.html)
@@ -122,9 +122,9 @@ options:
   template_body:
     description:
       - Template body. Use this to pass in the actual body of the CloudFormation template.
-      - If I(state=present) and the stack does not exist yet, either I(template), I(template_body) or I(template_url)
+      - If O(state=present) and the stack does not exist yet, either O(template), O(template_body) or O(template_url)
         must be specified (but only one of them).
-      - If I(state=present), the stack does exist, and neither I(template), I(template_body) nor I(template_url)
+      - If O(state=present), the stack does exist, and neither O(template), O(template_body) nor O(template_url)
         are specified, the previous template will be reused.
     type: str
   events_limit:
@@ -154,7 +154,7 @@ options:
   capabilities:
     description:
       - Specify capabilities that stack template contains.
-      - Valid values are C(CAPABILITY_IAM), C(CAPABILITY_NAMED_IAM) and C(CAPABILITY_AUTO_EXPAND).
+      - Valid values are V(CAPABILITY_IAM), V(CAPABILITY_NAMED_IAM) and V(CAPABILITY_AUTO_EXPAND).
     type: list
     elements: str
     default: [ CAPABILITY_IAM, CAPABILITY_NAMED_IAM ]
@@ -301,7 +301,7 @@ log:
   sample: ["updating stack"]
 change_set_id:
   description: The ID of the stack change set if one was created
-  returned:  I(state=present) and I(create_changeset=true)
+  returned:  O(state=present) and O(create_changeset=true)
   type: str
   sample: "arn:aws:cloudformation:us-east-1:123456789012:changeSet/Ansible-StackName-f4496805bd1b2be824d1e315c6884247ede41eb0"
 stack_resources:
@@ -345,9 +345,17 @@ from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleA
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
 
-# Set a default, mostly for our integration tests.  This will be overridden in
-# the main() loop to match the parameters we're passed
-retry_decorator = AWSRetry.jittered_backoff()
+
+@AWSRetry.jittered_backoff()
+def _search_events(cfn, stack_name, events_limit, token_filter):
+    pg = cfn.get_paginator("describe_stack_events").paginate(
+        StackName=stack_name,
+        PaginationConfig={"MaxItems": events_limit},
+    )
+    if token_filter is None:
+        return list(pg.search("StackEvents[*]"))
+
+    return list(pg.search(f"StackEvents[?ClientRequestToken == '{token_filter}']"))
 
 
 def get_stack_events(cfn, stack_name, events_limit, token_filter=None):
@@ -355,13 +363,7 @@ def get_stack_events(cfn, stack_name, events_limit, token_filter=None):
     ret = {"events": [], "log": []}
 
     try:
-        pg = cfn.get_paginator("describe_stack_events").paginate(
-            StackName=stack_name, PaginationConfig={"MaxItems": events_limit}
-        )
-        if token_filter is not None:
-            events = list(retry_decorator(pg.search)(f"StackEvents[?ClientRequestToken == '{token_filter}']"))
-        else:
-            events = list(pg.search("StackEvents[*]"))
+        events = _search_events(cfn, stack_name, events_limit, token_filter)
     except is_boto3_error_message("does not exist"):
         ret["log"].append("Stack does not exist.")
         return ret

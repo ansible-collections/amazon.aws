@@ -14,7 +14,7 @@ description:
   - This module was originally added to C(community.aws) in release 1.0.0.
 notes:
   - For details of the parameters and returns see U(http://boto3.readthedocs.io/en/latest/reference/services/logs.html).
-  - Support for I(purge_tags) was added in release 4.0.0.
+  - Support for O(purge_tags) was added in release 4.0.0.
 author:
   - Willian Ricardo (@willricardo) <willricardo@gmail.com>
 options:
@@ -39,20 +39,20 @@ options:
     description:
       - The number of days to retain the log events in the specified log group.
       - "Valid values are: [1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653]"
-      - Mutually exclusive with I(purge_retention_policy).
+      - Mutually exclusive with O(purge_retention_policy).
     required: false
     type: int
   purge_retention_policy:
     description:
-      - "Whether to purge the retention policy or not."
-      - "Mutually exclusive with I(retention) and I(overwrite)."
+      - Whether to purge the retention policy or not.
+      - Mutually exclusive with O(retention) and O(overwrite).
     default: false
     required: false
     type: bool
   overwrite:
     description:
       - Whether an existing log group should be overwritten on create.
-      - Mutually exclusive with I(purge_retention_policy).
+      - Mutually exclusive with O(purge_retention_policy).
     default: false
     required: false
     type: bool
@@ -91,7 +91,7 @@ EXAMPLES = r"""
 
 RETURN = r"""
 log_groups:
-    description: Return the list of complex objects representing log groups
+    description: Return the list of complex objects representing log groups.
     returned: success
     type: complex
     version_added: 4.0.0

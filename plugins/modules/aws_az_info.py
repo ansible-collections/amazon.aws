@@ -107,7 +107,7 @@ availability_zones:
         group_name:
             description:
                 - The name of the associated group.
-                - For availability zones, this will be the same as I(region_name).
+                - For availability zones, this will be the same as RV(availability_zones.region_name).
             type: str
             returned: on success
             sample: 'us-east-1'

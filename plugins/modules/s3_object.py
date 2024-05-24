@@ -783,9 +783,6 @@ def upload_s3file(
 def download_s3file(module, s3, bucket, obj, dest, retries, version=None):
     if module.check_mode:
         module.exit_json(msg="GET operation skipped - running in check mode", changed=True)
-    # retries is the number of loops; range/xrange needs to be one
-    # more to get that count of loops.
-    _get_object_content(module, s3, bucket, obj, version)
 
     optional_kwargs = {"ExtraArgs": {"VersionId": version}} if version else {}
     for x in range(0, retries + 1):
@@ -962,13 +959,13 @@ def ensure_tags(client, module, bucket, obj):
     return current_tags_dict, changed
 
 
-def get_binary_content(vars):
+def get_binary_content(s3_vars):
     # the content will be uploaded as a byte string, so we must encode it first
     bincontent = None
-    if vars.get("content"):
-        bincontent = vars["content"].encode("utf-8")
-    if vars.get("content_base64"):
-        bincontent = base64.standard_b64decode(vars["content_base64"])
+    if s3_vars.get("content"):
+        bincontent = s3_vars["content"].encode("utf-8")
+    if s3_vars.get("content_base64"):
+        bincontent = base64.standard_b64decode(s3_vars["content_base64"])
     return bincontent
 
 
