@@ -107,11 +107,13 @@ class AnsibleEC2Error(AnsibleAWSError):
 
 @AWSRetry.jittered_backoff()
 def describe_availability_zones(client, **params) -> List[Dict[str, Union[str, List[Dict[str, str]]]]]:
+    # The paginator does not exist for `describe_availability_zones()`
     return client.describe_availability_zones(**params)["AvailabilityZones"]
 
 
 @AWSRetry.jittered_backoff()
 def describe_regions(client, **params) -> List[Dict[str, str]]:
+    # The paginator does not exist for `describe_regions()`
     return client.describe_regions(**params)["Regions"]
 
 
@@ -146,19 +148,20 @@ def create_subnet(client, **params: Dict[str, Any]) -> Dict[str, Any]:
 
 @EC2VpcSubnetErrorHandler.common_error_handler("modify subnet")
 @AWSRetry.jittered_backoff()
-def modify_subnet_attribute(client, subnet_id: str, **params: Dict[str, Any]) -> None:
+def modify_subnet_attribute(client, subnet_id: str, **params: Dict[str, Any]) -> bool:
     client.modify_subnet_attribute(SubnetId=subnet_id, **params)
+    return True
 
 
 @EC2VpcSubnetErrorHandler.common_error_handler("disassociate subnet cidr block")
 @AWSRetry.jittered_backoff()
-def disassociate_subnet_cidr_block(client, association_id: str) -> None:
-    client.disassociate_subnet_cidr_block(AssociationId=association_id)
+def disassociate_subnet_cidr_block(client, association_id: str) -> Dict[str, Union[str, Dict[str, Union[str, bool]]]]:
+    return client.disassociate_subnet_cidr_block(AssociationId=association_id)["Ipv6CidrBlockAssociation"]
 
 
 @EC2VpcSubnetErrorHandler.common_error_handler("associate subnet cidr block")
 @AWSRetry.jittered_backoff()
-def associate_subnet_cidr_block(client, subnet_id: str, **params) -> Dict[str, Any]:
+def associate_subnet_cidr_block(client, subnet_id: str, **params) -> Dict[str, Union[str, Dict[str, Union[str, bool]]]]:
     return client.associate_subnet_cidr_block(SubnetId=subnet_id, **params)["Ipv6CidrBlockAssociation"]
 
 
@@ -180,20 +183,24 @@ def describe_route_tables(client, **params: Dict[str, Any]) -> List[Dict[str, An
 
 @EC2VpcRouteTableErrorHandler.common_error_handler("disassociate route table")
 @AWSRetry.jittered_backoff()
-def disassociate_route_table(client, association_id: str) -> None:
+def disassociate_route_table(client, association_id: str) -> bool:
     client.disassociate_route_table(AssociationId=association_id)
+    return True
 
 
 @EC2VpcRouteTableErrorHandler.common_error_handler("associate route table")
 @AWSRetry.jittered_backoff()
-def associate_route_table(client, route_table_id: str, **params: Dict[str, str]) -> Dict[str, Any]:
+def associate_route_table(
+    client, route_table_id: str, **params: Dict[str, str]
+) -> Dict[str, Union[str, Dict[str, Union[str, bool]]]]:
     return client.associate_route_table(RouteTableId=route_table_id, **params)
 
 
 @EC2VpcRouteTableErrorHandler.common_error_handler("enable vgw route propagation")
 @AWSRetry.jittered_backoff()
-def enable_vgw_route_propagation(client, gateway_id: str, route_table_id: str) -> None:
+def enable_vgw_route_propagation(client, gateway_id: str, route_table_id: str) -> bool:
     client.enable_vgw_route_propagation(RouteTableId=route_table_id, GatewayId=gateway_id)
+    return True
 
 
 @EC2VpcRouteTableErrorHandler.deletion_error_handler("delete route table")
@@ -230,14 +237,15 @@ def delete_route(client, route_table_id: str, **params: Dict[str, str]) -> bool:
 
 @EC2VpcRouteTableRouteErrorHandler.common_error_handler("replace route")
 @AWSRetry.jittered_backoff()
-def replace_route(client, route_table_id: str, **params: Dict[str, str]) -> None:
+def replace_route(client, route_table_id: str, **params: Dict[str, str]) -> bool:
     client.replace_route(RouteTableId=route_table_id, **params)
+    return True
 
 
 @EC2VpcRouteTableRouteErrorHandler.common_error_handler("create route")
 @AWSRetry.jittered_backoff()
-def create_route(client, route_table_id: str, **params: Dict[str, str]) -> None:
-    client.create_route(RouteTableId=route_table_id, **params)
+def create_route(client, route_table_id: str, **params: Dict[str, str]) -> bool:
+    return client.create_route(RouteTableId=route_table_id, **params)["Return"]
 
 
 # EC2 VPC
@@ -266,13 +274,15 @@ def delete_vpc(client, vpc_id: str) -> bool:
 @EC2VpcErrorHandler.common_error_handler("describe vpc attribute")
 @AWSRetry.jittered_backoff()
 def describe_vpc_attribute(client, vpc_id: str, attribute: str) -> Dict[str, Any]:
+    # The paginator does not exist for `describe_vpc_attribute`
     return client.describe_vpc_attribute(VpcId=vpc_id, Attribute=attribute)
 
 
 @EC2VpcErrorHandler.common_error_handler("modify vpc attribute")
 @AWSRetry.jittered_backoff()
-def modify_vpc_attribute(client, vpc_id: str, **params) -> None:
+def modify_vpc_attribute(client, vpc_id: str, **params) -> bool:
     client.modify_vpc_attribute(VpcId=vpc_id, **params)
+    return True
 
 
 @EC2VpcErrorHandler.common_error_handler("create vpc")
@@ -283,14 +293,14 @@ def create_vpc(client, **params) -> Dict[str, Any]:
 
 @EC2VpcErrorHandler.common_error_handler("associate vpc cidr block")
 @AWSRetry.jittered_backoff()
-def associate_vpc_cidr_block(client, vpc_id: str, **params) -> None:
-    client.associate_vpc_cidr_block(VpcId=vpc_id, **params)
+def associate_vpc_cidr_block(client, vpc_id: str, **params) -> Dict[str, Any]:
+    return client.associate_vpc_cidr_block(VpcId=vpc_id, **params)
 
 
 @EC2VpcErrorHandler.common_error_handler("disassociate vpc cidr block")
 @AWSRetry.jittered_backoff()
-def disassociate_vpc_cidr_block(client, association_id: str) -> None:
-    client.disassociate_vpc_cidr_block(AssociationId=association_id)
+def disassociate_vpc_cidr_block(client, association_id: str) -> Dict[str, Any]:
+    return client.disassociate_vpc_cidr_block(AssociationId=association_id)
 
 
 # EC2 Internet Gateway
@@ -304,7 +314,8 @@ class EC2InternetGatewayErrorHandler(AWSErrorHandler):
 
 @AWSRetry.jittered_backoff()
 def describe_internet_gateways(client, **params: Dict[str, Any]) -> List[Dict[str, Any]]:
-    return client.describe_internet_gateways(**params)["InternetGateways"]
+    paginator = client.get_paginator("describe_internet_gateways")
+    return paginator.paginate(**params).build_full_result()["InternetGateways"]
 
 
 @EC2InternetGatewayErrorHandler.common_error_handler("create internet gateway")
@@ -378,6 +389,7 @@ class EC2ElasticIPErrorHandler(AWSErrorHandler):
 @EC2ElasticIPErrorHandler.list_error_handler("describe addresses", [])
 @AWSRetry.jittered_backoff()
 def describe_addresses(client, **params: Dict[str, Any]) -> List[Dict[str, Union[str, List[Dict[str, str]]]]]:
+    # The paginator does not exist for 'describe_addresses()'
     return client.describe_addresses(**params)["Addresses"]
 
 
@@ -399,8 +411,9 @@ def associate_address(client, **params) -> Dict[str, str]:
 
 @EC2ElasticIPErrorHandler.common_error_handler("disassociate address")
 @AWSRetry.jittered_backoff()
-def disassociate_address(client, association_id: str) -> None:
+def disassociate_address(client, association_id: str) -> bool:
     client.disassociate_address(AssociationId=association_id)
+    return True
 
 
 @EC2ElasticIPErrorHandler.common_error_handler("allocate address")
@@ -452,7 +465,7 @@ def describe_vpc_endpoint_services(
     client, filters: Optional[List[Dict[str, Any]]] = None, service_names: Optional[List[str]] = None
 ) -> List[Dict[str, Any]]:
     paginator = client.get_paginator("describe_vpc_endpoint_services")
-    params = {}
+    params: dict[str, Any] = {}
     if filters:
         params["Filters"] = filters
 
@@ -571,8 +584,9 @@ def describe_instances(client, **params) -> List[Dict[str, Any]]:
 
 @EC2InstanceErrorHandler.common_error_handler("modify instance attribute")
 @AWSRetry.jittered_backoff(catch_extra_error_codes=EC2_INSTANCE_CATCH_EXTRA_CODES)
-def modify_instance_attribute(client, instance_id: str, **params) -> None:
+def modify_instance_attribute(client, instance_id: str, **params) -> bool:
     client.modify_instance_attribute(InstanceId=instance_id, **params)
+    return True
 
 
 @EC2InstanceErrorHandler.common_error_handler("terminate instances")
@@ -602,13 +616,15 @@ def run_instances(client, **params: Dict[str, Any]) -> Dict[str, Any]:
 @EC2InstanceErrorHandler.common_error_handler("describe instance attribute")
 @AWSRetry.jittered_backoff(catch_extra_error_codes=EC2_INSTANCE_CATCH_EXTRA_CODES)
 def describe_instance_attribute(client, instance_id: str, attribute: str) -> Dict[str, Any]:
+    # The paginator does not exist for describe_instance_attribute()
     return client.describe_instance_attribute(InstanceId=instance_id, Attribute=attribute)
 
 
 @EC2InstanceErrorHandler.common_error_handler("describe instance status")
 @AWSRetry.jittered_backoff(catch_extra_error_codes=EC2_INSTANCE_CATCH_EXTRA_CODES)
 def describe_instance_status(client, **params) -> List[Dict[str, Any]]:
-    return client.describe_instance_status(**params)["InstanceStatuses"]
+    paginator = client.get_paginator("describe_instance_status")
+    return paginator.paginate(**params).build_full_result()["InstanceStatuses"]
 
 
 @EC2InstanceErrorHandler.common_error_handler("modify instance metadata options")
@@ -620,7 +636,8 @@ def modify_instance_metadata_options(client, instance_id: str, **params) -> Dict
 @EC2InstanceErrorHandler.common_error_handler("describe iam instance profile associations")
 @AWSRetry.jittered_backoff(catch_extra_error_codes=EC2_INSTANCE_CATCH_EXTRA_CODES)
 def describe_iam_instance_profile_associations(client, **params) -> Dict[str, Any]:
-    return client.describe_iam_instance_profile_associations(**params)["IamInstanceProfileAssociations"]
+    paginator = client.get_paginator("describe_iam_instance_profile_associations")
+    return paginator.paginate(**params).build_full_result()["IamInstanceProfileAssociations"]
 
 
 @EC2InstanceErrorHandler.common_error_handler("replace iam instance profile association")
@@ -653,6 +670,7 @@ class EC2KeyErrorHandler(AWSErrorHandler):
 @EC2KeyErrorHandler.list_error_handler("describe key pairs", [])
 @AWSRetry.jittered_backoff()
 def describe_key_pairs(client, **params) -> List[Dict[str, Any]]:
+    # The paginator does not exist for `describe_key_pairs()`
     return client.describe_key_pairs(**params)["KeyPairs"]
 
 
@@ -692,12 +710,14 @@ class EC2ImageErrorHandler(AWSErrorHandler):
 @EC2ImageErrorHandler.list_error_handler("describe images", [])
 @AWSRetry.jittered_backoff()
 def describe_images(client, **params) -> List[Dict[str, Any]]:
-    return client.describe_images(**params)["Images"]
+    paginator = client.get_paginator("describe_images")
+    return paginator.paginate(**params).build_full_result()["Images"]
 
 
 @EC2ImageErrorHandler.list_error_handler("describe image attribute", {})
 @AWSRetry.jittered_backoff()
 def describe_image_attribute(client, image_id: str, attribute: str) -> Optional[Dict[str, Any]]:
+    # The paginator does not exist for `describe_image_attribute()`
     return client.describe_image_attribute(Attribute=attribute, ImageId=image_id)
 
 
@@ -746,6 +766,7 @@ def delete_snapshot(client, snapshot_id: str) -> bool:
 @EC2SnapshotErrorHandler.list_error_handler("describe snapshots", {})
 @AWSRetry.jittered_backoff()
 def describe_snapshots(client, **params) -> Dict[str, Any]:
+    # We do not use paginator here because the `ec2_snapshot_info` module excepts the NextToken to be returned
     return client.describe_snapshots(**params)
 
 
@@ -759,14 +780,16 @@ def describe_snapshot_attribute(
 
 @EC2SnapshotErrorHandler.common_error_handler("reset snapshot attribute")
 @AWSRetry.jittered_backoff()
-def reset_snapshot_attribute(client, snapshot_id: str, attribute: str) -> None:
+def reset_snapshot_attribute(client, snapshot_id: str, attribute: str) -> bool:
     client.reset_snapshot_attribute(Attribute=attribute, SnapshotId=snapshot_id)
+    return True
 
 
 @EC2SnapshotErrorHandler.common_error_handler("modify snapshot attribute")
 @AWSRetry.jittered_backoff()
-def modify_snapshot_attribute(client, snapshot_id: str, **params: Dict[str, Any]) -> None:
+def modify_snapshot_attribute(client, snapshot_id: str, **params: Dict[str, Any]) -> bool:
     client.modify_snapshot_attribute(SnapshotId=snapshot_id, **params)
+    return True
 
 
 @EC2SnapshotErrorHandler.common_error_handler("create snapshot")
@@ -789,7 +812,8 @@ class EC2NetworkInterfacesErrorHandler(AWSErrorHandler):
 @EC2NetworkInterfacesErrorHandler.list_error_handler("describe network interfaces", [])
 @AWSRetry.jittered_backoff()
 def describe_network_interfaces(client, **params) -> List[Dict[str, Any]]:
-    return client.describe_network_interfaces(**params)["NetworkInterfaces"]
+    paginator = client.get_paginator("describe_network_interfaces")
+    return paginator.paginate(**params).build_full_result()["NetworkInterfaces"]
 
 
 @EC2NetworkInterfacesErrorHandler.deletion_error_handler("delete network interface")
@@ -813,8 +837,9 @@ def attach_network_interface(client, **params) -> Dict[str, Union[str, int]]:
 
 @EC2NetworkInterfacesErrorHandler.common_error_handler("detach network interface")
 @AWSRetry.jittered_backoff()
-def detach_network_interface(client, **params) -> None:
-    return client.detach_network_interface(**params)
+def detach_network_interface(client, **params) -> bool:
+    client.detach_network_interface(**params)
+    return True
 
 
 @EC2NetworkInterfacesErrorHandler.common_error_handler("assign private ip addresses")
@@ -825,14 +850,16 @@ def assign_private_ip_addresses(client, **params) -> Dict[str, Union[str, List[D
 
 @EC2NetworkInterfacesErrorHandler.common_error_handler("unassign private ip addresses")
 @AWSRetry.jittered_backoff()
-def unassign_private_ip_addresses(client, **params) -> None:
+def unassign_private_ip_addresses(client, **params) -> bool:
     client.unassign_private_ip_addresses(**params)
+    return True
 
 
 @EC2NetworkInterfacesErrorHandler.common_error_handler("modify network interface attribute")
 @AWSRetry.jittered_backoff()
-def modify_network_interface_attribute(client, **params) -> None:
+def modify_network_interface_attribute(client, **params) -> bool:
     client.modify_network_interface_attribute(**params)
+    return True
 
 
 # EC2 Import Image

@@ -370,7 +370,7 @@ def get_nat_gateways(
         list
     """
 
-    params = {}
+    params: dict[str, Any] = {}
     if not states:
         states = ["available", "pending"]
     if nat_gateway_id:
@@ -495,7 +495,7 @@ def get_eip_allocation_id_by_address(client, eip_address: str) -> Tuple[Optional
     return allocation_id, msg
 
 
-def allocate_eip_address(client, check_mode: bool) -> Tuple[bool, str, str]:
+def allocate_eip_address(client, check_mode: bool) -> Tuple[bool, str, Optional[str]]:
     """Release an EIP from your EIP Pool
     Args:
         client (botocore.client.EC2): Boto3 client
@@ -612,7 +612,7 @@ def create(client, module: AnsibleAWSModule, allocation_id: Optional[str]) -> Tu
     request_time = datetime.datetime.utcnow()
     changed = False
     token_provided = False
-    result = {}
+    result: dict[str, Any] = {}
     msg = ""
 
     if client_token:
@@ -647,7 +647,7 @@ def create(client, module: AnsibleAWSModule, allocation_id: Optional[str]) -> Tu
     except is_ansible_aws_error_code("IdempotentParameterMismatch") as e:
         msg = "NAT Gateway does not support update and token has already been provided:" + e
         changed = False
-        result = None
+        result = {}
 
     if result:
         result["tags"] = describe_ec2_tags(client, module, result["nat_gateway_id"], resource_type="natgateway")
@@ -759,7 +759,7 @@ def pre_create(
     return create(client, module, allocation_id)
 
 
-def remove(client, module: AnsibleAWSModule) -> None:
+def remove(client, module: AnsibleAWSModule) -> Tuple[bool, str, Dict[str, Any]]:
     """Delete an Amazon NAT Gateway.
     Args:
         client (botocore.client.EC2): Boto3 client
@@ -802,7 +802,7 @@ def remove(client, module: AnsibleAWSModule) -> None:
 
     allocation_id = None
     changed = False
-    results = {}
+    results: dict[str, Any] = {}
     states = ["pending", "available"]
     msg = ""
     nat_gateway_id = module.params.get("nat_gateway_id")
