@@ -21,6 +21,8 @@ from ansible.module_utils.common.dict_transformations import snake_dict_to_camel
 
 from .botocore import is_boto3_error_code
 from .core import AnsibleAWSModule
+from .errors import AWSErrorHandler
+from .exceptions import AnsibleAWSError
 from .retries import AWSRetry
 from .tagging import ansible_dict_to_boto3_tag_list
 from .tagging import boto3_tag_list_to_ansible_dict
@@ -81,6 +83,31 @@ instance_snapshot_method_names = [
     "copy_db_snapshot",
     "list_tags_for_resource",
 ]
+
+
+class AnsibleRDSError(AnsibleAWSError):
+    pass
+
+
+class RDSErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleRDSError
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code(["DBInstanceNotFound", "DBSnapshotNotFound", "DBClusterNotFound"])
+
+
+@RDSErrorHandler.list_error_handler("describe db instances", [])
+@AWSRetry.jittered_backoff()
+def describe_db_instances(client, **params: Dict) -> List[Dict[str, Any]]:
+    paginator = client.get_paginator("describe_db_instances")
+    return paginator.paginate(**params).build_full_result()["DBInstances"]
+
+
+@RDSErrorHandler.list_error_handler("list tags for resource", [])
+@AWSRetry.jittered_backoff()
+def list_tags_for_resource(client, resource_arn: str) -> List[Dict[str, str]]:
+    return client.list_tags_for_resource(ResourceName=resource_arn)["TagList"]
 
 
 def get_rds_method_attribute(method_name, module):
@@ -359,11 +386,25 @@ def wait_for_status(client, module, identifier, method_name):
         wait_for_cluster_snapshot_status(client, module, identifier, waiter_name)
 
 
-def get_tags(client, module, resource_arn):
+def get_tags(client, module: AnsibleAWSModule, resource_arn: str) -> Dict[str, str]:
+    """
+    Returns tags for provided RDS resource, formatted as an Ansible dict.
+
+    Fails the module if an error is raised while retrieving resource tags.
+
+        Parameters:
+            client: boto3 rds client
+            module: AnsibleAWSModule
+            resource_arn (str): AWS resource ARN
+
+        Returns:
+            tags (dict): Tags for resource, formatted as an Ansible dict. An empty list is returned if the resource has no tags.
+    """
     try:
-        return boto3_tag_list_to_ansible_dict(client.list_tags_for_resource(ResourceName=resource_arn)["TagList"])
-    except (BotoCoreError, ClientError) as e:
-        module.fail_json_aws(e, msg="Unable to describe tags")
+        tags = list_tags_for_resource(client, resource_arn)
+    except AnsibleRDSError as e:
+        module.fail_json_aws(e, msg=f"Unable to list tags for resource {resource_arn}")
+    return boto3_tag_list_to_ansible_dict(tags)
 
 
 def arg_spec_to_rds_params(options_dict):
