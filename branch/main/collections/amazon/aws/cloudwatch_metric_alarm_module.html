@@ -157,6 +157,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 <li><p><a class="reference internal" href="#parameters" id="id3">Parameters</a></p></li>
 <li><p><a class="reference internal" href="#notes" id="id4">Notes</a></p></li>
 <li><p><a class="reference internal" href="#examples" id="id5">Examples</a></p></li>
+<li><p><a class="reference internal" href="#return-values" id="id6">Return Values</a></p></li>
 </ul>
 </nav>
 <section id="synopsis">
@@ -286,13 +287,28 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-evaluate_low_sample_count_percentile"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-evaluate-low-sample-count-percentile"><strong>evaluate_low_sample_count_percentile</strong></p>
+<a class="ansibleOptionLink" href="#parameter-evaluate_low_sample_count_percentile" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 9.0.0</em></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Used only for alarms based on percentiles.</p>
+<p>If you specify <code class="ansible-value docutils literal notranslate"><span class="pre">ignore</span></code>, the alarm state does not change during periods with too few data points to be statistically significant.</p>
+<p>If you specify <code class="ansible-value docutils literal notranslate"><span class="pre">evaluate</span></code> or omit this parameter, alarm is evaluated and possibly changes state no matter how many data points are available.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;ignore&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;evaluate&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-evaluation_periods"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-evaluation-periods"><strong>evaluation_periods</strong></p>
 <a class="ansibleOptionLink" href="#parameter-evaluation_periods" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The number of times in which the metric is evaluated before final calculation.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-extended_statistic"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-extended-statistic"><strong>extended_statistic</strong></p>
 <a class="ansibleOptionLink" href="#parameter-extended_statistic" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 <p><em class="ansible-option-versionadded">added in amazon.aws 5.5.0</em></p>
@@ -300,7 +316,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 <td><div class="ansible-option-cell"><p>The percentile statistic for the metric specified in the metric name.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-insufficient_data_actions"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-insufficient-data-actions"><strong>insufficient_data_actions</strong></p>
 <a class="ansibleOptionLink" href="#parameter-insufficient_data_actions" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
@@ -308,7 +324,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[]</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-metric_name"></div>
 <div class="ansibleOptionAnchor" id="parameter-metric"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-metric-name"><span id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-metric"></span><strong>metric_name</strong></p>
 <a class="ansibleOptionLink" href="#parameter-metric_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: metric</span></p>
@@ -318,7 +334,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 <p>Metric must already exist.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-metrics"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-metrics"><strong>metrics</strong></p>
 <a class="ansibleOptionLink" href="#parameter-metrics" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
 <p><em class="ansible-option-versionadded">added in amazon.aws 5.5.0</em></p>
@@ -327,112 +343,112 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[]</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-metrics/account_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-metrics-account-id"><strong>account_id</strong></p>
 <a class="ansibleOptionLink" href="#parameter-metrics/account_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ID of the account where the metrics are located, if this is a cross-account alarm.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-metrics/expression"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-metrics-expression"><strong>expression</strong></p>
 <a class="ansibleOptionLink" href="#parameter-metrics/expression" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>This field can contain either a Metrics Insights query, or a metric math expression to be performed on the returned data.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-metrics/id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-metrics-id"><strong>id</strong></p>
 <a class="ansibleOptionLink" href="#parameter-metrics/id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A short name used to tie this object to the results in the response.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-metrics/label"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-metrics-label"><strong>label</strong></p>
 <a class="ansibleOptionLink" href="#parameter-metrics/label" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A human-readable label for this metric or expression.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-metrics/metric_stat"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-metrics-metric-stat"><strong>metric_stat</strong></p>
 <a class="ansibleOptionLink" href="#parameter-metrics/metric_stat" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The metric to be returned, along with statistics, period, and units.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-metrics/metric_stat/metric"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-metrics-metric-stat-metric"><strong>metric</strong></p>
 <a class="ansibleOptionLink" href="#parameter-metrics/metric_stat/metric" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The metric to return, including the metric name, namespace, and dimensions.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-metrics/metric_stat/metric/dimensions"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-metrics-metric-stat-metric-dimensions"><strong>dimensions</strong></p>
 <a class="ansibleOptionLink" href="#parameter-metrics/metric_stat/metric/dimensions" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A name/value pair that is part of the identity of a metric.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-metrics/metric_stat/metric/dimensions/name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-metrics-metric-stat-metric-dimensions-name"><strong>name</strong></p>
 <a class="ansibleOptionLink" href="#parameter-metrics/metric_stat/metric/dimensions/name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The name of the dimension.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-metrics/metric_stat/metric/dimensions/value"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-metrics-metric-stat-metric-dimensions-value"><strong>value</strong></p>
 <a class="ansibleOptionLink" href="#parameter-metrics/metric_stat/metric/dimensions/value" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The value of the dimension.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-metrics/metric_stat/metric/metric_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-metrics-metric-stat-metric-metric-name"><strong>metric_name</strong></p>
 <a class="ansibleOptionLink" href="#parameter-metrics/metric_stat/metric/metric_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The name of the metric.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-metrics/metric_stat/metric/namespace"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-metrics-metric-stat-metric-namespace"><strong>namespace</strong></p>
 <a class="ansibleOptionLink" href="#parameter-metrics/metric_stat/metric/namespace" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The namespace of the metric.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-metrics/metric_stat/period"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-metrics-metric-stat-period"><strong>period</strong></p>
 <a class="ansibleOptionLink" href="#parameter-metrics/metric_stat/period" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span> / <span class="ansible-option-required">required</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The granularity, in seconds, of the returned data points.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-metrics/metric_stat/stat"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-metrics-metric-stat-stat"><strong>stat</strong></p>
 <a class="ansibleOptionLink" href="#parameter-metrics/metric_stat/stat" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The statistic to return. It can include any CloudWatch statistic or extended statistic.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-metrics/metric_stat/unit"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-metrics-metric-stat-unit"><strong>unit</strong></p>
 <a class="ansibleOptionLink" href="#parameter-metrics/metric_stat/unit" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Unit to use when storing the metric.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-metrics/period"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-metrics-period"><strong>period</strong></p>
 <a class="ansibleOptionLink" href="#parameter-metrics/period" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The granularity, in seconds, of the returned data points.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-metrics/return_data"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-metrics-return-data"><strong>return_data</strong></p>
 <a class="ansibleOptionLink" href="#parameter-metrics/return_data" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -444,21 +460,21 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-name"><strong>name</strong></p>
 <a class="ansibleOptionLink" href="#parameter-name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Unique name for the alarm.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-namespace"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-namespace"><strong>namespace</strong></p>
 <a class="ansibleOptionLink" href="#parameter-namespace" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Name of the appropriate namespace (<code class="ansible-value docutils literal notranslate"><span class="pre">AWS/EC2</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">System/Linux</span></code>, etc.), which determines the category it will appear under in CloudWatch.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-ok_actions"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-ok-actions"><strong>ok_actions</strong></p>
 <a class="ansibleOptionLink" href="#parameter-ok_actions" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
@@ -466,14 +482,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[]</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-period"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-period"><strong>period</strong></p>
 <a class="ansibleOptionLink" href="#parameter-period" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The time (in seconds) between metric evaluations.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-profile"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_profile"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-profile"><span id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-aws-profile"></span><strong>profile</strong></p>
 <a class="ansibleOptionLink" href="#parameter-profile" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_profile</span></p>
@@ -485,7 +501,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 <p>The <em>profile</em> option is mutually exclusive with the <em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> options.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-region"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_region"></div>
 <div class="ansibleOptionAnchor" id="parameter-ec2_region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-region"><span id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-ec2-region"></span><span id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-aws-region"></span><strong>region</strong></p>
@@ -500,7 +516,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_REGION</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-secret_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_secret_access_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_secret_key"></div>
@@ -517,7 +533,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_SECRET_KEY</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-session_token"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_session_token"></div>
 <div class="ansibleOptionAnchor" id="parameter-security_token"></div>
@@ -535,7 +551,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_SECRET_KEY</span></code> and <code class="docutils literal notranslate"><span class="pre">AWS_SECURITY_TOKEN</span></code> environment variables has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-state"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-state"><strong>state</strong></p>
 <a class="ansibleOptionLink" href="#parameter-state" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -547,7 +563,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-statistic"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-statistic"><strong>statistic</strong></p>
 <a class="ansibleOptionLink" href="#parameter-statistic" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -563,14 +579,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-threshold"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-threshold"><strong>threshold</strong></p>
 <a class="ansibleOptionLink" href="#parameter-threshold" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">float</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Sets the min/max bound for triggering the alarm.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-treat_missing_data"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-treat-missing-data"><strong>treat_missing_data</strong></p>
 <a class="ansibleOptionLink" href="#parameter-treat_missing_data" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -584,7 +600,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-unit"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-unit"><strong>unit</strong></p>
 <a class="ansibleOptionLink" href="#parameter-unit" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -621,7 +637,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-validate_certs"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-parameter-validate-certs"><strong>validate_certs</strong></p>
 <a class="ansibleOptionLink" href="#parameter-validate_certs" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -660,6 +676,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 <span class="w">    </span><span class="nt">comparison</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;LessThanOrEqualToThreshold&quot;</span>
 <span class="w">    </span><span class="nt">threshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5.0</span>
 <span class="w">    </span><span class="nt">period</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">300</span>
+<span class="w">    </span><span class="nt">evaluate_low_sample_count_percentile</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ignore&quot;</span>
 <span class="w">    </span><span class="nt">evaluation_periods</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
 <span class="w">    </span><span class="nt">unit</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Percent&quot;</span>
 <span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;This</span><span class="nv"> </span><span class="s">will</span><span class="nv"> </span><span class="s">alarm</span><span class="nv"> </span><span class="s">when</span><span class="nv"> </span><span class="s">a</span><span class="nv"> </span><span class="s">instance&#39;s</span><span class="nv"> </span><span class="s">CPU</span><span class="nv"> </span><span class="s">usage</span><span class="nv"> </span><span class="s">average</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">lower</span><span class="nv"> </span><span class="s">than</span><span class="nv"> </span><span class="s">5%</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">15</span><span class="nv"> </span><span class="s">minutes&quot;</span>
@@ -704,6 +721,231 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 <span class="w">    </span><span class="nt">alarm_actions</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;arn:aws:automate:us-west-1:ec2:recover&quot;</span><span class="p p-Indicator">]</span>
 </pre></div>
 </div>
+</section>
+<section id="return-values">
+<h2><a class="toc-backref" href="#id6" role="doc-backlink">Return Values</a><a class="headerlink" href="#return-values" title="Link to this heading"></a></h2>
+<p>Common return values are documented <a class="reference external" href="https://docs.ansible.com/ansible-core/devel/reference_appendices/common_return_values.html#common-return-values" title="(in Ansible Core vdevel)"><span class="xref std std-ref">here</span></a>, the following are the fields unique to this module:</p>
+<table class="longtable ansible-option-table docutils align-default" style="width: 100%">
+<thead>
+<tr class="row-odd"><th class="head"><p>Key</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-actions_enabled"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-return-actions-enabled"><strong>actions_enabled</strong></p>
+<a class="ansibleOptionLink" href="#return-actions_enabled" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Indicates whether actions should be executed during any changes to the alarm state.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-alarm_actions"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-return-alarm-actions"><strong>alarm_actions</strong></p>
+<a class="ansibleOptionLink" href="#return-alarm_actions" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The actions to execute when this alarm transitions to an ALARM state from any other state.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-alarm_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-return-alarm-arn"><strong>alarm_arn</strong></p>
+<a class="ansibleOptionLink" href="#return-alarm_arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The Amazon Resource Name (ARN) of the alarm.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-comparison"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-return-comparison"><strong>comparison</strong></p>
+<a class="ansibleOptionLink" href="#return-comparison" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The arithmetic operation to use when comparing the specified statistic and threshold.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-description"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-return-description"><strong>description</strong></p>
+<a class="ansibleOptionLink" href="#return-description" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The description of the alarm.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-dimensions"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-return-dimensions"><strong>dimensions</strong></p>
+<a class="ansibleOptionLink" href="#return-dimensions" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The dimensions for the metric.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-dimensions/name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-return-dimensions-name"><strong>name</strong></p>
+<a class="ansibleOptionLink" href="#return-dimensions/name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The name of the dimension.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-dimensions/value"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-return-dimensions-value"><strong>value</strong></p>
+<a class="ansibleOptionLink" href="#return-dimensions/value" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The value of the dimension.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-evaluate_low_sample_count_percentile"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-return-evaluate-low-sample-count-percentile"><strong>evaluate_low_sample_count_percentile</strong></p>
+<a class="ansibleOptionLink" href="#return-evaluate_low_sample_count_percentile" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Used only for alarms based on percentiles.</p>
+<p>If <em>ignore</em>, the alarm state does not change during periods with too few data points to be statistically significant.</p>
+<p>If <em>evaluate</em> or this parameter is not used, the alarm is always evaluated and possibly changes state.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-evaluation_periods"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-return-evaluation-periods"><strong>evaluation_periods</strong></p>
+<a class="ansibleOptionLink" href="#return-evaluation_periods" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The number of periods over which data is compared to the specified threshold.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-extended_statistic"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-return-extended-statistic"><strong>extended_statistic</strong></p>
+<a class="ansibleOptionLink" href="#return-extended_statistic" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The percentile statistic for the metric associated with the alarm.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-insufficient_data_actions"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-return-insufficient-data-actions"><strong>insufficient_data_actions</strong></p>
+<a class="ansibleOptionLink" href="#return-insufficient_data_actions" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The actions to execute when this alarm transitions to an INSUFFICIENT_DATA state from any other state.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-last_updated"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-return-last-updated"><strong>last_updated</strong></p>
+<a class="ansibleOptionLink" href="#return-last_updated" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The time stamp of the last update to the alarm configuration.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-metric"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-return-metric"><strong>metric</strong></p>
+<a class="ansibleOptionLink" href="#return-metric" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Name of the monitored metric (e.g. <code class="docutils literal notranslate"><span class="pre">CPUUtilization</span></code>).</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-metric_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-return-metric-name"><strong>metric_name</strong></p>
+<a class="ansibleOptionLink" href="#return-metric_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Name of the monitored metric (e.g. <code class="docutils literal notranslate"><span class="pre">CPUUtilization</span></code>).</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-metrics"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-return-metrics"><strong>metrics</strong></p>
+<a class="ansibleOptionLink" href="#return-metrics" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>An array of MetricDataQuery structures, used in an alarm based on a metric math expression.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-return-name"><strong>name</strong></p>
+<a class="ansibleOptionLink" href="#return-name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Unique name for the alarm.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-namespace"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-return-namespace"><strong>namespace</strong></p>
+<a class="ansibleOptionLink" href="#return-namespace" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Name of the appropriate namespace (<code class="docutils literal notranslate"><span class="pre">AWS/EC2</span></code>, <code class="docutils literal notranslate"><span class="pre">System/Linux</span></code>, etc.).</p>
+<p>Determines the category it will appear under in CloudWatch.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ok_actions"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-return-ok-actions"><strong>ok_actions</strong></p>
+<a class="ansibleOptionLink" href="#return-ok_actions" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The actions to execute when this alarm transitions to an OK state from any other state.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-period"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-return-period"><strong>period</strong></p>
+<a class="ansibleOptionLink" href="#return-period" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The length, in seconds, used each time the metric specified in MetricName is evaluated.</p>
+<p>Valid values are 10, 30, and any multiple of 60.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-state_reason"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-return-state-reason"><strong>state_reason</strong></p>
+<a class="ansibleOptionLink" href="#return-state_reason" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>An explanation for the alarm state, in text format.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-state_value"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-return-state-value"><strong>state_value</strong></p>
+<a class="ansibleOptionLink" href="#return-state_value" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The state value for the alarm.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-statistic"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-return-statistic"><strong>statistic</strong></p>
+<a class="ansibleOptionLink" href="#return-statistic" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The statistic for the metric associated with the alarm, other than percentile.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-threshold"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-return-threshold"><strong>threshold</strong></p>
+<a class="ansibleOptionLink" href="#return-threshold" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">float</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The value to compare with the specified statistic.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-treat_missing_data"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-return-treat-missing-data"><strong>treat_missing_data</strong></p>
+<a class="ansibleOptionLink" href="#return-treat_missing_data" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Sets how alarm is to handle missing data points.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-unit"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatch-metric-alarm-module-return-unit"><strong>unit</strong></p>
+<a class="ansibleOptionLink" href="#return-unit" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Unit used when storing the metric</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+</tbody>
+</table>
 <section id="authors">
 <h3>Authors<a class="headerlink" href="#authors" title="Link to this heading"></a></h3>
 <ul class="simple">
