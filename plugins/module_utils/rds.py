@@ -8,6 +8,8 @@ from time import sleep
 from typing import Any
 from typing import Dict
 from typing import List
+from typing import Optional
+from typing import Tuple
 
 try:
     from botocore.exceptions import BotoCoreError
@@ -117,7 +119,7 @@ def list_tags_for_resource(client, resource_arn: str) -> List[Dict[str, str]]:
     return client.list_tags_for_resource(ResourceName=resource_arn)["TagList"]
 
 
-def get_rds_method_attribute(method_name, module):
+def get_rds_method_attribute(method_name: str, module: AnsibleAWSModule) -> Boto3ClientMethod:
     """
     Returns rds attributes of the specified method.
 
@@ -208,7 +210,21 @@ def get_rds_method_attribute(method_name, module):
     )
 
 
-def get_final_identifier(method_name, module):
+def get_final_identifier(method_name: str, module: AnsibleAWSModule) -> str:
+    """
+    Returns the final identifier for the resource to which the specified method applies.
+
+        Parameters:
+            method_name (str): RDS method whose target resource final identifier is returned
+            module: AnsibleAWSModule
+
+        Returns:
+            updated_identifier (str): The new resource identifier from module params if not in check mode, there is a new identifier in module params, and
+                apply_immediately is True; otherwise returns the original resource identifier from module params
+
+        Raises:
+            NotImplementedError if the provided method is not supported
+    """
     updated_identifier = None
     apply_immediately = module.params.get("apply_immediately")
     resource = get_rds_method_attribute(method_name, module).resource
@@ -231,7 +247,20 @@ def get_final_identifier(method_name, module):
     return identifier
 
 
-def handle_errors(module, exception, method_name, parameters):
+def handle_errors(module: AnsibleAWSModule, exception: Any, method_name: str, parameters: Dict[str, Any]) -> bool:
+    """
+    Fails the module with an appropriate error message given the provided exception.
+
+        Parameters:
+            module: AnsibleAWSModule
+            exception: Botocore exception to be handled
+            method_name (str): Name of boto3 rds client method
+            parameters (dict): Parameters provided to boto3 client method
+
+        Returns:
+            changed (bool): False if provided exception indicates that no modifications were requested or a read replica promotion was attempted on an
+                instance/cluseter that is not a read replica; should never return True (the module should always fail instead)
+    """
     if not isinstance(exception, ClientError):
         module.fail_json_aws(exception, msg=f"Unexpected failure for method {method_name} with parameters {parameters}")
 
@@ -286,7 +315,23 @@ def handle_errors(module, exception, method_name, parameters):
     return changed
 
 
-def call_method(client, module, method_name, parameters):
+def call_method(client, module: AnsibleAWSModule, method_name: str, parameters: Dict[str, Any]) -> Tuple[Any, bool]:
+    """Calls the provided boto3 rds client method with the provided parameters.
+
+    Handles check mode determination, whether or not to wait for resource status, and method-specific retry codes.
+
+        Parameters:
+            client: boto3 rds client
+            module: Ansible AWS module
+            method_name (str): Name of the boto3 rds client method to call
+            parameters (dict): Parameters to pass to the boto3 client method; these must already match expected parameters for the method and
+                be formatted correctly (CamelCase, Tags and other attributes converted to lists of dicts as needed)
+
+        Returns:
+            tuple (any, bool):
+                result (any): Result value from method call
+                changed (bool): True if changes were made to the resource, False otherwise
+    """
     result = {}
     changed = True
     if not module.check_mode:
@@ -304,7 +349,19 @@ def call_method(client, module, method_name, parameters):
     return result, changed
 
 
-def wait_for_instance_status(client, module, db_instance_id, waiter_name):
+def wait_for_instance_status(client, module: AnsibleAWSModule, db_instance_id: str, waiter_name: str) -> None:
+    """
+    Waits until provided instance has reached the expected status for provided waiter.
+
+    Fails the module if an exception is raised while waiting.
+
+        Parameters:
+            client: boto3 rds client
+            module: AnsibleAWSModule
+            db_instance_id (str): DB instance identifier
+            waiter_name (str): Name of either a boto3 rds client waiter or an RDS waiter defined in module_utils/waiters.py
+    """
+
     def wait(client, db_instance_id, waiter_name):
         try:
             waiter = client.get_waiter(waiter_name)
@@ -334,7 +391,18 @@ def wait_for_instance_status(client, module, db_instance_id, waiter_name):
             )
 
 
-def wait_for_cluster_status(client, module, db_cluster_id, waiter_name):
+def wait_for_cluster_status(client, module: AnsibleAWSModule, db_cluster_id: str, waiter_name: str) -> None:
+    """
+    Waits until provided cluster has reached the expected status for provided waiter.
+
+    Fails the module if an exception is raised while waiting.
+
+        Parameters:
+            client: boto3 rds client
+            module: AnsibleAWSModule
+            db_cluster_id (str): DB cluster identifier
+            waiter_name (str): Name of either a boto3 rds client waiter or an RDS waiter defined in module_utils/waiters.py
+    """
     try:
         get_waiter(client, waiter_name).wait(DBClusterIdentifier=db_cluster_id)
     except WaiterError as e:
@@ -347,7 +415,18 @@ def wait_for_cluster_status(client, module, db_cluster_id, waiter_name):
         module.fail_json_aws(e, msg=f"Failed with an unexpected error while waiting for the DB cluster {db_cluster_id}")
 
 
-def wait_for_instance_snapshot_status(client, module, db_snapshot_id, waiter_name):
+def wait_for_instance_snapshot_status(client, module: AnsibleAWSModule, db_snapshot_id: str, waiter_name: str) -> None:
+    """
+    Waits until provided instance snapshot has reached the expected status for provided waiter.
+
+    Fails the module if an exception is raised while waiting.
+
+        Parameters:
+            client: boto3 rds client
+            module: AnsibleAWSModule
+            db_snapshot_id (str): DB instance snapshot identifier
+            waiter_name (str): Name of a boto3 rds client waiter
+    """
     try:
         client.get_waiter(waiter_name).wait(DBSnapshotIdentifier=db_snapshot_id)
     except WaiterError as e:
@@ -362,7 +441,18 @@ def wait_for_instance_snapshot_status(client, module, db_snapshot_id, waiter_nam
         )
 
 
-def wait_for_cluster_snapshot_status(client, module, db_snapshot_id, waiter_name):
+def wait_for_cluster_snapshot_status(client, module: AnsibleAWSModule, db_snapshot_id: str, waiter_name: str) -> None:
+    """
+    Waits until provided cluster snapshot has reached the expected status for provided waiter.
+
+    Fails the module if an exception is raised while waiting.
+
+        Parameters:
+            client: boto3 rds client
+            module: AnsibleAWSModule
+            db_snapshot_id (str): DB cluster snapshot identifier
+            waiter_name (str): Name of a boto3 rds client waiter
+    """
     try:
         client.get_waiter(waiter_name).wait(DBClusterSnapshotIdentifier=db_snapshot_id)
     except WaiterError as e:
@@ -378,7 +468,16 @@ def wait_for_cluster_snapshot_status(client, module, db_snapshot_id, waiter_name
         )
 
 
-def wait_for_status(client, module, identifier, method_name):
+def wait_for_status(client, module: AnsibleAWSModule, identifier: str, method_name: str) -> None:
+    """
+    Waits until provided resource has reached the expected final status for provided method.
+
+        Parameters:
+            client: boto3 rds client
+            module: AnsibleAWSModule
+            identifier (str): resource identifier
+            method_name (str): Name of boto3 rds client method on whose final status to wait
+    """
     rds_method_attributes = get_rds_method_attribute(method_name, module)
     waiter_name = rds_method_attributes.waiter
     resource = rds_method_attributes.resource
@@ -414,7 +513,19 @@ def get_tags(client, module: AnsibleAWSModule, resource_arn: str) -> Dict[str, s
     return boto3_tag_list_to_ansible_dict(tags)
 
 
-def arg_spec_to_rds_params(options_dict):
+def arg_spec_to_rds_params(options_dict: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Converts snake_cased rds module options to CamelCased parameter formats expected by boto3 rds client.
+
+    Does not alter case for keys or values in the following attributes: tags, processor_features.
+    Includes special handling of certain boto3 params that do not follow standard CamelCase.
+
+        Parameters:
+            options_dict (dict): Snake-cased options for a boto3 rds client method
+
+        Returns:
+            camel_options (dct): Options formatted for boto3 rds client
+    """
     tags = options_dict.pop("tags")
     has_processor_features = False
     if "processor_features" in options_dict:
@@ -431,7 +542,30 @@ def arg_spec_to_rds_params(options_dict):
     return camel_options
 
 
-def ensure_tags(client, module, resource_arn, existing_tags, tags, purge_tags):
+def ensure_tags(
+    client,
+    module: AnsibleAWSModule,
+    resource_arn: str,
+    existing_tags: Dict[str, str],
+    tags: Optional[Dict[str, str]],
+    purge_tags: bool,
+) -> bool:
+    """
+    Compares current resource tages to desired tags and adds/removes tags to ensure desired tags are present.
+
+    A value of None for desired tags results in resource tags being left as is.
+
+        Parameters:
+            client: boto3 rds client
+            module: AnsibleAWSModule
+            resource_arn (str): AWS resource ARN
+            existing_tags (dict): Current resource tags formatted as an Ansible dict
+            tags (dict): Desired resource tags formatted as an Ansible dict
+            purge_tags (bool): Whether to remove any existing resource tags not present in desired tags
+
+        Returns:
+            True if resource tags are updated, False if not.
+    """
     if tags is None:
         return False
     tags_to_add, tags_to_remove = compare_aws_tags(existing_tags, tags, purge_tags)
@@ -453,13 +587,15 @@ def ensure_tags(client, module, resource_arn, existing_tags, tags, purge_tags):
     return changed
 
 
-def compare_iam_roles(existing_roles, target_roles, purge_roles):
+def compare_iam_roles(
+    existing_roles: List[Dict[str, str]], target_roles: List[Dict[str, str]], purge_roles: bool
+) -> Tuple[List[Dict[str, str]], List[Dict[str, str]]]:
     """
-    Returns differences between target and existing IAM roles
+    Returns differences between target and existing IAM roles.
 
         Parameters:
-            existing_roles (list): Existing IAM roles
-            target_roles (list): Target IAM roles
+            existing_roles (list): Existing IAM roles as a list of snake-cased dicts
+            target_roles (list): Target IAM roles as a list of snake-cased dicts
             purge_roles (bool): Remove roles not in target_roles if True
 
         Returns:
@@ -472,7 +608,13 @@ def compare_iam_roles(existing_roles, target_roles, purge_roles):
     return roles_to_add, roles_to_remove
 
 
-def update_iam_roles(client, module, instance_id, roles_to_add, roles_to_remove):
+def update_iam_roles(
+    client,
+    module: AnsibleAWSModule,
+    instance_id: str,
+    roles_to_add: List[Dict[str, str]],
+    roles_to_remove: List[Dict[str, str]],
+) -> bool:
     """
     Update a DB instance's associated IAM roles
 
@@ -480,8 +622,8 @@ def update_iam_roles(client, module, instance_id, roles_to_add, roles_to_remove)
             client: RDS client
             module: AnsibleAWSModule
             instance_id (str): DB's instance ID
-            roles_to_add (list): List of IAM roles to add
-            roles_to_delete (list): List of IAM roles to delete
+            roles_to_add (list): List of IAM roles to add in snake-cased dict format
+            roles_to_delete (list): List of IAM roles to delete in snake-cased dict format
 
         Returns:
             changed (bool): True if changes were successfully made to DB instance's IAM roles; False if not
@@ -497,7 +639,7 @@ def update_iam_roles(client, module, instance_id, roles_to_add, roles_to_remove)
 
 @AWSRetry.jittered_backoff()
 def describe_db_cluster_parameter_groups(
-    module: AnsibleAWSModule, connection: Any, group_name: str
+    module: AnsibleAWSModule, connection: Any, group_name: Optional[str]
 ) -> List[Dict[str, Any]]:
     result = []
     try:
