@@ -166,6 +166,7 @@ EXAMPLES = r"""
 RETURN = r"""
 rule:
     description: CloudWatch Event rule data.
+    returned: success
     type: dict
     contains:
       name:
@@ -199,6 +200,7 @@ rule:
         sample: 'arn:aws:events:us-east-1:123456789012:rule/MyCronTask'
 targets:
     description: CloudWatch Event target(s) assigned to the rule.
+    returned: success
     type: list
     elements: dict
     contains:
