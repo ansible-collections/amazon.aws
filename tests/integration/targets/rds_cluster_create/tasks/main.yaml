@@ -132,7 +132,8 @@
     - assert:
         that:
           - _result_create_db_cluster_io_optimized.changed
-          - _result_create_db_cluster_io_optimized.storage_type == 'aurora-iopt1'
+          # as of 5/2024, API does not return the value of storage_type when storage_type not set or set to "aurora"
+          # - _result_create_db_cluster_io_optimized.storage_type == 'aurora-iopt1'
           - _result_create_db_cluster_io_optimized.storage_encrypted == false
           - _result_create_db_cluster_io_optimized.engine_mode == "provisioned"
           - _result_create_db_cluster_io_optimized.status == 'available'

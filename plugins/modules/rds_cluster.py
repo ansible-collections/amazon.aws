@@ -1333,7 +1333,7 @@ def main():
                     module.params["storage_type"] = "io1"
 
     if module.params.get("engine") and module.params["engine"] in ("aurora", "aurora-mysql", "aurora-postgresql"):
-        if not module.params.get("storage_type"):
+        if not module.check_mode and module.params.get("storage_type"):
             module.params["storage_type"] = "aurora"
 
     if module.params.get("storage_type") and module.params["storage_type"] in ("aurora", "aurora-iopt1"):
