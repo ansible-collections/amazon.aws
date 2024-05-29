@@ -33,7 +33,7 @@ options:
   rules:
     description:
       - An array of BackupRule objects, each of which specifies a scheduled task that is used to back up a selection of resources.
-      - Required when o(state=present).
+      - Required when O(state=present).
     type: list
     elements: dict
     suboptions:
@@ -83,7 +83,7 @@ options:
           delete_after_days:
             description: Specifies the number of days after creation that a recovery
               point is deleted. Must be greater than V(90) days plus
-              o(rules.lifecycle.move_to_cold_storage_after_days).
+              O(rules.lifecycle.move_to_cold_storage_after_days).
             type: int
       recovery_point_tags:
         description: To help organize your resources, you can assign your own metadata to the resources that you create.
@@ -115,7 +115,7 @@ options:
               delete_after_days:
                 description: Specifies the number of days after creation that a
                   recovery point is deleted. Must be greater than V(90) days plus
-                   o(rules.copy_actions.lifecycle.move_to_cold_storage_after_days).
+                   O(rules.copy_actions.lifecycle.move_to_cold_storage_after_days).
                 type: int
       enable_continuous_backup:
         description:
@@ -284,7 +284,7 @@ backup_plan:
           description:
             - Defines when a protected resource is transitioned to cold storage and when it expires.
           type: dict
-          returned: when o(rules.lifecycle) configured
+          returned: when configured.
           sample: {
                     "delete_after_days": 100,
                     "move_to_cold_storage_after_days": 10
@@ -294,7 +294,7 @@ backup_plan:
             - An array of key-value pair strings that are assigned to resources that are associated with
               this rule when restored from backup.
           type: dict
-          returned: when o(rules.recovery_point_tags) configured
+          returned: when configured.
           sample: {
                     "Tagkey1": "TagValue1",
                     "Tagkey2": "TagValue2"
@@ -307,7 +307,7 @@ backup_plan:
           sample: "973621ef-d863-41ef-b5c3-9e943a64ad0c"
         copy_actions:
           description: An array of CopyAction objects, which contains the details of the copy operation.
-          returned: when o(rules.copy_actions) configured
+          returned: when configured.
           type: list
           elements: dict
           sample: [
@@ -334,7 +334,7 @@ backup_plan:
           version_added: 7.3.0
     advanced_backup_settings:
       description: Advanced backup settings of the backup plan.
-      returned: when configured
+      returned: when configured.
       type: list
       elements: dict
       sample: [
