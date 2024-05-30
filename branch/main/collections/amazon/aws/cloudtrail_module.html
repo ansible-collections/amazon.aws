@@ -598,6 +598,15 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudtra
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-trail/has_insight_selectors"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudtrail-module-return-trail-has-insight-selectors"><strong>has_insight_selectors</strong></p>
+<a class="ansibleOptionLink" href="#return-trail/has_insight_selectors" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Whether any insight selectors are used for this trail.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">false</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-trail/home_region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudtrail-module-return-trail-home-region"><strong>home_region</strong></p>
 <a class="ansibleOptionLink" href="#return-trail/home_region" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -606,7 +615,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudtra
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;us-east-1&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-trail/include_global_service_events"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudtrail-module-return-trail-include-global-service-events"><strong>include_global_service_events</strong></p>
 <a class="ansibleOptionLink" href="#return-trail/include_global_service_events" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -615,7 +624,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudtra
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">true</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-trail/is_logging"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudtrail-module-return-trail-is-logging"><strong>is_logging</strong></p>
 <a class="ansibleOptionLink" href="#return-trail/is_logging" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -624,11 +633,20 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudtra
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">true</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-trail/is_multi_region_trail"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudtrail-module-return-trail-is-multi-region-trail"><strong>is_multi_region_trail</strong></p>
 <a class="ansibleOptionLink" href="#return-trail/is_multi_region_trail" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Whether the trail applies to all regions or just one.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">true</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-trail/is_organization_trail"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudtrail-module-return-trail-is-organization-trail"><strong>is_organization_trail</strong></p>
+<a class="ansibleOptionLink" href="#return-trail/is_organization_trail" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Specifies whether the trail is created for all accounts in an organization in Organizations, or only for the current Amazon Web Services account.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">true</span></code></p>
 </div></td>
