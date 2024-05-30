@@ -864,6 +864,8 @@ vpc_security_groups:
 from time import sleep
 from typing import Any
 from typing import Dict
+from typing import List
+from typing import Optional
 
 from ansible.module_utils._text import to_text
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
@@ -916,7 +918,22 @@ valid_engines_iam_roles = [
 ]
 
 
-def get_rds_method_attribute_name(instance, state, creation_source, read_replica):
+def get_rds_method_attribute_name(
+    instance: Dict, state: str, creation_source: str, read_replica: Optional[bool]
+) -> Optional[str]:
+    """
+    Returns the target boto3 rds client method name given the provided module options and current instance state.
+
+        Parameters:
+            instance (dict): Current instance attributes as returned by get_instance()
+            state (str): Desired instance state as provided to module options
+            creation_source (str): Creation source to use for restoring an instance as provided to module options
+            read_replica (bool): Whether to create (True) or promote (False) a read replica as provided to module options
+
+        Returns:
+            method_name (str): Name of boto3 rds client method needed to achieve desired state. Returns None if desired state is "absent" or "terminated" and
+                current instance is None or the current instance status is "deleting" or "deleted"
+    """
     method_name = None
     if state == "absent" or state == "terminated":
         if instance and instance["DBInstanceStatus"] not in ["deleting", "deleted"]:
@@ -1005,7 +1022,31 @@ def get_final_snapshot(client, module: AnsibleAWSModule, snapshot_identifier: st
     return snapshot
 
 
-def get_parameters(client, module, parameters, method_name):
+def get_parameters(client, module: AnsibleAWSModule, parameters: Dict[str, Any], method_name: str) -> Dict[str, Any]:
+    """
+    Returns a dict of parameters validated and formatted for the provided boto3 client method.
+
+    Performs the following parameters checks and updates:
+        - Converts parameters supplied as snake_cased module options to CamelCase
+        - Ensures that all required parameters for the provided method are present
+        - Ensures that only parameters allowed for the provided method are present, removing any that are not relevant
+        - Removes parameters with None values
+        - Converts the following dict parameters to lists of dicts as expected by the boto3 rds client: ProcessorFeatures, Tags
+        - If method is "modify_db_instance", compares supplied parameters to current instance attributes, determines which parameters need to be modified, and
+            removes any parameters that do not need to be modified
+
+        Parameters:
+            client: boto3 rds client
+            module: AnsibleAWSModule
+            parameters (dict): Parameter options from module argument_spec
+            method_name: boto3 client method for which to validate parameters
+
+        Returns:
+            Dict of client parameters formatted for the provided method
+
+        Raises:
+            Fails the module if any parameters required by the provided method are not provided in module options
+    """
     if method_name == "restore_db_instance_to_point_in_time":
         parameters["TargetDBInstanceIdentifier"] = module.params["db_instance_identifier"]
 
@@ -1029,13 +1070,29 @@ def get_parameters(client, module, parameters, method_name):
         if parameters.get("Tags"):
             parameters["Tags"] = ansible_dict_to_boto3_tag_list(parameters["Tags"])
 
+    # For modify_db_instance method, update parameters to include all params that need to be modified by comparing them to current instance attributes
     if method_name == "modify_db_instance":
         parameters = get_options_with_changing_values(client, module, parameters)
 
     return parameters
 
 
-def get_options_with_changing_values(client, module, parameters):
+def get_options_with_changing_values(client, module: AnsibleAWSModule, parameters: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Compares current instance attributes to the provided parameters and module options and returns parameters with values to be modified.
+
+        Parameters:
+            client: boto3 rds client
+            module: AnsibleAWSModule
+            parameters (dict): Parameters for boto3 client modify_db_instance method
+
+        Returns:
+            parameters (dict): Updated parameters including only parameters that need to be modified, renamed and formatted as expected by boto3 client
+                modify_db_instance method
+
+        Raises:
+            Fails the module if invalid changes are provided for iops or storage_throughput values
+    """
     instance_id = module.params["db_instance_identifier"]
     purge_cloudwatch_logs = module.params["purge_cloudwatch_logs_exports"]
     force_update_password = module.params["force_update_password"]
@@ -1057,12 +1114,15 @@ def get_options_with_changing_values(client, module, parameters):
         parameters.pop("Iops", None)
 
     instance = get_instance(client, module, instance_id)
+
+    # Determine which parameters need to be modified
     updated_parameters = get_changing_options_with_inconsistent_keys(
         parameters, instance, purge_cloudwatch_logs, purge_security_groups
     )
     updated_parameters.update(get_changing_options_with_consistent_keys(parameters, instance))
     parameters = updated_parameters
 
+    # Validate changes to storage type options
     if instance.get("StorageType") == "io1":
         # Bundle Iops and AllocatedStorage while updating io1 RDS Instance
         current_iops = instance.get("PendingModifiedValues", {}).get("Iops", instance["Iops"])
@@ -1134,8 +1194,26 @@ def get_options_with_changing_values(client, module, parameters):
     return parameters
 
 
-def get_current_attributes_with_inconsistent_keys(instance):
-    options = {}
+def get_current_attributes_with_inconsistent_keys(instance: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Returns current instance attributes whose formats differ from those expected by boto3 client modify_db_instance method, updated to match method options.
+
+    Option formats for the boto3 client modify_db_instance method do not always match their corresponding attributes returned by describe_db_instances.
+    To ensure that we are accurately comparing the two dicts for changes, this function:
+        - Checks for pending modified values in these instance attributes and updates the corresponding current attributes to match the pending values
+        - Converts these instance attribute names and value formats to those expected by the modify_db_instance method
+
+        Parameters:
+            instance (dict): Current instance attributes as returned by get_instance()
+
+        Returns:
+            options (dict): Current instance attributes updated to match the boto3 client modify_db_instance method option formatting. Only returns attributes
+                whose format varies between the returned attributes and the method options (i.e., excludes any attributes whose formats already match what the
+                boto3 client method expects)
+    """
+    options: Dict[str, Any] = {}
+
+    # Check for any pending cloudwatch logs exports configuration changes and add them to CloudwatchLogsExportConfiguration option
     if instance.get("PendingModifiedValues", {}).get("PendingCloudwatchLogsExports", {}).get("LogTypesToEnable", []):
         current_enabled = instance["PendingModifiedValues"]["PendingCloudwatchLogsExports"]["LogTypesToEnable"]
         current_disabled = instance["PendingModifiedValues"]["PendingCloudwatchLogsExports"]["LogTypesToDisable"]
@@ -1143,11 +1221,15 @@ def get_current_attributes_with_inconsistent_keys(instance):
             "LogTypesToEnable": current_enabled,
             "LogTypesToDisable": current_disabled,
         }
+    # If there are no pending cloudwatch logs exports configuration changes, set CloudwatchLogsExportConfiguration option to match current enabled cloudwatch
+    # logs exports attribute
     else:
         options["CloudwatchLogsExportConfiguration"] = {
             "LogTypesToEnable": instance.get("EnabledCloudwatchLogsExports", []),
             "LogTypesToDisable": [],
         }
+
+    # Check for pending changes on other attributes, if not then set options to current attribute values
     if instance.get("PendingModifiedValues", {}).get("Port"):
         options["DBPortNumber"] = instance["PendingModifiedValues"]["Port"]
     else:
@@ -1160,6 +1242,8 @@ def get_current_attributes_with_inconsistent_keys(instance):
         options["ProcessorFeatures"] = instance["PendingModifiedValues"]["ProcessorFeatures"]
     else:
         options["ProcessorFeatures"] = instance.get("ProcessorFeatures", {})
+
+    # Convert current instance's attributes that are lists of dicts to lists of string values for comparison and set the options to updated lists
     options["OptionGroupName"] = [g["OptionGroupName"] for g in instance["OptionGroupMemberships"]]
     options["DBSecurityGroups"] = [
         sg["DBSecurityGroupName"] for sg in instance["DBSecurityGroups"] if sg["Status"] in ["adding", "active"]
@@ -1171,6 +1255,7 @@ def get_current_attributes_with_inconsistent_keys(instance):
         parameter_group["DBParameterGroupName"] for parameter_group in instance["DBParameterGroups"]
     ]
     options["EnableIAMDatabaseAuthentication"] = instance["IAMDatabaseAuthenticationEnabled"]
+
     # PerformanceInsightsEnabled is not returned on older RDS instances it seems
     options["EnablePerformanceInsights"] = instance.get("PerformanceInsightsEnabled", False)
     options["NewDBInstanceIdentifier"] = instance["DBInstanceIdentifier"]
@@ -1182,8 +1267,24 @@ def get_current_attributes_with_inconsistent_keys(instance):
     return options
 
 
-def get_changing_options_with_inconsistent_keys(modify_params, instance, purge_cloudwatch_logs, purge_security_groups):
-    changing_params = {}
+def get_changing_options_with_inconsistent_keys(
+    modify_params: Dict[str, Any], instance: Dict[str, Any], purge_cloudwatch_logs: bool, purge_security_groups: bool
+) -> Dict[str, Any]:
+    """
+    Compares current instance attributes with provided parameters whose formats are inconsistent between describe_db_instances and modify_db_instance methods.
+
+        Parameters:
+            modify_params (dict): Parameters to be supplied to boto3 client modify_db_instance method; should already be validated and formatted
+            instance (dict): Current instance attributes as returned by get_instance()
+            purge_cloudwatch_logs (bool): True if currently enabled cloudwatch logs exports should be removed from configuration when not in provided
+                parameters, False if they should be retained
+            purge_security_groups (bool): True if currently associated security groups should be removed from instance if not in provided parameters, False if
+                they should be retained
+
+        Returns:
+                changing_params (dict): Parameters to be modified
+    """
+    changing_params: Dict[str, Any] = {}
     current_options = get_current_attributes_with_inconsistent_keys(instance)
     for option, current_option in current_options.items():
         desired_option = modify_params.pop(option, None)
@@ -1192,17 +1293,22 @@ def get_changing_options_with_inconsistent_keys(modify_params, instance, purge_c
 
         # TODO: allow other purge_option module parameters rather than just checking for things to add
         if isinstance(current_option, list):
+            # Compare lists
             if isinstance(desired_option, list):
                 if (
                     set(desired_option) < set(current_option)
                     and option in ["DBSecurityGroups", "VpcSecurityGroupIds"]
                     and purge_security_groups
                 ):
+                    # There are associated security groups to be purged
                     changing_params[option] = desired_option
                 elif set(desired_option) <= set(current_option):
+                    # Desired option set is entirely contained within current option set and purge is False, nothing to change
                     continue
             elif isinstance(desired_option, string_types):
+                # Current option is a list and desired option is a string
                 if desired_option in current_option:
+                    # Desired option is in current options, nothing to change
                     continue
 
         # Current option and desired option are the same - continue loop
@@ -1212,19 +1318,25 @@ def get_changing_options_with_inconsistent_keys(modify_params, instance, purge_c
         if option == "ProcessorFeatures" and current_option == boto3_tag_list_to_ansible_dict(
             desired_option, "Name", "Value"
         ):
+            # Processor features are the same, continue loop
             continue
 
         # Current option and desired option are different - add to changing_params list
         if option == "ProcessorFeatures" and desired_option == []:
+            # Update to use default processor features
             changing_params["UseDefaultProcessorFeatures"] = True
         elif option == "CloudwatchLogsExportConfiguration":
+            # Update cloudwatch logs enabled/disabled
             current_option = set(current_option.get("LogTypesToEnable", []))
             desired_option = set(desired_option)
-            format_option = {"EnableLogTypes": [], "DisableLogTypes": []}
+            format_option: Dict[str, List] = {"EnableLogTypes": [], "DisableLogTypes": []}
+            # Set enable list to any items from desired not in current
             format_option["EnableLogTypes"] = list(desired_option.difference(current_option))
             if purge_cloudwatch_logs:
+                # If purge is true, set disable list to difference between current and desired
                 format_option["DisableLogTypes"] = list(current_option.difference(desired_option))
             if format_option["EnableLogTypes"] or format_option["DisableLogTypes"]:
+                # Update cloudwatch logs configuration option to reflect changes
                 changing_params[option] = format_option
         elif option in ["DBSecurityGroups", "VpcSecurityGroupIds"]:
             if purge_security_groups:
@@ -1237,8 +1349,20 @@ def get_changing_options_with_inconsistent_keys(modify_params, instance, purge_c
     return changing_params
 
 
-def get_changing_options_with_consistent_keys(modify_params, instance):
-    changing_params = {}
+def get_changing_options_with_consistent_keys(
+    modify_params: Dict[str, Any], instance: Dict[str, Any]
+) -> Dict[str, Any]:
+    """
+    Compares current instance attributes with provided parameters whose attribute and parameter formats match.
+
+        Parameters:
+            modify_params (dict): Parameters to be supplied to boto3 client modify_db_instance method; should already be validated and formatted
+            instance (dict): Current instance attributes as returned by get_instance()
+
+        Returns:
+            changing_params (dict): Parameters to be modified
+    """
+    changing_params: Dict[str, Any] = {}
 
     for param in modify_params:
         current_option = instance.get("PendingModifiedValues", {}).get(param, None)
@@ -1250,7 +1374,18 @@ def get_changing_options_with_consistent_keys(modify_params, instance):
     return changing_params
 
 
-def validate_options(client, module, instance):
+def validate_options(client, module: AnsibleAWSModule, instance: Dict[str, Any]) -> None:
+    """
+    Validates complex module option logic and fails the module with an error message if options are invalid.
+
+        Parameters:
+            client: boto3 rds client
+            module: AnsibleAWSModule
+            instance (dict): Current instance attributes as returned by get_instance()
+
+        Raises:
+            Fails the module if provided module options are incompatible with each other or with current instance attributes
+    """
     state = module.params["state"]
     skip_final_snapshot = module.params["skip_final_snapshot"]
     snapshot_id = module.params["final_db_snapshot_identifier"]
@@ -1289,7 +1424,19 @@ def validate_options(client, module, instance):
         )
 
 
-def update_instance(client, module, instance, instance_id):
+def update_instance(client, module: AnsibleAWSModule, instance: Dict[str, Any], instance_id: str) -> bool:
+    """
+    Ensures that an existing instance's tags, read replica status, and state match what is supplied in module options.
+
+        Parameters:
+            client: boto3 rds client
+            module: AnsibleAWSModule
+            instance (dict): Current instance attributes as returned by get_instance()
+            instance_id (str): Existing instance identifier, used to retrieve instance attributes if provided instance dict is empty
+
+        Returns:
+            changed (bool): True if instance was successfully updated, False if not
+    """
     changed = False
 
     # Get newly created DB instance
@@ -1306,7 +1453,24 @@ def update_instance(client, module, instance, instance_id):
     return changed
 
 
-def promote_replication_instance(client, module, instance, read_replica):
+def promote_replication_instance(
+    client, module: AnsibleAWSModule, instance: Dict[str, Any], read_replica: bool
+) -> bool:
+    """
+    Promotes the provided DB instance from a read replica to a standalone instance.
+
+    Only promotes the instance if read_replica is False, which is confusing but is how the module is documented.
+    Returns changed=False without any warning or error message if the provided instance is not a read replica.
+
+        Parameters:
+            client: boto3 rds client
+            module: AnsibleAWSModule
+            instance (dict): Current instance attributes as returned by get_instance()
+            read_replica (bool): False if instance should be promoted
+
+        Returns:
+            changed (bool): True if provided instance was successfully promoted, False if not
+    """
     changed = False
     if read_replica is False:
         # 'StatusInfos' only exists when the instance is a read replica
@@ -1324,14 +1488,14 @@ def promote_replication_instance(client, module, instance, read_replica):
     return changed
 
 
-def ensure_iam_roles(client, module, instance_id):
+def ensure_iam_roles(client, module: AnsibleAWSModule, instance_id: str) -> bool:
     """
-    Ensure specified IAM roles are associated with DB instance
+    Ensure specified IAM roles are associated with DB instance.
 
         Parameters:
-            client: RDS client
-            module: AWSModule
-            instance_id: DB's instance ID
+            client: boto3 rds client
+            module: AnsibleAWSModule
+            instance_id (str): Existing DB instance identifier
 
         Returns:
             changed (bool): True if changes were successfully made to DB instance's IAM roles; False if not
@@ -1362,7 +1526,19 @@ def ensure_iam_roles(client, module, instance_id):
     return changed
 
 
-def update_instance_state(client, module, instance, state):
+def update_instance_state(client, module: AnsibleAWSModule, instance: Dict[str, Any], state: str) -> bool:
+    """
+    Starts, stops, or reboots an instance given the desired state and current instance attributes.
+
+        Parameters:
+            client: boto3 rds client
+            module: AnsibleAWSModule
+            instance (dict): Current instance attributes as returned by get_instance()
+            state (str): Desired instance state as provided to module options
+
+        Returns:
+            changed (bool): True if DB instance state was updated, False if not
+    """
     changed = False
     if state in ["rebooted", "restarted"]:
         changed |= reboot_running_db_instance(client, module, instance)
@@ -1371,7 +1547,20 @@ def update_instance_state(client, module, instance, state):
     return changed
 
 
-def reboot_running_db_instance(client, module, instance):
+def reboot_running_db_instance(client, module: AnsibleAWSModule, instance: Dict[str, Any]) -> bool:
+    """
+    Reboots provided instance.
+
+    If the instance is currently stopped or stopping, restarts it first.
+
+        Parameters:
+            client: boto3 rds client
+            module: AnsibleAWSModule
+            instance (dict): Current instance attributes as returned by get_instance()
+
+        Returns:
+            changed (bool): True if instance was successfully rebooted, False otherwise.
+    """
     parameters = {"DBInstanceIdentifier": instance["DBInstanceIdentifier"]}
     if instance["DBInstanceStatus"] in ["stopped", "stopping"]:
         call_method(client, module, "start_db_instance", parameters)
@@ -1381,7 +1570,21 @@ def reboot_running_db_instance(client, module, instance):
     return changed
 
 
-def start_or_stop_instance(client, module, instance, state):
+def start_or_stop_instance(client, module: AnsibleAWSModule, instance: Dict[str, Any], state: str) -> bool:
+    """
+    Starts or stops provided instance given desired state.
+
+    Checks whether the instance is already in or pending the desired state, if so does not alter it.
+
+        Parameters:
+            client: boto3 rds client
+            module: AnsibleAWSModule
+            instance (dict): Current instance attributes as returned by get_instance()
+            state (str): Desired instance state as provided to module options
+
+        Returns:
+            changed (bool): True if instance was started or stopped, False if not
+    """
     changed = False
     parameters = {"DBInstanceIdentifier": instance["DBInstanceIdentifier"]}
     if state == "stopped" and instance["DBInstanceStatus"] not in ["stopping", "stopped"]:
