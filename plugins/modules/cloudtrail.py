@@ -201,8 +201,19 @@ trail:
             returned: success
             type: bool
             sample: true
+        is_organization_trail:
+            description:
+            - Specifies whether the trail is created for all accounts in an organization in Organizations, or only for the current Amazon Web Services account.
+            returned: success
+            type: bool
+            sample: true
         has_custom_event_selectors:
             description: Whether any custom event selectors are used for this trail.
+            returned: success
+            type: bool
+            sample: False
+        has_insight_selectors:
+            description: Whether any insight selectors are used for this trail.
             returned: success
             type: bool
             sample: False

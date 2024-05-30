@@ -168,17 +168,52 @@ rule:
     description: CloudWatch Event rule data.
     returned: success
     type: dict
-    sample:
-      arn: 'arn:aws:events:us-east-1:123456789012:rule/MyCronTask'
-      description: 'Run my scheduled task'
-      name: 'MyCronTask'
-      schedule_expression: 'cron(0 20 * * ? *)'
-      state: 'ENABLED'
+    contains:
+      name:
+        description:
+          - The name of the rule you are creating, updating or deleting.
+        returned: success
+        type: str
+        sample: "MyCronTask"
+      schedule_expression:
+        description:
+          - A cron or rate expression that defines the schedule the rule will trigger on.
+        returned: success
+        type: str
+        sample: 'cron(0 20 * * ? *)'
+      state:
+        description:
+          - Whether the rule is present (and enabled), disabled, or absent.
+        returned: success
+        type: str
+        sample: "enabled"
+      description:
+        description:
+          - A description of the rule.
+        returned: success
+        type: str
+        sample: "Run my scheduled task"
+      arn:
+        description: The ARN associated with the rule.
+        type: str
+        returned: success
+        sample: 'arn:aws:events:us-east-1:123456789012:rule/MyCronTask'
 targets:
     description: CloudWatch Event target(s) assigned to the rule.
     returned: success
     type: list
-    sample: "[{ 'arn': 'arn:aws:lambda:us-east-1:123456789012:function:MyFunction', 'id': 'MyTargetId' }]"
+    elements: dict
+    contains:
+      id:
+        description: The unique target assignment ID.
+        type: str
+        returned: success
+        sample: 'MyTargetId'
+      arn:
+        description: The ARN associated with the target.
+        type: str
+        returned: success
+        sample: 'arn:aws:lambda:us-east-1:123456789012:function:MyFunction'
 """
 
 import json
