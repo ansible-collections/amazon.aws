@@ -862,30 +862,26 @@ vpc_security_groups:
 """
 
 from time import sleep
-
-try:
-    import botocore
-except ImportError:
-    pass  # caught by AnsibleAWSModule
-
+from typing import Any
+from typing import Dict
 
 from ansible.module_utils._text import to_text
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils.six import string_types
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import get_boto3_client_method_parameters
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_message
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.rds import AnsibleRDSError
 from ansible_collections.amazon.aws.plugins.module_utils.rds import arg_spec_to_rds_params
 from ansible_collections.amazon.aws.plugins.module_utils.rds import call_method
 from ansible_collections.amazon.aws.plugins.module_utils.rds import compare_iam_roles
+from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_instances
+from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_snapshots
 from ansible_collections.amazon.aws.plugins.module_utils.rds import ensure_tags
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_final_identifier
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_rds_method_attribute
-from ansible_collections.amazon.aws.plugins.module_utils.rds import get_tags
 from ansible_collections.amazon.aws.plugins.module_utils.rds import update_iam_roles
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 
@@ -941,47 +937,72 @@ def get_rds_method_attribute_name(instance, state, creation_source, read_replica
     return method_name
 
 
-def get_instance(client, module, db_instance_id):
+def get_instance(client, module: AnsibleAWSModule, db_instance_id: str) -> Dict[str, Any]:
+    """
+    Returns attributes for the provided db instance.
+
+        Parameters:
+            client: boto3 rds client
+            module: AnsibleAWSModule
+            db_instance_id (str): DB instance identifier
+
+        Returns:
+            instance (dict): DB instance attributes with the following boto3 attribute lists converted to dicts of key/value pairs:
+                    - PendingModifiedValues["ProcessorFeatures"]
+                    - ProcessorFeatures
+                    - Tags (from boto3 TagList attribute)
+                If no matching instance is found, returns an empty dict.
+
+        Raises:
+            Fails the module if an exception is raised while retrieving the db instance attributes.
+    """
+    instances = None
     try:
-        for _i in range(3):
-            try:
-                instance = client.describe_db_instances(DBInstanceIdentifier=db_instance_id)["DBInstances"][0]
-                instance["Tags"] = get_tags(client, module, instance["DBInstanceArn"])
-                if instance.get("ProcessorFeatures"):
-                    instance["ProcessorFeatures"] = dict(
-                        (feature["Name"], feature["Value"]) for feature in instance["ProcessorFeatures"]
-                    )
-                if instance.get("PendingModifiedValues", {}).get("ProcessorFeatures"):
-                    instance["PendingModifiedValues"]["ProcessorFeatures"] = dict(
-                        (feature["Name"], feature["Value"])
-                        for feature in instance["PendingModifiedValues"]["ProcessorFeatures"]
-                    )
-                break
-            except is_boto3_error_code("DBInstanceNotFound"):
-                sleep(3)
-        else:
-            instance = {}
-    except (
-        botocore.exceptions.ClientError,
-        botocore.exceptions.BotoCoreError,
-    ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Failed to describe DB instances")
+        instances = describe_db_instances(client, DBInstanceIdentifier=db_instance_id)
+    except AnsibleRDSError as e:
+        module.fail_json_aws(e, msg=f"Failed to get DB instance {db_instance_id}")
+
+    if instances:
+        instance = instances[0]
+    else:
+        return {}
+
+    instance["Tags"] = boto3_tag_list_to_ansible_dict(instance.pop("TagList"))
+    if instance.get("ProcessorFeatures"):
+        instance["ProcessorFeatures"] = dict(
+            (feature["Name"], feature["Value"]) for feature in instance["ProcessorFeatures"]
+        )
+    if instance.get("PendingModifiedValues", {}).get("ProcessorFeatures"):
+        instance["PendingModifiedValues"]["ProcessorFeatures"] = dict(
+            (feature["Name"], feature["Value"]) for feature in instance["PendingModifiedValues"]["ProcessorFeatures"]
+        )
+
     return instance
 
 
-def get_final_snapshot(client, module, snapshot_identifier):
+def get_final_snapshot(client, module: AnsibleAWSModule, snapshot_identifier: str) -> Dict[str, Any]:
+    """
+    Returns the final snapshot given the final snapshot identifer.
+
+        Parameters:
+            client: boto3 rds client
+            module: AnsibleAWSModule
+            snapshot_identifier (str): Unique snapshot identifier
+
+        Returns:
+            snapshot (dict): Snapshot attributes as returned by boto3 client
+
+        Raises:
+            Failes the module if an exception is raised while retrieving the snapshot attributes.
+    """
+    snapshot = {}
     try:
-        snapshots = AWSRetry.jittered_backoff()(client.describe_db_snapshots)(DBSnapshotIdentifier=snapshot_identifier)
-        if len(snapshots.get("DBSnapshots", [])) == 1:
-            return snapshots["DBSnapshots"][0]
-        return {}
-    except is_boto3_error_code("DBSnapshotNotFound"):  # May not be using wait: True
-        return {}
-    except (
-        botocore.exceptions.ClientError,
-        botocore.exceptions.BotoCoreError,
-    ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Failed to retrieve information about the final snapshot")
+        snapshots = describe_db_snapshots(client, DBSnapshotIdentifier=snapshot_identifier)
+        if len(snapshots) == 1:
+            snapshot = snapshots[0]
+    except AnsibleRDSError as e:
+        module.fail_json_aws(e, msg=f"Failed to retrieve information about the final snapshot: {snapshot_identifier}")
+    return snapshot
 
 
 def get_parameters(client, module, parameters, method_name):
