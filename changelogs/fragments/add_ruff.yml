@@ -1,0 +1,5 @@
+trivial:
+  - "Lint collection using ``ruff`` linter."
+
+minor_changes:
+  - "Introduce ``ruff`` linter into CI."
