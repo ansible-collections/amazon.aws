@@ -1,0 +1,118 @@
+---
+- name: Create ENI a
+  amazon.aws.ec2_eni:
+    name: "{{ resource_prefix }}-eni-a"
+    delete_on_termination: true
+    subnet_id: "{{ testing_subnet_a.subnet.id }}"
+    security_groups:
+      - "{{ sg.group_id }}"
+  register: eni_a
+
+- name: Create ENI b
+  amazon.aws.ec2_eni:
+    name: "{{ resource_prefix }}-eni-b"
+    delete_on_termination: true
+    subnet_id: "{{ testing_subnet_a.subnet.id }}"
+    security_groups:
+      - "{{ sg.group_id }}"
+  register: eni_b
+
+- name: Make instance with 1 existing ENI
+  amazon.aws.ec2_instance:
+    state: present
+    name: "{{ ec2_instance_name }}-a"
+    image_id: "{{ ec2_ami_id }}"
+    network_interfaces_ids:
+      - id: "{{ eni_a.interface.id }}"
+        device_index: 0
+    instance_type: "t2.micro"
+    wait: false
+  register: create_instance
+
+- name: Set instance Id
+  ansible.builtin.set_fact:
+    ec2_instance_id: "{{ create_instance.instance_ids }}"
+
+- name: Get instance info
+  ec2_instance_info:
+    instance_ids: "{{ ec2_instance_id }}"
+  register: _instances
+
+- name: Ensure instance has one ENI attached
+  assert:
+    that:
+      - _instances.instances.0.network_interfaces | map(attribute='network_interface_id') | list == [eni_a.interface.id]
+      - _instances.instances.0.network_interfaces.0.attachment.device_index == 0
+
+- name: Attach a new ENI to existing instance
+  amazon.aws.ec2_instance:
+    state: present
+    name: "{{ ec2_instance_name }}-a"
+    image_id: "{{ ec2_ami_id }}"
+    network_interfaces_ids:
+      - id: "{{ eni_a.interface.id }}"
+        device_index: 0
+      - id: "{{ eni_b.interface.id }}"
+        device_index: 1
+    instance_type: "t2.micro"
+    wait: false
+  register: attach_eni
+
+- name: Get instance info
+  ec2_instance_info:
+    instance_ids: "{{ ec2_instance_id }}"
+  register: _instances
+
+- name: Ensure instance has 2 ENIs attached
+  assert:
+    that:
+      - attach_eni is changed
+      - _instances.instances.0.network_interfaces | length == 2
+      - _instances.instances.0.network_interfaces | selectattr('attachment.device_index', 'equalto', 0) | map(attribute='network_interface_id') | list == [eni_a.interface.id]
+      - _instances.instances.0.network_interfaces | selectattr('attachment.device_index', 'equalto', 1) | map(attribute='network_interface_id') | list == [eni_b.interface.id]
+
+- name: Attach a new ENI to existing instance once again (idempotency)
+  amazon.aws.ec2_instance:
+    state: present
+    name: "{{ ec2_instance_name }}-a"
+    image_id: "{{ ec2_ami_id }}"
+    network_interfaces_ids:
+      - id: "{{ eni_a.interface.id }}"
+        device_index: 0
+      - id: "{{ eni_b.interface.id }}"
+        device_index: 1
+    instance_type: "t2.micro"
+    wait: false
+  register: attach_idempotency
+
+- name: Ensure module did not reported change
+  ansible.builtin.assert:
+    that:
+      - attach_idempotency is not changed
+
+- name: Detach one ENI from the instance (should not report change)
+  amazon.aws.ec2_instance:
+    state: present
+    name: "{{ ec2_instance_name }}-a"
+    image_id: "{{ ec2_ami_id }}"
+    network_interfaces_ids:
+      - id: "{{ eni_a.interface.id }}"
+        device_index: 0
+      - id: "{{ eni_b.interface.id }}"
+        device_index: 1
+    instance_type: "t2.micro"
+    wait: false
+  register: detach_eni
+
+- name: Get instance info
+  ec2_instance_info:
+    instance_ids: "{{ ec2_instance_id }}"
+  register: _instances
+
+- name: Ensure instance has 2 ENIs attached
+  assert:
+    that:
+      - detach_eni is not changed
+      - _instances.instances.0.network_interfaces | length == 2
+      - _instances.instances.0.network_interfaces | selectattr('attachment.device_index', 'equalto', 0) | map(attribute='network_interface_id') | list == [eni_a.interface.id]
+      - _instances.instances.0.network_interfaces | selectattr('attachment.device_index', 'equalto', 1) | map(attribute='network_interface_id') | list == [eni_b.interface.id]

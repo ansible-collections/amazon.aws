@@ -140,6 +140,7 @@ options:
     description:
       - A list of security group IDs or names (strings).
       - Mutually exclusive with O(security_group).
+      - Mutually exclusive with O(network_interfaces_ids).
     type: list
     elements: str
     default: []
@@ -147,6 +148,7 @@ options:
     description:
       - A security group ID or name.
       - Mutually exclusive with O(security_groups).
+      - Mutually exclusive with O(network_interfaces_ids).
     type: str
   name:
     description:
@@ -163,6 +165,9 @@ options:
       - Either a dictionary containing the key C(interfaces) corresponding to a list of network interface IDs or
         containing specifications for a single network interface.
       - Use the M(amazon.aws.ec2_eni) module to create ENIs with special settings.
+      - This field is deprecated and will be removed in a release after 2026-12-01, use O(network_interfaces) or O(network_interfaces_ids) instead.
+      - Mutually exclusive with O(network_interfaces).
+      - Mutually exclusive with O(network_interfaces_ids).
     type: dict
     suboptions:
       interfaces:
@@ -186,6 +191,7 @@ options:
       source_dest_check:
         description:
           - Controls whether source/destination checking is enabled on the interface.
+          - This field with be ignored when O(source_dest_check) is provided.
         type: bool
       description:
         description:
@@ -214,6 +220,95 @@ options:
           - A list of security group IDs to attach to the interface.
         type: list
         elements: str
+  source_dest_check:
+    description:
+      - Controls whether source/destination checking is enabled on the interface.
+    type: bool
+    version_added: 8.1.0
+  network_interfaces:
+    description:
+      - A dictionary containing specifications for a single network interface.
+      - Use the M(amazon.aws.ec2_eni) module to create ENIs with special settings.
+      - Mutually exclusive with O(network).
+    type: list
+    elements: dict
+    version_added: 8.1.0
+    suboptions:
+      assign_public_ip:
+        description:
+          - When V(true) assigns a public IP address to the interface.
+        type: bool
+      private_ip_address:
+        description:
+          - An IPv4 address to assign to the interface.
+        type: str
+      ipv6_addresses:
+        description:
+          - A list of IPv6 addresses to assign to the network interface.
+        type: list
+        elements: str
+      description:
+        description:
+          - A description for the network interface.
+        type: str
+      subnet_id:
+        description:
+          - The subnet to connect the network interface to.
+        type: str
+      delete_on_termination:
+        description:
+          - Delete the interface when the instance it is attached to is terminated.
+        type: bool
+        default: True
+      device_index:
+        description:
+          - The position of the network interface in the attachment order.
+          - Use device index V(0) for a primary network interface.
+        type: int
+        default: 0
+      groups:
+        description:
+          - A list of security group IDs or names to attach to the interface.
+        type: list
+        elements: str
+      private_ip_addresses:
+        description:
+          - A list of private IPv4 addresses to assign to the network interface.
+          - Only one private IPv4 address can be designated as primary.
+          - You cannot specify this option if you're launching more than one instance.
+        type: list
+        elements: dict
+        suboptions:
+          private_ip_address:
+            description:
+              - The private IPv4 address.
+            type: str
+            required: true
+          primary:
+            description:
+              - Indicates whether the private IPv4 address is the primary private IPv4 address.
+              - Only one IPv4 address can be designated as primary.
+            type: bool
+  network_interfaces_ids:
+    description:
+      - A list of ENI ids to attach to the instance.
+      - Mutually exclusive with O(network).
+      - Mutually exclusive with O(security_group).
+      - Mutually exclusive with O(security_groups).
+    type: list
+    elements: dict
+    version_added: 8.1.0
+    suboptions:
+      id:
+        description:
+          - The ID of the network interface.
+        type: str
+        required: True
+      device_index:
+        description:
+          - The position of the network interface in the attachment order.
+        type: int
+        default: 0
   volumes:
     description:
       - A list of block device mappings, by default this will always use the AMI root device so the volumes option is primarily for adding more storage.
@@ -454,8 +549,8 @@ EXAMPLES = r"""
     vpc_subnet_id: subnet-5ca1ab1e
     instance_type: c5.large
     security_group: default
-    network:
-      assign_public_ip: true
+    network_interfaces:
+      - assign_public_ip: true
     image_id: ami-123456
     tags:
       Environment: Testing
@@ -510,8 +605,8 @@ EXAMPLES = r"""
       tower_address: 1.2.3.4
       job_template_id: 876
       host_config_key: '[secret config key goes here]'
-    network:
-      assign_public_ip: true
+    network_interfaces:
+      - assign_public_ip: true
     image_id: ami-123456
     cpu_credit_specification: unlimited
     tags:
@@ -522,9 +617,9 @@ EXAMPLES = r"""
     name: "public-eni-instance"
     key_name: "prod-ssh-key"
     vpc_subnet_id: subnet-5ca1ab1e
-    network:
-      interfaces:
-        - id: "eni-12345"
+    network_interfaces_ids:
+      - id: "eni-12345"
+        device_index: 0
     tags:
       Env: "eni_on"
     volumes:
@@ -537,10 +632,11 @@ EXAMPLES = r"""
 - name: add second ENI interface
   amazon.aws.ec2_instance:
     name: "public-eni-instance"
-    network:
-      interfaces:
+    network_interfaces_ids:
         - id: "eni-12345"
+          device_index: 0
         - id: "eni-67890"
+          device_index: 1
     image_id: ami-123456
     tags:
       Env: "eni_on"
@@ -566,9 +662,10 @@ EXAMPLES = r"""
     exact_count: 5
     region: us-east-2
     vpc_subnet_id: subnet-0123456
-    network:
-      assign_public_ip: true
-      security_group: default
+    network_interfaces:
+      - assign_public_ip: true
+        groups:
+          - default
     tags:
       foo: bar
 
@@ -579,10 +676,31 @@ EXAMPLES = r"""
     image_id: ami-123456
     count: 3
     region: us-east-2
-    network:
-      assign_public_ip: true
-      security_group: default
-      vpc_subnet_id: subnet-0123456
+    network_interfaces:
+      - assign_public_ip: true
+        groups:
+          - default
+        subnet_id: subnet-0123456
+    state: present
+    tags:
+      foo: bar
+
+# launches an instance with a primary and a secondary network interfaces
+- name: start an instance with a primary and secondary network interfaces
+  amazon.aws.ec2_instance:
+    instance_type: t2.large
+    image_id: ami-123456
+    region: us-east-2
+    network_interfaces:
+      - assign_public_ip: true
+        groups:
+          - default
+        subnet_id: subnet-0123456
+        private_ip_addresses:
+          - primary: true
+            private_ip_address: 168.50.4.239
+          - primary: false
+            private_ip_address: 168.50.4.237
     state: present
     tags:
       foo: bar
@@ -1190,6 +1308,11 @@ instances:
 import time
 import uuid
 from collections import namedtuple
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Union
 
 try:
     import botocore
@@ -1284,122 +1407,164 @@ def add_or_update_instance_profile(instance, desired_profile_name):
     return False
 
 
-def build_network_spec(params):
+def validate_assign_public_ip(params: Dict[str, Any]) -> None:
     """
-    Returns list of interfaces [complex]
-    Interface type: {
-        'AssociatePublicIpAddress': True|False,
-        'DeleteOnTermination': True|False,
-        'Description': 'string',
-        'DeviceIndex': 123,
-        'Groups': [
-            'string',
-        ],
-        'Ipv6AddressCount': 123,
-        'Ipv6Addresses': [
-            {
-                'Ipv6Address': 'string'
-            },
-        ],
-        'NetworkInterfaceId': 'string',
-        'PrivateIpAddress': 'string',
-        'PrivateIpAddresses': [
-            {
-                'Primary': True|False,
-                'PrivateIpAddress': 'string'
-            },
-        ],
-        'SecondaryPrivateIpAddressCount': 123,
-        'SubnetId': 'string'
-    },
+    Validate Network interface public IP configuration
+        Parameters:
+            params: module parameters.
     """
+    network_interfaces = params.get("network_interfaces") or []
+    network_interfaces_ids = params.get("network_interfaces_ids") or []
+    if len(network_interfaces + network_interfaces_ids) > 1 and any(
+        i.get("assign_public_ip") for i in network_interfaces if i.get("assign_public_ip") is not None
+    ):
+        module.fail_json(msg="The option 'assign_public_ip' cannot be set to true with multiple network interfaces.")
 
-    interfaces = []
-    network = params.get("network") or {}
-    if not network.get("interfaces"):
-        # they only specified one interface
-        spec = {
-            "DeviceIndex": 0,
-        }
-        if network.get("assign_public_ip") is not None:
-            spec["AssociatePublicIpAddress"] = network["assign_public_ip"]
 
-        if params.get("vpc_subnet_id"):
-            spec["SubnetId"] = params["vpc_subnet_id"]
-        else:
-            default_vpc = get_default_vpc()
-            if default_vpc is None:
+def validate_network_params(params: Dict[str, Any], nb_instances: int) -> None:
+    """
+    This function is used to validate network specifications with the following constraints
+        - 'assign_public_ip' cannot set to True when multiple network interfaces are specified
+        - 'private_ip_addresses' only one IP can be set as primary
+        - 'private_ip_addresses' or 'private_ip_address' can't be specified if launching more than one instance
+        Parameters:
+            params: module parameters.
+            nb_instances: number of instance to create.
+    """
+    validate_assign_public_ip(params)
+
+    network_interfaces = params.get("network_interfaces")
+    if network_interfaces:
+        # private_ip_addresses: ensure only one private ip is set as primary
+        for inty in network_interfaces:
+            if len([i for i in inty.get("private_ip_addresses") or [] if i.get("primary")]) > 1:
                 module.fail_json(
-                    msg=(
-                        "No default subnet could be found - you must include a VPC subnet ID (vpc_subnet_id parameter)"
-                        " to create an instance"
-                    )
+                    msg="Only one primary private IP address can be specified when creating network interface."
                 )
-            else:
-                sub = get_default_subnet(default_vpc, availability_zone=module.params.get("availability_zone"))
-                spec["SubnetId"] = sub["SubnetId"]
 
-        if network.get("ipv6_addresses"):
-            spec["Ipv6Addresses"] = [{"Ipv6Address": a} for a in network.get("ipv6_addresses", [])]
+        # Ensure none of 'private_ip_address', 'private_ip_addresses', 'ipv6_addresses' were provided
+        # when launching more than one instance
+        if nb_instances > 1:
+            if any(True for inty in network_interfaces if inty.get("private_ip_address")):
+                module.fail_json(
+                    msg="The option 'private_ip_address' cannot be specified when launching more than one instance."
+                )
+            if any(True for inty in network_interfaces if inty.get("private_ip_addresses")):
+                module.fail_json(
+                    msg="The option 'private_ip_addresses' cannot be specified when launching more than one instance."
+                )
+            if any(True for inty in network_interfaces if inty.get("ipv6_addresses")):
+                module.fail_json(
+                    msg="The option 'ipv6_addresses' cannot be specified when launching more than one instance."
+                )
 
-        if network.get("private_ip_address"):
-            spec["PrivateIpAddress"] = network["private_ip_address"]
 
-        if params.get("security_group") or params.get("security_groups"):
-            groups = discover_security_groups(
-                group=params.get("security_group"),
-                groups=params.get("security_groups"),
-                subnet_id=spec["SubnetId"],
-            )
-            spec["Groups"] = groups
-        if network.get("description") is not None:
-            spec["Description"] = network["description"]
-        # TODO more special snowflake network things
+def ansible_to_boto3_eni_specification(
+    interface: Dict[str, Any], subnet_id: Optional[str], groups: Optional[Union[List[str], str]]
+) -> Dict[str, Any]:
+    """
+    Converts Ansible network interface specifications into AWS network interface spec
+        Parameters:
+            interface: Ansible network interface specification
+            subnet_id: Subnet Id
+            security_groups: Optional list of security groups.
+            security_group: Optional security group.
+        Returns:
+            AWS network interface specification.
+    """
+    spec = {
+        "DeviceIndex": interface.get("device_index") or 0,
+    }
+    if interface.get("assign_public_ip") is not None:
+        spec["AssociatePublicIpAddress"] = interface["assign_public_ip"]
 
-        return [spec]
+    if interface.get("subnet_id"):
+        spec["SubnetId"] = interface["subnet_id"]
+    elif subnet_id:
+        spec["SubnetId"] = subnet_id
+    else:
+        spec["SubnetId"] = describe_default_subnet(module)
 
-    # handle list of `network.interfaces` options
-    for idx, interface_params in enumerate(network.get("interfaces", [])):
-        spec = {
-            "DeviceIndex": idx,
-        }
+    if interface.get("ipv6_addresses"):
+        spec["Ipv6Addresses"] = [{"Ipv6Address": a} for a in interface.get("ipv6_addresses")]
 
-        if isinstance(interface_params, string_types):
-            # naive case where user gave
-            # network_interfaces: [eni-1234, eni-4567, ....]
-            # put into normal data structure so we don't dupe code
-            interface_params = {"id": interface_params}
+    if interface.get("private_ip_address"):
+        spec["PrivateIpAddress"] = interface["private_ip_address"]
 
-        if interface_params.get("id") is not None:
-            # if an ID is provided, we don't want to set any other parameters.
-            spec["NetworkInterfaceId"] = interface_params["id"]
-            interfaces.append(spec)
-            continue
+    if interface.get("private_ip_addresses"):
+        spec["PrivateIpAddresses"] = []
+        for addr in interface.get("private_ip_addresses"):
+            d = {"PrivateIpAddress": addr}
+            if isinstance(addr, dict):
+                d = {"PrivateIpAddress": addr.get("private_ip_address")}
+                if addr.get("primary") is not None:
+                    d.update({"Primary": addr.get("primary")})
+            spec["PrivateIpAddresses"].append(d)
 
-        spec["DeleteOnTermination"] = interface_params.get("delete_on_termination", True)
+    spec["DeleteOnTermination"] = interface.get("delete_on_termination", True)
 
-        if interface_params.get("ipv6_addresses"):
-            spec["Ipv6Addresses"] = [{"Ipv6Address": a} for a in interface_params.get("ipv6_addresses", [])]
+    interface_groups = interface.get("groups") or groups
+    if interface_groups:
+        spec["Groups"] = discover_security_groups(groups=interface_groups, subnet_id=spec["SubnetId"])
+    if interface.get("description") is not None:
+        spec["Description"] = interface["description"]
+    return spec
 
-        if interface_params.get("private_ip_address"):
-            spec["PrivateIpAddress"] = interface_params.get("private_ip_address")
 
-        if interface_params.get("description"):
-            spec["Description"] = interface_params.get("description")
+def build_network_spec(params: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """
+    Returns network interface specifications for instance to be created.
+        Parameters:
+            params: module parameters
+        Returns:
+            network specs (list): List of network interfaces specifications
+    """
 
-        if interface_params.get("subnet_id", params.get("vpc_subnet_id")):
-            spec["SubnetId"] = interface_params.get("subnet_id", params.get("vpc_subnet_id"))
-        elif not spec.get("SubnetId") and not interface_params["id"]:
-            # TODO grab a subnet from default VPC
-            raise ValueError(f"Failed to assign subnet to interface {interface_params}")
+    # They specified network_interfaces_ids (mutually exclusive with security_group(s) options)
+    interfaces = []
+    network_interfaces_ids = params.get("network_interfaces_ids")
+    if network_interfaces_ids:
+        interfaces = [
+            {"NetworkInterfaceId": eni.get("id"), "DeviceIndex": eni.get("device_index")}
+            for eni in network_interfaces_ids
+        ]
 
-        interfaces.append(spec)
+    network = params.get("network")
+    groups = params.get("security_groups") or params.get("security_group")
+    vpc_subnet_id = params.get("vpc_subnet_id")
+    network_interfaces = params.get("network_interfaces")
+    if (network is not None and not network.get("interfaces")) or network_interfaces:
+        # They specified network interfaces using `network` or `network_interfaces` options
+        if network is not None and not network.get("interfaces"):
+            network_interfaces = [network]
+        interfaces.extend(
+            [ansible_to_boto3_eni_specification(inty, vpc_subnet_id, groups) for inty in network_interfaces]
+        )
+    elif not network and not network_interfaces_ids:
+        # They do not specified any network interface configuration
+        # build network interface using subnet_id and security group(s) defined on the module
+        interfaces.append(ansible_to_boto3_eni_specification({}, vpc_subnet_id, groups))
+    elif network is not None:
+        # handle list of `network.interfaces` options
+        interfaces.extend(
+            [
+                {"DeviceIndex": idx, "NetworkInterfaceId": inty if isinstance(inty, string_types) else inty.get("id")}
+                for idx, inty in enumerate(network.get("interfaces", []))
+            ]
+        )
     return interfaces
 
 
-def warn_if_public_ip_assignment_changed(instance):
+def warn_if_public_ip_assignment_changed(instance: Dict[str, Any]) -> None:
     # This is a non-modifiable attribute.
     assign_public_ip = (module.params.get("network") or {}).get("assign_public_ip")
+    validate_assign_public_ip(module.params)
+    network_interfaces = module.params.get("network_interfaces")
+    if network_interfaces:
+        # Either we only have one network interface or multiple network interface with 'assign_public_ip=false'
+        # Anyways the value 'assign_public_ip' in the first item should be enough to determine whether
+        # the user wants to update the public IP or not
+        assign_public_ip = network_interfaces[0].get("assign_public_ip")
     if assign_public_ip is None:
         return
 
@@ -1436,7 +1601,9 @@ def warn_if_cpu_options_changed(instance):
         )
 
 
-def discover_security_groups(group, groups, parent_vpc_id=None, subnet_id=None):
+def discover_security_groups(
+    groups: Union[str, List[str]], parent_vpc_id: Optional[str] = None, subnet_id: Optional[str] = None
+) -> List[str]:
     if subnet_id is not None:
         try:
             sub = client.describe_subnets(aws_retry=True, SubnetIds=[subnet_id])
@@ -1452,11 +1619,7 @@ def discover_security_groups(group, groups, parent_vpc_id=None, subnet_id=None):
             module.fail_json_aws(e, msg=f"Error while searching for subnet {subnet_id} parent VPC.")
         parent_vpc_id = sub["Subnets"][0]["VpcId"]
 
-    if group:
-        return get_ec2_security_group_ids_from_names(group, client, vpc_id=parent_vpc_id)
-    if groups:
-        return get_ec2_security_group_ids_from_names(groups, client, vpc_id=parent_vpc_id)
-    return []
+    return get_ec2_security_group_ids_from_names(groups, client, vpc_id=parent_vpc_id)
 
 
 def build_userdata(params):
@@ -1591,10 +1754,18 @@ def build_instance_tags(params):
 def build_run_instance_spec(params, current_count=0):
     spec = dict(
         ClientToken=uuid.uuid4().hex,
-        MaxCount=1,
-        MinCount=1,
     )
     spec.update(**build_top_level_options(params))
+
+    nb_instances = params.get("count") or 1
+    if params.get("exact_count"):
+        nb_instances = params.get("exact_count") - current_count
+
+    spec["MinCount"] = nb_instances
+    spec["MaxCount"] = nb_instances
+
+    # Validate network parameters
+    validate_network_params(params, nb_instances)
 
     spec["NetworkInterfaces"] = build_network_spec(params)
     spec["BlockDeviceMappings"] = build_volume_spec(params)
@@ -1606,14 +1777,6 @@ def build_run_instance_spec(params, current_count=0):
     # IAM profile
     if params.get("iam_instance_profile"):
         spec["IamInstanceProfile"] = dict(Arn=determine_iam_role(params.get("iam_instance_profile")))
-
-    if params.get("exact_count"):
-        spec["MaxCount"] = params.get("exact_count") - current_count
-        spec["MinCount"] = params.get("exact_count") - current_count
-
-    if params.get("count"):
-        spec["MaxCount"] = params.get("count")
-        spec["MinCount"] = params.get("count")
 
     if params.get("instance_type"):
         spec["InstanceType"] = params["instance_type"]
@@ -1707,47 +1870,50 @@ def diff_instance_and_params(instance, params, skip=None):
             arguments[mapping.instance_key] = mapping.add_value(params.get(mapping.param_key))
             changes_to_apply.append(arguments)
 
-    if params.get("security_group") or params.get("security_groups"):
-        try:
-            value = client.describe_instance_attribute(aws_retry=True, Attribute="groupSet", InstanceId=id_)
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-            module.fail_json_aws(e, msg=f"Could not describe attribute groupSet for instance {id_}")
-        # managing security groups
-        if params.get("vpc_subnet_id"):
-            subnet_id = params.get("vpc_subnet_id")
+    network_interfaces = params.get("network_interfaces")
+    if not network_interfaces and params.get("network") and not params.get("network").get("interfaces"):
+        network_interfaces = [params.get("network")]
+    if network_interfaces or params.get("security_groups") or params.get("security_group"):
+        if len(network_interfaces or []) > 1 or len(instance["NetworkInterfaces"]) > 1:
+            module.warn("Skipping group modification because instance contains mutiple network interfaces.")
         else:
-            default_vpc = get_default_vpc()
-            if default_vpc is None:
-                module.fail_json(
-                    msg=(
-                        "No default subnet could be found - you must include a VPC subnet ID (vpc_subnet_id parameter)"
-                        " to modify security groups."
-                    )
-                )
+            try:
+                value = client.describe_instance_attribute(aws_retry=True, Attribute="groupSet", InstanceId=id_)
+            except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+                module.fail_json_aws(e, msg=f"Could not describe attribute groupSet for instance {id_}")
+
+            # Read interface subnet
+            subnet_id = None
+            groups = None
+            if network_interfaces:
+                subnet_id = network_interfaces[0].get("subnet_id")
+                groups = network_interfaces[0].get("groups")
+            elif params.get("vpc_subnet_id"):
+                subnet_id = params.get("vpc_subnet_id")
             else:
-                sub = get_default_subnet(default_vpc)
-                subnet_id = sub["SubnetId"]
+                subnet_id = describe_default_subnet(module=module, use_availability_zone=False)
 
-        groups = discover_security_groups(
-            group=params.get("security_group"),
-            groups=params.get("security_groups"),
-            subnet_id=subnet_id,
-        )
-        expected_groups = groups
-        instance_groups = [g["GroupId"] for g in value["Groups"]]
-        if set(instance_groups) != set(expected_groups):
-            changes_to_apply.append(dict(Groups=expected_groups, InstanceId=instance["InstanceId"]))
+            # Read groups
+            groups = groups or params.get("security_groups") or params.get("security_group")
+            if groups:
+                groups = discover_security_groups(groups=groups, subnet_id=subnet_id)
+                instance_groups = [g["GroupId"] for g in value["Groups"]]
+                if set(instance_groups) != set(groups):
+                    changes_to_apply.append(dict(Groups=groups, InstanceId=instance["InstanceId"]))
 
-    if (params.get("network") or {}).get("source_dest_check") is not None:
+    source_dest_check = params.get("source_dest_check")
+    if source_dest_check is None:
+        source_dest_check = (params.get("network") or {}).get("source_dest_check")
         # network.source_dest_check is nested, so needs to be treated separately
-        check = bool(params.get("network").get("source_dest_check"))
-        if instance["SourceDestCheck"] != check:
-            changes_to_apply.append(
-                dict(
-                    InstanceId=instance["InstanceId"],
-                    SourceDestCheck={"Value": check},
-                )
+        if source_dest_check is not None:
+            source_dest_check = bool(source_dest_check)
+    if source_dest_check is not None and instance["SourceDestCheck"] != source_dest_check:
+        changes_to_apply.append(
+            dict(
+                InstanceId=instance["InstanceId"],
+                SourceDestCheck={"Value": source_dest_check},
             )
+        )
 
     return changes_to_apply
 
@@ -1792,23 +1958,37 @@ def change_instance_metadata_options(instance, params):
     return True
 
 
-def change_network_attachments(instance, params):
-    if (params.get("network") or {}).get("interfaces") is not None:
-        new_ids = []
-        for inty in params.get("network").get("interfaces"):
-            if isinstance(inty, dict) and "id" in inty:
-                new_ids.append(inty["id"])
-            elif isinstance(inty, string_types):
-                new_ids.append(inty)
-        # network.interfaces can create the need to attach new interfaces
-        old_ids = [inty["NetworkInterfaceId"] for inty in instance["NetworkInterfaces"]]
-        to_attach = set(new_ids) - set(old_ids)
-        if not module.check_mode:
-            for eni_id in to_attach:
+def change_network_attachments(instance: Dict[str, Any], params: Dict[str, Any]) -> bool:
+    """
+    Attach Network interfaces to the instance
+        Parameters:
+            instance: A dictionnary describing the instance.
+            params: Ansible module parameters.
+        Returns:
+            A boolean set to True if changes have been done.
+    """
+    new_enis = [
+        eni.get("id")
+        for eni in params.get("network_interfaces_ids") or (params.get("network") or {}).get("interfaces") or []
+    ]
+    if not new_enis:
+        return False
+
+    new_ids = map(lambda x: x.get("id") if isinstance(x, dict) else x, new_enis)
+    old_ids = [inty["NetworkInterfaceId"] for inty in instance["NetworkInterfaces"]]
+    to_attach = set(new_ids) - set(old_ids)
+    if not module.check_mode:
+        for idx, eni in enumerate(new_enis):
+            eni_id = eni
+            device_index = idx
+            if isinstance(eni, dict):
+                eni_id = eni.get("id")
+                device_index = eni.get("device_index") or idx
+            if eni_id in to_attach:
                 try:
                     client.attach_network_interface(
                         aws_retry=True,
-                        DeviceIndex=new_ids.index(eni_id),
+                        DeviceIndex=device_index,
                         InstanceId=instance["InstanceId"],
                         NetworkInterfaceId=eni_id,
                     )
@@ -1816,8 +1996,7 @@ def change_network_attachments(instance, params):
                     module.fail_json_aws(
                         e, msg=f"Could not attach interface {eni_id} to instance {instance['InstanceId']}"
                     )
-        return bool(len(to_attach))
-    return False
+    return bool(to_attach)
 
 
 def find_instances(ids=None, filters=None):
@@ -2308,6 +2487,45 @@ def run_instances(**instance_spec):
         return client.run_instances(aws_retry=True, **instance_spec)
 
 
+def describe_default_subnet(module: AnsibleAWSModule, use_availability_zone: bool = True) -> str:
+    """
+    Read default subnet associated to the AWS account
+        Parameters:
+            module: The Ansible AWS module
+            use_availability_zone: Whether to use availability zone to find the default subnet.
+        Returns:
+            The default subnet id.
+    """
+    default_vpc = get_default_vpc()
+    if default_vpc is None:
+        module.fail_json(
+            msg=("No default subnet could be found - you must include a VPC subnet ID (vpc_subnet_id parameter).")
+        )
+    availability_zone = module.params.get("availability_zone") if use_availability_zone else None
+    return get_default_subnet(default_vpc, availability_zone)["SubnetId"]
+
+
+def build_network_filters() -> Dict[str, List[str]]:
+    """
+    Create Network filters for the DescribeInstances API
+        Returns:
+            Dictionnary of network filters
+    """
+    filters = {}
+    network_interfaces_ids = module.params.get("network_interfaces_ids") or (module.params.get("network") or {}).get(
+        "interfaces"
+    )
+    if module.params.get("vpc_subnet_id"):
+        filters["subnet-id"] = [module.params.get("vpc_subnet_id")]
+    elif network_interfaces_ids:
+        filters["network-interface.network-interface-id"] = [
+            eni["id"] if isinstance(eni, dict) else eni for eni in network_interfaces_ids
+        ]
+    else:
+        filters["subnet-id"] = describe_default_subnet(module)
+    return filters
+
+
 def build_filters():
     filters = {
         # all states except shutting-down and terminated
@@ -2318,22 +2536,8 @@ def build_filters():
     elif isinstance(module.params.get("instance_ids"), list) and len(module.params.get("instance_ids")):
         filters["instance-id"] = module.params.get("instance_ids")
     else:
-        if not module.params.get("vpc_subnet_id"):
-            if module.params.get("network"):
-                # grab AZ from one of the ENIs
-                ints = module.params.get("network").get("interfaces")
-                if ints:
-                    filters["network-interface.network-interface-id"] = []
-                    for i in ints:
-                        if isinstance(i, dict):
-                            i = i["id"]
-                        filters["network-interface.network-interface-id"].append(i)
-            else:
-                sub = get_default_subnet(get_default_vpc(), availability_zone=module.params.get("availability_zone"))
-                filters["subnet-id"] = sub["SubnetId"]
-        else:
-            filters["subnet-id"] = [module.params.get("vpc_subnet_id")]
-
+        # Network filters
+        filters.update(build_network_filters())
         if module.params.get("name"):
             filters["tag:Name"] = [module.params.get("name")]
         elif module.params.get("tags"):
@@ -2447,6 +2651,34 @@ def main():
             ),
         ),
         additional_info=dict(type="str"),
+        network_interfaces_ids=dict(
+            type="list",
+            elements="dict",
+            options=dict(
+                id=dict(required=True),
+                device_index=dict(type="int", default=0),
+            ),
+        ),
+        network_interfaces=dict(
+            type="list",
+            elements="dict",
+            options=dict(
+                assign_public_ip=dict(type="bool"),
+                private_ip_address=dict(),
+                ipv6_addresses=dict(type="list", elements="str"),
+                description=dict(),
+                private_ip_addresses=dict(
+                    type="list",
+                    elements="dict",
+                    options=dict(private_ip_address=dict(required=True), primary=dict(type="bool")),
+                ),
+                subnet_id=dict(),
+                delete_on_termination=dict(type="bool", default=True),
+                device_index=dict(type="int", default=0),
+                groups=dict(type="list", elements="str"),
+            ),
+        ),
+        source_dest_check=dict(type="bool"),
     )
     # running/present are synonyms
     # as are terminated/absent
@@ -2461,6 +2693,10 @@ def main():
             ["exact_count", "instance_ids"],
             ["tenancy", "placement"],
             ["placement_group", "placement"],
+            ["network", "network_interfaces"],
+            ["network", "network_interfaces_ids"],
+            ["security_group", "network_interfaces_ids"],
+            ["security_groups", "network_interfaces_ids"],
         ],
         supports_check_mode=True,
     )
@@ -2468,11 +2704,20 @@ def main():
     result = dict()
 
     if module.params.get("network"):
+        module.deprecate(
+            "The network parameter has been deprecated, please use network_interfaces and/or network_interfaces_ids instead.",
+            date="2026-12-01",
+            collection_name="amazon.aws",
+        )
         if module.params.get("network").get("interfaces"):
             if module.params.get("security_group"):
                 module.fail_json(msg="Parameter network.interfaces can't be used with security_group")
             if module.params.get("security_groups"):
                 module.fail_json(msg="Parameter network.interfaces can't be used with security_groups")
+        if module.params.get("network").get("source_dest_check") is not None and module.params.get("source_dest_check"):
+            module.warn(
+                "the source_dest_check option has been set therefore network.source_dest_check will be ignored."
+            )
 
     if module.params.get("placement_group"):
         module.deprecate(

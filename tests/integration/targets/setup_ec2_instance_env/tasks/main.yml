@@ -15,6 +15,7 @@
         tags:
           Name: "{{ vpc_name }}"
         tenancy: default
+        ipv6_cidr: true
       register: testing_vpc
       notify:
         - Delete ec2_instance environment
@@ -27,6 +28,7 @@
         az: "{{ subnet_a_az }}"
         resource_tags:
           Name: "{{ subnet_a_name }}"
+        ipv6_cidr: "{{ testing_vpc.vpc.ipv6_cidr_block_association_set.0.ipv6_cidr_block | replace('/56', '/64') }}"
       register: testing_subnet_a
 
     - name: Create secondary subnet in zone B

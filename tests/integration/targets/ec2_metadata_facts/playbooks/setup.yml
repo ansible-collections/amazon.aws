@@ -120,9 +120,9 @@
         security_group: "{{ vpc_sg_id }}"
         instance_type: t2.micro
         key_name: "{{ ec2_key_name }}"
-        network:
-          assign_public_ip: true
-          delete_on_termination: true
+        network_interfaces:
+          - assign_public_ip: true
+            delete_on_termination: true
         metadata_options:
           instance_metadata_tags: enabled
         tags:
@@ -143,9 +143,9 @@
         security_group: "{{ vpc_sg_id }}"
         instance_type: t2.micro
         key_name: "{{ ec2_key_name }}"
-        network:
-          assign_public_ip: true
-          delete_on_termination: true
+        network_interfaces:
+          - assign_public_ip: true
+            delete_on_termination: true
         metadata_options:
           instance_metadata_tags: enabled
         tags:

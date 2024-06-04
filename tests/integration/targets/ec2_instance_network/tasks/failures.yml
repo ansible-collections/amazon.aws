@@ -1,0 +1,115 @@
+---
+# Instance with multiple network interfaces with 'assign_public_ip=true'
+- name: Make instance with multiple network interfaces with 'assign_public_ip=true'
+  amazon.aws.ec2_instance:
+    name: "{{ ec2_instance_name }}"
+    image_id: "{{ ec2_ami_id }}"
+    instance_type: "t2.micro"
+    network_interfaces:
+      - assign_public_ip: true
+        subnet_id: "{{ testing_subnet_a.subnet.id }}"
+        device_index: 0
+      - assign_public_ip: false
+        subnet_id: "{{ testing_subnet_a.subnet.id }}"
+        device_index: 1
+    wait: false
+  register: make_instance
+  ignore_errors: true
+
+- name: Ensure module failed with proper message
+  ansible.builtin.assert:
+    that:
+      - make_instance is failed
+      - make_instance.msg == "The option 'assign_public_ip' cannot be set to true with multiple network interfaces."
+
+
+# Network interface with mutiple primary private ip address
+- name: Make instance with network interfaces with mutiple primary private ip address
+  amazon.aws.ec2_instance:
+    name: "{{ ec2_instance_name }}"
+    image_id: "{{ ec2_ami_id }}"
+    instance_type: "t2.micro"
+    network_interfaces:
+      - assign_public_ip: true
+        subnet_id: "{{ testing_subnet_a.subnet.id }}"
+        private_ip_addresses:
+          - primary: true
+            private_ip_address: 168.50.4.239
+          - primary: true
+            private_ip_address: 168.50.4.237
+          - primary: false
+            private_ip_address: 168.50.4.238
+    wait: false
+  register: make_instance
+  ignore_errors: true
+
+- name: Ensure module failed with proper message
+  ansible.builtin.assert:
+    that:
+      - make_instance is failed
+      - make_instance.msg == "Only one primary private IP address can be specified when creating network interface."
+
+# Mutiple instances with private_ip_addresses specified
+- name: Make multiple instances with private_ip_addresses provided
+  amazon.aws.ec2_instance:
+    name: "{{ ec2_instance_name }}"
+    image_id: "{{ ec2_ami_id }}"
+    instance_type: "t2.micro"
+    count: 2
+    network_interfaces:
+      - assign_public_ip: true
+        subnet_id: "{{ testing_subnet_a.subnet.id }}"
+        private_ip_addresses:
+          - private_ip_address: 168.50.4.239
+    wait: false
+  register: make_instance
+  ignore_errors: true
+
+- name: Ensure module failed with proper message
+  ansible.builtin.assert:
+    that:
+      - make_instance is failed
+      - make_instance.msg == "The option 'private_ip_addresses' cannot be specified when launching more than one instance."
+
+# Mutiple instances with private_ip_address specified
+- name: Make multiple instances with private_ip_address provided
+  amazon.aws.ec2_instance:
+    name: "{{ ec2_instance_name }}"
+    image_id: "{{ ec2_ami_id }}"
+    instance_type: "t2.micro"
+    count: 2
+    network_interfaces:
+      - assign_public_ip: true
+        subnet_id: "{{ testing_subnet_a.subnet.id }}"
+        private_ip_address: 168.50.4.239
+    wait: false
+  register: make_instance
+  ignore_errors: true
+
+- name: Ensure module failed with proper message
+  ansible.builtin.assert:
+    that:
+      - make_instance is failed
+      - make_instance.msg == "The option 'private_ip_address' cannot be specified when launching more than one instance."
+
+# Mutiple instances with ipv6_addresses specified
+- name: Make multiple instances with ipv6_addresses provided
+  amazon.aws.ec2_instance:
+    name: "{{ ec2_instance_name }}"
+    image_id: "{{ ec2_ami_id }}"
+    instance_type: "t2.micro"
+    count: 2
+    network_interfaces:
+      - assign_public_ip: true
+        subnet_id: "{{ testing_subnet_a.subnet.id }}"
+        ipv6_addresses:
+          - "{{ testing_vpc.vpc.ipv6_cidr_block_association_set.0.ipv6_cidr_block | replace('/56', '122') }}"
+    wait: false
+  register: make_instance
+  ignore_errors: true
+
+- name: Ensure module failed with proper message
+  ansible.builtin.assert:
+    that:
+      - make_instance is failed
+      - make_instance.msg == "The option 'ipv6_addresses' cannot be specified when launching more than one instance."
