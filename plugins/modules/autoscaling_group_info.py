@@ -80,13 +80,13 @@ results:
     description: A list of Auto Scaling Groups.
     returned: always
     type: list
-    elements: dicts
+    elements: dict
     contains:
         auto_scaling_group_arn:
             description: The Amazon Resource Name of the ASG.
             returned: success
             type: str
-            sample: "arn:aws:autoscaling:us-west-2:123456789012:autoScalingGroup:10787c52-0bcb-427d-82ba-c8e4b008ed2e:autoScalingGroupName/public-webapp-production-1"
+            sample: "arn:aws:autoscaling:us-west-2:123456789012:autoScalingGroup:10787c52-0bcb-427d-82ba-c8e4b008ed2e:autoScalingGroupName/dev11"
         auto_scaling_group_name:
             description: Name of autoscaling group
             returned: success
@@ -198,8 +198,8 @@ results:
                     type: bool
         launch_config_name:
             description: >
-            Name of launch configuration associated with the ASG. Same as launch_configuration_name,
-            provided for compatibility with M(amazon.aws.autoscaling_group) module.
+                Name of launch configuration associated with the ASG. Same as launch_configuration_name,
+                provided for compatibility with M(amazon.aws.autoscaling_group) module.
             returned: success
             type: str
             sample: "public-webapp-production-1"
@@ -256,7 +256,7 @@ results:
             type: str
             sample: None
         service_linked_role_arn:
-            decription: The Amazon Resource Name (ARN) of the service-linked role that the Auto Scaling group uses to call other Amazon Web Services on your behalf.
+            description: The ARN of the service-linked role that the Auto Scaling group uses to call other Amazon Web Services on your behalf.
             returned: success
             type: str
             sample: "arn:aws:iam::721234567890:role/aws-service-role/autoscaling.amazonaws.com/AWSServiceRoleForAutoScaling"
