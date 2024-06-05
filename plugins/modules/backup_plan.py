@@ -186,7 +186,8 @@ EXAMPLES = r"""
       - rule_name: daily
         advanced_backup_settings:
           - resource_type: "EC2"
-            backup_options: {"WindowsVSS": "enabled"}
+            backup_options:
+              WindowsVSS: enabled
         target_backup_vault_name: "{{ backup_vault_name }}"
         schedule_expression: 'cron(0 5 ? * * *)'
         start_window_minutes: 60
