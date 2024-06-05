@@ -1,4 +1,4 @@
 ---
 trivial:
-  - backup_plan: Modify the argspec to use options for a dict parameter.
-  - backup_plan: add example for advanced_backup_settings usage.
+  - backup_plan - Modify the argspec to use options for a dict parameter.
+  - backup_plan - add example for advanced_backup_settings usage.
