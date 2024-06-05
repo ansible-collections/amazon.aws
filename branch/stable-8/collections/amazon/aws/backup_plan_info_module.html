@@ -219,7 +219,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-backup-p
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-backup_plan_names"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-plan-info-module-parameter-backup-plan-names"><strong>backup_plan_names</strong></p>
-<a class="ansibleOptionLink" href="#parameter-backup_plan_names" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span> / <span class="ansible-option-required">required</span></p>
+<a class="ansibleOptionLink" href="#parameter-backup_plan_names" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Specifies a list of plan names.</p>
 </div></td>
@@ -342,10 +342,11 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-backup-p
 <section id="examples">
 <h2><a class="toc-backref" href="#id5" role="doc-backlink">Examples</a><a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
 <div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># Note: These examples do not set authentication details, see the AWS Guide for details.</span>
-<span class="c1"># Gather information about all backup plans</span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">amazon.aws.backup_plan_info</span>
-<span class="c1"># Gather information about a particular backup plan</span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.backup_plan_info</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Gather information about all backup plans</span>
+<span class="w">  </span><span class="nt">amazon.aws.backup_plan_info</span><span class="p">:</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Gather information about a particular backup plan</span>
+<span class="w">  </span><span class="nt">amazon.aws.backup_plan_info</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">backup plan_names</span><span class="p">:</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">elastic</span>
 </pre></div>
