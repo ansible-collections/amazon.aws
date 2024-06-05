@@ -4,6 +4,21 @@ amazon.aws Release Notes
 
 .. contents:: Topics
 
+v8.0.1
+======
+
+Release Summary
+---------------
+
+This release includes some bug fixes for the `s3_object`, `ec2_instance` and `backup_plan_info` modules.
+
+Bugfixes
+--------
+
+- backup_plan_info - Bugfix to enable getting info of all backup plans (https://github.com/ansible-collections/amazon.aws/pull/2083).
+- ec2_instance - do not ignore IPv6 addresses when a single network interface is specified (https://github.com/ansible-collections/amazon.aws/pull/1979).
+- s3_object - fixed issue which was causing ``MemoryError`` exceptions when downloading large files (https://github.com/ansible-collections/amazon.aws/issues/2107).
+
 v8.0.0
 ======
 
