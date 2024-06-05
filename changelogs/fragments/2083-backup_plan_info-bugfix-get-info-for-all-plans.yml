@@ -1,3 +1,0 @@
----
-bugfixes:
-  - backup_plan_info - Bugfix to enable getting info of all backup plans (https://github.com/ansible-collections/amazon.aws/pull/2083).
