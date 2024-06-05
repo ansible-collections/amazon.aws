@@ -4,6 +4,20 @@ amazon.aws Release Notes
 
 .. contents:: Topics
 
+v7.6.1
+======
+
+Release Summary
+---------------
+
+This release includes some bug fixes for the `ec2_instance` and `backup_plan_info` modules.
+
+Bugfixes
+--------
+
+- backup_plan_info - Bugfix to enable getting info of all backup plans (https://github.com/ansible-collections/amazon.aws/pull/2083).
+- ec2_instance - do not ignore IPv6 addresses when a single network interface is specified (https://github.com/ansible-collections/amazon.aws/pull/1979).
+
 v7.6.0
 ======
 
