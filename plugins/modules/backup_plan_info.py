@@ -20,7 +20,6 @@ options:
   backup_plan_names:
     type: list
     elements: str
-    required: true
     description:
       - Specifies a list of plan names.
 extends_documentation_fragment:
@@ -31,10 +30,11 @@ extends_documentation_fragment:
 
 EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
-# Gather information about all backup plans
-- amazon.aws.backup_plan_info
-# Gather information about a particular backup plan
-- amazon.aws.backup_plan_info:
+- name: Gather information about all backup plans
+  amazon.aws.backup_plan_info:
+
+- name: Gather information about a particular backup plan
+  amazon.aws.backup_plan_info:
     backup plan_names:
       - elastic
 """
@@ -110,9 +110,20 @@ from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleA
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 
 
+def get_all_backup_plans_info(client):
+    paginator = client.get_paginator("list_backup_plans")
+    return paginator.paginate().build_full_result()
+
+
 def get_backup_plan_detail(client, module):
     backup_plan_list = []
     backup_plan_names = module.params.get("backup_plan_names")
+
+    if backup_plan_names is None:
+        backup_plan_names = []
+        backup_plan_list_info = get_all_backup_plans_info(client)["BackupPlansList"]
+        for backup_plan in backup_plan_list_info:
+            backup_plan_names.append(backup_plan["BackupPlanName"])
 
     for name in backup_plan_names:
         backup_plan_list.extend(get_plan_details(module, client, name))
@@ -122,7 +133,7 @@ def get_backup_plan_detail(client, module):
 
 def main():
     argument_spec = dict(
-        backup_plan_names=dict(type="list", elements="str", required=True),
+        backup_plan_names=dict(type="list", elements="str"),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
