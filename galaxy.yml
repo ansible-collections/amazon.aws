@@ -1,7 +1,7 @@
 ---
 namespace: amazon
 name: aws
-version: 8.0.0
+version: 8.0.1
 readme: README.md
 authors:
   - Ansible (https://github.com/ansible)
