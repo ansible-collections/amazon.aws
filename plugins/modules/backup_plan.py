@@ -153,7 +153,11 @@ options:
           - Specifies the backup option for a selected resource.
           - This option is only available for Windows VSS backup jobs.
         type: dict
-        choices: [{'WindowsVSS': 'enabled'}, {'WindowsVSS': 'disabled'}]
+        suboptions:
+          WindowsVSS:
+            description: Enable or disable WindowsVSS backup option.
+            type: str
+            choices: ['enabled', 'disabled']
   creator_request_id:
     description: Identifies the request and allows failed requests to be retried
       without the risk of running the operation twice. If the request includes a
@@ -180,6 +184,9 @@ EXAMPLES = r"""
     backup_plan_name: elastic
     rules:
       - rule_name: daily
+        advanced_backup_settings:
+          - resource_type: "EC2"
+            backup_options: {"WindowsVSS": "enabled"}
         target_backup_vault_name: "{{ backup_vault_name }}"
         schedule_expression: 'cron(0 5 ? * * *)'
         start_window_minutes: 60
@@ -387,7 +394,9 @@ ARGUMENT_SPEC = dict(
             resource_type=dict(type="str", choices=["EC2"]),
             backup_options=dict(
                 type="dict",
-                choices=[{"WindowsVSS": "enabled"}, {"WindowsVSS": "disabled"}],
+                options=dict(
+                    WindowsVSS=dict(type="str", choices=["enabled", "disabed"])
+                ),
             ),
         ),
     ),
