@@ -2853,3 +2853,16 @@ releases:
       name: rds_engine_versions_info
       namespace: ''
     release_date: '2024-05-07'
+  7.6.1:
+    changes:
+      bugfixes:
+      - backup_plan_info - Bugfix to enable getting info of all backup plans (https://github.com/ansible-collections/amazon.aws/pull/2083).
+      - ec2_instance - do not ignore IPv6 addresses when a single network interface
+        is specified (https://github.com/ansible-collections/amazon.aws/pull/1979).
+      release_summary: This release includes some bug fixes for the `ec2_instance`
+        and `backup_plan_info` modules.
+    fragments:
+    - 1979-do-not-ignore-ipv6-addresses.yaml
+    - 2083-backup_plan_info-bugfix-get-info-for-all-plans.yml
+    - release_summary.yml
+    release_date: '2024-06-05'
