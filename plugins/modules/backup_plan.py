@@ -395,9 +395,7 @@ ARGUMENT_SPEC = dict(
             resource_type=dict(type="str", choices=["EC2"]),
             backup_options=dict(
                 type="dict",
-                options=dict(
-                    WindowsVSS=dict(type="str", choices=["enabled", "disabled"])
-                ),
+                options=dict(WindowsVSS=dict(type="str", choices=["enabled", "disabled"])),
             ),
         ),
     ),
