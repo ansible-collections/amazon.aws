@@ -12,7 +12,7 @@ short_description: Create or delete AWS AutoScaling Groups (ASGs)
 description:
   - Can create or delete AWS AutoScaling Groups.
   - Can be used with the M(community.aws.autoscaling_launch_config) module to manage Launch Configurations.
-  - Prior to release 5.0.0 this module was called C(community.aws.ec2_asg).
+  - Prior to release 5.0.0 this module was called M(community.aws.ec2_asg).
     The usage did not change.
   - This module was originally added to C(community.aws) in release 1.0.0.
 author:
@@ -42,13 +42,13 @@ options:
   availability_zones:
     description:
       - List of availability zone names in which to create the group.
-      - Defaults to all the availability zones in the region if I(vpc_zone_identifier) is not set.
+      - Defaults to all the availability zones in the region if O(vpc_zone_identifier) is not set.
     type: list
     elements: str
   launch_config_name:
     description:
-      - Name of the Launch configuration to use for the group. See the community.aws.autoscaling_launch_config) module for managing these.
-      - If unspecified then the current group value will be used.  One of I(launch_config_name) or I(launch_template) must be provided.
+      - Name of the Launch configuration to use for the group. See the M(community.aws.autoscaling_launch_config) module for managing these.
+      - If unspecified then the current group value will be used.  One of O(launch_config_name) or O(launch_template) must be provided.
     type: str
   launch_template:
     description:
@@ -61,11 +61,11 @@ options:
         type: str
       launch_template_name:
         description:
-          - The name of the launch template. Only one of I(launch_template_name) or I(launch_template_id) is required.
+          - The name of the launch template. Only one of O(launch_template.launch_template_name) or O(launch_template.launch_template_id) is required.
         type: str
       launch_template_id:
         description:
-          - The id of the launch template. Only one of I(launch_template_name) or I(launch_template_id) is required.
+          - The id of the launch template. Only one of O(launch_template.launch_template_name) or O(launch_template.launch_template_id) is required.
         type: str
     type: dict
   min_size:
@@ -79,19 +79,19 @@ options:
   max_instance_lifetime:
     description:
       - The maximum amount of time, in seconds, that an instance can be in service.
-      - Maximum instance lifetime must be equal to 0, between 604800 and 31536000 seconds (inclusive), or not specified.
-      - Value of 0 removes lifetime restriction.
+      - Maximum instance lifetime must be equal to V(0), between V(604800) and V(31536000) seconds (inclusive), or not specified.
+      - Value of V(0) removes lifetime restriction.
     type: int
   mixed_instances_policy:
     description:
       - A mixed instance policy to use for the ASG.
-      - Only used when the ASG is configured to use a Launch Template (I(launch_template)).
+      - Only used when the ASG is configured to use a Launch Template (O(launch_template)).
       - 'See also U(https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-autoscaling-autoscalinggroup-mixedinstancespolicy.html)'
     required: false
     suboptions:
       instance_types:
         description:
-          - A list of instance_types.
+          - A list of instance types.
         type: list
         elements: str
         required: false
@@ -120,17 +120,19 @@ options:
                 The minimum amount of the Auto Scaling group's capacity that must be fulfilled by On-Demand
                 Instances. This base portion is provisioned first as your group scales.
               - >-
-                Default if not set is 0. If you leave it set to 0, On-Demand Instances are launched as a
-                percentage of the Auto Scaling group's desired capacity, per the OnDemandPercentageAboveBaseCapacity setting.
+                Default if not set is V(0). If you leave it set to V(0), On-Demand Instances are launched as a
+                percentage of the Auto Scaling group's desired capacity, per the
+                O(mixed_instances_policy.instances_distribution.on_demand_percentage_above_base_capacity) setting.
             type: int
             required: false
             version_added: 1.5.0
             version_added_collection: community.aws
           on_demand_percentage_above_base_capacity:
             description:
-              - Controls the percentages of On-Demand Instances and Spot Instances for your additional capacity beyond OnDemandBaseCapacity.
-              - Default if not set is 100. If you leave it set to 100, the percentages are 100% for On-Demand Instances and 0% for Spot Instances.
-              - 'Valid range: 0 to 100'
+              - Controls the percentages of On-Demand Instances and Spot Instances for your additional capacity beyond
+                O(mixed_instances_policy.instances_distribution.on_demand_base_capacity).
+              - Default if not set is V(100). If you leave it set to V(100), the percentages are 100% for On-Demand Instances and 0% for Spot Instances.
+              - 'Valid range: V(0) to V(100).'
             type: int
             required: false
             version_added: 1.5.0
@@ -146,9 +148,9 @@ options:
             description:
               - >-
                 The number of Spot Instance pools across which to allocate your Spot Instances. The Spot pools are determined from
-                the different instance types in the Overrides array of LaunchTemplate. Default if not set is 2.
+                the different instance types in the Overrides array of LaunchTemplate. Default if not set is V(2).
               - Used only when the Spot allocation strategy is lowest-price.
-              - 'Valid Range: Minimum value of 1. Maximum value of 20.'
+              - 'Valid Range: Minimum value of V(1). Maximum value of V(20).'
             type: int
             required: false
             version_added: 1.5.0
@@ -174,20 +176,20 @@ options:
   replace_all_instances:
     description:
       - In a rolling fashion, replace all instances that used the old launch configuration with one from the new launch configuration.
-        It increases the ASG size by I(replace_batch_size), waits for the new instances to be up and running.
+        It increases the ASG size by O(replace_batch_size), waits for the new instances to be up and running.
         After that, it terminates a batch of old instances, waits for the replacements, and repeats, until all old instances are replaced.
         Once that's done the ASG size is reduced back to the expected size.
     default: false
     type: bool
   replace_batch_size:
     description:
-      - Number of instances you'd like to replace at a time.  Used with I(replace_all_instances).
+      - Number of instances you'd like to replace at a time.  Used with O(replace_all_instances).
     required: false
     default: 1
     type: int
   replace_instances:
     description:
-      - List of I(instance_ids) belonging to the named AutoScalingGroup that you would like to terminate and be replaced with instances
+      - List of instance ids belonging to the named AutoScalingGroup that you would like to terminate and be replaced with instances
         matching the current launch configuration.
     type: list
     elements: str
@@ -195,7 +197,7 @@ options:
   detach_instances:
     description:
       - Removes one or more instances from the specified AutoScalingGroup.
-      - If I(decrement_desired_capacity) flag is not set, new instance(s) are launched to replace the detached instance(s).
+      - If O(decrement_desired_capacity) flag is not set, new instance(s) are launched to replace the detached instance(s).
       - If a Classic Load Balancer is attached to the AutoScalingGroup, the instances are also deregistered from the load balancer.
       - If there are target groups attached to the AutoScalingGroup, the instances are also deregistered from the target groups.
     type: list
@@ -212,13 +214,13 @@ options:
     version_added_collection: community.aws
   lc_check:
     description:
-      - Check to make sure instances that are being replaced with I(replace_instances) do not already have the current I(launch_config).
+      - Check to make sure instances that are being replaced with O(replace_instances) do not already have the current launch config.
     default: true
     type: bool
   lt_check:
     description:
-      - Check to make sure instances that are being replaced with I(replace_instances) do not already have the current
-        I(launch_template or I(launch_template) I(version).
+      - Check to make sure instances that are being replaced with O(replace_instances) do not already have the current
+        O(launch_template) or O(launch_template) O(launch_template.version).
     default: true
     type: bool
   vpc_zone_identifier:
@@ -229,15 +231,15 @@ options:
   tags:
     description:
       - A list of tags to add to the Auto Scale Group.
-      - Optional key is I(propagate_at_launch), which defaults to true.
-      - When I(propagate_at_launch) is true the tags will be propagated to the Instances created.
+      - Optional key is V(propagate_at_launch), which defaults to V(true).
+      - When V(propagate_at_launch) is V(true) the tags will be propagated to the Instances created.
     type: list
     elements: dict
     default: []
   purge_tags:
     description:
-      - If C(true), existing tags will be purged from the resource to match exactly what is defined by I(tags) parameter.
-      - If the I(tags) parameter is not set then tags will not be modified.
+      - If V(true), existing tags will be purged from the resource to match exactly what is defined by O(tags) parameter.
+      - If the O(tags) parameter is not set then tags will not be modified.
     default: false
     type: bool
     version_added: 3.2.0
@@ -275,9 +277,9 @@ options:
   termination_policies:
     description:
         - An ordered list of criteria used for selecting instances to be removed from the Auto Scaling group when reducing capacity.
-        - Using I(termination_policies=Default) when modifying an existing AutoScalingGroup will result in the existing policy being retained
-          instead of changed to C(Default).
-        - 'Valid values include: C(Default), C(OldestInstance), C(NewestInstance), C(OldestLaunchConfiguration), C(ClosestToNextInstanceHour)'
+        - Using O(termination_policies=Default) when modifying an existing AutoScalingGroup will result in the existing policy being retained
+          instead of changed to V(Default).
+        - 'Valid values include: V(Default), V(OldestInstance), V(NewestInstance), V(OldestLaunchConfiguration), V(ClosestToNextInstanceHour)'
         - 'Full documentation of valid values can be found in the AWS documentation:'
         - 'U(https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-instance-termination.html#custom-termination-policy)'
     default: Default
@@ -302,7 +304,7 @@ options:
     description:
       - A list of scaling processes to suspend.
       - 'Valid values include:'
-      - C(Launch), C(Terminate), C(HealthCheck), C(ReplaceUnhealthy), C(AZRebalance), C(AlarmNotification), C(ScheduledActions), C(AddToLoadBalancer)
+      - V(Launch), V(Terminate), V(HealthCheck), V(ReplaceUnhealthy), V(AZRebalance), V(AlarmNotification), V(ScheduledActions), V(AddToLoadBalancer)
       - 'Full documentation of valid values can be found in the AWS documentation:'
       - 'U(https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-suspend-resume-processes.html)'
     default: []
@@ -315,12 +317,12 @@ options:
     default: false
   metrics_granularity:
     description:
-      - When I(metrics_collection=true) this will determine the granularity of metrics collected by CloudWatch.
+      - When O(metrics_collection=true) this will determine the granularity of metrics collected by CloudWatch.
     default: "1Minute"
     type: str
   metrics_list:
     description:
-      - List of autoscaling metrics to collect when I(metrics_collection=true).
+      - List of autoscaling metrics to collect when O(metrics_collection=true).
     default:
       - 'GroupMinSize'
       - 'GroupMaxSize'

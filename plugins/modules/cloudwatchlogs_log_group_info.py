@@ -33,7 +33,7 @@ EXAMPLES = r"""
 
 RETURN = r"""
 log_groups:
-    description: Return the list of complex objects representing log groups
+    description: Return the list of complex objects representing log groups.
     returned: success
     type: complex
     contains:

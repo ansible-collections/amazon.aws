@@ -1,3 +1,0 @@
----
-bugfixes:
-  - lambda_event - Retrieve function ARN using AWS API (get_function) instead of building it with AWS account information (https://github.com/ansible-collections/amazon.aws/issues/1859).

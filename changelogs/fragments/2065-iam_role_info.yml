@@ -1,3 +1,0 @@
----
-bugfixes:
-  - iam_role_info - fixes bug in handling paths missing the ``/`` prefix and/or suffix (https://github.com/ansible-collections/amazon.aws/issues/2065).

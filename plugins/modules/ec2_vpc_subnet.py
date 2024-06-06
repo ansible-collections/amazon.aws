@@ -18,25 +18,25 @@ options:
   az:
     description:
       - The availability zone for the subnet.
-      - Required if I(outpost_arn) is set.
+      - Required if O(outpost_arn) is set.
     type: str
   cidr:
     description:
-      - The CIDR block for the subnet. E.g. C(192.0.2.0/24).
+      - The CIDR block for the subnet. E.g. V(192.0.2.0/24).
     type: str
     required: true
   ipv6_cidr:
     description:
       - The IPv6 CIDR block for the subnet.
       - The VPC must have a /56 block assigned and this value must be a valid IPv6 /64 that falls in the VPC range.
-      - Required if I(assign_instances_ipv6=true)
+      - Required if O(assign_instances_ipv6=true)
     type: str
     default: ''
   outpost_arn:
     description:
       - The Amazon Resource Name (ARN) of the Outpost.
       - If set, allows to create subnet in an Outpost.
-      - If I(outpost_arn) is set, I(az) must also be specified.
+      - If O(outpost_arn) is set, O(az) must also be specified.
     type: str
     default: ''
   state:
@@ -58,7 +58,7 @@ options:
   assign_instances_ipv6:
     description:
       - Whether instances launched into the subnet should default to being automatically assigned an IPv6 address.
-      - If I(assign_instances_ipv6=true), I(ipv6_cidr) must also be specified.
+      - If O(assign_instances_ipv6=true), O(ipv6_cidr) must also be specified.
     type: bool
     default: false
   wait:
@@ -69,7 +69,7 @@ options:
   wait_timeout:
     description:
       - Number of seconds to wait for changes to complete
-      - Ignored unless I(wait=True).
+      - Ignored unless O(wait=true).
     default: 300
     type: int
 extends_documentation_fragment:
@@ -114,77 +114,91 @@ EXAMPLES = r"""
 
 RETURN = r"""
 subnet:
-    description: Dictionary of subnet values
-    returned: I(state=present)
+    description: Dictionary of subnet values.
+    returned: O(state=present)
     type: complex
     contains:
         id:
-            description: Subnet resource id
-            returned: I(state=present)
+            description: Subnet resource id.
+            returned: O(state=present)
             type: str
             sample: subnet-b883b2c4
         cidr_block:
-            description: The IPv4 CIDR of the Subnet
-            returned: I(state=present)
+            description: The IPv4 CIDR of the Subnet.
+            returned: O(state=present)
             type: str
             sample: "10.0.0.0/16"
         ipv6_cidr_block:
-            description: The IPv6 CIDR block actively associated with the Subnet
-            returned: I(state=present)
+            description: The IPv6 CIDR block actively associated with the Subnet.
+            returned: O(state=present)
             type: str
             sample: "2001:db8:0:102::/64"
         availability_zone:
-            description: Availability zone of the Subnet
-            returned: I(state=present)
+            description: Availability zone of the Subnet.
+            returned: O(state=present)
             type: str
             sample: us-east-1a
+        availability_zone_id:
+            description: The AZ ID of the subnet.
+            returned: O(state=present)
+            type: str
+            sample: use1-az6
         state:
-            description: state of the Subnet
-            returned: I(state=present)
+            description: State of the Subnet.
+            returned: O(state=present)
             type: str
             sample: available
         tags:
-            description: tags attached to the Subnet, includes name
-            returned: I(state=present)
+            description: Tags attached to the Subnet, includes name.
+            returned: O(state=present)
             type: dict
             sample: {"Name": "My Subnet", "env": "staging"}
         map_public_ip_on_launch:
-            description: whether public IP is auto-assigned to new instances
-            returned: I(state=present)
+            description: Whether public IP is auto-assigned to new instances.
+            returned: O(state=present)
             type: bool
             sample: false
         assign_ipv6_address_on_creation:
-            description: whether IPv6 address is auto-assigned to new instances
-            returned: I(state=present)
+            description: Whether IPv6 address is auto-assigned to new instances.
+            returned: O(state=present)
             type: bool
             sample: false
         vpc_id:
-            description: the id of the VPC where this Subnet exists
-            returned: I(state=present)
+            description: The id of the VPC where this Subnet exists.
+            returned: O(state=present)
             type: str
             sample: vpc-67236184
         available_ip_address_count:
-            description: number of available IPv4 addresses
-            returned: I(state=present)
+            description: Number of available IPv4 addresses.
+            returned: O(state=present)
             type: str
             sample: 251
         default_for_az:
-            description: indicates whether this is the default Subnet for this Availability Zone
-            returned: I(state=present)
+            description: Indicates whether this is the default Subnet for this Availability Zone.
+            returned: O(state=present)
+            type: bool
+            sample: false
+        enable_dns64:
+            description:
+            - Indicates whether DNS queries made should return synthetic IPv6 addresses for IPv4-only destinations.
             type: bool
             sample: false
         ipv6_association_id:
-            description: The IPv6 association ID for the currently associated CIDR
-            returned: I(state=present)
+            description: The IPv6 association ID for the currently associated CIDR.
+            returned: O(state=present)
             type: str
             sample: subnet-cidr-assoc-b85c74d2
+        ipv6_native:
+            description: Indicates whether this is an IPv6 only subnet.
+            type: bool
+            sample: false
         ipv6_cidr_block_association_set:
             description: An array of IPv6 cidr block association set information.
-            returned: I(state=present)
+            returned: O(state=present)
             type: complex
             contains:
                 association_id:
-                    description: The association ID
+                    description: The association ID.
                     returned: always
                     type: str
                 ipv6_cidr_block:
@@ -200,6 +214,30 @@ subnet:
                             description: The CIDR block association state.
                             returned: always
                             type: str
+        map_customer_owned_ip_on_launch:
+            description:
+            - Indicates whether a network interface receives a customer-owned IPv4 address.
+            type: bool
+            sample: flase
+        owner_id:
+            description: The ID of the Amazon Web Services account that owns the subnet.
+            type: str
+            sample: 12344567
+        private_dns_name_options_on_launch:
+            description:
+            - The type of hostnames to assign to instances in the subnet at launch.
+            - An instance hostname is based on the IPv4 address or ID of the instance.
+            type: dict
+            sample: {
+                "enable_resource_name_dns_a_record": false,
+                "enable_resource_name_dns_aaaa_record": false,
+                "hostname_type": "ip-name"
+            }
+        subnet_arn:
+            description: The Amazon Resource Name (ARN) of the subnet.
+            type: str
+            sample: arn:aws:ec2:us-east-1:xxx:subnet/subnet-xxx
+
 """
 
 

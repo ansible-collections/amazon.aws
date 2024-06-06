@@ -62,7 +62,7 @@ EXAMPLES = r"""
 
 RETURN = r"""
 spot_request:
-    description:  The gathered information about specified spot instance requests.
+    description: The gathered information about specified spot instance requests.
     returned: when success
     type: list
     elements: dict

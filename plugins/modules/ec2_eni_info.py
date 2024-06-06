@@ -17,14 +17,14 @@ options:
   eni_id:
     description:
       - The ID of the ENI.
-      - This option is mutually exclusive of I(filters).
+      - This option is mutually exclusive of O(filters).
     type: str
     version_added: 1.3.0
   filters:
     description:
       - A dict of filters to apply. Each dict item consists of a filter key and a filter value.
         See U(https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeNetworkInterfaces.html) for possible filters.
-      - This option is mutually exclusive of I(eni_id).
+      - This option is mutually exclusive of O(eni_id).
     type: dict
     default: {}
 extends_documentation_fragment:
@@ -73,6 +73,7 @@ network_interfaces:
         device_index: 1,
         instance_id: "i-15b8d3cadbafa1234",
         instance_owner_id: "123456789012",
+        "network_card_index": 0,
         status: "attached"
       }
     availability_zone:
@@ -96,7 +97,7 @@ network_interfaces:
         }
       ]
     id:
-      description: The id of the ENI (alias for network_interface_id).
+      description: The id of the ENI (alias for RV(network_interfaces.network_interface_id)).
       returned: always
       type: str
       sample: "eni-392fsdf"
@@ -147,7 +148,6 @@ network_interfaces:
       sample: []
     requester_id:
       description: The ID of the entity that launched the ENI.
-      returned: always
       type: str
       sample: "AIDA12345EXAMPLE54321"
     requester_managed:

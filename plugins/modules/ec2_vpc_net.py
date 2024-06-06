@@ -17,42 +17,42 @@ author:
 options:
   name:
     description:
-      - The name to give your VPC. This is used in combination with I(cidr_block)
+      - The name to give your VPC. This is used in combination with O(cidr_block)
         to determine if a VPC already exists.
-      - The value of I(name) overrides any value set for C(Name) in the I(tags)
+      - The value of O(name) overrides any value set for V(Name) in the O(tags)
         parameter.
-      - At least one of I(name) and I(vpc_id) must be specified.
-      - I(name) must be specified when creating a new VPC.
+      - At least one of O(name) and O(vpc_id) must be specified.
+      - O(name) must be specified when creating a new VPC.
     type: str
   vpc_id:
     version_added: 4.0.0
     description:
       - The ID of the VPC.
-      - At least one of I(name) and I(vpc_id) must be specified.
-      - At least one of I(name) and I(cidr_block) must be specified.
+      - At least one of O(name) and O(vpc_id) must be specified.
+      - At least one of O(name) and O(cidr_block) must be specified.
     type: str
   cidr_block:
     description:
       - The primary CIDR of the VPC.
       - The first in the list will be used as the primary CIDR
-        and is used in conjunction with I(name) to ensure idempotence.
-      - Required when I(vpc_id) is not set.
+        and is used in conjunction with O(name) to ensure idempotence.
+      - Required when O(vpc_id) is not set.
     type: list
     elements: str
   ipv6_cidr:
     description:
       - Request an Amazon-provided IPv6 CIDR block with /56 prefix length. You cannot specify the range of IPv6 addresses,
         or the size of the CIDR block.
-      - Default value is C(false) when creating a new VPC.
+      - Default value is V(false) when creating a new VPC.
     type: bool
   purge_cidrs:
     description:
-      - Remove CIDRs that are associated with the VPC and are not specified in I(cidr_block).
+      - Remove CIDRs that are associated with the VPC and are not specified in O(cidr_block).
     default: false
     type: bool
   tenancy:
     description:
-      - Whether to be default or dedicated tenancy.
+      - Whether to be V(default) or V(dedicated) tenancy.
       - This cannot be changed after the VPC has been created.
     default: default
     choices: [ 'default', 'dedicated' ]
@@ -60,12 +60,12 @@ options:
   dns_support:
     description:
       - Whether to enable AWS DNS support.
-      - Default value is C(true) when creating a new VPC.
+      - Default value is V(true) when creating a new VPC.
     type: bool
   dns_hostnames:
     description:
       - Whether to enable AWS hostname support.
-      - Default value is C(true) when creating a new VPC.
+      - Default value is V(true) when creating a new VPC.
     type: bool
   dhcp_opts_id:
     description:
@@ -80,7 +80,7 @@ options:
   multi_ok:
     description:
       - By default the module will not create another VPC if there is another VPC with the same name and CIDR block.
-        Specify I(multi_ok=true) if you want duplicate VPCs created.
+        Specify O(multi_ok=true) if you want duplicate VPCs created.
     type: bool
     default: false
 extends_documentation_fragment:
@@ -119,17 +119,17 @@ EXAMPLES = r"""
 
 RETURN = r"""
 vpc:
-  description: info about the VPC that was created or deleted
+  description: Info about the VPC that was created or deleted.
   returned: always
   type: complex
   contains:
     cidr_block:
-      description: The CIDR of the VPC
+      description: The CIDR of the VPC.
       returned: always
       type: str
       sample: 10.0.0.0/16
     cidr_block_association_set:
-      description: IPv4 CIDR blocks associated with the VPC
+      description: IPv4 CIDR blocks associated with the VPC.
       returned: success
       type: list
       sample:
@@ -143,12 +143,12 @@ vpc:
             }
         ]
     dhcp_options_id:
-      description: the id of the DHCP options associated with this VPC
+      description: The id of the DHCP options associated with this VPC.
       returned: always
       type: str
       sample: dopt-12345678
     id:
-      description: VPC resource id
+      description: VPC resource id.
       returned: always
       type: str
       sample: vpc-12345678
@@ -159,12 +159,12 @@ vpc:
       sample: MyVPC
       version_added: 4.0.0
     instance_tenancy:
-      description: indicates whether VPC uses default or dedicated tenancy
+      description: Indicates whether VPC uses default or dedicated tenancy.
       returned: always
       type: str
       sample: default
     ipv6_cidr_block_association_set:
-      description: IPv6 CIDR blocks associated with the VPC
+      description: IPv6 CIDR blocks associated with the VPC.
       returned: success
       type: list
       sample:
@@ -178,22 +178,22 @@ vpc:
             }
         ]
     is_default:
-      description: indicates whether this is the default VPC
+      description: Indicates whether this is the default VPC.
       returned: always
       type: bool
       sample: false
     state:
-      description: state of the VPC
+      description: State of the VPC.
       returned: always
       type: str
       sample: available
     tags:
-      description: tags attached to the VPC, includes name
+      description: Tags attached to the VPC, includes name.
       returned: always
       type: complex
       contains:
         Name:
-          description: name tag for the VPC
+          description: Name tag for the VPC.
           returned: always
           type: str
           sample: pk_vpc4

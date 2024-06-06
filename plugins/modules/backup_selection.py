@@ -43,14 +43,14 @@ options:
     description:
       - A list of conditions that you define to assign resources to your backup plans using tags.
       - Condition operators are case sensitive.
-      - When you specify more than one condition in I(list_of_tags), you assign all resources that match AT LEAST ONE condition (using OR logic).
+      - When you specify more than one condition in O(list_of_tags), you assign all resources that match AT LEAST ONE condition (using OR logic).
     type: list
     elements: dict
     suboptions:
         condition_type:
             description:
             - An operation applied to a key-value pair used to assign resources to your backup plan.
-            - Condition only supports C(STRINGEQUALS).
+            - Condition only supports V(STRINGEQUALS).
             type: str
         condition_key:
             description:
@@ -71,7 +71,7 @@ options:
     description:
       - A list of conditions (expressed as a dict) that you define to assign resources to your backup plans using tags.
       - When you specify more than one condition in I(conditions), you only assign the resources that match ALL conditions (using AND logic).
-      - I(conditions) supports C(string_equals), C(string_like), C(string_not_equals), and C(string_not_like). I(list_of_tags) only supports C(string_equals).
+      - O(conditions) supports V(string_equals), V(string_like), V(string_not_equals), and V(string_not_like). O(list_of_tags) only supports V(string_equals).
     type: dict
     suboptions:
       string_equals:
@@ -84,7 +84,7 @@ options:
           condition_key:
             description:
               - The key in a key-value pair.
-              - I(condition_key) in the I(conditions) option must use the AWS resource tag prefix, e.g. 'aws:ResourceTag/key-name'
+              - O(conditions.string_equals.condition_key) in the O(conditions) option must use the AWS resource tag prefix, e.g. 'aws:ResourceTag/key-name'
             type: str
           condition_value:
             description: The value in a key-value pair.
@@ -100,7 +100,7 @@ options:
           condition_key:
             description:
               - The key in a key-value pair.
-              - I(condition_key) in the I(conditions) option must use the AWS resource tag prefix, e.g. 'aws:ResourceTag/key-name'
+              - O(conditions.string_like.condition_key) in the O(conditions) option must use the AWS resource tag prefix, e.g. 'aws:ResourceTag/key-name'
             type: str
           condition_value:
             description: The value in a key-value pair.
@@ -115,7 +115,7 @@ options:
           condition_key:
             description:
               - The key in a key-value pair.
-              - I(condition_key) in the I(conditions) option must use the AWS resource tag prefix, e.g. 'aws:ResourceTag/key-name'
+              - O(conditions.string_not_equals.condition_key) in the O(conditions) option must use the AWS resource tag prefix, e.g. 'aws:ResourceTag/key-name'
             type: str
           condition_value:
             description: The value in a key-value pair.
@@ -130,7 +130,7 @@ options:
           condition_key:
             description:
               - The key in a key-value pair.
-              - I(condition_key) in the I(conditions) option must use the AWS resource tag prefix, e.g. 'aws:ResourceTag/key-name'
+              - O(conditions.string_not_like.condition_key) in the O(conditions) option must use the AWS resource tag prefix, e.g. 'aws:ResourceTag/key-name'
             type: str
           condition_value:
             description: The value in a key-value pair.

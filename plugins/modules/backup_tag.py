@@ -29,14 +29,14 @@ options:
   tags:
     description:
       - A dictionary of tags to add or remove from the resource.
-      - If the value provided for a tag key is null and I(state=absent), the tag will be removed regardless of its current value.
+      - If the value provided for a tag key is null and O(state=absent), the tag will be removed regardless of its current value.
     type: dict
     required: true
     aliases: ['resource_tags']
   purge_tags:
     description:
       - Whether unspecified tags should be removed from the resource.
-      - Note that when combined with I(state=absent), specified tag keys are not purged regardless of its current value.
+      - Note that when combined with O(state=absent), specified tag keys are not purged regardless of its current value.
     type: bool
     default: false
 

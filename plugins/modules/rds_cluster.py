@@ -170,7 +170,6 @@ options:
           - For the full list of DB instance classes and availability for your engine visit
             U(https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html).
           - This setting is required to create a Multi-AZ DB cluster.
-          - I(db_cluster_instance_class) require botocore >= 1.23.44.
         type: str
         version_added: 5.5.0
     enable_iam_database_authentication:
@@ -182,7 +181,6 @@ options:
         description:
           - The amount of storage in gibibytes (GiB) to allocate to each DB instance in the Multi-AZ DB cluster.
           - This setting is required to create a Multi-AZ DB cluster.
-          - I(allocated_storage) require botocore >= 1.23.44.
         type: int
         version_added: 5.5.0
     storage_type:
@@ -190,7 +188,6 @@ options:
           - Specifies the storage type to be associated with the DB cluster.
           - This setting is required to create a Multi-AZ DB cluster.
           - When specified, a value for the I(iops) parameter is required.
-          - I(storage_type) require botocore >= 1.23.44.
           - Defaults to C(io1).
         type: str
         choices:
@@ -201,7 +198,6 @@ options:
           - The amount of Provisioned IOPS (input/output operations per second) to be initially allocated for each DB instance in the Multi-AZ DB cluster.
           - This setting is required to create a Multi-AZ DB cluster
           - Must be a multiple between .5 and 50 of the storage amount for the DB cluster.
-          - I(iops) require botocore >= 1.23.44.
         type: int
         version_added: 5.5.0
     engine:

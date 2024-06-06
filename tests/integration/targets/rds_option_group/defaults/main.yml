@@ -1,7 +1,7 @@
 ---
 option_group_name: "{{ resource_prefix }}rds-option-group"
 engine_name: mysql
-major_engine_version: 5.6
+major_engine_version: 8.0
 option_group_description: "{{ resource_prefix }}rds-option-group test"
 instance_id: "{{ resource_prefix }}"
 username: test

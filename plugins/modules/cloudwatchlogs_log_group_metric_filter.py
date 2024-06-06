@@ -34,11 +34,11 @@ options:
       type: str
     filter_pattern:
       description:
-        - A filter pattern for extracting metric data out of ingested log events. Required when I(state=present).
+        - A filter pattern for extracting metric data out of ingested log events. Required when O(state=present).
       type: str
     metric_transformation:
       description:
-        - A collection of information that defines how metric data gets emitted. Required when I(state=present).
+        - A collection of information that defines how metric data gets emitted. Required when O(state=present).
       type: dict
       suboptions:
         metric_name:
@@ -84,7 +84,7 @@ EXAMPLES = r"""
 
 RETURN = r"""
 metric_filters:
-    description: Return the origin response value
+    description: Return the origin response value.
     returned: success
     type: list
     sample: [

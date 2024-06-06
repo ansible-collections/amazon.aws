@@ -44,7 +44,7 @@ EXAMPLES = r"""
 
 RETURN = r"""
 tags:
-  description: A dict containing the tags on the resource
+  description: A dict containing the tags on the resource.
   returned: always
   type: dict
 """

@@ -1,3 +1,0 @@
----
-bugfixes:
-  - iam_managed_policy - fixes bug that causes ``ParamValidationError`` when attempting to delete a policy that's attached to a role or a user (https://github.com/ansible-collections/amazon.aws/issues/2067).

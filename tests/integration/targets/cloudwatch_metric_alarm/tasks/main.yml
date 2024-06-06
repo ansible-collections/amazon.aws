@@ -211,13 +211,14 @@
         name: "{{ alarm_full_name }}"
         metric: CPUUtilization
         namespace: AWS/EC2
-        statistic: Average
-        comparison: LessThanOrEqualToThreshold
+        extended_statistic: p50
+        comparison: GreaterThanOrEqualToThreshold
         threshold: 5.0
         period: 60
         evaluation_periods: 3
+        evaluate_low_sample_count_percentile: "evaluate"
         unit: Percent
-        description: This will alarm when an instance's cpu usage average is lower than 5% for 3 minutes
+        description: This will alarm when an instance's cpu usage percentage is greater than or equal to 50% for 3 minutes
       check_mode: true
       register: ec2_instance_metric_alarm_update_check
 
@@ -251,13 +252,14 @@
         name: "{{ alarm_full_name }}"
         metric: CPUUtilization
         namespace: AWS/EC2
-        statistic: Average
-        comparison: LessThanOrEqualToThreshold
+        extended_statistic: p50
+        comparison: GreaterThanOrEqualToThreshold
         threshold: 5.0
         period: 60
         evaluation_periods: 3
+        evaluate_low_sample_count_percentile: "evaluate"
         unit: Percent
-        description: This will alarm when an instance's cpu usage average is lower than 5% for 3 minutes
+        description: This will alarm when an instance's cpu usage percentage is greater than or equal to 50% for 3 minutes
       register: ec2_instance_metric_alarm_update
 
     - name: verify that alarm registers as updated
@@ -271,12 +273,12 @@
           - ec2_instance_metric_alarm_update.changed
           - ec2_instance_metric_alarm_update.period == 60 # Period should be 60, not matching old value
           - ec2_instance_metric_alarm_update.alarm_arn == ec2_instance_metric_alarm.alarm_arn
-          - ec2_instance_metric_alarm_update.statistic == alarm_info.metric_alarms[0].statistic
+          - ec2_instance_metric_alarm_update.extended_statistic ==  'p50'
+          - ec2_instance_metric_alarm_update.evaluate_low_sample_count_percentile ==  'evaluate'
           - ec2_instance_metric_alarm_update.name  == alarm_info.metric_alarms[0].alarm_name
           - ec2_instance_metric_alarm_update.metric == alarm_info.metric_alarms[0].metric_name
           - ec2_instance_metric_alarm_update.namespace == alarm_info.metric_alarms[0].namespace
-          - ec2_instance_metric_alarm_update.statistic == alarm_info.metric_alarms[0].statistic
-          - ec2_instance_metric_alarm_update.comparison == alarm_info.metric_alarms[0].comparison_operator
+          - ec2_instance_metric_alarm_update.comparison == 'GreaterThanOrEqualToThreshold'
           - ec2_instance_metric_alarm_update.threshold == alarm_info.metric_alarms[0].threshold
           - ec2_instance_metric_alarm_update.unit == alarm_info.metric_alarms[0].unit
           - ec2_instance_metric_alarm_update.evaluation_periods == alarm_info.metric_alarms[0].evaluation_periods

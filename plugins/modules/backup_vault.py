@@ -187,19 +187,6 @@ def get_vault_facts(module, client, vault_name):
             resource = resp.get("BackupVaultArn")
             resp["tags"] = get_backup_resource_tags(module, client, resource)
 
-        # Check for non-existent values and populate with None
-        optional_vals = set(
-            [
-                "S3KeyPrefix",
-                "SnsTopicName",
-                "SnsTopicARN",
-                "CloudWatchLogsLogGroupArn",
-                "CloudWatchLogsRoleArn",
-                "KmsKeyId",
-            ]
-        )
-        for v in optional_vals - set(resp.keys()):
-            resp[v] = None
         return resp
 
     else:

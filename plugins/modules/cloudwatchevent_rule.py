@@ -20,10 +20,11 @@ extends_documentation_fragment:
 author:
   - "Jim Dalton (@jsdalton) <jim.dalton@gmail.com>"
 notes:
-  - A rule must contain at least an I(event_pattern) or I(schedule_expression). A
-    rule can have both an I(event_pattern) and a I(schedule_expression), in which
+  - A rule must contain at least an O(event_pattern) or O(schedule_expression). A
+    rule can have both an O(event_pattern) and a O(schedule_expression), in which
     case the rule will trigger on matching events as well as on a schedule.
-  - When specifying targets, I(input), I(input_path), I(input_paths_map) and I(input_template)
+  - When specifying targets, O(targets.input), O(targets.input_path),
+    O(targets.input_transformer.input_paths_map) and O(targets.input_transformer.input_template)
     are mutually-exclusive and optional parameters.
 options:
   name:
@@ -83,14 +84,14 @@ options:
         type: json
         description:
           - A JSON object that will override the event data passed to the target.
-          - If neither I(input) nor I(input_path) nor I(input_transformer)
+          - If neither O(targets.input) nor O(targets.input_path) nor O(targets.input_transformer)
             is specified, then the entire event is passed to the target in JSON form.
       input_path:
         type: str
         description:
-          - A JSONPath string (e.g. C($.detail)) that specifies the part of the event data to be
+          - A JSONPath string (e.g. V($.detail)) that specifies the part of the event data to be
             passed to the target.
-          - If neither I(input) nor I(input_path) nor I(input_transformer)
+          - If neither O(targets.input) nor O(targets.input_path) nor O(targets.input_transformer)
             is specified, then the entire event is passed to the target in JSON form.
       input_transformer:
         type: dict
@@ -120,7 +121,7 @@ options:
             required: true
           task_count:
             type: int
-            description: The number of tasks to create based on I(task_definition).
+            description: The number of tasks to create based on task definition.
     required: false
 """
 
@@ -167,17 +168,52 @@ rule:
     description: CloudWatch Event rule data.
     returned: success
     type: dict
-    sample:
-      arn: 'arn:aws:events:us-east-1:123456789012:rule/MyCronTask'
-      description: 'Run my scheduled task'
-      name: 'MyCronTask'
-      schedule_expression: 'cron(0 20 * * ? *)'
-      state: 'ENABLED'
+    contains:
+      name:
+        description:
+          - The name of the rule you are creating, updating or deleting.
+        returned: success
+        type: str
+        sample: "MyCronTask"
+      schedule_expression:
+        description:
+          - A cron or rate expression that defines the schedule the rule will trigger on.
+        returned: success
+        type: str
+        sample: 'cron(0 20 * * ? *)'
+      state:
+        description:
+          - Whether the rule is present (and enabled), disabled, or absent.
+        returned: success
+        type: str
+        sample: "enabled"
+      description:
+        description:
+          - A description of the rule.
+        returned: success
+        type: str
+        sample: "Run my scheduled task"
+      arn:
+        description: The ARN associated with the rule.
+        type: str
+        returned: success
+        sample: 'arn:aws:events:us-east-1:123456789012:rule/MyCronTask'
 targets:
     description: CloudWatch Event target(s) assigned to the rule.
     returned: success
     type: list
-    sample: "[{ 'arn': 'arn:aws:lambda:us-east-1:123456789012:function:MyFunction', 'id': 'MyTargetId' }]"
+    elements: dict
+    contains:
+      id:
+        description: The unique target assignment ID.
+        type: str
+        returned: success
+        sample: 'MyTargetId'
+      arn:
+        description: The ARN associated with the target.
+        type: str
+        returned: success
+        sample: 'arn:aws:lambda:us-east-1:123456789012:function:MyFunction'
 """
 
 import json

@@ -22,7 +22,7 @@ options:
   state:
     description:
       - Whether the tags should be present or absent on the resource.
-      - The use of I(state=list) to interrogate the tags of an instance was
+      - The use of O(state=list) to interrogate the tags of an instance was
         deprecated in release 1.0.0 and is no longer available in release 4.0.0.
         The 'list' functionality has been moved to a dedicated module
         M(amazon.aws.ec2_tag_info).
@@ -32,13 +32,13 @@ options:
   tags:
     description:
       - A dictionary of tags to add or remove from the resource.
-      - If the value provided for a key is not set and I(state=absent), the tag will be removed regardless of its current value.
+      - If the value provided for a key is not set and O(state=absent), the tag will be removed regardless of its current value.
     type: dict
     required: true
   purge_tags:
     description:
       - Whether unspecified tags should be removed from the resource.
-      - Note that when combined with I(state=absent), specified tags with non-matching values are not purged.
+      - Note that when combined with O(state=absent), specified tags with non-matching values are not purged.
     type: bool
     default: false
 
@@ -99,15 +99,15 @@ EXAMPLES = r"""
 
 RETURN = r"""
 tags:
-  description: A dict containing the tags on the resource
+  description: A dict containing the tags on the resource.
   returned: always
   type: dict
 added_tags:
-  description: A dict of tags that were added to the resource
+  description: A dict of tags that were added to the resource.
   returned: If tags were added
   type: dict
 removed_tags:
-  description: A dict of tags that were removed from the resource
+  description: A dict of tags that were removed from the resource.
   returned: If tags were removed
   type: dict
 """
