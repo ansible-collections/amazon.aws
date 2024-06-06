@@ -182,7 +182,7 @@ backup_selection:
       description: ID of the backup plan.
       returned: always
       type: str
-      sample: 1111f877-1ecf-4d79-9718-a861cd09df3b
+      sample: "1111f877-1ecf-4d79-9718-a861cd09df3b"
     creation_date:
       description: Creation date of the backup plan.
       returned: on create/update
@@ -251,17 +251,17 @@ backup_selection:
           description: The key in a key-value pair.
           returned: always
           type: str
-          sample: Environment
+          sample: "Environment"
         condition_type:
           description: An operation applied to a key-value pair used to assign resources to backup plan.
           returned: always
           type: str
-          sample: STRINGEQUALS
+          sample: "STRINGEQUALS"
         condition_value:
           description: The value in a key-value pair.
           returned: always
           type: str
-          sample: Dev
+          sample: "Dev"
     not_resources:
       description: List of Amazon Resource Names (ARNs) that are excluded from the backup plan.
       returned: always

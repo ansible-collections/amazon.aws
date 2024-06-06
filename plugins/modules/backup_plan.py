@@ -213,7 +213,7 @@ backup_plan_id:
   description: ID of the backup plan.
   returned: always
   type: str
-  sample: 1111f877-1ecf-4d79-9718-a861cd09df3b
+  sample: "1111f877-1ecf-4d79-9718-a861cd09df3b"
 backup_plan_name:
   description: Name of the backup plan.
   returned: always
@@ -260,7 +260,7 @@ backup_plan:
           description: The name of a logical container where backups are stored.
           returned: always
           type: str
-          sample: 09da67966fd5-backup-vault"
+          sample: "09da67966fd5-backup-vault"
         schedule_expression:
           description: A cron expression in UTC specifying when Backup initiates a backup job.
           returned: always
@@ -349,7 +349,7 @@ backup_plan:
         resource_type:
           description: Resource type of the advanced settings.
           type: str
-          sample: EC2
+          sample: "EC2"
         backup_options:
           description: Backup options of the advanced settings.
           type: dict

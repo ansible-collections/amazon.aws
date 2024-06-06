@@ -87,7 +87,7 @@ vault:
             description: The server-side encryption key that is used to protect your backups.
             returned: always
             type: str
-            sample: arn:aws:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab
+            sample: "arn:aws:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab"
         locked:
             description:
                 - A Boolean that indicates whether Backup Vault Lock is currently protecting the backup vault.

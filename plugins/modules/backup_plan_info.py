@@ -55,7 +55,7 @@ backup_plans:
             description: Id of the backup plan.
             returned: always
             type: str
-            sample: 1111f877-1ecf-4d79-9718-a861cd09df3b
+            sample: "1111f877-1ecf-4d79-9718-a861cd09df3b"
         backup_plan_name:
             description: The display name of a backup plan.
             returned: always
@@ -131,7 +131,7 @@ backup_plans:
                           description: The name of a logical container where backups are stored.
                           returned: always
                           type: str
-                          sample: 09da67966fd5-backup-vault"
+                          sample: "09da67966fd5-backup-vault"
                       schedule_expression:
                           description: A cron expression in UTC specifying when Backup initiates a backup job.
                           returned: always
