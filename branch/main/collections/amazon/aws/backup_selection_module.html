@@ -521,10 +521,20 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-backup-s
 <div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create backup selection</span>
 <span class="w">  </span><span class="nt">amazon.aws.backup_selection</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">selection_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">elastic</span>
-<span class="w">    </span><span class="nt">backup_plan_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1111f877-1ecf-4d79-9718-a861cd09df3b</span>
+<span class="w">    </span><span class="nt">backup_plan_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test-backup-plan</span>
 <span class="w">    </span><span class="nt">iam_role_arn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arn:aws:iam::111122223333:role/system-backup</span>
 <span class="w">    </span><span class="nt">resources</span><span class="p">:</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arn:aws:elasticfilesystem:*:*:file-system/*</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create backup selection, assign resources using tags</span>
+<span class="w">  </span><span class="nt">amazon.aws.backup_selection</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">selection_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">elastic</span>
+<span class="w">    </span><span class="nt">backup_plan_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test-backup-plan</span>
+<span class="w">    </span><span class="nt">iam_role_arn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arn:aws:iam::111122223333:role/system-backup</span>
+<span class="w">    </span><span class="nt">list_of_tags</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">condition_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">STRINGEQUALS</span>
+<span class="w">        </span><span class="nt">condition_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Owner</span>
+<span class="w">        </span><span class="nt">condition_value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Dev01</span>
 </pre></div>
 </div>
 </section>
@@ -550,7 +560,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-backup-s
 <div class="ansibleOptionAnchor" id="return-backup_selection/backup_plan_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-selection-module-return-backup-selection-backup-plan-id"><strong>backup_plan_id</strong></p>
 <a class="ansibleOptionLink" href="#return-backup_selection/backup_plan_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Backup plan id.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>ID of the backup plan.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;1111f877-1ecf-4d79-9718-a861cd09df3b&quot;</span></code></p>
 </div></td>
@@ -559,17 +569,53 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-backup-s
 <div class="ansibleOptionAnchor" id="return-backup_selection/conditions"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-selection-module-return-backup-selection-conditions"><strong>conditions</strong></p>
 <a class="ansibleOptionLink" href="#return-backup_selection/conditions" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>List of conditions (expressed as a dict) that are defined to assign resources to the backup plan using tags.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A list of conditions that defines how resources are assigned to backup plans using tags.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{}</span></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;string_equals&quot;:</span> <span class="pre">[],</span> <span class="pre">&quot;string_like&quot;:</span> <span class="pre">[],</span> <span class="pre">&quot;string_not_equals&quot;:</span> <span class="pre">[],</span> <span class="pre">&quot;string_not_like&quot;:</span> <span class="pre">[]}</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-backup_selection/conditions/string_equals"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-selection-module-return-backup-selection-conditions-string-equals"><strong>string_equals</strong></p>
+<a class="ansibleOptionLink" href="#return-backup_selection/conditions/string_equals" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Filters the values of tagged resources for only those resources that are tagged with the same value.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[]</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-backup_selection/conditions/string_like"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-selection-module-return-backup-selection-conditions-string-like"><strong>string_like</strong></p>
+<a class="ansibleOptionLink" href="#return-backup_selection/conditions/string_like" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Filters the values of tagged resources for matching tag values with the use of a wildcard character (*) anywhere in the string.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[]</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-backup_selection/conditions/string_not_equals"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-selection-module-return-backup-selection-conditions-string-not-equals"><strong>string_not_equals</strong></p>
+<a class="ansibleOptionLink" href="#return-backup_selection/conditions/string_not_equals" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Filters the values of tagged resources for only those resources that are not tagged with the same value.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[]</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-backup_selection/conditions/string_not_like"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-selection-module-return-backup-selection-conditions-string-not-like"><strong>string_not_like</strong></p>
+<a class="ansibleOptionLink" href="#return-backup_selection/conditions/string_not_like" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Filters the values of tagged resources for non-matching tag values with the use of a wildcard character (*) anywhere in the string.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[]</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-backup_selection/creation_date"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-selection-module-return-backup-selection-creation-date"><strong>creation_date</strong></p>
 <a class="ansibleOptionLink" href="#return-backup_selection/creation_date" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Backup plan creation date.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Creation date of the backup plan.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> on create/update</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2023-01-24T10:08:03.193000+01:00&quot;</span></code></p>
 </div></td>
 </tr>
@@ -577,7 +623,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-backup-s
 <div class="ansibleOptionAnchor" id="return-backup_selection/iam_role_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-selection-module-return-backup-selection-iam-role-arn"><strong>iam_role_arn</strong></p>
 <a class="ansibleOptionLink" href="#return-backup_selection/iam_role_arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ARN of the IAM role that Backup uses.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ARN of the IAM role that Backup uses to authenticate when backing up the target resource.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:iam::111122223333:role/system-backup&quot;</span></code></p>
 </div></td>
@@ -588,10 +634,37 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-backup-s
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Conditions defined to assign resources to the backup plans using tags.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[]</span></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[{&quot;condition_key&quot;:</span> <span class="pre">&quot;Environment&quot;,</span> <span class="pre">&quot;condition_type&quot;:</span> <span class="pre">&quot;STRINGEQUALS&quot;,</span> <span class="pre">&quot;condition_value&quot;:</span> <span class="pre">&quot;Dev&quot;}]</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-backup_selection/list_of_tags/condition_key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-selection-module-return-backup-selection-list-of-tags-condition-key"><strong>condition_key</strong></p>
+<a class="ansibleOptionLink" href="#return-backup_selection/list_of_tags/condition_key" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The key in a key-value pair.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;Environment&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-backup_selection/list_of_tags/condition_type"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-selection-module-return-backup-selection-list-of-tags-condition-type"><strong>condition_type</strong></p>
+<a class="ansibleOptionLink" href="#return-backup_selection/list_of_tags/condition_type" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>An operation applied to a key-value pair used to assign resources to backup plan.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;STRINGEQUALS&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-backup_selection/list_of_tags/condition_value"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-selection-module-return-backup-selection-list-of-tags-condition-value"><strong>condition_value</strong></p>
+<a class="ansibleOptionLink" href="#return-backup_selection/list_of_tags/condition_value" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The value in a key-value pair.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;Dev&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-backup_selection/not_resources"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-selection-module-return-backup-selection-not-resources"><strong>not_resources</strong></p>
 <a class="ansibleOptionLink" href="#return-backup_selection/not_resources" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
@@ -600,7 +673,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-backup-s
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[]</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-backup_selection/resources"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-selection-module-return-backup-selection-resources"><strong>resources</strong></p>
 <a class="ansibleOptionLink" href="#return-backup_selection/resources" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
@@ -609,7 +682,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-backup-s
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[]</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-backup_selection/selection_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-selection-module-return-backup-selection-selection-id"><strong>selection_id</strong></p>
 <a class="ansibleOptionLink" href="#return-backup_selection/selection_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -618,11 +691,11 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-backup-s
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;1111c217-5d71-4a55-8728-5fc4e63d437b&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-backup_selection/selection_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-selection-module-return-backup-selection-selection-name"><strong>selection_name</strong></p>
 <a class="ansibleOptionLink" href="#return-backup_selection/selection_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Backup selection name.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The display name of a resource selection document.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;elastic&quot;</span></code></p>
 </div></td>
