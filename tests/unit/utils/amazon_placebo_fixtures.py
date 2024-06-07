@@ -46,7 +46,7 @@ things modules depend on, such as:
 
 @pytest.fixture
 def placeboify(request, monkeypatch):
-    """This fixture puts a recording/replaying harness around `boto3_conn`
+    """This fixture puts a recording/replaying harness around `boto3_conn`.
 
     Placeboify patches the `boto3_conn` function in ec2 module_utils to return
     a boto3 session that in recording or replaying mode, depending on the
@@ -64,7 +64,7 @@ def placeboify(request, monkeypatch):
         request.fspath.dirname,
         "placebo_recordings",
         request.fspath.basename.replace(".py", ""),
-        request.function.__name__
+        request.function.__name__,
         # remove the test_ prefix from the function & file name
     ).replace("test_", "")
 
@@ -106,7 +106,7 @@ def placeboify(request, monkeypatch):
 
 @pytest.fixture(scope="module")
 def basic_launch_config():
-    """Create an EC2 launch config whose creation *is not* recorded and return its name
+    """Create an EC2 launch config whose creation *is not* recorded and return its name.
 
     This fixture is module-scoped, since launch configs are immutable and this
     can be reused for many tests.
@@ -209,7 +209,8 @@ def maybe_sleep():
 
     AWS modules often perform polling or retries, but when using recorded
     sessions there's no reason to wait. We can still exercise retry and other
-    code paths without waiting for wall-clock time to pass."""
+    code paths without waiting for wall-clock time to pass.
+    """
     if not os.getenv("PLACEBO_RECORD"):
         p = mock.patch("time.sleep", return_value=None)
         p.start()

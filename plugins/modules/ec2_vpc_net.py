@@ -388,7 +388,6 @@ def wait_for_vpc_ipv6_state(module, connection, vpc_id, ipv6_assoc_state):
     If ipv6_assoc_state is True, wait for VPC to be associated with at least one Amazon-provided IPv6 CIDR block.
     If ipv6_assoc_state is False, wait for VPC to be dissociated from all Amazon-provided IPv6 CIDR blocks.
     """
-
     if ipv6_assoc_state is None:
         return
     if module.check_mode:

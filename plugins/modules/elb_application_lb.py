@@ -571,9 +571,7 @@ def describe_sgs_with_backoff(connection, **params):
 
 
 def find_default_sg(connection, module, vpc_id):
-    """
-    Finds the default security group for the given VPC ID.
-    """
+    """Finds the default security group for the given VPC ID."""
     filters = ansible_dict_to_boto3_filter_list({"vpc-id": vpc_id, "group-name": "default"})
     try:
         sg = describe_sgs_with_backoff(connection, Filters=filters)
@@ -588,7 +586,7 @@ def find_default_sg(connection, module, vpc_id):
 
 
 def create_or_update_alb(alb_obj):
-    """Create ALB or modify main attributes. json_exit here"""
+    """Create ALB or modify main attributes. json_exit here."""
     if alb_obj.elb:
         # ALB exists so check subnets, security groups and tags match what has been passed
         # Subnets

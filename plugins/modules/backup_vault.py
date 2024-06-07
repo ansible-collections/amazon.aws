@@ -127,7 +127,7 @@ except ImportError:
 
 def create_backup_vault(module, client, params):
     """
-    Creates a Backup Vault
+    Creates a Backup Vault.
 
     module : AnsibleAWSModule object
     client : boto3 client connection object
@@ -147,7 +147,7 @@ def create_backup_vault(module, client, params):
 
 def tag_vault(module, client, tags, vault_arn, curr_tags=None, purge_tags=True):
     """
-    Creates, updates, removes tags on a Backup Vault resource
+    Creates, updates, removes tags on a Backup Vault resource.
 
     module : AnsibleAWSModule object
     client : boto3 client connection object
@@ -156,7 +156,6 @@ def tag_vault(module, client, tags, vault_arn, curr_tags=None, purge_tags=True):
     curr_tags : Dict of the current tags on resource, if any
     purge_tags : true/false to determine if current tags will be retained or not
     """
-
     if tags is None:
         return False
 
@@ -186,7 +185,7 @@ def tag_vault(module, client, tags, vault_arn, curr_tags=None, purge_tags=True):
 
 def get_vault_facts(module, client, vault_name):
     """
-    Describes existing vault in an account
+    Describes existing vault in an account.
 
     module : AnsibleAWSModule object
     client : boto3 client connection object
@@ -216,7 +215,7 @@ def get_vault_facts(module, client, vault_name):
 
 def delete_backup_vault(module, client, vault_name):
     """
-    Delete a Backup Vault
+    Delete a Backup Vault.
 
     module : AnsibleAWSModule object
     client : boto3 client connection object

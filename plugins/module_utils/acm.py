@@ -11,9 +11,7 @@
 #   - acm_certificate
 #   - acm_certificate_info
 
-"""
-Common Amazon Certificate Manager facts shared between modules
-"""
+"""Common Amazon Certificate Manager facts shared between modules."""
 
 try:
     from botocore.exceptions import BotoCoreError
@@ -49,7 +47,7 @@ def acm_catch_boto_exception(func):
 
 
 class ACMServiceManager:
-    """Handles ACM Facts Services"""
+    """Handles ACM Facts Services."""
 
     def __init__(self, module):
         self.module = module
@@ -206,7 +204,7 @@ class ACMServiceManager:
     def get_domain_of_cert(self, arn, **kwargs):
         """
         returns the domain name of a certificate (encoded in the public cert)
-        for a given ARN A cert with that ARN must already exist
+        for a given ARN A cert with that ARN must already exist.
         """
         if arn is None:
             self.module.fail_json(msg="Internal error with ACM domain fetching, no certificate ARN specified")

@@ -297,7 +297,6 @@ def alias_details(client, module, function_name):
     :param function_name (str): Name of Lambda function to query
     :return dict:
     """
-
     lambda_info = dict()
 
     try:
@@ -331,7 +330,6 @@ def list_functions(client, module):
     :param client: AWS API client reference (boto3)
     :param module: Ansible module reference
     """
-
     function_name = module.params.get("function_name")
     if function_name:
         # Function name is specified - retrieve info on that function
@@ -388,7 +386,6 @@ def config_details(client, module, function_name):
     :param function_name (str): Name of Lambda function to query
     :return dict:
     """
-
     lambda_info = dict()
 
     try:
@@ -420,7 +417,6 @@ def mapping_details(client, module, function_name):
     :param function_name (str): Name of Lambda function to query
     :return dict:
     """
-
     lambda_info = dict()
     params = dict()
 
@@ -451,7 +447,6 @@ def policy_details(client, module, function_name):
     :param function_name (str): Name of Lambda function to query
     :return dict:
     """
-
     lambda_info = dict()
 
     try:
@@ -477,7 +472,6 @@ def version_details(client, module, function_name):
     :param function_name (str): Name of Lambda function to query
     :return dict:
     """
-
     lambda_info = dict()
 
     try:
@@ -504,7 +498,6 @@ def tags_details(client, module, function_name):
     :param function_name (str): Name of Lambda function to query
     :return dict:
     """
-
     lambda_info = dict()
 
     try:

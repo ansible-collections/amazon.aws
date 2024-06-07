@@ -407,7 +407,7 @@ def ensure_tags(client, module, resource_arn, existing_tags, tags, purge_tags):
 
 def compare_iam_roles(existing_roles, target_roles, purge_roles):
     """
-    Returns differences between target and existing IAM roles
+    Returns differences between target and existing IAM roles.
 
         Parameters:
             existing_roles (list): Existing IAM roles
@@ -426,7 +426,7 @@ def compare_iam_roles(existing_roles, target_roles, purge_roles):
 
 def update_iam_roles(client, module, instance_id, roles_to_add, roles_to_remove):
     """
-    Update a DB instance's associated IAM roles
+    Update a DB instance's associated IAM roles.
 
         Parameters:
             client: RDS client

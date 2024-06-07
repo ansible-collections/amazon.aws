@@ -334,7 +334,7 @@ def get_nat_gateways(client, module, subnet_id=None, nat_gateway_id=None, states
     """Retrieve a list of NAT Gateways
     Args:
         client (botocore.client.EC2): Boto3 client
-        module: AnsibleAWSModule class instance
+        module: AnsibleAWSModule class instance.
 
     Kwargs:
         subnet_id (str): The subnet_id the nat resides in.
@@ -370,7 +370,6 @@ def get_nat_gateways(client, module, subnet_id=None, nat_gateway_id=None, states
     Returns:
         list
     """
-
     params = dict()
     existing_gateways = list()
 
@@ -438,7 +437,6 @@ def gateway_in_subnet_exists(client, module, subnet_id, allocation_id=None):
     Returns:
         Tuple (list, bool)
     """
-
     allocation_id_exists = False
     gateways = []
     states = ["available", "pending"]
@@ -477,7 +475,6 @@ def get_eip_allocation_id_by_address(client, module, eip_address):
     Returns:
         Tuple (str, str)
     """
-
     params = {
         "PublicIps": [eip_address],
     }
@@ -516,7 +513,7 @@ def allocate_eip_address(client, module):
     """Release an EIP from your EIP Pool
     Args:
         client (botocore.client.EC2): Boto3 client
-        module: AnsibleAWSModule class instance
+        module: AnsibleAWSModule class instance.
 
     Basic Usage:
         >>> client = boto3.client('ec2')
@@ -529,7 +526,6 @@ def allocate_eip_address(client, module):
     Returns:
         Tuple (bool, str, str)
     """
-
     new_eip = None
     msg = ""
     params = {
@@ -570,7 +566,6 @@ def release_address(client, module, allocation_id):
     Returns:
         Tuple (bool, str)
     """
-
     msg = ""
 
     if module.check_mode:
@@ -610,7 +605,7 @@ def create(client, module, subnet_id, allocation_id, tags, client_token=None, wa
         connectivity_type (str): public or private connectivity support
         tags (dict): Tags to associate to the NAT gateway
         purge_tags (bool): If true, remove tags not listed in I(tags)
-            type: bool
+            type: bool.
 
     Kwargs:
         wait (bool): Wait for the nat to be in the deleted state before returning.
@@ -649,7 +644,6 @@ def create(client, module, subnet_id, allocation_id, tags, client_token=None, wa
     Returns:
         Tuple (bool, str, list)
     """
-
     params = {"SubnetId": subnet_id, "ConnectivityType": connectivity_type}
 
     if connectivity_type == "public":
@@ -724,7 +718,7 @@ def pre_create(
         module: AnsibleAWSModule class instance
         subnet_id (str): The subnet_id the nat resides in
         tags (dict): Tags to associate to the NAT gateway
-        purge_tags (bool): If true, remove tags not listed in I(tags)
+        purge_tags (bool): If true, remove tags not listed in I(tags).
 
     Kwargs:
         allocation_id (str): The EIP Amazon identifier.
@@ -772,7 +766,6 @@ def pre_create(
     Returns:
         Tuple (bool, str, list)
     """
-
     changed = False
     msg = ""
     results = {}
@@ -853,7 +846,7 @@ def remove(client, module, nat_gateway_id, wait=False, release_eip=False, connec
     Args:
         client (botocore.client.EC2): Boto3 client
         module: AnsibleAWSModule class instance
-        nat_gateway_id (str): The Amazon nat id
+        nat_gateway_id (str): The Amazon nat id.
 
     Kwargs:
         wait (bool): Wait for the nat to be in the deleted state before returning.
@@ -890,7 +883,6 @@ def remove(client, module, nat_gateway_id, wait=False, release_eip=False, connec
     Returns:
         Tuple (bool, str, list)
     """
-
     allocation_id = None
     params = {"NatGatewayId": nat_gateway_id}
     changed = False

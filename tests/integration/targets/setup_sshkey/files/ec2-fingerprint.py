@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 """
 Reads an OpenSSH Public key and spits out the 'AWS' MD5 sum
-The equivalent of
+The equivalent of.
 
 ssh-keygen -f id_rsa.pub -e -m PKCS8 | openssl pkey -pubin -outform DER | openssl md5 -c | cut -f 2 -d ' '
 
 (but without needing the OpenSSL CLI)
 """
-
 
 import hashlib
 import sys

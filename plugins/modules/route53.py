@@ -460,7 +460,7 @@ def get_record(route53, zone_id, record_name, record_type, record_identifier):
 
 
 def get_zone_id_by_name(route53, module, zone_name, want_private, want_vpc_id):
-    """Finds a zone by name or zone_id"""
+    """Finds a zone by name or zone_id."""
     hosted_zones_results = _list_hosted_zones(route53)
 
     for zone in hosted_zones_results:
@@ -484,7 +484,7 @@ def get_zone_id_by_name(route53, module, zone_name, want_private, want_vpc_id):
 def format_record(record_in, zone_in, zone_id):
     """
     Formats a record in a way that's consistent with the pre-boto3 migration values
-    as well as returning the 'normal' boto3 style values
+    as well as returning the 'normal' boto3 style values.
     """
     if not record_in:
         return None

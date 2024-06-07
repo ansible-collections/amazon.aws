@@ -153,7 +153,6 @@ class LookupModule(AWSLookupBase):
         :kwarg variables: ansible variables active at the time of the lookup
         :returns: A list of parameter values or a list of dictionaries if bypath=True.
         """
-
         super().run(terms, variables, **kwargs)
 
         on_missing = self.get_option("on_missing")

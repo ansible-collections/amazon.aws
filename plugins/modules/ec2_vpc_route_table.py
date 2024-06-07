@@ -389,9 +389,7 @@ def find_subnets(connection, module, vpc_id, identified_subnets):
 
 
 def find_igw(connection, module, vpc_id):
-    """
-    Finds the Internet gateway for the given VPC ID.
-    """
+    """Finds the Internet gateway for the given VPC ID."""
     filters = ansible_dict_to_boto3_filter_list({"attachment.vpc-id": vpc_id})
     try:
         igw = describe_igws_with_backoff(connection, Filters=filters)

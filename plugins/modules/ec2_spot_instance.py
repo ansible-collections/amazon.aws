@@ -431,7 +431,7 @@ def build_launch_specification(launch_spec):
     block_device_mappings
     monitoring
     placement
-    iam_instance_profile
+    iam_instance_profile.
     """
     assigned_keys = dict((k, v) for k, v in launch_spec.items() if v is not None)
 

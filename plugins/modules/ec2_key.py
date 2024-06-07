@@ -222,7 +222,7 @@ def get_key_fingerprint(check_mode, ec2_client, key_material):
     EC2's fingerprints are non-trivial to generate, so push this key
     to a temporary name and make ec2 calculate the fingerprint for us.
     http://blog.jbrowne.com/?p=23
-    https://forums.aws.amazon.com/thread.jspa?messageID=352828
+    https://forums.aws.amazon.com/thread.jspa?messageID=352828.
     """
     # find an unused name
     name_in_use = True
@@ -283,9 +283,7 @@ def _write_private_key(key_data, file_name):
 
 
 def create_new_key_pair(ec2_client, name, key_material, key_type, tags, file_name, check_mode):
-    """
-    key does not exist, we create new key
-    """
+    """Key does not exist, we create new key."""
     if check_mode:
         return {"changed": True, "key": None, "msg": "key pair created"}
 

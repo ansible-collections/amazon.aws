@@ -216,14 +216,13 @@ def convert_managed_policy_names_to_arns(client, policy_names):
 
 
 def get_aws_account_id(module):
-    """Given an AnsibleAWSModule instance, get the active AWS account ID"""
-
+    """Given an AnsibleAWSModule instance, get the active AWS account ID."""
     return get_aws_account_info(module)[0]
 
 
 def get_aws_account_info(module):
     """Given an AnsibleAWSModule instance, return the account information
-    (account id and partition) we are currently working on
+    (account id and partition) we are currently working on.
 
     get_account_info tries too find out the account that we are working
     on.  It's not guaranteed that this will be easy so we try in
@@ -401,41 +400,41 @@ def validate_iam_identifiers(resource_type, name=None, path=None):
 
 
 def normalize_iam_mfa_device(device: BotoResource) -> AnsibleAWSResource:
-    """Converts IAM MFA Device from the CamelCase boto3 format to the snake_case Ansible format"""
+    """Converts IAM MFA Device from the CamelCase boto3 format to the snake_case Ansible format."""
     # MFA Devices don't support Tags (as of 1.34.52)
     return boto3_resource_to_ansible_dict(device)
 
 
 def normalize_iam_mfa_devices(devices: BotoResourceList) -> AnsibleAWSResourceList:
-    """Converts a list of IAM MFA Devices from the CamelCase boto3 format to the snake_case Ansible format"""
+    """Converts a list of IAM MFA Devices from the CamelCase boto3 format to the snake_case Ansible format."""
     # MFA Devices don't support Tags (as of 1.34.52)
     return boto3_resource_list_to_ansible_dict(devices)
 
 
 def normalize_iam_user(user: BotoResource) -> AnsibleAWSResource:
-    """Converts IAM users from the CamelCase boto3 format to the snake_case Ansible format"""
+    """Converts IAM users from the CamelCase boto3 format to the snake_case Ansible format."""
     return boto3_resource_to_ansible_dict(user)
 
 
 def normalize_iam_policy(policy: BotoResource) -> AnsibleAWSResource:
-    """Converts IAM policies from the CamelCase boto3 format to the snake_case Ansible format"""
+    """Converts IAM policies from the CamelCase boto3 format to the snake_case Ansible format."""
     return boto3_resource_to_ansible_dict(policy)
 
 
 def normalize_iam_group(group: BotoResource) -> AnsibleAWSResource:
-    """Converts IAM Groups from the CamelCase boto3 format to the snake_case Ansible format"""
+    """Converts IAM Groups from the CamelCase boto3 format to the snake_case Ansible format."""
     # Groups don't support Tags (as of 1.34.52)
     return boto3_resource_to_ansible_dict(group, force_tags=False)
 
 
 def normalize_iam_access_key(access_key: BotoResource) -> AnsibleAWSResource:
-    """Converts IAM access keys from the CamelCase boto3 format to the snake_case Ansible format"""
+    """Converts IAM access keys from the CamelCase boto3 format to the snake_case Ansible format."""
     # Access Keys don't support Tags (as of 1.34.52)
     return boto3_resource_to_ansible_dict(access_key, force_tags=False)
 
 
 def normalize_iam_access_keys(access_keys: BotoResourceList) -> AnsibleAWSResourceList:
-    """Converts a list of IAM access keys from the CamelCase boto3 format to the snake_case Ansible format"""
+    """Converts a list of IAM access keys from the CamelCase boto3 format to the snake_case Ansible format."""
     # Access Keys don't support Tags (as of 1.34.52)
     if not access_keys:
         return access_keys
@@ -444,9 +443,7 @@ def normalize_iam_access_keys(access_keys: BotoResourceList) -> AnsibleAWSResour
 
 
 def normalize_iam_instance_profile(profile: BotoResource) -> AnsibleAWSResource:
-    """
-    Converts a boto3 format IAM instance profile into "Ansible" format
-    """
+    """Converts a boto3 format IAM instance profile into "Ansible" format."""
     transforms = {"Roles": _normalize_iam_roles}
     transformed_profile = boto3_resource_to_ansible_dict(profile, nested_transforms=transforms)
     return transformed_profile
@@ -454,7 +451,7 @@ def normalize_iam_instance_profile(profile: BotoResource) -> AnsibleAWSResource:
 
 def normalize_iam_role(role: BotoResource, _v7_compat: bool = False) -> AnsibleAWSResource:
     """
-    Converts a boto3 format IAM instance role into "Ansible" format
+    Converts a boto3 format IAM instance role into "Ansible" format.
 
     _v7_compat is deprecated and will be removed in release after 2026-05-01 DO NOT USE.
     """

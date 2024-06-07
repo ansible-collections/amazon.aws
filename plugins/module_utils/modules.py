@@ -3,7 +3,7 @@
 #  Copyright 2017 Michael De La Rue | Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-"""This module adds shared support for generic Amazon AWS modules
+"""This module adds shared support for generic Amazon AWS modules.
 
 In order to use this module, include it as part of a custom
 module as shown below.
@@ -69,7 +69,7 @@ from .retries import RetryingBotoClientWrapper
 
 
 class AnsibleAWSModule:
-    """An ansible module class for AWS modules
+    """An ansible module class for AWS modules.
 
     AnsibleAWSModule provides an a class for building modules which
     connect to Amazon Web Services.  The interface is currently more
@@ -209,7 +209,7 @@ class AnsibleAWSModule:
         return get_aws_region(self)
 
     def fail_json_aws(self, exception, msg=None, **kwargs):
-        """call fail_json with processed exception
+        """Call fail_json with processed exception.
 
         function for converting exceptions thrown by AWS SDK modules,
         botocore, boto3 and boto, into nice error messages.
@@ -243,13 +243,13 @@ class AnsibleAWSModule:
         self.fail_json(**failure)
 
     def fail_json_aws_error(self, exception):
-        """A helper to call the right failure mode after catching an AnsibleAWSError"""
+        """A helper to call the right failure mode after catching an AnsibleAWSError."""
         if exception.exception:
             self.fail_json_aws(exception.exception, msg=exception.message)
         self.fail_json(msg=exception.message)
 
     def _gather_versions(self):
-        """Gather AWS SDK (boto3 and botocore) dependency versions
+        """Gather AWS SDK (boto3 and botocore) dependency versions.
 
         Returns {'boto3_version': str, 'botocore_version': str}
         Returns {} if either is not installed
@@ -366,9 +366,7 @@ def _aws_common_argument_spec():
 
 
 def aws_argument_spec():
-    """
-    Returns a dictionary containing the argument_spec common to all AWS modules.
-    """
+    """Returns a dictionary containing the argument_spec common to all AWS modules."""
     region_spec = dict(
         region=dict(
             aliases=["aws_region", "ec2_region"],

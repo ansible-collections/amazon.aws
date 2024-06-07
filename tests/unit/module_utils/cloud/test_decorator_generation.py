@@ -43,9 +43,8 @@ def check_common_side_effects(decorator_generator):
     number of keyword arguments.
     "found" should be CloudRetry.found
     "status_code_from_exception"  should be CloudRetry.status_code_from_exception (this is replaced when the abstract class is realised)
-    "sleep_time_generator" should be an instance of CloudRetry.BackoffIterator
+    "sleep_time_generator" should be an instance of CloudRetry.BackoffIterator.
     """
-
     assert decorator_generator.called is True
     assert decorator_generator.call_count == 1
 

@@ -293,7 +293,7 @@ def remove_dhcp_options_by_id(client, module, dhcp_options_id):
 def match_dhcp_options(client, module, new_config):
     """
     Returns a DhcpOptionsId if the module parameters match; else None
-    Filter by tags, if any are specified
+    Filter by tags, if any are specified.
     """
     try:
         all_dhcp_options = client.describe_dhcp_options(aws_retry=True)
@@ -320,7 +320,7 @@ def create_dhcp_config(module):
          'Values': [{'Value': 'us-west-2.compute.internal'}]},
         {'Key': 'domain-name-servers',
          'Values': [{'Value': 'AmazonProvidedDNS'}]},
-         ...],
+         ...],.
     """
     new_config = []
     params = module.params
@@ -389,7 +389,7 @@ def find_opt_index(config, option):
 
 def inherit_dhcp_config(existing_config, new_config):
     """
-    Compare two DhcpConfigurations lists and apply existing options to unset parameters
+    Compare two DhcpConfigurations lists and apply existing options to unset parameters.
 
     If there's an existing option config and the new option is not set or it's none,
     inherit the existing config.

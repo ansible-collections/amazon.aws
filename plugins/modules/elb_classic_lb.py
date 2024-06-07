@@ -691,7 +691,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_wait
 
 
 class ElbManager:
-    """Handles ELB creation and destruction"""
+    """Handles ELB creation and destruction."""
 
     def __init__(self, module):
         self.module = module
@@ -873,8 +873,8 @@ class ElbManager:
 
     def _format_listener(self, listener, inject_protocol=False):
         """Formats listener into the format needed by the
-        ELB API"""
-
+        ELB API.
+        """
         listener = scrub_none_parameters(listener)
 
         for protocol in ["protocol", "instance_protocol"]:
@@ -896,7 +896,7 @@ class ElbManager:
         return formatted_listener
 
     def _format_healthcheck_target(self):
-        """Compose target string from healthcheck parameters"""
+        """Compose target string from healthcheck parameters."""
         protocol = self.health_check["ping_protocol"].upper()
         path = ""
 
@@ -915,7 +915,7 @@ class ElbManager:
         )
 
     def ensure_ok(self):
-        """Create the ELB"""
+        """Create the ELB."""
         if not self.elb:
             try:
                 self._create_elb()
@@ -963,7 +963,7 @@ class ElbManager:
     #            self._set_access_log()
 
     def ensure_gone(self):
-        """Destroy the ELB"""
+        """Destroy the ELB."""
         if self.elb:
             try:
                 self._delete_elb()
@@ -1193,7 +1193,7 @@ class ElbManager:
         return True
 
     def _create_elb_listeners(self, listeners):
-        """Takes a list of listener definitions and creates them"""
+        """Takes a list of listener definitions and creates them."""
         if not listeners:
             return False
         self.changed = True
@@ -1208,7 +1208,7 @@ class ElbManager:
         return True
 
     def _delete_elb_listeners(self, ports):
-        """Takes a list of listener ports and deletes them from the ELB"""
+        """Takes a list of listener ports and deletes them from the ELB."""
         if not ports:
             return False
         self.changed = True
@@ -1225,9 +1225,8 @@ class ElbManager:
     def _set_elb_listeners(self):
         """
         Creates listeners specified by self.listeners; overwrites existing
-        listeners on these ports; removes extraneous listeners
+        listeners on these ports; removes extraneous listeners.
         """
-
         if not self.listeners:
             return False
 
@@ -1262,7 +1261,7 @@ class ElbManager:
         return changed
 
     def _api_listener_as_tuple(self, listener):
-        """Adds ssl_certificate_id to ELB API tuple if present"""
+        """Adds ssl_certificate_id to ELB API tuple if present."""
         base_tuple = [
             listener.get("LoadBalancerPort"),
             listener.get("InstancePort"),
@@ -1292,7 +1291,7 @@ class ElbManager:
         return True
 
     def _set_subnets(self):
-        """Determine which subnets need to be attached or detached on the ELB"""
+        """Determine which subnets need to be attached or detached on the ELB."""
         # Subnets parameter not set, nothing to change
         if self.subnets is None:
             return False
@@ -1319,7 +1318,7 @@ class ElbManager:
         return changed
 
     def _check_scheme(self):
-        """Determine if the current scheme is different than the scheme of the ELB"""
+        """Determine if the current scheme is different than the scheme of the ELB."""
         if self.scheme:
             if self.elb["Scheme"] != self.scheme:
                 return True
@@ -1360,7 +1359,7 @@ class ElbManager:
         return True
 
     def _set_zones(self):
-        """Determine which zones need to be enabled or disabled on the ELB"""
+        """Determine which zones need to be enabled or disabled on the ELB."""
         # zones parameter not set, nothing to changeA
         if self.zones is None:
             return False
@@ -1510,7 +1509,7 @@ class ElbManager:
         return True
 
     def _get_stickiness_policies(self):
-        """Get a list of AppCookieStickinessPolicyType and LBCookieStickinessPolicyType policies"""
+        """Get a list of AppCookieStickinessPolicyType and LBCookieStickinessPolicyType policies."""
         return list(
             p["PolicyName"]
             for p in self.elb_policies
@@ -1518,17 +1517,17 @@ class ElbManager:
         )
 
     def _get_app_stickness_policy_map(self):
-        """Get a mapping of App Cookie Stickiness policy names to their definitions"""
+        """Get a mapping of App Cookie Stickiness policy names to their definitions."""
         policies = self.elb.get("Policies", {}).get("AppCookieStickinessPolicies", [])
         return {p["PolicyName"]: p for p in policies}
 
     def _get_lb_stickness_policy_map(self):
-        """Get a mapping of LB Cookie Stickiness policy names to their definitions"""
+        """Get a mapping of LB Cookie Stickiness policy names to their definitions."""
         policies = self.elb.get("Policies", {}).get("LBCookieStickinessPolicies", [])
         return {p["PolicyName"]: p for p in policies}
 
     def _purge_stickiness_policies(self):
-        """Removes all stickiness policies from all Load Balancers"""
+        """Removes all stickiness policies from all Load Balancers."""
         # Used when purging stickiness policies or updating a policy (you can't
         # update a policy while it's connected to a Listener)
         stickiness_policies = set(self._get_stickiness_policies())
@@ -1659,7 +1658,7 @@ class ElbManager:
         return changed
 
     def _get_backend_policies(self):
-        """Get a list of backend policies mapped to the InstancePort"""
+        """Get a list of backend policies mapped to the InstancePort."""
         if not self.elb:
             return {}
         server_descriptions = self.elb.get("BackendServerDescriptions", [])
@@ -1667,7 +1666,7 @@ class ElbManager:
         return policies
 
     def _get_proxy_protocol_policy(self):
-        """Returns the name of the name of the ProxyPolicy if created"""
+        """Returns the name of the name of the ProxyPolicy if created."""
         all_proxy_policies = self._get_proxy_policies()
         if not all_proxy_policies:
             return None
@@ -1676,15 +1675,15 @@ class ElbManager:
         return all_proxy_policies
 
     def _get_proxy_policies(self):
-        """Get a list of ProxyProtocolPolicyType policies"""
+        """Get a list of ProxyProtocolPolicyType policies."""
         return list(p["PolicyName"] for p in self.elb_policies if p["PolicyTypeName"] == "ProxyProtocolPolicyType")
 
     def _get_policy_map(self):
-        """Get a mapping of Policy names to their definitions"""
+        """Get a mapping of Policy names to their definitions."""
         return {p["PolicyName"]: p for p in self.elb_policies}
 
     def _set_backend_policies(self):
-        """Sets policies for all backends"""
+        """Sets policies for all backends."""
         # Currently only supports setting ProxyProtocol policies
         if not self.listeners:
             return False
@@ -1754,7 +1753,7 @@ class ElbManager:
         return True
 
     def _set_proxy_protocol_policy(self, policy_name):
-        """Install a proxy protocol policy if needed"""
+        """Install a proxy protocol policy if needed."""
         policy_map = self._get_policy_map()
 
         policy_attributes = [dict(AttributeName="ProxyProtocol", AttributeValue="true")]
@@ -1791,7 +1790,7 @@ class ElbManager:
         return True
 
     def _get_instance_ids(self):
-        """Get the current list of instance ids installed in the elb"""
+        """Get the current list of instance ids installed in the elb."""
         elb = self.elb or {}
         return list(i["InstanceId"] for i in elb.get("Instances", []))
 
@@ -1817,7 +1816,7 @@ class ElbManager:
         return True
 
     def _set_instance_ids(self):
-        """Register or deregister instances from an lb instance"""
+        """Register or deregister instances from an lb instance."""
         new_instances = self.instance_ids or []
         existing_instances = self._get_instance_ids()
 
@@ -1869,7 +1868,7 @@ class ElbManager:
         return True
 
     def _set_tags(self):
-        """Add/Delete tags"""
+        """Add/Delete tags."""
         if self.tags is None:
             return False
 

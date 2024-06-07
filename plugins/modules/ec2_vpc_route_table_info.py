@@ -237,9 +237,8 @@ def normalize_route_table(table):
 def normalize_results(results):
     """
     We used to be a boto v2 module, make sure that the old return values are
-    maintained and the shape of the return values are what people expect
+    maintained and the shape of the return values are what people expect.
     """
-
     routes = [normalize_route_table(route) for route in results["RouteTables"]]
     del results["RouteTables"]
     results = camel_dict_to_snake_dict(results)

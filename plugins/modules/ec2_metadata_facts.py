@@ -598,7 +598,7 @@ class Ec2Metadata:
                         self._data["%s" % (new_uri)] = content  # not a stringified JSON string
 
     def fix_invalid_varnames(self, data):
-        """Change ':'' and '-' to '_' to ensure valid template variable names"""
+        """Change ':'' and '-' to '_' to ensure valid template variable names."""
         new_data = data.copy()
         for key, value in data.items():
             if ":" in key or "-" in key:
@@ -609,7 +609,7 @@ class Ec2Metadata:
         return new_data
 
     def fetch_session_token(self, uri_token):
-        """Used to get a session token for IMDSv2"""
+        """Used to get a session token for IMDSv2."""
         headers = {"X-aws-ec2-metadata-token-ttl-seconds": "60"}
         response, info = fetch_url(self.module, uri_token, method="PUT", headers=headers, force=True)
 

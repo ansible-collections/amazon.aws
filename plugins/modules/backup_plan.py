@@ -600,7 +600,6 @@ def tag_backup_plan(
     plan_arn : The ARN of the Backup Plan to operate on
     curr_tags : Dict of the current tags on resource, if any
     """
-
     if not new_tags and not current_tags:
         return False
 
@@ -631,7 +630,7 @@ def tag_backup_plan(
 
 def delete_backup_plan(module: AnsibleAWSModule, client, backup_plan_id: str) -> dict:
     """
-    Deletes a Backup Plan
+    Deletes a Backup Plan.
 
     module : AnsibleAWSModule object
     client : boto3 backup client connection object

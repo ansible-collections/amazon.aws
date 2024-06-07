@@ -316,8 +316,7 @@ def _list_health_checks(**params):
 
 
 def find_health_check(ip_addr, fqdn, hc_type, request_interval, port):
-    """Searches for health checks that have the exact same set of immutable values"""
-
+    """Searches for health checks that have the exact same set of immutable values."""
     # In lieu of an Id we perform matches against the following values:
     # - ip_addr
     # - fqdn

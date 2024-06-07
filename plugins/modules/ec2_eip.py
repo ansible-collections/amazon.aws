@@ -297,7 +297,7 @@ def disassociate_ip_and_device(ec2, module, address, device_id, check_mode, is_i
 
 @AWSRetry.jittered_backoff()
 def find_address(ec2, module, public_ip, device_id, is_instance=True):
-    """Find an existing Elastic IP address"""
+    """Find an existing Elastic IP address."""
     filters = []
     kwargs = {}
 
@@ -331,7 +331,7 @@ def find_address(ec2, module, public_ip, device_id, is_instance=True):
 
 
 def address_is_associated_with_device(ec2, module, address, device_id, is_instance=True):
-    """Check if the elastic IP is currently associated with the device"""
+    """Check if the elastic IP is currently associated with the device."""
     address = find_address(ec2, module, address["PublicIp"], device_id, is_instance)
     if address:
         if is_instance:
@@ -353,7 +353,7 @@ def allocate_address(
     search_tags=None,
     public_ipv4_pool=None,
 ):
-    """Allocate a new elastic IP address (when needed) and return it"""
+    """Allocate a new elastic IP address (when needed) and return it."""
     if not domain:
         domain = "standard"
 
@@ -405,8 +405,7 @@ def allocate_address(
 
 
 def release_address(ec2, module, address, check_mode):
-    """Release a previously allocated elastic IP address"""
-
+    """Release a previously allocated elastic IP address."""
     # If we're in check mode, nothing else to do
     if not check_mode:
         try:
@@ -426,8 +425,7 @@ def describe_eni_with_backoff(ec2, module, device_id):
 
 
 def find_device(ec2, module, device_id, is_instance=True):
-    """Attempt to find the EC2 instance and return it"""
-
+    """Attempt to find the EC2 instance and return it."""
     if is_instance:
         try:
             paginator = ec2.get_paginator("describe_instances")
@@ -526,7 +524,7 @@ def allocate_address_from_pool(
     tags,
 ):
     # type: (EC2Connection, AnsibleAWSModule, str, bool, str) -> Address
-    """Overrides botocore's allocate_address function to support BYOIP"""
+    """Overrides botocore's allocate_address function to support BYOIP."""
     if check_mode:
         return None
 
@@ -550,7 +548,7 @@ def allocate_address_from_pool(
 
 def generate_tag_dict(module, tag_name, tag_value):
     # type: (AnsibleAWSModule, str, str) -> Optional[Dict]
-    """Generates a dictionary to be passed as a filter to Amazon"""
+    """Generates a dictionary to be passed as a filter to Amazon."""
     if tag_name and not tag_value:
         if tag_name.startswith("tag:"):
             tag_name = tag_name.strip("tag:")

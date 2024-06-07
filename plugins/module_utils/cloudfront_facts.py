@@ -11,9 +11,7 @@
 #   - cloudfront_invalidation
 #   - cloudfront_origin_access_identity
 
-"""
-Common cloudfront facts shared between modules
-"""
+"""Common cloudfront facts shared between modules."""
 
 from functools import partial
 
@@ -49,7 +47,7 @@ def _cloudfront_paginate_build_full_result(client, client_method, **kwargs):
 
 
 class CloudFrontFactsServiceManager:
-    """Handles CloudFront Facts Services"""
+    """Handles CloudFront Facts Services."""
 
     CLOUDFRONT_CLIENT_API_MAPPING = {
         "get_distribution": {
