@@ -88,7 +88,7 @@ results:
             type: str
             sample: "arn:aws:autoscaling:us-west-2:123456789012:autoScalingGroup:10787c52-0bcb-427d-82ba-c8e4b008ed2e:autoScalingGroupName/dev11"
         auto_scaling_group_name:
-            description: Name of autoscaling group
+            description: Name of autoscaling group.
             returned: success
             type: str
             sample: "public-webapp-production-1"
@@ -164,7 +164,7 @@ results:
                 availability_zone:
                     description: The Availability Zone of the instance.
                     type: str
-                    sample: ap-southeast-2a
+                    sample: "ap-southeast-2a"
                 health_status:
                     description: The last reported health status of the instance.
                     type: str
@@ -172,11 +172,11 @@ results:
                 instance_id:
                     description: The ID of the instance.
                     type: str
-                    sample: i-012345678
+                    sample: "i-012345678"
                 instance_type:
                     description: The instance type size of the running instance.
                     type: str
-                    sample: t2.micro
+                    sample: "t2.micro"
                 launch_template:
                     description: The EC2 launch template to base instance configuration on.
                     type: dict
@@ -236,12 +236,12 @@ results:
             type: list
             sample: ["elb-webapp-prod"]
         max_size:
-            description: Maximum size of group
+            description: Maximum size of group.
             returned: success
             type: int
             sample: 3
         min_size:
-            description: Minimum size of group
+            description: Minimum size of group.
             returned: success
             type: int
             sample: 1
@@ -302,7 +302,7 @@ results:
                 }
             ]
         target_group_arns:
-            description: List of ARNs of the target groups that the ASG populates
+            description: List of ARNs of the target groups that the ASG populates.
             returned: success
             type: list
             sample: [
@@ -310,7 +310,7 @@ results:
                 "arn:aws:elasticloadbalancing:ap-southeast-2:123456789012:targetgroup/target-group-path-world/abcd1234abcd1234"
             ]
         target_group_names:
-            description: List of names of the target groups that the ASG populates
+            description: List of names of the target groups that the ASG populates.
             returned: success
             type: list
             sample: [
@@ -320,7 +320,8 @@ results:
         termination_policies:
             description: A list of termination policies for the group.
             returned: success
-            type: str
+            type: list
+            elements: str
             sample: ["Default"]
         traffic_sources:
             description: The traffic sources associated with this Auto Scaling group.
