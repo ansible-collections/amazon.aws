@@ -247,7 +247,8 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import AnsibleELBv2Error
+from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import describe_target_groups
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 
 
@@ -413,7 +414,6 @@ def find_asgs(conn, module, name=None, tags=None):
             if asg.get("target_group_arns"):
                 if elbv2:
                     try:
-                        tg_paginator = elbv2.get_paginator("describe_target_groups")
                         # Limit of 20 similar to https://docs.aws.amazon.com/elasticloadbalancing/latest/APIReference/API_DescribeLoadBalancers.html
                         tg_chunk_size = 20
                         asg["target_group_names"] = []
@@ -422,16 +422,10 @@ def find_asgs(conn, module, name=None, tags=None):
                             for i in range(0, len(asg["target_group_arns"]), tg_chunk_size)
                         ]  # fmt: skip
                         for chunk in tg_chunks:
-                            tg_result = tg_paginator.paginate(TargetGroupArns=chunk).build_full_result()
                             asg["target_group_names"].extend(
-                                [tg["TargetGroupName"] for tg in tg_result["TargetGroups"]]
+                                [tg["TargetGroupName"] for tg in describe_target_groups(elbv2, TargetGroupArns=chunk)]
                             )
-                    except is_boto3_error_code("TargetGroupNotFound"):
-                        asg["target_group_names"] = []
-                    except (
-                        botocore.exceptions.ClientError,
-                        botocore.exceptions.BotoCoreError,
-                    ) as e:  # pylint: disable=duplicate-except
+                    except AnsibleELBv2Error as e:
                         module.fail_json_aws(e, msg="Failed to describe Target Groups")
             else:
                 asg["target_group_names"] = []

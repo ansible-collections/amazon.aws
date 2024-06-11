@@ -10,6 +10,17 @@ import pytest
 
 from ansible_collections.amazon.aws.plugins.module_utils import elbv2
 
+
+@pytest.fixture
+def elb_listener_rules(mocker):
+    module = MagicMock()
+    connection = MagicMock()
+    rules = MagicMock()
+    listener_arn = MagicMock()
+
+    return elbv2.ELBListenerRules(connection, module, listener_arn, rules)
+
+
 example_arn = "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/nlb-123456789abc/abcdef0123456789"
 example_arn2 = "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/nlb-0123456789ab/0123456789abcdef"
 
@@ -186,21 +197,11 @@ test_rules = [
 
 
 @pytest.mark.parametrize("current_rule,new_rule,modified_rule", test_rules)
-def test__compare_rule(mocker, current_rule, new_rule, modified_rule):
-    mocker.patch(
-        "ansible_collections.amazon.aws.plugins.module_utils.elbv2.ELBListenerRules._get_elb_listener_rules"
-    ).return_value = MagicMock()
-    mocker.patch(
-        "ansible_collections.amazon.aws.plugins.module_utils.elbv2.get_elb_listener"
-    ).return_value = MagicMock()
-    module = MagicMock()
-    connection = MagicMock()
-    elb_arn = MagicMock()
+def test__compare_rule(current_rule, new_rule, modified_rule):
+    assert modified_rule == elbv2._compare_rule(current_rule, new_rule)
 
-    elb_listener_rules = elbv2.ELBListenerRules(connection, module, elb_arn, [], [])
 
-    assert modified_rule == elb_listener_rules._compare_rule(current_rule, new_rule)
-
+test_listener_arn = "arn:aws:elasticloadbalancing:us-west-2:123456789012:listener/app/my-load-balancer/50dc6c495c0c9188/f2f7dc8efc522ab2"
 
 test_listeners_rules = [
     (
@@ -290,6 +291,7 @@ test_listeners_rules = [
                 {
                     "Priority": 2,
                     "Conditions": [{"Field": "path-pattern", "Values": ["/test"]}],
+                    "ListenerArn": test_listener_arn,
                     "Actions": [
                         {"TargetGroupName": "oidc-target-01", "Type": "forward", "Order": 2},
                         {
@@ -402,6 +404,7 @@ test_listeners_rules = [
                 {
                     "Priority": 3,
                     "Conditions": [{"Field": "path-pattern", "Values": ["/test"]}],
+                    "ListenerArn": test_listener_arn,
                     "Actions": [
                         {"TargetGroupName": "oidc-target-01", "Type": "forward", "Order": 2},
                         {
@@ -447,6 +450,7 @@ test_listeners_rules = [
             "to_add": [
                 {
                     "Priority": 2,
+                    "ListenerArn": test_listener_arn,
                     "Conditions": [{"Field": "host-header", "Values": ["yolo.rocks"]}],
                     "Actions": [{"TargetGroupName": "target2", "Type": "forward"}],
                 },
@@ -500,7 +504,6 @@ test_listeners_rules = [
         {
             "to_modify": [
                 {
-                    "Priority": 1,
                     "Conditions": [{"Field": "path-pattern", "Values": ["/test"]}],
                     "Actions": [
                         {"TargetGroupName": "oidc-target-01", "Type": "forward", "Order": 2},
@@ -567,7 +570,6 @@ test_listeners_rules = [
         {
             "to_modify": [
                 {
-                    "Priority": 1,
                     "Conditions": [{"Field": "path-pattern", "Values": ["/test"]}],
                     "Actions": [
                         {
@@ -665,7 +667,6 @@ test_listeners_rules = [
         {
             "to_modify": [
                 {
-                    "Priority": 1,
                     "Conditions": [{"Field": "host-header", "Values": ["bla.tld"]}],
                     "Actions": [{"TargetGroupName": "another_target", "Type": "forward"}],
                     "RuleArn": "arn:aws:elasticloadbalancing:::listener-rule/app/ansible-test/rule-1",
@@ -710,23 +711,11 @@ test_listeners_rules = [
 
 
 @pytest.mark.parametrize("current_rules,rules,expected", test_listeners_rules)
-def test_compare_rules(mocker, current_rules, rules, expected):
-    mocker.patch(
-        "ansible_collections.amazon.aws.plugins.module_utils.elbv2.get_elb_listener"
-    ).return_value = MagicMock()
-    mocker.patch(
-        "ansible_collections.amazon.aws.plugins.module_utils.elbv2.ELBListenerRules._ensure_rules_action_has_arn"
-    ).return_value = rules
-    mocker.patch(
-        "ansible_collections.amazon.aws.plugins.module_utils.elbv2.ELBListenerRules._get_elb_listener_rules"
-    ).return_value = current_rules
-    module = MagicMock()
-    connection = MagicMock()
-    elb_arn = MagicMock()
-
-    elb_listener_rules = elbv2.ELBListenerRules(connection, module, elb_arn, rules, 8009)
+def test_compare_rules(elb_listener_rules, current_rules, rules, expected):
+    elb_listener_rules.rules = rules
     elb_listener_rules.current_rules = current_rules
-    rules_to_add, rules_to_modify, rules_to_delete, rules_to_set_priority = elb_listener_rules.compare_rules()
+    elb_listener_rules.listener_arn = test_listener_arn
+    rules_to_add, rules_to_set_priority, rules_to_modify, rules_to_delete = elb_listener_rules.compare_rules()
 
     assert sorted(rules_to_add, key=lambda x: x.get("Priority", 0)) == sorted(
         expected.get("to_add", []), key=lambda x: x.get("Priority", 0)
@@ -738,3 +727,70 @@ def test_compare_rules(mocker, current_rules, rules, expected):
         expected.get("to_set_priority", []), key=lambda x: x.get("Priority", 0)
     )
     assert sorted(rules_to_delete) == sorted(expected.get("to_delete", []))
+
+
+@pytest.mark.parametrize(
+    "current_conditions,condition,expected",
+    [
+        (
+            [{"Field": "test", "HostHeaderConfig": {"Values": ["a", "b"]}}],
+            {"Field": "test", "HostHeaderConfig": {"Values": ["b", "a"]}},
+            True,
+        ),
+        (
+            [{"Field": "test", "HostHeaderConfig": {"Values": ["a", "b"]}}],
+            {"Field": "prod", "HostHeaderConfig": {"Values": ["b", "a"]}},
+            False,
+        ),
+        (
+            [{"Field": "test", "HostHeaderConfig": {"Values": ["a", "b"]}, "Values": ["a", "a"]}],
+            {"Field": "test", "HostHeaderConfig": {"Values": ["a", "a"]}, "Values": ["a", "a"]},
+            False,
+        ),
+        (
+            [{"Field": "test", "Values": ["a", "a"]}],
+            {"Field": "test", "HostHeaderConfig": {"Values": ["a", "a"]}, "Values": ["a", "a"]},
+            True,
+        ),
+        (
+            [{"Field": "test", "Values": ["a", "b"]}],
+            {"Field": "test", "Values": ["b", "a"]},
+            True,
+        ),
+        (
+            [{"Field": "test", "SourceIpConfig": {"Values": ["c", "a", "b"]}}],
+            {"Field": "test", "SourceIpConfig": {"Values": ["a", "c", "b"]}},
+            True,
+        ),
+        (
+            [{"Field": "test", "PathPatternConfig": {"Values": ["c", "a", "b"]}}],
+            {"Field": "test", "PathPatternConfig": {"Values": ["a", "c", "b"]}},
+            True,
+        ),
+        (
+            [{"Field": "test", "HttpRequestMethodConfig": {"Values": ["c", "a", "b"]}}],
+            {"Field": "test", "HttpRequestMethodConfig": {"Values": ["a", "c", "b"]}},
+            True,
+        ),
+        (
+            [{"Field": "test", "HttpHeaderConfig": {"Values": ["c", "a", "b"], "HttpHeaderName": "header-a"}}],
+            {"Field": "test", "HttpHeaderConfig": {"Values": ["a", "c", "b"], "HttpHeaderName": "header-a"}},
+            True,
+        ),
+        (
+            [{"Field": "test", "HttpHeaderConfig": {"Values": ["c", "a", "b"], "HttpHeaderName": "header-a"}}],
+            {"Field": "test", "HttpHeaderConfig": {"Values": ["a", "c", "b"], "HttpHeaderName": "header-b"}},
+            False,
+        ),
+        (
+            [
+                {"Field": "prod", "HttpHeaderConfig": {"Values": ["c", "a", "b"], "HttpHeaderName": "header-a"}},
+                {"Field": "test", "HttpHeaderConfig": {"Values": ["c", "a", "b"], "HttpHeaderName": "header-a"}},
+            ],
+            {"Field": "test", "HttpHeaderConfig": {"Values": ["a", "c", "b"], "HttpHeaderName": "header-a"}},
+            True,
+        ),
+    ],
+)
+def test__check_rule_condition(current_conditions, condition, expected):
+    assert elbv2._check_rule_condition(current_conditions, condition) == expected

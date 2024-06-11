@@ -262,6 +262,8 @@ load_balancers:
             sample: false
 """
 
+from typing import Dict
+
 try:
     import botocore
 except ImportError:
@@ -269,47 +271,22 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import AnsibleELBv2Error
+from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import describe_listeners
+from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import describe_load_balancer_attributes
+from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import describe_load_balancers
+from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import describe_rules
+from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import describe_tags
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 
 
-@AWSRetry.jittered_backoff(retries=10)
-def get_paginator(connection, **kwargs):
-    paginator = connection.get_paginator("describe_load_balancers")
-    return paginator.paginate(**kwargs).build_full_result()
-
-
-def get_alb_listeners(connection, module, alb_arn):
+def get_load_balancer_attributes(connection, module: AnsibleAWSModule, load_balancer_arn: str) -> Dict[str, str]:
     try:
-        return connection.describe_listeners(
-            aws_retry=True,
-            LoadBalancerArn=alb_arn,
-        )["Listeners"]
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to describe alb listeners")
-
-
-def get_listener_rules(connection, module, listener_arn):
-    try:
-        return connection.describe_rules(
-            aws_retry=True,
-            ListenerArn=listener_arn,
-        )["Rules"]
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to describe listener rules")
-
-
-def get_load_balancer_attributes(connection, module, load_balancer_arn):
-    try:
-        attributes = connection.describe_load_balancer_attributes(
-            aws_retry=True,
-            LoadBalancerArn=load_balancer_arn,
-        )["Attributes"]
-        load_balancer_attributes = boto3_tag_list_to_ansible_dict(attributes)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        attributes = describe_load_balancer_attributes(connection, load_balancer_arn)
+    except AnsibleELBv2Error as e:
         module.fail_json_aws(e, msg="Failed to describe load balancer attributes")
+    load_balancer_attributes = boto3_tag_list_to_ansible_dict(attributes)
 
     # Replace '.' with '_' in attribute key names to make it more Ansibley
     for k, v in list(load_balancer_attributes.items()):
@@ -319,18 +296,12 @@ def get_load_balancer_attributes(connection, module, load_balancer_arn):
     return load_balancer_attributes
 
 
-def get_load_balancer_tags(connection, module, load_balancer_arn):
-    try:
-        tag_descriptions = connection.describe_tags(
-            aws_retry=True,
-            ResourceArns=[load_balancer_arn],
-        )["TagDescriptions"]
-        return boto3_tag_list_to_ansible_dict(tag_descriptions[0]["Tags"])
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to describe load balancer tags")
+def get_load_balancer_tags(connection, load_balancer_arn: str) -> Dict[str, str]:
+    tag_descriptions = describe_tags(connection, [load_balancer_arn])
+    return boto3_tag_list_to_ansible_dict(tag_descriptions[0]["Tags"])
 
 
-def list_load_balancers(connection, module):
+def list_load_balancers(connection, module: AnsibleAWSModule) -> None:
     load_balancer_arns = module.params.get("load_balancer_arns")
     names = module.params.get("names")
     include_attributes = module.params.get("include_attributes")
@@ -338,44 +309,31 @@ def list_load_balancers(connection, module):
     include_listener_rules = module.params.get("include_listener_rules")
 
     try:
-        if not load_balancer_arns and not names:
-            load_balancers = get_paginator(connection)
-        if load_balancer_arns:
-            load_balancers = get_paginator(connection, LoadBalancerArns=load_balancer_arns)
-        if names:
-            load_balancers = get_paginator(connection, Names=names)
-    except is_boto3_error_code("LoadBalancerNotFound"):
-        module.exit_json(load_balancers=[])
-    except (
-        botocore.exceptions.ClientError,
-        botocore.exceptions.BotoCoreError,
-    ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Failed to list load balancers")
+        load_balancers = describe_load_balancers(connection, load_balancer_arns=load_balancer_arns, names=names)
+        for load_balancer in load_balancers:
+            # Get the attributes for each alb
+            if include_attributes:
+                load_balancer.update(get_load_balancer_attributes(connection, module, load_balancer["LoadBalancerArn"]))
 
-    for load_balancer in load_balancers["LoadBalancers"]:
-        # Get the attributes for each alb
-        if include_attributes:
-            load_balancer.update(get_load_balancer_attributes(connection, module, load_balancer["LoadBalancerArn"]))
+            # Get the listeners for each alb
+            if include_listeners or include_listener_rules:
+                load_balancer["listeners"] = describe_listeners(
+                    connection, load_balancer_arn=load_balancer["LoadBalancerArn"]
+                )
 
-        # Get the listeners for each alb
-        if include_listeners or include_listener_rules:
-            load_balancer["listeners"] = get_alb_listeners(connection, module, load_balancer["LoadBalancerArn"])
+            # For each listener, get listener rules
+            if include_listener_rules:
+                for listener in load_balancer["listeners"]:
+                    listener["rules"] = describe_rules(connection, ListenerArn=listener["ListenerArn"])
 
-        # For each listener, get listener rules
-        if include_listener_rules:
-            for listener in load_balancer["listeners"]:
-                listener["rules"] = get_listener_rules(connection, module, listener["ListenerArn"])
+        # Turn the boto3 result in to ansible_friendly_snaked_names
+        snaked_load_balancers = [camel_dict_to_snake_dict(load_balancer) for load_balancer in load_balancers]
 
-    # Turn the boto3 result in to ansible_friendly_snaked_names
-    snaked_load_balancers = [
-        camel_dict_to_snake_dict(load_balancer) for load_balancer in load_balancers["LoadBalancers"]
-    ]
-
-    # Get tags for each load balancer
-    for snaked_load_balancer in snaked_load_balancers:
-        snaked_load_balancer["tags"] = get_load_balancer_tags(
-            connection, module, snaked_load_balancer["load_balancer_arn"]
-        )
+        # Get tags for each load balancer
+        for snaked_load_balancer in snaked_load_balancers:
+            snaked_load_balancer["tags"] = get_load_balancer_tags(connection, snaked_load_balancer["load_balancer_arn"])
+    except AnsibleELBv2Error as e:
+        module.fail_json_aws_error(e)
 
     module.exit_json(load_balancers=snaked_load_balancers)
 
@@ -396,9 +354,9 @@ def main():
     )
 
     try:
-        connection = module.client("elbv2", retry_decorator=AWSRetry.jittered_backoff(retries=10))
+        connection = module.client("elbv2")
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to connect to AWS")
+        module.fail_json_aws(e)
 
     list_load_balancers(connection, module)
 
