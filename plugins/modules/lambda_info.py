@@ -125,6 +125,15 @@ functions:
             returned: success
             type: str
             sample: 'My function'
+        ephermal_storage:
+            description: The size of the function’s /tmp directory in MB.
+            type: dict
+            contains:
+                size:
+                    description: The size of the function’s /tmp directory.
+                    type: int
+                    returned: always
+                    sample: 512
         environment:
             description: The function's environment variables.
             returned: when environment variables exist
@@ -211,6 +220,11 @@ functions:
             returned: on success
             type: int
             sample: 128
+        package_type:
+            description: The type of deployment package.
+            type: str
+            returned: always
+            sample: "Zip"
         policy:
             description: The policy associated with the function.
             returned: when C(query) is I(all) or I(policy)
@@ -230,6 +244,29 @@ functions:
             returned: on success
             type: str
             sample: 'nodejs6.10'
+        runtime_version_config:
+            description: The ARN of the runtime and any errors that occured.
+            type: dict
+            contains:
+                runtime_version_arn:
+                    description: The ARN of the runtime version you want the function to use.
+                    type: str
+                    returned: always
+                    sample: "arn:aws:lambda:us-west-2::runtime:xxxxx"
+        snap_start:
+            description: snapshot of the initialized execution environment when you publish a function version.
+            type: dict
+            contains:
+                apply_on:
+                    description: When set to V(PublishedVersions), Lambda creates a snapshot of the execution environment when you publish a function version.
+                    type: str
+                    sample: "None"
+                    returned: always
+                optimization_status:
+                    description: This element indicates whether SnapStart is activated for the specified function version.
+                    type: str
+                    returned: always
+                    sample: "Off"
         tracing_config:
             description: The function's AWS X-Ray tracing configuration.
             returned: on success

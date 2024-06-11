@@ -193,6 +193,11 @@ layer_version:
         description: The description of the version.
         returned: I(state=present)
         type: str
+    compatible_runtimes:
+        description: A list of compatible runtimes.
+        returned: if it was defined for the layer version.
+        type: list
+        sample: ["python3.7"]
     created_date:
         description: The date that the layer version was created, in ISO-8601 format (YYYY-MM-DDThh:mm:ss.sTZD).
         returned: if the layer version exists or has been created
