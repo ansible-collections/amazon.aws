@@ -105,14 +105,21 @@ class AnsibleEC2Error(AnsibleAWSError):
     pass
 
 
+EC2TagSpecifications = Dict[str, Union[str, List[Dict[str, str]]]]
+
+
 @AWSRetry.jittered_backoff()
-def describe_availability_zones(client, **params) -> List[Dict[str, Union[str, List[Dict[str, str]]]]]:
+def describe_availability_zones(
+    client, **params: Dict[str, Union[List[str], bool, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Union[str, List[Dict[str, str]]]]]:
     # The paginator does not exist for `describe_availability_zones()`
     return client.describe_availability_zones(**params)["AvailabilityZones"]
 
 
 @AWSRetry.jittered_backoff()
-def describe_regions(client, **params) -> List[Dict[str, str]]:
+def describe_regions(
+    client, **params: Dict[str, Union[List[str], bool, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, str]]:
     # The paginator does not exist for `describe_regions()`
     return client.describe_regions(**params)["Regions"]
 
@@ -135,33 +142,37 @@ def delete_subnet(client, subnet_id: str) -> bool:
 
 @EC2VpcSubnetErrorHandler.list_error_handler("describe subnets", [])
 @AWSRetry.jittered_backoff()
-def describe_subnets(client, **params: Dict[str, Any]) -> List[Dict[str, Any]]:
+def describe_subnets(
+    client, **params: Dict[str, Union[List[str], bool, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
     paginator = client.get_paginator("describe_subnets")
     return paginator.paginate(**params).build_full_result()["Subnets"]
 
 
 @EC2VpcSubnetErrorHandler.common_error_handler("create subnet")
 @AWSRetry.jittered_backoff()
-def create_subnet(client, **params: Dict[str, Any]) -> Dict[str, Any]:
+def create_subnet(client, **params: Dict[str, Union[str, bool, int, EC2TagSpecifications]]) -> Dict[str, Any]:
     return client.create_subnet(**params)["Subnet"]
 
 
 @EC2VpcSubnetErrorHandler.common_error_handler("modify subnet")
 @AWSRetry.jittered_backoff()
-def modify_subnet_attribute(client, subnet_id: str, **params: Dict[str, Any]) -> bool:
+def modify_subnet_attribute(client, subnet_id: str, **params: Dict[str, Union[str, int, Dict[str, bool]]]) -> bool:
     client.modify_subnet_attribute(SubnetId=subnet_id, **params)
     return True
 
 
 @EC2VpcSubnetErrorHandler.common_error_handler("disassociate subnet cidr block")
 @AWSRetry.jittered_backoff()
-def disassociate_subnet_cidr_block(client, association_id: str) -> Dict[str, Union[str, Dict[str, Union[str, bool]]]]:
+def disassociate_subnet_cidr_block(client, association_id: str) -> Dict[str, Union[str, Dict[str, str]]]:
     return client.disassociate_subnet_cidr_block(AssociationId=association_id)["Ipv6CidrBlockAssociation"]
 
 
 @EC2VpcSubnetErrorHandler.common_error_handler("associate subnet cidr block")
 @AWSRetry.jittered_backoff()
-def associate_subnet_cidr_block(client, subnet_id: str, **params) -> Dict[str, Union[str, Dict[str, Union[str, bool]]]]:
+def associate_subnet_cidr_block(
+    client, subnet_id: str, **params: Dict[str, Union[str, int]]
+) -> Dict[str, Union[str, Dict[str, str]]]:
     return client.associate_subnet_cidr_block(SubnetId=subnet_id, **params)["Ipv6CidrBlockAssociation"]
 
 
@@ -176,7 +187,9 @@ class EC2VpcRouteTableErrorHandler(AWSErrorHandler):
 
 @EC2VpcRouteTableErrorHandler.list_error_handler("describe route tables", [])
 @AWSRetry.jittered_backoff()
-def describe_route_tables(client, **params: Dict[str, Any]) -> List[Dict[str, Any]]:
+def describe_route_tables(
+    client, **params: Dict[str, Union[List[str], bool, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
     paginator = client.get_paginator("describe_route_tables")
     return paginator.paginate(**params).build_full_result()["RouteTables"]
 
@@ -192,7 +205,7 @@ def disassociate_route_table(client, association_id: str) -> bool:
 @AWSRetry.jittered_backoff()
 def associate_route_table(
     client, route_table_id: str, **params: Dict[str, str]
-) -> Dict[str, Union[str, Dict[str, Union[str, bool]]]]:
+) -> Dict[str, Union[str, Dict[str, str]]]:
     return client.associate_route_table(RouteTableId=route_table_id, **params)
 
 
@@ -237,7 +250,7 @@ def delete_route(client, route_table_id: str, **params: Dict[str, str]) -> bool:
 
 @EC2VpcRouteTableRouteErrorHandler.common_error_handler("replace route")
 @AWSRetry.jittered_backoff()
-def replace_route(client, route_table_id: str, **params: Dict[str, str]) -> bool:
+def replace_route(client, route_table_id: str, **params: Dict[str, Union[str, bool]]) -> bool:
     client.replace_route(RouteTableId=route_table_id, **params)
     return True
 
@@ -259,7 +272,9 @@ class EC2VpcErrorHandler(AWSErrorHandler):
 
 @EC2VpcErrorHandler.list_error_handler("describe vpcs", [])
 @AWSRetry.jittered_backoff()
-def describe_vpcs(client, **params: Dict[str, Any]) -> List[Dict[str, Any]]:
+def describe_vpcs(
+    client, **params: Dict[str, Union[List[str], bool, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
     paginator = client.get_paginator("describe_vpcs")
     return paginator.paginate(**params).build_full_result()["Vpcs"]
 
@@ -280,20 +295,20 @@ def describe_vpc_attribute(client, vpc_id: str, attribute: str) -> Dict[str, Any
 
 @EC2VpcErrorHandler.common_error_handler("modify vpc attribute")
 @AWSRetry.jittered_backoff()
-def modify_vpc_attribute(client, vpc_id: str, **params) -> bool:
+def modify_vpc_attribute(client, vpc_id: str, **params: Dict[str, Union[str, Dict[str, bool]]]) -> bool:
     client.modify_vpc_attribute(VpcId=vpc_id, **params)
     return True
 
 
 @EC2VpcErrorHandler.common_error_handler("create vpc")
 @AWSRetry.jittered_backoff()
-def create_vpc(client, **params) -> Dict[str, Any]:
+def create_vpc(client, **params: Dict[str, Union[str, bool, int, EC2TagSpecifications]]) -> Dict[str, Any]:
     return client.create_vpc(**params)["Vpc"]
 
 
 @EC2VpcErrorHandler.common_error_handler("associate vpc cidr block")
 @AWSRetry.jittered_backoff()
-def associate_vpc_cidr_block(client, vpc_id: str, **params) -> Dict[str, Any]:
+def associate_vpc_cidr_block(client, vpc_id: str, **params: Dict[str, Union[str, bool, int]]) -> Dict[str, Any]:
     return client.associate_vpc_cidr_block(VpcId=vpc_id, **params)
 
 
@@ -312,8 +327,11 @@ class EC2InternetGatewayErrorHandler(AWSErrorHandler):
         return is_boto3_error_code("InvalidInternetGatewayID.NotFound")
 
 
+@EC2InternetGatewayErrorHandler.list_error_handler("describe internet gateways")
 @AWSRetry.jittered_backoff()
-def describe_internet_gateways(client, **params: Dict[str, Any]) -> List[Dict[str, Any]]:
+def describe_internet_gateways(
+    client, **params: Dict[str, Union[List[str], bool, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
     paginator = client.get_paginator("describe_internet_gateways")
     return paginator.paginate(**params).build_full_result()["InternetGateways"]
 
@@ -359,7 +377,9 @@ class EC2NatGatewayErrorHandler(AWSErrorHandler):
 
 @EC2NatGatewayErrorHandler.list_error_handler("describe nat gateways", [])
 @AWSRetry.jittered_backoff()
-def describe_nat_gateways(client, **params: Dict[str, Any]) -> List[Dict[str, Any]]:
+def describe_nat_gateways(
+    client, **params: Dict[str, Union[List[str], bool, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
     paginator = client.get_paginator("describe_nat_gateways")
     return paginator.paginate(**params).build_full_result()["NatGateways"]
 
@@ -373,7 +393,9 @@ def delete_nat_gateway(client, nat_gateway_id: str) -> bool:
 
 @EC2NatGatewayErrorHandler.common_error_handler("create nat gateway")
 @AWSRetry.jittered_backoff()
-def create_nat_gateway(client, **params) -> Dict[str, Any]:
+def create_nat_gateway(
+    client, **params: Dict[str, Union[str, bool, int, EC2TagSpecifications, List[str]]]
+) -> Dict[str, Any]:
     return client.create_nat_gateway(**params)["NatGateway"]
 
 
@@ -388,7 +410,9 @@ class EC2ElasticIPErrorHandler(AWSErrorHandler):
 
 @EC2ElasticIPErrorHandler.list_error_handler("describe addresses", [])
 @AWSRetry.jittered_backoff()
-def describe_addresses(client, **params: Dict[str, Any]) -> List[Dict[str, Union[str, List[Dict[str, str]]]]]:
+def describe_addresses(
+    client, **params: Dict[str, Union[List[str], List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Union[str, List[Dict[str, str]]]]]:
     # The paginator does not exist for 'describe_addresses()'
     return client.describe_addresses(**params)["Addresses"]
 
@@ -405,7 +429,7 @@ def release_address(client, allocation_id: str, network_border_group: Optional[s
 
 @EC2ElasticIPErrorHandler.common_error_handler("associate address")
 @AWSRetry.jittered_backoff()
-def associate_address(client, **params) -> Dict[str, str]:
+def associate_address(client, **params: Dict[str, Union[str, bool]]) -> Dict[str, str]:
     return client.associate_address(**params)
 
 
@@ -418,7 +442,7 @@ def disassociate_address(client, association_id: str) -> bool:
 
 @EC2ElasticIPErrorHandler.common_error_handler("allocate address")
 @AWSRetry.jittered_backoff()
-def allocate_address(client, **params) -> Dict[str, str]:
+def allocate_address(client, **params: Dict[str, Union[str, EC2TagSpecifications]]) -> Dict[str, str]:
     return client.allocate_address(**params)
 
 
@@ -431,9 +455,11 @@ class EC2VpcEndpointsErrorHandler(AWSErrorHandler):
         return is_boto3_error_code(["InvalidVpcEndpoint.NotFound", "InvalidVpcEndpointId.NotFound"])
 
 
-@EC2VpcEndpointsErrorHandler.list_error_handler("describe vpc endpoints", {})
+@EC2VpcEndpointsErrorHandler.list_error_handler("describe vpc endpoints", [])
 @AWSRetry.jittered_backoff()
-def describe_vpc_endpoints(client, **params: Dict[str, Any]) -> Dict[str, Any]:
+def describe_vpc_endpoints(
+    client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
+) -> Dict[str, Any]:
     paginator = client.get_paginator("describe_vpc_endpoints")
     return paginator.paginate(**params).build_full_result()["VpcEndpoints"]
 
@@ -446,7 +472,12 @@ def delete_vpc_endpoints(client, vpc_endpoint_ids: str) -> Optional[List[Dict[st
 
 @EC2ElasticIPErrorHandler.common_error_handler("create vpc endpoint")
 @AWSRetry.jittered_backoff()
-def create_vpc_endpoint(client, **params) -> Dict[str, str]:
+def create_vpc_endpoint(
+    client,
+    **params: Dict[
+        str, Union[str, bool, List[str], Dict[str, Union[str, bool]], List[Dict[str, str]], EC2TagSpecifications]
+    ],
+) -> Dict[str, str]:
     return client.create_vpc_endpoint(**params)["VpcEndpoint"]
 
 
@@ -487,7 +518,9 @@ class EC2VpcDhcpOptionErrorHandler(AWSErrorHandler):
 
 @EC2VpcDhcpOptionErrorHandler.list_error_handler("describe dhcp options", [])
 @AWSRetry.jittered_backoff()
-def describe_dhcp_options(client, **params) -> List[Dict[str, Any]]:
+def describe_dhcp_options(
+    client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
     paginator = client.get_paginator("describe_dhcp_options")
     return paginator.paginate(**params).build_full_result()["DhcpOptions"]
 
@@ -508,7 +541,9 @@ def associate_dhcp_options(client, dhcp_options_id: str, vpc_id: str) -> bool:
 
 @EC2VpcDhcpOptionErrorHandler.common_error_handler("create dhcp options")
 @AWSRetry.jittered_backoff()
-def create_dhcp_options(client, **params) -> Dict[str, Any]:
+def create_dhcp_options(
+    client, **params: Dict[str, Union[Dict[str, Union[str, List[str]]], EC2TagSpecifications]]
+) -> Dict[str, Any]:
     return client.create_dhcp_options(**params)["DhcpOptions"]
 
 
@@ -523,7 +558,9 @@ class EC2VolumeErrorHandler(AWSErrorHandler):
 
 @EC2VolumeErrorHandler.list_error_handler("describe volumes", [])
 @AWSRetry.jittered_backoff()
-def describe_volumes(client, **params) -> List[Dict[str, Any]]:
+def describe_volumes(
+    client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
     paginator = client.get_paginator("describe_volumes")
     return paginator.paginate(**params).build_full_result()["Volumes"]
 
@@ -537,13 +574,13 @@ def delete_volume(client, volume_id: str) -> bool:
 
 @EC2VolumeErrorHandler.common_error_handler("modify volume")
 @AWSRetry.jittered_backoff()
-def modify_volume(client, **params) -> Dict[str, Any]:
+def modify_volume(client, **params: Dict[str, Union[str, bool, int]]) -> Dict[str, Any]:
     return client.modify_volume(**params)["VolumeModification"]
 
 
 @EC2VolumeErrorHandler.common_error_handler("modify volume")
 @AWSRetry.jittered_backoff()
-def create_volume(client, **params) -> Dict[str, Any]:
+def create_volume(client, **params: Dict[str, Union[str, bool, int, EC2TagSpecifications]]) -> Dict[str, Any]:
     return client.create_volume(**params)
 
 
@@ -555,7 +592,7 @@ def attach_volume(client, device: str, instance_id: str, volume_id: str) -> Dict
 
 @EC2VolumeErrorHandler.common_error_handler("attach volume")
 @AWSRetry.jittered_backoff()
-def detach_volume(client, volume_id: str, **params) -> Dict[str, Any]:
+def detach_volume(client, volume_id: str, **params: Dict[str, Union[str, bool]]) -> Dict[str, Any]:
     return client.detach_volume(VolumeId=volume_id, **params)
 
 
@@ -577,14 +614,30 @@ class EC2InstanceErrorHandler(AWSErrorHandler):
 
 @EC2InstanceErrorHandler.list_error_handler("describe instances", [])
 @AWSRetry.jittered_backoff()
-def describe_instances(client, **params) -> List[Dict[str, Any]]:
+def describe_instances(
+    client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
     paginator = client.get_paginator("describe_instances")
     return paginator.paginate(**params).build_full_result()["Reservations"]
 
 
 @EC2InstanceErrorHandler.common_error_handler("modify instance attribute")
 @AWSRetry.jittered_backoff(catch_extra_error_codes=EC2_INSTANCE_CATCH_EXTRA_CODES)
-def modify_instance_attribute(client, instance_id: str, **params) -> bool:
+def modify_instance_attribute(
+    client,
+    instance_id: str,
+    **params: Dict[
+        str,
+        Union[
+            str,
+            List[str],
+            Dict[str, str],
+            Dict[str, bool],
+            Dict[str, bytes],
+            Dict[str, Union[str, Dict[str, Union[str, bool]]]],
+        ],
+    ],
+) -> bool:
     client.modify_instance_attribute(InstanceId=instance_id, **params)
     return True
 
@@ -597,13 +650,17 @@ def terminate_instances(client, instance_ids: List[str]) -> List[Dict[str, Any]]
 
 @EC2InstanceErrorHandler.common_error_handler("stop instances")
 @AWSRetry.jittered_backoff(catch_extra_error_codes=EC2_INSTANCE_CATCH_EXTRA_CODES)
-def stop_instances(client, instance_ids: List[str], **params: Dict[str, Any]) -> List[Dict[str, Any]]:
+def stop_instances(
+    client, instance_ids: List[str], **params: Dict[str, Union[bool, List[str]]]
+) -> List[Dict[str, Any]]:
     return client.stop_instances(InstanceIds=instance_ids, **params)["StoppingInstances"]
 
 
 @EC2InstanceErrorHandler.common_error_handler("start instances")
 @AWSRetry.jittered_backoff(catch_extra_error_codes=EC2_INSTANCE_CATCH_EXTRA_CODES)
-def start_instances(client, instance_ids: List[str], **params: Dict[str, Any]) -> List[Dict[str, Any]]:
+def start_instances(
+    client, instance_ids: List[str], **params: Dict[str, Union[str, List[str]]]
+) -> List[Dict[str, Any]]:
     return client.start_instances(InstanceIds=instance_ids, **params)["StartingInstances"]
 
 
@@ -622,20 +679,26 @@ def describe_instance_attribute(client, instance_id: str, attribute: str) -> Dic
 
 @EC2InstanceErrorHandler.common_error_handler("describe instance status")
 @AWSRetry.jittered_backoff(catch_extra_error_codes=EC2_INSTANCE_CATCH_EXTRA_CODES)
-def describe_instance_status(client, **params) -> List[Dict[str, Any]]:
+def describe_instance_status(
+    client, **params: Dict[str, Union[List[str], bool, int, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
     paginator = client.get_paginator("describe_instance_status")
     return paginator.paginate(**params).build_full_result()["InstanceStatuses"]
 
 
 @EC2InstanceErrorHandler.common_error_handler("modify instance metadata options")
 @AWSRetry.jittered_backoff(catch_extra_error_codes=EC2_INSTANCE_CATCH_EXTRA_CODES)
-def modify_instance_metadata_options(client, instance_id: str, **params) -> Dict[str, Union[int, str]]:
+def modify_instance_metadata_options(
+    client, instance_id: str, **params: Dict[str, Union[str, int]]
+) -> Dict[str, Union[int, str]]:
     return client.modify_instance_metadata_options(InstanceId=instance_id, **params)["InstanceMetadataOptions"]
 
 
 @EC2InstanceErrorHandler.common_error_handler("describe iam instance profile associations")
 @AWSRetry.jittered_backoff(catch_extra_error_codes=EC2_INSTANCE_CATCH_EXTRA_CODES)
-def describe_iam_instance_profile_associations(client, **params) -> Dict[str, Any]:
+def describe_iam_instance_profile_associations(
+    client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
+) -> Dict[str, Any]:
     paginator = client.get_paginator("describe_iam_instance_profile_associations")
     return paginator.paginate(**params).build_full_result()["IamInstanceProfileAssociations"]
 
@@ -669,20 +732,26 @@ class EC2KeyErrorHandler(AWSErrorHandler):
 
 @EC2KeyErrorHandler.list_error_handler("describe key pairs", [])
 @AWSRetry.jittered_backoff()
-def describe_key_pairs(client, **params) -> List[Dict[str, Any]]:
+def describe_key_pairs(
+    client, **params: Dict[str, Union[List[str], bool, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
     # The paginator does not exist for `describe_key_pairs()`
     return client.describe_key_pairs(**params)["KeyPairs"]
 
 
 @EC2KeyErrorHandler.common_error_handler("import key pair")
 @AWSRetry.jittered_backoff()
-def import_key_pair(client, **params) -> Dict[str, Union[str, List[Dict[str, str]]]]:
+def import_key_pair(
+    client, **params: Dict[str, Union[str, bytes, EC2TagSpecifications]]
+) -> Dict[str, Union[str, List[Dict[str, str]]]]:
     return client.import_key_pair(**params)
 
 
 @EC2KeyErrorHandler.common_error_handler("create key pair")
 @AWSRetry.jittered_backoff()
-def create_key_pair(client, **params) -> Dict[str, Union[str, List[Dict[str, str]]]]:
+def create_key_pair(
+    client, **params: Dict[str, Union[str, EC2TagSpecifications]]
+) -> Dict[str, Union[str, List[Dict[str, str]]]]:
     return client.create_key_pair(**params)
 
 
@@ -709,7 +778,9 @@ class EC2ImageErrorHandler(AWSErrorHandler):
 
 @EC2ImageErrorHandler.list_error_handler("describe images", [])
 @AWSRetry.jittered_backoff()
-def describe_images(client, **params) -> List[Dict[str, Any]]:
+def describe_images(
+    client, **params: Dict[str, Union[List[str], bool, int, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
     paginator = client.get_paginator("describe_images")
     return paginator.paginate(**params).build_full_result()["Images"]
 
@@ -730,20 +801,20 @@ def deregister_image(client, image_id: str) -> bool:
 
 @EC2ImageErrorHandler.common_error_handler("modify image attribute")
 @AWSRetry.jittered_backoff()
-def modify_image_attribute(client, image_id: str, **params) -> bool:
+def modify_image_attribute(client, image_id: str, **params: Dict[str, Any]) -> bool:
     client.modify_image_attribute(ImageId=image_id, **params)
     return True
 
 
 @EC2ImageErrorHandler.common_error_handler("create image")
 @AWSRetry.jittered_backoff()
-def create_image(client, **params) -> Dict[str, str]:
+def create_image(client, **params: Dict[str, Any]) -> Dict[str, str]:
     return client.create_image(**params)
 
 
 @EC2ImageErrorHandler.common_error_handler("register image")
 @AWSRetry.jittered_backoff()
-def register_image(client, **params) -> Dict[str, str]:
+def register_image(client, **params: Dict[str, Any]) -> Dict[str, str]:
     return client.register_image(**params)
 
 
@@ -763,9 +834,11 @@ def delete_snapshot(client, snapshot_id: str) -> bool:
     return True
 
 
-@EC2SnapshotErrorHandler.list_error_handler("describe snapshots", {})
+@EC2SnapshotErrorHandler.list_error_handler("describe snapshots", [])
 @AWSRetry.jittered_backoff()
-def describe_snapshots(client, **params) -> Dict[str, Any]:
+def describe_snapshots(
+    client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
+) -> Dict[str, Any]:
     # We do not use paginator here because the `ec2_snapshot_info` module excepts the NextToken to be returned
     return client.describe_snapshots(**params)
 
@@ -811,7 +884,9 @@ class EC2NetworkInterfacesErrorHandler(AWSErrorHandler):
 
 @EC2NetworkInterfacesErrorHandler.list_error_handler("describe network interfaces", [])
 @AWSRetry.jittered_backoff()
-def describe_network_interfaces(client, **params) -> List[Dict[str, Any]]:
+def describe_network_interfaces(
+    client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
     paginator = client.get_paginator("describe_network_interfaces")
     return paginator.paginate(**params).build_full_result()["NetworkInterfaces"]
 
@@ -825,39 +900,46 @@ def delete_network_interface(client, network_interface_id: str) -> bool:
 
 @EC2NetworkInterfacesErrorHandler.common_error_handler("create network interface")
 @AWSRetry.jittered_backoff()
-def create_network_interface(client, **params) -> Dict[str, str]:
+def create_network_interface(client, **params: Dict[str, Any]) -> Dict[str, str]:
     return client.create_network_interface(**params)["NetworkInterface"]
 
 
 @EC2NetworkInterfacesErrorHandler.common_error_handler("attach network interface")
 @AWSRetry.jittered_backoff()
-def attach_network_interface(client, **params) -> Dict[str, Union[str, int]]:
+def attach_network_interface(
+    client, **params: Dict[str, Union[str, int, Dict[str, Union[bool, Dict[str, bool]]]]]
+) -> Dict[str, Union[str, int]]:
     return client.attach_network_interface(**params)
 
 
 @EC2NetworkInterfacesErrorHandler.common_error_handler("detach network interface")
 @AWSRetry.jittered_backoff()
-def detach_network_interface(client, **params) -> bool:
+def detach_network_interface(client, attachment_id: str, force: Optional[bool] = None) -> bool:
+    params = {"AttachmentId": attachment_id}
+    if force is not None:
+        params["Force"] = force
     client.detach_network_interface(**params)
     return True
 
 
 @EC2NetworkInterfacesErrorHandler.common_error_handler("assign private ip addresses")
 @AWSRetry.jittered_backoff()
-def assign_private_ip_addresses(client, **params) -> Dict[str, Union[str, List[Dict[str, str]]]]:
+def assign_private_ip_addresses(
+    client, **params: Dict[str, Union[bool, int, str, List[str]]]
+) -> Dict[str, Union[str, List[Dict[str, str]]]]:
     return client.assign_private_ip_addresses(**params)
 
 
 @EC2NetworkInterfacesErrorHandler.common_error_handler("unassign private ip addresses")
 @AWSRetry.jittered_backoff()
-def unassign_private_ip_addresses(client, **params) -> bool:
+def unassign_private_ip_addresses(client, **params: Dict[str, Union[str, List[str]]]) -> bool:
     client.unassign_private_ip_addresses(**params)
     return True
 
 
 @EC2NetworkInterfacesErrorHandler.common_error_handler("modify network interface attribute")
 @AWSRetry.jittered_backoff()
-def modify_network_interface_attribute(client, **params) -> bool:
+def modify_network_interface_attribute(client, **params: Dict[str, Any]) -> bool:
     client.modify_network_interface_attribute(**params)
     return True
 
@@ -873,12 +955,16 @@ class EC2ImportImageErrorHandler(AWSErrorHandler):
 
 @EC2ImportImageErrorHandler.list_error_handler("describe import image tasks", [])
 @AWSRetry.jittered_backoff()
-def describe_import_image_tasks(client, **params) -> List[Dict[str, Any]]:
+def describe_import_image_tasks(
+    client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
     paginator = client.get_paginator("describe_import_image_tasks")
     return paginator.paginate(**params).build_full_result()["ImportImageTasks"]
 
 
-def describe_import_image_tasks_as_snake_dict(client, **params) -> List[Dict[str, Any]]:
+def describe_import_image_tasks_as_snake_dict(
+    client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
     result = []
     for import_image_info in describe_import_image_tasks(client, **params):
         image = copy.deepcopy(import_image_info)
@@ -899,7 +985,7 @@ def cancel_import_task(client, import_task_id: str, cancel_reason: Optional[str]
 
 @EC2ImportImageErrorHandler.common_error_handler("import image")
 @AWSRetry.jittered_backoff()
-def import_image(client, **params) -> Dict[str, Any]:
+def import_image(client, **params: Dict[str, Any]) -> Dict[str, Any]:
     return client.import_image(**params)
 
 
@@ -914,7 +1000,9 @@ class EC2SpotInstanceRequestErrorHandler(AWSErrorHandler):
 
 @EC2SpotInstanceRequestErrorHandler.list_error_handler("describe spot instance requests", [])
 @AWSRetry.jittered_backoff()
-def describe_spot_instance_requests(client, **params) -> List[Dict[str, Any]]:
+def describe_spot_instance_requests(
+    client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
     paginator = client.get_paginator("describe_spot_instance_requests")
     return paginator.paginate(**params).build_full_result()["SpotInstanceRequests"]
 
@@ -944,7 +1032,9 @@ class EC2SecurityGroupsErrorHandler(AWSErrorHandler):
 
 @EC2SecurityGroupsErrorHandler.list_error_handler("describe security groups", [])
 @AWSRetry.jittered_backoff()
-def describe_security_groups(client, **params) -> List[Dict[str, Any]]:
+def describe_security_groups(
+    client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
     paginator = client.get_paginator("describe_security_groups")
     return paginator.paginate(**params).build_full_result()["SecurityGroups"]
 
@@ -963,43 +1053,43 @@ def delete_security_group(client, group_id: Optional[str], group_name: Optional[
 
 @EC2SecurityGroupsErrorHandler.common_error_handler("create security group")
 @AWSRetry.jittered_backoff()
-def create_security_group(client, **params) -> Dict[str, Any]:
+def create_security_group(client, **params: Dict[str, Union[str, EC2TagSpecifications]]) -> Dict[str, Any]:
     return client.create_security_group(**params)
 
 
 @EC2SecurityGroupsErrorHandler.common_error_handler("update security group rule descriptions egress")
 @AWSRetry.jittered_backoff()
-def update_security_group_rule_descriptions_egress(client, **params) -> bool:
+def update_security_group_rule_descriptions_egress(client, **params: Dict[str, Any]) -> bool:
     return client.update_security_group_rule_descriptions_egress(**params)["Return"]
 
 
 @EC2SecurityGroupsErrorHandler.common_error_handler("update security group rule descriptions ingress")
 @AWSRetry.jittered_backoff()
-def update_security_group_rule_descriptions_ingress(client, **params) -> bool:
+def update_security_group_rule_descriptions_ingress(client, **params: Dict[str, Any]) -> bool:
     return client.update_security_group_rule_descriptions_ingress(**params)["Return"]
 
 
 @EC2SecurityGroupsErrorHandler.common_error_handler("revoke security group ingress")
 @AWSRetry.jittered_backoff()
-def revoke_security_group_ingress(client, **params) -> bool:
+def revoke_security_group_ingress(client, **params: Dict[str, Any]) -> bool:
     return client.revoke_security_group_ingress(**params)["Return"]
 
 
 @EC2SecurityGroupsErrorHandler.common_error_handler("revoke security group egress")
 @AWSRetry.jittered_backoff()
-def revoke_security_group_egress(client, **params) -> bool:
+def revoke_security_group_egress(client, **params: Dict[str, Any]) -> bool:
     return client.revoke_security_group_egress(**params)["Return"]
 
 
 @EC2SecurityGroupsErrorHandler.common_error_handler("authorize security group ingress")
 @AWSRetry.jittered_backoff()
-def authorize_security_group_ingress(client, **params) -> bool:
+def authorize_security_group_ingress(client, **params: Dict[str, Any]) -> bool:
     return client.authorize_security_group_ingress(**params)["Return"]
 
 
 @EC2SecurityGroupsErrorHandler.common_error_handler("authorize security group egress")
 @AWSRetry.jittered_backoff()
-def authorize_security_group_egress(client, **params) -> bool:
+def authorize_security_group_egress(client, **params: Dict[str, Any]) -> bool:
     return client.authorize_security_group_egress(**params)["Return"]
 
 
@@ -1227,7 +1317,9 @@ def normalize_ec2_vpc_dhcp_config(option_config: List[Dict[str, Any]]):
 
 
 @AWSRetry.jittered_backoff(retries=10)
-def helper_describe_import_image_tasks(client, module, **params):
+def helper_describe_import_image_tasks(
+    client, module, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
     try:
         paginator = client.get_paginator("describe_import_image_tasks")
         return paginator.paginate(**params).build_full_result()["ImportImageTasks"]

@@ -195,14 +195,13 @@ class AnsibleEc2Igw:
             if gateway_id
             else {"Filters": ansible_dict_to_boto3_filter_list({"attachment.vpc-id": vpc_id})}
         )
-        igws = describe_internet_gateways(self._connection, **params)
 
         igw = None
-        if len(igws) > 1:
-            self._module.fail_json(msg=f"EC2 returned more than one Internet Gateway for VPC {vpc_id}, aborting")
-        elif igws:
+        igws = describe_internet_gateways(self._connection, **params)
+        if igws:
+            if len(igws) > 1:
+                self._module.fail_json(msg=f"EC2 returned more than one Internet Gateway for VPC {vpc_id}, aborting")
             igw = camel_dict_to_snake_dict(igws[0])
-
         return igw
 
     def get_matching_vpc(self, vpc_id: str) -> Dict[str, Any]:
