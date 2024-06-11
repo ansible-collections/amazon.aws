@@ -208,11 +208,6 @@ layer_version:
         returned: if the layer version exists or has been created
         type: int
         sample: 1
-    compatible_runtimes:
-        description: A list of compatible runtimes.
-        returned: if it was defined for the layer version.
-        type: list
-        sample: ["python3.7"]
     license_info:
         description: The layer's software license.
         returned: if it was defined for the layer version.

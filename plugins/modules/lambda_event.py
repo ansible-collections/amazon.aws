@@ -145,7 +145,7 @@ EXAMPLES = r"""
 RETURN = r"""
 ---
 events:
-    description: dictionary returned by the API describing stream event mappings
+    description: Dictionary returned by the API describing stream event mappings
     returned: success
     type: dict
     contains:
@@ -244,7 +244,7 @@ events:
         sample: 1
       uuid:
         description: The identifier of the event source mapping.
-        type:str
+        type: str
         returned: always
         sample: "a1b2c3d4-5678-90ab-cdef-11111EXAMPLE"
 """

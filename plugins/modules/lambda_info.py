@@ -126,11 +126,11 @@ functions:
             type: str
             sample: 'My function'
         ephermal_storage:
-            description: The size of the function’s /tmp directory in MB.
+            description: The size of the function /tmp directory in MB.
             type: dict
             contains:
                 size:
-                    description: The size of the function’s /tmp directory.
+                    description: The size of the function /tmp directory.
                     type: int
                     returned: always
                     sample: 512
@@ -254,7 +254,7 @@ functions:
                     returned: always
                     sample: "arn:aws:lambda:us-west-2::runtime:xxxxx"
         snap_start:
-            description: snapshot of the initialized execution environment when you publish a function version.
+            description: Snapshot of the initialized execution environment when you publish a function version.
             type: dict
             contains:
                 apply_on:
