@@ -633,10 +633,10 @@ EXAMPLES = r"""
   amazon.aws.ec2_instance:
     name: "public-eni-instance"
     network_interfaces_ids:
-        - id: "eni-12345"
-          device_index: 0
-        - id: "eni-67890"
-          device_index: 1
+      - id: "eni-12345"
+        device_index: 0
+      - id: "eni-67890"
+        device_index: 1
     image_id: ami-123456
     tags:
       Env: "eni_on"
