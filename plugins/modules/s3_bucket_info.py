@@ -171,7 +171,7 @@ buckets:
   contains:
     bucket_accelerate_configuration:
       description: The accelerate configuration of the bucket.
-      returned: when O(bucket_facts=true) and O(bucket_accelerate_configuration=true).
+      returned: when O(bucket_facts=true) and RV(buckets.bucket_accelerate_configuration=true).
       type: dict
       sample: {
                 'Status': 'Enabled',
@@ -189,7 +189,7 @@ buckets:
       sample: "2021-01-21T12:44:10+00:00"
     public_access_block:
       description: Bucket public access block configuration.
-      returned: when O(bucket_facts=true) and O(public_access_block=true)
+      returned: when O(bucket_facts=true) and  RV(buckets.public_access_block=true)
       type: complex
       sample: {
                 "PublicAccessBlockConfiguration": {
@@ -224,7 +224,7 @@ buckets:
       sample: "filter-by-this-string"
     bucket_acl:
       description: Bucket ACL configuration.
-      returned: when O(bucket_facts=true) and O(bucket_acl=true).
+      returned: when O(bucket_facts=true) and RV(buckets.bucket_acl=true).
       type: complex
       contains:
         Grants:
@@ -274,7 +274,7 @@ buckets:
               type: str
     bucket_cors:
       description: Bucket CORS configuration.
-      returned: when O(bucket_facts=true) and O(bucket_cors=true)
+      returned: when O(bucket_facts=true) and RV(buckets.bucket_cors=true)
       type: complex
       contains:
         CORSRules:
@@ -284,7 +284,7 @@ buckets:
           sample: []
     bucket_encryption:
       description: Bucket encryption configuration.
-      returned: when O(bucket_facts=true) and O(bucket_encryption=true).
+      returned: when O(bucket_facts=true) and RV(buckets.bucket_encryption=true).
       type: complex
       sample: {
                 "ServerSideEncryptionConfiguration": {
@@ -326,7 +326,7 @@ buckets:
                   type: bool
     bucket_lifecycle_configuration:
       description: Bucket lifecycle configuration settings.
-      returned: when O(bucket_facts=true) and O(bucket_lifecycle_configuration=true).
+      returned: when O(bucket_facts=true) and RV(buckets.bucket_lifecycle_configuration=true).
       type: complex
       contains:
         Rules:
@@ -341,7 +341,7 @@ buckets:
                   ]
     bucket_location:
       description: Bucket location.
-      returned: when O(bucket_facts=true) and O(bucket_location=true).
+      returned: when O(bucket_facts=true) and RV(buckets.bucket_location=true).
       type: complex
       contains:
         LocationConstraint:
@@ -351,7 +351,7 @@ buckets:
           sample: "us-east-2"
     bucket_logging:
       description: Server access logging configuration.
-      returned: when O(bucket_facts=true) and O(bucket_logging=true).
+      returned: when O(bucket_facts=true) and RV(buckets.bucket_logging=true).
       type: complex
       contains:
         LoggingEnabled:
@@ -371,7 +371,7 @@ buckets:
               sample: ""
     bucket_notification_configuration:
       description: Bucket notification settings.
-      returned: when O(bucket_facts=true) and O(bucket_notification_configuration=true).
+      returned: when O(bucket_facts=true) and RV(buckets.bucket_notification_configuration=true).
       type: complex
       contains:
         TopicConfigurations:
@@ -381,7 +381,7 @@ buckets:
           sample: []
     bucket_ownership_controls:
       description: Preffered object ownership settings.
-      returned: when O(bucket_facts=true) and O(bucket_ownership_controls=true)
+      returned: when O(bucket_facts=true) and RV(buckets.bucket_ownership_controls=true)
       type: complex
       sample: {
                 "OwnershipControls": {
@@ -404,12 +404,12 @@ buckets:
               type: list
     bucket_policy:
       description: Bucket policy contents.
-      returned: when O(bucket_facts=true) and O(bucket_policy=true).
+      returned: when O(bucket_facts=true) and RV(buckets.bucket_policy=true).
       type: str
       sample: '{"Version":"2012-10-17","Statement":[{"Sid":"AddCannedAcl","Effect":"Allow",..}}]}'
     bucket_policy_status:
       description: Status of bucket policy.
-      returned: when O(bucket_facts=true) and O(bucket_policy_status=true).
+      returned: when O(bucket_facts=true) and RV(buckets.bucket_policy_status=true).
       type: complex
       contains:
         PolicyStatus:
@@ -424,7 +424,7 @@ buckets:
               sample: True
     bucket_replication:
       description: Replication configuration settings.
-      returned: when O(bucket_facts=true) and O(bucket_replication=true).
+      returned: when O(bucket_facts=true) and RV(buckets.bucket_replication=true).
       type: complex
       contains:
         Role:
@@ -439,7 +439,7 @@ buckets:
           sample: [{ "ID": "rule-1", "Filter": "{}" }]
     bucket_request_payment:
       description: Requester pays setting.
-      returned: when O(bucket_facts=true) and O(bucket_request_payment=true)
+      returned: when O(bucket_facts=true) and RV(buckets.bucket_request_payment=true)
       type: complex
       sample: {
                 "Payer": "BucketOwner"
@@ -451,12 +451,12 @@ buckets:
           type: str
     bucket_tagging:
       description: Bucket tags.
-      returned: when O(bucket_facts=true) and O(bucket_tagging=true).
+      returned: when O(bucket_facts=true) and RV(buckets.bucket_tagging=true).
       type: dict
       sample: { "Tag1": "Value1", "Tag2": "Value2" }
     bucket_website:
       description: Static website hosting.
-      returned: when O(bucket_facts=true) and O(bucket_website=true).
+      returned: when O(bucket_facts=true) and RV(buckets.bucket_website=true).
       type: complex
       contains:
         ErrorDocument:
@@ -489,7 +489,7 @@ buckets:
         - The versioning state of the bucket.
         - This will also specify whether MFA delete is enabled in the bucket versioning configuration.
           if only the bucket has been configured with MFA delete.
-      returned: when O(bucket_facts=true) and O(bucket_versioning=true).
+      returned: when O(bucket_facts=true) and RV(buckets.bucket_versioning=true).
       type: dict
       sample: { "Status": "Enabled" }
       version_added: 7.2.0
