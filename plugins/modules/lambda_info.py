@@ -252,7 +252,7 @@ functions:
                     description: The ARN of the runtime version you want the function to use.
                     type: str
                     returned: always
-                    sample: "arn:aws:lambda:us-west-2::runtime:xxxxx"
+                    sample: "arn:aws:lambda:us-west-2::runtime:123456789012"
         snap_start:
             description: Snapshot of the initialized execution environment when you publish a function version.
             type: dict

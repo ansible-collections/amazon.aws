@@ -181,12 +181,12 @@ events:
         description: The Amazon Resource Name (ARN) of the event source.
         type: str
         returned: always
-        sample: "arn:aws:dynamodb:us-west-2:xxxxxx:table/yyyy/stream/2024-06-06T07:03:58.956"
+        sample: "arn:aws:dynamodb:us-west-2:123456789012:table/yyyy/stream/2024-06-06T07:03:58.956"
       function_arn:
         description: The ARN of the Lambda function.
         type: str
         returned: always
-        sample: "arn:aws:lambda:us-west-2:721066863947:function:test-lambda-3a0a29d0dbb5:1"
+        sample: "arn:aws:lambda:us-west-2:123456789012:function:test-lambda-3a0a29d0dbb5:1"
       function_response_types:
         description: A list of current response type enums applied to the event source mapping.
         type: list
