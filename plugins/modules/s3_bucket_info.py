@@ -321,7 +321,8 @@ buckets:
                       description: Amazon Web Services Key Management Service (KMS) customer Amazon Web Services KMS key ID to use for the default encryption.
                       type: str
                 BucketKeyEnabled:
-                  description: Specifies whether Amazon S3 should use an S3 Bucket Key with server-side encryption using KMS (SSE-KMS) for new objects in the bucket.
+                  description:
+                    - Specifies whether Amazon S3 should use an S3 Bucket Key with server-side encryption using KMS (SSE-KMS) for new objects in the bucket.
                   type: bool
     bucket_lifecycle_configuration:
       description: Bucket lifecycle configuration settings.

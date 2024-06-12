@@ -373,6 +373,23 @@ public_access_block:
                     "RestrictPublicBuckets": true
                 }
             }
+    contains:
+        PublicAccessBlockConfiguration:
+            description: The PublicAccessBlock configuration currently in effect for this Amazon S3 bucket.
+            type: dict
+            contains:
+                BlockPublicAcls:
+                    description: Specifies whether Amazon S3 should block public access control lists (ACLs) for this bucket and objects in this bucket.
+                    type: bool
+                BlockPublicPolicy:
+                    description: Specifies whether Amazon S3 should block public bucket policies for this bucket.
+                    type: bool
+                IgnorePublicAcls:
+                    description: Specifies whether Amazon S3 should ignore public ACLs for this bucket and objects in this bucket.
+                    type: bool
+                RestrictPublicBuckets:
+                    description: Specifies whether Amazon S3 should restrict public bucket policies for this bucket.
+                    type: bool
 """
 
 import json
@@ -494,7 +511,6 @@ def handle_bucket_requester_pays(s3_client, module: AnsibleAWSModule, name: str)
                     put_bucket_request_payment(s3_client, name, payer)
                     requester_pays_status = wait_payer_is_applied(module, s3_client, name, payer, should_fail=True)
                 requester_pays_changed = True
-    import q; q(requester_pays_status, "+++=+++++++++")
     return requester_pays_changed, requester_pays
 
 
