@@ -125,6 +125,7 @@ lambda_policy_action:
     description: describes what action was taken
     returned: success
     type: str
+    sample: "added"
 """
 
 import json
