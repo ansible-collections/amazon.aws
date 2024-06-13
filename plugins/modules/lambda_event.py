@@ -144,10 +144,109 @@ EXAMPLES = r"""
 
 RETURN = r"""
 ---
-lambda_stream_events:
-    description: list of dictionaries returned by the API describing stream event mappings
+events:
+    description: Dictionary returned by the API describing stream event mappings
     returned: success
-    type: list
+    type: dict
+    contains:
+      batch_size:
+        description: The maximum number of records in each batch that Lambda pulls.
+        type: int
+        returned: always
+      bisect_batch_on_function_error:
+        description: If the function returns an error, split the batch in two and retry.
+        type: bool
+        returned: for Kinesis and DynamoDB Streams only
+        sample: false
+      destination_config:
+        description: Configuration object that specifies the destination of an event after Lambda processes it.
+        type: dict
+        returned: For Kinesis, DynamoDB Streams, Amazon MSK, and self-managed Kafka only
+        contains:
+          on_failure:
+            description: The destination configuration for failed invocations.
+            type: dict
+            contains:
+              destination:
+                description: Destination resource ARN.
+                type: str
+          on_success:
+            description: The destination configuration for failed invocations.
+            type: dict
+            contains:
+              destination:
+                description: Destination resource ARN.
+                type: str
+      event_source_arn:
+        description: The Amazon Resource Name (ARN) of the event source.
+        type: str
+        returned: always
+        sample: "arn:aws:dynamodb:us-west-2:123456789012:table/yyyy/stream/2024-06-06T07:03:58.956"
+      function_arn:
+        description: The ARN of the Lambda function.
+        type: str
+        returned: always
+        sample: "arn:aws:lambda:us-west-2:123456789012:function:test-lambda-3a0a29d0dbb5:1"
+      function_response_types:
+        description: A list of current response type enums applied to the event source mapping.
+        type: list
+        returned: For Kinesis, DynamoDB Streams, and Amazon SQS
+        sample: ["ReportBatchItemFailures"]
+      last_modified:
+        description: The date that the event source mapping was last updated or that its state changed.
+        type: str
+        returned: always
+        sample: "2024-06-06T12:34:21.990000+05:30"
+      last_processing_result:
+        description: The result of the last Lambda invocation of your function.
+        type: str
+        returned: always
+        sample: "No records processed"
+      maximum_batching_window_in_seconds:
+        description: The maximum amount of time, in seconds, that Lambda spends gathering records before invoking the function.
+        type: int
+        returned: always
+        sample: 1
+      maximum_record_age_in_seconds:
+        description: Discard records older than the specified age. The default value is infinite (-1).
+        type: int
+        returned: For Kinesis and DynamoDB Streams only
+        sample: -1
+      maximum_retry_attempts:
+        description: Discard records after the specified number of retries.
+        type: int
+        returned: For Kinesis and DynamoDB Streams only
+        sample: -1
+      parallelization_factor:
+        description: The number of batches to process concurrently from each shard.
+        type: int
+        returned: For Kinesis and DynamoDB Streams only
+        sample: 1
+      starting_position:
+        description: The position in a stream from which to start reading.
+        type: str
+        returned: For Kinesis and DynamoDB Streams only
+        sample: "LATEST"
+      state:
+        description: The state of the event source mapping.
+        type: str
+        returned: always
+        sample: "deleting"
+      state_transition_reason:
+        description: Indicates whether a user or Lambda made the last change to the event source mapping.
+        type: str
+        returned: always
+        sample: "USER_INITIATED"
+      tumbling_window_in_seconds:
+        description: The duration in seconds of a processing window for DynamoDB and Kinesis Streams event sources.
+        type: int
+        returned: For Kinesis and DynamoDB Streams only
+        sample: 1
+      uuid:
+        description: The identifier of the event source mapping.
+        type: str
+        returned: always
+        sample: "a1b2c3d4-5678-90ab-cdef-11111EXAMPLE"
 """
 
 import copy
