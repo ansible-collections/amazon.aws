@@ -164,6 +164,15 @@ extends_documentation_fragment:
 """
 
 RETURN = r"""
+nameservers:
+  description: Nameservers associated with the zone.
+  returned: when state is 'get'
+  type: list
+  sample:
+  - ns-1036.awsdns-00.org.
+  - ns-516.awsdns-00.net.
+  - ns-1504.awsdns-00.co.uk.
+  - ns-1.awsdns-00.com.
 resource_record_sets:
   description: Info specific to the resource record.
   returned: when state is 'get'
