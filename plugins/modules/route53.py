@@ -164,16 +164,7 @@ extends_documentation_fragment:
 """
 
 RETURN = r"""
-nameservers:
-  description: Nameservers associated with the zone.
-  returned: when state is 'get'
-  type: list
-  sample:
-  - ns-1036.awsdns-00.org.
-  - ns-516.awsdns-00.net.
-  - ns-1504.awsdns-00.co.uk.
-  - ns-1.awsdns-00.com.
-set:
+resource_record_sets:
   description: Info specific to the resource record.
   returned: when state is 'get'
   type: complex
@@ -203,6 +194,11 @@ set:
       description: An identifier that differentiates among multiple resource record sets that have the same combination of DNS name and type.
       returned: always
       type: str
+    name:
+      description: Domain name for the record set.
+      returned: always
+      type: str
+      sample: new.foo.com.
     record:
       description: Domain name for the record set.
       returned: always
@@ -213,6 +209,11 @@ set:
       returned: always
       type: str
       sample: us-west-2
+    resource_records:
+      description: Information about the resource records to act upon.
+      type: list
+      returned: always
+      sample: [{"value": "1.1.1.1"}]
     ttl:
       description: Resource record cache TTL.
       returned: always
@@ -806,15 +807,20 @@ def main():
     rr_sets = [camel_dict_to_snake_dict(resource_record_set)]
     formatted_aws = format_record(aws_record, zone_in, zone_id)
     formatted_record = format_record(resource_record_set, zone_in, zone_id)
-
+    if module._diff:
+        module.exit_json(
+            changed=True,
+            wait_id=wait_id,
+            diff=dict(
+                before=formatted_aws,
+                after=camel_dict_to_snake_dict(formatted_record) if command_in != "delete" else {},
+                resource_record_sets=rr_sets,
+            ),
+        )
     module.exit_json(
         changed=True,
         wait_id=wait_id,
-        diff=dict(
-            before=formatted_aws,
-            after=formatted_record if command_in != "delete" else {},
-            resource_record_sets=rr_sets,
-        ),
+        resource_record_sets=[camel_dict_to_snake_dict(formatted_record)] if command_in != "delete" else {},
     )
 
 

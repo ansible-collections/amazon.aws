@@ -1,0 +1,2 @@
+bugfixes:
+  - modify the return value of the route53 module to return diff only when ``module._diff`` is set to true.
