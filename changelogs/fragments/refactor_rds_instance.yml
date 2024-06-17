@@ -1,0 +1,5 @@
+---
+minor_changes:
+  - module_utils/rds.py - Refactor shared boto3 client functionality, add type hinting and function docstrings (https://github.com/ansible-collections/amazon.aws/pull/2119).
+  - rds_instance - Refactor shared boto3 client functionality, add type hinting and function docstrings (https://github.com/ansible-collections/amazon.aws/pull/2119).
+  - rds_instance_info - Refactor shared boto3 client functionality, add type hinting and function docstrings (https://github.com/ansible-collections/amazon.aws/pull/2119).

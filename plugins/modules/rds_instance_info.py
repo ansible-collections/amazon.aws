@@ -351,64 +351,47 @@ instances:
           sample: sg-abcd1234
 """
 
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Union
+
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.rds import AnsibleRDSError
+from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_instances
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 
-try:
-    import botocore
-except ImportError:
-    pass  # handled by AnsibleAWSModule
 
+def instance_info(
+    client, module: AnsibleAWSModule, instance_name: Optional[str], filters: Optional[Dict[str, Union[str, List]]]
+) -> List[Dict[str, Any]]:
+    """
+    Returns attributes of db instance(s), with instances optionally filtered by provided name and additional filters.
 
-@AWSRetry.jittered_backoff()
-def _describe_db_instances(conn, **params):
-    paginator = conn.get_paginator("describe_db_instances")
-    try:
-        results = paginator.paginate(**params).build_full_result()["DBInstances"]
-    except is_boto3_error_code("DBInstanceNotFound"):
-        results = []
+        Parameters:
+            client: boto3 rds client
+            module: AnsibleAWSModule
+            instance_name (str, optional): Unique identifier of db instance to describe
+            filters (dict, optional): Additional boto3-supported filters specifying db instance(s) to describe
 
-    return results
-
-
-class RdsInstanceInfoFailure(Exception):
-    def __init__(self, original_e, user_message):
-        self.original_e = original_e
-        self.user_message = user_message
-        super().__init__(self)
-
-
-def get_instance_tags(conn, arn):
-    try:
-        return boto3_tag_list_to_ansible_dict(conn.list_tags_for_resource(ResourceName=arn, aws_retry=True)["TagList"])
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        raise RdsInstanceInfoFailure(e, f"Couldn't get tags for instance {arn}")
-
-
-def instance_info(conn, instance_name, filters):
+        Returns:
+            instances (list): List of instance attribute dicts converted from CamelCase to snake_case format
+    """
     params = {}
     if instance_name:
         params["DBInstanceIdentifier"] = instance_name
     if filters:
         params["Filters"] = ansible_dict_to_boto3_filter_list(filters)
 
-    try:
-        results = _describe_db_instances(conn, **params)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        raise RdsInstanceInfoFailure(e, "Couldn't get instance information")
-
+    results = describe_db_instances(client, **params)
     for instance in results:
-        instance["Tags"] = get_instance_tags(conn, arn=instance["DBInstanceArn"])
+        instance["Tags"] = boto3_tag_list_to_ansible_dict(instance.pop("TagList"))
 
-    return {
-        "changed": False,
-        "instances": [camel_dict_to_snake_dict(instance, ignore_list=["Tags"]) for instance in results],
-    }
+    return [camel_dict_to_snake_dict(instance, ignore_list=["Tags"]) for instance in results]
 
 
 def main():
@@ -422,15 +405,15 @@ def main():
         supports_check_mode=True,
     )
 
-    conn = module.client("rds", retry_decorator=AWSRetry.jittered_backoff(retries=10))
+    client = module.client("rds")
 
     instance_name = module.params.get("db_instance_identifier")
     filters = module.params.get("filters")
 
     try:
-        module.exit_json(**instance_info(conn, instance_name, filters))
-    except RdsInstanceInfoFailure as e:
-        module.fail_json_aws(e.original_e, e.user_message)
+        module.exit_json(changed=False, instances=instance_info(client, module, instance_name, filters))
+    except AnsibleRDSError as e:
+        module.fail_json_aws(e)
 
 
 if __name__ == "__main__":
