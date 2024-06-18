@@ -813,24 +813,26 @@ def main():
         except Exception as e:
             module.fail_json(msg=f"Unhandled exception. ({to_native(e)})")
 
-    rr_sets = [camel_dict_to_snake_dict(resource_record_set)]
     formatted_aws = format_record(aws_record, zone_in, zone_id)
     formatted_record = format_record(resource_record_set, zone_in, zone_id)
-    if module._diff:
-        module.exit_json(
-            changed=True,
-            wait_id=wait_id,
-            diff=dict(
-                before=formatted_aws,
-                after=camel_dict_to_snake_dict(formatted_record) if command_in != "delete" else {},
-            ),
-            resource_record_sets=[camel_dict_to_snake_dict(formatted_record)] if command_in != "delete" else {},
-        )
-    module.exit_json(
+
+    return_result = dict(
         changed=True,
         wait_id=wait_id,
         resource_record_sets=[camel_dict_to_snake_dict(formatted_record)] if command_in != "delete" else {},
     )
+
+    if module._diff:
+        return_result.update(
+            {
+                "diff": {
+                    "before": formatted_aws,
+                    "after": camel_dict_to_snake_dict(formatted_record) if command_in != "delete" else {},
+                }
+            }
+        )
+
+    module.exit_json(**return_result)
 
 
 if __name__ == "__main__":
