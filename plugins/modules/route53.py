@@ -823,9 +823,9 @@ def main():
             diff=dict(
                 before=formatted_aws,
                 after=camel_dict_to_snake_dict(formatted_record) if command_in != "delete" else {},
-                resource_record_sets=rr_sets,
-            ),
-        )
+		),
+        	resource_record_sets=[camel_dict_to_snake_dict(formatted_record)] if command_in != "delete" else {},
+            )
     module.exit_json(
         changed=True,
         wait_id=wait_id,
