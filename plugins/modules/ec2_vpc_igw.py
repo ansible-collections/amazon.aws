@@ -136,41 +136,34 @@ vpc_id:
     vpc_id: "vpc-XXXXXXXX"
 """
 
-try:
-    import botocore
-except ImportError:
-    pass  # caught by AnsibleAWSModule
+from typing import Any
+from typing import Dict
+from typing import Optional
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleEC2Error
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import attach_internet_gateway
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import create_internet_gateway
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import delete_internet_gateway
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_internet_gateways
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_vpcs
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import detach_internet_gateway
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
-from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
-
-
-@AWSRetry.jittered_backoff(retries=10, delay=10)
-def describe_igws_with_backoff(connection, **params):
-    paginator = connection.get_paginator("describe_internet_gateways")
-    return paginator.paginate(**params).build_full_result()["InternetGateways"]
-
-
-def describe_vpcs_with_backoff(connection, **params):
-    paginator = connection.get_paginator("describe_vpcs")
-    return paginator.paginate(**params).build_full_result()["Vpcs"]
+from ansible_collections.amazon.aws.plugins.module_utils.waiters import wait_for_resource_state
 
 
 class AnsibleEc2Igw:
-    def __init__(self, module, results):
+    def __init__(self, module: AnsibleAWSModule) -> None:
         self._module = module
-        self._results = results
-        self._connection = self._module.client("ec2", retry_decorator=AWSRetry.jittered_backoff())
+        self._results = {"changed": False}
+        self._connection = self._module.client("ec2")
         self._check_mode = self._module.check_mode
 
-    def process(self):
+    def process(self) -> None:
         internet_gateway_id = self._module.params.get("internet_gateway_id")
         vpc_id = self._module.params.get("vpc_id")
         state = self._module.params.get("state", "present")
@@ -183,8 +176,9 @@ class AnsibleEc2Igw:
             self.ensure_igw_present(internet_gateway_id, vpc_id, tags, purge_tags, force_attach, detach_vpc)
         elif state == "absent":
             self.ensure_igw_absent(internet_gateway_id, vpc_id)
+        self._module.exit_json(**self._results)
 
-    def get_matching_igw(self, vpc_id, gateway_id=None):
+    def get_matching_igw(self, vpc_id: str, gateway_id: Optional[str] = None) -> Optional[Dict[str, Any]]:
         """
         Returns the internet gateway found.
             Parameters:
@@ -193,26 +187,24 @@ class AnsibleEc2Igw:
             Returns:
                 igw (dict): dict of igw found, None if none found
         """
-        try:
-            # If we know the gateway_id, use it to avoid bugs with using filters
-            # See https://github.com/ansible-collections/amazon.aws/pull/766
-            if not gateway_id:
-                filters = ansible_dict_to_boto3_filter_list({"attachment.vpc-id": vpc_id})
-                igws = describe_igws_with_backoff(self._connection, Filters=filters)
-            else:
-                igws = describe_igws_with_backoff(self._connection, InternetGatewayIds=[gateway_id])
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            self._module.fail_json_aws(e)
+
+        # If we know the gateway_id, use it to avoid bugs with using filters
+        # See https://github.com/ansible-collections/amazon.aws/pull/766
+        params = (
+            {"InternetGatewayIds": [gateway_id]}
+            if gateway_id
+            else {"Filters": ansible_dict_to_boto3_filter_list({"attachment.vpc-id": vpc_id})}
+        )
 
         igw = None
-        if len(igws) > 1:
-            self._module.fail_json(msg=f"EC2 returned more than one Internet Gateway for VPC {vpc_id}, aborting")
-        elif igws:
+        igws = describe_internet_gateways(self._connection, **params)
+        if igws:
+            if len(igws) > 1:
+                self._module.fail_json(msg=f"EC2 returned more than one Internet Gateway for VPC {vpc_id}, aborting")
             igw = camel_dict_to_snake_dict(igws[0])
-
         return igw
 
-    def get_matching_vpc(self, vpc_id):
+    def get_matching_vpc(self, vpc_id: str) -> Dict[str, Any]:
         """
         Returns the virtual private cloud found.
             Parameters:
@@ -220,21 +212,13 @@ class AnsibleEc2Igw:
             Returns:
                 vpc (dict): dict of vpc found, None if none found
         """
-        try:
-            vpcs = describe_vpcs_with_backoff(self._connection, VpcIds=[vpc_id])
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            # self._module.fail_json(msg=f"{str(e)}")
-            if "InvalidVpcID.NotFound" in str(e):
-                self._module.fail_json(msg=f"VPC with Id {vpc_id} not found, aborting")
-            self._module.fail_json_aws(e)
+        vpcs = describe_vpcs(self._connection, VpcIds=[vpc_id])
+        if not vpcs:
+            self._module.fail_json(msg=f"VPC with Id {vpc_id} not found, aborting")
 
-        vpc = None
         if len(vpcs) > 1:
             self._module.fail_json(msg=f"EC2 returned more than one VPC for {vpc_id}, aborting")
-        elif vpcs:
-            vpc = camel_dict_to_snake_dict(vpcs[0])
-
-        return vpc
+        return camel_dict_to_snake_dict(vpcs[0])
 
     @staticmethod
     def get_igw_info(igw, vpc_id):
@@ -244,25 +228,11 @@ class AnsibleEc2Igw:
             "vpc_id": vpc_id,
         }
 
-    def detach_vpc(self, igw_id, vpc_id):
-        try:
-            self._connection.detach_internet_gateway(aws_retry=True, InternetGatewayId=igw_id, VpcId=vpc_id)
-
-            self._results["changed"] = True
-        except botocore.exceptions.WaiterError as e:
-            self._module.fail_json_aws(e, msg="Unable to detach VPC.")
-
     def attach_vpc(self, igw_id, vpc_id):
-        try:
-            self._connection.attach_internet_gateway(aws_retry=True, InternetGatewayId=igw_id, VpcId=vpc_id)
-
-            # Ensure the gateway is attached before proceeding
-            waiter = get_waiter(self._connection, "internet_gateway_attached")
-            waiter.wait(InternetGatewayIds=[igw_id])
-
-            self._results["changed"] = True
-        except botocore.exceptions.WaiterError as e:
-            self._module.fail_json_aws(e, msg="Failed to attach VPC.")
+        self._results["changed"] |= attach_internet_gateway(self._connection, internet_gateway_id=igw_id, vpc_id=vpc_id)
+        wait_for_resource_state(
+            self._connection, self._module, "internet_gateway_attached", InternetGatewayIds=[igw_id]
+        )
 
     def ensure_igw_absent(self, igw_id, vpc_id):
         igw = self.get_matching_igw(vpc_id, gateway_id=igw_id)
@@ -281,15 +251,12 @@ class AnsibleEc2Igw:
             self._results["changed"] = True
             return self._results
 
-        try:
-            self._results["changed"] = True
+        if igw_vpc_id:
+            self._results["changed"] |= detach_internet_gateway(
+                self._connection, internet_gateway_id=igw["internet_gateway_id"], vpc_id=igw_vpc_id
+            )
 
-            if igw_vpc_id:
-                self.detach_vpc(igw["internet_gateway_id"], igw_vpc_id)
-
-            self._connection.delete_internet_gateway(aws_retry=True, InternetGatewayId=igw["internet_gateway_id"])
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            self._module.fail_json_aws(e, msg="Unable to delete Internet Gateway")
+        self._results["changed"] |= delete_internet_gateway(self._connection, igw["internet_gateway_id"])
 
         return self._results
 
@@ -310,25 +277,20 @@ class AnsibleEc2Igw:
             if vpc_id:
                 self.get_matching_vpc(vpc_id)
 
-            try:
-                create_params = {}
-                if tags:
-                    create_params["TagSpecifications"] = boto3_tag_specifications(tags, types="internet-gateway")
-                response = self._connection.create_internet_gateway(aws_retry=True, **create_params)
+            response = create_internet_gateway(self._connection, tags=tags)
+            self._results["changed"] = True
+            # Ensure the gateway exists before trying to attach it or add tags
+            wait_for_resource_state(
+                self._connection,
+                self._module,
+                "internet_gateway_exists",
+                InternetGatewayIds=[response["InternetGatewayId"]],
+            )
 
-                # Ensure the gateway exists before trying to attach it or add tags
-                waiter = get_waiter(self._connection, "internet_gateway_exists")
-                waiter.wait(InternetGatewayIds=[response["InternetGateway"]["InternetGatewayId"]])
-                self._results["changed"] = True
+            igw = camel_dict_to_snake_dict(response)
 
-                igw = camel_dict_to_snake_dict(response["InternetGateway"])
-
-                if vpc_id:
-                    self.attach_vpc(igw["internet_gateway_id"], vpc_id)
-            except botocore.exceptions.WaiterError as e:
-                self._module.fail_json_aws(e, msg="No Internet Gateway exists.")
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                self._module.fail_json_aws(e, msg="Unable to create Internet Gateway")
+            if vpc_id:
+                self.attach_vpc(igw["internet_gateway_id"], vpc_id)
         else:
             igw_vpc_id = None
 
@@ -341,7 +303,9 @@ class AnsibleEc2Igw:
                         self._results["gateway_id"] = igw["internet_gateway_id"]
                         return self._results
 
-                    self.detach_vpc(igw["internet_gateway_id"], igw_vpc_id)
+                    self._results["changed"] |= detach_internet_gateway(
+                        self._connection, internet_gateway_id=igw["internet_gateway_id"], vpc_id=igw_vpc_id
+                    )
 
                 elif igw_vpc_id != vpc_id:
                     if self._check_mode:
@@ -352,7 +316,9 @@ class AnsibleEc2Igw:
                     if force_attach:
                         self.get_matching_vpc(vpc_id)
 
-                        self.detach_vpc(igw["internet_gateway_id"], igw_vpc_id)
+                        self._results["changed"] |= detach_internet_gateway(
+                            self._connection, internet_gateway_id=igw["internet_gateway_id"], vpc_id=igw_vpc_id
+                        )
                         self.attach_vpc(igw["internet_gateway_id"], vpc_id)
                     else:
                         self._module.fail_json(msg="VPC already attached, but does not match requested VPC.")
@@ -385,7 +351,7 @@ class AnsibleEc2Igw:
         return self._results
 
 
-def main():
+def main() -> None:
     argument_spec = dict(
         internet_gateway_id=dict(),
         vpc_id=dict(),
@@ -411,11 +377,11 @@ def main():
         mutually_exclusive=mutually_exclusive,
     )
 
-    results = dict(changed=False)
-    igw_manager = AnsibleEc2Igw(module=module, results=results)
-    igw_manager.process()
-
-    module.exit_json(**results)
+    igw_manager = AnsibleEc2Igw(module=module)
+    try:
+        igw_manager.process()
+    except AnsibleEC2Error as e:
+        module.fail_json_aws_error(e)
 
 
 if __name__ == "__main__":

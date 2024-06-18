@@ -409,21 +409,23 @@ cancelled_spot_request:
 # import datetime
 # import time
 
-try:
-    import botocore
-except ImportError:
-    pass  # Handled by AnsibleAWSModule
+from typing import Any
+from typing import Dict
+
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleEC2Error
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import cancel_spot_instance_requests
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_spot_instance_requests
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import request_spot_instances
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import terminate_instances
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 
 
-def build_launch_specification(launch_spec):
+def build_launch_specification(launch_spec: Dict[str, Any]) -> Dict[str, Any]:
     """
     Remove keys that have a value of None from Launch Specification
     Descend into these subkeys:
@@ -455,8 +457,8 @@ def build_launch_specification(launch_spec):
     return snake_dict_to_camel_dict(assigned_keys, capitalize_first=True)
 
 
-def request_spot_instances(module, connection):
-    # connection.request_spot_instances() always creates a new spot request
+def _request(module: AnsibleAWSModule, connection) -> None:
+    # request_spot_instances() always creates a new spot request
     changed = True
 
     if module.check_mode:
@@ -501,10 +503,8 @@ def request_spot_instances(module, connection):
     # params['ValidUntil'] = module.params.get('valid_until')
 
     try:
-        request_spot_instance_response = (connection.request_spot_instances(aws_retry=True, **params))[
-            "SpotInstanceRequests"
-        ][0]
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        request_spot_instance_response = request_spot_instances(connection, **params)[0]
+    except AnsibleEC2Error as e:
         module.fail_json_aws(e, msg="Error while creating the spot instance request")
 
     request_spot_instance_response["Tags"] = boto3_tag_list_to_ansible_dict(
@@ -514,55 +514,41 @@ def request_spot_instances(module, connection):
     module.exit_json(spot_request=spot_request, changed=changed)
 
 
-def cancel_spot_instance_requests(module, connection):
+def _cancel(module: AnsibleAWSModule, connection) -> None:
     changed = False
     spot_instance_request_ids = module.params.get("spot_instance_request_ids")
-    requests_exist = dict()
     try:
-        paginator = connection.get_paginator("describe_spot_instance_requests").paginate(
-            SpotInstanceRequestIds=spot_instance_request_ids, Filters=[{"Name": "state", "Values": ["open", "active"]}]
+        requests_exist = describe_spot_instance_requests(
+            connection,
+            SpotInstanceRequestIds=spot_instance_request_ids,
+            Filters=[{"Name": "state", "Values": ["open", "active"]}],
         )
-        jittered_retry = AWSRetry.jittered_backoff()
-        requests_exist = jittered_retry(paginator.build_full_result)()
-    except is_boto3_error_code("InvalidSpotInstanceRequestID.NotFound"):
-        requests_exist["SpotInstanceRequests"] = []
-    except (
-        botocore.exceptions.BotoCoreError,
-        botocore.exceptions.ClientError,
-    ) as e:  # pylint: disable=duplicate-except
+    except AnsibleEC2Error as e:
         module.fail_json_aws(e, msg="Failure when describing spot requests")
 
-    try:
-        if len(requests_exist["SpotInstanceRequests"]) > 0:
-            changed = True
-            if module.check_mode:
-                module.exit_json(changed=changed, msg=f"Would have cancelled Spot request {spot_instance_request_ids}")
+    if len(requests_exist) > 0:
+        changed = True
+        if module.check_mode:
+            module.exit_json(changed=changed, msg=f"Would have cancelled Spot request {spot_instance_request_ids}")
 
-            connection.cancel_spot_instance_requests(
-                aws_retry=True, SpotInstanceRequestIds=module.params.get("spot_instance_request_ids")
-            )
+        try:
+            cancel_spot_instance_requests(connection, spot_instance_request_ids)
+        except AnsibleEC2Error as e:
+            module.fail_json_aws(e, msg="Error while cancelling the spot instance request")
 
-            if module.params.get("terminate_instances") is True:
-                associated_instances = [request["InstanceId"] for request in requests_exist["SpotInstanceRequests"]]
-                terminate_associated_instances(connection, module, associated_instances)
+        if module.params.get("terminate_instances") is True:
+            instance_ids = [request["InstanceId"] for request in requests_exist]
+            try:
+                terminate_instances(connection, instance_ids=instance_ids)
+            except AnsibleEC2Error as e:
+                module.fail_json_aws(e, msg=f"Failed to terminate instances with Ids={instance_ids}")
 
-            module.exit_json(
-                changed=changed, msg=f"Cancelled Spot request {module.params.get('spot_instance_request_ids')}"
-            )
-        else:
-            module.exit_json(changed=changed, msg="Spot request not found or already cancelled")
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Error while cancelling the spot instance request")
-
-
-def terminate_associated_instances(connection, module, instance_ids):
-    try:
-        connection.terminate_instances(aws_retry=True, InstanceIds=instance_ids)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json(e, msg="Unable to terminate instances")
+        module.exit_json(changed=changed, msg=f"Cancelled Spot request {spot_instance_request_ids}")
+    else:
+        module.exit_json(changed=changed, msg="Spot request not found or already cancelled")
 
 
-def main():
+def main() -> None:
     network_interface_options = dict(
         associate_public_ip_address=dict(type="bool"),
         delete_on_termination=dict(type="bool"),
@@ -639,13 +625,13 @@ def main():
     if module.params.get("terminate_instances") and state != "absent":
         module.fail_json("terminate_instances can only be used when state is absent.")
 
-    connection = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff())
+    connection = module.client("ec2")
 
     if state == "present":
-        request_spot_instances(module, connection)
+        _request(module, connection)
 
     if state == "absent":
-        cancel_spot_instance_requests(module, connection)
+        _cancel(module, connection)
 
 
 if __name__ == "__main__":

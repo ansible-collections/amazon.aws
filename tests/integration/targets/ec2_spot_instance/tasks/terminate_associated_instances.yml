@@ -41,6 +41,19 @@
           - "{{ create_result.spot_request.spot_instance_request_id }}"
         state: absent
 
+    # Cancel spot instance request
+    - name: Spot Request Termination (again check mode)
+      amazon.aws.ec2_spot_instance:
+        spot_instance_request_ids:
+          - "{{ create_result.spot_request.spot_instance_request_id }}"
+        state: absent
+      check_mode: true
+      register: idem_check
+    
+    - ansible.builtin.assert:
+        that:
+          - idem_check is not changed
+
     # Verify that instance is not terminated and still running
     - name: Check state of instance - AFTER request cancellation
       amazon.aws.ec2_instance_info:
