@@ -64,7 +64,7 @@
 
     # ============================================================
 
-    - name: Run tests for termianting associated instances
+    - name: Run tests for terminating associated instances
       ansible.builtin.import_tasks: terminate_associated_instances.yml
     - name: Create simple spot instance request
       amazon.aws.ec2_spot_instance:

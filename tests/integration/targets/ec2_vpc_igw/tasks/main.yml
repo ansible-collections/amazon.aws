@@ -819,19 +819,16 @@
       amazon.aws.ec2_vpc_igw:
         state: absent
         vpc_id: "{{ vpc_result.vpc.id }}"
-      ignore_errors: true
 
     - name: Tidy up IGW on second VPC
       amazon.aws.ec2_vpc_igw:
         state: absent
         vpc_id: "{{ vpc_2_result.vpc.id }}"
-      ignore_errors: true
 
     - name: Tidy up detached IGW
       amazon.aws.ec2_vpc_igw:
         state: absent
         internet_gateway_id: "{{ detached_igw_result.gateway_id }}"
-      ignore_errors: true
 
     - name: Tidy up VPC
       amazon.aws.ec2_vpc_net:

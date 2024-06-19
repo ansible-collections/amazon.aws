@@ -4,12 +4,15 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 import copy
+from typing import Optional
 
 try:
+    import botocore.exceptions as exception_waiter
     import botocore.waiter as core_waiter
 except ImportError:
     pass  # caught by HAS_BOTO3
 
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import RetryingBotoClientWrapper
 
 ec2_data = {
@@ -292,6 +295,33 @@ ec2_data = {
             "acceptors": [
                 {"state": "success", "matcher": "pathAll", "expected": "available", "argument": "NatGateways[].State"},
                 {"state": "retry", "matcher": "error", "expected": "NatGatewayNotFound"},
+            ],
+        },
+        "VolumeAvailable": {
+            "delay": 15,
+            "maxAttempts": 40,
+            "operation": "DescribeVolumes",
+            "acceptors": [
+                {"state": "success", "matcher": "pathAll", "expected": "available", "argument": "Volumes[].State"},
+                {"state": "failure", "matcher": "pathAny", "argument": "Volumes[].State", "expected": "deleted"},
+            ],
+        },
+        "VolumeDeleted": {
+            "delay": 15,
+            "maxAttempts": 40,
+            "operation": "DescribeVolumes",
+            "acceptors": [
+                {"state": "success", "matcher": "pathAll", "expected": "deleted", "argument": "Volumes[].State"},
+                {"state": "success", "matcher": "error", "expected": "InvalidVolume.NotFound"},
+            ],
+        },
+        "VolumeInUse": {
+            "delay": 15,
+            "maxAttempts": 40,
+            "operation": "DescribeVolumes",
+            "acceptors": [
+                {"state": "success", "matcher": "pathAll", "expected": "in-use", "argument": "Volumes[].State"},
+                {"state": "failure", "matcher": "pathAny", "argument": "Volumes[].State", "expected": "deleted"},
             ],
         },
     },
@@ -844,6 +874,21 @@ waiters_by_name = {
         ec2_model("NatGatewayAvailable"),
         core_waiter.NormalizedOperationMethod(ec2.describe_nat_gateways),
     ),
+    ("EC2", "volume_available"): lambda ec2: core_waiter.Waiter(
+        "volume_available",
+        ec2_model("VolumeAvailable"),
+        core_waiter.NormalizedOperationMethod(ec2.describe_volumes),
+    ),
+    ("EC2", "volume_deleted"): lambda ec2: core_waiter.Waiter(
+        "volume_deleted",
+        ec2_model("VolumeDeleted"),
+        core_waiter.NormalizedOperationMethod(ec2.describe_volumes),
+    ),
+    ("EC2", "volume_in_use"): lambda ec2: core_waiter.Waiter(
+        "volume_in_use",
+        ec2_model("VolumeInUse"),
+        core_waiter.NormalizedOperationMethod(ec2.describe_volumes),
+    ),
     ("WAF", "change_token_in_sync"): lambda waf: core_waiter.Waiter(
         "change_token_in_sync",
         waf_model("ChangeTokenInSync"),
@@ -974,3 +1019,26 @@ def get_waiter(client, waiter_name):
         raise NotImplementedError(
             f"Waiter {waiter_name} could not be found for client {type(client)}. Available waiters: {available_waiters}"
         )
+
+
+def wait_for_resource_state(
+    client,
+    module: AnsibleAWSModule,
+    waiter_name: str,
+    delay: Optional[int] = None,
+    max_attempts: Optional[int] = None,
+    **params,
+) -> None:
+    waiter_params = copy.deepcopy(params)
+    if delay is not None or max_attempts is not None:
+        waiter_params["WaiterConfig"] = {}
+        if delay is not None:
+            waiter_params["WaiterConfig"].update({"Delay": delay})
+        if max_attempts is not None:
+            waiter_params["WaiterConfig"].update({"MaxAttempts": max_attempts})
+    try:
+        get_waiter(client=client, waiter_name=waiter_name).wait(**waiter_params)
+    except exception_waiter.WaiterError as e:
+        module.fail_json_aws(e, f"Timeout waiting for '{waiter_name}'")
+    except (exception_waiter.ClientError, exception_waiter.BotoCoreError) as e:
+        module.fail_json_aws(e, f"An exception happened while trying to wait for '{waiter_name}'")

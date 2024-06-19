@@ -37,7 +37,13 @@ lived here.  Most of these functions were not specific to EC2, they ended
 up in this module because "that's where the AWS code was" (originally).
 """
 
+import copy
 import re
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Union
 
 import ansible.module_utils.common.warnings as ansible_warnings
 from ansible.module_utils.ansible_release import __version__
@@ -60,7 +66,9 @@ from .botocore import boto3_inventory_conn  # pylint: disable=unused-import
 from .botocore import boto_exception  # pylint: disable=unused-import
 from .botocore import get_aws_connection_info  # pylint: disable=unused-import
 from .botocore import get_aws_region  # pylint: disable=unused-import
+from .botocore import is_boto3_error_code
 from .botocore import paginated_query_with_retries
+from .errors import AWSErrorHandler
 
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.exceptions
 from .exceptions import AnsibleAWSError  # pylint: disable=unused-import
@@ -80,6 +88,7 @@ from .retries import AWSRetry  # pylint: disable=unused-import
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.tagging
 from .tagging import ansible_dict_to_boto3_tag_list  # pylint: disable=unused-import
 from .tagging import boto3_tag_list_to_ansible_dict  # pylint: disable=unused-import
+from .tagging import boto3_tag_specifications
 from .tagging import compare_aws_tags  # pylint: disable=unused-import
 
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.transformation
@@ -90,6 +99,998 @@ try:
     import botocore
 except ImportError:
     pass  # Handled by HAS_BOTO3
+
+
+class AnsibleEC2Error(AnsibleAWSError):
+    pass
+
+
+EC2TagSpecifications = Dict[str, Union[str, List[Dict[str, str]]]]
+
+
+@AWSRetry.jittered_backoff()
+def describe_availability_zones(
+    client, **params: Dict[str, Union[List[str], bool, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Union[str, List[Dict[str, str]]]]]:
+    # The paginator does not exist for `describe_availability_zones()`
+    return client.describe_availability_zones(**params)["AvailabilityZones"]
+
+
+@AWSRetry.jittered_backoff()
+def describe_regions(
+    client, **params: Dict[str, Union[List[str], bool, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, str]]:
+    # The paginator does not exist for `describe_regions()`
+    return client.describe_regions(**params)["Regions"]
+
+
+# EC2 VPC Subnets
+class EC2VpcSubnetErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleEC2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code("InvalidSubnetID.NotFound")
+
+
+@EC2VpcSubnetErrorHandler.deletion_error_handler("delete subnet")
+@AWSRetry.jittered_backoff()
+def delete_subnet(client, subnet_id: str) -> bool:
+    client.delete_subnet(SubnetId=subnet_id)
+    return True
+
+
+@EC2VpcSubnetErrorHandler.list_error_handler("describe subnets", [])
+@AWSRetry.jittered_backoff()
+def describe_subnets(
+    client, **params: Dict[str, Union[List[str], bool, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
+    paginator = client.get_paginator("describe_subnets")
+    return paginator.paginate(**params).build_full_result()["Subnets"]
+
+
+@EC2VpcSubnetErrorHandler.common_error_handler("create subnet")
+@AWSRetry.jittered_backoff()
+def create_subnet(client, **params: Dict[str, Union[str, bool, int, EC2TagSpecifications]]) -> Dict[str, Any]:
+    return client.create_subnet(**params)["Subnet"]
+
+
+@EC2VpcSubnetErrorHandler.common_error_handler("modify subnet")
+@AWSRetry.jittered_backoff()
+def modify_subnet_attribute(client, subnet_id: str, **params: Dict[str, Union[str, int, Dict[str, bool]]]) -> bool:
+    client.modify_subnet_attribute(SubnetId=subnet_id, **params)
+    return True
+
+
+@EC2VpcSubnetErrorHandler.common_error_handler("disassociate subnet cidr block")
+@AWSRetry.jittered_backoff()
+def disassociate_subnet_cidr_block(client, association_id: str) -> Dict[str, Union[str, Dict[str, str]]]:
+    return client.disassociate_subnet_cidr_block(AssociationId=association_id)["Ipv6CidrBlockAssociation"]
+
+
+@EC2VpcSubnetErrorHandler.common_error_handler("associate subnet cidr block")
+@AWSRetry.jittered_backoff()
+def associate_subnet_cidr_block(
+    client, subnet_id: str, **params: Dict[str, Union[str, int]]
+) -> Dict[str, Union[str, Dict[str, str]]]:
+    return client.associate_subnet_cidr_block(SubnetId=subnet_id, **params)["Ipv6CidrBlockAssociation"]
+
+
+# EC2 VPC Route table
+class EC2VpcRouteTableErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleEC2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code("InvalidRouteTableID.NotFound")
+
+
+@EC2VpcRouteTableErrorHandler.list_error_handler("describe route tables", [])
+@AWSRetry.jittered_backoff()
+def describe_route_tables(
+    client, **params: Dict[str, Union[List[str], bool, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
+    paginator = client.get_paginator("describe_route_tables")
+    return paginator.paginate(**params).build_full_result()["RouteTables"]
+
+
+@EC2VpcRouteTableErrorHandler.common_error_handler("disassociate route table")
+@AWSRetry.jittered_backoff()
+def disassociate_route_table(client, association_id: str) -> bool:
+    client.disassociate_route_table(AssociationId=association_id)
+    return True
+
+
+@EC2VpcRouteTableErrorHandler.common_error_handler("associate route table")
+@AWSRetry.jittered_backoff()
+def associate_route_table(
+    client, route_table_id: str, **params: Dict[str, str]
+) -> Dict[str, Union[str, Dict[str, str]]]:
+    return client.associate_route_table(RouteTableId=route_table_id, **params)
+
+
+@EC2VpcRouteTableErrorHandler.common_error_handler("enable vgw route propagation")
+@AWSRetry.jittered_backoff()
+def enable_vgw_route_propagation(client, gateway_id: str, route_table_id: str) -> bool:
+    client.enable_vgw_route_propagation(RouteTableId=route_table_id, GatewayId=gateway_id)
+    return True
+
+
+@EC2VpcRouteTableErrorHandler.deletion_error_handler("delete route table")
+@AWSRetry.jittered_backoff()
+def delete_route_table(client, route_table_id: str) -> bool:
+    client.delete_route_table(RouteTableId=route_table_id)
+    return True
+
+
+@EC2VpcRouteTableErrorHandler.common_error_handler("create route table")
+@AWSRetry.jittered_backoff()
+def create_route_table(client, vpc_id: str, tags: Optional[Dict[str, str]]) -> Dict[str, Any]:
+    params = {"VpcId": vpc_id}
+    if tags:
+        params["TagSpecifications"] = boto3_tag_specifications(tags, types="route-table")
+    return client.create_route_table(**params)["RouteTable"]
+
+
+# EC2 VPC Route table Route
+class EC2VpcRouteTableRouteErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleEC2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code("InvalidRoute.NotFound")
+
+
+@EC2VpcRouteTableRouteErrorHandler.deletion_error_handler("delete route")
+@AWSRetry.jittered_backoff()
+def delete_route(client, route_table_id: str, **params: Dict[str, str]) -> bool:
+    client.delete_route(RouteTableId=route_table_id, **params)
+    return True
+
+
+@EC2VpcRouteTableRouteErrorHandler.common_error_handler("replace route")
+@AWSRetry.jittered_backoff()
+def replace_route(client, route_table_id: str, **params: Dict[str, Union[str, bool]]) -> bool:
+    client.replace_route(RouteTableId=route_table_id, **params)
+    return True
+
+
+@EC2VpcRouteTableRouteErrorHandler.common_error_handler("create route")
+@AWSRetry.jittered_backoff()
+def create_route(client, route_table_id: str, **params: Dict[str, str]) -> bool:
+    return client.create_route(RouteTableId=route_table_id, **params)["Return"]
+
+
+# EC2 VPC
+class EC2VpcErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleEC2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code("InvalidVpcID.NotFound")
+
+
+@EC2VpcErrorHandler.list_error_handler("describe vpcs", [])
+@AWSRetry.jittered_backoff()
+def describe_vpcs(
+    client, **params: Dict[str, Union[List[str], bool, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
+    paginator = client.get_paginator("describe_vpcs")
+    return paginator.paginate(**params).build_full_result()["Vpcs"]
+
+
+@EC2VpcErrorHandler.deletion_error_handler("delete vpc")
+@AWSRetry.jittered_backoff()
+def delete_vpc(client, vpc_id: str) -> bool:
+    client.delete_vpc(VpcId=vpc_id)
+    return True
+
+
+@EC2VpcErrorHandler.common_error_handler("describe vpc attribute")
+@AWSRetry.jittered_backoff()
+def describe_vpc_attribute(client, vpc_id: str, attribute: str) -> Dict[str, Any]:
+    # The paginator does not exist for `describe_vpc_attribute`
+    return client.describe_vpc_attribute(VpcId=vpc_id, Attribute=attribute)
+
+
+@EC2VpcErrorHandler.common_error_handler("modify vpc attribute")
+@AWSRetry.jittered_backoff()
+def modify_vpc_attribute(client, vpc_id: str, **params: Dict[str, Union[str, Dict[str, bool]]]) -> bool:
+    client.modify_vpc_attribute(VpcId=vpc_id, **params)
+    return True
+
+
+@EC2VpcErrorHandler.common_error_handler("create vpc")
+@AWSRetry.jittered_backoff()
+def create_vpc(client, **params: Dict[str, Union[str, bool, int, EC2TagSpecifications]]) -> Dict[str, Any]:
+    return client.create_vpc(**params)["Vpc"]
+
+
+@EC2VpcErrorHandler.common_error_handler("associate vpc cidr block")
+@AWSRetry.jittered_backoff()
+def associate_vpc_cidr_block(client, vpc_id: str, **params: Dict[str, Union[str, bool, int]]) -> Dict[str, Any]:
+    return client.associate_vpc_cidr_block(VpcId=vpc_id, **params)
+
+
+@EC2VpcErrorHandler.common_error_handler("disassociate vpc cidr block")
+@AWSRetry.jittered_backoff()
+def disassociate_vpc_cidr_block(client, association_id: str) -> Dict[str, Any]:
+    return client.disassociate_vpc_cidr_block(AssociationId=association_id)
+
+
+# EC2 Internet Gateway
+class EC2InternetGatewayErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleEC2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code("InvalidInternetGatewayID.NotFound")
+
+
+@EC2InternetGatewayErrorHandler.list_error_handler("describe internet gateways")
+@AWSRetry.jittered_backoff()
+def describe_internet_gateways(
+    client, **params: Dict[str, Union[List[str], bool, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
+    paginator = client.get_paginator("describe_internet_gateways")
+    return paginator.paginate(**params).build_full_result()["InternetGateways"]
+
+
+@EC2InternetGatewayErrorHandler.common_error_handler("create internet gateway")
+@AWSRetry.jittered_backoff()
+def create_internet_gateway(client, tags: Optional[List[Dict[str, str]]]) -> Dict[str, Any]:
+    params = {}
+    if tags:
+        params["TagSpecifications"] = boto3_tag_specifications(tags, types="internet-gateway")
+    return client.create_internet_gateway(**params)["InternetGateway"]
+
+
+@EC2InternetGatewayErrorHandler.common_error_handler("detach internet gateway")
+@AWSRetry.jittered_backoff()
+def detach_internet_gateway(client, internet_gateway_id: str, vpc_id: str) -> bool:
+    client.detach_internet_gateway(InternetGatewayId=internet_gateway_id, VpcId=vpc_id)
+    return True
+
+
+@EC2InternetGatewayErrorHandler.common_error_handler("attach internet gateway")
+@AWSRetry.jittered_backoff()
+def attach_internet_gateway(client, internet_gateway_id: str, vpc_id: str) -> bool:
+    client.attach_internet_gateway(InternetGatewayId=internet_gateway_id, VpcId=vpc_id)
+    return True
+
+
+@EC2InternetGatewayErrorHandler.deletion_error_handler("delete internet gateway")
+@AWSRetry.jittered_backoff()
+def delete_internet_gateway(client, internet_gateway_id: str) -> bool:
+    client.delete_internet_gateway(InternetGatewayId=internet_gateway_id)
+    return True
+
+
+# EC2 NAT Gateway
+class EC2NatGatewayErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleEC2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code("InvalidNatGatewayID.NotFound")
+
+
+@EC2NatGatewayErrorHandler.list_error_handler("describe nat gateways", [])
+@AWSRetry.jittered_backoff()
+def describe_nat_gateways(
+    client, **params: Dict[str, Union[List[str], bool, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
+    paginator = client.get_paginator("describe_nat_gateways")
+    return paginator.paginate(**params).build_full_result()["NatGateways"]
+
+
+@EC2NatGatewayErrorHandler.deletion_error_handler("delete nat gateway")
+@AWSRetry.jittered_backoff()
+def delete_nat_gateway(client, nat_gateway_id: str) -> bool:
+    client.delete_nat_gateway(NatGatewayId=nat_gateway_id)
+    return True
+
+
+@EC2NatGatewayErrorHandler.common_error_handler("create nat gateway")
+@AWSRetry.jittered_backoff()
+def create_nat_gateway(
+    client, **params: Dict[str, Union[str, bool, int, EC2TagSpecifications, List[str]]]
+) -> Dict[str, Any]:
+    return client.create_nat_gateway(**params)["NatGateway"]
+
+
+# EC2 Elastic IP
+class EC2ElasticIPErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleEC2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code("InvalidAddress.NotFound")
+
+
+@EC2ElasticIPErrorHandler.list_error_handler("describe addresses", [])
+@AWSRetry.jittered_backoff()
+def describe_addresses(
+    client, **params: Dict[str, Union[List[str], List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Union[str, List[Dict[str, str]]]]]:
+    # The paginator does not exist for 'describe_addresses()'
+    return client.describe_addresses(**params)["Addresses"]
+
+
+@EC2ElasticIPErrorHandler.common_error_handler("release address")
+@AWSRetry.jittered_backoff()
+def release_address(client, allocation_id: str, network_border_group: Optional[str] = None) -> bool:
+    params = {"AllocationId": allocation_id}
+    if network_border_group:
+        params["NetworkBorderGroup"] = network_border_group
+    client.release_address(**params)
+    return True
+
+
+@EC2ElasticIPErrorHandler.common_error_handler("associate address")
+@AWSRetry.jittered_backoff()
+def associate_address(client, **params: Dict[str, Union[str, bool]]) -> Dict[str, str]:
+    return client.associate_address(**params)
+
+
+@EC2ElasticIPErrorHandler.common_error_handler("disassociate address")
+@AWSRetry.jittered_backoff()
+def disassociate_address(client, association_id: str) -> bool:
+    client.disassociate_address(AssociationId=association_id)
+    return True
+
+
+@EC2ElasticIPErrorHandler.common_error_handler("allocate address")
+@AWSRetry.jittered_backoff()
+def allocate_address(client, **params: Dict[str, Union[str, EC2TagSpecifications]]) -> Dict[str, str]:
+    return client.allocate_address(**params)
+
+
+# EC2 VPC Endpoints
+class EC2VpcEndpointsErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleEC2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code(["InvalidVpcEndpoint.NotFound", "InvalidVpcEndpointId.NotFound"])
+
+
+@EC2VpcEndpointsErrorHandler.list_error_handler("describe vpc endpoints", [])
+@AWSRetry.jittered_backoff()
+def describe_vpc_endpoints(
+    client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
+) -> Dict[str, Any]:
+    paginator = client.get_paginator("describe_vpc_endpoints")
+    return paginator.paginate(**params).build_full_result()["VpcEndpoints"]
+
+
+@EC2VpcEndpointsErrorHandler.deletion_error_handler("delete vpc endpoints")
+@AWSRetry.jittered_backoff()
+def delete_vpc_endpoints(client, vpc_endpoint_ids: str) -> Optional[List[Dict[str, Any]]]:
+    return client.delete_vpc_endpoints(VpcEndpointIds=vpc_endpoint_ids)["Unsuccessful"]
+
+
+@EC2ElasticIPErrorHandler.common_error_handler("create vpc endpoint")
+@AWSRetry.jittered_backoff()
+def create_vpc_endpoint(
+    client,
+    **params: Dict[
+        str, Union[str, bool, List[str], Dict[str, Union[str, bool]], List[Dict[str, str]], EC2TagSpecifications]
+    ],
+) -> Dict[str, str]:
+    return client.create_vpc_endpoint(**params)["VpcEndpoint"]
+
+
+# EC2 VPC Endpoint Services
+class EC2VpcEndpointServiceErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleEC2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code("InvalidServiceName")
+
+
+@EC2VpcEndpointServiceErrorHandler.list_error_handler("describe vpc endpoint services", default_value={})
+@AWSRetry.jittered_backoff()
+def describe_vpc_endpoint_services(
+    client, filters: Optional[List[Dict[str, Any]]] = None, service_names: Optional[List[str]] = None
+) -> List[Dict[str, Any]]:
+    paginator = client.get_paginator("describe_vpc_endpoint_services")
+    params: dict[str, Any] = {}
+    if filters:
+        params["Filters"] = filters
+
+    if service_names:
+        params["ServiceNames"] = service_names
+
+    results = paginator.paginate(**params).build_full_result()
+    return results
+
+
+# EC2 VPC DHCP Option
+class EC2VpcDhcpOptionErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleEC2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code(["InvalidDhcpOptionsID.NotFound", "InvalidDhcpOptionID.NotFound"])
+
+
+@EC2VpcDhcpOptionErrorHandler.list_error_handler("describe dhcp options", [])
+@AWSRetry.jittered_backoff()
+def describe_dhcp_options(
+    client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
+    paginator = client.get_paginator("describe_dhcp_options")
+    return paginator.paginate(**params).build_full_result()["DhcpOptions"]
+
+
+@EC2VpcDhcpOptionErrorHandler.deletion_error_handler("delete dhcp options")
+@AWSRetry.jittered_backoff()
+def delete_dhcp_options(client, dhcp_options_id: str) -> bool:
+    client.delete_dhcp_options(DhcpOptionsId=dhcp_options_id)
+    return True
+
+
+@EC2VpcDhcpOptionErrorHandler.common_error_handler("associate dhcp options")
+@AWSRetry.jittered_backoff()
+def associate_dhcp_options(client, dhcp_options_id: str, vpc_id: str) -> bool:
+    client.associate_dhcp_options(DhcpOptionsId=dhcp_options_id, VpcId=vpc_id)
+    return True
+
+
+@EC2VpcDhcpOptionErrorHandler.common_error_handler("create dhcp options")
+@AWSRetry.jittered_backoff()
+def create_dhcp_options(
+    client, **params: Dict[str, Union[Dict[str, Union[str, List[str]]], EC2TagSpecifications]]
+) -> Dict[str, Any]:
+    return client.create_dhcp_options(**params)["DhcpOptions"]
+
+
+# EC2 Volumes
+class EC2VolumeErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleEC2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code("InvalidVolume.NotFound")
+
+
+@EC2VolumeErrorHandler.list_error_handler("describe volumes", [])
+@AWSRetry.jittered_backoff()
+def describe_volumes(
+    client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
+    paginator = client.get_paginator("describe_volumes")
+    return paginator.paginate(**params).build_full_result()["Volumes"]
+
+
+@EC2VolumeErrorHandler.deletion_error_handler("delete volume")
+@AWSRetry.jittered_backoff()
+def delete_volume(client, volume_id: str) -> bool:
+    client.delete_volume(VolumeId=volume_id)
+    return True
+
+
+@EC2VolumeErrorHandler.common_error_handler("modify volume")
+@AWSRetry.jittered_backoff()
+def modify_volume(client, **params: Dict[str, Union[str, bool, int]]) -> Dict[str, Any]:
+    return client.modify_volume(**params)["VolumeModification"]
+
+
+@EC2VolumeErrorHandler.common_error_handler("modify volume")
+@AWSRetry.jittered_backoff()
+def create_volume(client, **params: Dict[str, Union[str, bool, int, EC2TagSpecifications]]) -> Dict[str, Any]:
+    return client.create_volume(**params)
+
+
+@EC2VolumeErrorHandler.common_error_handler("attach volume")
+@AWSRetry.jittered_backoff()
+def attach_volume(client, device: str, instance_id: str, volume_id: str) -> Dict[str, Any]:
+    return client.attach_volume(Device=device, InstanceId=instance_id, VolumeId=volume_id)
+
+
+@EC2VolumeErrorHandler.common_error_handler("attach volume")
+@AWSRetry.jittered_backoff()
+def detach_volume(client, volume_id: str, **params: Dict[str, Union[str, bool]]) -> Dict[str, Any]:
+    return client.detach_volume(VolumeId=volume_id, **params)
+
+
+# EC2 Instance
+EC2_INSTANCE_CATCH_EXTRA_CODES = [
+    "IncorrectState",
+    "InsuffienctInstanceCapacity",
+    "InvalidInstanceID.NotFound",
+]
+
+
+class EC2InstanceErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleEC2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code("InvalidInstanceID.NotFound")
+
+
+@EC2InstanceErrorHandler.list_error_handler("describe instances", [])
+@AWSRetry.jittered_backoff()
+def describe_instances(
+    client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
+    paginator = client.get_paginator("describe_instances")
+    return paginator.paginate(**params).build_full_result()["Reservations"]
+
+
+@EC2InstanceErrorHandler.common_error_handler("modify instance attribute")
+@AWSRetry.jittered_backoff(catch_extra_error_codes=EC2_INSTANCE_CATCH_EXTRA_CODES)
+def modify_instance_attribute(
+    client,
+    instance_id: str,
+    **params: Dict[
+        str,
+        Union[
+            str,
+            List[str],
+            Dict[str, str],
+            Dict[str, bool],
+            Dict[str, bytes],
+            Dict[str, Union[str, Dict[str, Union[str, bool]]]],
+        ],
+    ],
+) -> bool:
+    client.modify_instance_attribute(InstanceId=instance_id, **params)
+    return True
+
+
+@EC2InstanceErrorHandler.common_error_handler("terminate instances")
+@AWSRetry.jittered_backoff(catch_extra_error_codes=EC2_INSTANCE_CATCH_EXTRA_CODES)
+def terminate_instances(client, instance_ids: List[str]) -> List[Dict[str, Any]]:
+    return client.terminate_instances(InstanceIds=instance_ids)["TerminatingInstances"]
+
+
+@EC2InstanceErrorHandler.common_error_handler("stop instances")
+@AWSRetry.jittered_backoff(catch_extra_error_codes=EC2_INSTANCE_CATCH_EXTRA_CODES)
+def stop_instances(
+    client, instance_ids: List[str], **params: Dict[str, Union[bool, List[str]]]
+) -> List[Dict[str, Any]]:
+    return client.stop_instances(InstanceIds=instance_ids, **params)["StoppingInstances"]
+
+
+@EC2InstanceErrorHandler.common_error_handler("start instances")
+@AWSRetry.jittered_backoff(catch_extra_error_codes=EC2_INSTANCE_CATCH_EXTRA_CODES)
+def start_instances(
+    client, instance_ids: List[str], **params: Dict[str, Union[str, List[str]]]
+) -> List[Dict[str, Any]]:
+    return client.start_instances(InstanceIds=instance_ids, **params)["StartingInstances"]
+
+
+@EC2InstanceErrorHandler.common_error_handler("run instances")
+@AWSRetry.jittered_backoff(catch_extra_error_codes=EC2_INSTANCE_CATCH_EXTRA_CODES)
+def run_instances(client, **params: Dict[str, Any]) -> Dict[str, Any]:
+    return client.run_instances(**params)
+
+
+@EC2InstanceErrorHandler.common_error_handler("describe instance attribute")
+@AWSRetry.jittered_backoff(catch_extra_error_codes=EC2_INSTANCE_CATCH_EXTRA_CODES)
+def describe_instance_attribute(client, instance_id: str, attribute: str) -> Dict[str, Any]:
+    # The paginator does not exist for describe_instance_attribute()
+    return client.describe_instance_attribute(InstanceId=instance_id, Attribute=attribute)
+
+
+@EC2InstanceErrorHandler.common_error_handler("describe instance status")
+@AWSRetry.jittered_backoff(catch_extra_error_codes=EC2_INSTANCE_CATCH_EXTRA_CODES)
+def describe_instance_status(
+    client, **params: Dict[str, Union[List[str], bool, int, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
+    paginator = client.get_paginator("describe_instance_status")
+    return paginator.paginate(**params).build_full_result()["InstanceStatuses"]
+
+
+@EC2InstanceErrorHandler.common_error_handler("modify instance metadata options")
+@AWSRetry.jittered_backoff(catch_extra_error_codes=EC2_INSTANCE_CATCH_EXTRA_CODES)
+def modify_instance_metadata_options(
+    client, instance_id: str, **params: Dict[str, Union[str, int]]
+) -> Dict[str, Union[int, str]]:
+    return client.modify_instance_metadata_options(InstanceId=instance_id, **params)["InstanceMetadataOptions"]
+
+
+@EC2InstanceErrorHandler.common_error_handler("describe iam instance profile associations")
+@AWSRetry.jittered_backoff(catch_extra_error_codes=EC2_INSTANCE_CATCH_EXTRA_CODES)
+def describe_iam_instance_profile_associations(
+    client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
+) -> Dict[str, Any]:
+    paginator = client.get_paginator("describe_iam_instance_profile_associations")
+    return paginator.paginate(**params).build_full_result()["IamInstanceProfileAssociations"]
+
+
+@EC2InstanceErrorHandler.common_error_handler("replace iam instance profile association")
+@AWSRetry.jittered_backoff(catch_extra_error_codes=EC2_INSTANCE_CATCH_EXTRA_CODES)
+def replace_iam_instance_profile_association(
+    client, iam_instance_profile: Dict[str, str], association_id: str
+) -> Dict[str, Union[int, str]]:
+    return client.replace_iam_instance_profile_association(
+        IamInstanceProfile=iam_instance_profile, AssociationId=association_id
+    )["IamInstanceProfileAssociation"]
+
+
+@EC2InstanceErrorHandler.common_error_handler("associate iam instance profile")
+@AWSRetry.jittered_backoff(catch_extra_error_codes=EC2_INSTANCE_CATCH_EXTRA_CODES)
+def associate_iam_instance_profile(client, iam_instance_profile: Dict[str, str], instance_id: str) -> Dict[str, Any]:
+    return client.associate_iam_instance_profile(IamInstanceProfile=iam_instance_profile, InstanceId=instance_id)[
+        "IamInstanceProfileAssociation"
+    ]
+
+
+# EC2 Key
+class EC2KeyErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleEC2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code("InvalidKeyPair.NotFound")
+
+
+@EC2KeyErrorHandler.list_error_handler("describe key pairs", [])
+@AWSRetry.jittered_backoff()
+def describe_key_pairs(
+    client, **params: Dict[str, Union[List[str], bool, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
+    # The paginator does not exist for `describe_key_pairs()`
+    return client.describe_key_pairs(**params)["KeyPairs"]
+
+
+@EC2KeyErrorHandler.common_error_handler("import key pair")
+@AWSRetry.jittered_backoff()
+def import_key_pair(
+    client, **params: Dict[str, Union[str, bytes, EC2TagSpecifications]]
+) -> Dict[str, Union[str, List[Dict[str, str]]]]:
+    return client.import_key_pair(**params)
+
+
+@EC2KeyErrorHandler.common_error_handler("create key pair")
+@AWSRetry.jittered_backoff()
+def create_key_pair(
+    client, **params: Dict[str, Union[str, EC2TagSpecifications]]
+) -> Dict[str, Union[str, List[Dict[str, str]]]]:
+    return client.create_key_pair(**params)
+
+
+@EC2KeyErrorHandler.deletion_error_handler("delete key pair")
+@AWSRetry.jittered_backoff()
+def delete_key_pair(client, key_name: Optional[str] = None, key_id: Optional[str] = None) -> bool:
+    params = {}
+    if key_name:
+        params["KeyName"] = key_name
+    if key_id:
+        params["KeyPairId"] = key_id
+    client.delete_key_pair(**params)
+    return True
+
+
+# EC2 Image
+class EC2ImageErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleEC2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code("InvalidAMIID.Unavailable")
+
+
+@EC2ImageErrorHandler.list_error_handler("describe images", [])
+@AWSRetry.jittered_backoff()
+def describe_images(
+    client, **params: Dict[str, Union[List[str], bool, int, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
+    paginator = client.get_paginator("describe_images")
+    return paginator.paginate(**params).build_full_result()["Images"]
+
+
+@EC2ImageErrorHandler.list_error_handler("describe image attribute", {})
+@AWSRetry.jittered_backoff()
+def describe_image_attribute(client, image_id: str, attribute: str) -> Optional[Dict[str, Any]]:
+    # The paginator does not exist for `describe_image_attribute()`
+    return client.describe_image_attribute(Attribute=attribute, ImageId=image_id)
+
+
+@EC2ImageErrorHandler.deletion_error_handler("deregister image")
+@AWSRetry.jittered_backoff()
+def deregister_image(client, image_id: str) -> bool:
+    client.deregister_image(ImageId=image_id)
+    return True
+
+
+@EC2ImageErrorHandler.common_error_handler("modify image attribute")
+@AWSRetry.jittered_backoff()
+def modify_image_attribute(client, image_id: str, **params: Dict[str, Any]) -> bool:
+    client.modify_image_attribute(ImageId=image_id, **params)
+    return True
+
+
+@EC2ImageErrorHandler.common_error_handler("create image")
+@AWSRetry.jittered_backoff()
+def create_image(client, **params: Dict[str, Any]) -> Dict[str, str]:
+    return client.create_image(**params)
+
+
+@EC2ImageErrorHandler.common_error_handler("register image")
+@AWSRetry.jittered_backoff()
+def register_image(client, **params: Dict[str, Any]) -> Dict[str, str]:
+    return client.register_image(**params)
+
+
+# EC2 Snapshot
+class EC2SnapshotErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleEC2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code("InvalidSnapshot.NotFound")
+
+
+@EC2SnapshotErrorHandler.deletion_error_handler("delete snapshot")
+@AWSRetry.jittered_backoff()
+def delete_snapshot(client, snapshot_id: str) -> bool:
+    client.delete_snapshot(SnapshotId=snapshot_id)
+    return True
+
+
+@EC2SnapshotErrorHandler.list_error_handler("describe snapshots", [])
+@AWSRetry.jittered_backoff()
+def describe_snapshots(
+    client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
+) -> Dict[str, Any]:
+    # We do not use paginator here because the `ec2_snapshot_info` module excepts the NextToken to be returned
+    return client.describe_snapshots(**params)
+
+
+@EC2SnapshotErrorHandler.common_error_handler("describe snapshot attribute")
+@AWSRetry.jittered_backoff()
+def describe_snapshot_attribute(
+    client, snapshot_id: str, attribute: str
+) -> Dict[str, Union[str, List[Dict[str, str]]]]:
+    return client.describe_snapshot_attribute(Attribute=attribute, SnapshotId=snapshot_id)
+
+
+@EC2SnapshotErrorHandler.common_error_handler("reset snapshot attribute")
+@AWSRetry.jittered_backoff()
+def reset_snapshot_attribute(client, snapshot_id: str, attribute: str) -> bool:
+    client.reset_snapshot_attribute(Attribute=attribute, SnapshotId=snapshot_id)
+    return True
+
+
+@EC2SnapshotErrorHandler.common_error_handler("modify snapshot attribute")
+@AWSRetry.jittered_backoff()
+def modify_snapshot_attribute(client, snapshot_id: str, **params: Dict[str, Any]) -> bool:
+    client.modify_snapshot_attribute(SnapshotId=snapshot_id, **params)
+    return True
+
+
+@EC2SnapshotErrorHandler.common_error_handler("create snapshot")
+# Handle SnapshotCreationPerVolumeRateExceeded separately because we need a much
+# longer delay than normal
+@AWSRetry.jittered_backoff(catch_extra_error_codes=["SnapshotCreationPerVolumeRateExceeded"], delay=15)
+def create_snapshot(client, volume_id: str, **params: Dict[str, Any]) -> Dict[str, Any]:
+    return client.create_snapshot(VolumeId=volume_id, **params)
+
+
+# EC2 ENI
+class EC2NetworkInterfacesErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleEC2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code("InvalidNetworkInterfaceID.NotFound")
+
+
+@EC2NetworkInterfacesErrorHandler.list_error_handler("describe network interfaces", [])
+@AWSRetry.jittered_backoff()
+def describe_network_interfaces(
+    client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
+    paginator = client.get_paginator("describe_network_interfaces")
+    return paginator.paginate(**params).build_full_result()["NetworkInterfaces"]
+
+
+@EC2NetworkInterfacesErrorHandler.deletion_error_handler("delete network interface")
+@AWSRetry.jittered_backoff()
+def delete_network_interface(client, network_interface_id: str) -> bool:
+    client.delete_network_interface(NetworkInterfaceId=network_interface_id)
+    return True
+
+
+@EC2NetworkInterfacesErrorHandler.common_error_handler("create network interface")
+@AWSRetry.jittered_backoff()
+def create_network_interface(client, **params: Dict[str, Any]) -> Dict[str, str]:
+    return client.create_network_interface(**params)["NetworkInterface"]
+
+
+@EC2NetworkInterfacesErrorHandler.common_error_handler("attach network interface")
+@AWSRetry.jittered_backoff()
+def attach_network_interface(
+    client, **params: Dict[str, Union[str, int, Dict[str, Union[bool, Dict[str, bool]]]]]
+) -> Dict[str, Union[str, int]]:
+    return client.attach_network_interface(**params)
+
+
+@EC2NetworkInterfacesErrorHandler.common_error_handler("detach network interface")
+@AWSRetry.jittered_backoff()
+def detach_network_interface(client, attachment_id: str, force: Optional[bool] = None) -> bool:
+    params = {"AttachmentId": attachment_id}
+    if force is not None:
+        params["Force"] = force
+    client.detach_network_interface(**params)
+    return True
+
+
+@EC2NetworkInterfacesErrorHandler.common_error_handler("assign private ip addresses")
+@AWSRetry.jittered_backoff()
+def assign_private_ip_addresses(
+    client, **params: Dict[str, Union[bool, int, str, List[str]]]
+) -> Dict[str, Union[str, List[Dict[str, str]]]]:
+    return client.assign_private_ip_addresses(**params)
+
+
+@EC2NetworkInterfacesErrorHandler.common_error_handler("unassign private ip addresses")
+@AWSRetry.jittered_backoff()
+def unassign_private_ip_addresses(client, **params: Dict[str, Union[str, List[str]]]) -> bool:
+    client.unassign_private_ip_addresses(**params)
+    return True
+
+
+@EC2NetworkInterfacesErrorHandler.common_error_handler("modify network interface attribute")
+@AWSRetry.jittered_backoff()
+def modify_network_interface_attribute(client, **params: Dict[str, Any]) -> bool:
+    client.modify_network_interface_attribute(**params)
+    return True
+
+
+# EC2 Import Image
+class EC2ImportImageErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleEC2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code("InvalidConversionTaskId")
+
+
+@EC2ImportImageErrorHandler.list_error_handler("describe import image tasks", [])
+@AWSRetry.jittered_backoff()
+def describe_import_image_tasks(
+    client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
+    paginator = client.get_paginator("describe_import_image_tasks")
+    return paginator.paginate(**params).build_full_result()["ImportImageTasks"]
+
+
+def describe_import_image_tasks_as_snake_dict(
+    client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
+    result = []
+    for import_image_info in describe_import_image_tasks(client, **params):
+        image = copy.deepcopy(import_image_info)
+        image["Tags"] = boto3_tag_list_to_ansible_dict(image["Tags"])
+        result.append(camel_dict_to_snake_dict(image, ignore_list=["Tags"]))
+    return result
+
+
+@EC2ImportImageErrorHandler.deletion_error_handler("cancel import task")
+@AWSRetry.jittered_backoff()
+def cancel_import_task(client, import_task_id: str, cancel_reason: Optional[str] = None) -> bool:
+    params = {"ImportTaskId": import_task_id}
+    if cancel_reason:
+        params["CancelReason"] = cancel_reason
+    client.cancel_import_task(**params)
+    return True
+
+
+@EC2ImportImageErrorHandler.common_error_handler("import image")
+@AWSRetry.jittered_backoff()
+def import_image(client, **params: Dict[str, Any]) -> Dict[str, Any]:
+    return client.import_image(**params)
+
+
+# EC2 Spot instance
+class EC2SpotInstanceRequestErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleEC2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code("InvalidSpotInstanceRequestID.NotFound")
+
+
+@EC2SpotInstanceRequestErrorHandler.list_error_handler("describe spot instance requests", [])
+@AWSRetry.jittered_backoff()
+def describe_spot_instance_requests(
+    client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
+    paginator = client.get_paginator("describe_spot_instance_requests")
+    return paginator.paginate(**params).build_full_result()["SpotInstanceRequests"]
+
+
+@EC2SpotInstanceRequestErrorHandler.common_error_handler("cancel spot instance requests")
+@AWSRetry.jittered_backoff()
+def cancel_spot_instance_requests(client, spot_instance_request_ids: List[str]) -> List[Dict[str, str]]:
+    return client.cancel_spot_instance_requests(SpotInstanceRequestIds=spot_instance_request_ids)[
+        "CancelledSpotInstanceRequests"
+    ]
+
+
+@EC2SpotInstanceRequestErrorHandler.common_error_handler("request spot instances")
+@AWSRetry.jittered_backoff()
+def request_spot_instances(client, **params: Dict[str, Any]) -> List[Dict[str, Any]]:
+    return client.request_spot_instances(**params)["SpotInstanceRequests"]
+
+
+# EC2 Security Groups
+class EC2SecurityGroupsErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleEC2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code("InvalidGroup.NotFound")
+
+
+@EC2SecurityGroupsErrorHandler.list_error_handler("describe security groups", [])
+@AWSRetry.jittered_backoff()
+def describe_security_groups(
+    client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
+    paginator = client.get_paginator("describe_security_groups")
+    return paginator.paginate(**params).build_full_result()["SecurityGroups"]
+
+
+@EC2SecurityGroupsErrorHandler.deletion_error_handler("delete security group")
+@AWSRetry.jittered_backoff()
+def delete_security_group(client, group_id: Optional[str], group_name: Optional[str] = None) -> bool:
+    params = {}
+    if group_id:
+        params["GroupId"] = group_id
+    if group_name:
+        params["GroupName"] = group_name
+    client.delete_security_group(**params)
+    return True
+
+
+@EC2SecurityGroupsErrorHandler.common_error_handler("create security group")
+@AWSRetry.jittered_backoff()
+def create_security_group(client, **params: Dict[str, Union[str, EC2TagSpecifications]]) -> Dict[str, Any]:
+    return client.create_security_group(**params)
+
+
+@EC2SecurityGroupsErrorHandler.common_error_handler("update security group rule descriptions egress")
+@AWSRetry.jittered_backoff()
+def update_security_group_rule_descriptions_egress(client, **params: Dict[str, Any]) -> bool:
+    return client.update_security_group_rule_descriptions_egress(**params)["Return"]
+
+
+@EC2SecurityGroupsErrorHandler.common_error_handler("update security group rule descriptions ingress")
+@AWSRetry.jittered_backoff()
+def update_security_group_rule_descriptions_ingress(client, **params: Dict[str, Any]) -> bool:
+    return client.update_security_group_rule_descriptions_ingress(**params)["Return"]
+
+
+@EC2SecurityGroupsErrorHandler.common_error_handler("revoke security group ingress")
+@AWSRetry.jittered_backoff()
+def revoke_security_group_ingress(client, **params: Dict[str, Any]) -> bool:
+    return client.revoke_security_group_ingress(**params)["Return"]
+
+
+@EC2SecurityGroupsErrorHandler.common_error_handler("revoke security group egress")
+@AWSRetry.jittered_backoff()
+def revoke_security_group_egress(client, **params: Dict[str, Any]) -> bool:
+    return client.revoke_security_group_egress(**params)["Return"]
+
+
+@EC2SecurityGroupsErrorHandler.common_error_handler("authorize security group ingress")
+@AWSRetry.jittered_backoff()
+def authorize_security_group_ingress(client, **params: Dict[str, Any]) -> bool:
+    return client.authorize_security_group_ingress(**params)["Return"]
+
+
+@EC2SecurityGroupsErrorHandler.common_error_handler("authorize security group egress")
+@AWSRetry.jittered_backoff()
+def authorize_security_group_egress(client, **params: Dict[str, Any]) -> bool:
+    return client.authorize_security_group_egress(**params)["Return"]
 
 
 def get_ec2_security_group_ids_from_names(sec_group_list, ec2_connection, vpc_id=None, boto3=None):
@@ -272,7 +1273,7 @@ def ensure_ec2_tags(client, module, resource_id, resource_type=None, tags=None, 
     return changed
 
 
-def normalize_ec2_vpc_dhcp_config(option_config):
+def normalize_ec2_vpc_dhcp_config(option_config: List[Dict[str, Any]]):
     """
     The boto2 module returned a config dict, but boto3 returns a list of dicts
     Make the data we return look like the old way, so we don't break users.
@@ -316,7 +1317,9 @@ def normalize_ec2_vpc_dhcp_config(option_config):
 
 
 @AWSRetry.jittered_backoff(retries=10)
-def helper_describe_import_image_tasks(client, module, **params):
+def helper_describe_import_image_tasks(
+    client, module, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
     try:
         paginator = client.get_paginator("describe_import_image_tasks")
         return paginator.paginate(**params).build_full_result()["ImportImageTasks"]

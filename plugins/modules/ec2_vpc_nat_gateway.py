@@ -289,6 +289,11 @@ nat_gateway_addresses:
 """
 
 import datetime
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Tuple
 
 try:
     import botocore
@@ -297,40 +302,34 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleEC2Error
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import allocate_address
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import create_nat_gateway
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import delete_nat_gateway
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_addresses
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_ec2_tags
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_nat_gateways
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import release_address
+from ansible_collections.amazon.aws.plugins.module_utils.exceptions import AnsibleAWSError
+from ansible_collections.amazon.aws.plugins.module_utils.exceptions import is_ansible_aws_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
-from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
+from ansible_collections.amazon.aws.plugins.module_utils.waiters import wait_for_resource_state
 
 
-@AWSRetry.jittered_backoff(retries=10)
-def _describe_nat_gateways(client, **params):
-    try:
-        paginator = client.get_paginator("describe_nat_gateways")
-        return paginator.paginate(**params).build_full_result()["NatGateways"]
-    except is_boto3_error_code("InvalidNatGatewayID.NotFound"):
-        return None
-
-
-def wait_for_status(client, module, waiter_name, nat_gateway_id):
+def wait_for_status(client, module: AnsibleAWSModule, waiter_name: str, nat_gateway_id: str) -> None:
     wait_timeout = module.params.get("wait_timeout")
-    try:
-        waiter = get_waiter(client, waiter_name)
-        attempts = 1 + int(wait_timeout / waiter.config.delay)
-        waiter.wait(
-            NatGatewayIds=[nat_gateway_id],
-            WaiterConfig={"MaxAttempts": attempts},
-        )
-    except botocore.exceptions.WaiterError as e:
-        module.fail_json_aws(e, msg="NAT gateway failed to reach expected state.")
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable to wait for NAT gateway state to update.")
+    wait_delay = 5
+    attempts = 1 + int(wait_timeout / wait_delay)
+    wait_for_resource_state(
+        client, module, waiter_name, delay=wait_delay, max_attempts=attempts, NatGatewayIds=[nat_gateway_id]
+    )
 
 
-def get_nat_gateways(client, module, subnet_id=None, nat_gateway_id=None, states=None):
+def get_nat_gateways(
+    client, subnet_id: Optional[str] = None, nat_gateway_id: Optional[str] = None, states: Optional[List[str]] = None
+) -> List[Dict[str, Any]]:
     """Retrieve a list of NAT Gateways
     Args:
         client (botocore.client.EC2): Boto3 client
@@ -371,9 +370,7 @@ def get_nat_gateways(client, module, subnet_id=None, nat_gateway_id=None, states
         list
     """
 
-    params = dict()
-    existing_gateways = list()
-
+    params: dict[str, Any] = {}
     if not states:
         states = ["available", "pending"]
     if nat_gateway_id:
@@ -384,18 +381,12 @@ def get_nat_gateways(client, module, subnet_id=None, nat_gateway_id=None, states
             {"Name": "state", "Values": states},
         ]
 
-    try:
-        gateways = _describe_nat_gateways(client, **params)
-        if gateways:
-            for gw in gateways:
-                existing_gateways.append(camel_dict_to_snake_dict(gw))
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e)
-
-    return existing_gateways
+    return [camel_dict_to_snake_dict(gw) for gw in describe_nat_gateways(client, **params) or []]
 
 
-def gateway_in_subnet_exists(client, module, subnet_id, allocation_id=None):
+def gateway_in_subnet_exists(
+    client, subnet_id: str, allocation_id: Optional[str] = None
+) -> Tuple[List[Dict[str, Any]], bool]:
     """Retrieve all NAT Gateways for a subnet.
     Args:
         client (botocore.client.EC2): Boto3 client
@@ -439,37 +430,33 @@ def gateway_in_subnet_exists(client, module, subnet_id, allocation_id=None):
         Tuple (list, bool)
     """
 
+    states = ["available", "pending"]
+    nat_gateways = get_nat_gateways(client, subnet_id=subnet_id, states=states)
+    if not allocation_id:
+        return nat_gateways, False
+
     allocation_id_exists = False
     gateways = []
-    states = ["available", "pending"]
-
-    gws_retrieved = get_nat_gateways(client, module, subnet_id, states=states)
-
-    if gws_retrieved:
-        for gw in gws_retrieved:
-            for address in gw["nat_gateway_addresses"]:
-                if allocation_id:
-                    if address.get("allocation_id") == allocation_id:
-                        allocation_id_exists = True
-                        gateways.append(gw)
-                else:
-                    gateways.append(gw)
+    for gw in nat_gateways:
+        for address in gw["nat_gateway_addresses"]:
+            if address.get("allocation_id") == allocation_id:
+                allocation_id_exists = True
+                gateways.append(gw)
 
     return gateways, allocation_id_exists
 
 
-def get_eip_allocation_id_by_address(client, module, eip_address):
+def get_eip_allocation_id_by_address(client, eip_address: str) -> Tuple[Optional[str], str]:
     """Release an EIP from your EIP Pool
     Args:
         client (botocore.client.EC2): Boto3 client
-        module: AnsibleAWSModule class instance
         eip_address (str): The Elastic IP Address of the EIP.
 
     Basic Usage:
         >>> client = boto3.client('ec2')
         >>> module = AnsibleAWSModule(...)
         >>> eip_address = '52.87.29.36'
-        >>> get_eip_allocation_id_by_address(client, module, eip_address)
+        >>> get_eip_allocation_id_by_address(client, eip_address)
         (
             'eipalloc-36014da3', ''
         )
@@ -485,7 +472,11 @@ def get_eip_allocation_id_by_address(client, module, eip_address):
     msg = ""
 
     try:
-        allocations = client.describe_addresses(aws_retry=True, **params)["Addresses"]
+        allocations = describe_addresses(client, **params)
+        if not allocations:
+            msg = f"EIP {eip_address} does not exist"
+            allocation_id = None
+            return allocation_id, msg
 
         if len(allocations) == 1:
             allocation = allocations[0]
@@ -498,21 +489,13 @@ def get_eip_allocation_id_by_address(client, module, eip_address):
             else:
                 allocation_id = allocation.get("AllocationId")
 
-    except is_boto3_error_code("InvalidAddress.Malformed"):
-        module.fail_json(msg=f"EIP address {eip_address} is invalid.")
-    except is_boto3_error_code("InvalidAddress.NotFound"):  # pylint: disable=duplicate-except
-        msg = f"EIP {eip_address} does not exist"
-        allocation_id = None
-    except (
-        botocore.exceptions.ClientError,
-        botocore.exceptions.BotoCoreError,
-    ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Unable to describe EIP")
+    except is_ansible_aws_error_code("InvalidAddress.Malformed"):
+        raise AnsibleAWSError(message=f"EIP address {eip_address} is invalid.")
 
     return allocation_id, msg
 
 
-def allocate_eip_address(client, module):
+def allocate_eip_address(client, check_mode: bool) -> Tuple[bool, str, Optional[str]]:
     """Release an EIP from your EIP Pool
     Args:
         client (botocore.client.EC2): Boto3 client
@@ -536,22 +519,19 @@ def allocate_eip_address(client, module):
         "Domain": "vpc",
     }
 
-    if module.check_mode:
+    if check_mode:
         ip_allocated = True
         new_eip = None
         return ip_allocated, msg, new_eip
 
-    try:
-        new_eip = client.allocate_address(aws_retry=True, **params)["AllocationId"]
-        ip_allocated = True
-        msg = f"eipalloc id {new_eip} created"
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e)
+    new_eip = allocate_address(client, **params)["AllocationId"]
+    ip_allocated = True
+    msg = f"eipalloc id {new_eip} created"
 
     return ip_allocated, msg, new_eip
 
 
-def release_address(client, module, allocation_id):
+def release_eip_address(client, allocation_id: str, check_mode: bool) -> bool:
     """Release an EIP from your EIP Pool
     Args:
         client (botocore.client.EC2): Boto3 client
@@ -563,67 +543,35 @@ def release_address(client, module, allocation_id):
         >>> module = AnsibleAWSModule(...)
         >>> allocation_id = "eipalloc-123456"
         >>> release_address(client, module, allocation_id)
-        (
-            True, ''
-        )
+        True
 
     Returns:
-        Tuple (bool, str)
+        bool
     """
 
-    msg = ""
+    changed = False
+    if check_mode:
+        return True
 
-    if module.check_mode:
-        return True, ""
+    addresses = describe_addresses(client, AllocationIds=[allocation_id])
+    if addresses:
+        # Release IP address
+        changed = release_address(client, allocation_id=allocation_id)
 
-    ip_released = False
-
-    try:
-        client.describe_addresses(aws_retry=True, AllocationIds=[allocation_id])
-    except is_boto3_error_code("InvalidAllocationID.NotFound") as e:
-        # IP address likely already released
-        # Happens with gateway in 'deleted' state that
-        # still lists associations
-        return True, e
-    except (
-        botocore.exceptions.ClientError,
-        botocore.exceptions.BotoCoreError,
-    ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e)
-
-    try:
-        client.release_address(aws_retry=True, AllocationId=allocation_id)
-        ip_released = True
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e)
-
-    return ip_released, msg
+    return changed
 
 
-def create(client, module, subnet_id, allocation_id, tags, client_token=None, wait=False, connectivity_type="public"):
+def create(client, module: AnsibleAWSModule, allocation_id: Optional[str]) -> Tuple[bool, str, Dict[str, Any]]:
     """Create an Amazon NAT Gateway.
     Args:
         client (botocore.client.EC2): Boto3 client
         module: AnsibleAWSModule class instance
-        subnet_id (str): The subnet_id the nat resides in
         allocation_id (str): The eip Amazon identifier
-        connectivity_type (str): public or private connectivity support
-        tags (dict): Tags to associate to the NAT gateway
-        purge_tags (bool): If true, remove tags not listed in I(tags)
-            type: bool
-
-    Kwargs:
-        wait (bool): Wait for the nat to be in the deleted state before returning.
-            default = False
-        client_token (str):
-            default = None
 
     Basic Usage:
         >>> client = boto3.client('ec2')
         >>> module = AnsibleAWSModule(...)
-        >>> subnet_id = 'subnet-1234567'
-        >>> allocation_id = 'eipalloc-1234567'
-        >>> create(client, module, subnet_id, allocation_id, wait=True, connectivity_type='public')
+        >>> create(client, module, allocation_id)
         [
             true,
             {
@@ -650,6 +598,12 @@ def create(client, module, subnet_id, allocation_id, tags, client_token=None, wa
         Tuple (bool, str, list)
     """
 
+    connectivity_type = module.params.get("connectivity_type")
+    wait = module.params.get("wait")
+    client_token = module.params.get("client_token")
+    subnet_id = module.params.get("subnet_id")
+    tags = module.params.get("tags")
+
     params = {"SubnetId": subnet_id, "ConnectivityType": connectivity_type}
 
     if connectivity_type == "public":
@@ -658,7 +612,7 @@ def create(client, module, subnet_id, allocation_id, tags, client_token=None, wa
     request_time = datetime.datetime.utcnow()
     changed = False
     token_provided = False
-    result = {}
+    result: dict[str, Any] = {}
     msg = ""
 
     if client_token:
@@ -670,10 +624,11 @@ def create(client, module, subnet_id, allocation_id, tags, client_token=None, wa
 
     if module.check_mode:
         changed = True
-        return changed, result, msg
+        return changed, msg, result
 
     try:
-        result = camel_dict_to_snake_dict(client.create_nat_gateway(aws_retry=True, **params)["NatGateway"])
+        result = create_nat_gateway(client, **params)
+        result = camel_dict_to_snake_dict(result)
         changed = True
 
         create_time = result["create_time"].replace(tzinfo=None)
@@ -686,67 +641,32 @@ def create(client, module, subnet_id, allocation_id, tags, client_token=None, wa
 
             # Get new result
             result = camel_dict_to_snake_dict(
-                _describe_nat_gateways(client, NatGatewayIds=[result["nat_gateway_id"]])[0]
+                describe_nat_gateways(client, NatGatewayIds=[result["nat_gateway_id"]])[0]
             )
 
-    except is_boto3_error_code("IdempotentParameterMismatch") as e:
+    except is_ansible_aws_error_code("IdempotentParameterMismatch") as e:
         msg = "NAT Gateway does not support update and token has already been provided:" + e
         changed = False
-        result = None
-    except (
-        botocore.exceptions.BotoCoreError,
-        botocore.exceptions.ClientError,
-    ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e)
+        result = {}
 
-    result["tags"] = describe_ec2_tags(client, module, result["nat_gateway_id"], resource_type="natgateway")
+    if result:
+        result["tags"] = describe_ec2_tags(client, module, result["nat_gateway_id"], resource_type="natgateway")
 
-    return changed, result, msg
+    return changed, msg, result
 
 
 def pre_create(
-    client,
-    module,
-    subnet_id,
-    tags,
-    purge_tags,
-    allocation_id=None,
-    eip_address=None,
-    if_exist_do_not_create=False,
-    wait=False,
-    client_token=None,
-    connectivity_type="public",
-    default_create=False,
-):
+    client, module: AnsibleAWSModule, allocation_id: Optional[str], eip_address: Optional[str]
+) -> Tuple[bool, str, Dict[str, Any]]:
     """Create an Amazon NAT Gateway.
     Args:
         client (botocore.client.EC2): Boto3 client
         module: AnsibleAWSModule class instance
-        subnet_id (str): The subnet_id the nat resides in
-        tags (dict): Tags to associate to the NAT gateway
-        purge_tags (bool): If true, remove tags not listed in I(tags)
-
-    Kwargs:
-        allocation_id (str): The EIP Amazon identifier.
-            default = None
-        eip_address (str): The Elastic IP Address of the EIP.
-            default = None
-        if_exist_do_not_create (bool): if a nat gateway already exists in this
-            subnet, than do not create another one.
-            default = False
-        wait (bool): Wait for the nat to be in the deleted state before returning.
-            default = False
-        client_token (str):
-            default = None
-        default_create (bool): create a NAT gateway even if EIP address is not found.
-            default = False
 
     Basic Usage:
         >>> client = boto3.client('ec2')
         >>> module = AnsibleAWSModule(...)
-        >>> subnet_id = 'subnet-w4t12897'
-        >>> allocation_id = 'eipalloc-36014da3'
-        >>> pre_create(client, module, subnet_id, allocation_id, if_exist_do_not_create=True, wait=True, connectivity_type=public)
+        >>> pre_create(client, module)
         [
             true,
             "",
@@ -777,9 +697,15 @@ def pre_create(
     msg = ""
     results = {}
 
-    if not allocation_id and not eip_address:
-        existing_gateways, allocation_id_exists = gateway_in_subnet_exists(client, module, subnet_id)
+    connectivity_type = module.params.get("connectivity_type")
+    if_exist_do_not_create = module.params.get("if_exist_do_not_create")
+    purge_tags = module.params.get("purge_tags")
+    default_create = module.params.get("default_create")
+    subnet_id = module.params.get("subnet_id")
+    tags = module.params.get("tags")
 
+    if not allocation_id and not eip_address:
+        existing_gateways, allocation_id_exists = gateway_in_subnet_exists(client, subnet_id=subnet_id)
         if len(existing_gateways) > 0 and if_exist_do_not_create:
             results = existing_gateways[0]
             changed |= ensure_ec2_tags(
@@ -796,35 +722,24 @@ def pre_create(
             return changed, msg, results
         else:
             if connectivity_type == "public":
-                changed, msg, allocation_id = allocate_eip_address(client, module)
+                changed, msg, allocation_id = allocate_eip_address(client, module.check_mode)
 
                 if not changed:
-                    return changed, msg, dict()
+                    return changed, msg, {}
 
     elif eip_address or allocation_id:
         if eip_address and not allocation_id:
-            allocation_id, msg = get_eip_allocation_id_by_address(client, module, eip_address)
+            allocation_id, msg = get_eip_allocation_id_by_address(client, eip_address)
             if not allocation_id and not default_create:
                 changed = False
                 module.fail_json(msg=msg)
             elif not allocation_id and default_create:
                 eip_address = None
-                return pre_create(
-                    client,
-                    module,
-                    subnet_id,
-                    tags,
-                    purge_tags,
-                    allocation_id,
-                    eip_address,
-                    if_exist_do_not_create,
-                    wait,
-                    client_token,
-                    connectivity_type,
-                    default_create,
-                )
+                return pre_create(client, module, allocation_id, eip_address)
 
-        existing_gateways, allocation_id_exists = gateway_in_subnet_exists(client, module, subnet_id, allocation_id)
+        existing_gateways, allocation_id_exists = gateway_in_subnet_exists(
+            client, subnet_id=subnet_id, allocation_id=allocation_id
+        )
 
         if len(existing_gateways) > 0 and (allocation_id_exists or if_exist_do_not_create):
             results = existing_gateways[0]
@@ -841,20 +756,14 @@ def pre_create(
             msg = f"NAT Gateway {existing_gateways[0]['nat_gateway_id']} already exists in subnet_id {subnet_id}"
             return changed, msg, results
 
-    changed, results, msg = create(
-        client, module, subnet_id, allocation_id, tags, client_token, wait, connectivity_type
-    )
-
-    return changed, msg, results
+    return create(client, module, allocation_id)
 
 
-def remove(client, module, nat_gateway_id, wait=False, release_eip=False, connectivity_type="public"):
+def remove(client, module: AnsibleAWSModule) -> Tuple[bool, str, Dict[str, Any]]:
     """Delete an Amazon NAT Gateway.
     Args:
         client (botocore.client.EC2): Boto3 client
         module: AnsibleAWSModule class instance
-        nat_gateway_id (str): The Amazon nat id
-
     Kwargs:
         wait (bool): Wait for the nat to be in the deleted state before returning.
         release_eip (bool): Once the nat has been deleted, you can deallocate the eip from the vpc.
@@ -892,45 +801,45 @@ def remove(client, module, nat_gateway_id, wait=False, release_eip=False, connec
     """
 
     allocation_id = None
-    params = {"NatGatewayId": nat_gateway_id}
     changed = False
-    results = {}
+    results: dict[str, Any] = {}
     states = ["pending", "available"]
     msg = ""
+    nat_gateway_id = module.params.get("nat_gateway_id")
+    wait = module.params.get("wait")
+    release_eip = module.params.get("release_eip")
+    connectivity_type = module.params.get("connectivity_type")
 
     if module.check_mode:
         changed = True
         return changed, msg, results
 
-    try:
-        gw_list = get_nat_gateways(client, module, nat_gateway_id=nat_gateway_id, states=states)
+    gw_list = get_nat_gateways(client, nat_gateway_id=nat_gateway_id, states=states)
 
-        if len(gw_list) == 1:
-            results = gw_list[0]
-            client.delete_nat_gateway(aws_retry=True, **params)
-            if connectivity_type == "public":
-                allocation_id = results["nat_gateway_addresses"][0]["allocation_id"]
-            changed = True
-            msg = f"NAT gateway {nat_gateway_id} is in a deleting state. Delete was successful"
+    if len(gw_list) == 1:
+        results = gw_list[0]
+        try:
+            changed = delete_nat_gateway(client, nat_gateway_id)
+        except AnsibleEC2Error as e:
+            module.fail_json_aws_error(e)
+        if connectivity_type == "public":
+            allocation_id = results["nat_gateway_addresses"][0]["allocation_id"]
+        msg = f"NAT gateway {nat_gateway_id} is in a deleting state. Delete was successful"
 
-            if wait and results.get("state") != "deleted":
-                wait_for_status(client, module, "nat_gateway_deleted", nat_gateway_id)
+        if wait and results.get("state") != "deleted":
+            wait_for_status(client, module, "nat_gateway_deleted", nat_gateway_id)
 
-                # Get new results
-                results = camel_dict_to_snake_dict(_describe_nat_gateways(client, NatGatewayIds=[nat_gateway_id])[0])
-                results["tags"] = describe_ec2_tags(client, module, nat_gateway_id, resource_type="natgateway")
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e)
+            # Get new results
+            results = camel_dict_to_snake_dict(describe_nat_gateways(client, NatGatewayIds=[nat_gateway_id])[0])
+            results["tags"] = describe_ec2_tags(client, module, nat_gateway_id, resource_type="natgateway")
 
     if release_eip and allocation_id:
-        eip_released, msg = release_address(client, module, allocation_id)
-        if not eip_released:
-            module.fail_json(msg=f"Failed to release EIP {allocation_id}: {msg}")
+        changed |= release_eip_address(client, allocation_id, module.check_mode)
 
     return changed, msg, results
 
 
-def main():
+def main() -> None:
     argument_spec = dict(
         subnet_id=dict(type="str"),
         eip_address=dict(type="str"),
@@ -955,45 +864,24 @@ def main():
         required_if=[["state", "absent", ["nat_gateway_id"]], ["state", "present", ["subnet_id"]]],
     )
 
-    state = module.params.get("state").lower()
-    subnet_id = module.params.get("subnet_id")
-    allocation_id = module.params.get("allocation_id")
-    connectivity_type = module.params.get("connectivity_type")
-    eip_address = module.params.get("eip_address")
-    nat_gateway_id = module.params.get("nat_gateway_id")
-    wait = module.params.get("wait")
-    release_eip = module.params.get("release_eip")
-    client_token = module.params.get("client_token")
-    if_exist_do_not_create = module.params.get("if_exist_do_not_create")
-    tags = module.params.get("tags")
-    purge_tags = module.params.get("purge_tags")
-    default_create = module.params.get("default_create")
-
     try:
-        client = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff())
+        client = module.client("ec2")
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to connect to AWS.")
 
     changed = False
     msg = ""
+    state = module.params.get("state")
 
-    if state == "present":
-        changed, msg, results = pre_create(
-            client,
-            module,
-            subnet_id,
-            tags,
-            purge_tags,
-            allocation_id,
-            eip_address,
-            if_exist_do_not_create,
-            wait,
-            client_token,
-            connectivity_type,
-            default_create,
-        )
-    else:
-        changed, msg, results = remove(client, module, nat_gateway_id, wait, release_eip, connectivity_type)
+    try:
+        if state == "present":
+            allocation_id = module.params.get("allocation_id")
+            eip_address = module.params.get("eip_address")
+            changed, msg, results = pre_create(client, module, allocation_id, eip_address)
+        else:
+            changed, msg, results = remove(client, module)
+    except AnsibleAWSError as e:
+        module.fail_json_aws_error(e)
 
     module.exit_json(msg=msg, changed=changed, **results)
 

@@ -1,0 +1,10 @@
+---
+minor_changes:
+  - ec2_snapshot - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2099).
+  - ec2_snapshot_info - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2099).
+  - ec2_spot_instance - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2099).
+  - ec2_spot_instance_info - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2099).
+  - ec2_vpc_igw - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2099).
+  - ec2_vpc_igw_info - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2099).
+  - ec2_vpc_nat_gateway - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2099).
+  - ec2_vpc_nat_gateway_info - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2099).
