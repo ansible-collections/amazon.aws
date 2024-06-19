@@ -233,6 +233,7 @@ from typing import Dict
 from typing import List
 from typing import Optional
 from typing import Tuple
+from typing import Union
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
@@ -250,7 +251,9 @@ from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_ta
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
 
 
-def fetch_dhcp_options_for_vpc(client, module: AnsibleAWSModule, vpc_id: str) -> Tuple[Optional[str], Optional[str]]:
+def fetch_dhcp_options_for_vpc(
+    client, module: AnsibleAWSModule, vpc_id: str
+) -> Tuple[Optional[List[Dict[str, Union[str, List[Dict[str, str]]]]]], Optional[str]]:
     try:
         vpcs = describe_vpcs(client, VpcIds=[vpc_id])
     except AnsibleEC2Error as e:
@@ -288,9 +291,7 @@ def remove_dhcp_options_by_id(client, module: AnsibleAWSModule, dhcp_options_id:
     return changed
 
 
-def match_dhcp_options(
-    client, module: AnsibleAWSModule, new_config: List[Dict[str, Any]]
-) -> Tuple[bool, Optional[str]]:
+def match_dhcp_options(client, module: AnsibleAWSModule, new_config: List[Dict[str, Any]]) -> Optional[str]:
     """
     Returns a DhcpOptionsId if the module parameters match; else None
     Filter by tags, if any are specified
@@ -305,11 +306,11 @@ def match_dhcp_options(
             # If we were given tags, try to match on them
             boto_tags = ansible_dict_to_boto3_tag_list(module.params["tags"])
             if dopts["DhcpConfigurations"] == new_config and dopts["Tags"] == boto_tags:
-                return True, dopts["DhcpOptionsId"]
+                return dopts["DhcpOptionsId"]
         elif dopts["DhcpConfigurations"] == new_config:
-            return True, dopts["DhcpOptionsId"]
+            return dopts["DhcpOptionsId"]
 
-    return False, None
+    return None
 
 
 def create_dhcp_config(params: Dict[str, Any]) -> List[Dict[str, Any]]:
@@ -378,7 +379,7 @@ def create_dhcp_option_set(
     return dhcp_options_id
 
 
-def find_opt_index(config: List[Dict[str, Any]], option: str) -> int:
+def find_opt_index(config: List[Dict[str, Any]], option: str) -> Optional[int]:
     return next((i for i, item in enumerate(config) if item["Key"] == option), None)
 
 
@@ -412,15 +413,18 @@ def get_dhcp_options_info(client, dhcp_options_id: Optional[str], check_mode: bo
         # We can't describe without an option id, we might get here when creating a new option set in check_mode
         return None
 
-    dhcp_option_info = describe_dhcp_options(client, DhcpOptionsIds=[dhcp_options_id])
-
-    dhcp_options_set = dhcp_option_info[0]
-    dhcp_option_info = {
-        "DhcpOptionsId": dhcp_options_set["DhcpOptionsId"],
-        "DhcpConfigurations": dhcp_options_set["DhcpConfigurations"],
-        "Tags": boto3_tag_list_to_ansible_dict(dhcp_options_set.get("Tags", [{"Value": "", "Key": "Name"}])),
-    }
-    return camel_dict_to_snake_dict(dhcp_option_info, ignore_list=["Tags"])
+    dhcp_options = describe_dhcp_options(client, DhcpOptionsIds=[dhcp_options_id])
+    dhcp_option_info = None
+    if dhcp_options:
+        dhcp_option_info = camel_dict_to_snake_dict(
+            {
+                "DhcpOptionsId": dhcp_options[0]["DhcpOptionsId"],
+                "DhcpConfigurations": dhcp_options[0]["DhcpConfigurations"],
+                "Tags": boto3_tag_list_to_ansible_dict(dhcp_options[0].get("Tags", [{"Value": "", "Key": "Name"}])),
+            },
+            ignore_list=["Tags"],
+        )
+    return dhcp_option_info
 
 
 def ensure_absent(client, module: AnsibleAWSModule, new_config: List[Dict[str, Any]]) -> None:
@@ -439,7 +443,6 @@ def ensure_present(client, module: AnsibleAWSModule, new_config: List[Dict[str, 
     tags = module.params["tags"]
     purge_tags = module.params["purge_tags"]
     dhcp_options_id = module.params["dhcp_options_id"]
-    found = False
     changed = False
     existing_config = None
     existing_id = None
@@ -473,7 +476,7 @@ def ensure_present(client, module: AnsibleAWSModule, new_config: List[Dict[str, 
                         dhcp_config=return_config,
                     )
         # If no vpc_id was given, or the options don't match then look for an existing set using tags
-        found, dhcp_options_id = match_dhcp_options(client, module, new_config)
+        dhcp_options_id = match_dhcp_options(client, module, new_config)
 
     else:
         # Now let's cover the case where there are existing options that we were told about by id
@@ -483,9 +486,8 @@ def ensure_present(client, module: AnsibleAWSModule, new_config: List[Dict[str, 
         dhcp_options = describe_dhcp_options(client, DhcpOptionsIds=[dhcp_options_id])
         if not dhcp_options:
             module.fail_json(msg="a dhcp_options_id was supplied, but does not exist")
-        found = True
 
-    if not found:
+    if not dhcp_options_id:
         # If we still don't have an options ID, create it
         dhcp_options_id = create_dhcp_option_set(client, module.params, new_config, module.check_mode)
         changed = True

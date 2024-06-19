@@ -278,17 +278,17 @@ from ansible_collections.amazon.aws.plugins.module_utils.waiters import wait_for
 
 
 def get_endpoints(client, params: Dict[str, Any], endpoint_id: Optional[str] = None) -> List[Dict[str, Any]]:
-    params = dict()
+    api_params = dict()
     if endpoint_id:
-        params["VpcEndpointIds"] = [endpoint_id]
+        api_params["VpcEndpointIds"] = [endpoint_id]
     else:
         filters = list()
         if params.get("service"):
             filters.append({"Name": "service-name", "Values": [params.get("service")]})
         if params.get("vpc_id"):
             filters.append({"Name": "vpc-id", "Values": [params.get("vpc_id")]})
-        params["Filters"] = filters
-    result = describe_vpc_endpoints(client, **params)
+        api_params["Filters"] = filters
+    result = describe_vpc_endpoints(client, **api_params)
 
     # normalize iso datetime fields in result
     normalized_result = normalize_boto3_result(result)
@@ -319,11 +319,10 @@ def setup_creation(client, module: AnsibleAWSModule) -> Tuple[bool, Dict[str, An
     if not endpoint_id:
         # Try to use the module parameters to match any existing endpoints
         all_endpoints = get_endpoints(client, module.params, endpoint_id)
-        if len(all_endpoints) > 0:
-            for endpoint in all_endpoints:
-                if match_endpoints(route_table_ids, service_name, vpc_id, endpoint):
-                    endpoint_id = endpoint["VpcEndpointId"]
-                    break
+        for endpoint in all_endpoints:
+            if match_endpoints(route_table_ids, service_name, vpc_id, endpoint):
+                endpoint_id = endpoint["VpcEndpointId"]
+                break
 
     if endpoint_id:
         # If we have an endpoint now, just ensure tags and exit
@@ -414,7 +413,7 @@ def create_aws_vpc_endpoint(client, module: AnsibleAWSModule) -> Tuple[bool, Dic
     return changed, normalized_result
 
 
-def setup_removal(client, module: AnsibleAWSError) -> Tuple[bool, Dict[str, Any]]:
+def setup_removal(client, module: AnsibleAWSModule) -> Tuple[bool, Dict[str, Any]]:
     changed = False
 
     if module.check_mode:
