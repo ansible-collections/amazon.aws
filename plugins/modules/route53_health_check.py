@@ -284,6 +284,22 @@ health_check:
           type: bool
           returned: When the health check exists.
           sample: false
+        enable_sni:
+          description: This allows the endpoint to respond to HTTPS health check requests with the applicable SSL/TLS certificate.
+          type: bool
+          returned: When the health check exists.
+          sample: false
+        inverted:
+          description: Specify whether you want Amazon Route 53 to invert the status of a health check.
+          type: bool
+          returned: When the health check exists.
+          sample: false
+        measure_latency:
+          description:
+          - To enable/disable latency graphs to monitor the latency between health checkers in multiple Amazon Web Services regions and your endpoint.
+          type: bool
+          returned: When the health check exists.
+          sample: false
     tags:
       description: A dictionary representing the tags on the health check.
       type: dict
