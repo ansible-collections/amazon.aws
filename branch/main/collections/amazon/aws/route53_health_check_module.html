@@ -655,6 +655,15 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-health_check/health_check_config/enable_sni"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-health-check-module-return-health-check-health-check-config-enable-sni"><strong>enable_sni</strong></p>
+<a class="ansibleOptionLink" href="#return-health_check/health_check_config/enable_sni" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>This allows the endpoint to respond to HTTPS health check requests with the applicable SSL/TLS certificate.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> When the health check exists.</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">false</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-health_check/health_check_config/failure_threshold"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-health-check-module-return-health-check-health-check-config-failure-threshold"><strong>failure_threshold</strong></p>
 <a class="ansibleOptionLink" href="#return-health_check/health_check_config/failure_threshold" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
@@ -663,13 +672,22 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">3</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-health_check/health_check_config/fully_qualified_domain_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-health-check-module-return-health-check-health-check-config-fully-qualified-domain-name"><strong>fully_qualified_domain_name</strong></p>
 <a class="ansibleOptionLink" href="#return-health_check/health_check_config/fully_qualified_domain_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The FQDN configured for the health check to test.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> When the health check exists and an FQDN is configured.</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;updated&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-health_check/health_check_config/inverted"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-health-check-module-return-health-check-health-check-config-inverted"><strong>inverted</strong></p>
+<a class="ansibleOptionLink" href="#return-health_check/health_check_config/inverted" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Specify whether you want Amazon Route 53 to invert the status of a health check.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> When the health check exists.</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">false</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -682,6 +700,15 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-health_check/health_check_config/measure_latency"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-health-check-module-return-health-check-health-check-config-measure-latency"><strong>measure_latency</strong></p>
+<a class="ansibleOptionLink" href="#return-health_check/health_check_config/measure_latency" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>To enable/disable latency graphs to monitor the latency between health checkers in multiple Amazon Web Services regions and your endpoint.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> When the health check exists.</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">false</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-health_check/health_check_config/port"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-health-check-module-return-health-check-health-check-config-port"><strong>port</strong></p>
 <a class="ansibleOptionLink" href="#return-health_check/health_check_config/port" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -690,7 +717,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;updated&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-health_check/health_check_config/request_interval"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-health-check-module-return-health-check-health-check-config-request-interval"><strong>request_interval</strong></p>
 <a class="ansibleOptionLink" href="#return-health_check/health_check_config/request_interval" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
@@ -699,7 +726,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">30</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-health_check/health_check_config/resource_path"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-health-check-module-return-health-check-health-check-config-resource-path"><strong>resource_path</strong></p>
 <a class="ansibleOptionLink" href="#return-health_check/health_check_config/resource_path" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -708,7 +735,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;/healthz&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-health_check/health_check_config/search_string"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-health-check-module-return-health-check-health-check-config-search-string"><strong>search_string</strong></p>
 <a class="ansibleOptionLink" href="#return-health_check/health_check_config/search_string" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -717,7 +744,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;ALIVE&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-health_check/health_check_config/type"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-health-check-module-return-health-check-health-check-config-type"><strong>type</strong></p>
 <a class="ansibleOptionLink" href="#return-health_check/health_check_config/type" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -726,7 +753,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;HTTPS_STR_MATCH&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-health_check/health_check_version"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-health-check-module-return-health-check-health-check-version"><strong>health_check_version</strong></p>
 <a class="ansibleOptionLink" href="#return-health_check/health_check_version" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
@@ -735,7 +762,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">14</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-health_check/id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-health-check-module-return-health-check-id"><strong>id</strong></p>
 <a class="ansibleOptionLink" href="#return-health_check/id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -744,7 +771,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;50ec8a13-9623-4c66-9834-dd8c5aedc9ba&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-health_check/tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-health-check-module-return-health-check-tags"><strong>tags</strong></p>
 <a class="ansibleOptionLink" href="#return-health_check/tags" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
