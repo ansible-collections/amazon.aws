@@ -190,7 +190,7 @@ buckets:
     public_access_block:
       description: Bucket public access block configuration.
       returned: when O(bucket_facts=true) and  RV(buckets.public_access_block=true)
-      type: complex
+      type: dict
       sample: {
                 "PublicAccessBlockConfiguration": {
                     "BlockPublicAcls": true,
@@ -255,12 +255,12 @@ buckets:
                 Type:
                   description: Type of grantee.
                   type: str
-        Permission:
-          description: Specifies the permission given to the grantee.
-          type: str
+            Permission:
+              description: Specifies the permission given to the grantee.
+              type: str
         Owner:
           description: Bucket owner information.
-          type: complex
+          type: dict
           sample: {
                     "DisplayName": "abc-aws-root+721234567890",
                     "ID": "1234567890cbc0f1234567890f1234567890c123456789012123456789091234"
@@ -327,7 +327,8 @@ buckets:
     bucket_lifecycle_configuration:
       description: Bucket lifecycle configuration settings.
       returned: when O(bucket_facts=true) and RV(buckets.bucket_lifecycle_configuration=true).
-      type: complex
+      type: list
+      elements: dict
       contains:
         Rules:
           description: List of lifecycle management rules.
@@ -410,12 +411,12 @@ buckets:
     bucket_policy_status:
       description: Status of bucket policy.
       returned: when O(bucket_facts=true) and RV(buckets.bucket_policy_status=true).
-      type: complex
+      type: dict
       contains:
         PolicyStatus:
           description: Status of bucket policy.
           returned: when bucket policy is present.
-          type: complex
+          type: dict
           contains:
             IsPublic:
               description: Report bucket policy public status.

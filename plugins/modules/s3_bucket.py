@@ -294,7 +294,7 @@ encryption:
     type: dict
     returned: when O(state=present)
     sample: {
-            "SSEAlgorithm": "AES256"
+                "SSEAlgorithm": "AES256"
             }
 name:
     description: Bucket name.
@@ -357,14 +357,14 @@ acl:
     returned: when O(state=present).
     sample: "public-read"
 object_lock_enabled:
-    description: Whether S3 Object Lock to be enabled.
+    description: Whether S3 Object Lock is enabled.
     type: bool
     returned: when O(state=present)
     sample: false
 public_access_block:
     description: Bucket public access block configuration.
     returned: when O(state=present)
-    type: complex
+    type: dict
     sample: {
                 "PublicAccessBlockConfiguration": {
                     "BlockPublicAcls": true,
