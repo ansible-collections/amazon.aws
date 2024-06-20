@@ -343,7 +343,7 @@ buckets:
     bucket_location:
       description: Bucket location.
       returned: when O(bucket_facts=true) and RV(buckets.bucket_location=true).
-      type: complex
+      type: dict
       sample: "bucket_location": {
                     "LocationConstraint": "us-east-1"
                 }
