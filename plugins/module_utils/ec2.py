@@ -466,8 +466,9 @@ def describe_vpc_endpoints(
 
 @EC2VpcEndpointsErrorHandler.deletion_error_handler("delete vpc endpoints")
 @AWSRetry.jittered_backoff()
-def delete_vpc_endpoints(client, vpc_endpoint_ids: str) -> Optional[List[Dict[str, Any]]]:
-    return client.delete_vpc_endpoints(VpcEndpointIds=vpc_endpoint_ids)["Unsuccessful"]
+def delete_vpc_endpoints(client, vpc_endpoint_ids: str) -> List[Dict[str, Union[str, Dict[str, str]]]]:
+    result = client.delete_vpc_endpoints(VpcEndpointIds=vpc_endpoint_ids)
+    return result.get("Unsuccessful", [])
 
 
 @EC2ElasticIPErrorHandler.common_error_handler("create vpc endpoint")
@@ -477,7 +478,7 @@ def create_vpc_endpoint(
     **params: Dict[
         str, Union[str, bool, List[str], Dict[str, Union[str, bool]], List[Dict[str, str]], EC2TagSpecifications]
     ],
-) -> Dict[str, str]:
+) -> Dict[str, Any]:
     return client.create_vpc_endpoint(**params)["VpcEndpoint"]
 
 
@@ -494,7 +495,17 @@ class EC2VpcEndpointServiceErrorHandler(AWSErrorHandler):
 @AWSRetry.jittered_backoff()
 def describe_vpc_endpoint_services(
     client, filters: Optional[List[Dict[str, Any]]] = None, service_names: Optional[List[str]] = None
-) -> List[Dict[str, Any]]:
+) -> Dict[str, Any]:
+    """
+    Wrap call to the AWS API describe_vpc_endpoint_services (used to describe available
+    services to which you can create a VPC endpoint.)
+        Parameters:
+            client: The boto3 client.
+            filters: Optional filters to pass to the API.
+            service_names: the service names.
+        Returns:
+            results: A dictionnary with keys 'ServiceNames' and 'ServiceDetails'
+    """
     paginator = client.get_paginator("describe_vpc_endpoint_services")
     params: dict[str, Any] = {}
     if filters:
