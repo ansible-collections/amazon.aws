@@ -344,12 +344,14 @@ buckets:
       description: Bucket location.
       returned: when O(bucket_facts=true) and RV(buckets.bucket_location=true).
       type: complex
+      sample: "bucket_location": {
+                    "LocationConstraint": "us-east-1"
+                }
       contains:
         LocationConstraint:
           description: AWS region.
           returned: always
           type: str
-          sample: "us-east-2"
     bucket_logging:
       description: Server access logging configuration.
       returned: when O(bucket_facts=true) and RV(buckets.bucket_logging=true).
@@ -379,7 +381,25 @@ buckets:
           description: List of notification events configurations.
           returned: when at least one notification is configured.
           type: list
-          sample: []
+          sample: [
+                      {
+                          'Id': 'topic-config-dev001',
+                          'TopicArn': 'arn:aws:sns:us-west-1:721234567890:sns-dev001-topic',
+                          'Events': [
+                              "s3:ObjectCreated:Copy"
+                          ],
+                          'Filter': {
+                              'Key': {
+                                  'FilterRules': [
+                                      {
+                                            "Name": "Prefix",
+                                            "Value": "test/"
+                                      },
+                                  ]
+                              }
+                          }
+                      },
+                    ]
     bucket_ownership_controls:
       description: Preffered object ownership settings.
       returned: when O(bucket_facts=true) and RV(buckets.bucket_ownership_controls=true)
