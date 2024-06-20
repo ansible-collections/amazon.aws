@@ -351,6 +351,7 @@ versioning:
         Versioning:
             description: The versioning state of the bucket.
             type: str
+            returned: always
 acl:
     description: S3 bucket's canned ACL.
     type: dict
