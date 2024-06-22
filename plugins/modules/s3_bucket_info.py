@@ -344,9 +344,9 @@ buckets:
       description: Bucket location.
       returned: when O(bucket_facts=true) and RV(buckets.bucket_location=true).
       type: dict
-      sample: "bucket_location": {
-                    "LocationConstraint": "us-east-1"
-                }
+      sample: {
+                "LocationConstraint": "us-east-1"
+              }
       contains:
         LocationConstraint:
           description: AWS region.
