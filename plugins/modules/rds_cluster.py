@@ -187,7 +187,7 @@ options:
         description:
           - Specifies the storage type to be associated with the DB cluster.
           - This setting is required to create a Multi-AZ DB cluster.
-          - For multi-AZ DB clusters, O(storage_type) defaults to V(io1) and a value for the V(iops) parameter is required.
+          - For multi-AZ DB clusters, O(storage_type) defaults to V(io1) and a value for the O(iops) parameter is required.
           - For Aurora DB clusters, O(storage_type) defaults to V(aurora) standard.
           - For mysql and postgres DB clusters, O(storage_type) defaults to V(io1).
           - Support for V(aurora) and V(aurora-iopt1) was added in release 8.1.0.
