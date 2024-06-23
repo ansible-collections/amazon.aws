@@ -12,6 +12,7 @@ short_description: add or delete entries in Amazons Route 53 DNS service
 description:
   - Creates and deletes DNS records in Amazons Route 53 service.
   - This module was originally added to C(community.aws) in release 1.0.0.
+  - test
 options:
   state:
     description:
