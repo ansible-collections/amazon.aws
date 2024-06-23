@@ -96,7 +96,7 @@ kms_keys:
       returned: always
       sample: "AWS"
     key_spec:
-      description: Describes the type of key material in the KMS key.
+      description: Specifies the type of KMS key to create.
       type: str
       returned: always
       sample: "SYMMETRIC_DEFAULT"
