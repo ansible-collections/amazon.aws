@@ -11,13 +11,13 @@ version_added: 1.0.0
 version_added_collection: community.aws
 short_description: List the MFA (Multi-Factor Authentication) devices registered for a user
 description:
-  - List the MFA (Multi-Factor Authentication) devices registered for a user
+  - List the MFA (Multi-Factor Authentication) devices registered for a user.
 author:
   - Victor Costan (@pwnall)
 options:
   user_name:
     description:
-      - The name of the user whose MFA devices will be listed
+      - The name of the user whose MFA devices will be listed.
     type: str
 extends_documentation_fragment:
   - amazon.aws.common.modules
@@ -27,7 +27,7 @@ extends_documentation_fragment:
 
 RETURN = r"""
 mfa_devices:
-    description: The MFA devices registered for the given user
+    description: The MFA devices registered for the given user.
     returned: always
     type: list
     sample:

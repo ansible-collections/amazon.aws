@@ -11,16 +11,16 @@ version_added: 1.0.0
 version_added_collection: community.aws
 short_description: Manage User Managed IAM policies
 description:
-  - Allows creating and removing managed IAM policies
+  - Allows creating and removing managed IAM policies.
 options:
   name:
     description:
       - The name of the managed policy.
       - >-
-        Note: Policy names are unique within an account.  Paths (I(path)) do B(not) affect
-        the uniqueness requirements of I(name).  For example it is not permitted to have both
+        Note: Policy names are unique within an account.  Paths (O(path)) do B(not) affect
+        the uniqueness requirements of O(name).  For example it is not permitted to have both
         C(/Path1/MyPolicy) and C(/Path2/MyPolicy) in the same account.
-      - The parameter was renamed from C(policy_name) to C(name) in release 7.2.0.
+      - The parameter was renamed from O(policy_name) to O(name) in release 7.2.0.
     required: true
     type: str
     aliases: ["policy_name"]
@@ -36,7 +36,7 @@ options:
   description:
     description:
       - A helpful description of this policy, this value is immutable and only set when creating a new policy.
-      - The parameter was renamed from C(policy_description) to C(description) in release 7.2.0.
+      - The parameter was renamed from O(policy_description) to O(description) in release 7.2.0.
     aliases: ["policy_description"]
     type: str
   policy:
@@ -50,7 +50,7 @@ options:
     type: bool
   only_version:
     description:
-      - Remove all other non default revisions, if this is used with C(make_default) it will result in all other versions of this policy being deleted.
+      - Remove all other non default revisions, if this is used with O(make_default) it will result in all other versions of this policy being deleted.
     type: bool
     default: false
   state:
@@ -60,7 +60,7 @@ options:
     choices: [ "present", "absent" ]
     type: str
 notes:
-  - Support for I(tags) and I(purge_tags) was added in release 7.2.0.
+  - Support for O(tags) and O(purge_tags) was added in release 7.2.0.
 
 author:
   - "Dan Kozlowski (@dkhenry)"

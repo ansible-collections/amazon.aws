@@ -12,7 +12,7 @@ short_description: Manage inline IAM policies for users, groups, and roles
 description:
   - Allows uploading or removing inline IAM policies for IAM users, groups or roles.
   - To administer managed policies please see M(community.aws.iam_user), M(community.aws.iam_role),
-    M(amazon.aws.iam_group) and M(community.aws.iam_managed_policy)
+    M(amazon.aws.iam_group) and M(community.aws.iam_managed_policy).
   - This module was originally added to C(community.aws) in release 1.0.0.
 options:
   iam_type:
@@ -43,7 +43,7 @@ options:
     type: str
   skip_duplicates:
     description:
-      - When I(skip_duplicates=true) the module looks for any policies that match the document you pass in.
+      - When O(skip_duplicates=true) the module looks for any policies that match the document you pass in.
         If there is a match it will not make a new policy object with the same rules.
     default: false
     type: bool
