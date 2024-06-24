@@ -20,10 +20,10 @@ options:
     description:
       - The name of the group.
       - >-
-        Note: Group names are unique within an account.  Paths (I(path)) do B(not) affect
-        the uniqueness requirements of I(name).  For example it is not permitted to have both
+        Note: Group names are unique within an account.  Paths (O(path)) do B(not) affect
+        the uniqueness requirements of O(name).  For example it is not permitted to have both
         C(/Path1/MyGroup) and C(/Path2/MyGroup) in the same account.
-      - The alias C(group_name) was added in release 7.2.0.
+      - The alias O(group_name) was added in release 7.2.0.
     required: true
     aliases: ['group_name']
     type: str
@@ -61,14 +61,14 @@ options:
     type: str
   purge_policies:
     description:
-      - When I(purge_policies=true) any managed policies not listed in I(managed_policies) will be detatched.
+      - When O(purge_policies=true) any managed policies not listed in O(managed_policies) will be detatched.
     required: false
     default: false
     type: bool
     aliases: ['purge_policy', 'purge_managed_policies']
   purge_users:
     description:
-      - When I(purge_users=true) users which are not included in I(users) will be detached.
+      - When O(purge_users=true) users which are not included in I(users) will be detached.
     required: false
     default: false
     type: bool
@@ -125,73 +125,73 @@ EXAMPLES = r"""
 
 RETURN = r"""
 iam_group:
-    description: dictionary containing all the group information including group membership
+    description: Dictionary containing all the group information including group membership.
     returned: success
     type: complex
     contains:
         group:
-            description: dictionary containing all the group information
+            description: Dictionary containing all the group information.
             returned: success
             type: complex
             contains:
                 arn:
-                    description: the Amazon Resource Name (ARN) specifying the group
+                    description: The Amazon Resource Name (ARN) specifying the group.
                     type: str
                     sample: "arn:aws:iam::1234567890:group/testgroup1"
                 create_date:
-                    description: the date and time, in ISO 8601 date-time format, when the group was created
+                    description: The date and time, in ISO 8601 date-time format, when the group was created.
                     type: str
                     sample: "2017-02-08T04:36:28+00:00"
                 group_id:
-                    description: the stable and unique string identifying the group
+                    description: The stable and unique string identifying the group.
                     type: str
                     sample: AGPA12345EXAMPLE54321
                 group_name:
-                    description: the friendly name that identifies the group
+                    description: The friendly name that identifies the group.
                     type: str
                     sample: testgroup1
                 path:
-                    description: the path to the group
+                    description: The path to the group.
                     type: str
                     sample: /
         users:
-            description: list containing all the group members
+            description: List containing all the group members.
             returned: success
             type: complex
             contains:
                 arn:
-                    description: the Amazon Resource Name (ARN) specifying the user
+                    description: The Amazon Resource Name (ARN) specifying the user.
                     type: str
                     sample: "arn:aws:iam::1234567890:user/test_user1"
                 create_date:
-                    description: the date and time, in ISO 8601 date-time format, when the user was created
+                    description: The date and time, in ISO 8601 date-time format, when the user was created.
                     type: str
                     sample: "2017-02-08T04:36:28+00:00"
                 user_id:
-                    description: the stable and unique string identifying the user
+                    description: The stable and unique string identifying the user.
                     type: str
                     sample: AIDA12345EXAMPLE54321
                 user_name:
-                    description: the friendly name that identifies the user
+                    description: The friendly name that identifies the user.
                     type: str
                     sample: testgroup1
                 path:
-                    description: the path to the user
+                    description: The path to the user.
                     type: str
                     sample: /
         attached_policies:
             version_added: 7.1.0
             description:
-                - list containing basic information about managed policies attached to the group.
+                - List containing basic information about managed policies attached to the group.
             returned: success
             type: complex
             contains:
                 policy_arn:
-                    description: the Amazon Resource Name (ARN) specifying the managed policy.
+                    description: The Amazon Resource Name (ARN) specifying the managed policy.
                     type: str
                     sample: "arn:aws:iam::123456789012:policy/test_policy"
                 policy_name:
-                    description: the friendly name that identifies the policy.
+                    description: The friendly name that identifies the policy.
                     type: str
                     sample: test_policy
 """

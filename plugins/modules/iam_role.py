@@ -22,17 +22,17 @@ options:
         U(https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html).
       - Updating the path on an existing role is not currently supported and will result in a
         warning.
-      - C(path_prefix) and C(prefix) were added as aliases in release 7.2.0.
+      - O(path_prefix) and O(prefix) were added as aliases in release 7.2.0.
     type: str
     aliases: ["prefix", "path_prefix"]
   name:
     description:
       - The name of the role.
       - >-
-        Note: Role names are unique within an account.  Paths (I(path)) do B(not) affect
-        the uniqueness requirements of I(name).  For example it is not permitted to have both
+        Note: Role names are unique within an account.  Paths (O(path)) do B(not) affect
+        the uniqueness requirements of O(name).  For example it is not permitted to have both
         C(/Path1/MyRole) and C(/Path2/MyRole) in the same account.
-      - C(role_name) was added as an alias in release 7.2.0.
+      - O(role_name) was added as an alias in release 7.2.0.
     required: true
     type: str
     aliases: ["role_name"]
@@ -43,7 +43,7 @@ options:
   boundary:
     description:
       - The ARN of an IAM managed policy to use to restrict the permissions this role can pass on to IAM roles/users that it creates.
-      - Boundaries cannot be set on Instance Profiles, as such if this option is specified then I(create_instance_profile) must be C(false).
+      - Boundaries cannot be set on Instance Profiles, as such if this option is specified then O(create_instance_profile) must be V(false).
       - This is intended for roles/users that have permissions to create new IAM objects.
       - For more information on boundaries, see U(https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_boundaries.html).
     aliases: [boundary_policy_arn]
@@ -51,12 +51,12 @@ options:
   assume_role_policy_document:
     description:
       - The trust relationship policy document that grants an entity permission to assume the role.
-      - This parameter is required when I(state=present).
+      - This parameter is required when O(state=present).
     type: json
   managed_policies:
     description:
       - A list of managed policy ARNs, managed policy ARNs or friendly names.
-      - To remove all policies set I(purge_polices=true) and I(managed_policies=[]).
+      - To remove all policies set O(purge_policies=true) and O(managed_policies=[]).
       - To embed an inline policy, use M(amazon.aws.iam_policy).
     aliases: ['managed_policy']
     type: list
@@ -68,7 +68,7 @@ options:
     type: int
   purge_policies:
     description:
-      - When I(purge_policies=true) any managed policies not listed in I(managed_policies) will be detatched.
+      - When O(purge_policies=true) any managed policies not listed in O(managed_policies) will be detatched.
     type: bool
     aliases: ['purge_policy', 'purge_managed_policies']
     default: true
@@ -85,9 +85,9 @@ options:
     type: bool
   delete_instance_profile:
     description:
-      - When I(delete_instance_profile=true) and I(state=absent) deleting a role will also delete the instance
-        profile created with the same I(name) as the role.
-      - Only applies when I(state=absent).
+      - When O(delete_instance_profile=true) and O(state=absent) deleting a role will also delete the instance
+        profile created with the same O(name) as the role.
+      - Only applies when O(state=absent).
     default: false
     type: bool
   wait_timeout:
@@ -97,7 +97,7 @@ options:
     type: int
   wait:
     description:
-      - When I(wait=True) the module will wait for up to I(wait_timeout) seconds
+      - When O(wait=True) the module will wait for up to O(wait_timeout) seconds
         for IAM role creation before returning.
     default: True
     type: bool
@@ -141,41 +141,41 @@ EXAMPLES = r"""
 
 RETURN = r"""
 iam_role:
-    description: dictionary containing the IAM Role data
+    description: Dictionary containing the IAM Role data.
     returned: success
     type: complex
     contains:
         path:
-            description: the path to the role
+            description: The path to the role.
             type: str
             returned: always
             sample: /
         role_name:
-            description: the friendly name that identifies the role
+            description: The friendly name that identifies the role.
             type: str
             returned: always
             sample: myrole
         role_id:
-            description: the stable and unique string identifying the role
+            description: The stable and unique string identifying the role.
             type: str
             returned: always
             sample: ABCDEFF4EZ4ABCDEFV4ZC
         arn:
-            description: the Amazon Resource Name (ARN) specifying the role
+            description: The Amazon Resource Name (ARN) specifying the role.
             type: str
             returned: always
             sample: "arn:aws:iam::1234567890:role/mynewrole"
         create_date:
-            description: the date and time, in ISO 8601 date-time format, when the role was created
+            description: The date and time, in ISO 8601 date-time format, when the role was created.
             type: str
             returned: always
             sample: "2016-08-14T04:36:28+00:00"
         assume_role_policy_document:
             description:
-              - the policy that grants an entity permission to assume the role
+              - The policy that grants an entity permission to assume the role.
               - |
                 Note: the case of keys in this dictionary are no longer converted from CamelCase to
-                snake_case.  This behaviour changed in release 8.0.0.
+                snake_case. This behaviour changed in release 8.0.0.
             type: dict
             returned: always
             sample: {
@@ -195,14 +195,14 @@ iam_role:
             description:
               - |
                 Note: this return value has been deprecated and will be removed in a release after
-                2026-05-01.  assume_role_policy_document and assume_role_policy_document_raw now use
-                the same format.
+                2026-05-01. RV(iam_role.assume_role_policy_document) and RV(iam_role.assume_role_policy_document_raw)
+                now use the same format.
             type: dict
             returned: always
             version_added: 5.3.0
 
         attached_policies:
-            description: a list of dicts containing the name and ARN of the managed IAM policies attached to the role
+            description: A list of dicts containing the name and ARN of the managed IAM policies attached to the role.
             type: list
             returned: always
             sample: [

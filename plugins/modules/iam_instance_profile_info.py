@@ -17,14 +17,14 @@ options:
   name:
     description:
       - Name of an instance profile to search for.
-      - Mutually exclusive with I(prefix).
+      - Mutually exclusive with O(prefix).
     aliases:
       - instance_profile_name
     type: str
   path_prefix:
     description:
       - The path prefix for filtering the results.
-      - Mutually exclusive with I(name).
+      - Mutually exclusive with O(name).
     aliases: ["path", "prefix"]
     type: str
 
@@ -52,7 +52,7 @@ EXAMPLES = r"""
 
 RETURN = r"""
 iam_instance_profiles:
-  description: List of IAM instance profiles
+  description: List of IAM instance profiles.
   returned: always
   type: complex
   contains:
