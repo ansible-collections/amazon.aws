@@ -266,11 +266,6 @@ kms_keys:
       type: str
       returned: always
       sample: "SYMMETRIC_DEFAULT"
-    description:
-      description: The description of the KMS key.
-      type: str
-      returned: always
-      sample: "Default key that protects my Backup data when no other key is defined"
     encryption_algorithms:
       description: The encryption algorithms that the KMS key supports.
       type: list
