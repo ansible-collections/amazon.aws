@@ -91,7 +91,7 @@ instances:
       description: Instance class of the database instance
       returned: always
       type: str
-      sample: db.t2.small
+      sample: db.t3.small
     db_instance_identifier:
       description: Database instance identifier
       returned: always
