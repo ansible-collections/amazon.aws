@@ -251,7 +251,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-inst
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Name of the instance profile.</p>
-<p>Note: Profile names are unique within an account.  Paths (<em>path</em>) do <strong>not</strong> affect the uniqueness requirements of <em>name</em>.  For example it is not permitted to have both <code class="docutils literal notranslate"><span class="pre">/Path1/MyProfile</span></code> and <code class="docutils literal notranslate"><span class="pre">/Path2/MyProfile</span></code> in the same account.</p>
+<p>Note: Profile names are unique within an account.  Paths (<code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-instance-profile-module-parameter-path"><span class="std std-ref"><span class="pre">path</span></span></a></strong></code>) do <strong>not</strong> affect the uniqueness requirements of <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-instance-profile-module-parameter-name"><span class="std std-ref"><span class="pre">name</span></span></a></strong></code>.  For example it is not permitted to have both <code class="docutils literal notranslate"><span class="pre">/Path1/MyProfile</span></code> and <code class="docutils literal notranslate"><span class="pre">/Path2/MyProfile</span></code> in the same account.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -264,7 +264,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-inst
 <td><div class="ansible-option-cell"><p>The instance profile path.</p>
 <p>For more information about IAM paths, see the AWS IAM identifiers documentation <a class="reference external" href="https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html">https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html</a>.</p>
 <p>Updating the path on an existing profile is not currently supported and will result in a warning.</p>
-<p>The parameter was renamed from <code class="docutils literal notranslate"><span class="pre">prefix</span></code> to <code class="docutils literal notranslate"><span class="pre">path</span></code> in release 7.2.0.</p>
+<p>The parameter was renamed from <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-instance-profile-module-parameter-prefix"><span class="std std-ref"><span class="pre">prefix</span></span></a></strong></code> to <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-instance-profile-module-parameter-path"><span class="std std-ref"><span class="pre">path</span></span></a></strong></code> in release 7.2.0.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -313,7 +313,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-inst
 <a class="ansibleOptionLink" href="#parameter-role" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The name of the role to attach to the instance profile.</p>
-<p>To remove all roles from the instance profile set <em>role=””</em>.</p>
+<p>To remove all roles from the instance profile set <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-iam-instance-profile-module-parameter-role"><span class="std std-ref"><span class="pre">role=&quot;&quot;</span></span></a></code>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -444,7 +444,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-inst
 <div class="ansibleOptionAnchor" id="return-iam_instance_profile"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-instance-profile-module-return-iam-instance-profile"><strong>iam_instance_profile</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_instance_profile" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>List of IAM instance profiles</p>
+<td><div class="ansible-option-cell"><p>List of IAM instance profiles.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 </div></td>
 </tr>

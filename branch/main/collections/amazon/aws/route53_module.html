@@ -746,16 +746,16 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-set"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-module-return-set"><strong>set</strong></p>
-<a class="ansibleOptionLink" href="#return-set" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
+<div class="ansibleOptionAnchor" id="return-resource_record_sets"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-module-return-resource-record-sets"><strong>resource_record_sets</strong></p>
+<a class="ansibleOptionLink" href="#return-resource_record_sets" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Info specific to the resource record.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when state is ‘get’</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-set/alias"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-module-return-set-alias"><strong>alias</strong></p>
-<a class="ansibleOptionLink" href="#return-set/alias" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+<div class="ansibleOptionAnchor" id="return-resource_record_sets/alias"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-module-return-resource-record-sets-alias"><strong>alias</strong></p>
+<a class="ansibleOptionLink" href="#return-resource_record_sets/alias" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Whether this is an alias.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
@@ -763,8 +763,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-set/failover"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-module-return-set-failover"><strong>failover</strong></p>
-<a class="ansibleOptionLink" href="#return-set/failover" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<div class="ansibleOptionAnchor" id="return-resource_record_sets/failover"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-module-return-resource-record-sets-failover"><strong>failover</strong></p>
+<a class="ansibleOptionLink" href="#return-resource_record_sets/failover" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Whether this is the primary or secondary resource record set.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
@@ -772,8 +772,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-set/geo_location"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-module-return-set-geo-location"><strong>geo_location</strong></p>
-<a class="ansibleOptionLink" href="#return-set/geo_location" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+<div class="ansibleOptionAnchor" id="return-resource_record_sets/geo_location"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-module-return-resource-record-sets-geo-location"><strong>geo_location</strong></p>
+<a class="ansibleOptionLink" href="#return-resource_record_sets/geo_location" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 <p><em class="ansible-option-versionadded">added in community.aws 3.3.0</em></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>geograpic location based on which Route53 resonds to DNS queries.</p>
@@ -782,42 +782,60 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-set/health_check"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-module-return-set-health-check"><strong>health_check</strong></p>
-<a class="ansibleOptionLink" href="#return-set/health_check" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<div class="ansibleOptionAnchor" id="return-resource_record_sets/health_check"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-module-return-resource-record-sets-health-check"><strong>health_check</strong></p>
+<a class="ansibleOptionLink" href="#return-resource_record_sets/health_check" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>health_check associated with this record.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-set/identifier"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-module-return-set-identifier"><strong>identifier</strong></p>
-<a class="ansibleOptionLink" href="#return-set/identifier" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<div class="ansibleOptionAnchor" id="return-resource_record_sets/identifier"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-module-return-resource-record-sets-identifier"><strong>identifier</strong></p>
+<a class="ansibleOptionLink" href="#return-resource_record_sets/identifier" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>An identifier that differentiates among multiple resource record sets that have the same combination of DNS name and type.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-set/record"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-module-return-set-record"><strong>record</strong></p>
-<a class="ansibleOptionLink" href="#return-set/record" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<div class="ansibleOptionAnchor" id="return-resource_record_sets/name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-module-return-resource-record-sets-name"><strong>name</strong></p>
+<a class="ansibleOptionLink" href="#return-resource_record_sets/name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Domain name for the record set.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;new.foo.com.&quot;</span></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;new.foo.com&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-set/region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-module-return-set-region"><strong>region</strong></p>
-<a class="ansibleOptionLink" href="#return-set/region" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<div class="ansibleOptionAnchor" id="return-resource_record_sets/record"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-module-return-resource-record-sets-record"><strong>record</strong></p>
+<a class="ansibleOptionLink" href="#return-resource_record_sets/record" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Domain name for the record set.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;new.foo.com&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-resource_record_sets/region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-module-return-resource-record-sets-region"><strong>region</strong></p>
+<a class="ansibleOptionLink" href="#return-resource_record_sets/region" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Which region this should be associated with for latency-based routing.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;us-west-2&quot;</span></code></p>
 </div></td>
 </tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-resource_record_sets/resource_records"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-module-return-resource-record-sets-resource-records"><strong>resource_records</strong></p>
+<a class="ansibleOptionLink" href="#return-resource_record_sets/resource_records" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Information about the resource records to act upon.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[{&quot;value&quot;:</span> <span class="pre">&quot;1.1.1.1&quot;}]</span></code></p>
+</div></td>
+</tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-set/ttl"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-module-return-set-ttl"><strong>ttl</strong></p>
-<a class="ansibleOptionLink" href="#return-set/ttl" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<div class="ansibleOptionAnchor" id="return-resource_record_sets/ttl"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-module-return-resource-record-sets-ttl"><strong>ttl</strong></p>
+<a class="ansibleOptionLink" href="#return-resource_record_sets/ttl" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Resource record cache TTL.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
@@ -825,8 +843,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-set/type"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-module-return-set-type"><strong>type</strong></p>
-<a class="ansibleOptionLink" href="#return-set/type" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<div class="ansibleOptionAnchor" id="return-resource_record_sets/type"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-module-return-resource-record-sets-type"><strong>type</strong></p>
+<a class="ansibleOptionLink" href="#return-resource_record_sets/type" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Resource record set type.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
@@ -834,8 +852,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-set/value"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-module-return-set-value"><strong>value</strong></p>
-<a class="ansibleOptionLink" href="#return-set/value" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<div class="ansibleOptionAnchor" id="return-resource_record_sets/value"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-module-return-resource-record-sets-value"><strong>value</strong></p>
+<a class="ansibleOptionLink" href="#return-resource_record_sets/value" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Record value.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
@@ -843,8 +861,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-set/values"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-module-return-set-values"><strong>values</strong></p>
-<a class="ansibleOptionLink" href="#return-set/values" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+<div class="ansibleOptionAnchor" id="return-resource_record_sets/values"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-module-return-resource-record-sets-values"><strong>values</strong></p>
+<a class="ansibleOptionLink" href="#return-resource_record_sets/values" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Record Values.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
@@ -852,8 +870,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-set/weight"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-module-return-set-weight"><strong>weight</strong></p>
-<a class="ansibleOptionLink" href="#return-set/weight" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<div class="ansibleOptionAnchor" id="return-resource_record_sets/weight"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-module-return-resource-record-sets-weight"><strong>weight</strong></p>
+<a class="ansibleOptionLink" href="#return-resource_record_sets/weight" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Weight of the record.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
@@ -861,12 +879,12 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-set/zone"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-module-return-set-zone"><strong>zone</strong></p>
-<a class="ansibleOptionLink" href="#return-set/zone" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<div class="ansibleOptionAnchor" id="return-resource_record_sets/zone"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-module-return-resource-record-sets-zone"><strong>zone</strong></p>
+<a class="ansibleOptionLink" href="#return-resource_record_sets/zone" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Zone this record set belongs to.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;foo.bar.com.&quot;</span></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;foo.bar.com&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">

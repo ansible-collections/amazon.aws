@@ -206,7 +206,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-role
 <a class="ansibleOptionLink" href="#parameter-assume_role_policy_document" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">json</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The trust relationship policy document that grants an entity permission to assume the role.</p>
-<p>This parameter is required when <em>state=present</em>.</p>
+<p>This parameter is required when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -232,7 +232,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-role
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The ARN of an IAM managed policy to use to restrict the permissions this role can pass on to IAM roles/users that it creates.</p>
-<p>Boundaries cannot be set on Instance Profiles, as such if this option is specified then <em>create_instance_profile</em> must be <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p>
+<p>Boundaries cannot be set on Instance Profiles, as such if this option is specified then <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-module-parameter-create-instance-profile"><span class="std std-ref"><span class="pre">create_instance_profile</span></span></a></strong></code> must be <code class="ansible-value docutils literal notranslate"><span class="pre">false</span></code>.</p>
 <p>This is intended for roles/users that have permissions to create new IAM objects.</p>
 <p>For more information on boundaries, see <a class="reference external" href="https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_boundaries.html">https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_boundaries.html</a>.</p>
 </div></td>
@@ -266,8 +266,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-role
 <div class="ansibleOptionAnchor" id="parameter-delete_instance_profile"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-role-module-parameter-delete-instance-profile"><strong>delete_instance_profile</strong></p>
 <a class="ansibleOptionLink" href="#parameter-delete_instance_profile" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>When <em>delete_instance_profile=true</em> and <em>state=absent</em> deleting a role will also delete the instance profile created with the same <em>name</em> as the role.</p>
-<p>Only applies when <em>state=absent</em>.</p>
+<td><div class="ansible-option-cell"><p>When <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-module-parameter-delete-instance-profile"><span class="std std-ref"><span class="pre">delete_instance_profile=true</span></span></a></code> and <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-module-parameter-state"><span class="std std-ref"><span class="pre">state=absent</span></span></a></code> deleting a role will also delete the instance profile created with the same <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-module-parameter-name"><span class="std std-ref"><span class="pre">name</span></span></a></strong></code> as the role.</p>
+<p>Only applies when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-module-parameter-state"><span class="std std-ref"><span class="pre">state=absent</span></span></a></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -303,7 +303,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-role
 <p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A list of managed policy ARNs, managed policy ARNs or friendly names.</p>
-<p>To remove all policies set <em>purge_polices=true</em> and <em>managed_policies=[]</em>.</p>
+<p>To remove all policies set <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-module-parameter-purge-policies"><span class="std std-ref"><span class="pre">purge_policies=true</span></span></a></code> and <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-module-parameter-managed-policies"><span class="std std-ref"><span class="pre">managed_policies=[]</span></span></a></code>.</p>
 <p>To embed an inline policy, use <a class="reference internal" href="iam_policy_module.html#ansible-collections-amazon-aws-iam-policy-module"><span class="std std-ref">amazon.aws.iam_policy</span></a>.</p>
 </div></td>
 </tr>
@@ -322,8 +322,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-role
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The name of the role.</p>
-<p>Note: Role names are unique within an account.  Paths (<em>path</em>) do <strong>not</strong> affect the uniqueness requirements of <em>name</em>.  For example it is not permitted to have both <code class="docutils literal notranslate"><span class="pre">/Path1/MyRole</span></code> and <code class="docutils literal notranslate"><span class="pre">/Path2/MyRole</span></code> in the same account.</p>
-<p><code class="docutils literal notranslate"><span class="pre">role_name</span></code> was added as an alias in release 7.2.0.</p>
+<p>Note: Role names are unique within an account.  Paths (<code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-module-parameter-path"><span class="std std-ref"><span class="pre">path</span></span></a></strong></code>) do <strong>not</strong> affect the uniqueness requirements of <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-module-parameter-name"><span class="std std-ref"><span class="pre">name</span></span></a></strong></code>.  For example it is not permitted to have both <code class="docutils literal notranslate"><span class="pre">/Path1/MyRole</span></code> and <code class="docutils literal notranslate"><span class="pre">/Path2/MyRole</span></code> in the same account.</p>
+<p><code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-module-parameter-role-name"><span class="std std-ref"><span class="pre">role_name</span></span></a></strong></code> was added as an alias in release 7.2.0.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -336,7 +336,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-role
 <td><div class="ansible-option-cell"><p>The path of the role.</p>
 <p>For more information about IAM paths, see the AWS IAM identifiers documentation <a class="reference external" href="https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html">https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html</a>.</p>
 <p>Updating the path on an existing role is not currently supported and will result in a warning.</p>
-<p><code class="docutils literal notranslate"><span class="pre">path_prefix</span></code> and <code class="docutils literal notranslate"><span class="pre">prefix</span></code> were added as aliases in release 7.2.0.</p>
+<p><code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-module-parameter-path-prefix"><span class="std std-ref"><span class="pre">path_prefix</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-module-parameter-prefix"><span class="std std-ref"><span class="pre">prefix</span></span></a></strong></code> were added as aliases in release 7.2.0.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -358,7 +358,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-role
 <a class="ansibleOptionLink" href="#parameter-purge_policies" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: purge_policy, purge_managed_policies</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>When <em>purge_policies=true</em> any managed policies not listed in <em>managed_policies</em> will be detatched.</p>
+<td><div class="ansible-option-cell"><p>When <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-module-parameter-purge-policies"><span class="std std-ref"><span class="pre">purge_policies=true</span></span></a></code> any managed policies not listed in <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-module-parameter-managed-policies"><span class="std std-ref"><span class="pre">managed_policies</span></span></a></strong></code> will be detatched.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
@@ -469,7 +469,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-role
 <div class="ansibleOptionAnchor" id="parameter-wait"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-role-module-parameter-wait"><strong>wait</strong></p>
 <a class="ansibleOptionLink" href="#parameter-wait" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>When <em>wait=True</em> the module will wait for up to <em>wait_timeout</em> seconds for IAM role creation before returning.</p>
+<td><div class="ansible-option-cell"><p>When <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-module-parameter-wait"><span class="std std-ref"><span class="pre">wait=True</span></span></a></code> the module will wait for up to <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-module-parameter-wait-timeout"><span class="std std-ref"><span class="pre">wait_timeout</span></span></a></strong></code> seconds for IAM role creation before returning.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
@@ -545,7 +545,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-role
 <div class="ansibleOptionAnchor" id="return-iam_role"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-role-module-return-iam-role"><strong>iam_role</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_role" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>dictionary containing the IAM Role data</p>
+<td><div class="ansible-option-cell"><p>Dictionary containing the IAM Role data.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 </div></td>
 </tr>
@@ -553,7 +553,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-role
 <div class="ansibleOptionAnchor" id="return-iam_role/arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-role-module-return-iam-role-arn"><strong>arn</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_role/arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>the Amazon Resource Name (ARN) specifying the role</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The Amazon Resource Name (ARN) specifying the role.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:iam::1234567890:role/mynewrole&quot;</span></code></p>
 </div></td>
@@ -562,9 +562,9 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-role
 <div class="ansibleOptionAnchor" id="return-iam_role/assume_role_policy_document"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-role-module-return-iam-role-assume-role-policy-document"><strong>assume_role_policy_document</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_role/assume_role_policy_document" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>the policy that grants an entity permission to assume the role</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The policy that grants an entity permission to assume the role.</p>
 <p>Note: the case of keys in this dictionary are no longer converted from CamelCase to
-snake_case.  This behaviour changed in release 8.0.0.</p>
+snake_case. This behaviour changed in release 8.0.0.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;statement&quot;:</span> <span class="pre">[{&quot;action&quot;:</span> <span class="pre">&quot;sts:AssumeRole&quot;,</span> <span class="pre">&quot;effect&quot;:</span> <span class="pre">&quot;Allow&quot;,</span> <span class="pre">&quot;principal&quot;:</span> <span class="pre">{&quot;service&quot;:</span> <span class="pre">&quot;ec2.amazonaws.com&quot;},</span> <span class="pre">&quot;sid&quot;:</span> <span class="pre">&quot;&quot;}],</span> <span class="pre">&quot;version&quot;:</span> <span class="pre">&quot;2012-10-17&quot;}</span></code></p>
 </div></td>
@@ -575,8 +575,7 @@ snake_case.  This behaviour changed in release 8.0.0.</p>
 <p><em class="ansible-option-versionadded">added in amazon.aws 5.3.0</em></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Note: this return value has been deprecated and will be removed in a release after
-2026-05-01.  assume_role_policy_document and assume_role_policy_document_raw now use
-the same format.</p>
+2026-05-01. <code class="ansible-return-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-module-return-iam-role-assume-role-policy-document"><span class="std std-ref"><span class="pre">iam_role.assume_role_policy_document</span></span></a></code> and <code class="ansible-return-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-module-return-iam-role-assume-role-policy-document-raw"><span class="std std-ref"><span class="pre">iam_role.assume_role_policy_document_raw</span></span></a></code>now use the same format.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 </div></td>
 </tr>
@@ -584,7 +583,7 @@ the same format.</p>
 <div class="ansibleOptionAnchor" id="return-iam_role/attached_policies"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-role-module-return-iam-role-attached-policies"><strong>attached_policies</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_role/attached_policies" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>a list of dicts containing the name and ARN of the managed IAM policies attached to the role</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A list of dicts containing the name and ARN of the managed IAM policies attached to the role.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[{&quot;policy_arn&quot;:</span> <span class="pre">&quot;arn:aws:iam::aws:policy/PowerUserAccess&quot;,</span> <span class="pre">&quot;policy_name&quot;:</span> <span class="pre">&quot;PowerUserAccess&quot;}]</span></code></p>
 </div></td>
@@ -593,7 +592,7 @@ the same format.</p>
 <div class="ansibleOptionAnchor" id="return-iam_role/create_date"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-role-module-return-iam-role-create-date"><strong>create_date</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_role/create_date" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>the date and time, in ISO 8601 date-time format, when the role was created</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The date and time, in ISO 8601 date-time format, when the role was created.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2016-08-14T04:36:28+00:00&quot;</span></code></p>
 </div></td>
@@ -602,7 +601,7 @@ the same format.</p>
 <div class="ansibleOptionAnchor" id="return-iam_role/path"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-role-module-return-iam-role-path"><strong>path</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_role/path" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>the path to the role</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The path to the role.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;/&quot;</span></code></p>
 </div></td>
@@ -611,7 +610,7 @@ the same format.</p>
 <div class="ansibleOptionAnchor" id="return-iam_role/role_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-role-module-return-iam-role-role-id"><strong>role_id</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_role/role_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>the stable and unique string identifying the role</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The stable and unique string identifying the role.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;ABCDEFF4EZ4ABCDEFV4ZC&quot;</span></code></p>
 </div></td>
@@ -620,7 +619,7 @@ the same format.</p>
 <div class="ansibleOptionAnchor" id="return-iam_role/role_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-role-module-return-iam-role-role-name"><strong>role_name</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_role/role_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>the friendly name that identifies the role</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The friendly name that identifies the role.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;myrole&quot;</span></code></p>
 </div></td>

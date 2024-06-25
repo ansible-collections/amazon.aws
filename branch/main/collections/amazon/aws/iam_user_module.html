@@ -230,7 +230,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-user
 <td><div class="ansible-option-cell"><p>The ARN of an IAM managed policy to apply as a boundary policy for this user.</p>
 <p>Boundary policies can be used to restrict the permissions a user can excercise, but does not grant any policies in and of itself.</p>
 <p>For more information on boundaries, see <a class="reference external" href="https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_boundaries.html">https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_boundaries.html</a>.</p>
-<p>Set to the empty string <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code> to remove the boundary policy.</p>
+<p>Set to the empty string <code class="ansible-value docutils literal notranslate"><span class="pre">&quot;&quot;</span></code> to remove the boundary policy.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -278,8 +278,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-user
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The name of the user.</p>
-<p>Note: user names are unique within an account.  Paths (<em>path</em>) do <strong>not</strong> affect the uniqueness requirements of <em>name</em>.  For example it is not permitted to have both <code class="docutils literal notranslate"><span class="pre">/Path1/MyUser</span></code> and <code class="docutils literal notranslate"><span class="pre">/Path2/MyUser</span></code> in the same account.</p>
-<p><code class="docutils literal notranslate"><span class="pre">user_name</span></code> was added as an alias in release 7.2.0.</p>
+<p>Note: user names are unique within an account.  Paths (<code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-user-module-parameter-path"><span class="std std-ref"><span class="pre">path</span></span></a></strong></code>) do <strong>not</strong> affect the uniqueness requirements of <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-user-module-parameter-name"><span class="std std-ref"><span class="pre">name</span></span></a></strong></code>.  For example it is not permitted to have both <code class="docutils literal notranslate"><span class="pre">/Path1/MyUser</span></code> and <code class="docutils literal notranslate"><span class="pre">/Path2/MyUser</span></code> in the same account.</p>
+<p><code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-user-module-parameter-user-name"><span class="std std-ref"><span class="pre">user_name</span></span></a></strong></code> was added as an alias in release 7.2.0.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -335,7 +335,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-user
 <a class="ansibleOptionLink" href="#parameter-purge_policies" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: purge_policy, purge_managed_policies</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>When <em>purge_policies=true</em> any managed policies not listed in <em>managed_policies</em> will be detached.</p>
+<td><div class="ansible-option-cell"><p>When <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-iam-user-module-parameter-purge-policies"><span class="std std-ref"><span class="pre">purge_policies=true</span></span></a></code> any managed policies not listed in <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-user-module-parameter-managed-policies"><span class="std std-ref"><span class="pre">managed_policies</span></span></a></strong></code> will be detached.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -378,7 +378,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-user
 <p><em class="ansible-option-versionadded">added in community.aws 2.2.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Option to delete user login passwords.</p>
-<p>This field is mutually exclusive to <em>password</em>.</p>
+<p>This field is mutually exclusive to <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-user-module-parameter-password"><span class="std std-ref"><span class="pre">password</span></span></a></strong></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
@@ -449,8 +449,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-user
 <p><em class="ansible-option-versionadded">added in community.aws 2.2.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>When to update user passwords.</p>
-<p><em>update_password=always</em> will ensure the password is set to <em>password</em>.</p>
-<p><em>update_password=on_create</em> will only set the password for newly created users.</p>
+<p><code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-iam-user-module-parameter-update-password"><span class="std std-ref"><span class="pre">update_password=always</span></span></a></code> will ensure the password is set to <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-user-module-parameter-password"><span class="std std-ref"><span class="pre">password</span></span></a></strong></code>.</p>
+<p><code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-iam-user-module-parameter-update-password"><span class="std std-ref"><span class="pre">update_password=on_create</span></span></a></code> will only set the password for newly created users.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">&quot;always&quot;</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -476,7 +476,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-user
 <a class="ansibleOptionLink" href="#parameter-wait" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 <p><em class="ansible-option-versionadded">added in community.aws 2.2.0</em></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>When <em>wait=True</em> the module will wait for up to <em>wait_timeout</em> seconds for IAM user creation before returning.</p>
+<td><div class="ansible-option-cell"><p>When <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-iam-user-module-parameter-wait"><span class="std std-ref"><span class="pre">wait=True</span></span></a></code> the module will wait for up to <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-user-module-parameter-wait-timeout"><span class="std std-ref"><span class="pre">wait_timeout</span></span></a></strong></code> seconds for IAM user creation before returning.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
@@ -501,7 +501,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-user
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <ul class="simple">
-<li><p>Support for <em>tags</em> and <em>purge_tags</em> was added in release 2.1.0.</p></li>
+<li><p>Support for <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-user-module-parameter-tags"><span class="std std-ref"><span class="pre">tags</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-user-module-parameter-purge-tags"><span class="std std-ref"><span class="pre">purge_tags</span></span></a></strong></code> was added in release 2.1.0.</p></li>
 <li><p><strong>Caution:</strong> For modules, environment variables and configuration files are read from the Ansible ‘host’ context and not the ‘controller’ context. As such, files may need to be explicitly copied to the ‘host’.  For lookup and connection plugins, environment variables and configuration files are read from the Ansible ‘controller’ context and not the ‘host’ context.</p></li>
 <li><p>The AWS SDK (boto3) that Ansible uses may also read defaults for credentials and other settings, such as the region, from its configuration files in the Ansible ‘host’ context (typically <code class="docutils literal notranslate"><span class="pre">~/.aws/credentials</span></code>). See <a class="reference external" href="https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html">https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html</a> for more information.</p></li>
 </ul>
@@ -566,7 +566,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-user
 <div class="ansibleOptionAnchor" id="return-user"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-user-module-return-user"><strong>user</strong></p>
 <a class="ansibleOptionLink" href="#return-user" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>dictionary containing all the user information</p>
+<td><div class="ansible-option-cell"><p>Dictionary containing all the user information.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 </div></td>
 </tr>
@@ -574,7 +574,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-user
 <div class="ansibleOptionAnchor" id="return-user/arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-user-module-return-user-arn"><strong>arn</strong></p>
 <a class="ansibleOptionLink" href="#return-user/arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>the Amazon Resource Name (ARN) specifying the user</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The Amazon Resource Name (ARN) specifying the user.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:iam::123456789012:user/testuser1&quot;</span></code></p>
 </div></td>
@@ -584,7 +584,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-user
 <a class="ansibleOptionLink" href="#return-user/attached_policies" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
 <p><em class="ansible-option-versionadded">added in amazon.aws 7.2.0</em></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>list containing basic information about managed policies attached to the group.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>List containing basic information about managed policies attached to the group.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 </div></td>
 </tr>
@@ -592,7 +592,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-user
 <div class="ansibleOptionAnchor" id="return-user/attached_policies/policy_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-user-module-return-user-attached-policies-policy-arn"><strong>policy_arn</strong></p>
 <a class="ansibleOptionLink" href="#return-user/attached_policies/policy_arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>the Amazon Resource Name (ARN) specifying the managed policy.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The Amazon Resource Name (ARN) specifying the managed policy.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:iam::123456789012:policy/test_policy&quot;</span></code></p>
 </div></td>
@@ -601,7 +601,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-user
 <div class="ansibleOptionAnchor" id="return-user/attached_policies/policy_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-user-module-return-user-attached-policies-policy-name"><strong>policy_name</strong></p>
 <a class="ansibleOptionLink" href="#return-user/attached_policies/policy_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>the friendly name that identifies the policy.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The friendly name that identifies the policy.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;test_policy&quot;</span></code></p>
 </div></td>
@@ -610,7 +610,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-user
 <div class="ansibleOptionAnchor" id="return-user/create_date"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-user-module-return-user-create-date"><strong>create_date</strong></p>
 <a class="ansibleOptionLink" href="#return-user/create_date" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>the date and time, in ISO 8601 date-time format, when the user was created</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The date and time, in ISO 8601 date-time format, when the user was created.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2017-02-08T04:36:28+00:00&quot;</span></code></p>
 </div></td>
@@ -619,7 +619,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-user
 <div class="ansibleOptionAnchor" id="return-user/path"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-user-module-return-user-path"><strong>path</strong></p>
 <a class="ansibleOptionLink" href="#return-user/path" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>the path to the user</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The path to the user.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;/&quot;</span></code></p>
 </div></td>
@@ -628,7 +628,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-user
 <div class="ansibleOptionAnchor" id="return-user/tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-user-module-return-user-tags"><strong>tags</strong></p>
 <a class="ansibleOptionLink" href="#return-user/tags" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>user tags</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>User tags.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;Env&quot;:</span> <span class="pre">&quot;Prod&quot;}</span></code></p>
 </div></td>
@@ -637,7 +637,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-user
 <div class="ansibleOptionAnchor" id="return-user/user_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-user-module-return-user-user-id"><strong>user_id</strong></p>
 <a class="ansibleOptionLink" href="#return-user/user_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>the stable and unique string identifying the user</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The stable and unique string identifying the user.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;AGPA12345EXAMPLE54321&quot;</span></code></p>
 </div></td>
@@ -646,7 +646,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-user
 <div class="ansibleOptionAnchor" id="return-user/user_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-user-module-return-user-user-name"><strong>user_name</strong></p>
 <a class="ansibleOptionLink" href="#return-user/user_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>the friendly name that identifies the user</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The friendly name that identifies the user.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;testuser1&quot;</span></code></p>
 </div></td>

@@ -208,7 +208,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-acce
 <p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Whether the key should be enabled or disabled.</p>
-<p>Defaults to <code class="docutils literal notranslate"><span class="pre">true</span></code> when creating a new key.</p>
+<p>Defaults to <code class="ansible-value docutils literal notranslate"><span class="pre">true</span></code> when creating a new key.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
@@ -264,8 +264,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-acce
 <a class="ansibleOptionLink" href="#parameter-id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The ID of the access key.</p>
-<p>Required when <em>state=absent</em>.</p>
-<p>Mutually exclusive with <em>rotate_keys</em>.</p>
+<p>Required when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-iam-access-key-module-parameter-state"><span class="std std-ref"><span class="pre">state=absent</span></span></a></code>.</p>
+<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-access-key-module-parameter-rotate-keys"><span class="std std-ref"><span class="pre">rotate_keys</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -300,8 +300,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-acce
 <a class="ansibleOptionLink" href="#parameter-rotate_keys" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>When there are already 2 access keys attached to the IAM user the oldest key will be removed and a new key created.</p>
-<p>Ignored if <em>state=absent</em></p>
-<p>Mutually exclusive with <em>id</em>.</p>
+<p>Ignored if <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-iam-access-key-module-parameter-state"><span class="std std-ref"><span class="pre">state=absent</span></span></a></code></p>
+<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-access-key-module-parameter-id"><span class="std std-ref"><span class="pre">id</span></span></a></strong></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -349,7 +349,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-acce
 <a class="ansibleOptionLink" href="#parameter-state" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Create or remove the access key.</p>
-<p>When <em>state=present</em> and <em>id</em> is not defined a new key will be created.</p>
+<p>When <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-iam-access-key-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-access-key-module-parameter-id"><span class="std std-ref"><span class="pre">id</span></span></a></strong></code> is not defined a new key will be created.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">&quot;present&quot;</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>

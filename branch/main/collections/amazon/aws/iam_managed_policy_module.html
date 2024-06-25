@@ -163,7 +163,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-mana
 <section id="synopsis">
 <h2><a class="toc-backref" href="#id1" role="doc-backlink">Synopsis</a><a class="headerlink" href="#synopsis" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p>Allows creating and removing managed IAM policies</p></li>
+<li><p>Allows creating and removing managed IAM policies.</p></li>
 </ul>
 </section>
 <section id="requirements">
@@ -237,7 +237,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-mana
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A helpful description of this policy, this value is immutable and only set when creating a new policy.</p>
-<p>The parameter was renamed from <code class="docutils literal notranslate"><span class="pre">policy_description</span></code> to <code class="docutils literal notranslate"><span class="pre">description</span></code> in release 7.2.0.</p>
+<p>The parameter was renamed from <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-managed-policy-module-parameter-policy-description"><span class="std std-ref"><span class="pre">policy_description</span></span></a></strong></code> to <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-managed-policy-module-parameter-description"><span class="std std-ref"><span class="pre">description</span></span></a></strong></code> in release 7.2.0.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -273,15 +273,15 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-mana
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The name of the managed policy.</p>
-<p>Note: Policy names are unique within an account.  Paths (<em>path</em>) do <strong>not</strong> affect the uniqueness requirements of <em>name</em>.  For example it is not permitted to have both <code class="docutils literal notranslate"><span class="pre">/Path1/MyPolicy</span></code> and <code class="docutils literal notranslate"><span class="pre">/Path2/MyPolicy</span></code> in the same account.</p>
-<p>The parameter was renamed from <code class="docutils literal notranslate"><span class="pre">policy_name</span></code> to <code class="docutils literal notranslate"><span class="pre">name</span></code> in release 7.2.0.</p>
+<p>Note: Policy names are unique within an account.  Paths (<code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-managed-policy-module-parameter-path"><span class="std std-ref"><span class="pre">path</span></span></a></strong></code>) do <strong>not</strong> affect the uniqueness requirements of <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-managed-policy-module-parameter-name"><span class="std std-ref"><span class="pre">name</span></span></a></strong></code>.  For example it is not permitted to have both <code class="docutils literal notranslate"><span class="pre">/Path1/MyPolicy</span></code> and <code class="docutils literal notranslate"><span class="pre">/Path2/MyPolicy</span></code> in the same account.</p>
+<p>The parameter was renamed from <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-managed-policy-module-parameter-policy-name"><span class="std std-ref"><span class="pre">policy_name</span></span></a></strong></code> to <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-managed-policy-module-parameter-name"><span class="std std-ref"><span class="pre">name</span></span></a></strong></code> in release 7.2.0.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-only_version"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-managed-policy-module-parameter-only-version"><strong>only_version</strong></p>
 <a class="ansibleOptionLink" href="#parameter-only_version" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Remove all other non default revisions, if this is used with <code class="docutils literal notranslate"><span class="pre">make_default</span></code> it will result in all other versions of this policy being deleted.</p>
+<td><div class="ansible-option-cell"><p>Remove all other non default revisions, if this is used with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-managed-policy-module-parameter-make-default"><span class="std std-ref"><span class="pre">make_default</span></span></a></strong></code> it will result in all other versions of this policy being deleted.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -427,7 +427,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-mana
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <ul class="simple">
-<li><p>Support for <em>tags</em> and <em>purge_tags</em> was added in release 7.2.0.</p></li>
+<li><p>Support for <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-managed-policy-module-parameter-tags"><span class="std std-ref"><span class="pre">tags</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-managed-policy-module-parameter-purge-tags"><span class="std std-ref"><span class="pre">purge_tags</span></span></a></strong></code> was added in release 7.2.0.</p></li>
 <li><p><strong>Caution:</strong> For modules, environment variables and configuration files are read from the Ansible ‘host’ context and not the ‘controller’ context. As such, files may need to be explicitly copied to the ‘host’.  For lookup and connection plugins, environment variables and configuration files are read from the Ansible ‘controller’ context and not the ‘host’ context.</p></li>
 <li><p>The AWS SDK (boto3) that Ansible uses may also read defaults for credentials and other settings, such as the region, from its configuration files in the Ansible ‘host’ context (typically <code class="docutils literal notranslate"><span class="pre">~/.aws/credentials</span></code>). See <a class="reference external" href="https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html">https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html</a> for more information.</p></li>
 </ul>
