@@ -6,8 +6,8 @@ option_group_description: "{{ resource_prefix }}rds-option-group test"
 instance_id: "{{ resource_prefix }}"
 username: test
 password: test12345678
-db_instance_class: db.t2.small
-storage_encrypted_db_instance_class: db.t2.small
+db_instance_class: db.t3.small
+storage_encrypted_db_instance_class: db.t3.small
 allocated_storage: 20
 vpc_name: "{{ resource_prefix }}-vpc"
 vpc_seed: "{{ resource_prefix }}"
