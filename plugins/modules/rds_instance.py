@@ -118,7 +118,7 @@ options:
         type: str
     db_instance_class:
         description:
-          - The compute and memory capacity of the DB instance, for example db.t2.micro.
+          - The compute and memory capacity of the DB instance, for example V(db.t3.micro).
         aliases:
           - class
           - instance_type
@@ -461,7 +461,7 @@ EXAMPLES = r"""
   amazon.aws.rds_instance:
     engine: aurora
     db_instance_identifier: ansible-test-aurora-db-instance
-    instance_type: db.t2.small
+    instance_type: db.t3.small
     password: "{{ password }}"
     username: "{{ username }}"
     cluster_id: ansible-test-cluster  # This cluster must exist - see rds_cluster to manage it
@@ -472,7 +472,7 @@ EXAMPLES = r"""
     state: present
     engine: mariadb
     storage_encrypted: true
-    db_instance_class: db.t2.medium
+    db_instance_class: db.t3.medium
     username: "{{ username }}"
     password: "{{ password }}"
     allocated_storage: "{{ allocated_storage }}"
@@ -600,7 +600,7 @@ db_instance_class:
   description: The name of the compute and memory capacity class of the DB instance.
   returned: always
   type: str
-  sample: db.m4.large
+  sample: db.m5.large
 db_instance_identifier:
   description: The identifier of the DB instance
   returned: always
