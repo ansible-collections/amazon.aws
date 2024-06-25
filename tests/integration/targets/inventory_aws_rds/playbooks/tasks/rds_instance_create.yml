@@ -3,7 +3,7 @@
   amazon.aws.rds_instance:
     state: present
     engine: "{{ instance_engine }}"
-    db_instance_class: db.t2.micro
+    db_instance_class: db.t3.micro
     allocated_storage: 20
     instance_id: "{{ instance_id }}"
     master_username: ansibletestuser
