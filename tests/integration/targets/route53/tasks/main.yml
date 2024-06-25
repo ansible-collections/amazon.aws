@@ -435,6 +435,7 @@
         type: A
         value:
           - 192.0.2.2
+      diff: true
       register: wc_a_record
     - ansible.builtin.assert:
         that:
@@ -454,7 +455,7 @@
     - name: check return values
       ansible.builtin.assert:
         that:
-          - ttl30.diff.resource_record_sets[0].ttl == 30
+          - ttl30.resource_record_sets[0].ttl == "30"
           - ttl30 is changed
 
     - name: delete previous record without mention ttl and value

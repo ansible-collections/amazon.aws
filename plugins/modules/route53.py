@@ -173,7 +173,7 @@ nameservers:
   - ns-516.awsdns-00.net.
   - ns-1504.awsdns-00.co.uk.
   - ns-1.awsdns-00.com.
-set:
+resource_record_sets:
   description: Info specific to the resource record.
   returned: when state is 'get'
   type: complex
@@ -187,7 +187,7 @@ set:
       description: Whether this is the primary or secondary resource record set.
       returned: always
       type: str
-      sample: PRIMARY
+      sample: "PRIMARY"
     geo_location:
       description: geograpic location based on which Route53 resonds to DNS queries.
       returned: when configured
@@ -203,31 +203,41 @@ set:
       description: An identifier that differentiates among multiple resource record sets that have the same combination of DNS name and type.
       returned: always
       type: str
+    name:
+      description: Domain name for the record set.
+      returned: always
+      type: str
+      sample: "new.foo.com"
     record:
       description: Domain name for the record set.
       returned: always
       type: str
-      sample: new.foo.com.
+      sample: "new.foo.com"
     region:
       description: Which region this should be associated with for latency-based routing.
       returned: always
       type: str
-      sample: us-west-2
+      sample: "us-west-2"
+    resource_records:
+      description: Information about the resource records to act upon.
+      type: list
+      returned: always
+      sample: [{"value": "1.1.1.1"}]
     ttl:
       description: Resource record cache TTL.
       returned: always
       type: str
-      sample: '3600'
+      sample: "3600"
     type:
       description: Resource record set type.
       returned: always
       type: str
-      sample: A
+      sample: "A"
     value:
       description: Record value.
       returned: always
       type: str
-      sample: 52.43.18.27
+      sample: "52.43.18.27"
     values:
       description: Record Values.
       returned: always
@@ -243,7 +253,7 @@ set:
       description: Zone this record set belongs to.
       returned: always
       type: str
-      sample: foo.bar.com.
+      sample: "foo.bar.com"
 wait_id:
   description:
     - The wait ID for the applied change. Can be used to wait for the change to propagate later on when I(wait=false).
@@ -803,19 +813,26 @@ def main():
         except Exception as e:
             module.fail_json(msg=f"Unhandled exception. ({to_native(e)})")
 
-    rr_sets = [camel_dict_to_snake_dict(resource_record_set)]
     formatted_aws = format_record(aws_record, zone_in, zone_id)
     formatted_record = format_record(resource_record_set, zone_in, zone_id)
 
-    module.exit_json(
+    return_result = dict(
         changed=True,
         wait_id=wait_id,
-        diff=dict(
-            before=formatted_aws,
-            after=formatted_record if command_in != "delete" else {},
-            resource_record_sets=rr_sets,
-        ),
+        resource_record_sets=[camel_dict_to_snake_dict(formatted_record)] if command_in != "delete" else {},
     )
+
+    if module._diff:
+        return_result.update(
+            {
+                "diff": {
+                    "before": formatted_aws,
+                    "after": camel_dict_to_snake_dict(formatted_record) if command_in != "delete" else {},
+                }
+            }
+        )
+
+    module.exit_json(**return_result)
 
 
 if __name__ == "__main__":
