@@ -189,7 +189,7 @@ buckets:
       sample: "2021-01-21T12:44:10+00:00"
     public_access_block:
       description: Bucket public access block configuration.
-      returned: when O(bucket_facts=true) and  RV(buckets.public_access_block=true)
+      returned: when O(bucket_facts=true) and RV(buckets.public_access_block=true).
       type: dict
       sample: {
                 "PublicAccessBlockConfiguration": {
@@ -455,7 +455,7 @@ buckets:
           sample: "arn:aws:iam::123:role/example-role"
         Rules:
           description: List of replication rules.
-          returned: when replication rule is defined/
+          returned: when replication rule is defined.
           type: list
           sample: [{ "ID": "rule-1", "Filter": "{}" }]
     bucket_request_payment:
