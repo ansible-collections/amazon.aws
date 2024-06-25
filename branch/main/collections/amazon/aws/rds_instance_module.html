@@ -335,7 +335,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <a class="ansibleOptionLink" href="#parameter-db_instance_class" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: class, instance_type</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>The compute and memory capacity of the DB instance, for example db.t2.micro.</p>
+<td><div class="ansible-option-cell"><p>The compute and memory capacity of the DB instance, for example <code class="ansible-value docutils literal notranslate"><span class="pre">db.t3.micro</span></code>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -1093,7 +1093,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <span class="w">  </span><span class="nt">amazon.aws.rds_instance</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">engine</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aurora</span>
 <span class="w">    </span><span class="nt">db_instance_identifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ansible-test-aurora-db-instance</span>
-<span class="w">    </span><span class="nt">instance_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">db.t2.small</span>
+<span class="w">    </span><span class="nt">instance_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">db.t3.small</span>
 <span class="w">    </span><span class="nt">password</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">password</span> <span class="cp">}}</span><span class="s">&quot;</span>
 <span class="w">    </span><span class="nt">username</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">username</span> <span class="cp">}}</span><span class="s">&quot;</span>
 <span class="w">    </span><span class="nt">cluster_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ansible-test-cluster</span><span class="w">  </span><span class="c1"># This cluster must exist - see rds_cluster to manage it</span>
@@ -1104,7 +1104,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
 <span class="w">    </span><span class="nt">engine</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mariadb</span>
 <span class="w">    </span><span class="nt">storage_encrypted</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<span class="w">    </span><span class="nt">db_instance_class</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">db.t2.medium</span>
+<span class="w">    </span><span class="nt">db_instance_class</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">db.t3.medium</span>
 <span class="w">    </span><span class="nt">username</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">username</span> <span class="cp">}}</span><span class="s">&quot;</span>
 <span class="w">    </span><span class="nt">password</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">password</span> <span class="cp">}}</span><span class="s">&quot;</span>
 <span class="w">    </span><span class="nt">allocated_storage</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">allocated_storage</span> <span class="cp">}}</span><span class="s">&quot;</span>
@@ -1275,7 +1275,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 <td><div class="ansible-option-cell"><p>The name of the compute and memory capacity class of the DB instance.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;db.m4.large&quot;</span></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;db.m5.large&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
