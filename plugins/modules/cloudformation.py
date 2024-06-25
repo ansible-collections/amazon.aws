@@ -287,9 +287,9 @@ EXAMPLES = r"""
 
 RETURN = r"""
 events:
-  type: list
   description: Most recent events in CloudFormation's event log. This may be from a previous run in some cases.
   returned: always
+  type: list
   sample: [
         "StackEvent AWS::CloudFormation::Stack stackname UPDATE_COMPLETE",
         "StackEvent AWS::CloudFormation::Stack stackname UPDATE_COMPLETE_CLEANUP_IN_PROGRESS"
@@ -298,16 +298,18 @@ log:
   description: Debugging logs. Useful when modifying or finding an error.
   returned: always
   type: list
+  elements: str
   sample: ["updating stack"]
 change_set_id:
-  description: The ID of the stack change set if one was created
-  returned:  O(state=present) and O(create_changeset=true)
+  description: The ID of the stack change set when created.
+  returned:  when O(state=present) and O(create_changeset=true).
   type: str
   sample: "arn:aws:cloudformation:us-east-1:123456789012:changeSet/Ansible-StackName-f4496805bd1b2be824d1e315c6884247ede41eb0"
 stack_resources:
   description: AWS stack resources and their status. List of dictionaries, one dict per resource.
-  returned: state == present
+  returned: when O(state=present)
   type: list
+  elements: dict
   sample: [
           {
               "last_updated_time": "2016-10-11T19:40:14.979000+00:00",
@@ -319,9 +321,9 @@ stack_resources:
           }
       ]
 stack_outputs:
-  type: dict
   description: A key:value dictionary of all the stack outputs currently defined. If there are no stack outputs, it is an empty dictionary.
-  returned: state == present
+  returned: When O(state=present)
+  type: dict
   sample: {"MySg": "AnsibleModuleTestYAML-CFTestSg-C8UVS567B6NS"}
 """
 

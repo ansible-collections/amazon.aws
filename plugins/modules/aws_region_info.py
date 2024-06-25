@@ -45,14 +45,28 @@ EXAMPLES = r"""
 RETURN = r"""
 regions:
     returned: on success
-    description: >
-        Regions that match the provided filters. Each element consists of a dict with all the information related
-        to that region.
+    description:
+        - Information about the regions that match the provided filters. Retruns information about all the regions if no filters specified.
+        - Each element consists of a dict with all the information related to that region.
     type: list
+    elements: dict
     sample: "[{
         'endpoint': 'ec2.us-west-1.amazonaws.com',
         'region_name': 'us-west-1'
     }]"
+    contains:
+        endpoint:
+            description: The Region service endpoint.
+            type: str
+            sample: "ec2.us-east-2.amazonaws.com"
+        opt_in_status:
+            description: The Region opt-in status.
+            type: str
+            sample: "opt-in-not-required"
+        region_name:
+            description: The name of the Region.
+            type: str
+            sample: "us-east-2"
 """
 
 try:

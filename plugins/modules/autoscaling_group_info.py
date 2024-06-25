@@ -76,166 +76,273 @@ EXAMPLES = r"""
 """
 
 RETURN = r"""
----
-auto_scaling_group_arn:
-    description: The Amazon Resource Name of the ASG
-    returned: success
-    type: str
-    sample: "arn:aws:autoscaling:us-west-2:123456789012:autoScalingGroup:10787c52-0bcb-427d-82ba-c8e4b008ed2e:autoScalingGroupName/public-webapp-production-1"
-auto_scaling_group_name:
-    description: Name of autoscaling group
-    returned: success
-    type: str
-    sample: "public-webapp-production-1"
-availability_zones:
-    description: List of Availability Zones that are enabled for this ASG.
-    returned: success
+results:
+    description: A list of Auto Scaling Groups.
+    returned: always
     type: list
-    sample: ["us-west-2a", "us-west-2b", "us-west-2a"]
-created_time:
-    description: The date and time this ASG was created, in ISO 8601 format.
-    returned: success
-    type: str
-    sample: "2015-11-25T00:05:36.309Z"
-default_cooldown:
-    description: The default cooldown time in seconds.
-    returned: success
-    type: int
-    sample: 300
-desired_capacity:
-    description: The number of EC2 instances that should be running in this group.
-    returned: success
-    type: int
-    sample: 3
-health_check_period:
-    description: Length of time in seconds after a new EC2 instance comes into service that Auto Scaling starts checking its health.
-    returned: success
-    type: int
-    sample: 30
-health_check_type:
-    description: The service you want the health status from, one of "EC2" or "ELB".
-    returned: success
-    type: str
-    sample: "ELB"
-instances:
-    description: List of EC2 instances and their status as it relates to the ASG.
-    returned: success
-    type: list
-    sample: [
-        {
-            "availability_zone": "us-west-2a",
-            "health_status": "Healthy",
-            "instance_id": "i-es22ad25",
-            "launch_configuration_name": "public-webapp-production-1",
-            "lifecycle_state": "InService",
-            "protected_from_scale_in": "false"
-        }
-    ]
-launch_config_name:
-    description: >
-      Name of launch configuration associated with the ASG. Same as launch_configuration_name,
-      provided for compatibility with M(amazon.aws.autoscaling_group) module.
-    returned: success
-    type: str
-    sample: "public-webapp-production-1"
-launch_configuration_name:
-    description: Name of launch configuration associated with the ASG.
-    returned: success
-    type: str
-    sample: "public-webapp-production-1"
-lifecycle_hooks:
-    description: List of lifecycle hooks for the ASG.
-    returned: success
-    type: list
-    sample: [
-        {
-            "AutoScalingGroupName": "public-webapp-production-1",
-            "DefaultResult": "ABANDON",
-            "GlobalTimeout": 172800,
-            "HeartbeatTimeout": 3600,
-            "LifecycleHookName": "instance-launch",
-            "LifecycleTransition": "autoscaling:EC2_INSTANCE_LAUNCHING"
-        },
-        {
-            "AutoScalingGroupName": "public-webapp-production-1",
-            "DefaultResult": "ABANDON",
-            "GlobalTimeout": 172800,
-            "HeartbeatTimeout": 3600,
-            "LifecycleHookName": "instance-terminate",
-            "LifecycleTransition": "autoscaling:EC2_INSTANCE_TERMINATING"
-        }
-    ]
-load_balancer_names:
-    description: List of load balancers names attached to the ASG.
-    returned: success
-    type: list
-    sample: ["elb-webapp-prod"]
-max_size:
-    description: Maximum size of group
-    returned: success
-    type: int
-    sample: 3
-min_size:
-    description: Minimum size of group
-    returned: success
-    type: int
-    sample: 1
-new_instances_protected_from_scale_in:
-    description: Whether or not new instances a protected from automatic scaling in.
-    returned: success
-    type: bool
-    sample: "false"
-placement_group:
-    description: Placement group into which instances are launched, if any.
-    returned: success
-    type: str
-    sample: None
-status:
-    description: The current state of the group when DeleteAutoScalingGroup is in progress.
-    returned: success
-    type: str
-    sample: None
-tags:
-    description: List of tags for the ASG, and whether or not each tag propagates to instances at launch.
-    returned: success
-    type: list
-    sample: [
-        {
-            "key": "Name",
-            "value": "public-webapp-production-1",
-            "resource_id": "public-webapp-production-1",
-            "resource_type": "auto-scaling-group",
-            "propagate_at_launch": "true"
-        },
-        {
-            "key": "env",
-            "value": "production",
-            "resource_id": "public-webapp-production-1",
-            "resource_type": "auto-scaling-group",
-            "propagate_at_launch": "true"
-        }
-    ]
-target_group_arns:
-    description: List of ARNs of the target groups that the ASG populates
-    returned: success
-    type: list
-    sample: [
-        "arn:aws:elasticloadbalancing:ap-southeast-2:123456789012:targetgroup/target-group-host-hello/1a2b3c4d5e6f1a2b",
-        "arn:aws:elasticloadbalancing:ap-southeast-2:123456789012:targetgroup/target-group-path-world/abcd1234abcd1234"
-    ]
-target_group_names:
-    description: List of names of the target groups that the ASG populates
-    returned: success
-    type: list
-    sample: [
-        "target-group-host-hello",
-        "target-group-path-world"
-    ]
-termination_policies:
-    description: A list of termination policies for the group.
-    returned: success
-    type: str
-    sample: ["Default"]
+    elements: dict
+    contains:
+        auto_scaling_group_arn:
+            description: The Amazon Resource Name of the ASG.
+            returned: success
+            type: str
+            sample: "arn:aws:autoscaling:us-west-2:123456789012:autoScalingGroup:10787c52-0bcb-427d-82ba-c8e4b008ed2e:autoScalingGroupName/dev11"
+        auto_scaling_group_name:
+            description: Name of autoscaling group.
+            returned: success
+            type: str
+            sample: "public-webapp-production-1"
+        availability_zones:
+            description: List of Availability Zones that are enabled for this ASG.
+            returned: success
+            type: list
+            sample: ["us-west-2a", "us-west-2b", "us-west-2a"]
+        created_time:
+            description: The date and time this ASG was created, in ISO 8601 format.
+            returned: success
+            type: str
+            sample: "2015-11-25T00:05:36.309Z"
+        default_cooldown:
+            description: The default cooldown time in seconds.
+            returned: success
+            type: int
+            sample: 300
+        desired_capacity:
+            description: The number of EC2 instances that should be running in this group.
+            returned: success
+            type: int
+            sample: 3
+        enabled_metrics:
+            description: The metrics enabled for the group.
+            returned: success
+            type: list
+            elements: dict
+            sample: [{
+                        "granularity": "1Minute",
+                        "metric": "GroupAndWarmPoolTotalCapacity"
+                    }]
+            contains:
+                metric:
+                    description: Name of the metric.
+                    type: str
+                    sample: "GroupAndWarmPoolTotalCapacity"
+                granularity:
+                    description: The granularity of the metric. The only valid value is 1Minute.
+                    type: str
+                    sample: "1Minute"
+        health_check_grace_period:
+            description: Length of time in seconds after a new EC2 instance comes into service that Auto Scaling starts checking its health.
+            returned: success
+            type: int
+            sample: 300
+        health_check_type:
+            description: The service you want the health status from, one of "EC2" or "ELB".
+            returned: success
+            type: str
+            sample: "ELB"
+        instances:
+            description: List of EC2 instances associated with ASG and their status.
+            returned: success
+            type: list
+            elements: dict
+            sample: [
+                {
+                    "availability_zone": "us-west-2a",
+                    "health_status": "Healthy",
+                    "instance_id": "i-es22ad25",
+                    "launch_configuration_name": "public-webapp-production-1",
+                    "launch_template": {
+                            "launch_template_id": "lt-0b19eb00123456789",
+                            "launch_template_name": "test-template",
+                            "version": "1"
+                    },
+                    "lifecycle_state": "InService",
+                    "protected_from_scale_in": "false"
+                }
+            ]
+            contains:
+                availability_zone:
+                    description: The Availability Zone of the instance.
+                    type: str
+                    sample: "ap-southeast-2a"
+                health_status:
+                    description: The last reported health status of the instance.
+                    type: str
+                    sample: "Healthy"
+                instance_id:
+                    description: The ID of the instance.
+                    type: str
+                    sample: "i-012345678"
+                instance_type:
+                    description: The instance type size of the running instance.
+                    type: str
+                    sample: "t2.micro"
+                launch_template:
+                    description: The EC2 launch template to base instance configuration on.
+                    type: dict
+                    contains:
+                        launch_template_id:
+                            description: The ID of the launch template.
+                            type: str
+                        launch_template_name:
+                            description: The name of the launch template.
+                            type: str
+                        version:
+                            description: The specific version of the launch template to use.
+                            type: int
+                lifecycle_state:
+                    description: A description of the current lifecycle state.
+                    type: str
+                protected_from_scale_in:
+                    description: Indicates whether the instance is protected from termination by Amazon EC2 Auto Scaling when scaling in.
+                    type: bool
+        launch_config_name:
+            description: >
+                Name of launch configuration associated with the ASG. Same as launch_configuration_name,
+                provided for compatibility with M(amazon.aws.autoscaling_group) module.
+            returned: success
+            type: str
+            sample: "public-webapp-production-1"
+        launch_configuration_name:
+            description: Name of launch configuration associated with the ASG.
+            returned: success
+            type: str
+            sample: "public-webapp-production-1"
+        lifecycle_hooks:
+            description: List of lifecycle hooks for the ASG.
+            returned: success
+            type: list
+            sample: [
+                {
+                    "AutoScalingGroupName": "public-webapp-production-1",
+                    "DefaultResult": "ABANDON",
+                    "GlobalTimeout": 172800,
+                    "HeartbeatTimeout": 3600,
+                    "LifecycleHookName": "instance-launch",
+                    "LifecycleTransition": "autoscaling:EC2_INSTANCE_LAUNCHING"
+                },
+                {
+                    "AutoScalingGroupName": "public-webapp-production-1",
+                    "DefaultResult": "ABANDON",
+                    "GlobalTimeout": 172800,
+                    "HeartbeatTimeout": 3600,
+                    "LifecycleHookName": "instance-terminate",
+                    "LifecycleTransition": "autoscaling:EC2_INSTANCE_TERMINATING"
+                }
+            ]
+        load_balancer_names:
+            description: List of load balancers names attached to the ASG.
+            returned: success
+            type: list
+            sample: ["elb-webapp-prod"]
+        max_size:
+            description: Maximum size of group.
+            returned: success
+            type: int
+            sample: 3
+        min_size:
+            description: Minimum size of group.
+            returned: success
+            type: int
+            sample: 1
+        new_instances_protected_from_scale_in:
+            description: Whether or not new instances a protected from automatic scaling in.
+            returned: success
+            type: bool
+            sample: false
+        placement_group:
+            description: Placement group into which instances are launched, if any.
+            returned: success
+            type: str
+            sample: None
+        service_linked_role_arn:
+            description: The ARN of the service-linked role that the Auto Scaling group uses to call other Amazon Web Services on your behalf.
+            returned: success
+            type: str
+            sample: "arn:aws:iam::721234567890:role/aws-service-role/autoscaling.amazonaws.com/AWSServiceRoleForAutoScaling"
+        suspended_processes:
+            description: The suspended processes associated with the group.
+            returned: success
+            type: list
+            elements: dict
+            sample: [{
+                        "process_name": "AddToLoadBalancer",
+                        "suspension_reason": "User suspended at 2018-08-30T14:11:58Z"
+                    }]
+            contains:
+                process_name:
+                    description: The name of the suspended process.
+                    type: str
+                suspension_reason:
+                    description: The reason that the process was suspended.
+                    type: str
+        status:
+            description: The current state of the group when DeleteAutoScalingGroup is in progress.
+            returned: success
+            type: str
+            sample: None
+        tags:
+            description: List of tags for the ASG, and whether or not each tag propagates to instances at launch.
+            returned: success
+            type: list
+            sample: [
+                {
+                    "key": "Name",
+                    "value": "public-webapp-production-1",
+                    "resource_id": "public-webapp-production-1",
+                    "resource_type": "auto-scaling-group",
+                    "propagate_at_launch": "true"
+                },
+                {
+                    "key": "env",
+                    "value": "production",
+                    "resource_id": "public-webapp-production-1",
+                    "resource_type": "auto-scaling-group",
+                    "propagate_at_launch": "true"
+                }
+            ]
+        target_group_arns:
+            description: List of ARNs of the target groups that the ASG populates.
+            returned: success
+            type: list
+            sample: [
+                "arn:aws:elasticloadbalancing:ap-southeast-2:123456789012:targetgroup/target-group-host-hello/1a2b3c4d5e6f1a2b",
+                "arn:aws:elasticloadbalancing:ap-southeast-2:123456789012:targetgroup/target-group-path-world/abcd1234abcd1234"
+            ]
+        target_group_names:
+            description: List of names of the target groups that the ASG populates.
+            returned: success
+            type: list
+            sample: [
+                "target-group-host-hello",
+                "target-group-path-world"
+            ]
+        termination_policies:
+            description: A list of termination policies for the group.
+            returned: success
+            type: list
+            elements: str
+            sample: ["Default"]
+        traffic_sources:
+            description: The traffic sources associated with this Auto Scaling group.
+            returned: success
+            type: list
+            sample: [{
+                        "identifier": "arn:aws:elasticloadbalancing:us-west-2:721234567890:targetgroup/Check-Exter-A4XXXXXXXXXX/8aXXXXXXXXXXXXXX",
+                        "type": "elbv2"
+                    }]
+            contains:
+                identifier:
+                    description: Identifies the traffic source.
+                    type: str
+                type:
+                    description: Provides additional context for the value of Identifier.
+                    type: str
+        vpc_zone_identifier:
+            description: One or more subnet IDs, if applicable, separated by commas.
+            returned: success
+            type: str
+            sample: "subnet-0352db1247ae60b40,subnet-01f266bb9928ddaee"
 """
 
 import re
