@@ -3047,8 +3047,8 @@ releases:
         is specified (https://github.com/ansible-collections/amazon.aws/pull/1979).
       - s3_object - fixed issue which was causing ``MemoryError`` exceptions when
         downloading large files (https://github.com/ansible-collections/amazon.aws/issues/2107).
-      release_summary: This release includes some bug fixes for the `s3_object`, `ec2_instance`
-        and `backup_plan_info` modules.
+      release_summary: This release includes some bug fixes for the ``s3_object``, ``ec2_instance``
+        and ``backup_plan_info`` modules.
     fragments:
     - 1979-do-not-ignore-ipv6-addresses.yaml
     - 2083-backup_plan_info-bugfix-get-info-for-all-plans.yml
