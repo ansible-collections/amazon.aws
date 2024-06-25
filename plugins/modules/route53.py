@@ -187,7 +187,7 @@ resource_record_sets:
       description: Whether this is the primary or secondary resource record set.
       returned: always
       type: str
-      sample: PRIMARY
+      sample: "PRIMARY"
     geo_location:
       description: geograpic location based on which Route53 resonds to DNS queries.
       returned: when configured
@@ -207,17 +207,17 @@ resource_record_sets:
       description: Domain name for the record set.
       returned: always
       type: str
-      sample: new.foo.com.
+      sample: "new.foo.com"
     record:
       description: Domain name for the record set.
       returned: always
       type: str
-      sample: new.foo.com.
+      sample: "new.foo.com"
     region:
       description: Which region this should be associated with for latency-based routing.
       returned: always
       type: str
-      sample: us-west-2
+      sample: "us-west-2"
     resource_records:
       description: Information about the resource records to act upon.
       type: list
@@ -227,17 +227,17 @@ resource_record_sets:
       description: Resource record cache TTL.
       returned: always
       type: str
-      sample: '3600'
+      sample: "3600"
     type:
       description: Resource record set type.
       returned: always
       type: str
-      sample: A
+      sample: "A"
     value:
       description: Record value.
       returned: always
       type: str
-      sample: 52.43.18.27
+      sample: "52.43.18.27"
     values:
       description: Record Values.
       returned: always
@@ -253,7 +253,7 @@ resource_record_sets:
       description: Zone this record set belongs to.
       returned: always
       type: str
-      sample: foo.bar.com.
+      sample: "foo.bar.com"
 wait_id:
   description:
     - The wait ID for the applied change. Can be used to wait for the change to propagate later on when I(wait=false).
