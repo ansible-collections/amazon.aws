@@ -164,16 +164,24 @@ EXAMPLES = r"""
 """
 
 RETURN = r"""
-bucket_list:
-  description: "List of buckets"
+buckets:
+  description: A list of S3 buckets.
   returned: always
   type: complex
   contains:
+    bucket_accelerate_configuration:
+      description: The accelerate configuration of the bucket.
+      returned: when O(bucket_facts=true) and RV(buckets.bucket_accelerate_configuration=true).
+      type: dict
+      sample: {
+                'Status': 'Enabled',
+                'RequestCharged': 'requester'
+              }
     name:
       description: Bucket name.
       returned: always
       type: str
-      sample: a-testing-bucket-name
+      sample: "a-testing-bucket-name"
     creation_date:
       description: Bucket creation date timestamp.
       returned: always
@@ -181,8 +189,16 @@ bucket_list:
       sample: "2021-01-21T12:44:10+00:00"
     public_access_block:
       description: Bucket public access block configuration.
-      returned: when I(bucket_facts=true) and I(public_access_block=true)
-      type: complex
+      returned: when O(bucket_facts=true) and RV(buckets.public_access_block=true).
+      type: dict
+      sample: {
+                "PublicAccessBlockConfiguration": {
+                    "BlockPublicAcls": true,
+                    "BlockPublicPolicy": true,
+                    "IgnorePublicAcls": true,
+                    "RestrictPublicBuckets": true
+                }
+              }
       contains:
         PublicAccessBlockConfiguration:
           description: PublicAccessBlockConfiguration data.
@@ -192,107 +208,165 @@ bucket_list:
             BlockPublicAcls:
               description: BlockPublicAcls setting value.
               type: bool
-              sample: true
             BlockPublicPolicy:
               description: BlockPublicPolicy setting value.
               type: bool
-              sample: true
             IgnorePublicAcls:
               description: IgnorePublicAcls setting value.
               type: bool
-              sample: true
             RestrictPublicBuckets:
               description: RestrictPublicBuckets setting value.
               type: bool
-              sample: true
     bucket_name_filter:
       description: String used to limit buckets. See I(name_filter).
-      returned: when I(name_filter) is defined
+      returned: when O(name_filter) is defined
       type: str
-      sample: filter-by-this-string
+      sample: "filter-by-this-string"
     bucket_acl:
       description: Bucket ACL configuration.
-      returned: when I(bucket_facts=true) and I(bucket_acl=true)
+      returned: when O(bucket_facts=true) and RV(buckets.bucket_acl=true).
       type: complex
       contains:
         Grants:
           description: List of ACL grants.
           type: list
-          sample: []
+          elements: dict
+          sample: [
+                    {
+                        "Grantee": {
+                            "DisplayName": "abc-aws-root+721234567890",
+                            "ID": "1234567890cbc0f1234567890f1234567890c123456789012123456789091234",
+                            "Type": "CanonicalUser"
+                        },
+                        "Permission": "FULL_CONTROL"
+                    }
+                  ]
+          contains:
+            Grantee:
+              description: The person being granted permissions.
+              type: dict
+              contains:
+                DisplayName:
+                  description: Screen name of the grantee.
+                  type: str
+                ID:
+                  description: The canonical user ID of the grantee.
+                  type: str
+                Type:
+                  description: Type of grantee.
+                  type: str
+            Permission:
+              description: Specifies the permission given to the grantee.
+              type: str
         Owner:
           description: Bucket owner information.
-          type: complex
+          type: dict
+          sample: {
+                    "DisplayName": "abc-aws-root+721234567890",
+                    "ID": "1234567890cbc0f1234567890f1234567890c123456789012123456789091234"
+                  }
           contains:
             DisplayName:
               description: Bucket owner user display name.
-              returned: always
               type: str
-              sample: username
             ID:
               description: Bucket owner user ID.
-              returned: always
               type: str
-              sample: 123894e509349etc
     bucket_cors:
       description: Bucket CORS configuration.
-      returned: when I(bucket_facts=true) and I(bucket_cors=true)
+      returned: when O(bucket_facts=true) and RV(buckets.bucket_cors=true)
       type: complex
       contains:
         CORSRules:
           description: Bucket CORS configuration.
-          returned: when CORS rules are defined for the bucket
+          returned: When CORS rules are defined for the bucket
           type: list
           sample: []
     bucket_encryption:
       description: Bucket encryption configuration.
-      returned: when I(bucket_facts=true) and I(bucket_encryption=true)
+      returned: when O(bucket_facts=true) and RV(buckets.bucket_encryption=true).
       type: complex
+      sample: {
+                "ServerSideEncryptionConfiguration": {
+                    "Rules": [
+                        {
+                          "ApplyServerSideEncryptionByDefault": {
+                              "SSEAlgorithm": "AES256"
+                          },
+                          "BucketKeyEnabled": true
+                        }
+                    ]
+                  }
+                }
       contains:
         ServerSideEncryptionConfiguration:
           description: ServerSideEncryptionConfiguration configuration.
-          returned: when encryption is enabled on the bucket
+          returned: when encryption is enabled on the bucket.
           type: complex
           contains:
             Rules:
               description: List of applied encryptio rules.
-              returned: when encryption is enabled on the bucket
+              returned: when encryption is enabled on the bucket.
               type: list
-              sample: { "ApplyServerSideEncryptionByDefault": { "SSEAlgorithm": "AES256" }, "BucketKeyEnabled": False }
+              elements: dict
+              contains:
+                ApplyServerSideEncryptionByDefault:
+                  description: Specifies the default server-side encryption to apply to new objects in the bucket.
+                  type: dict
+                  contains:
+                    SSEAlgorithm:
+                      description: Server-side encryption algorithm to use for the default encryption.
+                      type: str
+                    KMSMasterKeyID:
+                      description: Amazon Web Services Key Management Service (KMS) customer Amazon Web Services KMS key ID to use for the default encryption.
+                      type: str
+                BucketKeyEnabled:
+                  description:
+                    - Specifies whether Amazon S3 should use an S3 Bucket Key with server-side encryption using KMS (SSE-KMS) for new objects in the bucket.
+                  type: bool
     bucket_lifecycle_configuration:
       description: Bucket lifecycle configuration settings.
-      returned: when I(bucket_facts=true) and I(bucket_lifecycle_configuration=true)
-      type: complex
+      returned: when O(bucket_facts=true) and RV(buckets.bucket_lifecycle_configuration=true).
+      type: list
+      elements: dict
       contains:
         Rules:
           description: List of lifecycle management rules.
-          returned: when lifecycle configuration is present
+          returned: when lifecycle configuration is present.
           type: list
-          sample: [{ "Status": "Enabled", "ID": "example-rule" }]
+          sample: [
+                    {
+                      "Status": "Enabled",
+                      "ID": "example-rule"
+                    }
+                  ]
     bucket_location:
       description: Bucket location.
-      returned: when I(bucket_facts=true) and I(bucket_location=true)
-      type: complex
+      returned: when O(bucket_facts=true) and RV(buckets.bucket_location=true).
+      type: dict
+      sample: {
+                "LocationConstraint": "us-east-1"
+              }
       contains:
         LocationConstraint:
           description: AWS region.
           returned: always
           type: str
-          sample: us-east-2
     bucket_logging:
       description: Server access logging configuration.
-      returned: when I(bucket_facts=true) and I(bucket_logging=true)
+      returned: when O(bucket_facts=true) and RV(buckets.bucket_logging=true).
       type: complex
       contains:
         LoggingEnabled:
           description: Server access logging configuration.
-          returned: when server access logging is defined for the bucket
+          returned: when server access logging is defined for the bucket.
           type: complex
           contains:
             TargetBucket:
               description: Target bucket name.
               returned: always
               type: str
-              sample: logging-bucket-name
+              sample: "logging-bucket-name"
             TargetPrefix:
               description: Prefix in target bucket.
               returned: always
@@ -300,117 +374,145 @@ bucket_list:
               sample: ""
     bucket_notification_configuration:
       description: Bucket notification settings.
-      returned: when I(bucket_facts=true) and I(bucket_notification_configuration=true)
+      returned: when O(bucket_facts=true) and RV(buckets.bucket_notification_configuration=true).
       type: complex
       contains:
         TopicConfigurations:
           description: List of notification events configurations.
-          returned: when at least one notification is configured
+          returned: when at least one notification is configured.
           type: list
-          sample: []
+          sample: [
+                      {
+                          'Id': 'topic-config-dev001',
+                          'TopicArn': 'arn:aws:sns:us-west-1:721234567890:sns-dev001-topic',
+                          'Events': [
+                              "s3:ObjectCreated:Copy"
+                          ],
+                          'Filter': {
+                              'Key': {
+                                  'FilterRules': [
+                                      {
+                                            "Name": "Prefix",
+                                            "Value": "test/"
+                                      },
+                                  ]
+                              }
+                          }
+                      },
+                    ]
     bucket_ownership_controls:
       description: Preffered object ownership settings.
-      returned: when I(bucket_facts=true) and I(bucket_ownership_controls=true)
+      returned: when O(bucket_facts=true) and RV(buckets.bucket_ownership_controls=true)
       type: complex
+      sample: {
+                "OwnershipControls": {
+                  "Rules": [
+                      {
+                        "ObjectOwnership": "BucketOwnerEnforced"
+                      }
+                  ]
+                }
+              }
       contains:
         OwnershipControls:
           description: Object ownership settings.
-          returned: when ownership controls are defined for the bucket
+          returned: when ownership controls are defined for the bucket.
           type: complex
           contains:
             Rules:
               description: List of ownership rules.
-              returned: when ownership rule is defined
+              returned: when ownership rule is defined.
               type: list
-              sample: [{ "ObjectOwnership:": "ObjectWriter" }]
     bucket_policy:
       description: Bucket policy contents.
-      returned: when I(bucket_facts=true) and I(bucket_policy=true)
+      returned: when O(bucket_facts=true) and RV(buckets.bucket_policy=true).
       type: str
       sample: '{"Version":"2012-10-17","Statement":[{"Sid":"AddCannedAcl","Effect":"Allow",..}}]}'
     bucket_policy_status:
       description: Status of bucket policy.
-      returned: when I(bucket_facts=true) and I(bucket_policy_status=true)
-      type: complex
+      returned: when O(bucket_facts=true) and RV(buckets.bucket_policy_status=true).
+      type: dict
       contains:
         PolicyStatus:
           description: Status of bucket policy.
-          returned: when bucket policy is present
-          type: complex
+          returned: when bucket policy is present.
+          type: dict
           contains:
             IsPublic:
               description: Report bucket policy public status.
-              returned: when bucket policy is present
+              returned: when bucket policy is present.
               type: bool
               sample: True
     bucket_replication:
       description: Replication configuration settings.
-      returned: when I(bucket_facts=true) and I(bucket_replication=true)
+      returned: when O(bucket_facts=true) and RV(buckets.bucket_replication=true).
       type: complex
       contains:
         Role:
           description: IAM role used for replication.
-          returned: when replication rule is defined
+          returned: when replication rule is defined.
           type: str
           sample: "arn:aws:iam::123:role/example-role"
         Rules:
           description: List of replication rules.
-          returned: when replication rule is defined
+          returned: when replication rule is defined.
           type: list
           sample: [{ "ID": "rule-1", "Filter": "{}" }]
     bucket_request_payment:
       description: Requester pays setting.
-      returned: when I(bucket_facts=true) and I(bucket_request_payment=true)
+      returned: when O(bucket_facts=true) and RV(buckets.bucket_request_payment=true)
       type: complex
+      sample: {
+                "Payer": "BucketOwner"
+              }
       contains:
         Payer:
           description: Current payer.
           returned: always
           type: str
-          sample: BucketOwner
     bucket_tagging:
       description: Bucket tags.
-      returned: when I(bucket_facts=true) and I(bucket_tagging=true)
+      returned: when O(bucket_facts=true) and RV(buckets.bucket_tagging=true).
       type: dict
       sample: { "Tag1": "Value1", "Tag2": "Value2" }
     bucket_website:
       description: Static website hosting.
-      returned: when I(bucket_facts=true) and I(bucket_website=true)
+      returned: when O(bucket_facts=true) and RV(buckets.bucket_website=true).
       type: complex
       contains:
         ErrorDocument:
           description: Object serving as HTTP error page.
-          returned: when static website hosting is enabled
+          returned: when static website hosting is enabled.
           type: dict
           sample: { "Key": "error.html" }
         IndexDocument:
           description: Object serving as HTTP index page.
-          returned: when static website hosting is enabled
+          returned: when static website hosting is enabled.
           type: dict
           sample: { "Suffix": "error.html" }
         RedirectAllRequestsTo:
           description: Website redict settings.
-          returned: when redirect requests is configured
+          returned: when redirect requests is configured.
           type: complex
           contains:
             HostName:
               description: Hostname to redirect.
               returned: always
               type: str
-              sample: www.example.com
+              sample: "www.example.com"
             Protocol:
               description: Protocol used for redirect.
               returned: always
               type: str
-              sample: https
+              sample: "https"
     bucket_versioning:
       description:
         - The versioning state of the bucket.
         - This will also specify whether MFA delete is enabled in the bucket versioning configuration.
           if only the bucket has been configured with MFA delete.
-      returned: when I(bucket_facts=true) and I(bucket_versioning=true)
+      returned: when O(bucket_facts=true) and RV(buckets.bucket_versioning=true).
       type: dict
-      sample: { 'Status': 'Enabled' }
+      sample: { "Status": "Enabled" }
       version_added: 7.2.0
 """
 
