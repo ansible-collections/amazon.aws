@@ -227,7 +227,7 @@ options:
     version_added: 8.1.0
   network_interfaces:
     description:
-      - A dictionary containing specifications for a single network interface.
+      - A list of dictionaries containing specifications for network interfaces.
       - Use the M(amazon.aws.ec2_eni) module to create ENIs with special settings.
       - Mutually exclusive with O(network).
     type: list
@@ -1445,18 +1445,11 @@ def validate_network_params(params: Dict[str, Any], nb_instances: int) -> None:
         # Ensure none of 'private_ip_address', 'private_ip_addresses', 'ipv6_addresses' were provided
         # when launching more than one instance
         if nb_instances > 1:
-            if any(True for inty in network_interfaces if inty.get("private_ip_address")):
-                module.fail_json(
-                    msg="The option 'private_ip_address' cannot be specified when launching more than one instance."
-                )
-            if any(True for inty in network_interfaces if inty.get("private_ip_addresses")):
-                module.fail_json(
-                    msg="The option 'private_ip_addresses' cannot be specified when launching more than one instance."
-                )
-            if any(True for inty in network_interfaces if inty.get("ipv6_addresses")):
-                module.fail_json(
-                    msg="The option 'ipv6_addresses' cannot be specified when launching more than one instance."
-                )
+            for opt in ("private_ip_address", "private_ip_addresses", "ipv6_addresses"):
+                if any(True for inty in network_interfaces if inty.get(opt)):
+                    module.fail_json(
+                        msg=f"The option '{opt}' cannot be specified when launching more than one instance."
+                    )
 
 
 def ansible_to_boto3_eni_specification(
@@ -1473,9 +1466,9 @@ def ansible_to_boto3_eni_specification(
             AWS network interface specification.
     """
     spec = {
-        "DeviceIndex": interface.get("device_index") or 0,
+        "DeviceIndex": interface.get("device_index", 0),
     }
-    if interface.get("assign_public_ip") is not None:
+    if interface.get("assign_public_ip"):
         spec["AssociatePublicIpAddress"] = interface["assign_public_ip"]
 
     if interface.get("subnet_id"):
@@ -1486,14 +1479,14 @@ def ansible_to_boto3_eni_specification(
         spec["SubnetId"] = describe_default_subnet(module)
 
     if interface.get("ipv6_addresses"):
-        spec["Ipv6Addresses"] = [{"Ipv6Address": a} for a in interface.get("ipv6_addresses")]
+        spec["Ipv6Addresses"] = [{"Ipv6Address": a} for a in interface["ipv6_addresses"]]
 
     if interface.get("private_ip_address"):
         spec["PrivateIpAddress"] = interface["private_ip_address"]
 
     if interface.get("private_ip_addresses"):
         spec["PrivateIpAddresses"] = []
-        for addr in interface.get("private_ip_addresses"):
+        for addr in interface["private_ip_addresses"]:
             d = {"PrivateIpAddress": addr}
             if isinstance(addr, dict):
                 d = {"PrivateIpAddress": addr.get("private_ip_address")}
@@ -1533,18 +1526,18 @@ def build_network_spec(params: Dict[str, Any]) -> List[Dict[str, Any]]:
     groups = params.get("security_groups") or params.get("security_group")
     vpc_subnet_id = params.get("vpc_subnet_id")
     network_interfaces = params.get("network_interfaces")
-    if (network is not None and not network.get("interfaces")) or network_interfaces:
+    if (network and not network.get("interfaces")) or network_interfaces:
         # They specified network interfaces using `network` or `network_interfaces` options
-        if network is not None and not network.get("interfaces"):
+        if network and not network.get("interfaces"):
             network_interfaces = [network]
         interfaces.extend(
             [ansible_to_boto3_eni_specification(inty, vpc_subnet_id, groups) for inty in network_interfaces]
         )
     elif not network and not network_interfaces_ids:
-        # They do not specified any network interface configuration
+        # They did not specify any network interface configuration
         # build network interface using subnet_id and security group(s) defined on the module
         interfaces.append(ansible_to_boto3_eni_specification({}, vpc_subnet_id, groups))
-    elif network is not None:
+    elif network:
         # handle list of `network.interfaces` options
         interfaces.extend(
             [
@@ -1871,8 +1864,8 @@ def diff_instance_and_params(instance, params, skip=None):
             changes_to_apply.append(arguments)
 
     network_interfaces = params.get("network_interfaces")
-    if not network_interfaces and params.get("network") and not params.get("network").get("interfaces"):
-        network_interfaces = [params.get("network")]
+    if not network_interfaces and params.get("network") and not params["network"].get("interfaces"):
+        network_interfaces = [params["network"]]
     if network_interfaces or params.get("security_groups") or params.get("security_group"):
         if len(network_interfaces or []) > 1 or len(instance["NetworkInterfaces"]) > 1:
             module.warn("Skipping group modification because instance contains mutiple network interfaces.")
@@ -2497,7 +2490,7 @@ def describe_default_subnet(module: AnsibleAWSModule, use_availability_zone: boo
             The default subnet id.
     """
     default_vpc = get_default_vpc()
-    if default_vpc is None:
+    if not default_vpc:
         module.fail_json(
             msg=("No default subnet could be found - you must include a VPC subnet ID (vpc_subnet_id parameter).")
         )
@@ -2709,12 +2702,15 @@ def main():
             date="2026-12-01",
             collection_name="amazon.aws",
         )
-        if module.params.get("network").get("interfaces"):
+        if module.params["network"].get("interfaces"):
             if module.params.get("security_group"):
                 module.fail_json(msg="Parameter network.interfaces can't be used with security_group")
             if module.params.get("security_groups"):
                 module.fail_json(msg="Parameter network.interfaces can't be used with security_groups")
-        if module.params.get("network").get("source_dest_check") is not None and module.params.get("source_dest_check"):
+        if (
+            module.params["network"].get("source_dest_check") is not None
+            and module.params.get("source_dest_check") is not None
+        ):
             module.warn(
                 "the source_dest_check option has been set therefore network.source_dest_check will be ignored."
             )
