@@ -1,0 +1,3 @@
+---
+trivial:
+  - Update return block in the module documentation for kms_key, kms_key_info (https://github.com/ansible-collections/amazon.aws/pull/2144).
