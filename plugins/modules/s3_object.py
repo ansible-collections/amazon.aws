@@ -377,12 +377,12 @@ msg:
   description: Message indicating the status of the operation.
   returned: always
   type: str
-  sample: PUT operation complete
+  sample: "PUT operation complete"
 url:
   description: URL of the object.
   returned: (for put and geturl operations)
   type: str
-  sample: https://my-bucket.s3.amazonaws.com/my-key.txt?AWSAccessKeyId=<access-key>&Expires=1506888865&Signature=<signature>
+  sample: "https://my-bucket.s3.amazonaws.com/my-key.txt?AWSAccessKeyId=<access-key>&Expires=1506888865&Signature=<signature>"
 expiry:
   description: Number of seconds the presigned url is valid for.
   returned: (for geturl operation)
@@ -402,6 +402,14 @@ s3_keys:
   - prefix1/
   - prefix1/key1
   - prefix1/key2
+tags:
+    description: Tags of the s3 object.
+    returned: always
+    type: dict
+    sample: {
+                "Owner": "dev001",
+                "env": "test"
+            }
 """
 
 import base64
