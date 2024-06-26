@@ -217,12 +217,12 @@ key_id:
   description: ID of key.
   type: str
   returned: always
-  sample: abcd1234-abcd-1234-5678-ef1234567890
+  sample: "abcd1234-abcd-1234-5678-ef1234567890"
 key_arn:
   description: ARN of key.
   type: str
   returned: always
-  sample: arn:aws:kms:ap-southeast-2:123456789012:key/abcd1234-abcd-1234-5678-ef1234567890
+  sample: "arn:aws:kms:ap-southeast-2:123456789012:key/abcd1234-abcd-1234-5678-ef1234567890"
 key_state:
   description:
     - The state of the key.
@@ -230,24 +230,24 @@ key_state:
       C('PendingReplicaDeletion'), C('Unavailable'), or C('Updating').
   type: str
   returned: always
-  sample: PendingDeletion
+  sample: "PendingDeletion"
 key_usage:
   description: The cryptographic operations for which you can use the key.
   type: str
   returned: always
-  sample: ENCRYPT_DECRYPT
+  sample: "ENCRYPT_DECRYPT"
 origin:
   description: The source of the key's key material. When this value is C(AWS_KMS),
     AWS KMS created the key material. When this value is C(EXTERNAL), the
     key material was imported or the CMK lacks key material.
   type: str
   returned: always
-  sample: AWS_KMS
+  sample: "AWS_KMS"
 aws_account_id:
   description: The AWS Account ID that the key belongs to.
   type: str
   returned: always
-  sample: 1234567890123
+  sample: "1234567890123"
 creation_date:
   description: Date and time of creation of the key.
   type: str
@@ -349,27 +349,27 @@ grants:
       description: The unique ID for the grant.
       type: str
       returned: always
-      sample: abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234
+      sample: "abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234"
     grantee_principal:
       description: The principal that receives the grant's permissions.
       type: str
       returned: always
-      sample: arn:aws:sts::123456789012:assumed-role/lambda_xyz/xyz
+      sample: "arn:aws:sts::123456789012:assumed-role/lambda_xyz/xyz"
     issuing_account:
       description: The AWS account under which the grant was issued.
       type: str
       returned: always
-      sample: arn:aws:iam::123456789012:root
+      sample: "arn:aws:iam::123456789012:root"
     key_id:
       description: The key ARN to which the grant applies.
       type: str
       returned: always
-      sample: arn:aws:kms:ap-southeast-2:123456789012:key/abcd1234-abcd-1234-5678-ef1234567890
+      sample: "arn:aws:kms:ap-southeast-2:123456789012:key/abcd1234-abcd-1234-5678-ef1234567890"
     name:
       description: The friendly name that identifies the grant.
       type: str
       returned: always
-      sample: xyz
+      sample: "xyz"
     operations:
       description: The list of operations permitted by the grant.
       type: list
@@ -381,7 +381,7 @@ grants:
       description: The principal that can retire the grant.
       type: str
       returned: always
-      sample: arn:aws:sts::123456789012:assumed-role/lambda_xyz/xyz
+      sample: "arn:aws:sts::123456789012:assumed-role/lambda_xyz/xyz"
 changes_needed:
   description: Grant types that would be changed/were changed.
   type: dict
@@ -399,6 +399,27 @@ multi_region:
   version_added: 5.5.0
   returned: always
   sample: False
+customer_master_key_spec:
+  description: Specifies the type of KMS key to create.
+  type: str
+  returned: always
+  sample: "SYMMETRIC_DEFAULT"
+encryption_algorithms:
+  description: The encryption algorithms that the KMS key supports.
+  type: list
+  elements: str
+  returned: always
+  sample: ["SYMMETRIC_DEFAULT"]
+key_manager:
+  description: The manager of the KMS key.
+  type: str
+  returned: always
+  sample: "AWS"
+key_spec:
+  description: Specifies the type of KMS key to create.
+  type: str
+  returned: always
+  sample: "SYMMETRIC_DEFAULT"
 """
 
 import json
