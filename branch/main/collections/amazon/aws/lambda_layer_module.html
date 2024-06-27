@@ -224,7 +224,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-l
 <a class="ansibleOptionLink" href="#parameter-compatible_architectures" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A list of compatible instruction set architectures. For example, x86_64.</p>
-<p>Mutually exclusive with <em>version</em>.</p>
+<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-layer-module-parameter-version"><span class="std std-ref"><span class="pre">version</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -232,8 +232,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-l
 <a class="ansibleOptionLink" href="#parameter-compatible_runtimes" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A list of compatible function runtimes.</p>
-<p>Ignored when <em>state=absent</em>.</p>
-<p>Mutually exclusive with <em>version</em>.</p>
+<p>Ignored when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-layer-module-parameter-state"><span class="std std-ref"><span class="pre">state=absent</span></span></a></code>.</p>
+<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-layer-module-parameter-version"><span class="std std-ref"><span class="pre">version</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -241,9 +241,9 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-l
 <a class="ansibleOptionLink" href="#parameter-content" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The function layer archive.</p>
-<p>Required when <em>state=present</em>.</p>
-<p>Ignored when <em>state=absent</em>.</p>
-<p>Mutually exclusive with <em>version</em>.</p>
+<p>Required when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-layer-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code>.</p>
+<p>Ignored when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-layer-module-parameter-state"><span class="std std-ref"><span class="pre">state=absent</span></span></a></code>.</p>
+<p>Mutually exclusive with o(version).</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -292,8 +292,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-l
 <a class="ansibleOptionLink" href="#parameter-description" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The description of the version.</p>
-<p>Ignored when <em>state=absent</em>.</p>
-<p>Mutually exclusive with <em>version</em>.</p>
+<p>Ignored when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-layer-module-parameter-state"><span class="std std-ref"><span class="pre">state=absent</span></span></a></code>.</p>
+<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-layer-module-parameter-version"><span class="std std-ref"><span class="pre">version</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -315,8 +315,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-l
 <a class="ansibleOptionLink" href="#parameter-license_info" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The layer’s software license. It can be any of an SPDX license identifier, the URL of a license hosted on the internet or the full text of the license.</p>
-<p>Ignored when <em>state=absent</em>.</p>
-<p>Mutually exclusive with <em>version</em>.</p>
+<p>Ignored when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-layer-module-parameter-state"><span class="std std-ref"><span class="pre">state=absent</span></span></a></code>.</p>
+<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-layer-module-parameter-version"><span class="std std-ref"><span class="pre">version</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -394,7 +394,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-l
 <div class="ansibleOptionAnchor" id="parameter-state"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-layer-module-parameter-state"><strong>state</strong></p>
 <a class="ansibleOptionLink" href="#parameter-state" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Determines if an Lambda layer should be created, or deleted. When set to <code class="docutils literal notranslate"><span class="pre">present</span></code>, an Lambda layer version will be created. If set to <code class="docutils literal notranslate"><span class="pre">absent</span></code>, an existing Lambda layer version will be deleted.</p>
+<td><div class="ansible-option-cell"><p>Determines if an Lambda layer should be created, or deleted. When set to <code class="ansible-value docutils literal notranslate"><span class="pre">present</span></code>, an Lambda layer version will be created. If set to <code class="ansible-value docutils literal notranslate"><span class="pre">absent</span></code>, an existing Lambda layer version will be deleted.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;absent&quot;</span></code></p></li>
@@ -420,10 +420,10 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-l
 <a class="ansibleOptionLink" href="#parameter-version" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The version number of the layer to delete.</p>
-<p>Set to <code class="docutils literal notranslate"><span class="pre">-1</span></code> to delete all versions for the specified layer name.</p>
-<p>Required when <em>state=absent</em>.</p>
-<p>Ignored when <em>state=present</em>.</p>
-<p>Mutually exclusive with <em>description</em>, <em>content</em>, <em>compatible_runtimes</em>, <em>license_info</em>, <em>compatible_architectures</em>.</p>
+<p>Set to <code class="ansible-value docutils literal notranslate"><span class="pre">-1</span></code> to delete all versions for the specified layer name.</p>
+<p>Required when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-layer-module-parameter-state"><span class="std std-ref"><span class="pre">state=absent</span></span></a></code>.</p>
+<p>Ignored when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-layer-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code>.</p>
+<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-layer-module-parameter-description"><span class="std std-ref"><span class="pre">description</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-layer-module-parameter-content"><span class="std std-ref"><span class="pre">content</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-layer-module-parameter-compatible-runtimes"><span class="std std-ref"><span class="pre">compatible_runtimes</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-layer-module-parameter-license-info"><span class="std std-ref"><span class="pre">license_info</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-layer-module-parameter-compatible-architectures"><span class="std std-ref"><span class="pre">compatible_architectures</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
 </tbody>
@@ -503,7 +503,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-l
 <div class="ansibleOptionAnchor" id="return-layer_version"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-layer-module-return-layer-version"><strong>layer_version</strong></p>
 <a class="ansibleOptionLink" href="#return-layer_version" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>info about the layer version that was created or deleted.</p>
+<td><div class="ansible-option-cell"><p>Info about the layer version that was created or deleted.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 </div></td>
 </tr>
@@ -529,7 +529,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-l
 <a class="ansibleOptionLink" href="#return-layer_version/content" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Details about the layer version.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <em>state=present</em></p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-layer-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -537,7 +537,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-l
 <a class="ansibleOptionLink" href="#return-layer_version/content/code_sha256" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The SHA-256 hash of the layer archive.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <em>state=present</em></p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-layer-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;VLluleJZ3HTwDrdYolSMrS+8iPwEkcoXXaegjXf+dmc=&quot;</span></code></p>
 </div></td>
 </tr>
@@ -546,7 +546,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-l
 <a class="ansibleOptionLink" href="#return-layer_version/content/code_size" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The size of the layer archive in bytes.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <em>state=present</em></p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-layer-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">9473675</span></code></p>
 </div></td>
 </tr>
@@ -555,7 +555,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-l
 <a class="ansibleOptionLink" href="#return-layer_version/content/location" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A link to the layer archive in Amazon S3 that is valid for 10 minutes.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <em>state=present</em></p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-layer-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;https://awslambda-us-east-1-layers.s3.us-east-1.amazonaws.com/snapshots/123456789012/pylayer-9da91deffd3b4941b8baeeae5daeffe4&quot;</span></code></p>
 </div></td>
 </tr>
@@ -589,7 +589,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-l
 <a class="ansibleOptionLink" href="#return-layer_version/description" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The description of the version.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <em>state=present</em></p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-layer-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">

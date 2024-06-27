@@ -166,7 +166,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <li><p>This module allows the user to manage the objects and directories within S3 buckets. Includes support for creating and deleting objects and directories, retrieving objects as files or strings, generating download links and copying objects that are already stored in Amazon S3.</p></li>
 <li><p>S3 buckets can be created or deleted using the <a class="reference internal" href="s3_bucket_module.html#ansible-collections-amazon-aws-s3-bucket-module"><span class="std std-ref">amazon.aws.s3_bucket</span></a> module.</p></li>
 <li><p>Compatible with AWS, DigitalOcean, Ceph, Walrus, FakeS3 and StorageGRID.</p></li>
-<li><p>When using non-AWS services, <em>endpoint_url</em> should be specified.</p></li>
+<li><p>When using non-AWS services, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-endpoint-url"><span class="std std-ref"><span class="pre">endpoint_url</span></span></a></strong></code> should be specified.</p></li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -240,7 +240,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 </div></td>
 <td><div class="ansible-option-cell"><p>Enable API compatibility with Ceph RGW.</p>
 <p>It takes into account the S3 API subset working with Ceph in order to provide the same module behaviour where possible.</p>
-<p>Requires <em>endpoint_url</em> if <em>ceph=true</em>.</p>
+<p>Requires <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-endpoint-url"><span class="std std-ref"><span class="pre">endpoint_url</span></span></a></strong></code> if <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-ceph"><span class="std std-ref"><span class="pre">ceph=true</span></span></a></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -255,8 +255,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 </div></td>
 <td><div class="ansible-option-cell"><p>The content to <code class="docutils literal notranslate"><span class="pre">put</span></code> into an object.</p>
 <p>The parameter value will be treated as a string and converted to UTF-8 before sending it to S3.</p>
-<p>To send binary data, use the <em>content_base64</em> parameter instead.</p>
-<p>One of <em>content</em>, <em>content_base64</em> or <em>src</em> must be specified when <em>mode=put</em> otherwise ignored.</p>
+<p>To send binary data, use the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-content-base64"><span class="std std-ref"><span class="pre">content_base64</span></span></a></strong></code> parameter instead.</p>
+<p>One of <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-content"><span class="std std-ref"><span class="pre">content</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-content-base64"><span class="std std-ref"><span class="pre">content_base64</span></span></a></strong></code> or <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-src"><span class="std std-ref"><span class="pre">src</span></span></a></strong></code> must be specified when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-mode"><span class="std std-ref"><span class="pre">mode=put</span></span></a></code> otherwise ignored.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -266,7 +266,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 </div></td>
 <td><div class="ansible-option-cell"><p>The base64-encoded binary data to <code class="docutils literal notranslate"><span class="pre">put</span></code> into an object.</p>
 <p>Use this if you need to put raw binary data, and don’t forget to encode in base64.</p>
-<p>One of <em>content</em>, <em>content_base64</em> or <em>src</em> must be specified when <em>mode=put</em> otherwise ignored.</p>
+<p>One of <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-content"><span class="std std-ref"><span class="pre">content</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-content-base64"><span class="std std-ref"><span class="pre">content_base64</span></span></a></strong></code> or <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-src"><span class="std std-ref"><span class="pre">src</span></span></a></strong></code> must be specified when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-mode"><span class="std std-ref"><span class="pre">mode=put</span></span></a></code> otherwise ignored.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -275,7 +275,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <p><em class="ansible-option-versionadded">added in amazon.aws 2.0.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The source details of the object to copy.</p>
-<p>Required if <em>mode=copy</em>.</p>
+<p>Required if <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-mode"><span class="std std-ref"><span class="pre">mode=copy</span></span></a></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -290,7 +290,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <a class="ansibleOptionLink" href="#parameter-copy_src/object" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>key name of the source object.</p>
-<p>if not specified, all the objects of the <em>copy_src.bucket</em> will be copied into the specified bucket.</p>
+<p>if not specified, all the objects of the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-copy-src-bucket"><span class="std std-ref"><span class="pre">copy_src.bucket</span></span></a></strong></code> will be copied into the specified bucket.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -299,7 +299,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <p><em class="ansible-option-versionadded">added in amazon.aws 6.2.0</em></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Copy all the keys that begin with the specified prefix.</p>
-<p>Ignored if <em>copy_src.object</em> is supplied.</p>
+<p>Ignored if <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-copy-src-object"><span class="std std-ref"><span class="pre">copy_src.object</span></span></a></strong></code> is supplied.</p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
 </div></td>
 </tr>
@@ -327,8 +327,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <div class="ansibleOptionAnchor" id="parameter-dest"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-dest"><strong>dest</strong></p>
 <a class="ansibleOptionLink" href="#parameter-dest" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">path</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>The destination file path when downloading an object/key when <em>mode=get</em>.</p>
-<p>Ignored when <em>mode</em> is not <code class="docutils literal notranslate"><span class="pre">get</span></code>.</p>
+<td><div class="ansible-option-cell"><p>The destination file path when downloading an object/key when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-mode"><span class="std std-ref"><span class="pre">mode=get</span></span></a></code>.</p>
+<p>Ignored when <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-mode"><span class="std std-ref"><span class="pre">mode</span></span></a></strong></code> is not <code class="ansible-value docutils literal notranslate"><span class="pre">get</span></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -336,7 +336,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <a class="ansibleOptionLink" href="#parameter-dualstack" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Enables Amazon S3 Dual-Stack Endpoints, allowing S3 communications using both IPv4 and IPv6.</p>
-<p>Support for passing <em>dualstack</em> and <em>endpoint_url</em> at the same time has been deprecated, the dualstack endpoints are automatically configured using the configured <em>region</em>. Support will be removed in a release after 2024-12-01.</p>
+<p>Support for passing <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-dualstack"><span class="std std-ref"><span class="pre">dualstack</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-endpoint-url"><span class="std std-ref"><span class="pre">endpoint_url</span></span></a></strong></code> at the same time has been deprecated, the dualstack endpoints are automatically configured using the configured <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-region"><span class="std std-ref"><span class="pre">region</span></span></a></strong></code>. Support will be removed in a release after 2024-12-01.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -348,8 +348,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <div class="ansibleOptionAnchor" id="parameter-encrypt"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-encrypt"><strong>encrypt</strong></p>
 <a class="ansibleOptionLink" href="#parameter-encrypt" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Asks for server-side encryption of the objects when <em>mode=put</em> or <em>mode=copy</em>.</p>
-<p>Ignored when <em>mode</em> is neither <code class="docutils literal notranslate"><span class="pre">put</span></code> nor <code class="docutils literal notranslate"><span class="pre">copy</span></code>.</p>
+<td><div class="ansible-option-cell"><p>Asks for server-side encryption of the objects when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-mode"><span class="std std-ref"><span class="pre">mode=put</span></span></a></code> or <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-mode"><span class="std std-ref"><span class="pre">mode=copy</span></span></a></code>.</p>
+<p>Ignored when <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-mode"><span class="std std-ref"><span class="pre">mode</span></span></a></strong></code> is neither <code class="ansible-value docutils literal notranslate"><span class="pre">put</span></code> nor <code class="ansible-value docutils literal notranslate"><span class="pre">copy</span></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
@@ -361,15 +361,15 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <div class="ansibleOptionAnchor" id="parameter-encryption_kms_key_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-encryption-kms-key-id"><strong>encryption_kms_key_id</strong></p>
 <a class="ansibleOptionLink" href="#parameter-encryption_kms_key_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>KMS key id to use when encrypting objects using <em>encrypting=aws:kms</em>.</p>
-<p>Ignored if <em>encryption</em> is not <code class="docutils literal notranslate"><span class="pre">aws:kms</span></code>.</p>
+<td><div class="ansible-option-cell"><p>KMS key id to use when encrypting objects using <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-encryption-mode"><span class="std std-ref"><span class="pre">encryption_mode=aws:kms</span></span></a></code>.</p>
+<p>Ignored if <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-encryption-mode"><span class="std std-ref"><span class="pre">encryption_mode</span></span></a></strong></code> is not <code class="ansible-value docutils literal notranslate"><span class="pre">aws:kms</span></code>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-encryption_mode"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-encryption-mode"><strong>encryption_mode</strong></p>
 <a class="ansibleOptionLink" href="#parameter-encryption_mode" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>The encryption mode to use if <em>encrypt=true</em>.</p>
+<td><div class="ansible-option-cell"><p>The encryption mode to use if <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-encrypt"><span class="std std-ref"><span class="pre">encrypt=true</span></span></a></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">&quot;AES256&quot;</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -397,8 +397,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <a class="ansibleOptionLink" href="#parameter-expiry" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: expiration</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Time limit (in seconds) for the URL generated and returned by S3/Walrus when performing a <em>mode=put</em> or <em>mode=geturl</em> operation.</p>
-<p>Ignored when <em>mode</em> is neither <code class="docutils literal notranslate"><span class="pre">put</span></code> nor <code class="docutils literal notranslate"><span class="pre">geturl</span></code>.</p>
+<td><div class="ansible-option-cell"><p>Time limit (in seconds) for the URL generated and returned by S3/Walrus when performing a <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-mode"><span class="std std-ref"><span class="pre">mode=put</span></span></a></code> or <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-mode"><span class="std std-ref"><span class="pre">mode=geturl</span></span></a></code> operation.</p>
+<p>Ignored when <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-mode"><span class="std std-ref"><span class="pre">mode</span></span></a></strong></code> is neither <code class="ansible-value docutils literal notranslate"><span class="pre">put</span></code> nor <code class="ansible-value docutils literal notranslate"><span class="pre">geturl</span></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">600</span></code></p>
 </div></td>
 </tr>
@@ -406,8 +406,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <div class="ansibleOptionAnchor" id="parameter-headers"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-headers"><strong>headers</strong></p>
 <a class="ansibleOptionLink" href="#parameter-headers" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Custom headers to use when <em>mode=put</em> as a dictionary of key value pairs.</p>
-<p>Ignored when <em>mode</em> is not <code class="docutils literal notranslate"><span class="pre">put</span></code>.</p>
+<td><div class="ansible-option-cell"><p>Custom headers to use when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-mode"><span class="std std-ref"><span class="pre">mode=put</span></span></a></code> as a dictionary of key value pairs.</p>
+<p>Ignored when <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-mode"><span class="std std-ref"><span class="pre">mode</span></span></a></strong></code> is not <code class="ansible-value docutils literal notranslate"><span class="pre">put</span></code>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -415,7 +415,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <a class="ansibleOptionLink" href="#parameter-ignore_nonexistent_bucket" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Overrides initial bucket lookups in case bucket or IAM policies are restrictive.</p>
-<p>This can be useful when a user may have the <code class="docutils literal notranslate"><span class="pre">GetObject</span></code> permission but no other permissions.  In which case using <em>mode=get</em> will fail unless <em>ignore_nonexistent_bucket=true</em> is specified.</p>
+<p>This can be useful when a user may have the <code class="docutils literal notranslate"><span class="pre">GetObject</span></code> permission but no other permissions. In which case using <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-mode"><span class="std std-ref"><span class="pre">mode=get</span></span></a></code> will fail unless <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-ignore-nonexistent-bucket"><span class="std std-ref"><span class="pre">ignore_nonexistent_bucket=true</span></span></a></code> is specified.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -435,8 +435,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <div class="ansibleOptionAnchor" id="parameter-max_keys"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-max-keys"><strong>max_keys</strong></p>
 <a class="ansibleOptionLink" href="#parameter-max_keys" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Max number of results to return when <em>mode=list</em>, set this if you want to retrieve fewer than the default 1000 keys.</p>
-<p>Ignored when <em>mode</em> is not <code class="docutils literal notranslate"><span class="pre">list</span></code>.</p>
+<td><div class="ansible-option-cell"><p>Max number of results to return when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-mode"><span class="std std-ref"><span class="pre">mode=list</span></span></a></code>, set this if you want to retrieve fewer than the default 1000 keys.</p>
+<p>Ignored when <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-mode"><span class="std std-ref"><span class="pre">mode</span></span></a></strong></code> is not <code class="ansible-value docutils literal notranslate"><span class="pre">list</span></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">1000</span></code></p>
 </div></td>
 </tr>
@@ -444,7 +444,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <div class="ansibleOptionAnchor" id="parameter-metadata"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-metadata"><strong>metadata</strong></p>
 <a class="ansibleOptionLink" href="#parameter-metadata" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Metadata to use when <em>mode=put</em> or <em>mode=copy</em> as a dictionary of key value pairs.</p>
+<td><div class="ansible-option-cell"><p>Metadata to use when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-mode"><span class="std std-ref"><span class="pre">mode=put</span></span></a></code> or <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-mode"><span class="std std-ref"><span class="pre">mode=copy</span></span></a></code> as a dictionary of key value pairs.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -452,14 +452,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <a class="ansibleOptionLink" href="#parameter-mode" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Switches the module behaviour between</p>
-<p><code class="docutils literal notranslate"><span class="pre">put</span></code>: upload</p>
-<p><code class="docutils literal notranslate"><span class="pre">get</span></code>: download</p>
-<p><code class="docutils literal notranslate"><span class="pre">geturl</span></code>: return download URL</p>
-<p><code class="docutils literal notranslate"><span class="pre">getstr</span></code>: download object as string</p>
-<p><code class="docutils literal notranslate"><span class="pre">list</span></code>: list keys</p>
-<p><code class="docutils literal notranslate"><span class="pre">create</span></code>: create bucket directories</p>
-<p><code class="docutils literal notranslate"><span class="pre">delobj</span></code>: delete object</p>
-<p><code class="docutils literal notranslate"><span class="pre">copy</span></code>: copy object that is already stored in another bucket</p>
+<p><code class="ansible-value docutils literal notranslate"><span class="pre">put</span></code>: upload</p>
+<p><code class="ansible-value docutils literal notranslate"><span class="pre">get</span></code>: download</p>
+<p><code class="ansible-value docutils literal notranslate"><span class="pre">geturl</span></code>: return download URL</p>
+<p><code class="ansible-value docutils literal notranslate"><span class="pre">getstr</span></code>: download object as string</p>
+<p><code class="ansible-value docutils literal notranslate"><span class="pre">list</span></code>: list keys</p>
+<p><code class="ansible-value docutils literal notranslate"><span class="pre">create</span></code>: create bucket directories</p>
+<p><code class="ansible-value docutils literal notranslate"><span class="pre">delobj</span></code>: delete object</p>
+<p><code class="ansible-value docutils literal notranslate"><span class="pre">copy</span></code>: copy object that is already stored in another bucket</p>
 <p>Support for creating and deleting buckets was removed in release 6.0.0. To create and manage the bucket itself please use the <a class="reference internal" href="s3_bucket_module.html#ansible-collections-amazon-aws-s3-bucket-module"><span class="std std-ref">amazon.aws.s3_bucket</span></a> module.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
@@ -481,7 +481,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <td><div class="ansible-option-cell"><p>Key name of the object inside the bucket.</p>
 <p>Can be used to create “virtual directories”, see examples.</p>
 <p>Object key names should not include the leading <code class="docutils literal notranslate"><span class="pre">/</span></code>, see <a class="reference external" href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-keys.html">https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-keys.html</a> for more information.</p>
-<p>Support for passing the leading <code class="docutils literal notranslate"><span class="pre">/</span></code> has been deprecated and will be removed in a release after 2025-12-01.</p>
+<p>Support for passing the leading <code class="ansible-value docutils literal notranslate"><span class="pre">/</span></code> has been deprecated and will be removed in a release after 2025-12-01.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -491,13 +491,13 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Force overwrite either locally on the filesystem or remotely with the object/key.</p>
-<p>Used when <em>mode=put</em> or <em>mode=get</em>.</p>
-<p>Ignored when when <em>mode</em> is neither <code class="docutils literal notranslate"><span class="pre">put</span></code> nor <code class="docutils literal notranslate"><span class="pre">get</span></code>.</p>
-<p>Must be a Boolean, <code class="docutils literal notranslate"><span class="pre">always</span></code>, <code class="docutils literal notranslate"><span class="pre">never</span></code>, <code class="docutils literal notranslate"><span class="pre">different</span></code> or <code class="docutils literal notranslate"><span class="pre">latest</span></code>.</p>
-<p><code class="docutils literal notranslate"><span class="pre">true</span></code> is the same as <code class="docutils literal notranslate"><span class="pre">always</span></code>.</p>
-<p><code class="docutils literal notranslate"><span class="pre">false</span></code> is equal to <code class="docutils literal notranslate"><span class="pre">never</span></code>.</p>
+<p>Used when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-mode"><span class="std std-ref"><span class="pre">mode=put</span></span></a></code> or <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-mode"><span class="std std-ref"><span class="pre">mode=get</span></span></a></code>.</p>
+<p>Ignored when when <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-mode"><span class="std std-ref"><span class="pre">mode</span></span></a></strong></code> is neither <code class="ansible-value docutils literal notranslate"><span class="pre">put</span></code> nor <code class="ansible-value docutils literal notranslate"><span class="pre">get</span></code>.</p>
+<p>Must be a Boolean, <code class="ansible-value docutils literal notranslate"><span class="pre">always</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">never</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">different</span></code> or <code class="ansible-value docutils literal notranslate"><span class="pre">latest</span></code>.</p>
+<p><code class="ansible-value docutils literal notranslate"><span class="pre">true</span></code> is the same as <code class="ansible-value docutils literal notranslate"><span class="pre">always</span></code>.</p>
+<p><code class="ansible-value docutils literal notranslate"><span class="pre">false</span></code> is equal to <code class="ansible-value docutils literal notranslate"><span class="pre">never</span></code>.</p>
 <p>When this is set to <code class="docutils literal notranslate"><span class="pre">different</span></code> the MD5 sum of the local file is compared with the ‘ETag’ of the object/key in S3.  The ETag may or may not be an MD5 digest of the object data. See the ETag response header here <a class="reference external" href="https://docs.aws.amazon.com/AmazonS3/latest/API/RESTCommonResponseHeaders.html">https://docs.aws.amazon.com/AmazonS3/latest/API/RESTCommonResponseHeaders.html</a>.</p>
-<p>When <em>mode=get</em> and <em>overwrite=latest</em> the last modified timestamp of local file is compared with the ‘LastModified’ of the object/key in S3.</p>
+<p>When <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-mode"><span class="std std-ref"><span class="pre">mode=get</span></span></a></code> and <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-overwrite"><span class="std std-ref"><span class="pre">overwrite=latest</span></span></a></code> the last modified timestamp of local file is compared with the ‘LastModified’ of the object/key in S3.</p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;different&quot;</span></code></p>
 </div></td>
 </tr>
@@ -505,7 +505,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <div class="ansibleOptionAnchor" id="parameter-permission"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-permission"><strong>permission</strong></p>
 <a class="ansibleOptionLink" href="#parameter-permission" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>This option lets the user set the canned permissions on the object/bucket that are created. The permissions that can be set are <code class="docutils literal notranslate"><span class="pre">private</span></code>, <code class="docutils literal notranslate"><span class="pre">public-read</span></code>, <code class="docutils literal notranslate"><span class="pre">public-read-write</span></code>, <code class="docutils literal notranslate"><span class="pre">authenticated-read</span></code> for a bucket or <code class="docutils literal notranslate"><span class="pre">private</span></code>, <code class="docutils literal notranslate"><span class="pre">public-read</span></code>, <code class="docutils literal notranslate"><span class="pre">public-read-write</span></code>, <code class="docutils literal notranslate"><span class="pre">aws-exec-read</span></code>, <code class="docutils literal notranslate"><span class="pre">authenticated-read</span></code>, <code class="docutils literal notranslate"><span class="pre">bucket-owner-read</span></code>, <code class="docutils literal notranslate"><span class="pre">bucket-owner-full-control</span></code> for an object. Multiple permissions can be specified as a list; although only the first one will be used during the initial upload of the file.</p>
+<td><div class="ansible-option-cell"><p>This option lets the user set the canned permissions on the object/bucket that are created. The permissions that can be set are <code class="ansible-value docutils literal notranslate"><span class="pre">private</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">public-read</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">public-read-write</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">authenticated-read</span></code> for a bucket or <code class="ansible-value docutils literal notranslate"><span class="pre">private</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">public-read</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">public-read-write</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">aws-exec-read</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">authenticated-read</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">bucket-owner-read</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">bucket-owner-full-control</span></code> for an object. Multiple permissions can be specified as a list; although only the first one will be used during the initial upload of the file.</p>
 <p>For a full list of permissions see the AWS documentation <a class="reference external" href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl-overview.html#canned-acl">https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl-overview.html#canned-acl</a>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
@@ -620,7 +620,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <p><em class="ansible-option-versionadded">added in amazon.aws 5.0.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Forces the Boto SDK to use Signature Version 4.</p>
-<p>Only applies to get modes, <em>mode=get</em>, <em>mode=getstr</em>, <em>mode=geturl</em>.</p>
+<p>Only applies to get modes, <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-mode"><span class="std std-ref"><span class="pre">mode=get</span></span></a></code>, <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-mode"><span class="std std-ref"><span class="pre">mode=getstr</span></span></a></code>, <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-mode"><span class="std std-ref"><span class="pre">mode=geturl</span></span></a></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
@@ -633,7 +633,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <a class="ansibleOptionLink" href="#parameter-src" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">path</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The source file path when performing a <code class="docutils literal notranslate"><span class="pre">put</span></code> operation.</p>
-<p>One of <em>content</em>, <em>content_base64</em> or <em>src</em> must be specified when <em>mode=put</em> otherwise ignored.</p>
+<p>One of <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-content"><span class="std std-ref"><span class="pre">content</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-content-base64"><span class="std std-ref"><span class="pre">content_base64</span></span></a></strong></code> or <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-src"><span class="std std-ref"><span class="pre">src</span></span></a></strong></code> must be specified when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-mode"><span class="std std-ref"><span class="pre">mode=put</span></span></a></code> otherwise ignored.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -689,10 +689,10 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <ul class="simple">
-<li><p>Support for <em>tags</em> and <em>purge_tags</em> was added in release 2.0.0.</p></li>
-<li><p>In release 5.0.0 the <em>s3_url</em> parameter was merged into the <em>endpoint_url</em> parameter, <em>s3_url</em> remains as an alias for <em>endpoint_url</em>.</p></li>
-<li><p>For Walrus <em>endpoint_url</em> should be set to the FQDN of the endpoint with neither scheme nor path.</p></li>
-<li><p>Support for the <code class="docutils literal notranslate"><span class="pre">S3_URL</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01, please use the <em>endpoint_url</em> parameter or the <code class="docutils literal notranslate"><span class="pre">AWS_URL</span></code> environment variable.</p></li>
+<li><p>Support for <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-tags"><span class="std std-ref"><span class="pre">tags</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-purge-tags"><span class="std std-ref"><span class="pre">purge_tags</span></span></a></strong></code> was added in release 2.0.0.</p></li>
+<li><p>In release 5.0.0 the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-s3-url"><span class="std std-ref"><span class="pre">s3_url</span></span></a></strong></code> parameter was merged into the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-endpoint-url"><span class="std std-ref"><span class="pre">endpoint_url</span></span></a></strong></code> parameter, <em>s3_url</em> remains as an alias for <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-endpoint-url"><span class="std std-ref"><span class="pre">endpoint_url</span></span></a></strong></code>.</p></li>
+<li><p>For Walrus <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-endpoint-url"><span class="std std-ref"><span class="pre">endpoint_url</span></span></a></strong></code> should be set to the FQDN of the endpoint with neither scheme nor path.</p></li>
+<li><p>Support for the <code class="xref std std-envvar docutils literal notranslate"><span class="pre">S3_URL</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01, please use the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-endpoint-url"><span class="std std-ref"><span class="pre">endpoint_url</span></span></a></strong></code> parameter or the <a class="reference internal" href="../../environment_variables.html#envvar-AWS_URL"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_URL</span></code></a> environment variable.</p></li>
 <li><p>Support for creating and deleting buckets was removed in release 6.0.0.</p></li>
 <li><p><strong>Caution:</strong> For modules, environment variables and configuration files are read from the Ansible ‘host’ context and not the ‘controller’ context. As such, files may need to be explicitly copied to the ‘host’.  For lookup and connection plugins, environment variables and configuration files are read from the Ansible ‘controller’ context and not the ‘host’ context.</p></li>
 <li><p>The AWS SDK (boto3) that Ansible uses may also read defaults for credentials and other settings, such as the region, from its configuration files in the Ansible ‘host’ context (typically <code class="docutils literal notranslate"><span class="pre">~/.aws/credentials</span></code>). See <a class="reference external" href="https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html">https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html</a> for more information.</p></li>

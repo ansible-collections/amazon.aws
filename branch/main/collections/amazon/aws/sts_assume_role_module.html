@@ -236,7 +236,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-sts-assu
 </div></td>
 <td><div class="ansible-option-cell"><p>The duration, in seconds, of the role session. The value can range from 900 seconds (15 minutes) to 43200 seconds (12 hours).</p>
 <p>The max depends on the IAM role’s sessions duration setting.</p>
-<p>By default, the value is set to 3600 seconds.</p>
+<p>By default, the value is set to <code class="ansible-value docutils literal notranslate"><span class="pre">3600</span></code> seconds.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -378,7 +378,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-sts-assu
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <ul class="simple">
-<li><p>In order to use the assumed role in a following playbook task you must pass the <em>access_key</em>, <em>secret_key</em> and <em>session_token</em> parameters to modules that should use the assumed credentials.</p></li>
+<li><p>In order to use the assumed role in a following playbook task you must pass the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-sts-assume-role-module-parameter-access-key"><span class="std std-ref"><span class="pre">access_key</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-sts-assume-role-module-parameter-secret-key"><span class="std std-ref"><span class="pre">secret_key</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-sts-assume-role-module-parameter-session-token"><span class="std std-ref"><span class="pre">session_token</span></span></a></strong></code> parameters to modules that should use the assumed credentials.</p></li>
 <li><p><strong>Caution:</strong> For modules, environment variables and configuration files are read from the Ansible ‘host’ context and not the ‘controller’ context. As such, files may need to be explicitly copied to the ‘host’.  For lookup and connection plugins, environment variables and configuration files are read from the Ansible ‘controller’ context and not the ‘host’ context.</p></li>
 <li><p>The AWS SDK (boto3) that Ansible uses may also read defaults for credentials and other settings, such as the region, from its configuration files in the Ansible ‘host’ context (typically <code class="docutils literal notranslate"><span class="pre">~/.aws/credentials</span></code>). See <a class="reference external" href="https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html">https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html</a> for more information.</p></li>
 </ul>
@@ -420,7 +420,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-sts-assu
 <div class="ansibleOptionAnchor" id="return-changed"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-sts-assume-role-module-return-changed"><strong>changed</strong></p>
 <a class="ansibleOptionLink" href="#return-changed" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>True if obtaining the credentials succeeds</p>
+<td><div class="ansible-option-cell"><p>True if obtaining the credentials succeeds.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 </div></td>
 </tr>
@@ -428,7 +428,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-sts-assu
 <div class="ansibleOptionAnchor" id="return-sts_creds"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-sts-assume-role-module-return-sts-creds"><strong>sts_creds</strong></p>
 <a class="ansibleOptionLink" href="#return-sts_creds" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>The temporary security credentials, which include an access key ID, a secret access key, and a security (or session) token</p>
+<td><div class="ansible-option-cell"><p>The temporary security credentials, which include an access key ID, a secret access key, and a security (or session) token.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;access_key&quot;:</span> <span class="pre">&quot;XXXXXXXXXXXXXXXXXXXX&quot;,</span> <span class="pre">&quot;expiration&quot;:</span> <span class="pre">&quot;2017-11-11T11:11:11+00:00&quot;,</span> <span class="pre">&quot;secret_key&quot;:</span> <span class="pre">&quot;XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX&quot;,</span> <span class="pre">&quot;session_token&quot;:</span> <span class="pre">&quot;XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX&quot;}</span></code></p>
 </div></td>
@@ -437,7 +437,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-sts-assu
 <div class="ansibleOptionAnchor" id="return-sts_user"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-sts-assume-role-module-return-sts-user"><strong>sts_user</strong></p>
 <a class="ansibleOptionLink" href="#return-sts_user" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>The Amazon Resource Name (ARN) and the assumed role ID</p>
+<td><div class="ansible-option-cell"><p>The Amazon Resource Name (ARN) and the assumed role ID.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;arn&quot;:</span> <span class="pre">&quot;ARO123EXAMPLE123:Bob&quot;,</span> <span class="pre">&quot;assumed_role_id&quot;:</span> <span class="pre">&quot;arn:aws:sts::123456789012:assumed-role/demo/Bob&quot;}</span></code></p>
 </div></td>

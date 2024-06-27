@@ -223,8 +223,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-l
 <a class="ansibleOptionLink" href="#parameter-compatible_architecture" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A compatible instruction set architectures.</p>
-<p>Specify this option without <em>name</em> to include only to list only latest layers versions of layers that are compatible with that instruction set architecture.</p>
-<p>Specify this option with <em>name</em> to include only layer versions that are compatible with that architecture.</p>
+<p>Specify this option without <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-layer-info-module-parameter-name"><span class="std std-ref"><span class="pre">name</span></span></a></strong></code> to include only to list only latest layers versions of layers that are compatible with that instruction set architecture.</p>
+<p>Specify this option with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-layer-info-module-parameter-name"><span class="std std-ref"><span class="pre">name</span></span></a></strong></code> to include only layer versions that are compatible with that architecture.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -232,8 +232,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-l
 <a class="ansibleOptionLink" href="#parameter-compatible_runtime" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A runtime identifier.</p>
-<p>Specify this option without <em>name</em> to list only latest layers versions of layers that indicate that they’re compatible with that runtime.</p>
-<p>Specify this option with <em>name</em> to list only layer versions that indicate that they’re compatible with that runtime.</p>
+<p>Specify this option without <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-layer-info-module-parameter-name"><span class="std std-ref"><span class="pre">name</span></span></a></strong></code> to list only latest layers versions of layers that indicate that they’re compatible with that runtime.</p>
+<p>Specify this option with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-layer-info-module-parameter-name"><span class="std std-ref"><span class="pre">name</span></span></a></strong></code> to list only layer versions that indicate that they’re compatible with that runtime.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -355,7 +355,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-l
 <p><em class="ansible-option-versionadded">added in amazon.aws 6.0.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The Lambda layer version number to retrieve.</p>
-<p>Requires <em>name</em> to be provided.</p>
+<p>Requires <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-layer-info-module-parameter-name"><span class="std std-ref"><span class="pre">name</span></span></a></strong></code> to be provided.</p>
 </div></td>
 </tr>
 </tbody>
@@ -443,7 +443,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-l
 <p><em class="ansible-option-versionadded">added in amazon.aws 6.0.0</em></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Details about the layer version.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> if <em>version_number</em> was provided</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> if <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-layer-info-module-parameter-version-number"><span class="std std-ref"><span class="pre">version_number</span></span></a></strong></code> was provided</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -503,7 +503,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-l
 <a class="ansibleOptionLink" href="#return-layers_versions/description" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The description of the version.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <em>state=present</em></p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -511,7 +511,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-l
 <a class="ansibleOptionLink" href="#return-layers_versions/layer_arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ARN of the layer.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="docutils literal notranslate"><span class="pre">name</span></code> is provided</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-layer-info-module-parameter-name"><span class="std std-ref"><span class="pre">name</span></span></a></strong></code> is provided</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:lambda:eu-west-2:123456789012:layer:pylayer&quot;</span></code></p>
 </div></td>
 </tr>

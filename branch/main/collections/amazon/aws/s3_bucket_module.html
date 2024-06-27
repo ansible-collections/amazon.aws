@@ -25,7 +25,7 @@
     <script src="../../../_static/js/theme.js"></script>
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="amazon.aws.s3_bucket_info module – Lists S3 buckets in AWS" href="s3_bucket_info_module.html" />
-    <link rel="prev" title="amazon.aws.route53_zone module – add or delete Route53 zones" href="route53_zone_module.html" /><!-- extra head elements for Ansible beyond RTD Sphinx Theme -->
+    <link rel="prev" title="amazon.aws.route53_zone module – add or delete Route 53 zones" href="route53_zone_module.html" /><!-- extra head elements for Ansible beyond RTD Sphinx Theme -->
 
 
 
@@ -165,7 +165,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucke
 <ul class="simple">
 <li><p>Manage S3 buckets.</p></li>
 <li><p>Compatible with AWS, DigitalOcean, Ceph, Walrus, FakeS3 and StorageGRID.</p></li>
-<li><p>When using non-AWS services, <em>endpoint_url</em> should be specified.</p></li>
+<li><p>When using non-AWS services, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucket-module-parameter-endpoint-url"><span class="std std-ref"><span class="pre">endpoint_url</span></span></a></strong></code> should be specified.</p></li>
 </ul>
 </section>
 <section id="requirements">
@@ -242,7 +242,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucke
 </div></td>
 <td><div class="ansible-option-cell"><p>Enable S3 Bucket Keys for SSE-KMS on new objects.</p>
 <p>See the AWS documentation for more information <a class="reference external" href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucket-key.html">https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucket-key.html</a>.</p>
-<p>Bucket Key encryption is only supported if <em>encryption=aws:kms</em>.</p>
+<p>Bucket Key encryption is only supported if <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucket-module-parameter-encryption"><span class="std std-ref"><span class="pre">encryption=aws:kms</span></span></a></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
@@ -258,7 +258,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucke
 </div></td>
 <td><div class="ansible-option-cell"><p>Enable API compatibility with Ceph RGW.</p>
 <p>It takes into account the S3 API subset working with Ceph in order to provide the same module behaviour where possible.</p>
-<p>Requires <em>endpoint_url</em> if <em>ceph=true</em>.</p>
+<p>Requires <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucket-module-parameter-endpoint-url"><span class="std std-ref"><span class="pre">endpoint_url</span></span></a></strong></code> if <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucket-module-parameter-ceph"><span class="std std-ref"><span class="pre">ceph=true</span></span></a></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -285,7 +285,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucke
 <p><em class="ansible-option-versionadded">added in amazon.aws 2.0.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Delete bucket’s ownership controls.</p>
-<p>This option cannot be used together with a <em>object_ownership</em> definition.</p>
+<p>This option cannot be used together with a <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucket-module-parameter-object-ownership"><span class="std std-ref"><span class="pre">object_ownership</span></span></a></strong></code> definition.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -299,7 +299,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucke
 <p><em class="ansible-option-versionadded">added in amazon.aws 1.3.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Delete public access block configuration from bucket.</p>
-<p>This option cannot be used together with a <em>public_access</em> definition.</p>
+<p>This option cannot be used together with a <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucket-module-parameter-public-access"><span class="std std-ref"><span class="pre">public_access</span></span></a></strong></code> definition.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -313,7 +313,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucke
 <p><em class="ansible-option-versionadded">added in amazon.aws 6.0.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Enables Amazon S3 Dual-Stack Endpoints, allowing S3 communications using both IPv4 and IPv6.</p>
-<p>Mutually exclusive with <em>endpoint_url</em>.</p>
+<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucket-module-parameter-endpoint-url"><span class="std std-ref"><span class="pre">endpoint_url</span></span></a></strong></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -341,7 +341,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucke
 </div></td>
 <td><div class="ansible-option-cell"><p>KMS master key ID to use for the default encryption.</p>
 <p>If not specified then it will default to the AWS provided KMS key.</p>
-<p>This parameter is only supported if <em>encryption</em> is <code class="docutils literal notranslate"><span class="pre">aws:kms</span></code>.</p>
+<p>This parameter is only supported if <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucket-module-parameter-encryption"><span class="std std-ref"><span class="pre">encryption</span></span></a></strong></code> is <code class="ansible-value docutils literal notranslate"><span class="pre">aws:kms</span></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -383,7 +383,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucke
 <p><em class="ansible-option-versionadded">added in amazon.aws 5.3.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Whether S3 Object Lock to be enabled.</p>
-<p>Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code> when creating a new bucket.</p>
+<p>Defaults to <code class="ansible-value docutils literal notranslate"><span class="pre">false</span></code> when creating a new bucket.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
@@ -397,12 +397,12 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucke
 <p><em class="ansible-option-versionadded">added in amazon.aws 2.0.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Allow bucket’s ownership controls.</p>
-<p><code class="docutils literal notranslate"><span class="pre">BucketOwnerEnforced</span></code> - ACLs are disabled and no longer affect access permissions to your bucket. Requests to set or update ACLs fail. However, requests to read ACLs are supported. Bucket owner has full ownership and control. Object writer no longer has full ownership and control.</p>
-<p><code class="docutils literal notranslate"><span class="pre">BucketOwnerPreferred</span></code> - Objects uploaded to the bucket change ownership to the bucket owner if the objects are uploaded with the bucket-owner-full-control canned ACL.</p>
-<p><code class="docutils literal notranslate"><span class="pre">ObjectWriter</span></code> - The uploading account will own the object if the object is uploaded with the bucket-owner-full-control canned ACL.</p>
-<p>This option cannot be used together with a <em>delete_object_ownership</em> definition.</p>
-<p><code class="docutils literal notranslate"><span class="pre">BucketOwnerEnforced</span></code> has been added in version 3.2.0.</p>
-<p>Note: At the end of April 2023 Amazon updated the default setting to <code class="docutils literal notranslate"><span class="pre">BucketOwnerEnforced</span></code>.</p>
+<p><code class="ansible-value docutils literal notranslate"><span class="pre">BucketOwnerEnforced</span></code> - ACLs are disabled and no longer affect access permissions to your bucket. Requests to set or update ACLs fail. However, requests to read ACLs are supported. Bucket owner has full ownership and control. Object writer no longer has full ownership and control.</p>
+<p><code class="ansible-value docutils literal notranslate"><span class="pre">BucketOwnerPreferred</span></code> - Objects uploaded to the bucket change ownership to the bucket owner if the objects are uploaded with the bucket-owner-full-control canned ACL.</p>
+<p><code class="ansible-value docutils literal notranslate"><span class="pre">ObjectWriter</span></code> - The uploading account will own the object if the object is uploaded with the bucket-owner-full-control canned ACL.</p>
+<p>This option cannot be used together with a <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucket-module-parameter-delete-object-ownership"><span class="std std-ref"><span class="pre">delete_object_ownership</span></span></a></strong></code> definition.</p>
+<p><code class="ansible-value docutils literal notranslate"><span class="pre">BucketOwnerEnforced</span></code> has been added in version 3.2.0.</p>
+<p>Note: At the end of April 2023 Amazon updated the default setting to <code class="ansible-value docutils literal notranslate"><span class="pre">BucketOwnerEnforced</span></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;BucketOwnerEnforced&quot;</span></code></p></li>
@@ -415,7 +415,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucke
 <div class="ansibleOptionAnchor" id="parameter-policy"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-bucket-module-parameter-policy"><strong>policy</strong></p>
 <a class="ansibleOptionLink" href="#parameter-policy" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">json</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>The JSON policy as a string. Set to the string <code class="docutils literal notranslate"><span class="pre">&quot;null&quot;</span></code> to force the absence of a policy.</p>
+<td><div class="ansible-option-cell"><p>The JSON policy as a string. Set to the string <code class="ansible-value docutils literal notranslate"><span class="pre">&quot;null&quot;</span></code> to force the absence of a policy.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -436,10 +436,10 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucke
 <p><em class="ansible-option-versionadded">added in amazon.aws 1.3.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Configure public access block for S3 bucket.</p>
-<p>This option cannot be used together with <em>delete_public_access</em>.</p>
+<p>This option cannot be used together with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucket-module-parameter-delete-public-access"><span class="std std-ref"><span class="pre">delete_public_access</span></span></a></strong></code>.</p>
 <dl class="simple">
 <dt>Note: At the end of April 2023 Amazon updated the default settings to block public access by</dt><dd><p>default.  While the defaults for this module remain unchanged, it is necessary to explicitly
-pass the <em>public_access</em> parameter to enable public access ACLs.</p>
+pass the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucket-module-parameter-public-access"><span class="std std-ref"><span class="pre">public_access</span></span></a></strong></code> parameter to enable public access ACLs.</p>
 </dd>
 </dl>
 </div></td>
@@ -638,10 +638,10 @@ pass the <em>public_access</em> parameter to enable public access ACLs.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <ul class="simple">
-<li><p>If <code class="docutils literal notranslate"><span class="pre">requestPayment</span></code>, <code class="docutils literal notranslate"><span class="pre">policy</span></code>, <code class="docutils literal notranslate"><span class="pre">tagging</span></code> or <code class="docutils literal notranslate"><span class="pre">versioning</span></code> operations/API aren’t implemented by the endpoint, module doesn’t fail if each parameter satisfies the following condition. <em>requester_pays</em> is <code class="docutils literal notranslate"><span class="pre">False</span></code>, <em>policy</em>, <em>tags</em>, and <em>versioning</em> are <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
-<li><p>In release 5.0.0 the <em>s3_url</em> parameter was merged into the <em>endpoint_url</em> parameter, <em>s3_url</em> remains as an alias for <em>endpoint_url</em>.</p></li>
-<li><p>For Walrus <em>endpoint_url</em> should be set to the FQDN of the endpoint with neither scheme nor path.</p></li>
-<li><p>Support for the <code class="docutils literal notranslate"><span class="pre">S3_URL</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01, please use the <em>endpoint_url</em> parameter or the <code class="docutils literal notranslate"><span class="pre">AWS_URL</span></code> environment variable.</p></li>
+<li><p>If <code class="docutils literal notranslate"><span class="pre">requestPayment</span></code>, <code class="docutils literal notranslate"><span class="pre">policy</span></code>, <code class="docutils literal notranslate"><span class="pre">tagging</span></code> or <code class="docutils literal notranslate"><span class="pre">versioning</span></code> operations/API aren’t implemented by the endpoint, module doesn’t fail if each parameter satisfies the following condition. <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucket-module-parameter-requester-pays"><span class="std std-ref"><span class="pre">requester_pays</span></span></a></strong></code> is <code class="ansible-value docutils literal notranslate"><span class="pre">false</span></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucket-module-parameter-policy"><span class="std std-ref"><span class="pre">policy</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucket-module-parameter-tags"><span class="std std-ref"><span class="pre">tags</span></span></a></strong></code>, and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucket-module-parameter-versioning"><span class="std std-ref"><span class="pre">versioning</span></span></a></strong></code> are <code class="ansible-value docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p>In release 5.0.0 the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucket-module-parameter-s3-url"><span class="std std-ref"><span class="pre">s3_url</span></span></a></strong></code> parameter was merged into the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucket-module-parameter-endpoint-url"><span class="std std-ref"><span class="pre">endpoint_url</span></span></a></strong></code> parameter, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucket-module-parameter-s3-url"><span class="std std-ref"><span class="pre">s3_url</span></span></a></strong></code> remains as an alias for <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucket-module-parameter-endpoint-url"><span class="std std-ref"><span class="pre">endpoint_url</span></span></a></strong></code>.</p></li>
+<li><p>For Walrus <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucket-module-parameter-endpoint-url"><span class="std std-ref"><span class="pre">endpoint_url</span></span></a></strong></code> should be set to the FQDN of the endpoint with neither scheme nor path.</p></li>
+<li><p>Support for the <code class="xref std std-envvar docutils literal notranslate"><span class="pre">S3_URL</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01, please use the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucket-module-parameter-endpoint-url"><span class="std std-ref"><span class="pre">endpoint_url</span></span></a></strong></code> parameter or the <a class="reference internal" href="../../environment_variables.html#envvar-AWS_URL"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_URL</span></code></a> environment variable.</p></li>
 <li><p><strong>Caution:</strong> For modules, environment variables and configuration files are read from the Ansible ‘host’ context and not the ‘controller’ context. As such, files may need to be explicitly copied to the ‘host’.  For lookup and connection plugins, environment variables and configuration files are read from the Ansible ‘controller’ context and not the ‘host’ context.</p></li>
 <li><p>The AWS SDK (boto3) that Ansible uses may also read defaults for credentials and other settings, such as the region, from its configuration files in the Ansible ‘host’ context (typically <code class="docutils literal notranslate"><span class="pre">~/.aws/credentials</span></code>). See <a class="reference external" href="https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html">https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html</a> for more information.</p></li>
 </ul>
@@ -933,7 +933,7 @@ pass the <em>public_access</em> parameter to enable public access ACLs.</p>
           
 
 <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="route53_zone_module.html" class="btn btn-neutral float-left" title="amazon.aws.route53_zone module – add or delete Route53 zones" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="route53_zone_module.html" class="btn btn-neutral float-left" title="amazon.aws.route53_zone module – add or delete Route 53 zones" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="s3_bucket_info_module.html" class="btn btn-neutral float-right" title="amazon.aws.s3_bucket_info module – Lists S3 buckets in AWS" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

@@ -250,7 +250,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <div class="ansibleOptionAnchor" id="parameter-event_source_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-parameter-event-source-arn"><strong>event_source_arn</strong></p>
 <a class="ansibleOptionLink" href="#parameter-event_source_arn" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>When <em>query=mappings</em>, this is the Amazon Resource Name (ARN) of the Amazon Kinesis or DynamoDB stream.</p>
+<td><div class="ansible-option-cell"><p>When <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-info-module-parameter-query"><span class="std std-ref"><span class="pre">query=mappings</span></span></a></code>, this is the Amazon Resource Name (ARN) of the Amazon Kinesis or DynamoDB stream.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -280,8 +280,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <a class="ansibleOptionLink" href="#parameter-query" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Specifies the resource type for which to gather information.</p>
-<p>Defaults to <code class="docutils literal notranslate"><span class="pre">all</span></code> when <em>function_name</em> is specified.</p>
-<p>Defaults to <code class="docutils literal notranslate"><span class="pre">config</span></code> when <em>function_name</em> is NOT specified.</p>
+<p>Defaults to <code class="ansible-value docutils literal notranslate"><span class="pre">all</span></code> when <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-info-module-parameter-function-name"><span class="std std-ref"><span class="pre">function_name</span></span></a></strong></code> is specified.</p>
+<p>Defaults to <code class="ansible-value docutils literal notranslate"><span class="pre">config</span></code> when <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-info-module-parameter-function-name"><span class="std std-ref"><span class="pre">function_name</span></span></a></strong></code> is NOT specified.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;aliases&quot;</span></code></p></li>
@@ -413,8 +413,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <div class="ansibleOptionAnchor" id="return-function"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-function"><strong>function</strong></p>
 <a class="ansibleOptionLink" href="#return-function" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>lambda function list.</p>
-<p><code class="docutils literal notranslate"><span class="pre">function</span></code> has been deprecated in will be removed in the next major release after 2025-01-01.</p>
+<td><div class="ansible-option-cell"><p>Lambda function list.</p>
+<p><code class="ansible-return-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-info-module-return-function"><span class="std std-ref"><span class="pre">function</span></span></a></code> has been deprecated in will be removed in the next major release after 2025-01-01.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 </div></td>
 </tr>
@@ -422,8 +422,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <div class="ansibleOptionAnchor" id="return-function.TheName"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-function-thename"><strong>function.TheName</strong></p>
 <a class="ansibleOptionLink" href="#return-function.TheName" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>lambda function information, including event, mapping, and version information.</p>
-<p><code class="docutils literal notranslate"><span class="pre">function</span></code> has been deprecated in will be removed in the next major release after 2025-01-01.</p>
+<td><div class="ansible-option-cell"><p>Lambda function information, including event, mapping, and version information.</p>
+<p><code class="ansible-return-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-info-module-return-function"><span class="std std-ref"><span class="pre">function</span></span></a></code> has been deprecated in will be removed in the next major release after 2025-01-01.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 </div></td>
 </tr>
@@ -441,7 +441,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <a class="ansibleOptionLink" href="#return-functions/aliases" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The aliases associated with the function.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="docutils literal notranslate"><span class="pre">query</span></code> is <em>aliases</em> or <em>all</em></p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-info-module-parameter-query"><span class="std std-ref"><span class="pre">query=aliases</span></span></a></code> or <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-info-module-parameter-query"><span class="std std-ref"><span class="pre">query=all</span></span></a></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -597,7 +597,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <a class="ansibleOptionLink" href="#return-functions/mappings" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>List of configuration information for each event source mapping.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="docutils literal notranslate"><span class="pre">query</span></code> is <em>all</em> or <em>mappings</em></p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-info-module-parameter-query"><span class="std std-ref"><span class="pre">query=all</span></span></a></code> or <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-info-module-parameter-query"><span class="std std-ref"><span class="pre">query=mappings</span></span></a></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -687,7 +687,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <a class="ansibleOptionLink" href="#return-functions/policy" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The policy associated with the function.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="docutils literal notranslate"><span class="pre">query</span></code> is <em>all</em> or <em>policy</em></p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-info-module-parameter-query"><span class="std std-ref"><span class="pre">query=all</span></span></a></code> or <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-info-module-parameter-query"><span class="std std-ref"><span class="pre">query=policy</span></span></a></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -801,7 +801,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <a class="ansibleOptionLink" href="#return-functions/versions" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>List of Lambda function versions.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="docutils literal notranslate"><span class="pre">query</span></code> is <em>all</em> or <em>versions</em></p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-info-module-parameter-query"><span class="std std-ref"><span class="pre">query=all</span></span></a></code> or <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-info-module-parameter-query"><span class="std std-ref"><span class="pre">query=versions</span></span></a></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
