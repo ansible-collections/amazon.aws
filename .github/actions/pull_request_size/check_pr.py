@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # (c) 2024 Aubin Bikouo <@abikouo>
 # GNU General Public License v3.0+
@@ -34,9 +33,7 @@ def WriteComment(repository: str, pr_number: int, comment: str) -> None:
     )
     # Successful call to the API will return '201' (created)
     if result.status_code != 201:
-        raise RuntimeError(
-            f"Post to URL {url} returned status code = {result.status_code}"
-        )
+        raise RuntimeError(f"Post to URL {url} returned status code = {result.status_code}")
 
 
 def AddLabelToPR(repository: str, pr_number: int, type: str) -> None:
@@ -55,9 +52,7 @@ def AddLabelToPR(repository: str, pr_number: int, type: str) -> None:
             f"Unable to retrieve labels from issue {repository}/{pr_number} - status_code = {response.status_code}"
         )
 
-    pr_labels_to_remove = [
-        x["name"] for x in response.json() if x["name"] in all_labels
-    ]
+    pr_labels_to_remove = [x["name"] for x in response.json() if x["name"] in all_labels]
 
     # Remove labels from issue
     for label in pr_labels_to_remove:
@@ -68,18 +63,14 @@ def AddLabelToPR(repository: str, pr_number: int, type: str) -> None:
             )
 
     # add new label to pull request
-    response = requests.put(
-        url_base + "labels", headers=headers, json={"labels": [f"size/{type}"]}
-    )
+    response = requests.put(url_base + "labels", headers=headers, json={"labels": [f"size/{type}"]})
     if response.status_code != 200:
         raise RuntimeError(
             f"Unable to add label '{label}' to issue {repository}/{pr_number} - status_code = {response.status_code}"
         )
 
 
-def LabelCommentPR(
-    repository: str, pr_number: int, insertions: int, deletions: int
-) -> None:
+def LabelCommentPR(repository: str, pr_number: int, insertions: int, deletions: int) -> None:
     # Calculating PR Size:
     # The PR size is calculated using the formula: insertions + deletions * 0.5.
     # This calculation considers both the lines of code added and a weighted count of deletions to assess the overall size.
@@ -108,11 +99,10 @@ def RunDiff(path: str, repository: str, pr_number: int, base_ref: str) -> None:
     proc = subprocess.Popen(
         git_diff_status,
         stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
         shell=True,
         cwd=path,
     )
-    stdout, _ = proc.communicate()
+    stdout = proc.communicate()
     name_status = defaultdict(list)
     for i in stdout.decode().split("\n"):
         m = re.match("^(A|M|D)[\t](.+)", i)
@@ -125,21 +115,18 @@ def RunDiff(path: str, repository: str, pr_number: int, base_ref: str) -> None:
         if type == "D":
             continue
         for f in files:
-            git_diff_stat = (
-                f"git --no-pager diff --cached --stat origin/{base_ref} -- {f}"
-            )
+            git_diff_stat = f"git --no-pager diff --cached --stat origin/{base_ref} -- {f}"
             proc = subprocess.Popen(
                 git_diff_stat,
                 stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
                 shell=True,
                 cwd=path,
             )
-            stdout, _ = proc.communicate()
-            m = re.search(f"(\d*) deletion[s]?\(\-\)", stdout.decode())
+            stdout = proc.communicate()
+            m = re.search("(\\d*) deletion[s]?\\(\\-\\)", stdout.decode())
             if m:
                 deletions += int(m.group(1))
-            m = re.search(f"(\d*) insertion[s]?\(\+\)", stdout.decode())
+            m = re.search("(\\d*) insertion[s]?\\(\\+\\)", stdout.decode())
             if m:
                 insertions += int(m.group(1))
     LabelCommentPR(repository, pr_number, insertions, deletions)
@@ -150,9 +137,7 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--path", required=True, help="Path to the repository.")
     parser.add_argument("--repository", required=True, help="Repository name org/name.")
-    parser.add_argument(
-        "--pr-number", type=int, required=True, help="The pull request number."
-    )
+    parser.add_argument("--pr-number", type=int, required=True, help="The pull request number.")
     parser.add_argument("--base-ref", required=True, help="The pull request base ref.")
 
     args = parser.parse_args()
