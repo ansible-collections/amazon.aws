@@ -32,7 +32,7 @@ options:
   db_cluster_identifier:
     description:
       - The identifier of the DB cluster to create a snapshot for.
-      - Required when I(state=present).
+      - Required when O(state=present).
     aliases:
       - cluster_id
       - cluster_name
@@ -52,9 +52,9 @@ options:
     type: str
   copy_tags:
     description:
-      - Whether to copy all tags from I(source_db_cluster_snapshot_identifier) to I(db_cluster_snapshot_identifier).
+      - Whether to copy all tags from O(source_db_cluster_snapshot_identifier) to O(db_cluster_snapshot_identifier).
     type: bool
-    default: False
+    default: false
   wait:
     description:
       - Whether or not to wait for snapshot creation or deletion.

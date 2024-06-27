@@ -25,10 +25,10 @@ options:
     state:
         description:
           - Desired state of the RDS Instance.
-          - I(state=rebooted) is not idempotent and will leave the DB instance in a running state
-            and start it prior to rebooting if it was stopped. I(present) will leave the DB instance in the current running/stopped state,
+          - O(state=rebooted) is not idempotent and will leave the DB instance in a running state
+            and start it prior to rebooting if it was stopped. V(present) will leave the DB instance in the current running/stopped state,
             (running if creating the DB instance).
-          - I(state=running) and I(state=started) are synonyms, as are I(state=rebooted) and I(state=restarted).
+          - O(state=running) and I(state=started) are synonyms, as are O(state=rebooted) and O(state=restarted).
         choices: ['present', 'absent', 'terminated', 'running', 'started', 'stopped', 'rebooted', 'restarted']
         default: 'present'
         type: str
@@ -38,20 +38,20 @@ options:
         type: str
     force_update_password:
         description:
-          - Set to C(true) to update your instance password with I(master_user_password). Since comparing passwords to determine
-            if it needs to be updated is not possible this is set to c(false) by default to allow idempotence.
+          - Set to V(true) to update your instance password with O(master_user_password). Since comparing passwords to determine
+            if it needs to be updated is not possible this is set to V(false) by default to allow idempotence.
         type: bool
         default: false
     purge_cloudwatch_logs_exports:
         description:
-          - Set to C(false) to retain any enabled cloudwatch logs that aren't specified in the task and are associated with the instance.
-          - Set I(enable_cloudwatch_logs_exports) to an empty list to disable all.
+          - Set to V(false) to retain any enabled cloudwatch logs that aren't specified in the task and are associated with the instance.
+          - Set O(enable_cloudwatch_logs_exports) to an empty list to disable all.
         type: bool
         default: true
     read_replica:
         description:
-          - Set to C(false) to promote a read replica instance or C(true) to create one. When creating a read replica C(creation_source) should
-            be set to 'instance' or not provided. C(source_db_instance_identifier) must be provided with this option.
+          - Set to V(false) to promote a read replica instance or V(true) to create one. When creating a read replica O(creation_source) should
+            be set to 'instance' or not provided. O(source_db_instance_identifier) must be provided with this option.
         type: bool
     wait:
         description:
@@ -59,7 +59,7 @@ options:
             Following each API call to create/modify/delete the instance a waiter is used with a 60 second delay 30 times until the instance reaches
             the expected state (available/stopped/deleted). The total task time may also be influenced by AWSRetry which helps stabilize if the
             instance is in an invalid state to operate on to begin with (such as if you try to stop it when it is in the process of rebooting).
-            If setting this to C(false) task retries and delays may make your playbook execution better handle timeouts for major modifications.
+            If setting this to V(false) task retries and delays may make your playbook execution better handle timeouts for major modifications.
         type: bool
         default: true
 
@@ -74,8 +74,8 @@ options:
         type: bool
     apply_immediately:
         description:
-          - A value that specifies whether modifying an instance with I(new_db_instance_identifier) and I(master_user_password)
-            should be applied as soon as possible, regardless of the I(preferred_maintenance_window) setting. If C(false), changes
+          - A value that specifies whether modifying an instance with O(new_db_instance_identifier) and I(master_user_password)
+            should be applied as soon as possible, regardless of the O(preferred_maintenance_window) setting. If V(false), changes
             are applied during the next maintenance window.
         type: bool
         default: false
@@ -86,7 +86,7 @@ options:
     availability_zone:
         description:
           - A list of EC2 Availability Zones that the DB instance can be created in.
-            May be used when creating an instance or when restoring from S3 or a snapshot. Mutually exclusive with I(multi_az).
+            May be used when creating an instance or when restoring from S3 or a snapshot. Mutually exclusive with O(multi_az).
         aliases:
           - az
           - zone
@@ -94,7 +94,7 @@ options:
     backup_retention_period:
         description:
           - The number of days for which automated backups are retained.
-          - When set to C(0), automated backups will be disabled. (Not applicable if the DB instance is a source to read replicas)
+          - When set to V(0), automated backups will be disabled. (Not applicable if the DB instance is a source to read replicas)
           - May be used when creating a new instance, when restoring from S3, or when modifying an instance.
         type: int
     ca_certificate_identifier:
@@ -108,7 +108,7 @@ options:
     copy_tags_to_snapshot:
         description:
           - Whether or not to copy all tags from the DB instance to snapshots of the instance. When initially creating
-            a DB instance the RDS API defaults this to C(false) if unspecified.
+            a DB instance the RDS API defaults this to V(false) if unspecified.
         type: bool
     db_cluster_identifier:
         description:
@@ -150,7 +150,7 @@ options:
         elements: str
     db_snapshot_identifier:
         description:
-          - The identifier or ARN of the DB snapshot to restore from when using I(creation_source=snapshot).
+          - The identifier or ARN of the DB snapshot to restore from when using O(creation_source=snapshot).
         type: str
         aliases:
           - snapshot_identifier
@@ -187,7 +187,7 @@ options:
     enable_iam_database_authentication:
         description:
           - Enable mapping of AWS Identity and Access Management (IAM) accounts to database accounts.
-            If this option is omitted when creating the instance, Amazon RDS sets this to C(false).
+            If this option is omitted when creating the instance, Amazon RDS sets this to V(false).
         type: bool
     enable_performance_insights:
         description:
@@ -201,18 +201,18 @@ options:
         type: str
     engine_version:
         description:
-          - The version number of the database engine to use. For Aurora MySQL that could be C(5.6.10a) , C(5.7.12).
-            Aurora PostgreSQL example, C(9.6.3)
+          - The version number of the database engine to use. For Aurora MySQL that could be V(5.6.10a) , V(5.7.12).
+            Aurora PostgreSQL example, V(9.6.3)
         type: str
     final_db_snapshot_identifier:
         description:
-          - The DB instance snapshot identifier of the new DB instance snapshot created when I(skip_final_snapshot) is C(false).
+          - The DB instance snapshot identifier of the new DB instance snapshot created when O(skip_final_snapshot) is V(false).
         aliases:
           - final_snapshot_identifier
         type: str
     force_failover:
         description:
-          - Set to C(true) to conduct the reboot through a MultiAZ failover.
+          - Set to V(true) to conduct the reboot through a MultiAZ failover.
         type: bool
     iam_roles:
         description:
@@ -234,14 +234,14 @@ options:
         version_added_collection: community.aws
     iops:
         description:
-          - The Provisioned IOPS (I/O operations per second) value. Is only set when using I(storage_type) is set to io1.
+          - The Provisioned IOPS (I/O operations per second) value. Is only set when using O(storage_type) is set to io1.
         type: int
     kms_key_id:
         description:
           - The ARN of the AWS KMS key identifier for an encrypted DB instance. If you are creating a DB instance with the
             same AWS account that owns the KMS encryption key used to encrypt the new DB instance, then you can use the KMS key
             alias instead of the ARN for the KM encryption key.
-          - If I(storage_encrypted) is C(true) and and this option is not provided, the default encryption key is used.
+          - If O(storage_encrypted) is V(true) and and this option is not provided, the default encryption key is used.
         type: str
     license_model:
         description:
@@ -252,7 +252,7 @@ options:
     master_user_password:
         description:
           - An 8-41 character password for the master database user. The password can contain any printable ASCII character
-            except C(/), C("), or C(@). To modify the password use I(force_update_password). Use I(apply_immediately) to change
+            except V(/), V("), or V(@). To modify the password use I(force_update_password). Use O(apply_immediately) to change
             the password immediately, otherwise it is updated during the next maintenance window.
         aliases:
           - password
@@ -270,7 +270,7 @@ options:
     monitoring_interval:
         description:
           - The interval, in seconds, when Enhanced Monitoring metrics are collected for the DB instance. To disable collecting
-            metrics, specify C(0). Amazon RDS defaults this to 0 if omitted when initially creating a DB instance.
+            metrics, specify V(0). Amazon RDS defaults this to 0 if omitted when initially creating a DB instance.
         type: int
     monitoring_role_arn:
         description:
@@ -278,13 +278,13 @@ options:
         type: str
     multi_az:
         description:
-          - Specifies if the DB instance is a Multi-AZ deployment. Mutually exclusive with I(availability_zone).
+          - Specifies if the DB instance is a Multi-AZ deployment. Mutually exclusive with O(availability_zone).
         type: bool
     new_db_instance_identifier:
         description:
           - The new DB instance (lowercase) identifier for the DB instance when renaming a DB instance. The identifier must contain
             from 1 to 63 letters, numbers, or hyphens and the first character must be a letter and may not end in a hyphen or
-            contain consecutive hyphens. Use I(apply_immediately) to rename immediately, otherwise it is updated during the
+            contain consecutive hyphens. Use O(apply_immediately) to rename immediately, otherwise it is updated during the
             next maintenance window.
         aliases:
           - new_instance_id
@@ -309,8 +309,8 @@ options:
     preferred_backup_window:
         description:
           - The daily time range (in UTC) of at least 30 minutes, during which automated backups are created if automated backups are
-            enabled using I(backup_retention_period). The option must be in the format of "hh24:mi-hh24:mi" and not conflict with
-            I(preferred_maintenance_window).
+            enabled using O(backup_retention_period). The option must be in the format of "hh24:mi-hh24:mi" and not conflict with
+            O(preferred_maintenance_window).
         aliases:
           - backup_window
         type: str
@@ -339,13 +339,13 @@ options:
         type: int
     publicly_accessible:
         description:
-          - Specifies the accessibility options for the DB instance. A value of C(true) specifies an Internet-facing instance with
+          - Specifies the accessibility options for the DB instance. A value of Vtrue) specifies an Internet-facing instance with
             a publicly resolvable DNS name, which resolves to a public IP address. A value of C(false) specifies an internal
             instance with a DNS name that resolves to a private IP address.
         type: bool
     purge_iam_roles:
         description:
-          - Set to C(true) to remove any IAM roles that aren't specified in the task and are associated with the instance.
+          - Set to V(true) to remove any IAM roles that aren't specified in the task and are associated with the instance.
         type: bool
         default: false
         version_added: 3.3.0
@@ -354,8 +354,8 @@ options:
         description:
           - If using I(creation_source=instance) this indicates the UTC date and time to restore from the source instance.
             For example, "2009-09-07T23:45:00Z".
-          - May alternatively set I(use_latest_restore_time=true).
-          - Only one of I(use_latest_restorable_time) and I(restore_time) may be provided.
+          - May alternatively set O(use_latest_restorable_time=true).
+          - Only one of O(use_latest_restorable_time) and O(restore_time) may be provided.
         type: str
     s3_bucket_name:
         description:
@@ -373,14 +373,14 @@ options:
         type: str
     skip_final_snapshot:
         description:
-          - Whether a final DB instance snapshot is created before the DB instance is deleted. If this is C(false) I(final_db_snapshot_identifier)
+          - Whether a final DB instance snapshot is created before the DB instance is deleted. If this is V(false) O(final_db_snapshot_identifier)
             must be provided.
         type: bool
         default: false
     source_db_instance_identifier:
         description:
           - The identifier or ARN of the source DB instance from which to restore when creating a read replica or spinning up a point-in-time
-            DB instance using I(creation_source=instance). If the source DB is not in the same region this should be an ARN.
+            DB instance using O(creation_source=instance). If the source DB is not in the same region this should be an ARN.
         type: str
     source_engine:
         description:
@@ -402,7 +402,7 @@ options:
         type: bool
     storage_type:
         description:
-          - The storage type to be associated with the DB instance. I(storage_type) does not apply to Aurora DB instances.
+          - The storage type to be associated with the DB instance. O(storage_type) does not apply to Aurora DB instances.
         choices:
           - standard
           - gp2
@@ -411,7 +411,7 @@ options:
         type: str
     storage_throughput:
       description:
-        - The storage throughput when the I(storage_type) is C(gp3).
+        - The storage throughput when the O(storage_type) is V(gp3).
         - When the allocated storage is below 400 GB, the storage throughput will always be 125 mb/s.
         - When the allocated storage is large than or equal 400 GB, the througput starts at 500 mb/s.
         - Requires botocore >= 1.29.0.
@@ -420,7 +420,7 @@ options:
     tde_credential_arn:
         description:
           - The ARN from the key store with which to associate the instance for Transparent Data Encryption. This is
-            supported by Oracle or SQL Server DB instances and may be used in conjunction with C(storage_encrypted)
+            supported by Oracle or SQL Server DB instances and may be used in conjunction with O(storage_encrypted)
             though it might slightly affect the performance of your database.
         aliases:
           - transparent_data_encryption_arn
@@ -438,7 +438,7 @@ options:
     use_latest_restorable_time:
         description:
           - Whether to restore the DB instance to the latest restorable backup time.
-          - Only one of I(use_latest_restorable_time) and I(restore_time) may be provided.
+          - Only one of O(use_latest_restorable_time) and O(restore_time) may be provided.
         type: bool
         aliases:
           - restore_from_latest
@@ -449,8 +449,8 @@ options:
         elements: str
     purge_security_groups:
         description:
-          - Set to C(false) to retain any enabled security groups that aren't specified in the task and are associated with the instance.
-          - Can be applied to I(vpc_security_group_ids) and I(db_security_groups)
+          - Set to V(false) to retain any enabled security groups that aren't specified in the task and are associated with the instance.
+          - Can be applied to O(vpc_security_group_ids) and O(db_security_groups)
         type: bool
         default: true
         version_added: 1.5.0
@@ -459,7 +459,7 @@ options:
 
 EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
-- name: create minimal aurora instance in default VPC and default subnet group
+- name: Create minimal aurora instance in default VPC and default subnet group
   amazon.aws.rds_instance:
     engine: aurora
     db_instance_identifier: ansible-test-aurora-db-instance
@@ -479,13 +479,13 @@ EXAMPLES = r"""
     password: "{{ password }}"
     allocated_storage: "{{ allocated_storage }}"
 
-- name: remove the DB instance without a final snapshot
+- name: Remove the DB instance without a final snapshot
   amazon.aws.rds_instance:
     id: "{{ instance_id }}"
     state: absent
     skip_final_snapshot: true
 
-- name: remove the DB instance with a final snapshot
+- name: Remove the DB instance with a final snapshot
   amazon.aws.rds_instance:
     id: "{{ instance_id }}"
     state: absent
@@ -604,7 +604,7 @@ db_instance_class:
   type: str
   sample: db.m5.large
 db_instance_identifier:
-  description: The identifier of the DB instance
+  description: The identifier of the DB instance.
   returned: always
   type: str
   sample: ansible-test

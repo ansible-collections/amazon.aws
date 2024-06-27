@@ -17,14 +17,14 @@ options:
     option_group_name:
         description:
             - The name of the option group to describe.
-            - Can't be supplied together with I(engine_name) or I(major_engine_version).
+            - Can't be supplied together with O(engine_name) or O(major_engine_version).
         default: ''
         required: false
         type: str
     marker:
         description:
-            - If this parameter is specified, the response includes only records beyond the marker, up to the value specified by I(max_records).
-            - Allowed values are between C(20) and C(100).
+            - If this parameter is specified, the response includes only records beyond the marker, up to the value specified by O(max_records).
+            - Allowed values are between V(20) and V(100).
         required: false
         type: str
     max_records:
@@ -41,7 +41,7 @@ options:
     major_engine_version:
         description:
             - Filters the list of option groups to only include groups associated with a specific database engine version.
-            - If specified, then I(engine_name) must also be specified.
+            - If specified, then O(engine_name) must also be specified.
         type: str
         default: ''
         required: false
@@ -226,7 +226,7 @@ option_groups_list:
             type: str
             sample: "vpc-bf07e9d6"
         tags:
-            description: The tags associated the Internet Gateway.
+            description: The tags associated the RDS option group.
             type: dict
             returned: always
             sample: {

@@ -7,7 +7,7 @@
 DOCUMENTATION = r"""
 module: rds_engine_versions_info
 version_added: 7.6.0
-short_description: Describes the properties of specific versions of DB engines.
+short_description: Describes the properties of specific versions of DB engines
 description:
   - Obtain information about a specific versions of DB engines.
 options:
@@ -45,7 +45,7 @@ options:
           - Specifies whether to return only the default version of the specified engine
             or the engine and major version combination.
         type: bool
-        default: False
+        default: false
     filters:
         description:
             - A filter that specifies one or more DB engine versions to describe.
