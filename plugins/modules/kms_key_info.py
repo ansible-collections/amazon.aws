@@ -20,7 +20,7 @@ options:
   alias:
     description:
       - Alias for key.
-      - Mutually exclusive with O(key_id) and 0(filters).
+      - Mutually exclusive with O(key_id) and O(filters).
     required: false
     aliases:
       - key_alias

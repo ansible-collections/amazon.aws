@@ -114,7 +114,7 @@ options:
       continent_code:
         description:
           - The two-letter code for the continent.
-          - Specifying O(geo_location.continent_code) with either I(geo_location.country_code) or O(geo_location.subdivision_code)
+          - Specifying O(geo_location.continent_code) with either O(geo_location.country_code) or O(geo_location.subdivision_code)
             returns an InvalidInput error.
         type: str
       country_code:
@@ -125,7 +125,7 @@ options:
       subdivision_code:
         description:
           - The two-letter code for a state of the United States.
-          - To specify I(geo_location.subdivision_code), I(geo_location.country_code) must be set to V(US).
+          - To specify O(geo_location.subdivision_code), O(geo_location.country_code) must be set to V(US).
         type: str
     type: dict
     version_added: 3.3.0
@@ -257,7 +257,7 @@ resource_record_sets:
       sample: "foo.bar.com"
 wait_id:
   description:
-    - The wait ID for the applied change. Can be used to wait for the change to propagate later on when I(wait=false).
+    - The wait ID for the applied change. Can be used to wait for the change to propagate later on when O(wait=false).
   type: str
   returned: when changed
   version_added: 6.3.0

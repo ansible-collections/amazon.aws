@@ -40,7 +40,7 @@ options:
     description:
     - The function layer archive.
     - Required when O(state=present).
-    - Ignored wheno(state=absent).
+    - Ignored when O(state=absent).
     - Mutually exclusive with o(version).
     type: dict
     suboptions:
