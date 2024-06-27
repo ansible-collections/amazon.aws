@@ -100,7 +100,6 @@ Release Summary
 ---------------
 
 This release includes some bug fixes for the ``s3_object``, ``ec2_instance`` and ``backup_plan_info`` modules.
-This release includes some bug fixes for the ``ec2_instance`` and ``backup_plan_info`` modules.
 
 Bugfixes
 --------
