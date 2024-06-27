@@ -37,7 +37,7 @@ options:
   deletion_protection:
     description:
       - Indicates whether deletion protection for the ALB is enabled.
-      - Defaults to V(False).
+      - Defaults to V(false).
     type: bool
   http2:
     description:
@@ -54,22 +54,22 @@ options:
     version_added_collection: community.aws
   http_drop_invalid_header_fields:
     description:
-      - Indicates whether HTTP headers with invalid header fields are removed by the load balancer C(True) or routed to targets C(False).
-      - Defaults to V(False).
+      - Indicates whether HTTP headers with invalid header fields are removed by the load balancer C(true) or routed to targets C(false).
+      - Defaults to V(false).
     type: bool
     version_added: 3.2.0
     version_added_collection: community.aws
   http_x_amzn_tls_version_and_cipher_suite:
     description:
       - Indicates whether the two headers are added to the client request before sending it to the target.
-      - Defaults to V(False).
+      - Defaults to V(false).
     type: bool
     version_added: 3.2.0
     version_added_collection: community.aws
   http_xff_client_port:
     description:
       - Indicates whether the X-Forwarded-For header should preserve the source port that the client used to connect to the load balancer.
-      - Defaults to V(False).
+      - Defaults to V(false).
     type: bool
     version_added: 3.2.0
     version_added_collection: community.aws
@@ -204,7 +204,7 @@ options:
   waf_fail_open:
     description:
       - Indicates whether to allow a AWS WAF-enabled load balancer to route requests to targets if it is unable to forward the request to AWS WAF.
-      - Defaults to C(False).
+      - Defaults to V(false).
     type: bool
     version_added: 3.2.0
     version_added_collection: community.aws
@@ -368,8 +368,8 @@ access_logs_s3_bucket:
 access_logs_s3_enabled:
     description: Indicates whether access logs stored in Amazon S3 are enabled.
     returned: when O(state=present)
-    type: bool
-    sample: true
+    type: str
+    sample: "true"
 access_logs_s3_prefix:
     description: The prefix for the location in the S3 bucket.
     returned: when O(state=present)
@@ -379,6 +379,38 @@ availability_zones:
     description: The Availability Zones for the load balancer.
     returned: when O(state=present)
     type: list
+    elements: dict
+    contains:
+        load_balancer_addresses:
+            description: Information about a static IP address for a load balancer.
+            returned: when O(state=present)
+            type: list
+            elements: dict
+            contains:
+                ip_address:
+                    description: The static IP address.
+                    returned: when O(state=present)
+                    type: str
+                allocation_id:
+                    description: The allocation ID of the Elastic IP address for an internal-facing load balancer.
+                    returned: when O(state=present)
+                    type: str
+                private_ipv4_address:
+                    returned: when O(state=present)
+                    description: The private IPv4 address for an internal load balancer.
+                    type: str
+                ipv6_address:
+                    returned: when O(state=present)
+                    description: The IPv6 address.
+                    type: str
+        subnet_id:
+            description: The ID of the subnet.
+            returned: when O(state=present)
+            type: str
+        zone_name:
+            description: The name of the Availability Zone.
+            returned: when O(state=present)
+            type: str
     sample: [{ "load_balancer_addresses": [], "subnet_id": "subnet-aabbccddff", "zone_name": "ap-southeast-2a" }]
 canonical_hosted_zone_id:
     description: The ID of the Amazon Route 53 hosted zone associated with the load balancer.
@@ -395,11 +427,31 @@ created_time:
     returned: when O(state=present)
     type: str
     sample: "2015-02-12T02:14:02+00:00"
+client_keep_alive_seconds:
+    description:
+    returned: when O(state=present)
+    type: str
+    sample: "3600"
+connection_logs_s3_bucket:
+    description: The name of the S3 bucket for the connection logs.
+    returned: when O(state=present)
+    type: str
+    sample: ""
+connection_logs_s3_enabled:
+    description: Indicates whether connection logs are enabled.
+    returned: when O(state=present)
+    type: str
+    sample: "false"
+connection_logs_s3_prefix:
+    description: The prefix for the location in the S3 bucket for the connection logs.
+    returned: when O(state=present)
+    type: str
+    sample: ""
 deletion_protection_enabled:
     description: Indicates whether deletion protection is enabled.
     returned: when O(state=present)
-    type: bool
-    sample: true
+    type: str
+    sample: "true"
 dns_name:
     description: The public DNS name of the load balancer.
     returned: when O(state=present)
@@ -408,28 +460,34 @@ dns_name:
 idle_timeout_timeout_seconds:
     description: The idle timeout value, in seconds.
     returned: when O(state=present)
-    type: int
-    sample: 60
+    type: str
+    sample: "60"
 ip_address_type:
     description: The type of IP addresses used by the subnets for the load balancer.
     returned: when O(state=present)
     type: str
     sample: "ipv4"
+ipv6_deny_all_igw_traffic:
+    description: locks internet gateway (IGW) access to the load balancer.
+    returned: when O(state=present)
+    type: str
+    sample: "false"
 listeners:
     description: Information about the listeners.
     returned: when O(state=present)
-    type: complex
+    type: list
+    elements: dict
     contains:
         listener_arn:
             description: The Amazon Resource Name (ARN) of the listener.
             returned: when O(state=present)
             type: str
-            sample: ""
+            sample: "arn:aws:elasticloadbalancing:us-east-1:123456789012:listener/app/alb-test-169eb5ba/1659336d4100d496/8367c4262cc1d0cc"
         load_balancer_arn:
             description: The Amazon Resource Name (ARN) of the load balancer.
             returned: when O(state=present)
             type: str
-            sample: ""
+            sample:"arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/app/alb-test-169eb5ba/1659336d4100d496"
         port:
             description: The port on which the load balancer is listening.
             returned: when O(state=present)
@@ -440,21 +498,106 @@ listeners:
             returned: when O(state=present)
             type: str
             sample: "HTTPS"
+        rules:
+            description: List of listener rules.
+            returned: when O(state=present)
+            type: list
+            elements: dict
+            contains:
+                rule_arn:
+                    description: The Amazon Resource Name (ARN) of the rule.
+                    returned: when O(state=present)
+                    type: str
+                    sample: "arn:aws:elasticloadbalancing:us-east-1:123456789012:listener-rule/app/alb-test-169eb5ba/1659336d4100d496/8367c4262cc1d0cc/8f066464b82f7ca8"
+                priority:
+                    description: The priority.
+                    returned: when O(state=present)
+                    type: str
+                    sample "default"
+                is_default:
+                    description: Indicates whether this is the default rule.
+                    returned: when O(state=present)
+                    type: bool
+                    sample false
+                conditions:
+                    description: The conditions.
+                    returned: when O(state=present)
+                    type: list
+                    sample: []
+                actions:
+                    description: The actions.
+                    returned: when O(state=present)
+                    type: list
+                    elements: dict
+                    contains:
+                        type:
+                            description: The type of action.
+                            returned: when O(state=present)
+                            type: str
+                        target_group_arn:
+                            description: The Amazon Resource Name (ARN) of the target group.
+                            returned: when O(state=present)
+                            type: str
+                        forward_config:
+                            description: Information for creating an action that distributes requests among one or more target groups.
+                            returned: when O(state=present)
+                            type: dict
+                            contains:
+                                target_groups:
+                                    description: The target groups.
+                                    returned: when O(state=present)
+                                    type: dict
+                                    contains:
+                                        target_group_arn:
+                                            description: The Amazon Resource Name (ARN) of the target group.
+                                            returned: when O(state=present)
+                                            type: str
+                                        weight:
+                                            description: The weight.
+                                            returned: when O(state=present)
+                                            type: int
+                                target_group_stickiness_config:
+                                    description: The target group stickiness for the rule.
+                                    returned: when O(state=present)
+                                    type: dict
+                                    contains:
+                                        enabled:
+                                            description: Indicates whether target group stickiness is enabled.
+                                            returned: when O(state=present)
+                                            type: bool
+                    sample: [
+                        {
+                            "forward_config": {
+                                "target_group_stickiness_config": {
+                                    "enabled": false
+                                },
+                                "target_groups": [
+                                    {
+                                        "target_group_arn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/alb-test-169eb5ba/09ba111f8079fb83",
+                                        "weight": 1
+                                    }
+                                ]
+                            },
+                            "target_group_arn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/alb-test-169eb5ba/09ba111f8079fb83",
+                            "type": "forward"
+                        }
+                    ]
         certificates:
             description: The SSL server certificate.
             returned: when O(state=present)
-            type: complex
+            type: list
+            elements: dict
             contains:
                 certificate_arn:
                     description: The Amazon Resource Name (ARN) of the certificate.
                     returned: when O(state=present)
                     type: str
-                    sample: ""
+                    sample: "arn:aws:acm:us-east-1:123456789012:certificate/28d2f3d9-cb2f-4033-a9aa-e75e704125a2"
         ssl_policy:
             description: The security policy that defines which ciphers and protocols are supported.
             returned: when O(state=present)
             type: str
-            sample: ""
+            sample: "ELBSecurityPolicy-2016-08"
         default_actions:
             description: The default actions for the listener.
             returned: when O(state=present)
@@ -464,12 +607,56 @@ listeners:
                     description: The type of action.
                     returned: when O(state=present)
                     type: str
-                    sample: ""
+                    sample: "forward"
                 target_group_arn:
                     description: The Amazon Resource Name (ARN) of the target group.
                     returned: when O(state=present)
                     type: str
-                    sample: ""
+                    sample: "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/alb-test-169eb5ba/09ba111f8079fb83"
+                forward_config:
+                    description: Information for creating an action that distributes requests among one or more target groups.
+                    returned: when O(state=present)
+                    type: dict
+                    contains:
+                        target_groups:
+                            description: The target groups.
+                            returned: when O(state=present)
+                            type: dict
+                            contains:
+                                target_group_arn:
+                                    description: The Amazon Resource Name (ARN) of the target group.
+                                    returned: when O(state=present)
+                                    type: str
+                                weight:
+                                    description: The weight.
+                                    returned: when O(state=present)
+                                    type: int
+                        target_group_stickiness_config:
+                            description: The target group stickiness for the rule.
+                            returned: when O(state=present)
+                            type: dict
+                            contains:
+                                enabled:
+                                    description: Indicates whether target group stickiness is enabled.
+                                    returned: when O(state=present)
+                                    type: bool
+            sample: [
+                {
+                    "forward_config": {
+                        "target_group_stickiness_config": {
+                            "enabled": false
+                        },
+                        "target_groups": [
+                            {
+                                "target_group_arn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/alb-test-2-98b7f374/bf43c68602c51c02",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    "target_group_arn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/alb-test-2-98b7f374/bf43c68602c51c02",
+                    "type": "forward"
+                }
+            ]
 load_balancer_arn:
     description: The Amazon Resource Name (ARN) of the load balancer.
     returned: when O(state=present)
@@ -480,11 +667,16 @@ load_balancer_name:
     returned: when O(state=present)
     type: str
     sample: "my-alb"
+load_balancing_cross_zone_enabled:
+    description: Indicates whether cross-zone load balancing is enabled.
+    returned: when O(state=present)
+    type: str
+    sample: "true"
 routing_http2_enabled:
     description: Indicates whether HTTP/2 is enabled.
     returned: when O(state=present)
-    type: bool
-    sample: true
+    type: str
+    sample: "true"
 routing_http_desync_mitigation_mode:
     description: Determines how the load balancer handles requests that might pose a security risk to an application.
     returned: when O(state=present)
@@ -493,18 +685,28 @@ routing_http_desync_mitigation_mode:
 routing_http_drop_invalid_header_fields_enabled:
     description: Indicates whether HTTP headers with invalid header fields are removed by the load balancer (true) or routed to targets (false).
     returned: when O(state=present)
-    type: bool
-    sample: false
+    type: str
+    sample: "false"
+routing_http_preserve_host_header_enabled:
+    description: Indicates whether the Application Load Balancer should preserve the Host header in the HTTP request and send it to the target without any change.
+    returned: when O(state=present)
+    type: str
+    sample: "false"
 routing_http_x_amzn_tls_version_and_cipher_suite_enabled:
     description: Indicates whether the two headers are added to the client request before sending it to the target.
     returned: when O(state=present)
-    type: bool
-    sample: false
+    type: str
+    sample: "false"
 routing_http_xff_client_port_enabled:
     description: Indicates whether the X-Forwarded-For header should preserve the source port that the client used to connect to the load balancer.
     returned: when O(state=present)
-    type: bool
-    sample: false
+    type: str
+    sample: "false"
+routing_http_xff_header_processing_mode:
+    description: Enables you to modify, preserve, or remove the X-Forwarded-For header in the HTTP request before the Application Load Balancer sends the request to the target.
+    returned: when O(state=present)
+    type: str
+    sample: "append"
 scheme:
     description: Internet-facing or internal load balancer.
     returned: when O(state=present)
@@ -514,18 +716,27 @@ security_groups:
     description: The IDs of the security groups for the load balancer.
     returned: when O(state=present)
     type: list
-    sample: ['sg-0011223344']
+    elements: str
+    sample: ["sg-0011223344"]
 state:
     description: The state of the load balancer.
     returned: when O(state=present)
     type: dict
-    sample: {'code': 'active'}
+    contains:
+        code:
+            description: The state code.
+            type: str
+        reason:
+            description: A description of the state.
+            returned: when available
+            type: str
+    sample: {"code": "active"}
 tags:
     description: The tags attached to the load balancer.
     returned: when O(state=present)
     type: dict
     sample: {
-        'Tag': 'Example'
+        "Tag": "Example"
     }
 type:
     description: The type of load balancer.
@@ -540,8 +751,8 @@ vpc_id:
 waf_fail_open_enabled:
     description: Indicates whether to allow a AWS WAF-enabled load balancer to route requests to targets if it is unable to forward the request to AWS WAF.
     returned: when O(state=present)
-    type: bool
-    sample: false
+    type: str
+    sample: "false"
 """
 
 try:
