@@ -34,7 +34,7 @@ options:
       - Please use M(amazon.aws.rds_engine_versions_info) to get list of all supported db engines and their respective versions.
       - The DB parameter group family is immutable and can't be changed when updating a DB parameter group.
         See U(https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-rds-dbparametergroup.html)
-      - Required for I(state=present).
+      - Required for O(state=present).
     type: str
   immediate:
     description:
@@ -79,29 +79,29 @@ EXAMPLES = r"""
 
 RETURN = r"""
 db_parameter_group_name:
-    description: Name of DB parameter group
+    description: Name of DB parameter group.
     type: str
-    returned: when state is present
+    returned: when O(state=present)
 db_parameter_group_family:
     description: DB parameter group family that this DB parameter group is compatible with.
     type: str
-    returned: when state is present
+    returned: when O(state=present)
 db_parameter_group_arn:
-    description: ARN of the DB parameter group
+    description: ARN of the DB parameter group.
     type: str
-    returned: when state is present
+    returned: when O(state=present)
 description:
-    description: description of the DB parameter group
+    description: description of the DB parameter group.
     type: str
-    returned: when state is present
+    returned: when O(state=present)
 errors:
-    description: list of errors from attempting to modify parameters that are not modifiable
+    description: List of errors from attempting to modify parameters that are not modifiable.
     type: list
-    returned: when state is present
+    returned: when O(state=present)
 tags:
-    description: dictionary of tags
+    description: A dictionary of tags.
     type: dict
-    returned: when state is present
+    returned: when O(state=present)
 """
 
 from itertools import zip_longest

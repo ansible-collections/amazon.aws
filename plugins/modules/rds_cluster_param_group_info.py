@@ -7,7 +7,7 @@
 DOCUMENTATION = r"""
 module: rds_cluster_param_group_info
 version_added: 7.6.0
-short_description: Describes the properties of specific RDS cluster parameter group.
+short_description: Describes the properties of specific RDS cluster parameter group
 description:
   - Obtain information about a list or one specific RDS cluster parameter group.
 options:
