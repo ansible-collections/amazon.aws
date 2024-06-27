@@ -52,7 +52,7 @@ options:
   headers:
     description:
       - Custom headers to use when O(mode=put) as a dictionary of key value pairs.
-      - Ignored when V(mode) is not V(put).
+      - Ignored when O(mode) is not V(put).
     type: dict
   marker:
     description:

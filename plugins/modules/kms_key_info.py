@@ -133,7 +133,7 @@ kms_keys:
     deletion_date:
       description: Date and time after which KMS deletes this KMS key.
       type: str
-      returned: when key_state is PendingDeletion
+      returned: when RV(kms_keys.key_state) is PendingDeletion
       sample: "2017-04-18T15:12:08.551000+10:00"
       version_added: 3.3.0
       version_added_collection: community.aws
@@ -143,7 +143,7 @@ kms_keys:
       returned: always
       sample: "My Key for Protecting important stuff"
     enabled:
-      description: Whether the key is enabled. True if RV(kms_keys.key_state) is C(Enabled).
+      description: Whether the key is enabled. True if RV(kms_keys.key_state) is V(Enabled).
       type: bool
       returned: always
       sample: false

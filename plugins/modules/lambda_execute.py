@@ -125,7 +125,7 @@ result:
             type: str
             returned: if O(tail_log=true)
         status:
-            description: C(StatusCode) of API call exit (200 for synchronous invokes, 202 for async).
+            description: V(StatusCode) of API call exit (200 for synchronous invokes, 202 for async).
             type: int
             sample: 200
             returned: always

@@ -112,7 +112,7 @@ options:
   transform_location:
     description:
       - S3 bucket location for default us-east-1 is normally reported as C(null).
-      - Setting this option to V(true) will return C(us-east-1) instead.
+      - Setting this option to V(true) will return V(us-east-1) instead.
       - Affects only queries with O(bucket_facts=true) and O(bucket_facts.bucket_location=true).
     type: bool
     default: False

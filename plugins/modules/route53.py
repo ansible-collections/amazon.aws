@@ -143,7 +143,7 @@ options:
     choices: ['SECONDARY', 'PRIMARY']
   vpc_id:
     description:
-      - "When used in conjunction with O(private_zone=true), this will only modify records in the private hosted zone attached to this VPC."
+      - When used in conjunction with O(private_zone=true), this will only modify records in the private hosted zone attached to this VPC.
       - This allows you to have multiple private hosted zones, all with the same name, attached to different VPCs.
     type: str
   wait:
