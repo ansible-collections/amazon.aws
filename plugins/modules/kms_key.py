@@ -12,7 +12,7 @@ short_description: Perform various KMS key management tasks
 description:
   - Manage role/user access to a KMS key.
   - Not designed for encrypting/decrypting.
-  - Prior to release 5.0.0 this module was called C(community.aws.aws_kms).
+  - Prior to release 5.0.0 this module was called M(community.aws.aws_kms).
     The usage did not change.
   - This module was originally added to C(community.aws) in release 1.0.0.
 options:
@@ -21,10 +21,10 @@ options:
       - An alias for a key.
       - For safety, even though KMS does not require keys to have an alias, this module expects all
         new keys to be given an alias to make them easier to manage. Existing keys without an alias
-        may be referred to by I(key_id). Use M(amazon.aws.kms_key_info) to find key ids.
-      - Note that passing a I(key_id) and I(alias) will only cause a new alias to be added, an alias will never be renamed.
-      - The C(alias/) prefix is optional.
-      - Required if I(key_id) is not given.
+        may be referred to by O(key_id). Use M(amazon.aws.kms_key_info) to find key ids.
+      - Note that passing a O(key_id) and O(alias) will only cause a new alias to be added, an alias will never be renamed.
+      - The V(alias/) prefix is optional.
+      - Required if O(key_id) is not given.
     required: false
     aliases:
       - key_alias
@@ -32,7 +32,7 @@ options:
   key_id:
     description:
       - Key ID or ARN of the key.
-      - One of I(alias) or I(key_id) are required.
+      - One of O(alias) or O(key_id) are required.
     required: false
     aliases:
       - key_arn
@@ -45,9 +45,9 @@ options:
   state:
     description:
       - Whether a key should be present or absent.
-      - Note that making an existing key C(absent) only schedules a key for deletion.
-      - Passing a key that is scheduled for deletion with I(state=present) will cancel key deletion.
-    required: False
+      - Note that making an existing key V(absent) only schedules a key for deletion.
+      - Passing a key that is scheduled for deletion with O(state=present) will cancel key deletion.
+    required: false
     choices:
       - present
       - absent
@@ -55,7 +55,7 @@ options:
     type: str
   enabled:
     description: Whether or not a key is enabled.
-    default: True
+    default: true
     type: bool
   description:
     description:
@@ -65,14 +65,14 @@ options:
   multi_region:
     description:
       -  Whether to create a multi-Region primary key or not.
-    default: False
+    default: false
     type: bool
     version_added: 5.5.0
   pending_window:
     description:
       - The number of days between requesting deletion of the CMK and when it will actually be deleted.
-      - Only used when I(state=absent) and the CMK has not yet been deleted.
-      - Valid values are between 7 and 30 (inclusive).
+      - Only used when O(state=absent) and the CMK has not yet been deleted.
+      - Valid values are between V(7) and V(30) (inclusive).
       - 'See also: U(https://docs.aws.amazon.com/kms/latest/APIReference/API_ScheduleKeyDeletion.html#KMS-ScheduleKeyDeletion-request-PendingWindowInDays)'
     type: int
     aliases: ['deletion_delay']
@@ -80,15 +80,15 @@ options:
     version_added_collection: community.aws
   purge_grants:
     description:
-      - Whether the I(grants) argument should cause grants not in the list to be removed.
-    default: False
+      - Whether the O(grants) argument should cause grants not in the list to be removed.
+    default: false
     type: bool
   grants:
     description:
-      - A list of grants to apply to the key. Each item must contain I(grantee_principal).
-        Each item can optionally contain I(retiring_principal), I(operations), I(constraints),
-        I(name).
-      - I(grantee_principal) and I(retiring_principal) must be ARNs
+      - A list of grants to apply to the key. Each item must contain O(grants.grantee_principal).
+        Each item can optionally contain O(grants.retiring_principal), O(grants.operations), O(grants.constraints),
+        O(grants.name).
+      - O(grants.grantee_principal) and O(grants.retiring_principal) must be ARNs.
       - 'For full documentation of suboptions see the boto3 documentation:'
       - 'U(https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/kms.html#KMS.Client.create_grant)'
     type: list
@@ -111,14 +111,19 @@ options:
                       'CreateGrant', 'RetireGrant', 'DescribeKey', 'Verify', 'Sign']
         constraints:
             description:
-              - Constraints is a dict containing C(encryption_context_subset) or C(encryption_context_equals),
+              - Constraints is a dict containing V(encryption_context_subset) or V(encryption_context_equals),
                 either or both being a dict specifying an encryption context match.
                 See U(https://docs.aws.amazon.com/kms/latest/APIReference/API_GrantConstraints.html) or
                 U(https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/kms.html#KMS.Client.create_grant)
             type: dict
+        name:
+            description:
+              - A friendly name for the grant.
+              - Use this value to prevent the unintended creation of duplicate grants when retrying this request.
+            type: str
   policy:
     description:
-      - policy to apply to the KMS key.
+      - Policy to apply to the KMS key.
       - See U(https://docs.aws.amazon.com/kms/latest/developerguide/key-policies.html)
     type: json
   key_spec:
@@ -256,7 +261,7 @@ creation_date:
 deletion_date:
   description: Date and time after which KMS deletes this KMS key.
   type: str
-  returned: when key_state is PendingDeletion
+  returned: when RV(key_state) is PendingDeletion
   sample: "2017-04-18T15:12:08.551000+10:00"
   version_added: 3.3.0
   version_added_collection: community.aws
@@ -266,7 +271,7 @@ description:
   returned: always
   sample: "My Key for Protecting important stuff"
 enabled:
-  description: Whether the key is enabled. True if I(key_state) is C(Enabled).
+  description: Whether the key is enabled. True if RV(key_state) is V(Enabled).
   type: bool
   returned: always
   sample: false

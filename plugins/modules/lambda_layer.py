@@ -14,13 +14,12 @@ description:
   - Creates an Lambda layer from a ZIP archive.
     Each time you call this module with the same layer name, a new version is created.
   - Deletes a version of an Lambda layer.
-
 author: "Aubin Bikouo (@abikouo)"
 options:
   state:
     description:
-    - Determines if an Lambda layer should be created, or deleted. When set to C(present), an Lambda layer version will be
-      created. If set to C(absent), an existing Lambda layer version will be deleted.
+    - Determines if an Lambda layer should be created, or deleted. When set to V(present), an Lambda layer version will be
+      created. If set to V(absent), an existing Lambda layer version will be deleted.
     type: str
     default: present
     choices: [ absent, present ]
@@ -34,15 +33,15 @@ options:
   description:
     description:
     - The description of the version.
-    - Ignored when I(state=absent).
-    - Mutually exclusive with I(version).
+    - Ignored when O(state=absent).
+    - Mutually exclusive with O(version).
     type: str
   content:
     description:
     - The function layer archive.
-    - Required when I(state=present).
-    - Ignored when I(state=absent).
-    - Mutually exclusive with I(version).
+    - Required when O(state=present).
+    - Ignored when O(state=absent).
+    - Mutually exclusive with o(version).
     type: dict
     suboptions:
       s3_bucket:
@@ -64,31 +63,31 @@ options:
   compatible_runtimes:
     description:
     - A list of compatible function runtimes.
-    - Ignored when I(state=absent).
-    - Mutually exclusive with I(version).
+    - Ignored when O(state=absent).
+    - Mutually exclusive with O(version).
     type: list
     elements: str
   license_info:
     description:
     - The layer's software license. It can be any of an SPDX license identifier,
       the URL of a license hosted on the internet or the full text of the license.
-    - Ignored when I(state=absent).
-    - Mutually exclusive with I(version).
+    - Ignored when O(state=absent).
+    - Mutually exclusive with O(version).
     type: str
   compatible_architectures:
     description:
     - A list of compatible instruction set architectures. For example, x86_64.
-    - Mutually exclusive with I(version).
+    - Mutually exclusive with O(version).
     type: list
     elements: str
   version:
     description:
     - The version number of the layer to delete.
-    - Set to C(-1) to delete all versions for the specified layer name.
-    - Required when I(state=absent).
-    - Ignored when I(state=present).
-    - Mutually exclusive with I(description), I(content), I(compatible_runtimes),
-      I(license_info), I(compatible_architectures).
+    - Set to V(-1) to delete all versions for the specified layer name.
+    - Required when O(state=absent).
+    - Ignored when O(state=present).
+    - Mutually exclusive with O(description), O(content), O(compatible_runtimes),
+      O(license_info), O(compatible_architectures).
     type: int
 extends_documentation_fragment:
   - amazon.aws.common.modules
@@ -146,29 +145,29 @@ EXAMPLES = r"""
 
 RETURN = r"""
 layer_version:
-  description: info about the layer version that was created or deleted.
+  description: Info about the layer version that was created or deleted.
   returned: always
   type: list
   elements: dict
   contains:
     content:
         description: Details about the layer version.
-        returned: I(state=present)
+        returned: O(state=present)
         type: complex
         contains:
           location:
             description: A link to the layer archive in Amazon S3 that is valid for 10 minutes.
-            returned: I(state=present)
+            returned: O(state=present)
             type: str
             sample: "https://awslambda-us-east-1-layers.s3.us-east-1.amazonaws.com/snapshots/123456789012/pylayer-9da91deffd3b4941b8baeeae5daeffe4"
           code_sha256:
             description: The SHA-256 hash of the layer archive.
-            returned: I(state=present)
+            returned: O(state=present)
             type: str
             sample: "VLluleJZ3HTwDrdYolSMrS+8iPwEkcoXXaegjXf+dmc="
           code_size:
             description: The size of the layer archive in bytes.
-            returned: I(state=present)
+            returned: O(state=present)
             type: int
             sample: 9473675
           signing_profile_version_arn:
@@ -191,7 +190,7 @@ layer_version:
         sample: "arn:aws:lambda:eu-west-2:123456789012:layer:pylayer:2"
     description:
         description: The description of the version.
-        returned: I(state=present)
+        returned: O(state=present)
         type: str
     compatible_runtimes:
         description: A list of compatible runtimes.

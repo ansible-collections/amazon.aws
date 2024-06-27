@@ -8,11 +8,11 @@ DOCUMENTATION = r"""
 ---
 module: route53_health_check
 version_added: 5.0.0
-short_description: Manage health-checks in Amazons Route53 DNS service
+short_description: Manage health checks in Amazons Route 53 DNS service
 description:
-  - Creates and deletes DNS Health checks in Amazons Route53 service.
-  - Only the port, resource_path, string_match and request_interval are
-    considered when updating existing health-checks.
+  - Creates and deletes DNS Health checks in Amazons Route 53 service.
+  - Only the O(port), O(resource_path), O(string_match) and O(request_interval) are
+    considered when updating existing health checks.
   - This module was originally added to C(community.aws) in release 1.0.0.
 options:
   state:
@@ -26,13 +26,13 @@ options:
       - Stops Route 53 from performing health checks.
       - See the AWS documentation for more details on the exact implications.
         U(https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/health-checks-creating-values.html)
-      - Defaults to C(true) when creating a new health check.
+      - Defaults to V(true) when creating a new health check.
     type: bool
     version_added: 2.1.0
     version_added_collection: community.aws
   ip_address:
     description:
-      - IP address of the end-point to check. Either this or I(fqdn) has to be provided.
+      - IP address of the end-point to check. Either this or O(fqdn) has to be provided.
       - IP addresses must be publicly routable.
     type: str
   port:
@@ -44,8 +44,8 @@ options:
     description:
       - The type of health check that you want to create, which indicates how
         Amazon Route 53 determines whether an endpoint is healthy.
-      - Once health_check is created, type can not be changed.
-      - The CALCULATED choice was added in 6.3.0.
+      - Once health check is created, type can not be changed.
+      - The V(CALCULATED) choice was added in 6.3.0.
     choices: [ 'HTTP', 'HTTPS', 'HTTP_STR_MATCH', 'HTTPS_STR_MATCH', 'TCP', 'CALCULATED' ]
     type: str
   child_health_checks:
@@ -67,14 +67,14 @@ options:
         health checks. The path can be any value for which your endpoint will
         return an HTTP status code of 2xx or 3xx when the endpoint is healthy,
         for example the file /docs/route53-health-check.html.
-      - Mutually exclusive with I(type='TCP').
+      - Mutually exclusive with O(type='TCP').
       - The path must begin with a /
       - Maximum 255 characters.
     type: str
   fqdn:
     description:
-      - Domain name of the endpoint to check. Either this or I(ip_address) has
-        to be provided. When both are given the I(fqdn) is used in the C(Host:)
+      - Domain name of the endpoint to check. Either this or O(ip_address) has
+        to be provided. When both are given the O(fqdn) is used in the V(Host:)
         header of the HTTP request.
     type: str
   string_match:
@@ -88,7 +88,7 @@ options:
     description:
       - The number of seconds between the time that Amazon Route 53 gets a
         response from your endpoint and the time that it sends the next
-        health-check request.
+        health check request.
     default: 30
     choices: [ 10, 30 ]
     type: int
@@ -103,17 +103,17 @@ options:
   health_check_name:
     description:
       - Name of the Health Check.
-      - Used together with I(use_unique_names) to set/make use of I(health_check_name) as a unique identifier.
+      - Used together with O(use_unique_names) to set/make use of O(health_check_name) as a unique identifier.
     type: str
-    required: False
+    required: false
     aliases: ['name']
     version_added: 4.1.0
     version_added_collection: community.aws
   use_unique_names:
     description:
-      - Used together with I(health_check_name) to set/make use of I(health_check_name) as a unique identifier.
+      - Used together with O(health_check_name) to set/make use of O(health_check_name) as a unique identifier.
     type: bool
-    required: False
+    required: false
     version_added: 4.1.0
     version_added_collection: community.aws
   health_check_id:
@@ -121,22 +121,22 @@ options:
       - ID of the health check to be update or deleted.
       - If provided, a health check can be updated or deleted based on the ID as unique identifier.
     type: str
-    required: False
+    required: false
     aliases: ['id']
     version_added: 4.1.0
     version_added_collection: community.aws
   measure_latency:
     description:
       - To enable/disable latency graphs to monitor the latency between health checkers in multiple Amazon Web Services regions and your endpoint.
-      - Value of I(measure_latency) is immutable and can not be modified after creating a health check.
+      - Value of O(measure_latency) is immutable and can not be modified after creating a health check.
         See U(https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/monitoring-health-check-latency.html)
     type: bool
-    required: False
+    required: false
     version_added: 5.4.0
 author:
   - "zimbatm (@zimbatm)"
 notes:
-  - Support for I(tags) and I(purge_tags) was added in release 2.1.0.
+  - Support for O(tags) and O(purge_tags) was added in release 2.1.0.
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
@@ -145,7 +145,7 @@ extends_documentation_fragment:
 """
 
 EXAMPLES = r"""
-- name: Create a health-check for host1.example.com and use it in record
+- name: Create a health check for host1.example.com and use it in record
   amazon.aws.route53_health_check:
     state: present
     fqdn: host1.example.com
@@ -187,7 +187,7 @@ EXAMPLES = r"""
     use_unique_names: true
     measure_latency: true
 
-- name: Delete health-check
+- name: Delete health check
   amazon.aws.route53_health_check:
     state: absent
     fqdn: host1.example.com

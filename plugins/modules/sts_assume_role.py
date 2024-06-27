@@ -35,7 +35,7 @@ options:
     description:
       - The duration, in seconds, of the role session. The value can range from 900 seconds (15 minutes) to 43200 seconds (12 hours).
       - The max depends on the IAM role's sessions duration setting.
-      - By default, the value is set to 3600 seconds.
+      - By default, the value is set to V(3600) seconds.
     type: int
   external_id:
     description:
@@ -50,8 +50,8 @@ options:
       - The value provided by the MFA device, if the trust policy of the role being assumed requires MFA.
     type: str
 notes:
-  - In order to use the assumed role in a following playbook task you must pass the I(access_key),
-    I(secret_key) and I(session_token) parameters to modules that should use the assumed credentials.
+  - In order to use the assumed role in a following playbook task you must pass the O(access_key),
+    O(secret_key) and O(session_token) parameters to modules that should use the assumed credentials.
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
@@ -60,7 +60,7 @@ extends_documentation_fragment:
 
 RETURN = r"""
 sts_creds:
-    description: The temporary security credentials, which include an access key ID, a secret access key, and a security (or session) token
+    description: The temporary security credentials, which include an access key ID, a secret access key, and a security (or session) token.
     returned: always
     type: dict
     sample:
@@ -69,14 +69,14 @@ sts_creds:
       secret_key: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
       session_token: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 sts_user:
-    description: The Amazon Resource Name (ARN) and the assumed role ID
+    description: The Amazon Resource Name (ARN) and the assumed role ID.
     returned: always
     type: dict
     sample:
       assumed_role_id: arn:aws:sts::123456789012:assumed-role/demo/Bob
       arn: ARO123EXAMPLE123:Bob
 changed:
-    description: True if obtaining the credentials succeeds
+    description: True if obtaining the credentials succeeds.
     type: bool
     returned: always
 """

@@ -13,7 +13,7 @@ description:
   - This module allows the management of AWS Lambda function event source mappings such as DynamoDB and Kinesis stream
     events via the Ansible framework. These event source mappings are relevant only in the AWS Lambda pull model, where
     AWS Lambda invokes the function.
-    It is idempotent and supports "Check" mode.  Use module M(amazon.aws.lambda) to manage the lambda
+    It is idempotent and supports "Check" mode. Use module M(amazon.aws.lambda) to manage the lambda
     function itself and M(amazon.aws.lambda_alias) to manage function aliases.
   - This module was originally added to C(community.aws) in release 1.0.0.
 
@@ -36,19 +36,19 @@ options:
   alias:
     description:
       - Name of the function alias.
-      - Mutually exclusive with I(version).
+      - Mutually exclusive with O(version).
     type: str
   version:
     description:
       - Version of the Lambda function.
-      - Mutually exclusive with I(alias).
+      - Mutually exclusive with O(alias).
     type: int
     default: 0
   event_source:
     description:
       - Source of the event that triggers the lambda function.
-      - For DynamoDB and Kinesis events, select C(stream)
-      - For SQS queues, select C(sqs)
+      - For DynamoDB and Kinesis events, select V(stream).
+      - For SQS queues, select V(sqs).
     default: stream
     choices: ['stream', 'sqs']
     type: str
@@ -80,7 +80,7 @@ options:
       starting_position:
         description:
           - The position in the stream where AWS Lambda should start reading.
-          - Required when I(event_source=stream).
+          - Required when O(event_source=stream).
         choices: [TRIM_HORIZON,LATEST]
         type: str
       function_response_types:

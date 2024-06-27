@@ -14,7 +14,7 @@ author:
 short_description: Lists S3 buckets in AWS
 description:
   - Lists S3 buckets and details about those buckets.
-  - Prior to release 5.0.0 this module was called C(community.aws.aws_s3_bucket_info).
+  - Prior to release 5.0.0 this module was called M(community.aws.aws_s3_bucket_info).
     The usage did not change.
 options:
   name:
@@ -25,15 +25,15 @@ options:
     version_added: 1.4.0
   name_filter:
     description:
-      - Limits buckets to only buckets who's name contain the string in I(name_filter).
+      - Limits buckets to only buckets who's name contain the string in O(name_filter).
     type: str
     default: ""
     version_added: 1.4.0
   bucket_facts:
     description:
       - Retrieve requested S3 bucket detailed information.
-      - Each bucket_X option executes one API call, hence many options being set to C(true) will cause slower module execution.
-      - You can limit buckets by using the I(name) or I(name_filter) option.
+      - Each bucket_X option executes one API call, hence many options being set to V(true) will cause slower module execution.
+      - You can limit buckets by using the O(name) or O(name_filter) option.
     suboptions:
       bucket_accelerate_configuration:
         description: Retrieve S3 accelerate configuration.
@@ -112,8 +112,8 @@ options:
   transform_location:
     description:
       - S3 bucket location for default us-east-1 is normally reported as C(null).
-      - Setting this option to C(true) will return C(us-east-1) instead.
-      - Affects only queries with I(bucket_facts=true) and I(bucket_location=true).
+      - Setting this option to V(true) will return V(us-east-1) instead.
+      - Affects only queries with O(bucket_facts=true) and O(bucket_facts.bucket_location=true).
     type: bool
     default: False
     version_added: 1.4.0

@@ -12,7 +12,7 @@ short_description: Gather information about objects in S3
 description:
     - Describes objects in S3.
     - Compatible with AWS, DigitalOcean, Ceph, Walrus, FakeS3 and StorageGRID (only supports list_keys currently).
-    - When using non-AWS services, I(endpoint_url) should be specified.
+    - When using non-AWS services, O(endpoint_url) should be specified.
 author:
   - Mandar Vijay Kulkarni (@mandar242)
 options:
@@ -34,8 +34,8 @@ options:
   dualstack:
     description:
       - Enables Amazon S3 Dual-Stack Endpoints, allowing S3 communications using both IPv4 and IPv6.
-      - Support for passing I(dualstack) and I(endpoint_url) at the same time has been deprecated,
-        the dualstack endpoints are automatically configured using the configured I(region).
+      - Support for passing O(dualstack) and O(endpoint_url) at the same time has been deprecated,
+        the dualstack endpoints are automatically configured using the configured O(region).
         Support will be removed in a release after 2024-12-01.
     type: bool
     default: false
@@ -44,7 +44,7 @@ options:
       - Enable API compatibility with Ceph RGW.
       - It takes into account the S3 API subset working with Ceph in order to provide the same module
         behaviour where possible.
-      - Requires I(endpoint_url) if I(ceph=true).
+      - Requires O(endpoint_url) if O(ceph=true).
     aliases: ['rgw']
     default: false
     type: bool
@@ -93,14 +93,14 @@ options:
       attributes_list:
         description:
           - The fields/details that should be returned.
-          - Required when I(object_attributes) is C(true) in I(object_details).
+          - Required when O(object_details.object_attributes=true).
         type: list
         elements: str
         choices: ['ETag', 'Checksum', 'ObjectParts', 'StorageClass', 'ObjectSize']
 notes:
-  - Support for the C(S3_URL) environment variable has been
-    deprecated and will be removed in a release after 2024-12-01, please use the I(endpoint_url) parameter
-    or the C(AWS_URL) environment variable.
+  - Support for the E(S3_URL) environment variable has been
+    deprecated and will be removed in a release after 2024-12-01, please use the O(endpoint_url) parameter
+    or the E(AWS_URL) environment variable.
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
@@ -153,7 +153,7 @@ EXAMPLES = r"""
 RETURN = r"""
 s3_keys:
   description: List of object keys.
-  returned: when only I(bucket_name) is specified and I(object_name), I(object_details) are not specified.
+  returned: when only O(bucket_name) is specified and O(object_name), O(object_details) are not specified.
   type: list
   elements: str
   sample:
@@ -162,13 +162,13 @@ s3_keys:
   - prefix1/key2
 object_info:
     description: S3 object details.
-    returned: when I(bucket_name) and I(object_name) are specified.
+    returned: when O(bucket_name) and O(object_name) are specified.
     type: list
     elements: dict
     contains:
         object_data:
             description: A dict containing the metadata of S3 object.
-            returned: when I(bucket_name) and I(object_name) are specified but I(object_details) is not specified.
+            returned: when O(bucket_name) and O(object_name) are specified but O(object_details) is not specified.
             type: dict
             elements: str
             contains:
@@ -206,7 +206,7 @@ object_info:
                     type: int
         object_acl:
             description: Access control list (ACL) of an object.
-            returned: when I(object_acl) is set to I(true).
+            returned: when O(object_details.object_acl=true).
             type: complex
             contains:
                 owner:
@@ -251,7 +251,7 @@ object_info:
                             sample: "FULL CONTROL"
         object_legal_hold:
             description: Object's current legal hold status
-            returned: when I(object_legal_hold) is set to I(true) and object legal hold is set on the bucket.
+            returned: when O(object_details.object_legal_hold=true) and object legal hold is set on the bucket.
             type: complex
             contains:
                 legal_hold:
@@ -266,7 +266,7 @@ object_info:
                             sample: "ON"
         object_lock_configuration:
             description: Object Lock configuration for a bucket.
-            returned: when I(object_lock_configuration) is set to I(true) and object lock configuration is set on the bucket.
+            returned: when O(object_details.object_lock_configuration=true) and object lock configuration is set on the bucket.
             type: complex
             contains:
                 object_lock_enabled:
@@ -299,7 +299,7 @@ object_info:
                                     type: int
         object_retention:
             description: Object's retention settings.
-            returned: when I(object_retention) is set to I(true) and object retention is set on the bucket.
+            returned: when O(object_details.object_retention=true) and object retention is set on the bucket.
             type: complex
             contains:
                 retention:
@@ -317,11 +317,11 @@ object_info:
                             type: str
         object_tagging:
             description: The tag-set of an object
-            returned: when I(object_tagging) is set to I(true).
+            returned: when O(object_details.object_tagging=true).
             type: dict
         object_attributes:
             description: Object attributes.
-            returned: when I(object_attributes) is set to I(true).
+            returned: when O(object_details.object_attributes=true).
             type: complex
             contains:
                 etag:

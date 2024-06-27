@@ -15,7 +15,7 @@ description:
     strings, generating download links and copying objects that are already stored in Amazon S3.
   - S3 buckets can be created or deleted using the M(amazon.aws.s3_bucket) module.
   - Compatible with AWS, DigitalOcean, Ceph, Walrus, FakeS3 and StorageGRID.
-  - When using non-AWS services, I(endpoint_url) should be specified.
+  - When using non-AWS services, O(endpoint_url) should be specified.
 options:
   bucket:
     description:
@@ -24,18 +24,18 @@ options:
     type: str
   dest:
     description:
-      - The destination file path when downloading an object/key when I(mode=get).
-      - Ignored when I(mode) is not C(get).
+      - The destination file path when downloading an object/key when O(mode=get).
+      - Ignored when O(mode) is not V(get).
     type: path
   encrypt:
     description:
-      - Asks for server-side encryption of the objects when I(mode=put) or I(mode=copy).
-      - Ignored when I(mode) is neither C(put) nor C(copy).
+      - Asks for server-side encryption of the objects when O(mode=put) or O(mode=copy).
+      - Ignored when O(mode) is neither V(put) nor V(copy).
     default: true
     type: bool
   encryption_mode:
     description:
-      - The encryption mode to use if I(encrypt=true).
+      - The encryption mode to use if O(encrypt=true).
     default: AES256
     choices:
       - AES256
@@ -44,15 +44,15 @@ options:
   expiry:
     description:
       - Time limit (in seconds) for the URL generated and returned by S3/Walrus when performing a
-        I(mode=put) or I(mode=geturl) operation.
-      - Ignored when I(mode) is neither C(put) nor C(geturl).
+        O(mode=put) or O(mode=geturl) operation.
+      - Ignored when O(mode) is neither V(put) nor V(geturl).
     default: 600
     aliases: ['expiration']
     type: int
   headers:
     description:
-      - Custom headers to use when I(mode=put) as a dictionary of key value pairs.
-      - Ignored when I(mode) is not C(put).
+      - Custom headers to use when O(mode=put) as a dictionary of key value pairs.
+      - Ignored when O(mode) is not V(put).
     type: dict
   marker:
     description:
@@ -62,26 +62,26 @@ options:
     default: ''
   max_keys:
     description:
-      - Max number of results to return when I(mode=list), set this if you want to retrieve fewer
+      - Max number of results to return when O(mode=list), set this if you want to retrieve fewer
         than the default 1000 keys.
-      - Ignored when I(mode) is not C(list).
+      - Ignored when O(mode) is not V(list).
     default: 1000
     type: int
   metadata:
     description:
-      - Metadata to use when I(mode=put) or I(mode=copy) as a dictionary of key value pairs.
+      - Metadata to use when O(mode=put) or O(mode=copy) as a dictionary of key value pairs.
     type: dict
   mode:
     description:
       - Switches the module behaviour between
-      - 'C(put): upload'
-      - 'C(get): download'
-      - 'C(geturl): return download URL'
-      - 'C(getstr): download object as string'
-      - 'C(list): list keys'
-      - 'C(create): create bucket directories'
-      - 'C(delobj): delete object'
-      - 'C(copy): copy object that is already stored in another bucket'
+      - 'V(put): upload'
+      - 'V(get): download'
+      - 'V(geturl): return download URL'
+      - 'V(getstr): download object as string'
+      - 'V(list): list keys'
+      - 'V(create): create bucket directories'
+      - 'V(delobj): delete object'
+      - 'V(copy): copy object that is already stored in another bucket'
       - Support for creating and deleting buckets was removed in release 6.0.0.
         To create and manage the bucket itself please use the M(amazon.aws.s3_bucket) module.
     required: true
@@ -94,22 +94,22 @@ options:
       - Object key names should not include the leading C(/), see
         U(https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-keys.html) for more
         information.
-      - Support for passing the leading C(/) has been deprecated and will be removed
+      - Support for passing the leading V(/) has been deprecated and will be removed
         in a release after 2025-12-01.
     type: str
   sig_v4:
     description:
       - Forces the Boto SDK to use Signature Version 4.
-      - Only applies to get modes, I(mode=get), I(mode=getstr), I(mode=geturl).
+      - Only applies to get modes, O(mode=get), O(mode=getstr), O(mode=geturl).
     default: true
     type: bool
     version_added: 5.0.0
   permission:
     description:
       - This option lets the user set the canned permissions on the object/bucket that are created.
-        The permissions that can be set are C(private), C(public-read), C(public-read-write),
-        C(authenticated-read) for a bucket or C(private), C(public-read), C(public-read-write),
-        C(aws-exec-read), C(authenticated-read), C(bucket-owner-read), C(bucket-owner-full-control)
+        The permissions that can be set are V(private), V(public-read), V(public-read-write),
+        V(authenticated-read) for a bucket or V(private), V(public-read), V(public-read-write),
+        V(aws-exec-read), V(authenticated-read), V(bucket-owner-read), V(bucket-owner-full-control)
         for an object. Multiple permissions can be specified as a list; although only the first one
         will be used during the initial upload of the file.
       - For a full list of permissions see the AWS documentation
@@ -138,16 +138,16 @@ options:
   overwrite:
     description:
       - Force overwrite either locally on the filesystem or remotely with the object/key.
-      - Used when I(mode=put) or I(mode=get).
-      - Ignored when when I(mode) is neither C(put) nor C(get).
-      - Must be a Boolean, C(always), C(never), C(different) or C(latest).
-      - C(true) is the same as C(always).
-      - C(false) is equal to C(never).
+      - Used when O(mode=put) or O(mode=get).
+      - Ignored when when O(mode) is neither V(put) nor V(get).
+      - Must be a Boolean, V(always), V(never), V(different) or V(latest).
+      - V(true) is the same as V(always).
+      - V(false) is equal to V(never).
       - When this is set to C(different) the MD5 sum of the local file is compared with the 'ETag'
         of the object/key in S3.  The ETag may or may not be an MD5 digest of the object data. See
         the ETag response header here
         U(https://docs.aws.amazon.com/AmazonS3/latest/API/RESTCommonResponseHeaders.html).
-      - When I(mode=get) and I(overwrite=latest) the last modified timestamp of local file
+      - When O(mode=get) and O(overwrite=latest) the last modified timestamp of local file
         is compared with the 'LastModified' of the object/key in S3.
     default: 'different'
     aliases: ['force']
@@ -161,8 +161,8 @@ options:
   dualstack:
     description:
       - Enables Amazon S3 Dual-Stack Endpoints, allowing S3 communications using both IPv4 and IPv6.
-      - Support for passing I(dualstack) and I(endpoint_url) at the same time has been deprecated,
-        the dualstack endpoints are automatically configured using the configured I(region).
+      - Support for passing O(dualstack) and O(endpoint_url) at the same time has been deprecated,
+        the dualstack endpoints are automatically configured using the configured O(region).
         Support will be removed in a release after 2024-12-01.
     type: bool
     default: false
@@ -171,14 +171,14 @@ options:
       - Enable API compatibility with Ceph RGW.
       - It takes into account the S3 API subset working with Ceph in order to provide the same module
         behaviour where possible.
-      - Requires I(endpoint_url) if I(ceph=true).
+      - Requires O(endpoint_url) if O(ceph=true).
     aliases: ['rgw']
     default: false
     type: bool
   src:
     description:
       - The source file path when performing a C(put) operation.
-      - One of I(content), I(content_base64) or I(src) must be specified when I(mode=put)
+      - One of O(content), O(content_base64) or O(src) must be specified when O(mode=put)
         otherwise ignored.
     type: path
   content:
@@ -186,8 +186,8 @@ options:
       - The content to C(put) into an object.
       - The parameter value will be treated as a string and converted to UTF-8 before sending it to
         S3.
-      - To send binary data, use the I(content_base64) parameter instead.
-      - One of I(content), I(content_base64) or I(src) must be specified when I(mode=put)
+      - To send binary data, use the O(content_base64) parameter instead.
+      - One of O(content), O(content_base64) or O(src) must be specified when O(mode=put)
         otherwise ignored.
     version_added: "1.3.0"
     type: str
@@ -195,7 +195,7 @@ options:
     description:
       - The base64-encoded binary data to C(put) into an object.
       - Use this if you need to put raw binary data, and don't forget to encode in base64.
-      - One of I(content), I(content_base64) or I(src) must be specified when I(mode=put)
+      - One of O(content), O(content_base64) or O(src) must be specified when O(mode=put)
         otherwise ignored.
     version_added: "1.3.0"
     type: str
@@ -203,19 +203,19 @@ options:
     description:
       - Overrides initial bucket lookups in case bucket or IAM policies are restrictive.
       - This can be useful when a user may have the C(GetObject) permission but no other
-        permissions.  In which case using I(mode=get) will fail unless
-        I(ignore_nonexistent_bucket=true) is specified.
+        permissions. In which case using O(mode=get) will fail unless
+        O(ignore_nonexistent_bucket=true) is specified.
     type: bool
     default: false
   encryption_kms_key_id:
     description:
-      - KMS key id to use when encrypting objects using I(encrypting=aws:kms).
-      - Ignored if I(encryption) is not C(aws:kms).
+      - KMS key id to use when encrypting objects using O(encryption_mode=aws:kms).
+      - Ignored if O(encryption_mode) is not V(aws:kms).
     type: str
   copy_src:
     description:
     - The source details of the object to copy.
-    - Required if I(mode=copy).
+    - Required if O(mode=copy).
     type: dict
     version_added: 2.0.0
     suboptions:
@@ -228,7 +228,7 @@ options:
         type: str
         description:
         - key name of the source object.
-        - if not specified, all the objects of the I(copy_src.bucket) will be copied into the specified bucket.
+        - if not specified, all the objects of the O(copy_src.bucket) will be copied into the specified bucket.
         required: false
       version_id:
         type: str
@@ -237,7 +237,7 @@ options:
       prefix:
         description:
         - Copy all the keys that begin with the specified prefix.
-        - Ignored if I(copy_src.object) is supplied.
+        - Ignored if O(copy_src.object) is supplied.
         default: ""
         type: str
         version_added: 6.2.0
@@ -255,13 +255,13 @@ author:
   - "Sloane Hertel (@s-hertel)"
   - "Alina Buzachis (@alinabuzachis)"
 notes:
-  - Support for I(tags) and I(purge_tags) was added in release 2.0.0.
-  - In release 5.0.0 the I(s3_url) parameter was merged into the I(endpoint_url) parameter,
-    I(s3_url) remains as an alias for I(endpoint_url).
-  - For Walrus I(endpoint_url) should be set to the FQDN of the endpoint with neither scheme nor path.
-  - Support for the C(S3_URL) environment variable has been
-    deprecated and will be removed in a release after 2024-12-01, please use the I(endpoint_url) parameter
-    or the C(AWS_URL) environment variable.
+  - Support for O(tags) and O(purge_tags) was added in release 2.0.0.
+  - In release 5.0.0 the O(s3_url) parameter was merged into the O(endpoint_url) parameter,
+    I(s3_url) remains as an alias for O(endpoint_url).
+  - For Walrus O(endpoint_url) should be set to the FQDN of the endpoint with neither scheme nor path.
+  - Support for the E(S3_URL) environment variable has been
+    deprecated and will be removed in a release after 2024-12-01, please use the O(endpoint_url) parameter
+    or the E(AWS_URL) environment variable.
   - Support for creating and deleting buckets was removed in release 6.0.0.
 extends_documentation_fragment:
   - amazon.aws.common.modules
