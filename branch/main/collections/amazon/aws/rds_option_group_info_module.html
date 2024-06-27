@@ -258,7 +258,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-opti
 <a class="ansibleOptionLink" href="#parameter-major_engine_version" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Filters the list of option groups to only include groups associated with a specific database engine version.</p>
-<p>If specified, then <em>engine_name</em> must also be specified.</p>
+<p>If specified, then <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-option-group-info-module-parameter-engine-name"><span class="std std-ref"><span class="pre">engine_name</span></span></a></strong></code> must also be specified.</p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
 </div></td>
 </tr>
@@ -266,8 +266,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-opti
 <div class="ansibleOptionAnchor" id="parameter-marker"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-option-group-info-module-parameter-marker"><strong>marker</strong></p>
 <a class="ansibleOptionLink" href="#parameter-marker" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>If this parameter is specified, the response includes only records beyond the marker, up to the value specified by <em>max_records</em>.</p>
-<p>Allowed values are between <code class="docutils literal notranslate"><span class="pre">20</span></code> and <code class="docutils literal notranslate"><span class="pre">100</span></code>.</p>
+<td><div class="ansible-option-cell"><p>If this parameter is specified, the response includes only records beyond the marker, up to the value specified by <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-option-group-info-module-parameter-max-records"><span class="std std-ref"><span class="pre">max_records</span></span></a></strong></code>.</p>
+<p>Allowed values are between <code class="ansible-value docutils literal notranslate"><span class="pre">20</span></code> and <code class="ansible-value docutils literal notranslate"><span class="pre">100</span></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -283,7 +283,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-opti
 <a class="ansibleOptionLink" href="#parameter-option_group_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The name of the option group to describe.</p>
-<p>Can’t be supplied together with <em>engine_name</em> or <em>major_engine_version</em>.</p>
+<p>Can’t be supplied together with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-option-group-info-module-parameter-engine-name"><span class="std std-ref"><span class="pre">engine_name</span></span></a></strong></code> or <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-option-group-info-module-parameter-major-engine-version"><span class="std std-ref"><span class="pre">major_engine_version</span></span></a></strong></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
 </div></td>
 </tr>
@@ -672,7 +672,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-opti
 <div class="ansibleOptionAnchor" id="return-option_groups_list/tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-option-group-info-module-return-option-groups-list-tags"><strong>tags</strong></p>
 <a class="ansibleOptionLink" href="#return-option_groups_list/tags" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The tags associated the Internet Gateway.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The tags associated the RDS option group.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;Ansible&quot;:</span> <span class="pre">&quot;Test&quot;}</span></code></p>
 </div></td>

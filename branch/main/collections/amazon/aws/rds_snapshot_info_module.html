@@ -224,7 +224,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <a class="ansibleOptionLink" href="#parameter-db_cluster_identifier" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>RDS cluster name for which to find snapshots.</p>
-<p>Mutually exclusive with <em>db_snapshot_identifier</em>, <em>db_instance_identifier</em>, <em>db_cluster_snapshot_identifier</em></p>
+<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-snapshot-info-module-parameter-db-snapshot-identifier"><span class="std std-ref"><span class="pre">db_snapshot_identifier</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-snapshot-info-module-parameter-db-instance-identifier"><span class="std std-ref"><span class="pre">db_instance_identifier</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-snapshot-info-module-parameter-db-cluster-snapshot-identifier"><span class="std std-ref"><span class="pre">db_cluster_snapshot_identifier</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -232,7 +232,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <a class="ansibleOptionLink" href="#parameter-db_cluster_snapshot_identifier" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Name of an RDS cluster snapshot.</p>
-<p>Mutually exclusive with <em>db_instance_identifier</em>, <em>db_snapshot_identifier</em>, <em>db_cluster_identifier</em></p>
+<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-snapshot-info-module-parameter-db-instance-identifier"><span class="std std-ref"><span class="pre">db_instance_identifier</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-snapshot-info-module-parameter-db-snapshot-identifier"><span class="std std-ref"><span class="pre">db_snapshot_identifier</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-snapshot-info-module-parameter-db-cluster-identifier"><span class="std std-ref"><span class="pre">db_cluster_identifier</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -240,7 +240,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <a class="ansibleOptionLink" href="#parameter-db_instance_identifier" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>RDS instance name for which to find snapshots.</p>
-<p>Mutually exclusive with <em>db_snapshot_identifier</em>, <em>db_cluster_identifier</em>, <em>db_cluster_snapshot_identifier</em></p>
+<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-snapshot-info-module-parameter-db-snapshot-identifier"><span class="std std-ref"><span class="pre">db_snapshot_identifier</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-snapshot-info-module-parameter-db-cluster-identifier"><span class="std std-ref"><span class="pre">db_cluster_identifier</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-snapshot-info-module-parameter-db-cluster-snapshot-identifier"><span class="std std-ref"><span class="pre">db_cluster_snapshot_identifier</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -250,7 +250,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Name of an RDS (unclustered) snapshot.</p>
-<p>Mutually exclusive with <em>db_instance_identifier</em>, <em>db_cluster_identifier</em>, <em>db_cluster_snapshot_identifier</em></p>
+<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-snapshot-info-module-parameter-db-instance-identifier"><span class="std std-ref"><span class="pre">db_instance_identifier</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-snapshot-info-module-parameter-db-cluster-identifier"><span class="std std-ref"><span class="pre">db_cluster_identifier</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-snapshot-info-module-parameter-db-cluster-snapshot-identifier"><span class="std std-ref"><span class="pre">db_cluster_snapshot_identifier</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -410,7 +410,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <div class="ansibleOptionAnchor" id="return-cluster_snapshots"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-snapshot-info-module-return-cluster-snapshots"><strong>cluster_snapshots</strong></p>
 <a class="ansibleOptionLink" href="#return-cluster_snapshots" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>List of cluster snapshots</p>
+<td><div class="ansible-option-cell"><p>List of cluster snapshots.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 </div></td>
 </tr>
@@ -418,7 +418,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <div class="ansibleOptionAnchor" id="return-cluster_snapshots/allocated_storage"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-snapshot-info-module-return-cluster-snapshots-allocated-storage"><strong>allocated_storage</strong></p>
 <a class="ansibleOptionLink" href="#return-cluster_snapshots/allocated_storage" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>How many gigabytes of storage are allocated</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>How many gigabytes of storage are allocated.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">1</span></code></p>
 </div></td>
@@ -427,7 +427,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <div class="ansibleOptionAnchor" id="return-cluster_snapshots/availability_zones"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-snapshot-info-module-return-cluster-snapshots-availability-zones"><strong>availability_zones</strong></p>
 <a class="ansibleOptionLink" href="#return-cluster_snapshots/availability_zones" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The availability zones of the database from which the snapshot was taken</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The availability zones of the database from which the snapshot was taken.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[&quot;ca-central-1a&quot;,</span> <span class="pre">&quot;ca-central-1b&quot;]</span></code></p>
 </div></td>
@@ -436,7 +436,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <div class="ansibleOptionAnchor" id="return-cluster_snapshots/cluster_create_time"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-snapshot-info-module-return-cluster-snapshots-cluster-create-time"><strong>cluster_create_time</strong></p>
 <a class="ansibleOptionLink" href="#return-cluster_snapshots/cluster_create_time" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Date and time the cluster was created</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Date and time the cluster was created.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2018-05-17T00:13:40.223000+00:00&quot;</span></code></p>
 </div></td>
@@ -445,7 +445,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <div class="ansibleOptionAnchor" id="return-cluster_snapshots/db_cluster_identifier"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-snapshot-info-module-return-cluster-snapshots-db-cluster-identifier"><strong>db_cluster_identifier</strong></p>
 <a class="ansibleOptionLink" href="#return-cluster_snapshots/db_cluster_identifier" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Database cluster identifier</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Database cluster identifier.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;test-aurora-cluster&quot;</span></code></p>
 </div></td>
@@ -454,7 +454,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <div class="ansibleOptionAnchor" id="return-cluster_snapshots/db_cluster_snapshot_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-snapshot-info-module-return-cluster-snapshots-db-cluster-snapshot-arn"><strong>db_cluster_snapshot_arn</strong></p>
 <a class="ansibleOptionLink" href="#return-cluster_snapshots/db_cluster_snapshot_arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>ARN of the database snapshot</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>ARN of the database snapshot.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:rds:ca-central-1:123456789012:cluster-snapshot:test-aurora-snapshot&quot;</span></code></p>
 </div></td>
@@ -463,7 +463,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <div class="ansibleOptionAnchor" id="return-cluster_snapshots/db_cluster_snapshot_identifier"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-snapshot-info-module-return-cluster-snapshots-db-cluster-snapshot-identifier"><strong>db_cluster_snapshot_identifier</strong></p>
 <a class="ansibleOptionLink" href="#return-cluster_snapshots/db_cluster_snapshot_identifier" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Snapshot identifier</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Snapshot identifier.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;test-aurora-snapshot&quot;</span></code></p>
 </div></td>
@@ -472,7 +472,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <div class="ansibleOptionAnchor" id="return-cluster_snapshots/engine"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-snapshot-info-module-return-cluster-snapshots-engine"><strong>engine</strong></p>
 <a class="ansibleOptionLink" href="#return-cluster_snapshots/engine" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Database engine</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Database engine.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;aurora&quot;</span></code></p>
 </div></td>
@@ -481,7 +481,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <div class="ansibleOptionAnchor" id="return-cluster_snapshots/engine_version"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-snapshot-info-module-return-cluster-snapshots-engine-version"><strong>engine_version</strong></p>
 <a class="ansibleOptionLink" href="#return-cluster_snapshots/engine_version" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Database engine version</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Database engine version.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;5.6.10a&quot;</span></code></p>
 </div></td>
@@ -490,7 +490,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <div class="ansibleOptionAnchor" id="return-cluster_snapshots/iam_database_authentication_enabled"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-snapshot-info-module-return-cluster-snapshots-iam-database-authentication-enabled"><strong>iam_database_authentication_enabled</strong></p>
 <a class="ansibleOptionLink" href="#return-cluster_snapshots/iam_database_authentication_enabled" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Whether database authentication through IAM is enabled</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Whether database authentication through IAM is enabled.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">false</span></code></p>
 </div></td>
@@ -499,7 +499,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <div class="ansibleOptionAnchor" id="return-cluster_snapshots/kms_key_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-snapshot-info-module-return-cluster-snapshots-kms-key-id"><strong>kms_key_id</strong></p>
 <a class="ansibleOptionLink" href="#return-cluster_snapshots/kms_key_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>ID of the KMS Key encrypting the snapshot</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>ID of the KMS Key encrypting the snapshot.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:kms:ca-central-1:123456789012:key/abcd1234-abcd-1111-aaaa-0123456789ab&quot;</span></code></p>
 </div></td>
@@ -508,7 +508,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <div class="ansibleOptionAnchor" id="return-cluster_snapshots/license_model"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-snapshot-info-module-return-cluster-snapshots-license-model"><strong>license_model</strong></p>
 <a class="ansibleOptionLink" href="#return-cluster_snapshots/license_model" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>License model</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>License model.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;aurora&quot;</span></code></p>
 </div></td>
@@ -517,7 +517,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <div class="ansibleOptionAnchor" id="return-cluster_snapshots/master_username"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-snapshot-info-module-return-cluster-snapshots-master-username"><strong>master_username</strong></p>
 <a class="ansibleOptionLink" href="#return-cluster_snapshots/master_username" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Database master username</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Database master username.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;shertel&quot;</span></code></p>
 </div></td>
@@ -526,7 +526,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <div class="ansibleOptionAnchor" id="return-cluster_snapshots/percent_progress"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-snapshot-info-module-return-cluster-snapshots-percent-progress"><strong>percent_progress</strong></p>
 <a class="ansibleOptionLink" href="#return-cluster_snapshots/percent_progress" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Percent progress of snapshot</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Percent progress of snapshot.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">0</span></code></p>
 </div></td>
@@ -535,7 +535,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <div class="ansibleOptionAnchor" id="return-cluster_snapshots/port"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-snapshot-info-module-return-cluster-snapshots-port"><strong>port</strong></p>
 <a class="ansibleOptionLink" href="#return-cluster_snapshots/port" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Database port</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Database port.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">0</span></code></p>
 </div></td>
@@ -544,7 +544,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <div class="ansibleOptionAnchor" id="return-cluster_snapshots/snapshot_create_time"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-snapshot-info-module-return-cluster-snapshots-snapshot-create-time"><strong>snapshot_create_time</strong></p>
 <a class="ansibleOptionLink" href="#return-cluster_snapshots/snapshot_create_time" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Date and time when the snapshot was created</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Date and time when the snapshot was created.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2018-05-17T00:23:23.731000+00:00&quot;</span></code></p>
 </div></td>
@@ -553,7 +553,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <div class="ansibleOptionAnchor" id="return-cluster_snapshots/snapshot_type"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-snapshot-info-module-return-cluster-snapshots-snapshot-type"><strong>snapshot_type</strong></p>
 <a class="ansibleOptionLink" href="#return-cluster_snapshots/snapshot_type" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Type of snapshot</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Type of snapshot.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;manual&quot;</span></code></p>
 </div></td>
@@ -562,7 +562,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <div class="ansibleOptionAnchor" id="return-cluster_snapshots/status"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-snapshot-info-module-return-cluster-snapshots-status"><strong>status</strong></p>
 <a class="ansibleOptionLink" href="#return-cluster_snapshots/status" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Status of snapshot</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Status of snapshot.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;creating&quot;</span></code></p>
 </div></td>
@@ -571,7 +571,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <div class="ansibleOptionAnchor" id="return-cluster_snapshots/storage_encrypted"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-snapshot-info-module-return-cluster-snapshots-storage-encrypted"><strong>storage_encrypted</strong></p>
 <a class="ansibleOptionLink" href="#return-cluster_snapshots/storage_encrypted" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Whether the snapshot is encrypted</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Whether the snapshot is encrypted.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">true</span></code></p>
 </div></td>
@@ -581,14 +581,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <a class="ansibleOptionLink" href="#return-cluster_snapshots/tags" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Tags of the snapshot</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when snapshot is not shared</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when snapshot is not shared.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-cluster_snapshots/vpc_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-snapshot-info-module-return-cluster-snapshots-vpc-id"><strong>vpc_id</strong></p>
 <a class="ansibleOptionLink" href="#return-cluster_snapshots/vpc_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>VPC of the database</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>VPC of the database.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;vpc-abcd1234&quot;</span></code></p>
 </div></td>
@@ -597,7 +597,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <div class="ansibleOptionAnchor" id="return-snapshots"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-snapshot-info-module-return-snapshots"><strong>snapshots</strong></p>
 <a class="ansibleOptionLink" href="#return-snapshots" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>List of non-clustered snapshots</p>
+<td><div class="ansible-option-cell"><p>List of non-clustered snapshots.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> When cluster parameters are not passed</p>
 </div></td>
 </tr>
@@ -605,7 +605,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <div class="ansibleOptionAnchor" id="return-snapshots/allocated_storage"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-snapshot-info-module-return-snapshots-allocated-storage"><strong>allocated_storage</strong></p>
 <a class="ansibleOptionLink" href="#return-snapshots/allocated_storage" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>How many gigabytes of storage are allocated</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>How many gigabytes of storage are allocated.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">10</span></code></p>
 </div></td>
@@ -614,7 +614,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <div class="ansibleOptionAnchor" id="return-snapshots/availability_zone"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-snapshot-info-module-return-snapshots-availability-zone"><strong>availability_zone</strong></p>
 <a class="ansibleOptionLink" href="#return-snapshots/availability_zone" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The availability zone of the database from which the snapshot was taken</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The availability zone of the database from which the snapshot was taken.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;us-west-2b&quot;</span></code></p>
 </div></td>
@@ -623,7 +623,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <div class="ansibleOptionAnchor" id="return-snapshots/db_instance_identifier"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-snapshot-info-module-return-snapshots-db-instance-identifier"><strong>db_instance_identifier</strong></p>
 <a class="ansibleOptionLink" href="#return-snapshots/db_instance_identifier" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Database instance identifier</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Database instance identifier.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;hello-world-rds&quot;</span></code></p>
 </div></td>
@@ -632,7 +632,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <div class="ansibleOptionAnchor" id="return-snapshots/db_snapshot_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-snapshot-info-module-return-snapshots-db-snapshot-arn"><strong>db_snapshot_arn</strong></p>
 <a class="ansibleOptionLink" href="#return-snapshots/db_snapshot_arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Snapshot ARN</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Snapshot ARN.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:rds:us-west-2:123456789012:snapshot:rds:hello-world-rds-us1-2018-05-16-04-03&quot;</span></code></p>
 </div></td>
@@ -641,7 +641,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <div class="ansibleOptionAnchor" id="return-snapshots/db_snapshot_identifier"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-snapshot-info-module-return-snapshots-db-snapshot-identifier"><strong>db_snapshot_identifier</strong></p>
 <a class="ansibleOptionLink" href="#return-snapshots/db_snapshot_identifier" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Snapshot name</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Snapshot name.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;rds:hello-world-rds-us1-2018-05-16-04-03&quot;</span></code></p>
 </div></td>
@@ -650,7 +650,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <div class="ansibleOptionAnchor" id="return-snapshots/encrypted"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-snapshot-info-module-return-snapshots-encrypted"><strong>encrypted</strong></p>
 <a class="ansibleOptionLink" href="#return-snapshots/encrypted" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Whether the snapshot was encrypted</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Whether the snapshot was encrypted.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">true</span></code></p>
 </div></td>
@@ -659,7 +659,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <div class="ansibleOptionAnchor" id="return-snapshots/engine"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-snapshot-info-module-return-snapshots-engine"><strong>engine</strong></p>
 <a class="ansibleOptionLink" href="#return-snapshots/engine" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Database engine</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Database engine.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;postgres&quot;</span></code></p>
 </div></td>
@@ -668,7 +668,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <div class="ansibleOptionAnchor" id="return-snapshots/engine_version"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-snapshot-info-module-return-snapshots-engine-version"><strong>engine_version</strong></p>
 <a class="ansibleOptionLink" href="#return-snapshots/engine_version" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Database engine version</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Database engine version.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;9.5.10&quot;</span></code></p>
 </div></td>
@@ -677,7 +677,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <div class="ansibleOptionAnchor" id="return-snapshots/iam_database_authentication_enabled"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-snapshot-info-module-return-snapshots-iam-database-authentication-enabled"><strong>iam_database_authentication_enabled</strong></p>
 <a class="ansibleOptionLink" href="#return-snapshots/iam_database_authentication_enabled" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Whether database authentication through IAM is enabled</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Whether database authentication through IAM is enabled.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">false</span></code></p>
 </div></td>
@@ -686,7 +686,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <div class="ansibleOptionAnchor" id="return-snapshots/instance_create_time"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-snapshot-info-module-return-snapshots-instance-create-time"><strong>instance_create_time</strong></p>
 <a class="ansibleOptionLink" href="#return-snapshots/instance_create_time" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Time the Instance was created</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Time the Instance was created.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2017-10-10T04:00:07.434000+00:00&quot;</span></code></p>
 </div></td>
@@ -695,7 +695,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <div class="ansibleOptionAnchor" id="return-snapshots/kms_key_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-snapshot-info-module-return-snapshots-kms-key-id"><strong>kms_key_id</strong></p>
 <a class="ansibleOptionLink" href="#return-snapshots/kms_key_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>ID of the KMS Key encrypting the snapshot</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>ID of the KMS Key encrypting the snapshot.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:kms:us-west-2:123456789012:key/abcd1234-1234-aaaa-0000-1234567890ab&quot;</span></code></p>
 </div></td>
@@ -704,7 +704,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <div class="ansibleOptionAnchor" id="return-snapshots/license_model"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-snapshot-info-module-return-snapshots-license-model"><strong>license_model</strong></p>
 <a class="ansibleOptionLink" href="#return-snapshots/license_model" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>License model</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>License model.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;postgresql-license&quot;</span></code></p>
 </div></td>
@@ -713,7 +713,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <div class="ansibleOptionAnchor" id="return-snapshots/master_username"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-snapshot-info-module-return-snapshots-master-username"><strong>master_username</strong></p>
 <a class="ansibleOptionLink" href="#return-snapshots/master_username" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Database master username</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Database master username.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;dbadmin&quot;</span></code></p>
 </div></td>
@@ -722,7 +722,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <div class="ansibleOptionAnchor" id="return-snapshots/option_group_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-snapshot-info-module-return-snapshots-option-group-name"><strong>option_group_name</strong></p>
 <a class="ansibleOptionLink" href="#return-snapshots/option_group_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Database option group name</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Database option group name.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;default:postgres-9-5&quot;</span></code></p>
 </div></td>
@@ -740,7 +740,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <div class="ansibleOptionAnchor" id="return-snapshots/snapshot_create_time"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-snapshot-info-module-return-snapshots-snapshot-create-time"><strong>snapshot_create_time</strong></p>
 <a class="ansibleOptionLink" href="#return-snapshots/snapshot_create_time" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Time snapshot was created</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Time snapshot was created.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2018-05-16T04:03:33.871000+00:00&quot;</span></code></p>
 </div></td>
@@ -749,7 +749,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <div class="ansibleOptionAnchor" id="return-snapshots/snapshot_type"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-snapshot-info-module-return-snapshots-snapshot-type"><strong>snapshot_type</strong></p>
 <a class="ansibleOptionLink" href="#return-snapshots/snapshot_type" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Type of snapshot</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Type of snapshot.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;automated&quot;</span></code></p>
 </div></td>
@@ -758,7 +758,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <div class="ansibleOptionAnchor" id="return-snapshots/status"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-snapshot-info-module-return-snapshots-status"><strong>status</strong></p>
 <a class="ansibleOptionLink" href="#return-snapshots/status" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Status of snapshot</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Status of snapshot.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;available&quot;</span></code></p>
 </div></td>
@@ -767,7 +767,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <div class="ansibleOptionAnchor" id="return-snapshots/storage_type"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-snapshot-info-module-return-snapshots-storage-type"><strong>storage_type</strong></p>
 <a class="ansibleOptionLink" href="#return-snapshots/storage_type" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Storage type of underlying DB</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Storage type of underlying DB.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;gp2&quot;</span></code></p>
 </div></td>
@@ -776,7 +776,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <div class="ansibleOptionAnchor" id="return-snapshots/tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-snapshot-info-module-return-snapshots-tags"><strong>tags</strong></p>
 <a class="ansibleOptionLink" href="#return-snapshots/tags" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Snapshot tags</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Snapshot tags.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when snapshot is not shared</p>
 </div></td>
 </tr>
@@ -784,7 +784,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-snap
 <div class="ansibleOptionAnchor" id="return-snapshots/vpc_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-snapshot-info-module-return-snapshots-vpc-id"><strong>vpc_id</strong></p>
 <a class="ansibleOptionLink" href="#return-snapshots/vpc_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>ID of VPC containing the DB</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>ID of VPC containing the DB.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;vpc-abcd1234&quot;</span></code></p>
 </div></td>
