@@ -1,0 +1,34 @@
+name: Calculate pull request size
+description: Evaluate pull request size.
+author: Aubin Bikouo (@abikouo)
+
+inputs:
+  path:
+    description: The path to the collection.
+    required: true
+  github_token:
+    description: The Github token used to comment/label pull requests.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: setup python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+
+    - name: Install python required libraries
+      run: pip install -U requests
+      shell: bash
+
+    - name: Evaluate pull request size
+      run: >-
+        python3 ${{ github.action_path }}/check_pr.py
+        --path ${{ inputs.path }}
+        --repository ${{ github.repository }}
+        --pr-number ${{ github.event.pull_request.number }}
+        --base-ref ${{ github.event.pull_request.base.ref }}
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
