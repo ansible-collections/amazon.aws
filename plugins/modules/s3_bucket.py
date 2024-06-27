@@ -12,7 +12,7 @@ short_description: Manage S3 buckets in AWS, DigitalOcean, Ceph, Walrus, FakeS3 
 description:
   - Manage S3 buckets.
   - Compatible with AWS, DigitalOcean, Ceph, Walrus, FakeS3 and StorageGRID.
-  - When using non-AWS services, I(endpoint_url) should be specified.
+  - When using non-AWS services, O(endpoint_url) should be specified.
 author:
   - Rob White (@wimnat)
   - Aubin Bikouo (@abikouo)
@@ -30,14 +30,14 @@ options:
     type: str
   policy:
     description:
-      - The JSON policy as a string. Set to the string C("null") to force the absence of a policy.
+      - The JSON policy as a string. Set to the string V("null") to force the absence of a policy.
     type: json
   ceph:
     description:
       - Enable API compatibility with Ceph RGW.
       - It takes into account the S3 API subset working with Ceph in order to provide the same module
         behaviour where possible.
-      - Requires I(endpoint_url) if I(ceph=true).
+      - Requires O(endpoint_url) if O(ceph=true).
     aliases: ['rgw']
     type: bool
     default: false
@@ -68,78 +68,78 @@ options:
     description:
       - KMS master key ID to use for the default encryption.
       - If not specified then it will default to the AWS provided KMS key.
-      - This parameter is only supported if I(encryption) is C(aws:kms).
+      - This parameter is only supported if O(encryption) is V(aws:kms).
     type: str
   bucket_key_enabled:
     description:
       - Enable S3 Bucket Keys for SSE-KMS on new objects.
       - See the AWS documentation for more information
         U(https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucket-key.html).
-      - Bucket Key encryption is only supported if I(encryption=aws:kms).
+      - Bucket Key encryption is only supported if O(encryption=aws:kms).
     required: false
     type: bool
     version_added: 4.1.0
   public_access:
     description:
       - Configure public access block for S3 bucket.
-      - This option cannot be used together with I(delete_public_access).
+      - This option cannot be used together with O(delete_public_access).
       - |
         Note: At the end of April 2023 Amazon updated the default settings to block public access by
         default.  While the defaults for this module remain unchanged, it is necessary to explicitly
-        pass the I(public_access) parameter to enable public access ACLs.
+        pass the O(public_access) parameter to enable public access ACLs.
     suboptions:
       block_public_acls:
         description: Sets BlockPublicAcls value.
         type: bool
-        default: False
+        default: false
       block_public_policy:
         description: Sets BlockPublicPolicy value.
         type: bool
-        default: False
+        default: false
       ignore_public_acls:
         description: Sets IgnorePublicAcls value.
         type: bool
-        default: False
+        default: false
       restrict_public_buckets:
         description: Sets RestrictPublicAcls value.
         type: bool
-        default: False
+        default: false
     type: dict
     version_added: 1.3.0
   delete_public_access:
     description:
       - Delete public access block configuration from bucket.
-      - This option cannot be used together with a I(public_access) definition.
+      - This option cannot be used together with a O(public_access) definition.
     default: false
     type: bool
     version_added: 1.3.0
   object_ownership:
     description:
       - Allow bucket's ownership controls.
-      - C(BucketOwnerEnforced) - ACLs are disabled and no longer affect access permissions to your
+      - V(BucketOwnerEnforced) - ACLs are disabled and no longer affect access permissions to your
         bucket. Requests to set or update ACLs fail. However, requests to read ACLs are supported.
         Bucket owner has full ownership and control. Object writer no longer has full ownership and
         control.
-      - C(BucketOwnerPreferred) - Objects uploaded to the bucket change ownership to the bucket owner
+      - V(BucketOwnerPreferred) - Objects uploaded to the bucket change ownership to the bucket owner
         if the objects are uploaded with the bucket-owner-full-control canned ACL.
-      - C(ObjectWriter) - The uploading account will own the object
+      - V(ObjectWriter) - The uploading account will own the object
         if the object is uploaded with the bucket-owner-full-control canned ACL.
-      - This option cannot be used together with a I(delete_object_ownership) definition.
-      - C(BucketOwnerEnforced) has been added in version 3.2.0.
-      - "Note: At the end of April 2023 Amazon updated the default setting to C(BucketOwnerEnforced)."
+      - This option cannot be used together with a O(delete_object_ownership) definition.
+      - V(BucketOwnerEnforced) has been added in version 3.2.0.
+      - "Note: At the end of April 2023 Amazon updated the default setting to V(BucketOwnerEnforced)."
     choices: [ 'BucketOwnerEnforced', 'BucketOwnerPreferred', 'ObjectWriter' ]
     type: str
     version_added: 2.0.0
   object_lock_enabled:
     description:
       - Whether S3 Object Lock to be enabled.
-      - Defaults to C(False) when creating a new bucket.
+      - Defaults to V(false) when creating a new bucket.
     type: bool
     version_added: 5.3.0
   delete_object_ownership:
     description:
       - Delete bucket's ownership controls.
-      - This option cannot be used together with a I(object_ownership) definition.
+      - This option cannot be used together with a O(object_ownership) definition.
     default: false
     type: bool
     version_added: 2.0.0
@@ -158,11 +158,11 @@ options:
       - See https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html
     type: bool
     version_added: 3.1.0
-    default: True
+    default: true
   dualstack:
     description:
       - Enables Amazon S3 Dual-Stack Endpoints, allowing S3 communications using both IPv4 and IPv6.
-      - Mutually exclusive with I(endpoint_url).
+      - Mutually exclusive with O(endpoint_url).
     type: bool
     default: false
     version_added: 6.0.0
@@ -177,13 +177,13 @@ notes:
   - If C(requestPayment), C(policy), C(tagging) or C(versioning)
     operations/API aren't implemented by the endpoint, module doesn't fail
     if each parameter satisfies the following condition.
-    I(requester_pays) is C(False), I(policy), I(tags), and I(versioning) are C(None).
-  - In release 5.0.0 the I(s3_url) parameter was merged into the I(endpoint_url) parameter,
-    I(s3_url) remains as an alias for I(endpoint_url).
-  - For Walrus I(endpoint_url) should be set to the FQDN of the endpoint with neither scheme nor path.
-  - Support for the C(S3_URL) environment variable has been
-    deprecated and will be removed in a release after 2024-12-01, please use the I(endpoint_url) parameter
-    or the C(AWS_URL) environment variable.
+    O(requester_pays) is V(false), O(policy), O(tags), and O(versioning) are V(None).
+  - In release 5.0.0 the O(s3_url) parameter was merged into the O(endpoint_url) parameter,
+    O(s3_url) remains as an alias for O(endpoint_url).
+  - For Walrus O(endpoint_url) should be set to the FQDN of the endpoint with neither scheme nor path.
+  - Support for the E(S3_URL) environment variable has been
+    deprecated and will be removed in a release after 2024-12-01, please use the O(endpoint_url) parameter
+    or the E(AWS_URL) environment variable.
 """
 
 EXAMPLES = r"""

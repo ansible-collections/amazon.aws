@@ -12,7 +12,6 @@ short_description: List lambda layer or lambda layer versions
 description:
   - This module is used to list the versions of an Lambda layer or all available lambda layers.
   - The lambda layer versions that have been deleted aren't listed.
-
 author: "Aubin Bikouo (@abikouo)"
 options:
   name:
@@ -24,7 +23,7 @@ options:
   version_number:
     description:
     - The Lambda layer version number to retrieve.
-    - Requires I(name) to be provided.
+    - Requires O(name) to be provided.
     type: int
     aliases:
     - layer_version
@@ -32,17 +31,17 @@ options:
   compatible_runtime:
     description:
     - A runtime identifier.
-    - Specify this option without I(name) to list only latest layers versions of layers that indicate
+    - Specify this option without O(name) to list only latest layers versions of layers that indicate
       that they're compatible with that runtime.
-    - Specify this option with I(name) to list only layer versions that indicate that
+    - Specify this option with O(name) to list only layer versions that indicate that
       they're compatible with that runtime.
     type: str
   compatible_architecture:
     description:
     - A compatible instruction set architectures.
-    - Specify this option without I(name) to include only to list only latest layers versions of layers that
+    - Specify this option without O(name) to include only to list only latest layers versions of layers that
       are compatible with that instruction set architecture.
-    - Specify this option with I(name) to include only layer versions that are compatible with that architecture.
+    - Specify this option with O(name) to include only layer versions that are compatible with that architecture.
     type: str
 extends_documentation_fragment:
   - amazon.aws.common.modules
@@ -89,7 +88,7 @@ layers_versions:
   contains:
     layer_arn:
         description: The ARN of the layer.
-        returned: when C(name) is provided
+        returned: when O(name) is provided
         type: str
         sample: "arn:aws:lambda:eu-west-2:123456789012:layer:pylayer"
     layer_version_arn:
@@ -99,7 +98,7 @@ layers_versions:
         sample: "arn:aws:lambda:eu-west-2:123456789012:layer:pylayer:2"
     description:
         description: The description of the version.
-        returned: I(state=present)
+        returned: always
         type: str
     created_date:
         description: The date that the layer version was created, in ISO-8601 format (YYYY-MM-DDThh:mm:ss.sTZD).
@@ -127,7 +126,7 @@ layers_versions:
         type: list
     content:
         description: Details about the layer version.
-        returned: if I(version_number) was provided
+        returned: if O(version_number) was provided
         type: complex
         version_added: 6.0.0
         contains:
