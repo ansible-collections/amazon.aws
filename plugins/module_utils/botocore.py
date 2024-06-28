@@ -33,9 +33,21 @@ A set of helper functions designed to help with initializing boto3/botocore
 connections.
 """
 
+from __future__ import annotations
+
 import json
 import os
 import traceback
+import typing
+from typing import Any
+from typing import Callable
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Set
+from typing import Tuple
+from typing import Type
+from typing import Union
 
 BOTO3_IMP_ERR = None
 try:
@@ -47,6 +59,11 @@ except ImportError:
     BOTO3_IMP_ERR = traceback.format_exc()
     HAS_BOTO3 = False
 
+if typing.TYPE_CHECKING:
+    ClientType = botocore.client.BaseClient
+    ResourceType = boto3.resources.base.ServiceResource
+    BotoConn = Union[ClientType, ResourceType, Tuple[ClientType, ResourceType]]
+
 try:
     from packaging.version import Version
 
@@ -56,6 +73,7 @@ except ImportError:
 
 from ansible.module_utils._text import to_native
 from ansible.module_utils.ansible_release import __version__
+from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.basic import missing_required_lib
 from ansible.module_utils.six import binary_type
 from ansible.module_utils.six import text_type
@@ -79,7 +97,14 @@ def _get_user_agent_string():
     return result
 
 
-def boto3_conn(module, conn_type=None, resource=None, region=None, endpoint=None, **params):
+def boto3_conn(
+    module: AnsibleModule,
+    conn_type: str,
+    resource: Optional[str] = None,
+    region: Optional[str] = None,
+    endpoint: Optional[str] = None,
+    **params,
+) -> BotoConn:
     """
     Builds a boto3 resource/client connection cleanly wrapping the most common failures.
     Handles:
@@ -98,7 +123,10 @@ def boto3_conn(module, conn_type=None, resource=None, region=None, endpoint=None
         module.fail_json(msg=f"Couldn't connect to AWS: {to_native(e)}")
 
 
-def _merge_botocore_config(config_a, config_b):
+def _merge_botocore_config(
+    config_a: botocore.config.Config,
+    config_b: Union[botocore.config.Config, Dict],
+) -> botocore.config.Config:
     """
     Merges the extra configuration options from config_b into config_a.
     Supports both botocore.config.Config objects and dicts
@@ -110,7 +138,13 @@ def _merge_botocore_config(config_a, config_b):
     return config_a.merge(config_b)
 
 
-def _boto3_conn(conn_type=None, resource=None, region=None, endpoint=None, **params):
+def _boto3_conn(
+    conn_type: str,
+    resource: Optional[str] = None,
+    region: Optional[str] = None,
+    endpoint: Optional[str] = None,
+    **params,
+) -> BotoConn:
     """
     Builds a boto3 resource/client connection cleanly wrapping the most common failures.
     No exceptions are caught/handled.
@@ -145,8 +179,8 @@ def _boto3_conn(conn_type=None, resource=None, region=None, endpoint=None, **par
         return session.client(resource, config=config, region_name=region, endpoint_url=endpoint, **params)
     else:
         client = session.client(resource, config=config, region_name=region, endpoint_url=endpoint, **params)
-        resource = session.resource(resource, config=config, region_name=region, endpoint_url=endpoint, **params)
-        return client, resource
+        boto3_resource = session.resource(resource, config=config, region_name=region, endpoint_url=endpoint, **params)
+        return client, boto3_resource
 
 
 # Inventory plugins don't have access to the same 'module', they need to throw
@@ -154,7 +188,7 @@ def _boto3_conn(conn_type=None, resource=None, region=None, endpoint=None, **par
 boto3_inventory_conn = _boto3_conn
 
 
-def boto_exception(err):
+def boto_exception(err: Exception) -> str:
     """
     Extracts the error message from a boto exception.
 
@@ -171,7 +205,7 @@ def boto_exception(err):
     return error
 
 
-def _aws_region(params):
+def _aws_region(params: Dict) -> Optional[str]:
     region = params.get("region")
 
     if region:
@@ -190,7 +224,10 @@ def _aws_region(params):
         return None
 
 
-def get_aws_region(module, boto3=None):  # pylint: disable=redefined-outer-name
+def get_aws_region(
+    module: AnsibleModule,
+    boto3: Optional[bool] = None,
+) -> Optional[str]:  # pylint: disable=redefined-outer-name
     if boto3 is not None:
         module.deprecate(
             "get_aws_region(): the boto3 parameter will be removed in a release after 2025-05-01. "
@@ -207,7 +244,7 @@ def get_aws_region(module, boto3=None):  # pylint: disable=redefined-outer-name
             module.fail_json(msg=e.message)
 
 
-def _aws_connection_info(params):
+def _aws_connection_info(params: Dict) -> Tuple[Optional[str], Optional[str], Dict[str, Any]]:
     endpoint_url = params.get("endpoint_url")
     access_key = params.get("access_key")
     secret_key = params.get("secret_key")
@@ -261,7 +298,10 @@ def _aws_connection_info(params):
     return region, endpoint_url, boto_params
 
 
-def get_aws_connection_info(module, boto3=None):  # pylint: disable=redefined-outer-name
+def get_aws_connection_info(
+    module: AnsibleModule,
+    boto3: Optional[bool] = None,
+) -> Tuple[Optional[str], Optional[str], Dict]:  # pylint: disable=redefined-outer-name
     if boto3 is not None:
         module.deprecate(
             "get_aws_connection_info(): the boto3 parameter will be removed in a release after 2025-05-01. "
@@ -278,13 +318,22 @@ def get_aws_connection_info(module, boto3=None):  # pylint: disable=redefined-ou
             module.fail_json(msg=e.message)
 
 
-def _paginated_query(client, paginator_name, **params):
+def _paginated_query(
+    client: ClientType,
+    paginator_name: str,
+    **params,
+) -> Any:
     paginator = client.get_paginator(paginator_name)
     result = paginator.paginate(**params).build_full_result()
     return result
 
 
-def paginated_query_with_retries(client, paginator_name, retry_decorator=None, **params):
+def paginated_query_with_retries(
+    client: ClientType,
+    paginator_name: str,
+    retry_decorator=None,
+    **params,
+) -> Any:
     """
     Performs a boto3 paginated query.
     By default uses uses AWSRetry.jittered_backoff(retries=10) to retry queries
@@ -303,7 +352,7 @@ def paginated_query_with_retries(client, paginator_name, retry_decorator=None, *
     return result
 
 
-def gather_sdk_versions():
+def gather_sdk_versions() -> Dict:
     """Gather AWS SDK (boto3 and botocore) dependency versions
 
     Returns {'boto3_version': str, 'botocore_version': str}
@@ -318,7 +367,10 @@ def gather_sdk_versions():
     )
 
 
-def is_boto3_error_code(code, e=None):
+def is_boto3_error_code(
+    code: Union[List, Tuple, Set, str],
+    e: Optional[BaseException] = None,
+) -> Type[Exception]:
     """Check if the botocore exception is raised by a specific error code.
 
     Returns ClientError if the error code matches, a dummy exception if it does not have an error code or does not match
@@ -344,7 +396,10 @@ def is_boto3_error_code(code, e=None):
     return type("NeverEverRaisedException", (Exception,), {})
 
 
-def is_boto3_error_message(msg, e=None):
+def is_boto3_error_message(
+    msg: str,
+    e: Optional[BaseException] = None,
+) -> Type[Exception]:
     """Check if the botocore exception contains a specific error message.
 
     Returns ClientError if the error code matches, a dummy exception if it does not have an error code or does not match
@@ -368,7 +423,11 @@ def is_boto3_error_message(msg, e=None):
     return type("NeverEverRaisedException", (Exception,), {})
 
 
-def get_boto3_client_method_parameters(client, method_name, required=False):
+def get_boto3_client_method_parameters(
+    client: ClientType,
+    method_name: str,
+    required=False,
+) -> List:
     op = client.meta.method_to_api_mapping.get(method_name)
     input_shape = client._service_model.operation_model(op).input_shape
     if not input_shape:
@@ -381,14 +440,16 @@ def get_boto3_client_method_parameters(client, method_name, required=False):
 
 
 # Used by normalize_boto3_result
-def _boto3_handler(obj):
+def _boto3_handler(obj: Any) -> Any:
     if hasattr(obj, "isoformat"):
         return obj.isoformat()
     else:
         return obj
 
 
-def normalize_boto3_result(result):
+def normalize_boto3_result(
+    result: Union[List, Dict, Set],
+) -> Union[List, Dict, Set]:
     """
     Because Boto3 returns datetime objects where it knows things are supposed to
     be dates we need to mass-convert them over to strings which Ansible/Jinja
@@ -399,7 +460,7 @@ def normalize_boto3_result(result):
     return json.loads(json.dumps(result, default=_boto3_handler))
 
 
-def enable_placebo(session):
+def enable_placebo(session: boto3.session.Session) -> None:
     """
     Helper to record or replay offline modules for testing purpose.
     """
@@ -431,7 +492,11 @@ def enable_placebo(session):
         pill.playback()
 
 
-def check_sdk_version_supported(botocore_version=None, boto3_version=None, warn=None):
+def check_sdk_version_supported(
+    botocore_version: Optional[str] = None,
+    boto3_version: Optional[str] = None,
+    warn: Optional[Callable] = None,
+) -> bool:
     """Checks to see if the available boto3 / botocore versions are supported
     args:
         botocore_version: (str) overrides the minimum version of botocore supported by the collection
@@ -469,13 +534,13 @@ def check_sdk_version_supported(botocore_version=None, boto3_version=None, warn=
     return supported
 
 
-def _version_at_least(a, b):
+def _version_at_least(a: str, b: str) -> bool:
     if not HAS_PACKAGING:
         return True
     return Version(a) >= Version(b)
 
 
-def boto3_at_least(desired):
+def boto3_at_least(desired: str) -> bool:
     """Check if the available boto3 version is greater than or equal to a desired version.
 
     Usage:
@@ -487,7 +552,7 @@ def boto3_at_least(desired):
     return _version_at_least(existing["boto3_version"], desired)
 
 
-def botocore_at_least(desired):
+def botocore_at_least(desired: str) -> bool:
     """Check if the available botocore version is greater than or equal to a desired version.
 
     Usage:
