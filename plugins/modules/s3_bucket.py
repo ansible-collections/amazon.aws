@@ -322,6 +322,7 @@ EXAMPLES = r"""
     name: mys3bucket
     state: present
     accelerate_enabled: true
+
 # Default Object Lock retention
 - amazon.aws.s3_bucket:
     name: mys3bucket
@@ -974,6 +975,7 @@ def handle_bucket_accelerate(s3_client, module: AnsibleAWSModule, name: str) -> 
             module.fail_json_aws(e, msg="Failed to update bucket transfer acceleration")
     return accelerate_enabled_changed, accelerate_enabled_result
 
+
 def handle_bucket_object_lock_retention(s3_client, module: AnsibleAWSModule, name: str) -> tuple[bool, dict]:
     """
     Manage object lock retention configuration for an S3 bucket.
@@ -1103,6 +1105,7 @@ def create_or_update_bucket(s3_client, module: AnsibleAWSModule):
     # -- Transfer Acceleration
     bucket_accelerate_changed, bucket_accelerate_result = handle_bucket_accelerate(s3_client, module, name)
     result["accelerate_enabled"] = bucket_accelerate_result
+
     # -- Object Lock Default Retention
     bucket_object_lock_retention_changed, bucket_object_lock_retention_result = handle_bucket_object_lock_retention(
         s3_client, module, name
