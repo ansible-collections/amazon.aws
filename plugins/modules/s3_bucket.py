@@ -891,7 +891,7 @@ def handle_bucket_object_lock(s3_client, module: AnsibleAWSModule, name: str) ->
     return object_lock_result
 
 
-def handle_bucket_accelerate(s3_client, module: AnsibleAWSModule, name: str) -> tuple[bool, dict]:
+def handle_bucket_accelerate(s3_client, module: AnsibleAWSModule, name: str) -> tuple[bool, bool]:
     """
     Manage transfer accelerate for an S3 bucket.
     Parameters:
@@ -900,7 +900,7 @@ def handle_bucket_accelerate(s3_client, module: AnsibleAWSModule, name: str) -> 
         name (str): The name of the bucket to handle transfer accelerate for.
     Returns:
         A tuple containing a boolean indicating whether transfer accelerate setting was changed
-        and a dictionary containing the updated transfer accelerate setting.
+        and a boolean indicating the transfer accelerate status.
     """
     accelerate_enabled = module.params.get("accelerate_enabled")
     accelerate_enabled_result = False
@@ -910,10 +910,10 @@ def handle_bucket_accelerate(s3_client, module: AnsibleAWSModule, name: str) -> 
         accelerate_enabled_result = accelerate_status
     except is_boto3_error_code(["NotImplemented", "XNotImplemented"]) as e:
         if accelerate_enabled is not None:
-            module.fail_json(msg="Fetching bucket transfer acceleration state is not supported")
+            module.fail_json_aws(e, msg="Fetching bucket transfer acceleration state is not supported")
     except is_boto3_error_code("AccessDenied") as e:  # pylint: disable=duplicate-except
         if accelerate_enabled is not None:
-            module.fail_json(msg="Permission denied fetching transfer acceleration for bucket")
+            module.fail_json_aws(e, msg="Permission denied fetching transfer acceleration for bucket")
     except (
         botocore.exceptions.BotoCoreError,
         botocore.exceptions.ClientError,
@@ -1110,7 +1110,7 @@ def delete_bucket_accelerate_configuration(s3_client, bucket_name):
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
 def get_bucket_accelerate_status(s3_client, bucket_name) -> bool:
     """
-    Disable transfer accelerate status of the S3 bucket.
+    Get transfer accelerate status of the S3 bucket.
     Parameters:
         s3_client (boto3.client): The Boto3 S3 client object.
         bucket_name (str): The name of the S3 bucket.
