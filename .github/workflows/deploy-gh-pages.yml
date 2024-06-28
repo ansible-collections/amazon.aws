@@ -1,0 +1,43 @@
+---
+# Copyright (c) Ansible Project
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# Inspired by https://www.josephguadagno.net/2024/04/03/migrate-to-github-actions-from-pages-legacy-worker
+
+name: Deploy gh-pages branch to GitHub Pages
+'on':
+  push:
+    branches:
+      - gh-pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:  # Do not run workflow in parallel!
+  cancel-in-progress: false
+  group: pages
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: https://ansible-collections.github.io/amazon.aws/
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload gh-pages branch as artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: Deploy gh-pages branch to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
