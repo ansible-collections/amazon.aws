@@ -83,31 +83,19 @@ def boto3_conn(module, conn_type=None, resource=None, region=None, endpoint=None
     """
     Builds a boto3 resource/client connection cleanly wrapping the most common failures.
     Handles:
-        ValueError,
-        botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError,
-        botocore.exceptions.NoCredentialsError, botocore.exceptions.ConfigParseError,
-        botocore.exceptions.NoRegionError
+        ValueError, botocore.exceptions.BotoCoreError
     """
     try:
         return _boto3_conn(conn_type=conn_type, resource=resource, region=region, endpoint=endpoint, **params)
-    except ValueError as e:
-        module.fail_json(
-            msg=f"Couldn't connect to AWS: {to_native(e)}",
-        )
-    except (
-        botocore.exceptions.ProfileNotFound,
-        botocore.exceptions.PartialCredentialsError,
-        botocore.exceptions.NoCredentialsError,
-        botocore.exceptions.ConfigParseError,
-    ) as e:
-        module.fail_json(
-            msg=to_native(e),
-        )
     except botocore.exceptions.NoRegionError:
         module.fail_json(
             msg=f"The {module._name} module requires a region and none was found in configuration, "
             "environment variables or module parameters",
         )
+    except (ValueError, botocore.exceptions.BotoCoreError) as e:
+        if hasattr(module, "fail_json_aws"):
+            module.fail_json_aws(e, msg="Couldn't connect to AWS")
+        module.fail_json(msg=f"Couldn't connect to AWS: {to_native(e)}")
 
 
 def _merge_botocore_config(config_a, config_b):
