@@ -96,6 +96,13 @@ EXAMPLES = r"""
     key_type: ed25519
     file_name: /tmp/aws_ssh_rsa
 
+- name: Create a new EC2 key pair with tags
+  amazon.aws.ec2_key:
+    name: my_keypair
+    tags:
+      environment: production
+      department: sales
+
 # try creating a key pair with the name of an already existing keypair
 # but don't overwrite it even if the key is different (force=false)
 - name: try creating a key pair with name of an already existing keypair
