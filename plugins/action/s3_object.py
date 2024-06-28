@@ -48,7 +48,7 @@ class ActionModule(ActionBase):
                         # module handles error message for nonexistent files
                         new_module_args["src"] = source
                     except AnsibleError as e:
-                        raise AnsibleActionFail(to_text(e))
+                        raise AnsibleActionFail(to_text(e)) from e
 
             wrap_async = self._task.async_val and not self._connection.has_native_async
             # execute the s3_object module with the updated args
@@ -58,7 +58,7 @@ class ActionModule(ActionBase):
 
             if not wrap_async:
                 # remove a temporary path we created
-                self._remove_tmp_path(self._connection._shell.tmpdir)
+                self._remove_tmp_path(None)
 
         except AnsibleAction as e:
             result.update(e.result)
