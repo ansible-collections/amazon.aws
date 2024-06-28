@@ -1,0 +1,9 @@
+breaking_changes:
+- module_utils.botocore - ``boto3_conn``'s  ``conn_type`` parameter is now mandatory ().
+minor_changes:
+- module_utils.botocore - the ``boto3_conn`` method now catches ``BotoCoreError`` rather than an incomplete list of subclasses ().
+- plugin_utils.botocore - the ``boto3_conn`` method now catches ``BotoCoreError`` rather than an incomplete list of subclasses ().
+trivial_changes:
+- module_utils.botocore - added Type hints ().
+- plugin_utils.botocore - added Type hints ().
+- plugin_utils.base - added Type hints ().
