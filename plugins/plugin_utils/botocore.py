@@ -20,33 +20,20 @@ def boto3_conn(plugin, conn_type=None, resource=None, region=None, endpoint=None
     """
     Builds a boto3 resource/client connection cleanly wrapping the most common failures.
     Handles:
-        ValueError,
-        botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError,
-        botocore.exceptions.NoCredentialsError, botocore.exceptions.ConfigParseError,
-        botocore.exceptions.NoRegionError
+        ValueError, botocore.exceptions.BotoCoreError
     """
 
     try:
         return _boto3_conn(conn_type=conn_type, resource=resource, region=region, endpoint=endpoint, **params)
     except ValueError as e:
-        plugin.fail_aws(f"Couldn't connect to AWS: {to_native(e)}")
-    except (
-        botocore.exceptions.ProfileNotFound,
-        botocore.exceptions.PartialCredentialsError,
-        botocore.exceptions.NoCredentialsError,
-        botocore.exceptions.ConfigParseError,
-    ) as e:
-        plugin.fail_aws(to_native(e))
+        plugin.fail_aws("Couldn't connect to AWS", exception=e)
     except botocore.exceptions.NoRegionError:
-        # ansible_name is added in 2.14
-        if hasattr(plugin, "ansible_name"):
-            plugin.fail_aws(
-                f"The {plugin.ansible_name} plugin requires a region and none was found in configuration, "
-                "environment variables or module parameters"
-            )
         plugin.fail_aws(
-            "A region is required and none was found in configuration, environment variables or module parameters"
+            f"The {plugin.ansible_name} plugin requires a region and none was found in configuration, "
+            "environment variables or module parameters"
         )
+    except botocore.exceptions.BotoCoreError as e:
+        plugin.fail_aws("Couldn't connect to AWS", exception=e)
 
 
 def get_aws_connection_info(plugin):
