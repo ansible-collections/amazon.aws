@@ -1,0 +1,3 @@
+---
+trivial:
+  - Add dependencies to galaxy.yml(https://github.com/ansible-collections/amazon.aws/pull/2145).
