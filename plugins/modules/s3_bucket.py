@@ -176,23 +176,23 @@ options:
     description:
       - Default Object Lock configuration that will be applied by default to
         every new object placed in the specified bucket.
-      - I(object_lock_enabled) must be included and set to C(True)
+      - O(object_lock_enabled) must be included and set to V(True).
       - Object lock retention policy can't be removed.
     suboptions:
       mode:
-        description: Type of retention modes
-        choices: [ 'GOVERNANCE', "['COMPLIANCE']"]
+        description: Type of retention modes.
+        choices: [ "GOVERNANCE", "COMPLIANCE"]
         required: true
         type: str
       days:
         description:
             - The number of days that you want to specify for the default retention period.
-            - Mutually exclusive with I(years).
+            - Mutually exclusive with O(object_lock_default_retention.years).
         type: int
       years:
         description:
             - The number of years that you want to specify for the default retention period.
-            - Mutually exclusive with I(days).
+            - Mutually exclusive with O(object_lock_default_retention.days).
         type: int
     type: dict
     version_added: 8.1.0
@@ -353,7 +353,7 @@ object_ownership:
 object_lock_default_retention:
     description: S3 bucket's object lock retention policy.
     type: dict
-    returned: I(state=present)
+    returned: when O(state=present)
     sample: {
         "Days": 1,
         "Mode": "GOVERNANCE",
@@ -1104,7 +1104,9 @@ def create_or_update_bucket(s3_client, module: AnsibleAWSModule):
     bucket_accelerate_changed, bucket_accelerate_result = handle_bucket_accelerate(s3_client, module, name)
     result["accelerate_enabled"] = bucket_accelerate_result
     # -- Object Lock Default Retention
-    bucket_object_lock_retention_changed, bucket_object_lock_retention_result = handle_bucket_object_lock_retention(s3_client, module, name)
+    bucket_object_lock_retention_changed, bucket_object_lock_retention_result = handle_bucket_object_lock_retention(
+        s3_client, module, name
+    )
     result["object_lock_default_retention"] = bucket_object_lock_retention_result
 
     # Module exit
@@ -1173,18 +1175,34 @@ def create_bucket(s3_client, bucket_name: str, location: str, object_lock_enable
         # method. However, the AWS Api sometimes fails to report bucket presence, so we catch this exception
         return False
 
+
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
 def get_object_lock_configuration(s3_client, bucket_name):
+    """
+    Get the object lock default retention configuration for an S3 bucket.
+    Parameters:
+        s3_client (boto3.client): The Boto3 S3 client object.
+        bucket_name (str): The name of the S3 bucket.
+    Returns:
+        Object lock default retention configuration dictionary.
+    """
     result = s3_client.get_object_lock_configuration(Bucket=bucket_name)
-    return result.get("ObjectLockConfiguration",{}).get("Rule", {}).get("DefaultRetention", {})
+    return result.get("ObjectLockConfiguration", {}).get("Rule", {}).get("DefaultRetention", {})
 
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
 def put_object_lock_configuration(s3_client, bucket_name, object_lock_default_retention):
-    conf = {
-        "ObjectLockEnabled": "Enabled",
-        "Rule": { "DefaultRetention": object_lock_default_retention }
-    }
+    """
+    Set tags for an S3 bucket.
+    Parameters:
+        s3_client (boto3.client): The Boto3 S3 client object.
+        bucket_name (str): The name of the S3 bucket.
+        object_lock_default_retention (dict): A dictionary containing the object
+        lock default retention configuration to be set on the bucket.
+    Returns:
+        None
+    """
+    conf = {"ObjectLockEnabled": "Enabled", "Rule": {"DefaultRetention": object_lock_default_retention}}
     s3_client.put_object_lock_configuration(Bucket=bucket_name, ObjectLockConfiguration=conf)
 
 
@@ -1993,13 +2011,13 @@ def main():
         object_lock_default_retention=dict(
             type="dict",
             options=dict(
-                mode=dict(type="str", choices=["GOVERNANCE", ["COMPLIANCE"]], required=True),
+                mode=dict(type="str", choices=["GOVERNANCE", "COMPLIANCE"], required=True),
                 years=dict(type="int"),
                 days=dict(type="int"),
             ),
             mutually_exclusive=[("days", "years")],
-            required_one_of=[('days', 'years')],
-        )
+            required_one_of=[("days", "years")],
+        ),
     )
 
     required_by = dict(

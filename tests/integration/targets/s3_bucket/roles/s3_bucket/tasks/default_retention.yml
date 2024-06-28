@@ -66,7 +66,7 @@
           - output.changed
           - output.object_lock_enabled
           - output.object_lock_default_retention
-    
+
     - name: Touch bucket with object lock enabled (idempotency)
       amazon.aws.s3_bucket:
         name: "{{ local_bucket_name }}-2"

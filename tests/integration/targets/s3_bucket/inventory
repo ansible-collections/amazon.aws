@@ -1,5 +1,4 @@
 [tests]
-default_retention
 ownership_controls
 missing
 simple
@@ -13,6 +12,7 @@ public_access
 acl
 object_lock
 accelerate
+default_retention
 
 [all:vars]
 ansible_connection=local
