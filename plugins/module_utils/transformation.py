@@ -31,6 +31,8 @@
 from copy import deepcopy
 from typing import Any
 from typing import Callable
+from typing import Dict
+from typing import List
 from typing import Mapping
 from typing import Optional
 from typing import Sequence
@@ -229,3 +231,23 @@ def boto3_resource_list_to_ansible_dict(
         boto3_resource_to_ansible_dict(resource, transform_tags, force_tags, normalize, ignore_list, nested_transforms)
         for resource in resource_list
     ]
+
+
+def sanitize_filters_to_boto3_filter_list(
+    filters: Dict[str, Any], ignore_keys: Optional[List[str]] = None
+) -> Dict[str, Any]:
+    """
+    Replace filter key underscores with dashes, for compatibility and tranform ansible dict
+    into boto3 filter list.
+
+    :param filters: Ansible module params filters
+    :return: Sanitized filters
+    """
+    sanitized_filters = deepcopy(filters)
+    for k, v in filters.items():
+        if ignore_keys and any((k.startswith(x) for x in ignore_keys)):
+            continue
+        if "_" in k:
+            sanitized_filters[k.replace("_", "-")] = v
+            del sanitized_filters[k]
+    return ansible_dict_to_boto3_filter_list(sanitized_filters)
