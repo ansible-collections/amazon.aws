@@ -74,23 +74,21 @@ def test_get_image_by_id_found(m_describe_images, m_describe_image_attribute):
     )
 
 
-def test_get_image_by_too_many():
+@patch(module_name + ".describe_images")
+def test_get_image_by_too_many(m_describe_images):
     connection = MagicMock()
 
-    connection.describe_images.return_value = {
-        "Images": [
-            {"ImageId": "ami-0c7a795306730b288"},
-            {"ImageId": "ami-0c7a795306730b288"},
-        ]
-    }
+    m_describe_images.return_value = [
+        {"ImageId": "ami-0c7a795306730b288"},
+        {"ImageId": "ami-0c7a795306730b289"},
+    ]
 
     with pytest.raises(ec2_ami.Ec2AmiFailure):
         ec2_ami.get_image_by_id(connection, "ami-0c7a795306730b288")
+    m_describe_images.assert_called_once_with(connection, ImageIds=["ami-0c7a795306730b288"])
 
 
-@patch(
-    module_name + ".describe_images",
-)
+@patch(module_name + ".describe_images")
 def test_get_image_missing(m_describe_images):
     connection = MagicMock()
 
@@ -344,14 +342,16 @@ def test_CreateImage_do_check_mode_no_change():
     )
 
 
-def test_CreateImage_do_check_mode_with_change():
+@patch(module_name + ".describe_images")
+def test_CreateImage_do_check_mode_with_change(m_describe_images):
     module = MagicMock()
 
     module.params = {"name": "my-image"}
     connection = MagicMock()
-    connection.describe_images.return_value = {"Images": []}
+    m_describe_images.return_value = []
 
     ec2_ami.CreateImage.do_check_mode(module, connection, None)
+    m_describe_images.assert_called_once_with(connection, Filters=[{"Name": "name", "Values": [module.params["name"]]}])
     module.exit_json.assert_called_with(changed=True, msg="Would have created a AMI if not in check mode.")
 
 
