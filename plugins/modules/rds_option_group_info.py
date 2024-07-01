@@ -72,7 +72,7 @@ changed:
     type: bool
     returned: always
     sample: false
-option_groups_list:
+result:
     description: The available RDS option groups.
     returned: always
     type: complex
