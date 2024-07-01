@@ -206,44 +206,56 @@ vpc:
 
 from time import sleep
 from time import time
-
-try:
-    import botocore
-except ImportError:
-    pass  # Handled by AnsibleAWSModule
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils.common.network import to_subnet
 
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleEC2Error
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import associate_dhcp_options
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import associate_vpc_cidr_block
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import create_vpc
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import delete_vpc
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_vpc_attribute
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_vpcs
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import disassociate_vpc_cidr_block
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import modify_vpc_attribute
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
-from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
+from ansible_collections.amazon.aws.plugins.module_utils.waiters import wait_for_resource_state
 
 
-def vpc_exists(module, vpc, name, cidr_block, multi):
+def get_vpc_id(connection, module: AnsibleAWSModule) -> Optional[str]:
     """Returns None or a vpc object depending on the existence of a VPC. When supplied
     with a CIDR, it will check for matching tags to determine if it is a match
     otherwise it will assume the VPC does not exist and thus return None.
     """
-    try:
-        vpc_filters = ansible_dict_to_boto3_filter_list({"tag:Name": name, "cidr-block": cidr_block})
-        matching_vpcs = vpc.describe_vpcs(aws_retry=True, Filters=vpc_filters)["Vpcs"]
-        # If an exact matching using a list of CIDRs isn't found, check for a match with the first CIDR as is documented for C(cidr_block)
-        if not matching_vpcs:
-            vpc_filters = ansible_dict_to_boto3_filter_list({"tag:Name": name, "cidr-block": [cidr_block[0]]})
-            matching_vpcs = vpc.describe_vpcs(aws_retry=True, Filters=vpc_filters)["Vpcs"]
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to describe VPCs")
+    vpc_id = module.params.get("vpc_id")
+    if vpc_id is not None:
+        return vpc_id
 
+    name = module.params.get("name")
+    cidr_block = module.params.get("cidr_block")
+    multi = module.params.get("multi_ok")
+    vpc_filters = ansible_dict_to_boto3_filter_list({"tag:Name": name, "cidr-block": cidr_block})
+    matching_vpcs = describe_vpcs(connection, Filters=vpc_filters)
+    # If an exact matching using a list of CIDRs isn't found, check for a match with the first CIDR as is documented for C(cidr_block)
+    if not matching_vpcs:
+        vpc_filters = ansible_dict_to_boto3_filter_list({"tag:Name": name, "cidr-block": [cidr_block[0]]})
+        matching_vpcs = describe_vpcs(connection, Filters=vpc_filters)
+
+    vpc_id = None
     if multi:
-        return None
+        vpc_id = None
     elif len(matching_vpcs) == 1:
-        return matching_vpcs[0]["VpcId"]
+        vpc_id = matching_vpcs[0]["VpcId"]
     elif len(matching_vpcs) > 1:
         module.fail_json(
             msg=(
@@ -251,37 +263,24 @@ def vpc_exists(module, vpc, name, cidr_block, multi):
                 " If you would like to create the VPC anyway please pass True to the multi_ok param."
             )
         )
-    return None
+    return vpc_id
 
 
-def wait_for_vpc_to_exist(module, connection, **params):
+def wait_for_vpc(
+    module: AnsibleAWSModule,
+    connection,
+    waiter_name: str,
+    delay: Optional[int] = None,
+    max_attempts: Optional[int] = None,
+    **params,
+) -> None:
     # wait for vpc to be available
-    try:
-        get_waiter(connection, "vpc_exists").wait(**params)
-    except botocore.exceptions.WaiterError as e:
-        module.fail_json_aws(e, msg="VPC failed to reach expected state (exists)")
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable to wait for VPC creation.")
+    wait_for_resource_state(connection, module, waiter_name, delay=delay, max_attempts=max_attempts, **params)
 
 
-def wait_for_vpc(module, connection, **params):
-    # wait for vpc to be available
-    try:
-        get_waiter(connection, "vpc_available").wait(**params)
-    except botocore.exceptions.WaiterError as e:
-        module.fail_json_aws(e, msg="VPC failed to reach expected state (available)")
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable to wait for VPC state to update.")
-
-
-def get_vpc(module, connection, vpc_id, wait=True):
-    wait_for_vpc(module, connection, VpcIds=[vpc_id])
-    try:
-        vpc_obj = connection.describe_vpcs(VpcIds=[vpc_id], aws_retry=True)["Vpcs"][0]
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to describe VPCs")
-
-    return vpc_obj
+def get_vpc(module: AnsibleAWSModule, connection, vpc_id: str) -> Dict[str, Any]:
+    wait_for_vpc(module, connection, waiter_name="vpc_available", VpcIds=[vpc_id])
+    return describe_vpcs(connection, VpcIds=[vpc_id])[0]
 
 
 def update_vpc_tags(connection, module, vpc_id, tags, name, purge_tags):
@@ -304,7 +303,7 @@ def update_vpc_tags(connection, module, vpc_id, tags, name, purge_tags):
     return True
 
 
-def update_dhcp_opts(connection, module, vpc_obj, dhcp_id):
+def update_dhcp_opts(connection, module: AnsibleAWSModule, vpc_obj: Dict[str, Any], dhcp_id: Optional[str]) -> bool:
     if dhcp_id is None:
         return False
     if vpc_obj["DhcpOptionsId"] == dhcp_id:
@@ -312,15 +311,18 @@ def update_dhcp_opts(connection, module, vpc_obj, dhcp_id):
     if module.check_mode:
         return True
 
-    try:
-        connection.associate_dhcp_options(DhcpOptionsId=dhcp_id, VpcId=vpc_obj["VpcId"], aws_retry=True)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg=f"Failed to associate DhcpOptionsId {dhcp_id}")
-
-    return True
+    return associate_dhcp_options(connection, vpc_id=vpc_obj["VpcId"], dhcp_options_id=dhcp_id)
 
 
-def create_vpc(connection, module, cidr_block, tenancy, tags, ipv6_cidr, name):
+def create_vpc_net(
+    connection,
+    module: AnsibleAWSModule,
+    cidr_block: List[str],
+    tenancy,
+    tags: Dict[str, str],
+    ipv6_cidr: bool,
+    name: Optional[str],
+) -> str:
     if module.check_mode:
         module.exit_json(changed=True, msg="VPC would be created if not in check mode")
 
@@ -339,27 +341,14 @@ def create_vpc(connection, module, cidr_block, tenancy, tags, ipv6_cidr, name):
     if ipv6_cidr:
         create_args["AmazonProvidedIpv6CidrBlock"] = True
 
-    try:
-        vpc_obj = connection.create_vpc(aws_retry=True, **create_args)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, "Failed to create the VPC")
+    vpc_obj = create_vpc(connection, **create_args)
 
     # wait up to 30 seconds for vpc to exist
-    wait_for_vpc_to_exist(
-        module,
-        connection,
-        VpcIds=[vpc_obj["Vpc"]["VpcId"]],
-        WaiterConfig=dict(MaxAttempts=30),
-    )
+    wait_for_vpc(module, connection, waiter_name="vpc_exists", max_attempts=30, VpcIds=[vpc_obj["VpcId"]])
     # Wait for the VPC to enter an 'Available' State
-    wait_for_vpc(
-        module,
-        connection,
-        VpcIds=[vpc_obj["Vpc"]["VpcId"]],
-        WaiterConfig=dict(MaxAttempts=30),
-    )
+    wait_for_vpc(module, connection, waiter_name="vpc_available", max_attempts=30, VpcIds=[vpc_obj["VpcId"]])
 
-    return vpc_obj["Vpc"]["VpcId"]
+    return vpc_obj["VpcId"]
 
 
 def wait_for_vpc_attribute(connection, module, vpc_id, attribute, expected_value):
@@ -371,7 +360,7 @@ def wait_for_vpc_attribute(connection, module, vpc_id, attribute, expected_value
     start_time = time()
     updated = False
     while time() < start_time + 300:
-        current_value = connection.describe_vpc_attribute(Attribute=attribute, VpcId=vpc_id, aws_retry=True)[
+        current_value = describe_vpc_attribute(connection, attribute=attribute, vpc_id=vpc_id)[
             f"{attribute[0].upper()}{attribute[1:]}"
         ]["Value"]
         if current_value != expected_value:
@@ -478,20 +467,14 @@ def update_ipv6_cidrs(connection, module, vpc_obj, vpc_id, ipv6_cidr):
 
     # There's no block associated, and we want one to be associated
     if ipv6_cidr:
-        try:
-            connection.associate_vpc_cidr_block(AmazonProvidedIpv6CidrBlock=ipv6_cidr, VpcId=vpc_id, aws_retry=True)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, "Unable to associate IPv6 CIDR")
+        associate_vpc_cidr_block(connection, vpc_id=vpc_id, AmazonProvidedIpv6CidrBlock=ipv6_cidr)
     else:
         for ipv6_assoc in vpc_obj["Ipv6CidrBlockAssociationSet"]:
             if ipv6_assoc["Ipv6Pool"] == "Amazon" and ipv6_assoc["Ipv6CidrBlockState"]["State"] in [
                 "associated",
                 "associating",
             ]:
-                try:
-                    connection.disassociate_vpc_cidr_block(AssociationId=ipv6_assoc["AssociationId"], aws_retry=True)
-                except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                    module.fail_json_aws(e, f"Unable to disassociate IPv6 CIDR {ipv6_assoc['AssociationId']}.")
+                disassociate_vpc_cidr_block(connection, association_id=ipv6_assoc["AssociationId"])
     return True
 
 
@@ -521,19 +504,18 @@ def update_cidrs(connection, module, vpc_obj, vpc_id, cidr_block, purge_cidrs):
 
     for cidr in cidrs_to_add:
         try:
-            connection.associate_vpc_cidr_block(CidrBlock=cidr, VpcId=vpc_id, aws_retry=True)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            associate_vpc_cidr_block(connection, vpc_id=vpc_id, CidrBlock=cidr)
+        except AnsibleEC2Error as e:
             module.fail_json_aws(e, f"Unable to associate CIDR {cidr}.")
 
     for cidr in cidrs_to_remove:
-        association_id = associated_cidrs[cidr]
         try:
-            connection.disassociate_vpc_cidr_block(AssociationId=association_id, aws_retry=True)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            disassociate_vpc_cidr_block(connection, associated_cidrs[cidr])
+        except AnsibleEC2Error as e:
             module.fail_json_aws(
                 e,
                 (
-                    f"Unable to disassociate {association_id}. You must detach or delete all gateways and resources"
+                    f"Unable to disassociate {associated_cidrs[cidr]}. You must detach or delete all gateways and resources"
                     " that are associated with the CIDR block before you can disassociate it."
                 ),
             )
@@ -544,7 +526,7 @@ def update_dns_enabled(connection, module, vpc_id, dns_support):
     if dns_support is None:
         return False
 
-    current_dns_enabled = connection.describe_vpc_attribute(Attribute="enableDnsSupport", VpcId=vpc_id, aws_retry=True)[
+    current_dns_enabled = describe_vpc_attribute(connection, attribute="enableDnsSupport", vpc_id=vpc_id)[
         "EnableDnsSupport"
     ]["Value"]
     if current_dns_enabled == dns_support:
@@ -553,10 +535,7 @@ def update_dns_enabled(connection, module, vpc_id, dns_support):
     if module.check_mode:
         return True
 
-    try:
-        connection.modify_vpc_attribute(VpcId=vpc_id, EnableDnsSupport={"Value": dns_support}, aws_retry=True)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, "Failed to update enabled dns support attribute")
+    modify_vpc_attribute(connection, vpc_id=vpc_id, EnableDnsSupport={"Value": dns_support})
     return True
 
 
@@ -564,39 +543,16 @@ def update_dns_hostnames(connection, module, vpc_id, dns_hostnames):
     if dns_hostnames is None:
         return False
 
-    current_dns_hostnames = connection.describe_vpc_attribute(
-        Attribute="enableDnsHostnames", VpcId=vpc_id, aws_retry=True
-    )["EnableDnsHostnames"]["Value"]
+    current_dns_hostnames = describe_vpc_attribute(connection, attribute="enableDnsHostnames", vpc_id=vpc_id)[
+        "EnableDnsHostnames"
+    ]["Value"]
     if current_dns_hostnames == dns_hostnames:
         return False
 
     if module.check_mode:
         return True
 
-    try:
-        connection.modify_vpc_attribute(VpcId=vpc_id, EnableDnsHostnames={"Value": dns_hostnames}, aws_retry=True)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, "Failed to update enabled dns hostnames attribute")
-    return True
-
-
-def delete_vpc(connection, module, vpc_id):
-    if vpc_id is None:
-        return False
-    if module.check_mode:
-        return True
-
-    try:
-        connection.delete_vpc(VpcId=vpc_id, aws_retry=True)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(
-            e,
-            msg=(
-                f"Failed to delete VPC {vpc_id} You may want to use the ec2_vpc_subnet, ec2_vpc_igw, and/or"
-                " ec2_vpc_route_table modules to ensure that all depenednt components are absent."
-            ),
-        )
-
+    modify_vpc_attribute(connection, vpc_id=vpc_id, EnableDnsHostnames={"Value": dns_hostnames})
     return True
 
 
@@ -608,6 +564,7 @@ def wait_for_updates(connection, module, vpc_id, ipv6_cidr, expected_cidrs, dns_
         wait_for_vpc(
             module,
             connection,
+            waiter_name="vpc_available",
             VpcIds=[vpc_id],
             Filters=[{"Name": "cidr-block-association.cidr-block", "Values": expected_cidrs}],
         )
@@ -616,7 +573,7 @@ def wait_for_updates(connection, module, vpc_id, ipv6_cidr, expected_cidrs, dns_
     if tags is not None:
         tag_list = ansible_dict_to_boto3_tag_list(tags)
         filters = [{"Name": f"tag:{t['Key']}", "Values": [t["Value"]]} for t in tag_list]
-        wait_for_vpc(module, connection, VpcIds=[vpc_id], Filters=filters)
+        wait_for_vpc(module, connection, waiter_name="vpc_available", VpcIds=[vpc_id], Filters=filters)
 
     wait_for_vpc_attribute(connection, module, vpc_id, "enableDnsSupport", dns_support)
     wait_for_vpc_attribute(connection, module, vpc_id, "enableDnsHostnames", dns_hostnames)
@@ -624,9 +581,70 @@ def wait_for_updates(connection, module, vpc_id, ipv6_cidr, expected_cidrs, dns_
     if dhcp_id is not None:
         # Wait for DhcpOptionsId to be updated
         filters = [{"Name": "dhcp-options-id", "Values": [dhcp_id]}]
-        wait_for_vpc(module, connection, VpcIds=[vpc_id], Filters=filters)
+        wait_for_vpc(module, connection, waiter_name="vpc_available", VpcIds=[vpc_id], Filters=filters)
 
     return
+
+
+def ensure_present(connection, module: AnsibleAWSModule, vpc_id: str) -> None:
+    name = module.params.get("name")
+    cidr_block = module.params.get("cidr_block")
+    ipv6_cidr = module.params.get("ipv6_cidr")
+    purge_cidrs = module.params.get("purge_cidrs")
+    tenancy = module.params.get("tenancy")
+    dns_support = module.params.get("dns_support")
+    dns_hostnames = module.params.get("dns_hostnames")
+    dhcp_id = module.params.get("dhcp_opts_id")
+    tags = module.params.get("tags")
+    purge_tags = module.params.get("purge_tags")
+
+    if vpc_id is None:
+        if name is None:
+            module.fail_json("The name parameter must be specified when creating a new VPC.")
+        vpc_id = create_vpc_net(connection, module, cidr_block[0], tenancy, tags, ipv6_cidr, name)
+        changed = True
+        vpc_obj = get_vpc(module, connection, vpc_id)
+        if len(cidr_block) > 1:
+            cidrs_changed, desired_cidrs = update_cidrs(connection, module, vpc_obj, vpc_id, cidr_block, purge_cidrs)
+            changed |= cidrs_changed
+        else:
+            desired_cidrs = None
+        # Set on-creation defaults
+        if dns_hostnames is None:
+            dns_hostnames = True
+        if dns_support is None:
+            dns_support = True
+    else:
+        changed = False
+        vpc_obj = get_vpc(module, connection, vpc_id)
+        cidrs_changed, desired_cidrs = update_cidrs(connection, module, vpc_obj, vpc_id, cidr_block, purge_cidrs)
+        changed |= cidrs_changed
+        changed |= update_ipv6_cidrs(connection, module, vpc_obj, vpc_id, ipv6_cidr)
+        changed |= update_vpc_tags(connection, module, vpc_id, tags, name, purge_tags)
+
+    changed |= update_dhcp_opts(connection, module, vpc_obj, dhcp_id)
+    changed |= update_dns_enabled(connection, module, vpc_id, dns_support)
+    changed |= update_dns_hostnames(connection, module, vpc_id, dns_hostnames)
+
+    wait_for_updates(connection, module, vpc_id, ipv6_cidr, desired_cidrs, dns_support, dns_hostnames, tags, dhcp_id)
+
+    updated_obj = get_vpc(module, connection, vpc_id)
+    final_state = camel_dict_to_snake_dict(updated_obj)
+    final_state["tags"] = boto3_tag_list_to_ansible_dict(updated_obj.get("Tags", []))
+    final_state["name"] = final_state["tags"].get("Name", None)
+    final_state["id"] = final_state.pop("vpc_id")
+
+    module.exit_json(changed=changed, vpc=final_state)
+
+
+def ensure_absent(connection, module: AnsibleAWSModule, vpc_id: str) -> None:
+    changed = False
+    if vpc_id:
+        if module.check_mode:
+            changed = True
+        else:
+            changed = delete_vpc(connection, vpc_id=vpc_id)
+    module.exit_json(changed=changed, vpc={})
 
 
 def main():
@@ -652,88 +670,22 @@ def main():
 
     module = AnsibleAWSModule(argument_spec=argument_spec, required_one_of=required_one_of, supports_check_mode=True)
 
-    name = module.params.get("name")
-    vpc_id = module.params.get("vpc_id")
-    cidr_block = module.params.get("cidr_block")
-    ipv6_cidr = module.params.get("ipv6_cidr")
-    purge_cidrs = module.params.get("purge_cidrs")
-    tenancy = module.params.get("tenancy")
     dns_support = module.params.get("dns_support")
     dns_hostnames = module.params.get("dns_hostnames")
-    dhcp_id = module.params.get("dhcp_opts_id")
-    tags = module.params.get("tags")
-    purge_tags = module.params.get("purge_tags")
     state = module.params.get("state")
-    multi = module.params.get("multi_ok")
-
-    changed = False
-
-    connection = module.client(
-        "ec2",
-        retry_decorator=AWSRetry.jittered_backoff(
-            retries=8, delay=3, catch_extra_error_codes=["InvalidVpcID.NotFound"]
-        ),
-    )
 
     if dns_hostnames and not dns_support:
         module.fail_json(msg="In order to enable DNS Hostnames you must also enable DNS support")
 
-    cidr_block = get_cidr_network_bits(module, module.params.get("cidr_block"))
-
-    if vpc_id is None:
-        vpc_id = vpc_exists(module, connection, name, cidr_block, multi)
-
-    if state == "present":
-        # Check if VPC exists
-        if vpc_id is None:
-            if module.params.get("name") is None:
-                module.fail_json("The name parameter must be specified when creating a new VPC.")
-            vpc_id = create_vpc(connection, module, cidr_block[0], tenancy, tags, ipv6_cidr, name)
-            changed = True
-            vpc_obj = get_vpc(module, connection, vpc_id)
-            if len(cidr_block) > 1:
-                cidrs_changed, desired_cidrs = update_cidrs(
-                    connection, module, vpc_obj, vpc_id, cidr_block, purge_cidrs
-                )
-                changed |= cidrs_changed
-            else:
-                desired_cidrs = None
-            # Set on-creation defaults
-            if dns_hostnames is None:
-                dns_hostnames = True
-            if dns_support is None:
-                dns_support = True
+    connection = module.client("ec2")
+    try:
+        vpc_id = get_vpc_id(connection, module)
+        if state == "present":
+            ensure_present(connection, module, vpc_id)
         else:
-            vpc_obj = get_vpc(module, connection, vpc_id)
-            cidrs_changed, desired_cidrs = update_cidrs(connection, module, vpc_obj, vpc_id, cidr_block, purge_cidrs)
-            changed |= cidrs_changed
-            ipv6_changed = update_ipv6_cidrs(connection, module, vpc_obj, vpc_id, ipv6_cidr)
-            changed |= ipv6_changed
-            tags_changed = update_vpc_tags(connection, module, vpc_id, tags, name, purge_tags)
-            changed |= tags_changed
-
-        dhcp_changed = update_dhcp_opts(connection, module, vpc_obj, dhcp_id)
-        changed |= dhcp_changed
-        dns_changed = update_dns_enabled(connection, module, vpc_id, dns_support)
-        changed |= dns_changed
-        hostnames_changed = update_dns_hostnames(connection, module, vpc_id, dns_hostnames)
-        changed |= hostnames_changed
-
-        wait_for_updates(
-            connection, module, vpc_id, ipv6_cidr, desired_cidrs, dns_support, dns_hostnames, tags, dhcp_id
-        )
-
-        updated_obj = get_vpc(module, connection, vpc_id)
-        final_state = camel_dict_to_snake_dict(updated_obj)
-        final_state["tags"] = boto3_tag_list_to_ansible_dict(updated_obj.get("Tags", []))
-        final_state["name"] = final_state["tags"].get("Name", None)
-        final_state["id"] = final_state.pop("vpc_id")
-
-        module.exit_json(changed=changed, vpc=final_state)
-
-    elif state == "absent":
-        changed = delete_vpc(connection, module, vpc_id)
-        module.exit_json(changed=changed, vpc={})
+            ensure_absent(connection, module, vpc_id)
+    except AnsibleEC2Error as e:
+        module.fail_json_aws_error(e)
 
 
 if __name__ == "__main__":
