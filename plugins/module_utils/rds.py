@@ -21,15 +21,16 @@ except ImportError:
 from ansible.module_utils._text import to_text
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 
-from .botocore import is_boto3_error_code
-from .core import AnsibleAWSModule
-from .errors import AWSErrorHandler
-from .exceptions import AnsibleAWSError
-from .retries import AWSRetry
-from .tagging import ansible_dict_to_boto3_tag_list
-from .tagging import boto3_tag_list_to_ansible_dict
-from .tagging import compare_aws_tags
-from .waiters import get_waiter
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import get_boto3_client_method_parameters
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.errors import AWSErrorHandler
+from ansible_collections.amazon.aws.plugins.module_utils.exceptions import AnsibleAWSError
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
+from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
 
 Boto3ClientMethod = namedtuple(
     "Boto3ClientMethod", ["name", "waiter", "operation_description", "resource", "retry_codes"]
@@ -96,7 +97,16 @@ class RDSErrorHandler(AWSErrorHandler):
 
     @classmethod
     def _is_missing(cls):
-        return is_boto3_error_code(["DBInstanceNotFound", "DBSnapshotNotFound", "DBClusterNotFound"])
+        return is_boto3_error_code(
+            ["DBInstanceNotFound", "DBSnapshotNotFound", "DBClusterNotFound", "DBClusterSnapshotNotFoundFault"]
+        )
+
+
+@RDSErrorHandler.list_error_handler("describe db cluster snapshots", [])
+@AWSRetry.jittered_backoff()
+def describe_db_cluster_snapshots(client, **params: Dict) -> List[Dict[str, Any]]:
+    paginator = client.get_paginator("describe_db_cluster_snapshots")
+    return paginator.paginate(**params).build_full_result()["DBClusterSnapshots"]
 
 
 @RDSErrorHandler.list_error_handler("describe db instances", [])
@@ -492,6 +502,43 @@ def wait_for_status(client, module: AnsibleAWSModule, identifier: str, method_na
         wait_for_cluster_snapshot_status(client, module, identifier, waiter_name)
 
 
+def get_snapshot(
+    client, module: AnsibleAWSModule, snapshot_identifier: str, snapshot_type: str, convert_tags: bool = True
+) -> Dict[str, Any]:
+    """
+    Returns instance or cluster snapshot attributes given the snapshot identifier.
+
+        Parameters:
+            client: boto3 rds client
+            module: AnsibleAWSModule
+            snapshot_identifier (str): Unique snapshot identifier
+            snapshot_type (str): Which type of snapshot to get, one of: cluster, instance
+            convert_tags (bool): Whether to convert the snapshot tags from boto3 list of dicts to Ansible dict; defaults to True
+
+        Returns:
+            snapshot (dict): Snapshot attributes. If snapshot with provided id is not found, returns an empty dict
+
+        Raises:
+            Failes the module if an exception is raised while retrieving the snapshot attributes.
+    """
+    snapshot = {}
+
+    try:
+        if snapshot_type == "cluster":
+            snapshots = describe_db_cluster_snapshots(client, DBClusterSnapshotIdentifier=snapshot_identifier)
+        elif snapshot_type == "instance":
+            snapshots = describe_db_snapshots(client, DBSnapshotIdentifier=snapshot_identifier)
+        if snapshots:
+            snapshot = snapshots[0]
+    except AnsibleRDSError as e:
+        module.fail_json_aws(e, msg=f"Failed to get snapshot: {snapshot_identifier}")
+
+    if snapshot and convert_tags:
+        snapshot["Tags"] = boto3_tag_list_to_ansible_dict(snapshot.pop("TagList"))
+
+    return snapshot
+
+
 def get_tags(client, module: AnsibleAWSModule, resource_arn: str) -> Dict[str, str]:
     """
     Returns tags for provided RDS resource, formatted as an Ansible dict.
@@ -540,6 +587,44 @@ def arg_spec_to_rds_params(options_dict: Dict[str, Any]) -> Dict[str, Any]:
     if has_processor_features:
         camel_options["ProcessorFeatures"] = processor_features
     return camel_options
+
+
+def format_rds_client_method_parameters(
+    client, module: AnsibleAWSModule, parameters: Dict[str, Any], method_name: str, format_tags: bool
+) -> Dict[str, Any]:
+    """
+    Returns a dict of parameters validated and formatted for the provided boto3 client method.
+
+    Performs the following parameters checks and updates:
+        - Converts parameters supplied as snake_cased module options to CamelCase
+        - Ensures that all required parameters for the provided method are present
+        - Ensures that only parameters allowed for the provided method are present, removing any that are not relevant
+        - Removes parameters with None values
+        - If format_tags is True, converts "Tags" param from an Ansible dict to boto3 list of dicts
+
+        Parameters:
+            client: boto3 rds client
+            module: AnsibleAWSModule
+            parameters (dict): Parameter options as provided to module
+            method_name (str): boto3 client method for which to validate parameters
+            format_tags (bool): Whether to convert tags from an Ansible dict to boto3 list of dicts
+
+        Returns:
+            Dict of client parameters formatted for the provided method
+
+        Raises:
+            Fails the module if any parameters required by the provided method are not provided in module options
+    """
+    required_options = get_boto3_client_method_parameters(client, method_name, required=True)
+    if any(parameters.get(k) is None for k in required_options):
+        method_description = get_rds_method_attribute(method_name, module).operation_description
+        module.fail_json(msg=f"To {method_description} requires the parameters: {required_options}")
+    options = get_boto3_client_method_parameters(client, method_name)
+    parameters = dict((k, v) for k, v in parameters.items() if k in options and v is not None)
+    if format_tags and parameters.get("Tags"):
+        parameters["Tags"] = ansible_dict_to_boto3_tag_list(parameters["Tags"])
+
+    return parameters
 
 
 def ensure_tags(

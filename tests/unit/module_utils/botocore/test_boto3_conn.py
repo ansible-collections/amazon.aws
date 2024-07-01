@@ -97,6 +97,13 @@ def test_boto3_conn_success(monkeypatch, aws_module, botocore_utils):
             botocore.exceptions.NoRegionError(),
             "The sentinel.MODULE_NAME module requires a region and none was found",
         ),
+        (
+            botocore.exceptions.UnknownServiceError(
+                service_name=sentinel.SERVICE_ERROR_NAME, known_service_names=sentinel.SERVICE_ERROR_KNOWN
+            ),
+            None,
+        ),
+        (botocore.exceptions.BotoCoreError(), None),
     ],
 )
 def test_boto3_conn_exception(monkeypatch, aws_module, botocore_utils, failure, custom_error):

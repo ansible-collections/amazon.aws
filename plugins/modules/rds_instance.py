@@ -871,7 +871,6 @@ from ansible.module_utils._text import to_text
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils.six import string_types
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import get_boto3_client_method_parameters
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_message
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.rds import AnsibleRDSError
@@ -879,10 +878,10 @@ from ansible_collections.amazon.aws.plugins.module_utils.rds import arg_spec_to_
 from ansible_collections.amazon.aws.plugins.module_utils.rds import call_method
 from ansible_collections.amazon.aws.plugins.module_utils.rds import compare_iam_roles
 from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_instances
-from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_snapshots
 from ansible_collections.amazon.aws.plugins.module_utils.rds import ensure_tags
+from ansible_collections.amazon.aws.plugins.module_utils.rds import format_rds_client_method_parameters
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_final_identifier
-from ansible_collections.amazon.aws.plugins.module_utils.rds import get_rds_method_attribute
+from ansible_collections.amazon.aws.plugins.module_utils.rds import get_snapshot
 from ansible_collections.amazon.aws.plugins.module_utils.rds import update_iam_roles
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
@@ -997,40 +996,12 @@ def get_instance(client, module: AnsibleAWSModule, db_instance_id: str) -> Dict[
     return instance
 
 
-def get_final_snapshot(client, module: AnsibleAWSModule, snapshot_identifier: str) -> Dict[str, Any]:
-    """
-    Returns the final snapshot given the final snapshot identifer.
-
-        Parameters:
-            client: boto3 rds client
-            module: AnsibleAWSModule
-            snapshot_identifier (str): Unique snapshot identifier
-
-        Returns:
-            snapshot (dict): Snapshot attributes as returned by boto3 client
-
-        Raises:
-            Failes the module if an exception is raised while retrieving the snapshot attributes.
-    """
-    snapshot = {}
-    try:
-        snapshots = describe_db_snapshots(client, DBSnapshotIdentifier=snapshot_identifier)
-        if len(snapshots) == 1:
-            snapshot = snapshots[0]
-    except AnsibleRDSError as e:
-        module.fail_json_aws(e, msg=f"Failed to retrieve information about the final snapshot: {snapshot_identifier}")
-    return snapshot
-
-
 def get_parameters(client, module: AnsibleAWSModule, parameters: Dict[str, Any], method_name: str) -> Dict[str, Any]:
     """
     Returns a dict of parameters validated and formatted for the provided boto3 client method.
 
     Performs the following parameters checks and updates:
-        - Converts parameters supplied as snake_cased module options to CamelCase
-        - Ensures that all required parameters for the provided method are present
-        - Ensures that only parameters allowed for the provided method are present, removing any that are not relevant
-        - Removes parameters with None values
+        - Formats provided parameters as expected by provided method
         - Converts the following dict parameters to lists of dicts as expected by the boto3 rds client: ProcessorFeatures, Tags
         - If method is "modify_db_instance", compares supplied parameters to current instance attributes, determines which parameters need to be modified, and
             removes any parameters that do not need to be modified
@@ -1049,13 +1020,7 @@ def get_parameters(client, module: AnsibleAWSModule, parameters: Dict[str, Any],
     """
     if method_name == "restore_db_instance_to_point_in_time":
         parameters["TargetDBInstanceIdentifier"] = module.params["db_instance_identifier"]
-
-    required_options = get_boto3_client_method_parameters(client, method_name, required=True)
-    if any(parameters.get(k) is None for k in required_options):
-        description = get_rds_method_attribute(method_name, module).operation_description
-        module.fail_json(msg=f"To {description} requires the parameters: {required_options}")
-    options = get_boto3_client_method_parameters(client, method_name)
-    parameters = dict((k, v) for k, v in parameters.items() if k in options and v is not None)
+    parameters = format_rds_client_method_parameters(client, module, parameters, method_name, format_tags=False)
 
     if parameters.get("ProcessorFeatures") is not None:
         parameters["ProcessorFeatures"] = [
@@ -1794,7 +1759,9 @@ def main():
 
         if state == "absent" and changed and not module.params["skip_final_snapshot"]:
             instance.update(
-                FinalSnapshot=get_final_snapshot(client, module, module.params["final_db_snapshot_identifier"])
+                FinalSnapshot=get_snapshot(
+                    client, module, module.params["final_db_snapshot_identifier"], "instance", False
+                )
             )
 
     pending_processor_features = None

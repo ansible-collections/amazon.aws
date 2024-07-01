@@ -23,7 +23,7 @@ def boto3_conn(plugin, conn_type=None, resource=None, region=None, endpoint=None
         ValueError,
         botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError,
         botocore.exceptions.NoCredentialsError, botocore.exceptions.ConfigParseError,
-        botocore.exceptions.NoRegionError
+        botocore.exceptions.NoRegionError, and finally the base botocore.BotoCoreError
     """
 
     try:
@@ -47,6 +47,8 @@ def boto3_conn(plugin, conn_type=None, resource=None, region=None, endpoint=None
         plugin.fail_aws(
             "A region is required and none was found in configuration, environment variables or module parameters"
         )
+    except botocore.exceptions.BotoCoreError as e:
+        plugin.fail_aws(to_native(e))
 
 
 def get_aws_connection_info(plugin):

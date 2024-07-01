@@ -79,6 +79,13 @@ def test_boto3_conn_success_plugin(monkeypatch, aws_plugin, botocore_utils):
         (botocore.exceptions.NoCredentialsError(), None),
         (botocore.exceptions.ConfigParseError(path=sentinel.PARSE_ERROR), None),
         (botocore.exceptions.NoRegionError(), "The sentinel.PLUGIN_NAME plugin requires a region"),
+        (
+            botocore.exceptions.UnknownServiceError(
+                service_name=sentinel.SERVICE_ERROR_NAME, known_service_names=sentinel.SERVICE_ERROR_KNOWN
+            ),
+            None,
+        ),
+        (botocore.exceptions.BotoCoreError(), None),
     ],
 )
 def test_boto3_conn_exception_plugin(monkeypatch, aws_plugin, botocore_utils, failure, custom_error):
@@ -113,6 +120,13 @@ def test_boto3_conn_exception_plugin(monkeypatch, aws_plugin, botocore_utils, fa
             botocore.exceptions.NoRegionError(),
             "A region is required and none was found",
         ),
+        (
+            botocore.exceptions.UnknownServiceError(
+                service_name=sentinel.SERVICE_ERROR_NAME, known_service_names=sentinel.SERVICE_ERROR_KNOWN
+            ),
+            None,
+        ),
+        (botocore.exceptions.BotoCoreError(), None),
     ],
 )
 def test_boto3_conn_exception_no_plugin_name(monkeypatch, aws_plugin, botocore_utils, failure, custom_error):

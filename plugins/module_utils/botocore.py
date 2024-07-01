@@ -86,7 +86,7 @@ def boto3_conn(module, conn_type=None, resource=None, region=None, endpoint=None
         ValueError,
         botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError,
         botocore.exceptions.NoCredentialsError, botocore.exceptions.ConfigParseError,
-        botocore.exceptions.NoRegionError
+        botocore.exceptions.NoRegionError, and finally the base botocore.exceptions.BotoCoreError
     """
     try:
         return _boto3_conn(conn_type=conn_type, resource=resource, region=region, endpoint=endpoint, **params)
@@ -108,6 +108,8 @@ def boto3_conn(module, conn_type=None, resource=None, region=None, endpoint=None
             msg=f"The {module._name} module requires a region and none was found in configuration, "
             "environment variables or module parameters",
         )
+    except botocore.exceptions.BotoCoreError as e:
+        module.fail_json(msg=f"Couldn't connect to AWS: {to_native(e)}")
 
 
 def _merge_botocore_config(config_a, config_b):

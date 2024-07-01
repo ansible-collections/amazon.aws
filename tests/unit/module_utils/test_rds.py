@@ -5,6 +5,7 @@
 
 import sys
 from unittest.mock import MagicMock
+from unittest.mock import patch
 
 import pytest
 
@@ -24,6 +25,8 @@ from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOT
 
 if not HAS_BOTO3:
     pytestmark = pytest.mark.skip("test_rds.py requires the python modules 'boto3' and 'botocore'")
+
+mod_name = "ansible_collections.amazon.aws.plugins.module_utils.rds"
 
 
 def expected(x):
@@ -718,6 +721,179 @@ def test__handle_errors_failed(method_name, exception, expected, error):
         rds.handle_errors(module, exception, method_name, {"Engine": "fake_engine"})
         module.fail_json_aws.assert_called_once
         module.fail_json_aws.call_args[1]["msg"] == expected
+
+
+@pytest.mark.parametrize(
+    "snapshots, snapshot_type, convert_tags, expected",
+    [
+        ([], "cluster", False, {}),
+        ([], "instance", True, {}),
+        (
+            [{"DBSnapshotIdentifier": "my-snapshot", "DBInstanceIdentifier": "my-instance", "TagList": []}],
+            "instance",
+            False,
+            {"DBSnapshotIdentifier": "my-snapshot", "DBInstanceIdentifier": "my-instance", "TagList": []},
+        ),
+        (
+            [
+                {
+                    "DBClusterSnapshotIdentifier": "my-cluster-snapshot",
+                    "DBClusterIdentifier": "my-cluster",
+                    "TagList": [],
+                }
+            ],
+            "cluster",
+            True,
+            {"DBClusterSnapshotIdentifier": "my-cluster-snapshot", "DBClusterIdentifier": "my-cluster", "Tags": {}},
+        ),
+        (
+            [
+                {
+                    "DBClusterSnapshotIdentifier": "my-cluster-snapshot",
+                    "DBClusterIdentifier": "my-cluster",
+                    "TagList": [{"Key": "TagOne", "Value": "Value one"}, {"Key": "tag_two", "Value": "Value two"}],
+                }
+            ],
+            "cluster",
+            False,
+            {
+                "DBClusterSnapshotIdentifier": "my-cluster-snapshot",
+                "DBClusterIdentifier": "my-cluster",
+                "TagList": [{"Key": "TagOne", "Value": "Value one"}, {"Key": "tag_two", "Value": "Value two"}],
+            },
+        ),
+        (
+            [
+                {
+                    "DBSnapshotIdentifier": "my-snapshot",
+                    "DBInstanceIdentifier": "my-instance",
+                    "TagList": [{"Key": "TagOne", "Value": "Value one"}, {"Key": "tag_two", "Value": "Value two"}],
+                }
+            ],
+            "instance",
+            True,
+            {
+                "DBSnapshotIdentifier": "my-snapshot",
+                "DBInstanceIdentifier": "my-instance",
+                "Tags": {"TagOne": "Value one", "tag_two": "Value two"},
+            },
+        ),
+    ],
+)
+@patch(mod_name + ".describe_db_snapshots")
+@patch(mod_name + ".describe_db_cluster_snapshots")
+def test_get_snapshot_success(
+    m_describe_db_cluster_snapshots, m_describe_db_snapshots, snapshots, snapshot_type, convert_tags, expected
+):
+    client = MagicMock()
+    module = MagicMock()
+    m_describe_db_cluster_snapshots.return_value = snapshots
+    m_describe_db_snapshots.return_value = snapshots
+    assert rds.get_snapshot(client, module, "my-snapshot", snapshot_type, convert_tags) == expected
+
+
+@patch(mod_name + ".describe_db_snapshots")
+@patch(mod_name + ".describe_db_cluster_snapshots")
+def test_get_snapshot_failure(m_describe_db_cluster_snapshots, m_describe_db_snapshots):
+    client = MagicMock()
+    module = MagicMock()
+    e = rds.AnsibleRDSError()
+    m_describe_db_cluster_snapshots.side_effect = e
+    m_describe_db_snapshots.side_effect = e
+    rds.get_snapshot(client, module, "my-snapshot", "instance")
+    module.fail_json_aws.assert_called_once_with(e, msg="Failed to get snapshot: my-snapshot")
+
+
+@pytest.mark.parametrize(
+    "provided_params, format_tags, expected",
+    [
+        (
+            {"RequiredParameter": "Present"},
+            False,
+            {"RequiredParameter": "Present"},
+        ),
+        (
+            {"RequiredParameter": "Present", "OptionalParameter": None},
+            False,
+            {"RequiredParameter": "Present"},
+        ),
+        (
+            {"RequiredParameter": "Present", "IrrelevantParameter": "Not used by this method"},
+            False,
+            {"RequiredParameter": "Present"},
+        ),
+        (
+            {
+                "RequiredParameter": "Present",
+                "OptionalParameter": "Present",
+                "Tags": {"still_in": "ansible_dict_format"},
+            },
+            False,
+            {
+                "RequiredParameter": "Present",
+                "OptionalParameter": "Present",
+                "Tags": {"still_in": "ansible_dict_format"},
+            },
+        ),
+        (
+            {"RequiredParameter": "Present"},
+            True,
+            {"RequiredParameter": "Present"},
+        ),
+        (
+            {"RequiredParameter": "Present", "Tags": None},
+            True,
+            {"RequiredParameter": "Present"},
+        ),
+        (
+            {"RequiredParameter": "Present", "Tags": {}},
+            True,
+            {"RequiredParameter": "Present", "Tags": {}},
+        ),
+        (
+            {"RequiredParameter": "Present", "Tags": {"Now in": "boto3_list_format"}},
+            True,
+            {"RequiredParameter": "Present", "Tags": [{"Key": "Now in", "Value": "boto3_list_format"}]},
+        ),
+    ],
+)
+@patch(mod_name + ".get_boto3_client_method_parameters")
+def test_format_rds_client_method_parameters_success(
+    m_get_boto3_client_method_parameters, provided_params, format_tags, expected
+):
+    module = MagicMock()
+    module.fail_json_aws = MagicMock()
+    client = MagicMock()
+    m_get_boto3_client_method_parameters.side_effect = [
+        ["RequiredParameter"],
+        ["RequiredParameter", "OptionalParameter", "Tags"],
+    ]
+
+    assert (
+        rds.format_rds_client_method_parameters(client, module, provided_params, "mock_method", format_tags) == expected
+    )
+
+
+@pytest.mark.parametrize(
+    "provided_params",
+    [
+        ({"RequiredParameter": None}),
+        ({"OptionalParameter": "present"}),
+        ({}),
+    ],
+)
+@patch(mod_name + ".get_boto3_client_method_parameters")
+@patch(mod_name + ".get_rds_method_attribute")
+def test_format_rds_client_method_parameters_failure(
+    m_get_rds_method_attribute, m_get_boto3_client_method_parameters, provided_params
+):
+    module = MagicMock()
+    client = MagicMock()
+    m_get_boto3_client_method_parameters.return_value = ["RequiredParameter"]
+    m_get_rds_method_attribute.return_value = rds.Boto3ClientMethod("mock_method", None, "mock method", None, None)
+
+    rds.format_rds_client_method_parameters(client, module, provided_params, "mock_method", False)
+    module.fail_json.assert_called_with(msg="To mock method requires the parameters: ['RequiredParameter']")
 
 
 class TestRdsUtils:
