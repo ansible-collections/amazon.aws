@@ -21,11 +21,12 @@ def test_build_request_args(eni_id, filters, expected):
     assert ec2_eni_info.build_request_args(eni_id, filters) == expected
 
 
-def test_get_network_interfaces():
+@patch(module_name + ".describe_network_interfaces")
+def test_get_network_interfaces(m_describe_network_interfaces):
     connection = MagicMock()
     module = MagicMock()
 
-    connection.describe_network_interfaces.return_value = {
+    m_describe_network_interfaces.return_value = {
         "NetworkInterfaces": [
             {
                 "AvailabilityZone": "us-east-2b",
@@ -46,8 +47,8 @@ def test_get_network_interfaces():
 
     network_interfaces_result = ec2_eni_info.get_network_interfaces(connection, module, request_args)
 
-    connection.describe_network_interfaces.call_count == 1
-    connection.describe_network_interfaces.assert_called_with(aws_retry=True, **request_args)
+    m_describe_network_interfaces.call_count == 1
+    m_describe_network_interfaces.assert_called_with(connection, **request_args)
     assert len(network_interfaces_result["NetworkInterfaces"]) == 1
 
 
@@ -56,36 +57,34 @@ def test_list_eni(m_get_network_interfaces):
     connection = MagicMock()
     module = MagicMock()
 
-    m_get_network_interfaces.return_value = {
-        "NetworkInterfaces": [
-            {
-                "AvailabilityZone": "us-east-2b",
-                "Description": "",
-                "NetworkInterfaceId": "eni-1234567890",
-                "PrivateIpAddresses": [{"Primary": "True", "PrivateIpAddress": "11.22.33.44"}],
-                "RequesterManaged": False,
-                "SourceDestCheck": True,
-                "Status": "available",
-                "SubnetId": "subnet-07d906b8358869bda",
-                "TagSet": [],
-                "VpcId": "vpc-0cb60952be96c9cd8",
-            },
-            {
-                "AvailabilityZone": "us-east-2b",
-                "Description": "",
-                "NetworkInterfaceId": "eni-0987654321",
-                "PrivateIpAddresses": [{"Primary": "True", "PrivateIpAddress": "11.22.33.44"}],
-                "RequesterManaged": False,
-                "SourceDestCheck": True,
-                "Status": "available",
-                "SubnetId": "subnet-07d906b8358869bda",
-                "TagSet": [
-                    {"Key": "Name", "Value": "my-test-eni-name"},
-                ],
-                "VpcId": "vpc-0cb60952be96c9cd8",
-            },
-        ]
-    }
+    m_get_network_interfaces.return_value = [
+        {
+            "AvailabilityZone": "us-east-2b",
+            "Description": "",
+            "NetworkInterfaceId": "eni-1234567890",
+            "PrivateIpAddresses": [{"Primary": "True", "PrivateIpAddress": "11.22.33.44"}],
+            "RequesterManaged": False,
+            "SourceDestCheck": True,
+            "Status": "available",
+            "SubnetId": "subnet-07d906b8358869bda",
+            "TagSet": [],
+            "VpcId": "vpc-0cb60952be96c9cd8",
+        },
+        {
+            "AvailabilityZone": "us-east-2b",
+            "Description": "",
+            "NetworkInterfaceId": "eni-0987654321",
+            "PrivateIpAddresses": [{"Primary": "True", "PrivateIpAddress": "11.22.33.44"}],
+            "RequesterManaged": False,
+            "SourceDestCheck": True,
+            "Status": "available",
+            "SubnetId": "subnet-07d906b8358869bda",
+            "TagSet": [
+                {"Key": "Name", "Value": "my-test-eni-name"},
+            ],
+            "VpcId": "vpc-0cb60952be96c9cd8",
+        },
+    ]
 
     request_args = {"Filters": [{"Name": "owner-id", "Values": ["1234567890"]}]}
 
