@@ -20,7 +20,7 @@ from typing import Tuple
 from typing import Union
 
 if typing.TYPE_CHECKING:
-    from ansible_collections.amazon.aws.plugins.plugin_utils.base import AWSPluginBase
+    from .base import AWSPluginBase
 
     ClientType = botocore.client.BaseClient
     ResourceType = boto3.resources.base.ServiceResource
@@ -54,7 +54,7 @@ def boto3_conn(
         plugin.fail_aws("Couldn't connect to AWS", exception=e)
     except botocore.exceptions.NoRegionError:
         plugin.fail_aws(
-            f"The {plugin.ansible_name} plugin requires a region and none was found in configuration, "
+            f"The {plugin.ansible_name} plugin requires a region and none was found in configuration, "  # pyright: ignore[reportAttributeAccessIssue]
             "environment variables or module parameters"
         )
     except botocore.exceptions.BotoCoreError as e:
@@ -63,13 +63,13 @@ def boto3_conn(
 
 def get_aws_connection_info(plugin: AWSPluginBase) -> Tuple[Optional[str], Optional[str], Dict[str, Any]]:
     try:
-        return _aws_connection_info(plugin.get_options())
+        return _aws_connection_info(plugin.get_options())  # pyright: ignore[reportAttributeAccessIssue]
     except AnsibleBotocoreError as e:
         plugin.fail_aws(to_native(e))
 
 
 def get_aws_region(plugin: AWSPluginBase) -> Optional[str]:
     try:
-        return _aws_region(plugin.get_options())
+        return _aws_region(plugin.get_options())  # pyright: ignore[reportAttributeAccessIssue]
     except AnsibleBotocoreError as e:
         plugin.fail_aws(to_native(e))

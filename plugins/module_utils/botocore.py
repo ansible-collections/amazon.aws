@@ -63,6 +63,7 @@ if typing.TYPE_CHECKING:
     ClientType = botocore.client.BaseClient
     ResourceType = boto3.resources.base.ServiceResource
     BotoConn = Union[ClientType, ResourceType, Tuple[ClientType, ResourceType]]
+    from .modules import AnsibleAWSModule
 
 try:
     from packaging.version import Version
@@ -73,7 +74,6 @@ except ImportError:
 
 from ansible.module_utils._text import to_native
 from ansible.module_utils.ansible_release import __version__
-from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.basic import missing_required_lib
 from ansible.module_utils.six import binary_type
 from ansible.module_utils.six import text_type
@@ -98,7 +98,7 @@ def _get_user_agent_string():
 
 
 def boto3_conn(
-    module: AnsibleModule,
+    module: AnsibleAWSModule,
     conn_type: str,
     resource: Optional[str] = None,
     region: Optional[str] = None,
@@ -196,9 +196,11 @@ def boto_exception(err: Exception) -> str:
     :return: Error message
     """
     if hasattr(err, "error_message"):
-        error = err.error_message
+        error = err.error_message  # pyright: ignore[reportAttributeAccessIssue]
     elif hasattr(err, "message"):
-        error = str(err.message) + " " + str(err) + " - " + str(type(err))
+        error = (
+            str(err.message) + " " + str(err) + " - " + str(type(err))  # pyright: ignore[reportAttributeAccessIssue]
+        )
     else:
         error = f"{Exception}: {err}"
 
@@ -219,13 +221,13 @@ def _aws_region(params: Dict) -> Optional[str]:
         # Botocore doesn't like empty strings, make sure we default to None in the case of an empty
         # string.
         profile_name = params.get("profile") or None
-        return botocore.session.Session(profile=profile_name).get_config_variable("region")
-    except botocore.exceptions.ProfileNotFound:
+        return boto3.session.Session(profile_name=profile_name).region_name
+    except botocore.exceptions.BotoCoreError:
         return None
 
 
 def get_aws_region(
-    module: AnsibleModule,
+    module: AnsibleAWSModule,
     boto3: Optional[bool] = None,
 ) -> Optional[str]:  # pylint: disable=redefined-outer-name
     if boto3 is not None:
@@ -299,7 +301,7 @@ def _aws_connection_info(params: Dict) -> Tuple[Optional[str], Optional[str], Di
 
 
 def get_aws_connection_info(
-    module: AnsibleModule,
+    module: AnsibleAWSModule,
     boto3: Optional[bool] = None,
 ) -> Tuple[Optional[str], Optional[str], Dict]:  # pylint: disable=redefined-outer-name
     if boto3 is not None:

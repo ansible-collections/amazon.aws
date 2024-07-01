@@ -41,12 +41,12 @@ import logging
 import os
 import re
 import traceback
-
-try:
-    from cStringIO import StringIO
-except ImportError:
-    # Python 3
-    from io import StringIO
+import typing
+from io import StringIO
+from typing import Any
+from typing import Dict
+from typing import NoReturn
+from typing import Optional
 
 from ansible.module_utils._text import to_native
 from ansible.module_utils.basic import AnsibleModule
@@ -150,7 +150,7 @@ class AnsibleAWSModule:
             self.logger.addHandler(logging.StreamHandler(self._botocore_endpoint_log_stream))
 
     @property
-    def params(self):
+    def params(self) -> Dict[str, Any]:
         return self._module.params
 
     def _get_resource_action_list(self):
@@ -159,56 +159,60 @@ class AnsibleAWSModule:
             ln = ln.strip()
             if not ln:
                 continue
-            found_operational_request = re.search(r"OperationModel\(name=.*?\)", ln)
-            if found_operational_request:
-                operation_request = found_operational_request.group(0)[20:-1]
-                resource = re.search(r"https://.*?\.", ln).group(0)[8:-1]
+            try:
+                found_operational_request = re.search(r"OperationModel\(name=.*?\)", ln)
+                operation_request = found_operational_request.group(0)[  # pyright: ignore[reportOptionalMemberAccess]
+                    20:-1
+                ]
+                resource = re.search(r"https://.*?\.", ln).group(0)[8:-1]  # pyright: ignore[reportOptionalMemberAccess]
                 actions.append(f"{resource}:{operation_request}")
+            except AttributeError:
+                pass
         return list(set(actions))
 
-    def exit_json(self, *args, **kwargs):
+    def exit_json(self, *args, **kwargs) -> NoReturn:
         if self.params.get("debug_botocore_endpoint_logs"):
             kwargs["resource_actions"] = self._get_resource_action_list()
-        return self._module.exit_json(*args, **kwargs)
+        self._module.exit_json(*args, **kwargs)
 
-    def fail_json(self, *args, **kwargs):
+    def fail_json(self, *args, **kwargs) -> NoReturn:
         if self.params.get("debug_botocore_endpoint_logs"):
             kwargs["resource_actions"] = self._get_resource_action_list()
-        return self._module.fail_json(*args, **kwargs)
+        self._module.fail_json(*args, **kwargs)
 
-    def debug(self, *args, **kwargs):
+    def debug(self, *args, **kwargs) -> None:
         return self._module.debug(*args, **kwargs)
 
-    def warn(self, *args, **kwargs):
+    def warn(self, *args, **kwargs) -> None:
         return self._module.warn(*args, **kwargs)
 
-    def deprecate(self, *args, **kwargs):
+    def deprecate(self, *args, **kwargs) -> None:
         return self._module.deprecate(*args, **kwargs)
 
-    def boolean(self, *args, **kwargs):
+    def boolean(self, *args, **kwargs) -> bool:
         return self._module.boolean(*args, **kwargs)
 
-    def md5(self, *args, **kwargs):
+    def md5(self, *args, **kwargs) -> str:
         return self._module.md5(*args, **kwargs)
 
-    def client(self, service, retry_decorator=None, **extra_params):
+    def client(self, service: str, retry_decorator=None, **extra_params):
         region, endpoint_url, aws_connect_kwargs = get_aws_connection_info(self)
         kw_args = dict(region=region, endpoint=endpoint_url, **aws_connect_kwargs)
         kw_args.update(extra_params)
         conn = boto3_conn(self, conn_type="client", resource=service, **kw_args)
         return conn if retry_decorator is None else RetryingBotoClientWrapper(conn, retry_decorator)
 
-    def resource(self, service, **extra_params):
+    def resource(self, service: str, **extra_params):
         region, endpoint_url, aws_connect_kwargs = get_aws_connection_info(self)
         kw_args = dict(region=region, endpoint=endpoint_url, **aws_connect_kwargs)
         kw_args.update(extra_params)
         return boto3_conn(self, conn_type="resource", resource=service, **kw_args)
 
     @property
-    def region(self):
+    def region(self) -> Optional[str]:
         return get_aws_region(self)
 
-    def fail_json_aws(self, exception, msg=None, **kwargs):
+    def fail_json_aws(self, exception: BaseException, msg: Optional[str] = None, **kwargs) -> NoReturn:
         """call fail_json with processed exception
 
         function for converting exceptions thrown by AWS SDK modules,
@@ -219,7 +223,7 @@ class AnsibleAWSModule:
         # to_native is trusted to handle exceptions that str() could
         # convert to text.
         try:
-            except_msg = to_native(exception.message)
+            except_msg = to_native(exception.message)  # pyright: ignore[reportAttributeAccessIssue]
         except AttributeError:
             except_msg = to_native(exception)
 
@@ -229,7 +233,7 @@ class AnsibleAWSModule:
             message = except_msg
 
         try:
-            response = exception.response
+            response = exception.response  # pyright: ignore[reportAttributeAccessIssue]
         except AttributeError:
             response = None
 
@@ -242,13 +246,13 @@ class AnsibleAWSModule:
 
         self.fail_json(**failure)
 
-    def fail_json_aws_error(self, exception):
+    def fail_json_aws_error(self, exception) -> NoReturn:
         """A helper to call the right failure mode after catching an AnsibleAWSError"""
         if exception.exception:
             self.fail_json_aws(exception.exception, msg=exception.message)
         self.fail_json(msg=exception.message)
 
-    def _gather_versions(self):
+    def _gather_versions(self) -> Dict[str, Any]:
         """Gather AWS SDK (boto3 and botocore) dependency versions
 
         Returns {'boto3_version': str, 'botocore_version': str}
@@ -256,7 +260,7 @@ class AnsibleAWSModule:
         """
         return gather_sdk_versions()
 
-    def require_boto3_at_least(self, desired, **kwargs):
+    def require_boto3_at_least(self, desired: str, **kwargs) -> None:
         """Check if the available boto3 version is greater than or equal to a desired version.
 
         calls fail_json() when the boto3 version is less than the desired
@@ -275,10 +279,10 @@ class AnsibleAWSModule:
                 **self._gather_versions(),
             )
 
-    def boto3_at_least(self, desired):
+    def boto3_at_least(self, desired: str) -> bool:
         return boto3_at_least(desired)
 
-    def require_botocore_at_least(self, desired, **kwargs):
+    def require_botocore_at_least(self, desired: str, **kwargs) -> None:
         """Check if the available botocore version is greater than or equal to a desired version.
 
         calls fail_json() when the botocore version is less than the desired
@@ -297,11 +301,11 @@ class AnsibleAWSModule:
                 **self._gather_versions(),
             )
 
-    def botocore_at_least(self, desired):
+    def botocore_at_least(self, desired: str) -> bool:
         return botocore_at_least(desired)
 
 
-def _aws_common_argument_spec():
+def _aws_common_argument_spec() -> Dict["str", Any]:
     """
     This does not include 'region' as some AWS APIs don't require a
     region.  However, it's not recommended to do this as it means module_defaults
@@ -365,7 +369,7 @@ def _aws_common_argument_spec():
     )
 
 
-def aws_argument_spec():
+def aws_argument_spec() -> Dict["str", Any]:
     """
     Returns a dictionary containing the argument_spec common to all AWS modules.
     """

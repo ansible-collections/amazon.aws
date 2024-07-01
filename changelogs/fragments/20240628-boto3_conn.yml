@@ -3,6 +3,7 @@ breaking_changes:
 minor_changes:
 - module_utils.botocore - the ``boto3_conn`` method now catches ``BotoCoreError`` rather than an incomplete list of subclasses ().
 - plugin_utils.botocore - the ``boto3_conn`` method now catches ``BotoCoreError`` rather than an incomplete list of subclasses ().
+- module_utils.botocore - replace use of ``botocore.Session`` with ``boto3.Session`` for consistency ().
 trivial_changes:
 - module_utils.botocore - added Type hints ().
 - plugin_utils.botocore - added Type hints ().
