@@ -187,30 +187,19 @@ route_tables:
       sample: vpc-6e2d2407
 """
 
-try:
-    import botocore
-except ImportError:
-    pass  # Handled by AnsibleAWSModule
+from typing import Any
+from typing import Dict
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleEC2Error
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_route_tables
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 
 
-@AWSRetry.jittered_backoff()
-def describe_route_tables_with_backoff(connection, **params):
-    try:
-        paginator = connection.get_paginator("describe_route_tables")
-        return paginator.paginate(**params).build_full_result()
-    except is_boto3_error_code("InvalidRouteTableID.NotFound"):
-        return None
-
-
-def normalize_route(route):
+def normalize_route(route: Dict[str, Any]) -> Dict[str, Any]:
     # Historically these were all there, but set to null when empty'
     for legacy_key in ["DestinationCidrBlock", "GatewayId", "InstanceId", "Origin", "State", "NetworkInterfaceId"]:
         if legacy_key not in route:
@@ -219,13 +208,13 @@ def normalize_route(route):
     return route
 
 
-def normalize_association(assoc):
+def normalize_association(assoc: Dict[str, Any]) -> Dict[str, Any]:
     # Name change between boto v2 and boto v3, return both
     assoc["Id"] = assoc["RouteTableAssociationId"]
     return assoc
 
 
-def normalize_route_table(table):
+def normalize_route_table(table: Dict[str, Any]) -> Dict[str, Any]:
     table["tags"] = boto3_tag_list_to_ansible_dict(table["Tags"])
     table["Associations"] = [normalize_association(assoc) for assoc in table["Associations"]]
     table["Routes"] = [normalize_route(route) for route in table["Routes"]]
@@ -234,39 +223,26 @@ def normalize_route_table(table):
     return camel_dict_to_snake_dict(table, ignore_list=["tags"])
 
 
-def normalize_results(results):
-    """
-    We used to be a boto v2 module, make sure that the old return values are
-    maintained and the shape of the return values are what people expect
-    """
-
-    routes = [normalize_route_table(route) for route in results["RouteTables"]]
-    del results["RouteTables"]
-    results = camel_dict_to_snake_dict(results)
-    results["route_tables"] = routes
-    return results
-
-
-def list_ec2_vpc_route_tables(connection, module):
+def list_ec2_vpc_route_tables(connection, module: AnsibleAWSModule) -> None:
     filters = ansible_dict_to_boto3_filter_list(module.params.get("filters"))
 
     try:
-        results = describe_route_tables_with_backoff(connection, Filters=filters)
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        module.fail_json_aws(e, msg="Failed to get route tables")
+        route_tables = describe_route_tables(connection, Filters=filters)
+    except AnsibleEC2Error as e:
+        module.fail_json_aws_error(e)
 
-    results = normalize_results(results)
-    module.exit_json(changed=False, **results)
+    route_tables = [normalize_route_table(table) for table in route_tables]
+    module.exit_json(changed=False, route_tables=route_tables)
 
 
-def main():
+def main() -> None:
     argument_spec = dict(
         filters=dict(default={}, type="dict"),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
-    connection = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff(retries=10))
+    connection = module.client("ec2")
 
     list_ec2_vpc_route_tables(connection, module)
 
