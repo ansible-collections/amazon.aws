@@ -59,8 +59,8 @@
         instance_type: t2.micro
         wait: false
         security_group: "{{ vpc_sg_id }}"
-        network:
-          private_ip_address: "{{ ec2_ips[item] }}"
+        network_interfaces:
+          - private_ip_address: "{{ ec2_ips[item] }}"
       register: ec2_instances
       loop:
         - 0

@@ -19,8 +19,10 @@
           TestId: "{{ ec2_instance_tag_TestId }}"
           Something: else
         security_groups: "{{ sg.group_id }}"
-        network:
-          source_dest_check: false
+        network_interfaces:
+          - device_index: 0
+            assign_public_ip: false
+        source_dest_check: false
         vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
         instance_type: "{{ ec2_instance_type }}"
         wait: false
@@ -39,8 +41,10 @@
           TestId: "{{ ec2_instance_tag_TestId }}"
           Something: else
         security_groups: "{{ sg.group_id }}"
-        network:
-          source_dest_check: false
+        network_interfaces:
+          - device_index: 0
+            assign_public_ip: false
+        source_dest_check: false
         vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
         instance_type: "{{ ec2_instance_type }}"
       check_mode: true
@@ -178,3 +182,68 @@
         that:
           - _purge_tags.instances[0].tags | length == 1
           - _purge_tags.instances[0].tags.Name.startswith(resource_prefix)
+
+    - name: Update source_dest_check to true (check_mode)
+      amazon.aws.ec2_instance:
+        state: present
+        name: "{{ resource_prefix }}-test-basic-vpc-create"
+        image_id: "{{ ec2_ami_id }}"
+        tags:
+          TestId: "{{ ec2_instance_tag_TestId }}"
+          Something: else
+        security_groups: "{{ sg.group_id }}"
+        source_dest_check: true
+        vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+        instance_type: "{{ ec2_instance_type }}"
+      check_mode: true
+      register: update_source_dest_check_checkmode
+
+    - name: Ensure module reported change when running in check_mode
+      ansible.builtin.assert:
+        that:
+          - update_source_dest_check_checkmode is changed
+
+    - name: Update source_dest_check to true
+      amazon.aws.ec2_instance:
+        state: present
+        name: "{{ resource_prefix }}-test-basic-vpc-create"
+        image_id: "{{ ec2_ami_id }}"
+        tags:
+          TestId: "{{ ec2_instance_tag_TestId }}"
+          Something: else
+        security_groups: "{{ sg.group_id }}"
+        source_dest_check: true
+        vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+        instance_type: "{{ ec2_instance_type }}"
+      register: update_source_dest_check
+
+    - name: fact presented ec2 instance
+      amazon.aws.ec2_instance_info:
+        filters:
+          tag:Name: "{{ resource_prefix }}-test-basic-vpc-create"
+      register: presented_instance_fact
+
+    - name: Ensure module reported change and instance was updated
+      ansible.builtin.assert:
+        that:
+          - update_source_dest_check is changed
+          - presented_instance_fact.instances.0.source_dest_check
+
+    - name: Update source_dest_check to true (idempotency)
+      amazon.aws.ec2_instance:
+        state: present
+        name: "{{ resource_prefix }}-test-basic-vpc-create"
+        image_id: "{{ ec2_ami_id }}"
+        tags:
+          TestId: "{{ ec2_instance_tag_TestId }}"
+          Something: else
+        security_groups: "{{ sg.group_id }}"
+        source_dest_check: true
+        vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+        instance_type: "{{ ec2_instance_type }}"
+      register: update_source_dest_check_idempotency
+
+    - name: Ensure module did not reported change
+      ansible.builtin.assert:
+        that:
+          - update_source_dest_check_idempotency is not changed
