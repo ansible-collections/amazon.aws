@@ -16,8 +16,8 @@ description:
 options:
   state:
     description:
-      - Use O(state=present) to import single or multi-volume disk images or EBS snapshots into an Amazon Machine Image (AMI).
-      - Use O(state=absent) to cancel an in-process import virtual machine task.
+      - Use I(state=present) to import single or multi-volume disk images or EBS snapshots into an Amazon Machine Image (AMI).
+      - Use I(state=absent) to cancel an in-process import virtual machine task.
     default: "present"
     choices: ["present", "absent"]
     type: str
@@ -101,7 +101,7 @@ options:
   encrypted:
     description:
       - Specifies whether the destination AMI of the imported image should be encrypted.
-      - The default KMS key for EBS is used unless you specify a non-default KMS key using O(kms_key_id).
+      - The default KMS key for EBS is used unless you specify a non-default KMS key using I(kms_key_id).
     type: bool
   hypervisor:
     description:
@@ -113,7 +113,7 @@ options:
       - An identifier for the symmetric KMS key to use when creating the encrypted AMI.
         This parameter is only required if you want to use a non-default KMS key;
         if this parameter is not specified, the default KMS key for EBS is used.
-        If a O(kms_key_id) is specified, the O(encrypted) flag must also be set.
+        If a I(kms_key_id) is specified, the I(encrypted) flag must also be set.
     type: str
   license_type:
     description:
@@ -303,34 +303,23 @@ import_image:
       type: dict
 """
 
-import copy
-
 try:
     import botocore
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
-from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import helper_describe_import_image_tasks
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleEC2Error
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import cancel_import_task
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_import_image_tasks_as_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import import_image
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
 
 
-def ensure_ec2_import_image_result(import_image_info):
-    result = {"import_image": {}}
-    if import_image_info:
-        image = copy.deepcopy(import_image_info[0])
-        image["Tags"] = boto3_tag_list_to_ansible_dict(image["Tags"])
-        result["import_image"] = camel_dict_to_snake_dict(image, ignore_list=["Tags"])
-    return result
-
-
-def absent(client, module):
+def absent(client, module: AnsibleAWSModule) -> None:
     """
     Cancel an in-process import virtual machine
     """
@@ -342,35 +331,36 @@ def absent(client, module):
         ]
     }
 
-    params = {}
-
-    if module.params.get("cancel_reason"):
-        params["CancelReason"] = module.params["cancel_reason"]
-
-    import_image_info = helper_describe_import_image_tasks(client, module, **filters)
+    try:
+        import_image_info = describe_import_image_tasks_as_snake_dict(client, **filters)
+    except AnsibleEC2Error as e:
+        module.fail_json_aws_error(e)
 
     if import_image_info:
-        params["ImportTaskId"] = import_image_info[0]["ImportTaskId"]
-        import_image_info[0]["TaskName"] = module.params["task_name"]
+        result = import_image_info[0]
+        result["task_name"] = module.params["task_name"]
 
         if module.check_mode:
             module.exit_json(changed=True, msg="Would have cancelled the import task if not in check mode")
 
         try:
-            client.cancel_import_task(aws_retry=True, **params)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Failed to import the image")
+            changed = cancel_import_task(
+                client,
+                import_task_id=result["import_task_id"],
+                cancel_reason=module.params.get("cancel_reason"),
+            )
+            module.exit_json(changed=changed, import_image=result)
+        except AnsibleEC2Error as e:
+            module.fail_json_aws_error(e)
     else:
         module.exit_json(
             changed=False,
             msg="The specified import task does not exist or it cannot be cancelled",
-            **{"import_image": {}},
+            import_image={},
         )
 
-    module.exit_json(changed=True, **ensure_ec2_import_image_result(import_image_info))
 
-
-def present(client, module):
+def present(client, module: AnsibleAWSModule) -> None:
     params = {}
     tags = module.params.get("tags") or {}
     tags.update({"Name": module.params["task_name"]})
@@ -411,14 +401,18 @@ def present(client, module):
             {"Name": "task-state", "Values": ["completed", "active", "deleting"]},
         ]
     }
-    import_image_info = helper_describe_import_image_tasks(client, module, **filters)
+    try:
+        import_image_info = describe_import_image_tasks_as_snake_dict(client, **filters)
+    except AnsibleEC2Error as e:
+        module.fail_json_aws_error(e)
 
     if import_image_info:
-        import_image_info[0]["TaskName"] = module.params["task_name"]
+        result = import_image_info[0]
+        result["task_name"] = module.params["task_name"]
         module.exit_json(
             changed=False,
             msg="An import task with the specified name already exists",
-            **ensure_ec2_import_image_result(import_image_info),
+            import_image=result,
         )
     else:
         if module.check_mode:
@@ -427,13 +421,18 @@ def present(client, module):
         params = scrub_none_parameters(params)
 
         try:
-            client.import_image(aws_retry=True, **params)
-            import_image_info = helper_describe_import_image_tasks(client, module, **filters)
-            import_image_info[0]["TaskName"] = module.params["task_name"]
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Failed to import the image")
-
-    module.exit_json(changed=True, **ensure_ec2_import_image_result(import_image_info))
+            import_image(client, **params)
+            import_image_info = describe_import_image_tasks_as_snake_dict(client, **filters)
+            result = {}
+            if import_image_info:
+                result = import_image_info[0]
+                result["task_name"] = module.params["task_name"]
+            module.exit_json(
+                changed=True,
+                import_image=result,
+            )
+        except AnsibleEC2Error as e:
+            module.fail_json_aws_error(e)
 
 
 def main():
@@ -498,7 +497,7 @@ def main():
     state = module.params.get("state")
 
     try:
-        client = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff())
+        client = module.client("ec2")
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to connect to AWS.")
 
