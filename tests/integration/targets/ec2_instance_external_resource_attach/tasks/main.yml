@@ -39,9 +39,8 @@
         state: present
         name: "{{ resource_prefix }}-test-eni-vpc"
         key_name: "{{ resource_prefix }}_test_key"
-        network:
-          interfaces:
-            - id: "{{ eni_a.interface.id }}"
+        network_interfaces_ids:
+          - id: "{{ eni_a.interface.id }}"
         image_id: "{{ ec2_ami_id }}"
         availability_zone: "{{ subnet_b_az }}"
         tags:
@@ -65,10 +64,9 @@
       amazon.aws.ec2_instance:
         state: present
         name: "{{ resource_prefix }}-test-eni-vpc"
-        network:
-          interfaces:
-            - id: "{{ eni_a.interface.id }}"
-            - id: "{{ eni_b.interface.id }}"
+        network_interfaces_ids:
+          - id: "{{ eni_a.interface.id }}"
+          - id: "{{ eni_b.interface.id }}"
         image_id: "{{ ec2_ami_id }}"
         tags:
           TestId: "{{ ec2_instance_tag_TestId }}"
@@ -98,10 +96,9 @@
       amazon.aws.ec2_instance:
         state: present
         name: "{{ resource_prefix }}-test-eni-vpc"
-        network:
-          interfaces:
-            - id: "{{ eni_a.interface.id }}"
-            - id: "{{ eni_b.interface.id }}"
+        network_interfaces_ids:
+          - id: "{{ eni_a.interface.id }}"
+          - id: "{{ eni_b.interface.id }}"
         image_id: "{{ ec2_ami_id }}"
         tags:
           TestId: "{{ ec2_instance_tag_TestId }}"
@@ -133,9 +130,8 @@
         state: present
         name: "{{ resource_prefix }}-test-eni-vpc-checkmode"
         key_name: "{{ resource_prefix }}_test_key"
-        network:
-          interfaces:
-            - id: "{{ eni_c.interface.id }}"
+        network_interfaces_ids:
+          - id: "{{ eni_c.interface.id }}"
         image_id: "{{ ec2_ami_id }}"
         availability_zone: "{{ subnet_b_az }}"
         tags:

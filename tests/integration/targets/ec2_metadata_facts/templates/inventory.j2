@@ -12,15 +12,16 @@ testhost_py2
 
 [testhost:vars]
 ansible_ssh_private_key_file="{{ sshkey }}"
-ansible_python_interpreter=/usr/bin/env python
 
 [testhost_py3:vars]
 ansible_user="{{ ec2_ami_ssh_user }}"
 image_id="{{ ec2_ami_id }}"
+ansible_python_interpreter=python3
 
 [testhost_py2:vars]
 ansible_user="{{ ec2_ami_ssh_user_py2 }}"
 image_id="{{ ec2_ami_id_py2 }}"
+ansible_python_interpreter=python2
 
 [all:vars]
 # Template vars that will need to be used in used in tests and teardown

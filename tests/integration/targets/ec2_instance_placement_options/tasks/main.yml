@@ -58,6 +58,7 @@
           TestId: "{{ ec2_instance_tag_TestId }}"
         security_group: default
         instance_type: "{{ ec2_instance_type }}"
+        availability_zone: us-east-1c
         wait: true
       ignore_errors: true
       register: instance_creation
