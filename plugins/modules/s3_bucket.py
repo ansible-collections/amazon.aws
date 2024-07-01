@@ -166,6 +166,12 @@ options:
     type: bool
     default: false
     version_added: 6.0.0
+  accelerate_enabled:
+    description:
+      - Enables Amazon S3 Transfer Acceleration, sent data will be routed to Amazon S3 over an optimized network path.
+    type: bool
+    default: false
+    version_added: 8.1.0
 
 extends_documentation_fragment:
   - amazon.aws.common.modules
@@ -286,6 +292,12 @@ EXAMPLES = r"""
     name: mys3bucket
     state: present
     acl: public-read
+
+# Enable transfer acceleration
+- amazon.aws.s3_bucket:
+    name: mys3bucket
+    state: present
+    accelerate_enabled: true
 """
 
 RETURN = r"""
@@ -348,6 +360,11 @@ acl:
     type: dict
     returned: I(state=present)
     sample: 'public-read'
+accelerate_enabled:
+    description: S3 bucket acceleration status.
+    type: bool
+    returned: O(state=present)
+    sample: true
 """
 
 import json
@@ -832,6 +849,49 @@ def handle_bucket_object_lock(s3_client, module: AnsibleAWSModule, name: str) ->
     return object_lock_result
 
 
+def handle_bucket_accelerate(s3_client, module: AnsibleAWSModule, name: str) -> tuple[bool, bool]:
+    """
+    Manage transfer accelerate for an S3 bucket.
+    Parameters:
+        s3_client (boto3.client): The Boto3 S3 client object.
+        module (AnsibleAWSModule): The Ansible module object.
+        name (str): The name of the bucket to handle transfer accelerate for.
+    Returns:
+        A tuple containing a boolean indicating whether transfer accelerate setting was changed
+        and a boolean indicating the transfer accelerate status.
+    """
+    accelerate_enabled = module.params.get("accelerate_enabled")
+    accelerate_enabled_result = False
+    accelerate_enabled_changed = False
+    try:
+        accelerate_status = get_bucket_accelerate_status(s3_client, name)
+        accelerate_enabled_result = accelerate_status
+    except is_boto3_error_code(["NotImplemented", "XNotImplemented"]) as e:
+        if accelerate_enabled is not None:
+            module.fail_json_aws(e, msg="Fetching bucket transfer acceleration state is not supported")
+    except is_boto3_error_code("AccessDenied") as e:  # pylint: disable=duplicate-except
+        if accelerate_enabled is not None:
+            module.fail_json_aws(e, msg="Permission denied fetching transfer acceleration for bucket")
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Failed to fetch bucket transfer acceleration state")
+    else:
+        try:
+            if not accelerate_enabled and accelerate_status:
+                delete_bucket_accelerate_configuration(s3_client, name)
+                accelerate_enabled_changed = True
+                accelerate_enabled_result = False
+            if accelerate_enabled and not accelerate_status:
+                put_bucket_accelerate_configuration(s3_client, name)
+                accelerate_enabled_changed = True
+                accelerate_enabled_result = True
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+            module.fail_json_aws(e, msg="Failed to update bucket transfer acceleration")
+    return accelerate_enabled_changed, accelerate_enabled_result
+
+
 def create_or_update_bucket(s3_client, module: AnsibleAWSModule):
     """
     Create or update an S3 bucket along with its associated configurations.
@@ -908,6 +968,10 @@ def create_or_update_bucket(s3_client, module: AnsibleAWSModule):
     bucket_object_lock_result = handle_bucket_object_lock(s3_client, module, name)
     result["object_lock_enabled"] = bucket_object_lock_result
 
+    # -- Transfer Acceleration
+    bucket_accelerate_changed, bucket_accelerate_result = handle_bucket_accelerate(s3_client, module, name)
+    result["accelerate_enabled"] = bucket_accelerate_result
+
     # Module exit
     changed = (
         changed
@@ -919,6 +983,7 @@ def create_or_update_bucket(s3_client, module: AnsibleAWSModule):
         or encryption_changed
         or bucket_ownership_changed
         or bucket_acl_changed
+        or bucket_accelerate_changed
     )
     module.exit_json(changed=changed, name=name, **result)
 
@@ -971,6 +1036,47 @@ def create_bucket(s3_client, bucket_name: str, location: str, object_lock_enable
         # We should never get here since we check the bucket presence before calling the create_or_update_bucket
         # method. However, the AWS Api sometimes fails to report bucket presence, so we catch this exception
         return False
+
+
+@AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
+def put_bucket_accelerate_configuration(s3_client, bucket_name):
+    """
+    Enable transfer accelerate for the S3 bucket.
+    Parameters:
+        s3_client (boto3.client): The Boto3 S3 client object.
+        bucket_name (str): The name of the S3 bucket.
+    Returns:
+        None
+    """
+    s3_client.put_bucket_accelerate_configuration(Bucket=bucket_name, AccelerateConfiguration={"Status": "Enabled"})
+
+
+@AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
+def delete_bucket_accelerate_configuration(s3_client, bucket_name):
+    """
+    Disable transfer accelerate for the S3 bucket.
+    Parameters:
+        s3_client (boto3.client): The Boto3 S3 client object.
+        bucket_name (str): The name of the S3 bucket.
+    Returns:
+        None
+    """
+
+    s3_client.put_bucket_accelerate_configuration(Bucket=bucket_name, AccelerateConfiguration={"Status": "Suspended"})
+
+
+@AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
+def get_bucket_accelerate_status(s3_client, bucket_name) -> bool:
+    """
+    Get transfer accelerate status of the S3 bucket.
+    Parameters:
+        s3_client (boto3.client): The Boto3 S3 client object.
+        bucket_name (str): The name of the S3 bucket.
+    Returns:
+        Transfer accelerate status of the S3 bucket.
+    """
+    accelerate_configuration = s3_client.get_bucket_accelerate_configuration(Bucket=bucket_name)
+    return accelerate_configuration.get("Status") == "Enabled"
 
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
@@ -1732,6 +1838,7 @@ def main():
         acl=dict(type="str", choices=["private", "public-read", "public-read-write", "authenticated-read"]),
         validate_bucket_name=dict(type="bool", default=True),
         dualstack=dict(default=False, type="bool"),
+        accelerate_enabled=dict(default=False, type="bool"),
         object_lock_enabled=dict(type="bool"),
     )
 
