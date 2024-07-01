@@ -1,0 +1,7 @@
+---
+profile: production
+
+exclude_paths:
+  - changelogs/changelog.yaml
+  - tests/
+  - .github/
