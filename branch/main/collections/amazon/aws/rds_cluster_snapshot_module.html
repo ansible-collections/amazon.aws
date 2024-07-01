@@ -479,9 +479,9 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <div class="ansibleOptionAnchor" id="return-allocated_storage"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-snapshot-module-return-allocated-storage"><strong>allocated_storage</strong></p>
 <a class="ansibleOptionLink" href="#return-allocated_storage" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Specifies the allocated storage size in gibibytes (GiB).</p>
+<td><div class="ansible-option-cell"><p>The allocated storage size of the DB cluster snapshot in gibibytes (GiB).</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">20</span></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">0</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -497,9 +497,9 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <div class="ansibleOptionAnchor" id="return-cluster_create_time"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-snapshot-module-return-cluster-create-time"><strong>cluster_create_time</strong></p>
 <a class="ansibleOptionLink" href="#return-cluster_create_time" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Specifies the time when the DB cluster was created, in Universal Coordinated Time (UTC).</p>
+<td><div class="ansible-option-cell"><p>The time when the DB cluster was created, in Universal Coordinated Time (UTC).</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2019-06-15T10:15:56.221000+00:00&quot;</span></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2024-07-01T05:27:53.478000+00:00&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -659,15 +659,16 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 </div></td>
 <td><div class="ansible-option-cell"><p>A list of tags.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[]</span></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[{&quot;key&quot;:</span> <span class="pre">&quot;tag_one&quot;,</span> <span class="pre">&quot;value&quot;:</span> <span class="pre">&quot;ansible-test-123456789012-rds-cluster-snapshot-b</span> <span class="pre">One&quot;}]</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-snapshot-module-return-tags"><strong>tags</strong></p>
-<a class="ansibleOptionLink" href="#return-tags" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
+<a class="ansibleOptionLink" href="#return-tags" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Tags applied to the snapshot.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;Tag</span> <span class="pre">Two&quot;:</span> <span class="pre">&quot;two</span> <span class="pre">ansible-test-123456789012-rds-cluster-snapshot-b&quot;}</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
