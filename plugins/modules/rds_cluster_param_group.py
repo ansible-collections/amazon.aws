@@ -121,7 +121,7 @@ db_cluster_parameter_group:
             description: A dictionary of tags.
             type: dict
             returned: when O(state=present)
-            sample: tags: {
+            sample: {
                 "another": "tag",
                 "resource_prefix": "ansible-test-53268383-redhat",
                 "some": "tag"

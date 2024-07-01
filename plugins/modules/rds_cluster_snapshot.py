@@ -153,11 +153,6 @@ vpc_id:
   returned: always
   type: str
   sample: vpc-09ff232e222710ae0
-cluster_create_time:
-  description: Specifies the time when the DB cluster was created, in Universal Coordinated Time (UTC).
-  returned: always
-  type: str
-  sample: "2019-06-15T10:15:56.221000+00:00"
 master_username:
   description: Provides the master username for this DB cluster snapshot.
   returned: always
@@ -219,8 +214,8 @@ tag_list:
 tags:
   description: Tags applied to the snapshot.
   returned: always
-  type: complex
-  contains: {
+  type: dict
+  sample: {
         "Tag Two": "two ansible-test-123456789012-rds-cluster-snapshot-b"
         }
 """
