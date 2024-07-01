@@ -201,32 +201,15 @@ subnets:
             type: str
 """
 
-try:
-    import botocore
-except ImportError:
-    pass  # Handled by AnsibleAWSModule
-
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_subnets
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 
 
-@AWSRetry.exponential_backoff()
-def describe_subnets_with_backoff(connection, subnet_ids, filters):
-    """
-    Describe Subnets with AWSRetry backoff throttling support.
-
-    connection  : boto3 client connection object
-    subnet_ids  : list of subnet ids for which to gather information
-    filters     : additional filters to apply to request
-    """
-    return connection.describe_subnets(SubnetIds=subnet_ids, Filters=filters)
-
-
-def describe_subnets(connection, module):
+def _describe_subnets(connection, module: AnsibleAWSModule) -> None:
     """
     Describe Subnets.
 
@@ -245,12 +228,9 @@ def describe_subnets(connection, module):
     subnet_info = list()
 
     # Get the basic VPC info
-    try:
-        response = describe_subnets_with_backoff(connection, subnet_ids, filters)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to describe subnets")
+    subnets = describe_subnets(connection, SubnetIds=subnet_ids, Filters=filters)
 
-    for subnet in response["Subnets"]:
+    for subnet in subnets:
         # for backwards compatibility
         subnet["id"] = subnet["SubnetId"]
         subnet_info.append(camel_dict_to_snake_dict(subnet))
@@ -260,7 +240,7 @@ def describe_subnets(connection, module):
     module.exit_json(subnets=subnet_info)
 
 
-def main():
+def main() -> None:
     argument_spec = dict(
         subnet_ids=dict(type="list", elements="str", default=[], aliases=["subnet_id"]),
         filters=dict(type="dict", default={}),
@@ -270,7 +250,7 @@ def main():
 
     connection = module.client("ec2")
 
-    describe_subnets(connection, module)
+    _describe_subnets(connection, module)
 
 
 if __name__ == "__main__":
