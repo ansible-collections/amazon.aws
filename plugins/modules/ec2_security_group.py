@@ -563,6 +563,7 @@ vpc_id:
   returned: on create/update
 """
 
+
 import itertools
 import json
 import re
@@ -570,13 +571,11 @@ from collections import namedtuple
 from copy import deepcopy
 from ipaddress import ip_network
 from time import sleep
-
-try:
-    import botocore
-    from botocore.exceptions import BotoCoreError
-    from botocore.exceptions import ClientError
-except ImportError:
-    pass  # Handled by AnsibleAWSModule
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Tuple
 
 from ansible.module_utils._text import to_text
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
@@ -584,17 +583,27 @@ from ansible.module_utils.common.network import to_ipv6_subnet
 from ansible.module_utils.common.network import to_subnet
 from ansible.module_utils.six import string_types
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleEC2Error
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import authorize_security_group_egress
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import authorize_security_group_ingress
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import create_security_group
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import delete_security_group
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_security_groups
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import revoke_security_group_egress
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import revoke_security_group_ingress
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import update_security_group_rule_descriptions_egress
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import update_security_group_rule_descriptions_ingress
+from ansible_collections.amazon.aws.plugins.module_utils.exceptions import AnsibleAWSError
+from ansible_collections.amazon.aws.plugins.module_utils.exceptions import is_ansible_aws_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.iam import get_aws_account_id
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
-from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
+from ansible_collections.amazon.aws.plugins.module_utils.waiters import wait_for_resource_state
 
 Rule = namedtuple("Rule", ["port_range", "protocol", "target", "target_type", "description"])
 TARGET_TYPES_ALL = {"ipv4", "ipv6", "group", "ip_prefix"}
@@ -613,6 +622,8 @@ class SecurityGroupError(Exception):
     # Simple helper to perform the module.fail_... call once we have module available to us
     def fail(self, module):
         if self.exception:
+            if isinstance(self.exception, AnsibleEC2Error):
+                module.fail_json_aws_error(self.exception)
             module.fail_json_aws(self.exception, msg=self.message, **self.kwargs)
         module.fail_json(msg=self.message, **self.kwargs)
 
@@ -751,19 +762,6 @@ def rule_from_group_permission(perm):
             )
 
 
-# Wrap just this method so we can retry on missing groups
-@AWSRetry.jittered_backoff(retries=5, delay=5, catch_extra_error_codes=["InvalidGroup.NotFound"])
-def get_security_groups_with_backoff(client, **kwargs):
-    return client.describe_security_groups(**kwargs)
-
-
-def sg_exists_with_backoff(client, **kwargs):
-    try:
-        return client.describe_security_groups(aws_retry=True, **kwargs)
-    except is_boto3_error_code("InvalidGroup.NotFound"):
-        return {"SecurityGroups": []}
-
-
 def deduplicate_rules_args(rules):
     """Returns unique rules"""
     if rules is None:
@@ -804,37 +802,36 @@ def _target_from_rule_with_group_id(rule, groups):
     return "group", (owner_id, group_id, group_name), False
 
 
-def _lookup_target_or_fail(client, group_name, vpc_id, groups, msg):
-    owner_id = current_account_id
+def _lookup_target_or_fail(client, group_name: str, vpc_id: Optional[str], msg: str) -> Optional[Dict[str, Any]]:
     filters = {"group-name": group_name}
     if vpc_id:
         filters["vpc-id"] = vpc_id
 
     filters = ansible_dict_to_boto3_filter_list(filters)
     try:
-        found_group = get_security_groups_with_backoff(client, Filters=filters).get("SecurityGroups", [])[0]
-    except (is_boto3_error_code("InvalidGroup.NotFound"), IndexError):
-        raise SecurityGroupError(msg=msg)
-    except (BotoCoreError, ClientError) as e:  # pylint: disable=duplicate-except
+        found_group = describe_security_groups(client, Filters=filters)
+        if not found_group:
+            raise SecurityGroupError(msg=msg)
+        return found_group[0]
+    except AnsibleEC2Error as e:
         raise SecurityGroupError(msg="Failed to get security group", e=e)
 
-    group_id = found_group["GroupId"]
-    groups[group_id] = found_group
-    groups[group_name] = found_group
-    return "group", (owner_id, group_id, None), False
 
-
-def _create_target_from_rule(client, rule, groups, vpc_id, tags, check_mode):
-    owner_id = current_account_id
+def _create_target_from_rule(
+    client, module: AnsibleAWSModule, rule: Dict[str, Any], vpc_id: str, tags: Dict[str, Any]
+) -> Tuple[Optional[Dict[str, Any]], bool]:
     # We can't create a group in check mode...
-    if check_mode:
-        return "group", (owner_id, None, None), True
+    if module.check_mode:
+        return None, True
 
     group_name = rule["group_name"]
+    changed = False
+    group = None
 
     try:
-        created_group = _create_security_group_with_wait(client, group_name, rule["group_desc"], vpc_id, tags)
-    except is_boto3_error_code("InvalidGroup.Duplicate"):
+        group = _create_security_group_with_wait(client, module, group_name, rule["group_desc"], vpc_id, tags)
+        changed = True
+    except is_ansible_aws_error_code("InvalidGroup.Duplicate") as e:
         # The group exists, but didn't show up in any of our previous describe-security-groups calls
         # Try searching on a filter for the name, and allow a retry window for AWS to update
         # the model on their end.
@@ -843,43 +840,48 @@ def _create_target_from_rule(client, rule, groups, vpc_id, tags, check_mode):
             "Make sure the group exists and try using the group_id "
             "instead of the name"
         )
-        return _lookup_target_or_fail(client, group_name, vpc_id, groups, fail_msg)
-    except (BotoCoreError, ClientError) as e:
-        raise SecurityGroupError(msg="Failed to create security group '{0}' in rule {1}", e=e)
-
-    group_id = created_group["GroupId"]
-    groups[group_id] = created_group
-    groups[group_name] = created_group
-
-    return "group", (owner_id, group_id, None), True
+        group = _lookup_target_or_fail(client, group_name, vpc_id, fail_msg)
+        changed = False
+    except AnsibleAWSError as e:  # pylint: disable=duplicate-except
+        raise SecurityGroupError(msg=f"Failed to create security group '{group_name}' in rule {rule}", e=e)
+    return group, changed
 
 
-def _target_from_rule_with_group_name(client, rule, name, group, groups, vpc_id, tags, check_mode):
+def _target_from_rule_with_group_name(
+    client,
+    module: AnsibleAWSModule,
+    rule: Dict[str, Any],
+    name: str,
+    group: Dict[str, Any],
+    groups: Dict[str, Any],
+    vpc_id: str,
+    tags: Dict[str, Any],
+) -> Tuple[str, bool]:
     group_name = rule["group_name"]
-    owner_id = current_account_id
     if group_name == name:
         # Simplest case, the rule references itself
         group_id = group["GroupId"]
         groups[group_id] = group
         groups[group_name] = group
-        return "group", (owner_id, group_id, None), False
+        return group_id, False
 
     # Already cached groups
     if group_name in groups and group.get("VpcId") and groups[group_name].get("VpcId"):
         # both are VPC groups, this is ok
         group_id = groups[group_name]["GroupId"]
-        return "group", (owner_id, group_id, None), False
+        return group_id, False
 
     if group_name in groups and not (group.get("VpcId") or groups[group_name].get("VpcId")):
         # both are EC2 classic, this is ok
         group_id = groups[group_name]["GroupId"]
-        return "group", (owner_id, group_id, None), False
+        return group_id, False
 
     # if we got here, either the target group does not exist, or there
     # is a mix of EC2 classic + VPC groups. Mixing of EC2 classic + VPC
     # is bad, so we have to create a new SG because no compatible group
     # exists
 
+    changed = False
     # Without a group description we can't create a new group, try looking up the group, or fail
     # with a descriptive error message
     if not rule.get("group_desc", "").strip():
@@ -888,9 +890,17 @@ def _target_from_rule_with_group_name(client, rule, name, group, groups, vpc_id,
             f"group '{group_name}' not found and would be automatically created by rule {rule} but "
             "no description was provided"
         )
-        return _lookup_target_or_fail(client, group_name, vpc_id, groups, fail_msg)
+        created_group = _lookup_target_or_fail(client, group_name, vpc_id, fail_msg)
+    else:
+        created_group, changed = _create_target_from_rule(client, module, rule, vpc_id, tags)
 
-    return _create_target_from_rule(client, rule, groups, vpc_id, tags, check_mode)
+    group_id = None
+    if created_group:
+        group_id = created_group["GroupId"]
+        groups[group_id] = created_group
+        groups[group_name] = created_group
+
+    return group_id, changed
 
 
 def get_target_from_rule(module, client, rule, name, group, groups, vpc_id, tags):
@@ -914,7 +924,10 @@ def get_target_from_rule(module, client, rule, name, group, groups, vpc_id, tags
         if rule.get("group_id"):
             return _target_from_rule_with_group_id(rule, groups)
         if "group_name" in rule:
-            return _target_from_rule_with_group_name(client, rule, name, group, groups, vpc_id, tags, module.check_mode)
+            group_id, changed = _target_from_rule_with_group_name(
+                client, module, rule, name, group, groups, vpc_id, tags
+            )
+            return "group", (current_account_id, group_id, None), changed
         if "cidr_ip" in rule:
             return "ipv4", validate_ip(module, rule["cidr_ip"]), False
         if "cidr_ipv6" in rule:
@@ -1005,20 +1018,23 @@ def expand_ports_list(ports):
     return ports_expanded
 
 
-def update_rules_description(module, client, rule_type, group_id, ip_permissions):
+def update_rules_description(
+    module: AnsibleAWSModule, client, rule_type: str, group_id: str, ip_permissions: List[Dict[str, Any]]
+) -> bool:
     if module.check_mode:
-        return
+        return True
     try:
         if rule_type == "in":
-            client.update_security_group_rule_descriptions_ingress(
-                aws_retry=True, GroupId=group_id, IpPermissions=ip_permissions
+            changed = update_security_group_rule_descriptions_ingress(
+                client, GroupId=group_id, IpPermissions=ip_permissions
             )
         if rule_type == "out":
-            client.update_security_group_rule_descriptions_egress(
-                aws_retry=True, GroupId=group_id, IpPermissions=ip_permissions
+            changed = update_security_group_rule_descriptions_egress(
+                client, GroupId=group_id, IpPermissions=ip_permissions
             )
-    except (ClientError, BotoCoreError) as e:
+    except AnsibleEC2Error as e:
         module.fail_json_aws(e, msg=f"Unable to update rule description for group {group_id}")
+    return changed
 
 
 def fix_port_and_protocol(permission):
@@ -1034,44 +1050,62 @@ def fix_port_and_protocol(permission):
     return permission
 
 
-def remove_old_permissions(client, module, revoke_ingress, revoke_egress, group_id):
+def remove_old_permissions(
+    client,
+    module: AnsibleAWSModule,
+    revoke_ingress: List[Dict[str, Any]],
+    revoke_egress: List[Dict[str, Any]],
+    group_id: str,
+) -> bool:
+    changed = False
     if revoke_ingress:
-        revoke(client, module, revoke_ingress, group_id, "in")
+        changed |= revoke(client, module, revoke_ingress, group_id, "in")
     if revoke_egress:
-        revoke(client, module, revoke_egress, group_id, "out")
-    return bool(revoke_ingress or revoke_egress)
+        changed |= revoke(client, module, revoke_egress, group_id, "out")
+    return changed
 
 
-def revoke(client, module, ip_permissions, group_id, rule_type):
-    if not module.check_mode:
-        try:
-            if rule_type == "in":
-                client.revoke_security_group_ingress(aws_retry=True, GroupId=group_id, IpPermissions=ip_permissions)
-            elif rule_type == "out":
-                client.revoke_security_group_egress(aws_retry=True, GroupId=group_id, IpPermissions=ip_permissions)
-        except (BotoCoreError, ClientError) as e:
-            rules = "ingress rules" if rule_type == "in" else "egress rules"
-            module.fail_json_aws(e, f"Unable to revoke {rules}: {ip_permissions}")
+def revoke(
+    client, module: AnsibleAWSModule, ip_permissions: List[Dict[str, Any]], group_id: str, rule_type: str
+) -> bool:
+    if module.check_mode:
+        return True
+    try:
+        if rule_type == "in":
+            changed = revoke_security_group_ingress(client, GroupId=group_id, IpPermissions=ip_permissions)
+        elif rule_type == "out":
+            changed = revoke_security_group_egress(client, GroupId=group_id, IpPermissions=ip_permissions)
+    except AnsibleEC2Error as e:
+        rules = "ingress rules" if rule_type == "in" else "egress rules"
+        module.fail_json_aws(e, f"Unable to revoke {rules}: {ip_permissions}")
+    return changed
 
 
-def add_new_permissions(client, module, new_ingress, new_egress, group_id):
+def add_new_permissions(
+    client, module: AnsibleAWSModule, new_ingress: List[Dict[str, Any]], new_egress: List[Dict[str, Any]], group_id: str
+) -> bool:
+    changed = False
     if new_ingress:
-        authorize(client, module, new_ingress, group_id, "in")
+        changed |= authorize(client, module, new_ingress, group_id, "in")
     if new_egress:
-        authorize(client, module, new_egress, group_id, "out")
-    return bool(new_ingress or new_egress)
+        changed |= authorize(client, module, new_egress, group_id, "out")
+    return changed
 
 
-def authorize(client, module, ip_permissions, group_id, rule_type):
-    if not module.check_mode:
-        try:
-            if rule_type == "in":
-                client.authorize_security_group_ingress(aws_retry=True, GroupId=group_id, IpPermissions=ip_permissions)
-            elif rule_type == "out":
-                client.authorize_security_group_egress(aws_retry=True, GroupId=group_id, IpPermissions=ip_permissions)
-        except (BotoCoreError, ClientError) as e:
-            rules = "ingress rules" if rule_type == "in" else "egress rules"
-            module.fail_json_aws(e, f"Unable to authorize {rules}: {ip_permissions}")
+def authorize(
+    client, module: AnsibleAWSModule, ip_permissions: List[Dict[str, Any]], group_id: str, rule_type: str
+) -> bool:
+    if module.check_mode:
+        return True
+    try:
+        if rule_type == "in":
+            changed = authorize_security_group_ingress(client, GroupId=group_id, IpPermissions=ip_permissions)
+        elif rule_type == "out":
+            changed = authorize_security_group_egress(client, GroupId=group_id, IpPermissions=ip_permissions)
+    except AnsibleEC2Error as e:
+        rules = "ingress rules" if rule_type == "in" else "egress rules"
+        module.fail_json_aws(e, f"Unable to authorize {rules}: {ip_permissions}")
+    return changed
 
 
 def validate_ip(module, cidr_ip):
@@ -1139,56 +1173,54 @@ def update_rule_descriptions(
         ingress_needs_desc_update.extend(needs_update)
 
     if ingress_needs_desc_update:
-        update_rules_description(module, client, "in", group_id, rules_to_permissions(ingress_needs_desc_update))
-        changed |= True
+        changed |= update_rules_description(
+            module, client, "in", group_id, rules_to_permissions(ingress_needs_desc_update)
+        )
     if egress_needs_desc_update:
-        update_rules_description(module, client, "out", group_id, rules_to_permissions(egress_needs_desc_update))
-        changed |= True
+        changed |= update_rules_description(
+            module, client, "out", group_id, rules_to_permissions(egress_needs_desc_update)
+        )
     return changed
 
 
-def _create_security_group_with_wait(client, name, description, vpc_id, tags):
+def _create_security_group_with_wait(
+    client, module: AnsibleAWSModule, name: str, description: str, vpc_id: Optional[str], tags: Dict[str, str]
+) -> Dict[str, Any]:
     params = dict(GroupName=name, Description=description)
     if vpc_id:
         params["VpcId"] = vpc_id
     if tags:
         params["TagSpecifications"] = boto3_tag_specifications(tags, ["security-group"])
 
-    created_group = client.create_security_group(aws_retry=True, **params)
-    get_waiter(
-        client,
-        "security_group_exists",
-    ).wait(
-        GroupIds=[created_group["GroupId"]],
-    )
+    created_group = create_security_group(client, **params)
+    wait_for_resource_state(client, module, "security_group_exists", GroupIds=[created_group["GroupId"]])
     return created_group
 
 
-def create_security_group(client, module, name, description, vpc_id, tags):
-    if not module.check_mode:
-        params = dict(GroupName=name, Description=description)
-        if vpc_id:
-            params["VpcId"] = vpc_id
-        if tags:
-            params["TagSpecifications"] = boto3_tag_specifications(tags, ["security-group"])
-        try:
-            group = client.create_security_group(aws_retry=True, **params)
-        except (BotoCoreError, ClientError) as e:
-            module.fail_json_aws(e, msg="Unable to create security group")
-        # When a group is created, an egress_rule ALLOW ALL
-        # to 0.0.0.0/0 is added automatically but it's not
-        # reflected in the object returned by the AWS API
-        # call. We re-read the group for getting an updated object
-        # amazon sometimes takes a couple seconds to update the security group so wait till it exists
-        while True:
-            sleep(3)
-            group = get_security_groups_with_backoff(client, GroupIds=[group["GroupId"]])["SecurityGroups"][0]
-            if group.get("VpcId") and not group.get("IpPermissionsEgress"):
-                pass
-            else:
-                break
-        return group
-    return None
+def create_ec2_security_group(
+    client, module: AnsibleAWSModule, name: str, description: str, vpc_id: Optional[str], tags: Optional[Dict[str, str]]
+) -> Dict[str, Any]:
+    params = dict(GroupName=name, Description=description)
+    if vpc_id:
+        params["VpcId"] = vpc_id
+    if tags:
+        params["TagSpecifications"] = boto3_tag_specifications(tags, ["security-group"])
+    try:
+        group = create_security_group(client, **params)
+    except AnsibleEC2Error as e:
+        module.fail_json_aws(e, msg="Unable to create security group")
+    # When a group is created, an egress_rule ALLOW ALL
+    # to 0.0.0.0/0 is added automatically but it's not
+    # reflected in the object returned by the AWS API
+    # call. We re-read the group for getting an updated object
+    # amazon sometimes takes a couple seconds to update the security group so wait till it exists
+    while True:
+        sleep(3)
+        groups = describe_security_groups(client, GroupIds=[group["GroupId"]])
+        if groups[0].get("VpcId") and not groups[0].get("IpPermissionsEgress"):
+            pass
+        else:
+            return groups[0]
 
 
 def wait_for_rule_propagation(module, client, group, desired_ingress, desired_egress, purge_ingress, purge_egress):
@@ -1212,19 +1244,21 @@ def wait_for_rule_propagation(module, client, group, desired_ingress, desired_eg
             elif current_rules.issuperset(desired_rules) and not purge:
                 return group
             sleep(10)
-            group = get_security_groups_with_backoff(client, GroupIds=[group_id])["SecurityGroups"][0]
+            group = describe_security_groups(client, GroupIds=[group_id])[0]
         module.warn(
             f"Ran out of time waiting for {group_id} {rule_key}. Current: {current_rules}, Desired: {desired_rules}"
         )
         return group
 
-    group = get_security_groups_with_backoff(client, GroupIds=[group_id])["SecurityGroups"][0]
+    group = describe_security_groups(client, GroupIds=[group_id])[0]
     if "VpcId" in group and module.params.get("rules_egress") is not None:
         group = await_rules(group, desired_egress, purge_egress, "IpPermissionsEgress")
     return await_rules(group, desired_ingress, purge_ingress, "IpPermissions")
 
 
-def group_exists(client, module, vpc_id, group_id, name):
+def group_exists(
+    client, module: AnsibleAWSModule, vpc_id: Optional[str], group_id: Optional[str], name: Optional[str]
+) -> Tuple[Optional[Dict[str, Any]], Dict[str, Any]]:
     filters = dict()
     params = dict()
     if group_id:
@@ -1241,10 +1275,10 @@ def group_exists(client, module, vpc_id, group_id, name):
     # Don't filter by description to maintain backwards compatibility
     params["Filters"] = ansible_dict_to_boto3_filter_list(filters)
     try:
-        security_groups = sg_exists_with_backoff(client, **params).get("SecurityGroups", [])
-        all_groups = get_security_groups_with_backoff(client).get("SecurityGroups", [])
-    except (BotoCoreError, ClientError) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Error in describe_security_groups")
+        security_groups = describe_security_groups(client, **params)
+        all_groups = describe_security_groups(client)
+    except AnsibleEC2Error as e:
+        module.fail_json_aws_error(e)
 
     if security_groups:
         groups = dict((group["GroupId"], group) for group in all_groups)
@@ -1260,13 +1294,6 @@ def group_exists(client, module, vpc_id, group_id, name):
 
 
 def get_diff_final_resource(client, module, security_group):
-    def get_account_id(security_group, module):
-        try:
-            owner_id = security_group.get("owner_id", current_account_id)
-        except (BotoCoreError, ClientError) as e:
-            owner_id = f"Unable to determine owner_id: {to_text(e)}"
-        return owner_id
-
     def get_final_tags(security_group_tags, specified_tags, purge_tags):
         if specified_tags is None:
             return security_group_tags
@@ -1334,7 +1361,7 @@ def get_diff_final_resource(client, module, security_group):
                             "group_id": rule.get("group_id"),
                             "group_name": rule.get("group_name"),
                             "peering_status": None,
-                            "user_id": get_account_id(security_group, module),
+                            "user_id": security_group.get("owner_id", current_account_id),
                             "vpc_id": module.params["vpc_id"],
                             "vpc_peering_connection_id": None,
                         }
@@ -1347,7 +1374,7 @@ def get_diff_final_resource(client, module, security_group):
                             "group_id": rule_sg.get("group_id", rule.get("group_id")),
                             "group_name": rule_sg.get("group_name", rule.get("group_name")),
                             "peering_status": rule_sg.get("peering_status"),
-                            "user_id": rule_sg.get("user_id", get_account_id(security_group, module)),
+                            "user_id": rule_sg.get("user_id", security_group.get("owner_id", current_account_id)),
                             "vpc_id": rule_sg.get("vpc_id", module.params["vpc_id"]),
                             "vpc_peering_connection_id": rule_sg.get("vpc_peering_connection_id"),
                         }
@@ -1370,7 +1397,7 @@ def get_diff_final_resource(client, module, security_group):
         "group_name": security_group.get("group_name", module.params["name"]),
         "ip_permissions": get_final_rules(client, module, security_group_ingress, specified_ingress, purge_ingress),
         "ip_permissions_egress": get_final_rules(client, module, security_group_egress, specified_egress, purge_egress),
-        "owner_id": get_account_id(security_group, module),
+        "owner_id": security_group.get("owner_id", current_account_id),
         "tags": get_final_tags(security_group.get("tags", {}), module.params["tags"], module.params["purge_tags"]),
         "vpc_id": security_group.get("vpc_id", module.params["vpc_id"]),
     }
@@ -1461,25 +1488,22 @@ def validate_rules(module, rules):
         e.fail(module)
 
 
-def ensure_absent(client, group, check_mode):
+def ensure_absent(client, group: Optional[Dict[str, Any]], check_mode: bool) -> bool:
     if not group:
         return False
     if check_mode:
         return True
 
     try:
-        client.delete_security_group(aws_retry=True, GroupId=group["GroupId"])
-    except is_boto3_error_code("InvalidGroup.NotFound"):
-        return False
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        return delete_security_group(client, group_id=group["GroupId"])
+    except AnsibleEC2Error as e:
         raise SecurityGroupError(f"Unable to delete security group '{group}'", e=e)
 
-    return True
 
-
-def ensure_present(module, client, group, groups):
+def ensure_present(
+    module: AnsibleAWSModule, client, group: Optional[Dict[str, Any]], groups: Dict[str, Any]
+) -> Tuple[bool, Dict[str, Any]]:
     name = module.params["name"]
-    group_id = module.params["group_id"]
     description = module.params["description"]
     vpc_id = module.params["vpc_id"]
     # Deprecated
@@ -1490,7 +1514,6 @@ def ensure_present(module, client, group, groups):
     validate_rules(module, rules_egress)
     rules = deduplicate_rules_args(expand_rules(rules))
     rules_egress = deduplicate_rules_args(expand_rules(rules_egress))
-    state = module.params.get("state")
     purge_rules = module.params["purge_rules"]
     purge_rules_egress = module.params["purge_rules_egress"]
     tags = module.params["tags"]
@@ -1500,13 +1523,13 @@ def ensure_present(module, client, group, groups):
     group_created_new = False
 
     if not group:
+        changed = True
         # Short circuit things if we're in check_mode
         if module.check_mode:
-            return True, None
+            return changed, {"group_id": None}
 
-        group = create_security_group(client, module, name, description, vpc_id, tags)
+        group = create_ec2_security_group(client, module, name, description, vpc_id, tags)
         group_created_new = True
-        changed = True
 
     else:
         # Description is immutable
@@ -1518,14 +1541,14 @@ def ensure_present(module, client, group, groups):
 
     changed |= ensure_ec2_tags(client, module, group["GroupId"], tags=tags, purge_tags=purge_tags)
 
-    named_tuple_ingress_list = []
-    named_tuple_egress_list = []
+    named_tuple_ingress_list: List[Rule] = []
+    named_tuple_egress_list: List[Rule] = []
     current_ingress = sum([list(rule_from_group_permission(p)) for p in group["IpPermissions"]], [])
     current_egress = sum([list(rule_from_group_permission(p)) for p in group["IpPermissionsEgress"]], [])
 
-    for new_rules, _rule_type, named_tuple_rule_list in [
-        (rules, "in", named_tuple_ingress_list),
-        (rules_egress, "out", named_tuple_egress_list),
+    for new_rules, named_tuple_rule_list in [
+        (rules, named_tuple_ingress_list),
+        (rules_egress, named_tuple_egress_list),
     ]:
         if new_rules is None:
             continue
@@ -1620,14 +1643,14 @@ def ensure_present(module, client, group, groups):
     if group_created_new and module.params.get("rules") is None and module.params.get("rules_egress") is None:
         # A new group with no rules provided is already being awaited.
         # When it is created we wait for the default egress rule to be added by AWS
-        security_group = get_security_groups_with_backoff(client, GroupIds=[group["GroupId"]])["SecurityGroups"][0]
+        security_group = describe_security_groups(client, GroupIds=[group["GroupId"]])[0]
     elif changed and not module.check_mode:
         # keep pulling until current security group rules match the desired ingress and egress rules
         security_group = wait_for_rule_propagation(
             module, client, group, desired_ingress, desired_egress, purge_rules, purge_rules_egress
         )
     else:
-        security_group = get_security_groups_with_backoff(client, GroupIds=[group["GroupId"]])["SecurityGroups"][0]
+        security_group = describe_security_groups(client, GroupIds=[group["GroupId"]])[0]
     security_group = camel_dict_to_snake_dict(security_group, ignore_list=["Tags"])
     security_group["tags"] = boto3_tag_list_to_ansible_dict(security_group.get("tags", []))
 
@@ -1731,7 +1754,7 @@ def main():
     vpc_id = module.params["vpc_id"]
     state = module.params.get("state")
 
-    client = module.client("ec2", AWSRetry.jittered_backoff())
+    client = module.client("ec2")
 
     group, groups = group_exists(client, module, vpc_id, group_id, name)
 
@@ -1745,17 +1768,14 @@ def main():
         before = camel_dict_to_snake_dict(group, ignore_list=["Tags"])
         before["tags"] = boto3_tag_list_to_ansible_dict(before.get("tags", []))
 
+    security_group = {"group_id": None}
     try:
         # Ensure requested group is absent
         if state == "absent":
             changed = ensure_absent(client, group, module.check_mode)
-            security_group = {"group_id": None}
         # Ensure requested group is present
         elif state == "present":
             (changed, security_group) = ensure_present(module, client, group, groups)
-            # Check mode can't create anything
-            if not security_group:
-                security_group = {"group_id": None}
     except SecurityGroupError as e:
         e.fail(module)
 
