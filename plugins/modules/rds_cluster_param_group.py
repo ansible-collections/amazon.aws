@@ -101,22 +101,31 @@ db_cluster_parameter_group:
             description: The Amazon Resource Name (ARN) for the RDS cluster parameter group.
             type: str
             returned: when O(state=present)
+            sample: "arn:aws:rds:us-west-2:123456789012:cluster-pg:ansible-test-123456789012-redhat-cluster-param-group"
         db_cluster_parameter_group_name:
             description: The name of the RDS cluster parameter group.
             type: str
             returned: when O(state=present)
+            sample: "ansible-test-123456789012-redhat-cluster-param-group"
         db_parameter_group_family:
             description: The name of the RDS parameter group family that this RDS cluster parameter group is compatible with.
             type: str
             returned: when O(state=present)
+            sample: "postgres16"
         description:
             description: Provides the customer-specified description for this RDS cluster parameter group.
             type: str
             returned: when O(state=present)
+            sample: "RDS cluster param group"
         tags:
             description: A dictionary of tags.
             type: dict
             returned: when O(state=present)
+            sample: tags: {
+                "another": "tag",
+                "resource_prefix": "ansible-test-53268383-redhat",
+                "some": "tag"
+            }
 """
 
 from itertools import zip_longest
