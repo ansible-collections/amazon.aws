@@ -41,7 +41,7 @@ options:
       - Note that ED25519 keys are not supported for Windows instances,
         EC2 Instance Connect, and EC2 Serial Console.
       - By default Amazon will create an RSA key.
-      - Mutually exclusive with parameter O(key_material).
+      - Mutually exclusive with parameter I(key_material).
     type: str
     choices:
       - rsa
@@ -50,15 +50,15 @@ options:
   file_name:
     description:
       - Name of the file where the generated private key will be saved.
-      - When provided, the RV(key.private_key) attribute will be removed from the return value.
+      - When provided, the I(key.private_key) attribute will be removed from the return value.
       - The file is written out on the 'host' side rather than the 'controller' side.
-      - Ignored when O(state=absent) or O(key_material) is provided.
+      - Ignored when I(state=absent) or I(key_material) is provided.
     type: path
     version_added: 6.4.0
 notes:
-  - Support for O(tags) and O(purge_tags) was added in release 2.1.0.
+  - Support for I(tags) and I(purge_tags) was added in release 2.1.0.
   - For security reasons, this module should be used with B(no_log=true) and (register) functionalities
-    when creating new key pair without providing O(key_material).
+    when creating new key pair without providing I(key_material).
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
@@ -112,49 +112,49 @@ EXAMPLES = r"""
 
 RETURN = r"""
 changed:
-  description: Whether a keypair was created/deleted.
+  description: whether a keypair was created/deleted
   returned: always
   type: bool
   sample: true
 msg:
-  description: Short message describing the action taken.
+  description: short message describing the action taken
   returned: always
   type: str
   sample: key pair created
 key:
-  description: Details of the keypair (this is set to null when state is absent).
+  description: details of the keypair (this is set to null when state is absent)
   returned: always
   type: complex
   contains:
     fingerprint:
-      description: Fingerprint of the key.
-      returned: when O(state=present)
+      description: fingerprint of the key
+      returned: when state is present
       type: str
       sample: 'b0:22:49:61:d9:44:9d:0c:7e:ac:8a:32:93:21:6c:e8:fb:59:62:43'
     name:
-      description: Name of the keypair.
-      returned: when O(state=present)
+      description: name of the keypair
+      returned: when state is present
       type: str
       sample: my_keypair
     id:
-      description: Id of the keypair.
-      returned: when O(state=present)
+      description: id of the keypair
+      returned: when state is present
       type: str
       sample: key-123456789abc
     tags:
-      description: A dictionary representing the tags attached to the key pair.
-      returned: when O(state=present)
+      description: a dictionary representing the tags attached to the key pair
+      returned: when state is present
       type: dict
       sample: '{"my_key": "my value"}'
     private_key:
-      description: Private key of a newly created keypair.
-      returned: when a new keypair is created by AWS (O(key_material) is not provided) and O(file_name) is not provided.
+      description: private key of a newly created keypair
+      returned: when a new keypair is created by AWS (I(key_material) is not provided) and I(file_name) is not provided.
       type: str
       sample: '-----BEGIN RSA PRIVATE KEY-----
         MIIEowIBAAKC...
         -----END RSA PRIVATE KEY-----'
     type:
-      description: Type of a newly created keypair.
+      description: type of a newly created keypair
       returned: when a new keypair is created by AWS
       type: str
       sample: rsa
@@ -164,17 +164,15 @@ key:
 import os
 import uuid
 
-try:
-    import botocore
-except ImportError:
-    pass  # caught by AnsibleAWSModule
-
 from ansible.module_utils._text import to_bytes
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleEC2Error
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import create_key_pair
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import delete_key_pair as delete_ec2_key_pair
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_key_pairs
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import import_key_pair
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
@@ -193,9 +191,9 @@ def _import_key_pair(ec2_client, name, key_material, tag_spec=None):
     params = scrub_none_parameters(params)
 
     try:
-        key = ec2_client.import_key_pair(aws_retry=True, **params)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as err:
-        raise Ec2KeyFailure(err, "error importing key")
+        key = import_key_pair(ec2_client, **params)
+    except AnsibleEC2Error as e:
+        raise Ec2KeyFailure(e, "error importing key")
     return key
 
 
@@ -236,18 +234,15 @@ def get_key_fingerprint(check_mode, ec2_client, key_material):
 
 def find_key_pair(ec2_client, name):
     try:
-        key = ec2_client.describe_key_pairs(aws_retry=True, KeyNames=[name])
-    except is_boto3_error_code("InvalidKeyPair.NotFound"):
-        return None
-    except (
-        botocore.exceptions.ClientError,
-        botocore.exceptions.BotoCoreError,
-    ) as err:  # pylint: disable=duplicate-except
-        raise Ec2KeyFailure(err, "error finding keypair")
+        key = describe_key_pairs(ec2_client, KeyNames=[name])
+        if not key:
+            return None
+    except AnsibleEC2Error as e:
+        raise Ec2KeyFailure(e, "error finding keypair")
     except IndexError:
         key = None
 
-    return key["KeyPairs"][0]
+    return key[0]
 
 
 def _create_key_pair(ec2_client, name, tag_spec, key_type):
@@ -260,9 +255,9 @@ def _create_key_pair(ec2_client, name, tag_spec, key_type):
     params = scrub_none_parameters(params)
 
     try:
-        key = ec2_client.create_key_pair(aws_retry=True, **params)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as err:
-        raise Ec2KeyFailure(err, "error creating key")
+        key = create_key_pair(ec2_client, **params)
+    except AnsibleEC2Error as e:
+        raise Ec2KeyFailure(e, "error creating key")
     return key
 
 
@@ -325,13 +320,6 @@ def update_key_pair_by_key_type(check_mode, ec2_client, name, key_type, tag_spec
         return {"changed": True, "key": key_data, "msg": "key pair updated"}
 
 
-def _delete_key_pair(ec2_client, key_name):
-    try:
-        ec2_client.delete_key_pair(aws_retry=True, KeyName=key_name)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as err:
-        raise Ec2KeyFailure(err, "error deleting key")
-
-
 def delete_key_pair(check_mode, ec2_client, name, finish_task=True):
     key = find_key_pair(ec2_client, name)
 
@@ -341,7 +329,10 @@ def delete_key_pair(check_mode, ec2_client, name, finish_task=True):
         result = {"key": None, "msg": "key did not exist"}
         return result
     else:
-        _delete_key_pair(ec2_client, name)
+        try:
+            delete_ec2_key_pair(ec2_client, name)
+        except AnsibleEC2Error as e:
+            raise Ec2KeyFailure(e, "error deleting keypair")
         if not finish_task:
             return
         result = {"changed": True, "key": None, "msg": "key deleted"}
@@ -389,7 +380,7 @@ def main():
         supports_check_mode=True,
     )
 
-    ec2_client = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff())
+    ec2_client = module.client("ec2")
 
     name = module.params["name"]
     state = module.params.get("state")
