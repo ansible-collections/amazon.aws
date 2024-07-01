@@ -41,7 +41,6 @@ import logging
 import os
 import re
 import traceback
-import typing
 from io import StringIO
 from typing import Any
 from typing import Dict
