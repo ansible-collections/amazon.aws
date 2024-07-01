@@ -152,16 +152,16 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <p class="ansible-version-added">New in amazon.aws 1.0.0</p>
 <nav class="contents local" id="contents">
 <ul class="simple">
-<li><p><a class="reference internal" href="#synopsis" id="id2">Synopsis</a></p></li>
-<li><p><a class="reference internal" href="#requirements" id="id3">Requirements</a></p></li>
-<li><p><a class="reference internal" href="#parameters" id="id4">Parameters</a></p></li>
-<li><p><a class="reference internal" href="#notes" id="id5">Notes</a></p></li>
-<li><p><a class="reference internal" href="#examples" id="id6">Examples</a></p></li>
-<li><p><a class="reference internal" href="#return-values" id="id7">Return Values</a></p></li>
+<li><p><a class="reference internal" href="#synopsis" id="id3">Synopsis</a></p></li>
+<li><p><a class="reference internal" href="#requirements" id="id4">Requirements</a></p></li>
+<li><p><a class="reference internal" href="#parameters" id="id5">Parameters</a></p></li>
+<li><p><a class="reference internal" href="#notes" id="id6">Notes</a></p></li>
+<li><p><a class="reference internal" href="#examples" id="id7">Examples</a></p></li>
+<li><p><a class="reference internal" href="#return-values" id="id8">Return Values</a></p></li>
 </ul>
 </nav>
 <section id="synopsis">
-<h2><a class="toc-backref" href="#id2" role="doc-backlink">Synopsis</a><a class="headerlink" href="#synopsis" title="Link to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">Synopsis</a><a class="headerlink" href="#synopsis" title="Link to this heading"></a></h2>
 <ul class="simple">
 <li><p>Create and manage AWS EC2 instances.</p></li>
 <li><p>This module does not support creating <a class="reference external" href="https://aws.amazon.com/ec2/spot/">EC2 Spot instances</a>.</p></li>
@@ -169,7 +169,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 </ul>
 </section>
 <section id="requirements">
-<span id="ansible-collections-amazon-aws-ec2-instance-module-requirements"></span><h2><a class="toc-backref" href="#id3" role="doc-backlink">Requirements</a><a class="headerlink" href="#requirements" title="Link to this heading"></a></h2>
+<span id="ansible-collections-amazon-aws-ec2-instance-module-requirements"></span><h2><a class="toc-backref" href="#id4" role="doc-backlink">Requirements</a><a class="headerlink" href="#requirements" title="Link to this heading"></a></h2>
 <p>The below requirements are needed on the host that executes this module.</p>
 <ul class="simple">
 <li><p>python &gt;= 3.6</p></li>
@@ -178,7 +178,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 </ul>
 </section>
 <section id="parameters">
-<h2><a class="toc-backref" href="#id4" role="doc-backlink">Parameters</a><a class="headerlink" href="#parameters" title="Link to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id5" role="doc-backlink">Parameters</a><a class="headerlink" href="#parameters" title="Link to this heading"></a></h2>
 <table class="longtable ansible-option-table docutils align-default" style="width: 100%">
 <thead>
 <tr class="row-odd"><th class="head"><p>Parameter</p></th>
@@ -643,6 +643,9 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 </div></td>
 <td><div class="ansible-option-cell"><p>Either a dictionary containing the key <code class="docutils literal notranslate"><span class="pre">interfaces</span></code> corresponding to a list of network interface IDs or containing specifications for a single network interface.</p>
 <p>Use the <a class="reference internal" href="ec2_eni_module.html#ansible-collections-amazon-aws-ec2-eni-module"><span class="std std-ref">amazon.aws.ec2_eni</span></a> module to create ENIs with special settings.</p>
+<p>This field is deprecated and will be removed in a release after 2026-12-01, use <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#id2"><span class="std std-ref"><span class="pre">network_interfaces</span></span></a></strong></code> or <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-instance-module-parameter-network-interfaces-ids"><span class="std std-ref"><span class="pre">network_interfaces_ids</span></span></a></strong></code> instead.</p>
+<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#id2"><span class="std std-ref"><span class="pre">network_interfaces</span></span></a></strong></code>.</p>
+<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-instance-module-parameter-network-interfaces-ids"><span class="std std-ref"><span class="pre">network_interfaces_ids</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -723,6 +726,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <a class="ansibleOptionLink" href="#parameter-network/source_dest_check" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Controls whether source/destination checking is enabled on the interface.</p>
+<p>This field with be ignored when <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-instance-module-parameter-source-dest-check"><span class="std std-ref"><span class="pre">source_dest_check</span></span></a></strong></code> is provided.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
@@ -738,6 +742,139 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-network_interfaces"></div><p class="ansible-option-title" id="id2"><strong>network_interfaces</strong></p>
+<a class="ansibleOptionLink" href="#parameter-network_interfaces" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 8.1.0</em></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>A list of dictionaries containing specifications for network interfaces.</p>
+<p>Use the <a class="reference internal" href="ec2_eni_module.html#ansible-collections-amazon-aws-ec2-eni-module"><span class="std std-ref">amazon.aws.ec2_eni</span></a> module to create ENIs with special settings.</p>
+<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-instance-module-parameter-network"><span class="std std-ref"><span class="pre">network</span></span></a></strong></code>.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-network_interfaces/assign_public_ip"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-network-interfaces-assign-public-ip"><strong>assign_public_ip</strong></p>
+<a class="ansibleOptionLink" href="#parameter-network_interfaces/assign_public_ip" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>When <code class="ansible-value docutils literal notranslate"><span class="pre">true</span></code> assigns a public IP address to the interface.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-network_interfaces/delete_on_termination"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-network-interfaces-delete-on-termination"><strong>delete_on_termination</strong></p>
+<a class="ansibleOptionLink" href="#parameter-network_interfaces/delete_on_termination" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Delete the interface when the instance it is attached to is terminated.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">true</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-network_interfaces/description"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-network-interfaces-description"><strong>description</strong></p>
+<a class="ansibleOptionLink" href="#parameter-network_interfaces/description" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A description for the network interface.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-network_interfaces/device_index"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-network-interfaces-device-index"><strong>device_index</strong></p>
+<a class="ansibleOptionLink" href="#parameter-network_interfaces/device_index" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The position of the network interface in the attachment order.</p>
+<p>Use device index <code class="ansible-value docutils literal notranslate"><span class="pre">0</span></code> for a primary network interface.</p>
+<p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">0</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-network_interfaces/groups"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-network-interfaces-groups"><strong>groups</strong></p>
+<a class="ansibleOptionLink" href="#parameter-network_interfaces/groups" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A list of security group IDs or names to attach to the interface.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-network_interfaces/ipv6_addresses"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-network-interfaces-ipv6-addresses"><strong>ipv6_addresses</strong></p>
+<a class="ansibleOptionLink" href="#parameter-network_interfaces/ipv6_addresses" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A list of IPv6 addresses to assign to the network interface.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-network_interfaces/private_ip_address"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-network-interfaces-private-ip-address"><strong>private_ip_address</strong></p>
+<a class="ansibleOptionLink" href="#parameter-network_interfaces/private_ip_address" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>An IPv4 address to assign to the interface.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-network_interfaces/private_ip_addresses"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-network-interfaces-private-ip-addresses"><strong>private_ip_addresses</strong></p>
+<a class="ansibleOptionLink" href="#parameter-network_interfaces/private_ip_addresses" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A list of private IPv4 addresses to assign to the network interface.</p>
+<p>Only one private IPv4 address can be designated as primary.</p>
+<p>You cannot specify this option if you’re launching more than one instance.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-network_interfaces/private_ip_addresses/primary"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-network-interfaces-private-ip-addresses-primary"><strong>primary</strong></p>
+<a class="ansibleOptionLink" href="#parameter-network_interfaces/private_ip_addresses/primary" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Indicates whether the private IPv4 address is the primary private IPv4 address.</p>
+<p>Only one IPv4 address can be designated as primary.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-network_interfaces/private_ip_addresses/private_ip_address"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-network-interfaces-private-ip-addresses-private-ip-address"><strong>private_ip_address</strong></p>
+<a class="ansibleOptionLink" href="#parameter-network_interfaces/private_ip_addresses/private_ip_address" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The private IPv4 address.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-network_interfaces/subnet_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-network-interfaces-subnet-id"><strong>subnet_id</strong></p>
+<a class="ansibleOptionLink" href="#parameter-network_interfaces/subnet_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The subnet to connect the network interface to.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-network_interfaces_ids"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-network-interfaces-ids"><strong>network_interfaces_ids</strong></p>
+<a class="ansibleOptionLink" href="#parameter-network_interfaces_ids" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 8.1.0</em></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>A list of ENI ids to attach to the instance.</p>
+<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-instance-module-parameter-network"><span class="std std-ref"><span class="pre">network</span></span></a></strong></code>.</p>
+<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-instance-module-parameter-security-group"><span class="std std-ref"><span class="pre">security_group</span></span></a></strong></code>.</p>
+<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-instance-module-parameter-security-groups"><span class="std std-ref"><span class="pre">security_groups</span></span></a></strong></code>.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-network_interfaces_ids/device_index"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-network-interfaces-ids-device-index"><strong>device_index</strong></p>
+<a class="ansibleOptionLink" href="#parameter-network_interfaces_ids/device_index" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The position of the network interface in the attachment order.</p>
+<p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">0</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-network_interfaces_ids/id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-network-interfaces-ids-id"><strong>id</strong></p>
+<a class="ansibleOptionLink" href="#parameter-network_interfaces_ids/id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ID of the network interface.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-placement"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-placement"><strong>placement</strong></p>
 <a class="ansibleOptionLink" href="#parameter-placement" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 <p><em class="ansible-option-versionadded">added in amazon.aws 7.0.0</em></p>
@@ -745,49 +882,49 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <td><div class="ansible-option-cell"><p>The location where the instance launched, if applicable.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-placement/affinity"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-placement-affinity"><strong>affinity</strong></p>
 <a class="ansibleOptionLink" href="#parameter-placement/affinity" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The affinity setting for the instance on the Dedicated Host.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-placement/availability_zone"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-placement-availability-zone"><strong>availability_zone</strong></p>
 <a class="ansibleOptionLink" href="#parameter-placement/availability_zone" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The Availability Zone of the instance.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-placement/group_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-placement-group-name"><strong>group_name</strong></p>
 <a class="ansibleOptionLink" href="#parameter-placement/group_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The name of the placement group the instance is in.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-placement/host_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-placement-host-id"><strong>host_id</strong></p>
 <a class="ansibleOptionLink" href="#parameter-placement/host_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ID of the Dedicated Host on which the instance resides.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-placement/host_resource_group_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-placement-host-resource-group-arn"><strong>host_resource_group_arn</strong></p>
 <a class="ansibleOptionLink" href="#parameter-placement/host_resource_group_arn" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ARN of the host resource group in which to launch the instances.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-placement/partition_number"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-placement-partition-number"><strong>partition_number</strong></p>
 <a class="ansibleOptionLink" href="#parameter-placement/partition_number" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The number of the partition the instance is in.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-placement/tenancy"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-placement-tenancy"><strong>tenancy</strong></p>
 <a class="ansibleOptionLink" href="#parameter-placement/tenancy" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -801,7 +938,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-placement_group"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-placement-group"><strong>placement_group</strong></p>
 <a class="ansibleOptionLink" href="#parameter-placement_group" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -809,7 +946,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <p>This field is deprecated and will be removed in a release after 2025-12-01, use <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-instance-module-parameter-placement"><span class="std std-ref"><span class="pre">placement</span></span></a></strong></code> instead.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-profile"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_profile"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-profile"><span id="ansible-collections-amazon-aws-ec2-instance-module-parameter-aws-profile"></span><strong>profile</strong></p>
 <a class="ansibleOptionLink" href="#parameter-profile" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_profile</span></p>
@@ -821,7 +958,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <p>The <em>profile</em> option is mutually exclusive with the <em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> options.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-purge_tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-purge-tags"><strong>purge_tags</strong></p>
 <a class="ansibleOptionLink" href="#parameter-purge_tags" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -835,7 +972,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-region"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_region"></div>
 <div class="ansibleOptionAnchor" id="parameter-ec2_region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-region"><span id="ansible-collections-amazon-aws-ec2-instance-module-parameter-ec2-region"></span><span id="ansible-collections-amazon-aws-ec2-instance-module-parameter-aws-region"></span><strong>region</strong></p>
@@ -850,7 +987,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_REGION</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-secret_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_secret_access_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_secret_key"></div>
@@ -867,24 +1004,26 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_SECRET_KEY</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-security_group"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-security-group"><strong>security_group</strong></p>
 <a class="ansibleOptionLink" href="#parameter-security_group" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A security group ID or name.</p>
 <p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-instance-module-parameter-security-groups"><span class="std std-ref"><span class="pre">security_groups</span></span></a></strong></code>.</p>
+<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-instance-module-parameter-network-interfaces-ids"><span class="std std-ref"><span class="pre">network_interfaces_ids</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-security_groups"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-security-groups"><strong>security_groups</strong></p>
 <a class="ansibleOptionLink" href="#parameter-security_groups" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A list of security group IDs or names (strings).</p>
 <p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-instance-module-parameter-security-group"><span class="std std-ref"><span class="pre">security_group</span></span></a></strong></code>.</p>
+<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-instance-module-parameter-network-interfaces-ids"><span class="std std-ref"><span class="pre">network_interfaces_ids</span></span></a></strong></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[]</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-session_token"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_session_token"></div>
 <div class="ansibleOptionAnchor" id="parameter-security_token"></div>
@@ -900,6 +1039,19 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <p>Aliases <em>aws_session_token</em> and <em>session_token</em> were added in release 3.2.0, with the parameter being renamed from <em>security_token</em> to <em>session_token</em> in release 6.0.0.</p>
 <p>The <em>security_token</em>, <em>aws_security_token</em>, and <em>access_token</em> aliases have been deprecated and will be removed in a release after 2024-12-01.</p>
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_SECRET_KEY</span></code> and <code class="docutils literal notranslate"><span class="pre">AWS_SECURITY_TOKEN</span></code> environment variables has been deprecated and will be removed in a release after 2024-12-01.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-source_dest_check"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-source-dest-check"><strong>source_dest_check</strong></p>
+<a class="ansibleOptionLink" href="#parameter-source_dest_check" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 8.1.0</em></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Controls whether source/destination checking is enabled on the interface.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
+</ul>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -1027,7 +1179,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 </table>
 </section>
 <section id="notes">
-<h2><a class="toc-backref" href="#id5" role="doc-backlink">Notes</a><a class="headerlink" href="#notes" title="Link to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id6" role="doc-backlink">Notes</a><a class="headerlink" href="#notes" title="Link to this heading"></a></h2>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <ul class="simple">
@@ -1037,7 +1189,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 </div>
 </section>
 <section id="examples">
-<h2><a class="toc-backref" href="#id6" role="doc-backlink">Examples</a><a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id7" role="doc-backlink">Examples</a><a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
 <div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># Note: These examples do not set authentication details, see the AWS Guide for details.</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Terminate every running instance in a region. Use with EXTREME caution.</span>
@@ -1059,8 +1211,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <span class="w">    </span><span class="nt">vpc_subnet_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-5ca1ab1e</span>
 <span class="w">    </span><span class="nt">instance_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">c5.large</span>
 <span class="w">    </span><span class="nt">security_group</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
-<span class="w">    </span><span class="nt">network</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">assign_public_ip</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">network_interfaces</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">assign_public_ip</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 <span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ami-123456</span>
 <span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">Environment</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Testing</span>
@@ -1115,8 +1267,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <span class="w">      </span><span class="nt">tower_address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.2.3.4</span>
 <span class="w">      </span><span class="nt">job_template_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">876</span>
 <span class="w">      </span><span class="nt">host_config_key</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;[secret</span><span class="nv"> </span><span class="s">config</span><span class="nv"> </span><span class="s">key</span><span class="nv"> </span><span class="s">goes</span><span class="nv"> </span><span class="s">here]&#39;</span>
-<span class="w">    </span><span class="nt">network</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">assign_public_ip</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">network_interfaces</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">assign_public_ip</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 <span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ami-123456</span>
 <span class="w">    </span><span class="nt">cpu_credit_specification</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">unlimited</span>
 <span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
@@ -1127,9 +1279,9 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;public-eni-instance&quot;</span>
 <span class="w">    </span><span class="nt">key_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;prod-ssh-key&quot;</span>
 <span class="w">    </span><span class="nt">vpc_subnet_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-5ca1ab1e</span>
-<span class="w">    </span><span class="nt">network</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">interfaces</span><span class="p">:</span>
-<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;eni-12345&quot;</span>
+<span class="w">    </span><span class="nt">network_interfaces_ids</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;eni-12345&quot;</span>
+<span class="w">        </span><span class="nt">device_index</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
 <span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">Env</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;eni_on&quot;</span>
 <span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
@@ -1142,10 +1294,11 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">add second ENI interface</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;public-eni-instance&quot;</span>
-<span class="w">    </span><span class="nt">network</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">interfaces</span><span class="p">:</span>
-<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;eni-12345&quot;</span>
-<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;eni-67890&quot;</span>
+<span class="w">    </span><span class="nt">network_interfaces_ids</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;eni-12345&quot;</span>
+<span class="w">        </span><span class="nt">device_index</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;eni-67890&quot;</span>
+<span class="w">        </span><span class="nt">device_index</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
 <span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ami-123456</span>
 <span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">Env</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;eni_on&quot;</span>
@@ -1171,9 +1324,10 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <span class="w">    </span><span class="nt">exact_count</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
 <span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-2</span>
 <span class="w">    </span><span class="nt">vpc_subnet_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-0123456</span>
-<span class="w">    </span><span class="nt">network</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">assign_public_ip</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<span class="w">      </span><span class="nt">security_group</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
+<span class="w">    </span><span class="nt">network_interfaces</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">assign_public_ip</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">        </span><span class="nt">groups</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
 <span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">foo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bar</span>
 
@@ -1184,10 +1338,31 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ami-123456</span>
 <span class="w">    </span><span class="nt">count</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
 <span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-2</span>
-<span class="w">    </span><span class="nt">network</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">assign_public_ip</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<span class="w">      </span><span class="nt">security_group</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
-<span class="w">      </span><span class="nt">vpc_subnet_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-0123456</span>
+<span class="w">    </span><span class="nt">network_interfaces</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">assign_public_ip</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">        </span><span class="nt">groups</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
+<span class="w">        </span><span class="nt">subnet_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-0123456</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
+<span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">foo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bar</span>
+
+<span class="c1"># launches an instance with a primary and a secondary network interfaces</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">start an instance with a primary and secondary network interfaces</span>
+<span class="w">  </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">instance_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">t2.large</span>
+<span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ami-123456</span>
+<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-2</span>
+<span class="w">    </span><span class="nt">network_interfaces</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">assign_public_ip</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">        </span><span class="nt">groups</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
+<span class="w">        </span><span class="nt">subnet_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-0123456</span>
+<span class="w">        </span><span class="nt">private_ip_addresses</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">primary</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">            </span><span class="nt">private_ip_address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">168.50.4.239</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">primary</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">            </span><span class="nt">private_ip_address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">168.50.4.237</span>
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
 <span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">foo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bar</span>
@@ -1211,7 +1386,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 </div>
 </section>
 <section id="return-values">
-<h2><a class="toc-backref" href="#id7" role="doc-backlink">Return Values</a><a class="headerlink" href="#return-values" title="Link to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id8" role="doc-backlink">Return Values</a><a class="headerlink" href="#return-values" title="Link to this heading"></a></h2>
 <p>Common return values are documented <a class="reference external" href="https://docs.ansible.com/ansible-core/devel/reference_appendices/common_return_values.html#common-return-values" title="(in Ansible Core vdevel)"><span class="xref std std-ref">here</span></a>, the following are the fields unique to this module:</p>
 <table class="longtable ansible-option-table docutils align-default" style="width: 100%">
 <thead>
