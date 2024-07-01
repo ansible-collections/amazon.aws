@@ -1,0 +1,54 @@
+- name: Get the current caller identity facts
+  amazon.aws.aws_caller_info:
+  register: caller_info
+
+- name: List available AZs
+  amazon.aws.aws_az_info:
+  register: region_azs
+
+- name: Create a VPC
+  amazon.aws.ec2_vpc_net:
+    name: "{{ resource_prefix }}-vpc"
+    state: present
+    cidr_block: "{{ vpc_cidr }}"
+    tags:
+      AnsibleEIPTest: Pending
+      AnsibleEIPTestPrefix: "{{ resource_prefix }}"
+  register: vpc_result
+
+- name: Create subnet
+  amazon.aws.ec2_vpc_subnet:
+    cidr: "{{ subnet_cidr }}"
+    az: "{{ subnet_az }}"
+    vpc_id: "{{ vpc_result.vpc.id }}"
+    state: present
+  register: vpc_subnet_create
+
+- name: Create internet gateway
+  amazon.aws.ec2_vpc_igw:
+    state: present
+    vpc_id: "{{ vpc_result.vpc.id }}"
+  register: vpc_igw
+
+- name: Create security group
+  amazon.aws.ec2_security_group:
+    state: present
+    name: "{{ resource_prefix }}-sg"
+    description: a security group for ansible tests
+    vpc_id: "{{ vpc_result.vpc.id }}"
+    rules:
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: "0.0.0.0/0"
+  register: security_group
+
+- name: Create ENI A
+  amazon.aws.ec2_eni:
+    subnet_id: "{{ vpc_subnet_create.subnet.id }}"
+  register: eni_create_a
+
+- name: Create ENI B
+  amazon.aws.ec2_eni:
+    subnet_id: "{{ vpc_subnet_create.subnet.id }}"
+  register: eni_create_b
