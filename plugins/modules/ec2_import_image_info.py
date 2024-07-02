@@ -163,24 +163,9 @@ import_image:
       type: dict
 """
 
-import copy
-
-from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
-
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import helper_describe_import_image_tasks
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleEC2Error
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_import_image_tasks_as_snake_dict
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
-
-
-def ensure_ec2_import_image_result(import_image_info):
-    result = {"import_image": []}
-    if import_image_info:
-        for image in import_image_info:
-            image = copy.deepcopy(import_image_info[0])
-            image["Tags"] = boto3_tag_list_to_ansible_dict(image["Tags"])
-            result["import_image"].append(camel_dict_to_snake_dict(image, ignore_list=["Tags"]))
-    return result
 
 
 def main():
@@ -190,7 +175,7 @@ def main():
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
-    client = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff())
+    client = module.client("ec2")
     params = {}
 
     if module.params.get("filters"):
@@ -198,9 +183,10 @@ def main():
     if module.params.get("import_task_ids"):
         params["ImportTaskIds"] = module.params["import_task_ids"]
 
-    import_image_info = helper_describe_import_image_tasks(client, module, **params)
-
-    module.exit_json(**ensure_ec2_import_image_result(import_image_info))
+    try:
+        module.exit_json(import_image=describe_import_image_tasks_as_snake_dict(client, **params))
+    except AnsibleEC2Error as e:
+        module.fail_json_aws_error(e)
 
 
 if __name__ == "__main__":
