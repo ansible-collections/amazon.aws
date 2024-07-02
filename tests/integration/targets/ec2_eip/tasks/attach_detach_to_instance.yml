@@ -1,0 +1,289 @@
+---
+- name: Test attach/detach EIP to instance
+  block:
+    - name: Create instance for attaching
+      amazon.aws.ec2_instance:
+        name: "{{ resource_prefix }}-instance"
+        image_id: "{{ ec2_ami_id }}"
+        security_group: "{{ security_group.group_id }}"
+        vpc_subnet_id: "{{ vpc_subnet_create.subnet.id }}"
+        instance_type: t2.micro
+        wait: true
+        state: running
+      register: create_ec2_instance_result
+
+    # ------------------------------------------------------------------------------------------
+    # Create EIP and attach to EC2 instance
+    # ------------------------------------------------------------------------------------------
+    - name: Attach EIP to an EC2 instance - check_mode
+      amazon.aws.ec2_eip:
+        device_id: "{{ create_ec2_instance_result.instance_ids[0] }}"
+        state: present
+        release_on_disassociation: true
+      register: instance_eip
+      check_mode: true
+
+    - ansible.builtin.assert:
+        that:
+          - instance_eip is changed
+
+    - name: Attach EIP to an EC2 instance
+      amazon.aws.ec2_eip:
+        device_id: "{{ create_ec2_instance_result.instance_ids[0] }}"
+        state: present
+        release_on_disassociation: true
+      register: instance_eip
+
+    - amazon.aws.ec2_eip_info:
+        filters:
+          public-ip: "{{ instance_eip.public_ip }}"
+      register: eip_info
+
+    - ansible.builtin.assert:
+        that:
+          - instance_eip is changed
+          - eip_info.addresses[0].allocation_id is defined
+          - eip_info.addresses[0].instance_id == create_ec2_instance_result.instance_ids[0] 
+
+    - name: Attach EIP to an EC2 instance (idempotence) - check_mode
+      amazon.aws.ec2_eip:
+        device_id: "{{ create_ec2_instance_result.instance_ids[0] }}"
+        state: present
+        release_on_disassociation: true
+      register: instance_eip
+      check_mode: true
+
+    - ansible.builtin.assert:
+        that:
+          - instance_eip is not changed
+
+    - name: Attach EIP to an EC2 instance (idempotence)
+      amazon.aws.ec2_eip:
+        device_id: "{{ create_ec2_instance_result.instance_ids[0] }}"
+        state: present
+        release_on_disassociation: true
+      register: instance_eip
+
+    - amazon.aws.ec2_eip_info:
+        filters:
+          public-ip: "{{ instance_eip.public_ip }}"
+      register: eip_info
+
+    - ansible.builtin.assert:
+        that:
+          - instance_eip is not changed
+          - eip_info.addresses[0].allocation_id is defined
+          - eip_info.addresses[0].instance_id == create_ec2_instance_result.instance_ids[0] 
+
+    # ------------------------------------------------------------------------------------------
+    # Detach EIP to EC2 instance
+    # ------------------------------------------------------------------------------------------
+    - name: Detach EIP from EC2 instance, without enabling release on disassociation - check_mode
+      amazon.aws.ec2_eip:
+        state: absent
+        device_id: "{{ create_ec2_instance_result.instance_ids[0] }}"
+      register: detach_eip
+      check_mode: true
+
+    - ansible.builtin.assert:
+        that:
+          - detach_eip is changed
+
+    - name: Detach EIP from EC2 instance, without enabling release on disassociation
+      amazon.aws.ec2_eip:
+        state: absent
+        device_id: "{{ create_ec2_instance_result.instance_ids[0] }}"
+      register: detach_eip
+
+    - amazon.aws.ec2_eip_info:
+        filters:
+          public-ip: "{{ instance_eip.public_ip }}"
+      register: eip_info
+
+    - ansible.builtin.assert:
+        that:
+          - detach_eip.changed
+          - detach_eip.disassociated
+          - not detach_eip.released
+          - eip_info.addresses | length == 1
+
+    - name: Detach EIP from EC2 instance, without enabling release on disassociation (idempotence) - check_mode
+      amazon.aws.ec2_eip:
+        state: absent
+        device_id: "{{ create_ec2_instance_result.instance_ids[0] }}"
+      register: detach_eip
+      check_mode: true
+
+    - ansible.builtin.assert:
+        that:
+          - detach_eip is not changed
+
+    - name: Detach EIP from EC2 instance, without enabling release on disassociation (idempotence)
+      amazon.aws.ec2_eip:
+        state: absent
+        device_id: "{{ create_ec2_instance_result.instance_ids[0] }}"
+      register: detach_eip
+
+    - amazon.aws.ec2_eip_info:
+        filters:
+          public-ip: "{{ instance_eip.public_ip }}"
+      register: eip_info
+
+    - ansible.builtin.assert:
+        that:
+          - not detach_eip.changed
+          - not detach_eip.disassociated
+          - not detach_eip.released
+          - eip_info.addresses | length == 1
+
+    - name: Release EIP
+      amazon.aws.ec2_eip:
+        state: absent
+        public_ip: "{{ instance_eip.public_ip }}"
+
+    # ------------------------------------------------------------------------------------------
+    # Attach EIP to EC2 instance with Private IP specified
+    # ------------------------------------------------------------------------------------------
+    - name: Attach EIP to an EC2 instance with private Ip specified - check_mode
+      amazon.aws.ec2_eip:
+        device_id: "{{ create_ec2_instance_result.instance_ids[0] }}"
+        private_ip_address: "{{ create_ec2_instance_result.instances[0].private_ip_address }}"
+        state: present
+        release_on_disassociation: true
+      register: instance_eip
+      check_mode: true
+
+    - ansible.builtin.assert:
+        that:
+          - instance_eip is changed
+
+    - name: Attach EIP to an EC2 instance with private Ip specified
+      amazon.aws.ec2_eip:
+        device_id: "{{ create_ec2_instance_result.instance_ids[0] }}"
+        private_ip_address: "{{ create_ec2_instance_result.instances[0].private_ip_address }}"
+        state: present
+        release_on_disassociation: true
+      register: instance_eip
+
+    - amazon.aws.ec2_eip_info:
+        filters:
+          public-ip: "{{ instance_eip.public_ip }}"
+      register: eip_info
+
+    - ansible.builtin.assert:
+        that:
+          - instance_eip is changed
+          - eip_info.addresses[0].allocation_id is defined
+          - eip_info.addresses[0].instance_id == create_ec2_instance_result.instance_ids[0] 
+
+    - name: Attach EIP to an EC2 instance with private Ip specified (idempotence) - check_mode
+      amazon.aws.ec2_eip:
+        device_id: "{{ create_ec2_instance_result.instance_ids[0] }}"
+        private_ip_address: "{{ create_ec2_instance_result.instances[0].private_ip_address }}"
+        state: present
+        release_on_disassociation: true
+      register: instance_eip
+      check_mode: true
+
+    - ansible.builtin.assert:
+        that:
+          - instance_eip is not changed
+
+    - name: Attach EIP to an EC2 instance with private Ip specified (idempotence)
+      amazon.aws.ec2_eip:
+        device_id: "{{ create_ec2_instance_result.instance_ids[0] }}"
+        private_ip_address: "{{ create_ec2_instance_result.instances[0].private_ip_address }}"
+        state: present
+        release_on_disassociation: true
+      register: instance_eip
+
+    - amazon.aws.ec2_eip_info:
+        filters:
+          public-ip: "{{ instance_eip.public_ip }}"
+      register: eip_info
+
+    - ansible.builtin.assert:
+        that:
+          - instance_eip is not changed
+          - eip_info.addresses[0].allocation_id is defined
+          - eip_info.addresses[0].instance_id == create_ec2_instance_result.instance_ids[0] 
+
+    # ------------------------------------------------------------------------------------------
+    # Detach EIP from EC2 instance enabling release on disassociation
+    # ------------------------------------------------------------------------------------------
+    - name: Detach EIP from EC2 instance, enabling release on disassociation - check_mode
+      amazon.aws.ec2_eip:
+        state: absent
+        device_id: "{{ create_ec2_instance_result.instance_ids[0] }}"
+        release_on_disassociation: true
+      register: disassociate_eip
+      check_mode: true
+
+    - ansible.builtin.assert:
+        that:
+          - disassociate_eip is changed
+
+    - name: Detach EIP from EC2 instance, enabling release on disassociation
+      amazon.aws.ec2_eip:
+        state: absent
+        device_id: "{{ create_ec2_instance_result.instance_ids[0] }}"
+        release_on_disassociation: true
+      register: disassociate_eip
+
+    - amazon.aws.ec2_eip_info:
+        filters:
+          public-ip: "{{ instance_eip.public_ip }}"
+      register: eip_info
+
+    - ansible.builtin.assert:
+        that:
+          - disassociate_eip.changed
+          - disassociate_eip.disassociated
+          - disassociate_eip.released
+          - eip_info.addresses | length == 0
+
+    - name: Detach EIP from EC2 instance, enabling release on disassociation (idempotence) - check_mode
+      amazon.aws.ec2_eip:
+        state: absent
+        device_id: "{{ create_ec2_instance_result.instance_ids[0] }}"
+        release_on_disassociation: true
+      register: disassociate_eip
+      check_mode: true
+
+    - ansible.builtin.assert:
+        that:
+          - disassociate_eip is not changed
+
+    - name: Detach EIP from EC2 instance, enabling release on disassociation (idempotence)
+      amazon.aws.ec2_eip:
+        state: absent
+        device_id: "{{ create_ec2_instance_result.instance_ids[0] }}"
+        release_on_disassociation: true
+      register: disassociate_eip
+
+    - amazon.aws.ec2_eip_info:
+        filters:
+          public-ip: "{{ instance_eip.public_ip }}"
+      register: eip_info
+
+    - ansible.builtin.assert:
+        that:
+          - not disassociate_eip.changed
+          - not disassociate_eip.disassociated
+          - not disassociate_eip.released
+          - eip_info.addresses | length == 0
+
+  always:
+    - name: Cleanup instance (by id)
+      amazon.aws.ec2_instance:
+        instance_ids: "{{ create_ec2_instance_result.instance_ids }}"
+        state: absent
+        wait: true
+      ignore_errors: true
+      when: create_ec2_instance_result is defined
+
+    - name: Release EIP
+      amazon.aws.ec2_eip:
+        state: absent
+        public_ip: "{{ instance_eip.public_ip }}"
+      when: instance_eip is defined

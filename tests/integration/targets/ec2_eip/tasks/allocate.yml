@@ -1,0 +1,146 @@
+- name: Test EIP allocation
+  block:
+    # ------------------------------------------------------------------------------------------
+    # Allocate EIP with no condition
+    # ------------------------------------------------------------------------------------------
+    - name: Get current state of EIPs
+      amazon.aws.ec2_eip_info:
+      register: eip_info_start
+
+    - name: Allocate a new EIP with no conditions - check_mode
+      amazon.aws.ec2_eip:
+        state: present
+        tags:
+          AnsibleEIPTestPrefix: "{{ resource_prefix }}"
+      register: eip
+      check_mode: true
+
+    - ansible.builtin.assert:
+        that:
+          - eip is changed
+
+    - name: Allocate a new EIP with no conditions
+      amazon.aws.ec2_eip:
+        state: present
+        tags:
+          AnsibleEIPTestPrefix: "{{ resource_prefix }}"
+      register: eip
+
+    - amazon.aws.ec2_eip_info:
+      register: eip_info
+      check_mode: true
+
+    - ansible.builtin.assert:
+        that:
+          - eip is changed
+          - "'ec2:CreateTags' not in eip.resource_actions"
+          - "'ec2:DeleteTags' not in eip.resource_actions"
+          - eip.public_ip is defined and ( eip.public_ip | ansible.utils.ipaddr )
+          - eip.allocation_id is defined and eip.allocation_id.startswith("eipalloc-")
+          - ( eip_info_start.addresses | length ) + 1 == ( eip_info.addresses | length )
+
+    - name: Get EIP info via public ip
+      amazon.aws.ec2_eip_info:
+        filters:
+          public-ip: "{{ eip.public_ip }}"
+      register: eip_info
+
+    - ansible.builtin.assert:
+        that:
+          - '"addresses" in eip_info'
+          - eip_info.addresses | length == 1
+          - eip_info.addresses[0].allocation_id == eip.allocation_id
+          - eip_info.addresses[0].domain == "vpc"
+          - eip_info.addresses[0].public_ip == eip.public_ip
+          - '"AnsibleEIPTestPrefix" in eip_info.addresses[0].tags'
+          - eip_info.addresses[0].tags['AnsibleEIPTestPrefix'] == resource_prefix
+
+    - name: Get EIP info via allocation id
+      amazon.aws.ec2_eip_info:
+        filters:
+          allocation-id: "{{ eip.allocation_id }}"
+      register: eip_info
+
+    - ansible.builtin.assert:
+        that:
+          - '"addresses" in eip_info'
+          - eip_info.addresses | length == 1
+          - eip_info.addresses[0].allocation_id == eip.allocation_id
+          - eip_info.addresses[0].domain == "vpc"
+          - eip_info.addresses[0].public_ip == eip.public_ip
+          - '"AnsibleEIPTestPrefix" in eip_info.addresses[0].tags'
+          - eip_info.addresses[0].tags['AnsibleEIPTestPrefix'] == resource_prefix
+
+    - name: Allocate a new ip (idempotence) - check_mode
+      amazon.aws.ec2_eip:
+        state: present
+        public_ip: "{{ eip.public_ip }}"
+      register: eip
+      check_mode: true
+
+    - ansible.builtin.assert:
+        that:
+          - eip is not changed
+
+    - name: Allocate a new ip (idempotence)
+      amazon.aws.ec2_eip:
+        state: present
+        public_ip: "{{ eip.public_ip }}"
+      register: eip
+
+    - amazon.aws.ec2_eip_info:
+      register: eip_info
+
+    - ansible.builtin.assert:
+        that:
+          - eip is not changed
+          - eip.public_ip is defined and ( eip.public_ip | ansible.utils.ipaddr )
+          - eip.allocation_id is defined and eip.allocation_id.startswith("eipalloc-")
+          - ( eip_info_start.addresses | length ) + 1  == ( eip_info.addresses | length )
+
+    # ------------------------------------------------------------------------------------------
+    # Allocate EIP from a pool
+    # ------------------------------------------------------------------------------------------
+    - name: Get current state of EIPs
+      amazon.aws.ec2_eip_info:
+      register: eip_info_start
+
+    - name: Allocate a new EIP from a pool - check_mode
+      amazon.aws.ec2_eip:
+        state: present
+        public_ipv4_pool: amazon
+      register: eip_pool
+      check_mode: true
+
+    - ansible.builtin.assert:
+        that:
+          - eip_pool is changed
+
+    - name: Allocate a new EIP from a pool
+      amazon.aws.ec2_eip:
+        state: present
+        public_ipv4_pool: amazon
+      register: eip_pool
+
+    - amazon.aws.ec2_eip_info:
+      register: eip_info
+
+    - ansible.builtin.assert:
+        that:
+          - eip_pool is changed
+          - eip_pool.public_ip is defined and ( eip_pool.public_ip | ansible.utils.ipaddr )
+          - eip_pool.allocation_id is defined and eip_pool.allocation_id.startswith("eipalloc-")
+          - ( eip_info_start.addresses | length ) + 1  == ( eip_info.addresses | length )
+
+  always:
+    - name: Release EIP
+      amazon.aws.ec2_eip:
+        state: absent
+        public_ip: "{{ eip.public_ip }}"
+      when: eip is defined
+
+    - name: Release EIP created from pool
+      amazon.aws.ec2_eip:
+        state: absent
+        public_ip: "{{ eip_pool.public_ip }}"
+      when: eip_pool is defined

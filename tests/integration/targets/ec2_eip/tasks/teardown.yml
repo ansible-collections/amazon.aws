@@ -1,0 +1,39 @@
+---
+- name: Cleanup ENI A
+  amazon.aws.ec2_eni:
+    state: absent
+    eni_id: "{{ eni_create_a.interface.id }}"
+  ignore_errors: true
+
+- name: Cleanup ENI B
+  amazon.aws.ec2_eni:
+    state: absent
+    eni_id: "{{ eni_create_b.interface.id }}"
+  ignore_errors: true
+
+- name: Cleanup IGW
+  amazon.aws.ec2_vpc_igw:
+    state: absent
+    vpc_id: "{{ vpc_result.vpc.id }}"
+  register: vpc_igw
+  ignore_errors: true
+
+- name: Cleanup security group
+  amazon.aws.ec2_security_group:
+    state: absent
+    name: "{{ resource_prefix }}-sg"
+  ignore_errors: true
+
+- name: Cleanup Subnet
+  amazon.aws.ec2_vpc_subnet:
+    state: absent
+    cidr: "{{ subnet_cidr }}"
+    vpc_id: "{{ vpc_result.vpc.id }}"
+  ignore_errors: true
+
+- name: Cleanup VPC
+  amazon.aws.ec2_vpc_net:
+    state: absent
+    name: "{{ resource_prefix }}-vpc"
+    cidr_block: "{{ vpc_cidr }}"
+  ignore_errors: true
