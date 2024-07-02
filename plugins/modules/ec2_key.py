@@ -164,17 +164,15 @@ key:
 import os
 import uuid
 
-try:
-    import botocore
-except ImportError:
-    pass  # caught by AnsibleAWSModule
-
 from ansible.module_utils._text import to_bytes
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleEC2Error
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import create_key_pair
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import delete_key_pair as delete_ec2_key_pair
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_key_pairs
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import import_key_pair
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
@@ -193,9 +191,9 @@ def _import_key_pair(ec2_client, name, key_material, tag_spec=None):
     params = scrub_none_parameters(params)
 
     try:
-        key = ec2_client.import_key_pair(aws_retry=True, **params)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as err:
-        raise Ec2KeyFailure(err, "error importing key")
+        key = import_key_pair(ec2_client, **params)
+    except AnsibleEC2Error as e:
+        raise Ec2KeyFailure(e, "error importing key")
     return key
 
 
@@ -236,18 +234,15 @@ def get_key_fingerprint(check_mode, ec2_client, key_material):
 
 def find_key_pair(ec2_client, name):
     try:
-        key = ec2_client.describe_key_pairs(aws_retry=True, KeyNames=[name])
-    except is_boto3_error_code("InvalidKeyPair.NotFound"):
-        return None
-    except (
-        botocore.exceptions.ClientError,
-        botocore.exceptions.BotoCoreError,
-    ) as err:  # pylint: disable=duplicate-except
-        raise Ec2KeyFailure(err, "error finding keypair")
+        key = describe_key_pairs(ec2_client, KeyNames=[name])
+        if not key:
+            return None
+    except AnsibleEC2Error as e:
+        raise Ec2KeyFailure(e, "error finding keypair")
     except IndexError:
         key = None
 
-    return key["KeyPairs"][0]
+    return key[0]
 
 
 def _create_key_pair(ec2_client, name, tag_spec, key_type):
@@ -260,9 +255,9 @@ def _create_key_pair(ec2_client, name, tag_spec, key_type):
     params = scrub_none_parameters(params)
 
     try:
-        key = ec2_client.create_key_pair(aws_retry=True, **params)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as err:
-        raise Ec2KeyFailure(err, "error creating key")
+        key = create_key_pair(ec2_client, **params)
+    except AnsibleEC2Error as e:
+        raise Ec2KeyFailure(e, "error creating key")
     return key
 
 
@@ -325,13 +320,6 @@ def update_key_pair_by_key_type(check_mode, ec2_client, name, key_type, tag_spec
         return {"changed": True, "key": key_data, "msg": "key pair updated"}
 
 
-def _delete_key_pair(ec2_client, key_name):
-    try:
-        ec2_client.delete_key_pair(aws_retry=True, KeyName=key_name)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as err:
-        raise Ec2KeyFailure(err, "error deleting key")
-
-
 def delete_key_pair(check_mode, ec2_client, name, finish_task=True):
     key = find_key_pair(ec2_client, name)
 
@@ -341,7 +329,10 @@ def delete_key_pair(check_mode, ec2_client, name, finish_task=True):
         result = {"key": None, "msg": "key did not exist"}
         return result
     else:
-        _delete_key_pair(ec2_client, name)
+        try:
+            delete_ec2_key_pair(ec2_client, name)
+        except AnsibleEC2Error as e:
+            raise Ec2KeyFailure(e, "error deleting keypair")
         if not finish_task:
             return
         result = {"changed": True, "key": None, "msg": "key deleted"}
@@ -389,7 +380,7 @@ def main():
         supports_check_mode=True,
     )
 
-    ec2_client = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff())
+    ec2_client = module.client("ec2")
 
     name = module.params["name"]
     state = module.params.get("state")
