@@ -4,6 +4,20 @@ amazon.aws Release Notes
 
 .. contents:: Topics
 
+v8.1.0
+======
+
+Release Summary
+---------------
+
+This release includes several documentation improvements and two new features for the ``s3_bucket`` module.
+
+Minor Changes
+-------------
+
+- s3_bucket - Add ``object_lock_default_retention`` to set Object Lock default retention configuration for S3 buckets (https://github.com/ansible-collections/amazon.aws/pull/2062).
+- s3_bucket - Add support for enabling Amazon S3 Transfer Acceleration by setting the ``accelerate_enabled`` option (https://github.com/ansible-collections/amazon.aws/pull/2046).
+
 v8.0.1
 ======
 
