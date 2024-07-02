@@ -237,7 +237,7 @@ def sanitize_filters_to_boto3_filter_list(
     filters: Dict[str, Any], ignore_keys: Optional[List[str]] = None
 ) -> Dict[str, Any]:
     """
-    Replace filter key underscores with dashes, for compatibility and tranform ansible dict
+    Replace filter key underscores with dashes, for compatibility and transform ansible dict
     into boto3 filter list.
 
     :param filters: Ansible module params filters
