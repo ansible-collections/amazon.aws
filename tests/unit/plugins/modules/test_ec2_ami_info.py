@@ -3,12 +3,10 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from unittest.mock import ANY
 from unittest.mock import MagicMock
 from unittest.mock import call
 from unittest.mock import patch
 
-import botocore.exceptions
 import pytest
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
@@ -50,8 +48,9 @@ def test_build_request_args(executable_users, filters, image_ids, owners, expect
     assert ec2_ami_info.build_request_args(executable_users, filters, image_ids, owners) == expected
 
 
-def test_get_images(ec2_client):
-    ec2_client.describe_images.return_value = {
+@patch(module_name + ".describe_images")
+def test_get_images(m_describe_images):
+    m_describe_images.return_value = {
         "Images": [
             {
                 "Architecture": "x86_64",
@@ -78,93 +77,72 @@ def test_get_images(ec2_client):
     }
 
     request_args = {"ImageIds": ["ami-1234567890"]}
-
+    ec2_client = MagicMock()
     get_images_result = ec2_ami_info.get_images(ec2_client, request_args)
 
-    ec2_client.describe_images.call_count == 2
-    ec2_client.describe_images.assert_called_with(aws_retry=True, **request_args)
-    assert get_images_result == ec2_client.describe_images.return_value
+    m_describe_images.call_count == 2
+    m_describe_images.assert_called_with(ec2_client, **request_args)
+    assert get_images_result == m_describe_images.return_value
 
 
-def test_get_image_attribute():
-    ec2_client = MagicMock()
-
-    ec2_client.describe_image_attribute.return_value = {
-        "ImageId": "ami-1234567890",
-        "LaunchPermissions": [{"UserId": "1234567890"}, {"UserId": "0987654321"}],
-    }
-
-    image_id = "ami-1234567890"
-
-    get_image_attribute_result = ec2_ami_info.get_image_attribute(ec2_client, image_id)
-
-    ec2_client.describe_image_attribute.call_count == 1
-    ec2_client.describe_image_attribute.assert_called_with(
-        aws_retry=True, Attribute="launchPermission", ImageId=image_id
-    )
-    assert len(get_image_attribute_result["LaunchPermissions"]) == 2
-
-
-@patch(module_name + ".get_image_attribute")
+@patch(module_name + ".describe_image_attribute")
 @patch(module_name + ".get_images")
-def test_list_ec2_images(m_get_images, m_get_image_attribute):
+def test_list_ec2_images(m_get_images, m_describe_image_attribute):
     module = MagicMock()
 
-    m_get_images.return_value = {
-        "Images": [
-            {
-                "Architecture": "x86_64",
-                "BlockDeviceMappings": [
-                    {
-                        "DeviceName": "/dev/sda1",
-                        "Ebs": {
-                            "DeleteOnTermination": "True",
-                            "Encrypted": "False",
-                            "SnapshotId": "snap-0f00cba784af62428",
-                            "VolumeSize": 10,
-                            "VolumeType": "gp2",
-                        },
-                    }
-                ],
-                "ImageId": "ami-1234567890",
-                "ImageLocation": "1234567890/test-ami-uefi-boot",
-                "ImageType": "machine",
-                "Name": "test-ami-uefi-boot",
-                "OwnerId": "1234567890",
-                "OwnerAlias": "test_ami_owner",
-                "PlatformDetails": "Linux/UNIX",
-            },
-            {
-                "Architecture": "x86_64",
-                "BlockDeviceMappings": [
-                    {
-                        "DeviceName": "/dev/sda1",
-                        "Ebs": {
-                            "DeleteOnTermination": "True",
-                            "Encrypted": "False",
-                            "SnapshotId": "snap-0f00cba784af62428",
-                            "VolumeSize": 10,
-                            "VolumeType": "gp2",
-                        },
-                    }
-                ],
-                "ImageId": "ami-1523498760",
-                "ImageLocation": "1523498760/test-ami-uefi-boot",
-                "ImageType": "machine",
-                "Name": "test-ami-uefi-boot",
-                "OwnerId": "1234567890",
-                "OwnerAlias": "test_ami_owner",
-                "PlatformDetails": "Linux/UNIX",
-            },
-        ],
-    }
+    m_get_images.return_value = [
+        {
+            "Architecture": "x86_64",
+            "BlockDeviceMappings": [
+                {
+                    "DeviceName": "/dev/sda1",
+                    "Ebs": {
+                        "DeleteOnTermination": "True",
+                        "Encrypted": "False",
+                        "SnapshotId": "snap-0f00cba784af62428",
+                        "VolumeSize": 10,
+                        "VolumeType": "gp2",
+                    },
+                }
+            ],
+            "ImageId": "ami-1234567890",
+            "ImageLocation": "1234567890/test-ami-uefi-boot",
+            "ImageType": "machine",
+            "Name": "test-ami-uefi-boot",
+            "OwnerId": "1234567890",
+            "OwnerAlias": "test_ami_owner",
+            "PlatformDetails": "Linux/UNIX",
+        },
+        {
+            "Architecture": "x86_64",
+            "BlockDeviceMappings": [
+                {
+                    "DeviceName": "/dev/sda1",
+                    "Ebs": {
+                        "DeleteOnTermination": "True",
+                        "Encrypted": "False",
+                        "SnapshotId": "snap-0f00cba784af62428",
+                        "VolumeSize": 10,
+                        "VolumeType": "gp2",
+                    },
+                }
+            ],
+            "ImageId": "ami-1523498760",
+            "ImageLocation": "1523498760/test-ami-uefi-boot",
+            "ImageType": "machine",
+            "Name": "test-ami-uefi-boot",
+            "OwnerId": "1234567890",
+            "OwnerAlias": "test_ami_owner",
+            "PlatformDetails": "Linux/UNIX",
+        },
+    ]
 
-    m_get_image_attribute.return_value = {
+    m_describe_image_attribute.return_value = {
         "ImageId": "ami-1234567890",
         "LaunchPermissions": [{"UserId": "1234567890"}, {"UserId": "0987654321"}],
     }
 
-    images = m_get_images.return_value["Images"]
+    images = m_get_images.return_value
     images = [camel_dict_to_snake_dict(image) for image in images]
 
     request_args = {
@@ -182,10 +160,10 @@ def test_list_ec2_images(m_get_images, m_get_image_attribute):
     assert m_get_images.call_count == 1
     m_get_images.assert_called_with(ec2_client, request_args)
 
-    assert m_get_image_attribute.call_count == 2
-    m_get_image_attribute.assert_has_calls(
-        [call(ec2_client, images[0]["image_id"])],
-        [call(ec2_client, images[1]["image_id"])],
+    assert m_describe_image_attribute.call_count == 2
+    m_describe_image_attribute.assert_has_calls(
+        [call(ec2_client, attribute="launchPermission", image_id=images[0]["image_id"])],
+        [call(ec2_client, attribute="launchPermission", image_id=images[1]["image_id"])],
     )
 
     assert len(list_ec2_images_result) == 2
@@ -200,25 +178,18 @@ def test_main_success(m_AnsibleAWSModule):
 
     ec2_ami_info.main()
 
-    m_module.client.assert_called_with("ec2", retry_decorator=ANY)
+    m_module.client.assert_called_with("ec2")
     m_module.exit_json.assert_called_with(images=[])
 
 
-def a_boto_exception():
-    return botocore.exceptions.UnknownServiceError(service_name="Whoops", known_service_names="Oula")
+def a_ami_info_exception():
+    return ec2_ami_info.AnsibleEC2Error(message="Whoops")
 
 
-def test_api_failure_get_images(ec2_client):
+@patch(module_name + ".describe_images")
+def test_api_failure_get_images(m_describe_images):
     request_args = {}
-    ec2_client.describe_images.side_effect = a_boto_exception()
+    m_describe_images.side_effect = a_ami_info_exception()
 
     with pytest.raises(ec2_ami_info.AmiInfoFailure):
         ec2_ami_info.get_images(ec2_client, request_args)
-
-
-def test_api_failure_get_image_attribute(ec2_client):
-    image_id = "ami-1234567890"
-    ec2_client.describe_image_attribute.side_effect = a_boto_exception()
-
-    with pytest.raises(ec2_ami_info.AmiInfoFailure):
-        ec2_ami_info.get_image_attribute(ec2_client, image_id)
