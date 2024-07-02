@@ -391,6 +391,44 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucke
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-object_lock_default_retention"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-bucket-module-parameter-object-lock-default-retention"><strong>object_lock_default_retention</strong></p>
+<a class="ansibleOptionLink" href="#parameter-object_lock_default_retention" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 8.1.0</em></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Default Object Lock configuration that will be applied by default to every new object placed in the specified bucket.</p>
+<p><code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucket-module-parameter-object-lock-enabled"><span class="std std-ref"><span class="pre">object_lock_enabled</span></span></a></strong></code> must be included and set to <code class="ansible-value docutils literal notranslate"><span class="pre">True</span></code>.</p>
+<p>Object lock retention policy can’t be removed.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-object_lock_default_retention/days"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-bucket-module-parameter-object-lock-default-retention-days"><strong>days</strong></p>
+<a class="ansibleOptionLink" href="#parameter-object_lock_default_retention/days" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The number of days that you want to specify for the default retention period.</p>
+<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucket-module-parameter-object-lock-default-retention-years"><span class="std std-ref"><span class="pre">object_lock_default_retention.years</span></span></a></strong></code>.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-object_lock_default_retention/mode"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-bucket-module-parameter-object-lock-default-retention-mode"><strong>mode</strong></p>
+<a class="ansibleOptionLink" href="#parameter-object_lock_default_retention/mode" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Type of retention modes.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;GOVERNANCE&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;COMPLIANCE&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-object_lock_default_retention/years"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-bucket-module-parameter-object-lock-default-retention-years"><strong>years</strong></p>
+<a class="ansibleOptionLink" href="#parameter-object_lock_default_retention/years" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The number of years that you want to specify for the default retention period.</p>
+<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucket-module-parameter-object-lock-default-retention-days"><span class="std std-ref"><span class="pre">object_lock_default_retention.days</span></span></a></strong></code>.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-object_lock_enabled"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-bucket-module-parameter-object-lock-enabled"><strong>object_lock_enabled</strong></p>
 <a class="ansibleOptionLink" href="#parameter-object_lock_enabled" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 <p><em class="ansible-option-versionadded">added in amazon.aws 5.3.0</em></p>
@@ -767,6 +805,15 @@ pass the <em>public_access</em> parameter to enable public access ACLs.</p>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mys3bucket</span>
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
 <span class="w">    </span><span class="nt">accelerate_enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+
+<span class="c1"># Default Object Lock retention</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.s3_bucket</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mys3bucket</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
+<span class="w">    </span><span class="nt">object_lock_enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">object_lock_default_retention</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">governance</span>
+<span class="w">      </span><span class="nt">days</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
 </pre></div>
 </div>
 </section>
@@ -817,6 +864,15 @@ pass the <em>public_access</em> parameter to enable public access ACLs.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-object_lock_default_retention"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-bucket-module-return-object-lock-default-retention"><strong>object_lock_default_retention</strong></p>
+<a class="ansibleOptionLink" href="#return-object_lock_default_retention" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>S3 bucket’s object lock retention policy.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucket-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;Days&quot;:</span> <span class="pre">1,</span> <span class="pre">&quot;Mode&quot;:</span> <span class="pre">&quot;GOVERNANCE&quot;,</span> <span class="pre">&quot;Years&quot;:</span> <span class="pre">0}</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-object_ownership"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-bucket-module-return-object-ownership"><strong>object_ownership</strong></p>
 <a class="ansibleOptionLink" href="#return-object_ownership" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -825,7 +881,7 @@ pass the <em>public_access</em> parameter to enable public access ACLs.</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;BucketOwnerPreferred&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-policy"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-bucket-module-return-policy"><strong>policy</strong></p>
 <a class="ansibleOptionLink" href="#return-policy" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
@@ -834,7 +890,7 @@ pass the <em>public_access</em> parameter to enable public access ACLs.</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;Statement&quot;:</span> <span class="pre">[{&quot;Action&quot;:</span> <span class="pre">&quot;s3:GetObject&quot;,</span> <span class="pre">&quot;Effect&quot;:</span> <span class="pre">&quot;Allow&quot;,</span> <span class="pre">&quot;Principal&quot;:</span> <span class="pre">&quot;*&quot;,</span> <span class="pre">&quot;Resource&quot;:</span> <span class="pre">&quot;arn:aws:s3:::2d3ce10a8210d36d6b4d23b822892074complex/*&quot;,</span> <span class="pre">&quot;Sid&quot;:</span> <span class="pre">&quot;AddPerm&quot;}],</span> <span class="pre">&quot;Version&quot;:</span> <span class="pre">&quot;2012-10-17&quot;}</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-requester_pays"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-bucket-module-return-requester-pays"><strong>requester_pays</strong></p>
 <a class="ansibleOptionLink" href="#return-requester_pays" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -843,7 +899,7 @@ pass the <em>public_access</em> parameter to enable public access ACLs.</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-bucket-module-return-tags"><strong>tags</strong></p>
 <a class="ansibleOptionLink" href="#return-tags" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
@@ -852,7 +908,7 @@ pass the <em>public_access</em> parameter to enable public access ACLs.</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;Tag1&quot;:</span> <span class="pre">&quot;tag1&quot;,</span> <span class="pre">&quot;Tag2&quot;:</span> <span class="pre">&quot;tag2&quot;}</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-versioning"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-bucket-module-return-versioning"><strong>versioning</strong></p>
 <a class="ansibleOptionLink" href="#return-versioning" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
