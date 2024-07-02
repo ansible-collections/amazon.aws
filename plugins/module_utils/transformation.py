@@ -240,7 +240,8 @@ def sanitize_filters_to_boto3_filter_list(
     Replace filter key underscores with dashes, for compatibility and transform ansible dict
     into boto3 filter list.
 
-    :param filters: Ansible module params filters
+    :param filters: Ansible module params filters.
+    :param ignore_keys: A list of keys to ignore.
     :return: Sanitized filters
     """
     sanitized_filters = deepcopy(filters)
