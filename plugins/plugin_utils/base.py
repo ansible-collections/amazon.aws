@@ -3,6 +3,9 @@
 # (c) 2022 Red Hat Inc.
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+from typing import NoReturn
+from typing import Optional
+
 from ansible.errors import AnsibleError
 from ansible.module_utils.basic import to_native
 from ansible.utils.display import Display
@@ -17,24 +20,24 @@ display = Display()
 
 
 class AWSPluginBase:
-    def warn(self, message):
+    def warn(self, message: str):
         display.warning(message)
 
-    def debug(self, message):
+    def debug(self, message: str):
         display.debug(message)
 
     # Should be overridden with the plugin-type specific exception
-    def _do_fail(self, message):
+    def _do_fail(self, message: str) -> NoReturn:
         raise AnsibleError(message)
 
     # We don't know what the correct exception is to raise, so the actual "raise" is handled by
     # _do_fail()
-    def fail_aws(self, message, exception=None):
+    def fail_aws(self, message: str, exception: Optional[Exception] = None) -> NoReturn:
         if not exception:
             self._do_fail(to_native(message))
         self._do_fail(f"{message}: {to_native(exception)}")
 
-    def client(self, service, retry_decorator=None, **extra_params):
+    def client(self, service: str, retry_decorator=None, **extra_params):
         region, endpoint_url, aws_connect_kwargs = get_aws_connection_info(self)
         kw_args = dict(region=region, endpoint=endpoint_url, **aws_connect_kwargs)
         kw_args.update(extra_params)
@@ -48,10 +51,10 @@ class AWSPluginBase:
         return boto3_conn(self, conn_type="resource", resource=service, **kw_args)
 
     @property
-    def region(self):
+    def region(self) -> Optional[str]:
         return get_aws_region(self)
 
-    def require_aws_sdk(self, botocore_version=None, boto3_version=None):
+    def require_aws_sdk(self, botocore_version: Optional[str] = None, boto3_version: Optional[str] = None) -> bool:
         return check_sdk_version_supported(
             botocore_version=botocore_version, boto3_version=boto3_version, warn=self.warn
         )

@@ -42,9 +42,9 @@ def test_boto3_conn_success_plugin(monkeypatch, aws_plugin, botocore_utils):
     monkeypatch.setattr(botocore_utils, "_boto3_conn", connection_method)
     connection_method.return_value = sentinel.RETURNED_CONNECTION
 
-    assert botocore_utils.boto3_conn(aws_plugin) is sentinel.RETURNED_CONNECTION
+    assert botocore_utils.boto3_conn(aws_plugin, sentinel.PARAM_CONNTYPE) is sentinel.RETURNED_CONNECTION
     passed_args = connection_method.call_args
-    assert passed_args == call(conn_type=None, resource=None, region=None, endpoint=None)
+    assert passed_args == call(conn_type=sentinel.PARAM_CONNTYPE, resource=None, region=None, endpoint=None)
 
     result = botocore_utils.boto3_conn(
         aws_plugin,
@@ -66,66 +66,35 @@ def test_boto3_conn_success_plugin(monkeypatch, aws_plugin, botocore_utils):
 
 
 @pytest.mark.parametrize(
-    "failure, custom_error",
+    "failure, custom_error, inc_exc",
     [
-        (ValueError(sentinel.VALUE_ERROR), "Couldn't connect to AWS: sentinel.VALUE_ERROR"),
-        (botocore.exceptions.ProfileNotFound(profile=sentinel.PROFILE_ERROR), None),
+        (ValueError(sentinel.VALUE_ERROR), None, True),
+        (botocore.exceptions.ProfileNotFound(profile=sentinel.PROFILE_ERROR), None, True),
         (
             botocore.exceptions.PartialCredentialsError(
                 provider=sentinel.CRED_ERROR_PROV, cred_var=sentinel.CRED_ERROR_VAR
             ),
             None,
+            False,
         ),
-        (botocore.exceptions.NoCredentialsError(), None),
-        (botocore.exceptions.ConfigParseError(path=sentinel.PARSE_ERROR), None),
-        (botocore.exceptions.NoRegionError(), "The sentinel.PLUGIN_NAME plugin requires a region"),
+        (botocore.exceptions.NoCredentialsError(), None, False),
+        (botocore.exceptions.ConfigParseError(path=sentinel.PARSE_ERROR), None, False),
+        (botocore.exceptions.NoRegionError(), "The sentinel.PLUGIN_NAME plugin requires a region", False),
     ],
 )
-def test_boto3_conn_exception_plugin(monkeypatch, aws_plugin, botocore_utils, failure, custom_error):
+def test_boto3_conn_exception_plugin(monkeypatch, aws_plugin, botocore_utils, failure, custom_error, inc_exc):
     connection_method = MagicMock(name="_boto3_conn")
     monkeypatch.setattr(botocore_utils, "_boto3_conn", connection_method)
     connection_method.side_effect = failure
 
     if custom_error is None:
-        custom_error = str(failure)
+        custom_error = "Couldn't connect to AWS"
 
     with pytest.raises(FailException):
-        botocore_utils.boto3_conn(aws_plugin)
+        botocore_utils.boto3_conn(aws_plugin, sentinel.PARAM_CONNTYPE)
 
     fail_args = aws_plugin.fail_aws.call_args
-    assert custom_error in fail_args[0][0]
-
-
-@pytest.mark.parametrize(
-    "failure, custom_error",
-    [
-        (ValueError(sentinel.VALUE_ERROR), "Couldn't connect to AWS: sentinel.VALUE_ERROR"),
-        (botocore.exceptions.ProfileNotFound(profile=sentinel.PROFILE_ERROR), None),
-        (
-            botocore.exceptions.PartialCredentialsError(
-                provider=sentinel.CRED_ERROR_PROV, cred_var=sentinel.CRED_ERROR_VAR
-            ),
-            None,
-        ),
-        (botocore.exceptions.NoCredentialsError(), None),
-        (botocore.exceptions.ConfigParseError(path=sentinel.PARSE_ERROR), None),
-        (
-            botocore.exceptions.NoRegionError(),
-            "A region is required and none was found",
-        ),
-    ],
-)
-def test_boto3_conn_exception_no_plugin_name(monkeypatch, aws_plugin, botocore_utils, failure, custom_error):
-    connection_method = MagicMock(name="_boto3_conn")
-    monkeypatch.setattr(botocore_utils, "_boto3_conn", connection_method)
-    connection_method.side_effect = failure
-    del aws_plugin.ansible_name
-
-    if custom_error is None:
-        custom_error = str(failure)
-
-    with pytest.raises(FailException):
-        botocore_utils.boto3_conn(aws_plugin)
-
-    fail_args = aws_plugin.fail_aws.call_args
-    assert custom_error in fail_args[0][0]
+    if inc_exc:
+        assert fail_args == call(custom_error, exception=failure)
+    else:
+        assert custom_error in fail_args[0][0]

@@ -33,18 +33,18 @@ def aws_module(monkeypatch):
 
 
 @pytest.fixture
-def fake_botocore(monkeypatch):
+def fake_boto3(monkeypatch):
     # Note: this isn't a monkey-patched real-botocore, this is a complete fake.
     fake_session = MagicMock()
-    fake_session.get_config_variable.return_value = sentinel.BOTO3_REGION
+    fake_session.region_name = sentinel.BOTO3_REGION
     fake_session_module = MagicMock()
     fake_session_module.Session.return_value = fake_session
-    fake_botocore = MagicMock()
-    monkeypatch.setattr(fake_botocore, "session", fake_session_module)
+    fake_boto3 = MagicMock()
+    monkeypatch.setattr(fake_boto3, "session", fake_session_module)
     # Patch exceptions back in
-    monkeypatch.setattr(fake_botocore, "exceptions", botocore.exceptions)
+    monkeypatch.setattr(fake_boto3, "exceptions", botocore.exceptions)
 
-    return fake_botocore
+    return fake_boto3
 
 
 @pytest.fixture
@@ -126,48 +126,45 @@ def test_aws_region_no_boto(monkeypatch, botocore_utils):
     assert e.value.exception is sentinel.BOTO3_IMPORT_EXCEPTION
 
 
-def test_aws_region_no_profile(monkeypatch, botocore_utils, fake_botocore):
-    monkeypatch.setattr(botocore_utils, "botocore", fake_botocore)
-    fake_session_module = fake_botocore.session
+def test_aws_region_no_profile(monkeypatch, botocore_utils, fake_boto3):
+    monkeypatch.setattr(botocore_utils, "boto3", fake_boto3)
+    fake_session_module = fake_boto3.session
     fake_session = fake_session_module.Session(sentinel.RETRIEVAL)
 
     assert botocore_utils._aws_region(dict(region=sentinel.PARAM_REGION)) is sentinel.PARAM_REGION
     assert fake_session_module.Session.call_args == call(sentinel.RETRIEVAL)
 
     assert botocore_utils._aws_region(dict()) is sentinel.BOTO3_REGION
-    assert fake_session_module.Session.call_args == call(profile=None)
-    assert fake_session.get_config_variable.call_args == call("region")
+    assert fake_session_module.Session.call_args == call(profile_name=None)
 
 
-def test_aws_region_none_profile(monkeypatch, botocore_utils, fake_botocore):
-    monkeypatch.setattr(botocore_utils, "botocore", fake_botocore)
-    fake_session_module = fake_botocore.session
+def test_aws_region_none_profile(monkeypatch, botocore_utils, fake_boto3):
+    monkeypatch.setattr(botocore_utils, "boto3", fake_boto3)
+    fake_session_module = fake_boto3.session
     fake_session = fake_session_module.Session(sentinel.RETRIEVAL)
 
     assert botocore_utils._aws_region(dict(region=sentinel.PARAM_REGION, profile=None)) is sentinel.PARAM_REGION
     assert fake_session_module.Session.call_args == call(sentinel.RETRIEVAL)
 
     assert utils_botocore._aws_region(dict(profile=None)) is sentinel.BOTO3_REGION
-    assert fake_session_module.Session.call_args == call(profile=None)
-    assert fake_session.get_config_variable.call_args == call("region")
+    assert fake_session_module.Session.call_args == call(profile_name=None)
 
 
-def test_aws_region_empty_profile(monkeypatch, botocore_utils, fake_botocore):
-    monkeypatch.setattr(botocore_utils, "botocore", fake_botocore)
-    fake_session_module = fake_botocore.session
+def test_aws_region_empty_profile(monkeypatch, botocore_utils, fake_boto3):
+    monkeypatch.setattr(botocore_utils, "boto3", fake_boto3)
+    fake_session_module = fake_boto3.session
     fake_session = fake_session_module.Session(sentinel.RETRIEVAL)
 
     assert botocore_utils._aws_region(dict(region=sentinel.PARAM_REGION, profile="")) is sentinel.PARAM_REGION
     assert fake_session_module.Session.call_args == call(sentinel.RETRIEVAL)
 
     assert utils_botocore._aws_region(dict(profile="")) is sentinel.BOTO3_REGION
-    assert fake_session_module.Session.call_args == call(profile=None)
-    assert fake_session.get_config_variable.call_args == call("region")
+    assert fake_session_module.Session.call_args == call(profile_name=None)
 
 
-def test_aws_region_with_profile(monkeypatch, botocore_utils, fake_botocore):
-    monkeypatch.setattr(botocore_utils, "botocore", fake_botocore)
-    fake_session_module = fake_botocore.session
+def test_aws_region_with_profile(monkeypatch, botocore_utils, fake_boto3):
+    monkeypatch.setattr(botocore_utils, "boto3", fake_boto3)
+    fake_session_module = fake_boto3.session
     fake_session = fake_session_module.Session(sentinel.RETRIEVAL)
 
     assert (
@@ -177,15 +174,14 @@ def test_aws_region_with_profile(monkeypatch, botocore_utils, fake_botocore):
     assert fake_session_module.Session.call_args == call(sentinel.RETRIEVAL)
 
     assert utils_botocore._aws_region(dict(profile=sentinel.PARAM_PROFILE)) is sentinel.BOTO3_REGION
-    assert fake_session_module.Session.call_args == call(profile=sentinel.PARAM_PROFILE)
-    assert fake_session.get_config_variable.call_args == call("region")
+    assert fake_session_module.Session.call_args == call(profile_name=sentinel.PARAM_PROFILE)
 
 
-def test_aws_region_bad_profile(monkeypatch, botocore_utils, fake_botocore):
+def test_aws_region_bad_profile(monkeypatch, botocore_utils, fake_boto3):
     not_found_exception = botocore.exceptions.ProfileNotFound(profile=sentinel.ERROR_PROFILE)
 
-    monkeypatch.setattr(botocore_utils, "botocore", fake_botocore)
-    fake_session_module = fake_botocore.session
+    monkeypatch.setattr(botocore_utils, "boto3", fake_boto3)
+    fake_session_module = fake_boto3.session
 
     assert (
         botocore_utils._aws_region(dict(region=sentinel.PARAM_REGION, profile=sentinel.PARAM_PROFILE))
@@ -196,4 +192,4 @@ def test_aws_region_bad_profile(monkeypatch, botocore_utils, fake_botocore):
     # bad profile name they'll see the ProfileNotFound exception
     fake_session_module.Session.side_effect = not_found_exception
     assert utils_botocore._aws_region(dict(profile=sentinel.PARAM_PROFILE)) is None
-    assert fake_session_module.Session.call_args == call(profile=sentinel.PARAM_PROFILE)
+    assert fake_session_module.Session.call_args == call(profile_name=sentinel.PARAM_PROFILE)
