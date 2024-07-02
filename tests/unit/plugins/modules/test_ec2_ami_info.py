@@ -7,7 +7,6 @@ from unittest.mock import MagicMock
 from unittest.mock import call
 from unittest.mock import patch
 
-import botocore.exceptions
 import pytest
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
@@ -183,13 +182,14 @@ def test_main_success(m_AnsibleAWSModule):
     m_module.exit_json.assert_called_with(images=[])
 
 
-def a_boto_exception():
-    return botocore.exceptions.UnknownServiceError(service_name="Whoops", known_service_names="Oula")
+def a_ami_info_exception():
+    return ec2_ami_info.AnsibleEC2Error(message="Whoops")
 
 
-def test_api_failure_get_images(ec2_client):
+@patch(module_name + ".describe_images")
+def test_api_failure_get_images(m_describe_images):
     request_args = {}
-    ec2_client.describe_images.side_effect = a_boto_exception()
+    m_describe_images.side_effect = a_ami_info_exception()
 
     with pytest.raises(ec2_ami_info.AmiInfoFailure):
         ec2_ami_info.get_images(ec2_client, request_args)
