@@ -172,6 +172,30 @@ options:
     type: bool
     default: false
     version_added: 8.1.0
+  object_lock_default_retention:
+    description:
+      - Default Object Lock configuration that will be applied by default to
+        every new object placed in the specified bucket.
+      - O(object_lock_enabled) must be included and set to V(True).
+      - Object lock retention policy can't be removed.
+    suboptions:
+      mode:
+        description: Type of retention modes.
+        choices: [ "GOVERNANCE", "COMPLIANCE"]
+        required: true
+        type: str
+      days:
+        description:
+            - The number of days that you want to specify for the default retention period.
+            - Mutually exclusive with O(object_lock_default_retention.years).
+        type: int
+      years:
+        description:
+            - The number of years that you want to specify for the default retention period.
+            - Mutually exclusive with O(object_lock_default_retention.days).
+        type: int
+    type: dict
+    version_added: 8.1.0
 
 extends_documentation_fragment:
   - amazon.aws.common.modules
@@ -298,6 +322,15 @@ EXAMPLES = r"""
     name: mys3bucket
     state: present
     accelerate_enabled: true
+
+# Default Object Lock retention
+- amazon.aws.s3_bucket:
+    name: mys3bucket
+    state: present
+    object_lock_enabled: true
+    object_lock_default_retention:
+      mode: governance
+      days: 1
 """
 
 RETURN = r"""
@@ -317,6 +350,15 @@ object_ownership:
     type: str
     returned: I(state=present)
     sample: "BucketOwnerPreferred"
+object_lock_default_retention:
+    description: S3 bucket's object lock retention policy.
+    type: dict
+    returned: when O(state=present)
+    sample: {
+        "Days": 1,
+        "Mode": "GOVERNANCE",
+        "Years": 0,
+    }
 policy:
     description: S3 bucket's policy.
     type: dict
@@ -892,6 +934,56 @@ def handle_bucket_accelerate(s3_client, module: AnsibleAWSModule, name: str) -> 
     return accelerate_enabled_changed, accelerate_enabled_result
 
 
+def handle_bucket_object_lock_retention(s3_client, module: AnsibleAWSModule, name: str) -> tuple[bool, dict]:
+    """
+    Manage object lock retention configuration for an S3 bucket.
+    Parameters:
+        s3_client (boto3.client): The Boto3 S3 client object.
+        module (AnsibleAWSModule): The Ansible module object.
+        name (str): The name of the bucket to handle object lock for.
+    Returns:
+        A tuple containing a boolean indicating whether the bucket object lock
+        retention configuration was changed and a dictionary containing the change.
+    """
+    object_lock_enabled = module.params.get("object_lock_enabled")
+    object_lock_default_retention = module.params.get("object_lock_default_retention")
+    object_lock_default_retention_result = {}
+    object_lock_default_retention_changed = False
+    try:
+        if object_lock_enabled:
+            object_lock_configuration_status = get_object_lock_configuration(s3_client, name)
+        else:
+            object_lock_configuration_status = {}
+    except is_boto3_error_code(["NotImplemented", "XNotImplemented"]) as e:
+        if object_lock_default_retention is not None:
+            module.fail_json_aws(e, msg="Fetching bucket object lock default retention is not supported")
+    except is_boto3_error_code("AccessDenied") as e:  # pylint: disable=duplicate-except
+        if object_lock_default_retention is not None:
+            module.fail_json_aws(e, msg="Permission denied fetching object lock default retention for bucket")
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Failed to fetch bucket object lock default retention state")
+    else:
+        if not object_lock_default_retention and object_lock_configuration_status != {}:
+            module.fail_json(msg="Removing object lock default retention is not supported")
+        if object_lock_default_retention is not None:
+            conf = snake_dict_to_camel_dict(object_lock_default_retention, capitalize_first=True)
+            conf = {k: v for k, v in conf.items() if v}  # remove keys with None value
+            try:
+                if object_lock_default_retention and object_lock_configuration_status != conf:
+                    put_object_lock_configuration(s3_client, name, conf)
+                    object_lock_default_retention_changed = True
+                    object_lock_default_retention_result = object_lock_default_retention
+                else:
+                    object_lock_default_retention_result = object_lock_default_retention
+            except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+                module.fail_json_aws(e, msg="Failed to update bucket object lock default retention")
+
+    return object_lock_default_retention_changed, object_lock_default_retention_result
+
+
 def create_or_update_bucket(s3_client, module: AnsibleAWSModule):
     """
     Create or update an S3 bucket along with its associated configurations.
@@ -972,6 +1064,12 @@ def create_or_update_bucket(s3_client, module: AnsibleAWSModule):
     bucket_accelerate_changed, bucket_accelerate_result = handle_bucket_accelerate(s3_client, module, name)
     result["accelerate_enabled"] = bucket_accelerate_result
 
+    # -- Object Lock Default Retention
+    bucket_object_lock_retention_changed, bucket_object_lock_retention_result = handle_bucket_object_lock_retention(
+        s3_client, module, name
+    )
+    result["object_lock_default_retention"] = bucket_object_lock_retention_result
+
     # Module exit
     changed = (
         changed
@@ -984,6 +1082,7 @@ def create_or_update_bucket(s3_client, module: AnsibleAWSModule):
         or bucket_ownership_changed
         or bucket_acl_changed
         or bucket_accelerate_changed
+        or bucket_object_lock_retention_changed
     )
     module.exit_json(changed=changed, name=name, **result)
 
@@ -1036,6 +1135,36 @@ def create_bucket(s3_client, bucket_name: str, location: str, object_lock_enable
         # We should never get here since we check the bucket presence before calling the create_or_update_bucket
         # method. However, the AWS Api sometimes fails to report bucket presence, so we catch this exception
         return False
+
+
+@AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
+def get_object_lock_configuration(s3_client, bucket_name):
+    """
+    Get the object lock default retention configuration for an S3 bucket.
+    Parameters:
+        s3_client (boto3.client): The Boto3 S3 client object.
+        bucket_name (str): The name of the S3 bucket.
+    Returns:
+        Object lock default retention configuration dictionary.
+    """
+    result = s3_client.get_object_lock_configuration(Bucket=bucket_name)
+    return result.get("ObjectLockConfiguration", {}).get("Rule", {}).get("DefaultRetention", {})
+
+
+@AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
+def put_object_lock_configuration(s3_client, bucket_name, object_lock_default_retention):
+    """
+    Set tags for an S3 bucket.
+    Parameters:
+        s3_client (boto3.client): The Boto3 S3 client object.
+        bucket_name (str): The name of the S3 bucket.
+        object_lock_default_retention (dict): A dictionary containing the object
+        lock default retention configuration to be set on the bucket.
+    Returns:
+        None
+    """
+    conf = {"ObjectLockEnabled": "Enabled", "Rule": {"DefaultRetention": object_lock_default_retention}}
+    s3_client.put_object_lock_configuration(Bucket=bucket_name, ObjectLockConfiguration=conf)
 
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
@@ -1840,10 +1969,21 @@ def main():
         dualstack=dict(default=False, type="bool"),
         accelerate_enabled=dict(default=False, type="bool"),
         object_lock_enabled=dict(type="bool"),
+        object_lock_default_retention=dict(
+            type="dict",
+            options=dict(
+                mode=dict(type="str", choices=["GOVERNANCE", "COMPLIANCE"], required=True),
+                years=dict(type="int"),
+                days=dict(type="int"),
+            ),
+            mutually_exclusive=[("days", "years")],
+            required_one_of=[("days", "years")],
+        ),
     )
 
     required_by = dict(
         encryption_key_id=("encryption",),
+        object_lock_default_retention="object_lock_enabled",
     )
 
     mutually_exclusive = [
