@@ -42,6 +42,11 @@ options:
       - Whether to enable AWS DNS support.
     default: true
     type: bool
+  multicast_support:
+    description:
+      - Whether to enable AWS Multicast support. Valid only at the time of creation of the Transit Gateway.
+    type: bool
+    version_added: 8.1.0
   state:
     description:
       - C(present) to ensure resource is created.
@@ -91,6 +96,7 @@ EXAMPLES = r"""
     asn: 64514
     auto_associate: false
     auto_propagate: false
+    multicast_support: true
     dns_support: true
     description: "nonprod transit gateway"
     purge_tags: false
@@ -181,6 +187,12 @@ transit_gateway:
           returned: always
           type: str
           sample: enable
+        multicast_support:
+          description: Indicates whether Multicast support is enabled.
+          returned: always
+          type: str
+          sample: enable
+          version_added: 7.3.0
     owner_id:
       description: The account that owns the transit gateway.
       returned: always
@@ -362,6 +374,7 @@ class AnsibleEc2Tgw(object):
         options["DefaultRouteTablePropagation"] = self.enable_option_flag(self._module.params.get("auto_propagate"))
         options["VpnEcmpSupport"] = self.enable_option_flag(self._module.params.get("vpn_ecmp_support"))
         options["DnsSupport"] = self.enable_option_flag(self._module.params.get("dns_support"))
+        options["MulticastSupport"] = self.enable_option_flag(self._module.params.get("multicast_support"))
 
         try:
             response = self._connection.create_transit_gateway(Description=description, Options=options)
@@ -482,6 +495,7 @@ def setup_module_object():
         auto_attach=dict(type="bool", default=False),
         auto_propagate=dict(type="bool", default=True),
         description=dict(type="str"),
+        multicast_support=dict(type="bool"),
         dns_support=dict(type="bool", default=True),
         purge_tags=dict(type="bool", default=True),
         state=dict(default="present", choices=["present", "absent"]),
