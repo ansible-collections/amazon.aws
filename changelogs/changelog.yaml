@@ -3034,11 +3034,27 @@ releases:
         is specified (https://github.com/ansible-collections/amazon.aws/pull/1979).
       - s3_object - fixed issue which was causing ``MemoryError`` exceptions when
         downloading large files (https://github.com/ansible-collections/amazon.aws/issues/2107).
-      release_summary: This release includes some bug fixes for the ``s3_object``, ``ec2_instance``
-        and ``backup_plan_info`` modules.
+      release_summary: This release includes some bug fixes for the ``s3_object``,
+        ``ec2_instance`` and ``backup_plan_info`` modules.
     fragments:
     - 1979-do-not-ignore-ipv6-addresses.yaml
     - 2083-backup_plan_info-bugfix-get-info-for-all-plans.yml
     - 2107-s3_download.yml
     - release_summary.yml
     release_date: '2024-06-05'
+  8.1.0:
+    changes:
+      minor_changes:
+      - s3_bucket - Add ``object_lock_default_retention`` to set Object Lock default
+        retention configuration for S3 buckets (https://github.com/ansible-collections/amazon.aws/pull/2062).
+      - s3_bucket - Add support for enabling Amazon S3 Transfer Acceleration by setting
+        the ``accelerate_enabled`` option (https://github.com/ansible-collections/amazon.aws/pull/2046).
+      release_summary: This release includes several documentation improvements and
+        two new features for the ``s3_bucket`` module.
+    fragments:
+    - 2141-rds-t3-m4.yml
+    - fix_args_spec_supoptions.yml
+    - release_summary.yml
+    - s3_bucket-accelerate_option.yml
+    - s3_bucket-object-retention.yml
+    release_date: '2024-07-02'
