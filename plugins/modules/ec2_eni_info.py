@@ -188,17 +188,15 @@ network_interfaces:
       sample: "vpc-b3f1f123"
 """
 
-try:
-    from botocore.exceptions import ClientError
-    from botocore.exceptions import NoCredentialsError
-except ImportError:
-    pass  # Handled by AnsibleAWSModule
+from typing import Any
+from typing import Dict
+from typing import List
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleEC2Error
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_network_interfaces
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 
@@ -214,23 +212,23 @@ def build_request_args(eni_id, filters):
     return request_args
 
 
-def get_network_interfaces(connection, module, request_args):
+def get_network_interfaces(connection, module: AnsibleAWSModule, request_args: Dict[str, Any]) -> List[Dict[str, Any]]:
     try:
-        network_interfaces_result = connection.describe_network_interfaces(aws_retry=True, **request_args)
-    except is_boto3_error_code("InvalidNetworkInterfaceID.NotFound"):
-        module.exit_json(network_interfaces=[])
-    except (ClientError, NoCredentialsError) as e:  # pylint: disable=duplicate-except
+        network_interfaces_result = describe_network_interfaces(connection, **request_args)
+        if not network_interfaces_result:
+            module.exit_json(network_interfaces=[])
+    except AnsibleEC2Error as e:
         module.fail_json_aws(e)
 
     return network_interfaces_result
 
 
-def list_eni(connection, module, request_args):
+def list_eni(connection, module: AnsibleAWSModule, request_args: Dict[str, Any]) -> List[Dict[str, Any]]:
     network_interfaces_result = get_network_interfaces(connection, module, request_args)
 
     # Modify boto3 tags list to be ansible friendly dict and then camel_case
     camel_network_interfaces = []
-    for network_interface in network_interfaces_result["NetworkInterfaces"]:
+    for network_interface in network_interfaces_result:
         network_interface["TagSet"] = boto3_tag_list_to_ansible_dict(network_interface["TagSet"])
         network_interface["Tags"] = network_interface["TagSet"]
         if "Name" in network_interface["Tags"]:
@@ -257,7 +255,7 @@ def main():
         mutually_exclusive=mutually_exclusive,
     )
 
-    connection = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff())
+    connection = module.client("ec2")
 
     request_args = build_request_args(
         eni_id=module.params["eni_id"],
