@@ -1,2 +1,0 @@
-trivial:
-- rds_instance - remove references to deprecated ``m4`` and ``t2`` RDS instance types (https://github.com/ansible-collections/amazon.aws/pull/2141).
