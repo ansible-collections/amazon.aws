@@ -132,9 +132,6 @@ The `amazon.aws` collection follows the Ansible project's
 [Code of Conduct](https://docs.ansible.com/ansible/devel/community/code_of_conduct.html).
 Please read and familiarize yourself with this document.
 
-### IRC
-Our IRC channels may require you to register your nickname. If you receive an error when you connect, see
-[Libera.Chat's Nickname Registration guide](https://libera.chat/guides/registration) for instructions.
-
-The `#ansible-aws` channel on [irc.libera.chat](https://libera.chat/) is the main and official place to discuss use and development
+### Communicating with the team
+The [AWS Working Group](https://forum.ansible.com/g/AWS) is the main and official place to discuss use and development
 of the `amazon.aws` collection.
