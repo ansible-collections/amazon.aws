@@ -47,6 +47,8 @@
     # - instance_creation is failed
     # - '"You are not authorized to perform this operation." in instance_creation.msg'
 
+    - ansible.builtin.include_tasks: select_availability_zone.yml
+
     - name: New instance with dedicated tenancy
       amazon.aws.ec2_instance:
         state: running
@@ -58,7 +60,7 @@
           TestId: "{{ ec2_instance_tag_TestId }}"
         security_group: default
         instance_type: "{{ ec2_instance_type }}"
-        availability_zone: us-east-1c
+        availability_zone: "{{ ec2_availability_zone }}"
         wait: true
       ignore_errors: true
       register: instance_creation

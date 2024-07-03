@@ -1,0 +1,21 @@
+- name: List available AZs in current Region
+  amazon.aws.aws_az_info:
+  register: region_azs
+
+- ansible.builtin.set_fact:
+    av_zones: "{{ region_azs.availability_zones | map(attribute='zone_name') | list }}"
+
+- name: List t3.micro instances
+  amazon.aws.ec2_instance_info:
+    filters:
+      instance-type: t3.micro
+      instance-state-name:
+        - pending
+        - running
+  register: _instances
+
+- ansible.builtin.set_fact:
+    instances_zones: "{{ _instances.instances | map(attribute='placement.availability_zone') | list }}"
+
+- ansible.builtin.set_fact:
+    ec2_availability_zone: "{{ av_zones | ansible.builtin.difference(instances_zones) | list | ansible.builtin.random }}"
