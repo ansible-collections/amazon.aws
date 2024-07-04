@@ -238,31 +238,26 @@ def get_vpc_id(connection, module: AnsibleAWSModule) -> Optional[str]:
     otherwise it will assume the VPC does not exist and thus return None.
     """
     vpc_id = module.params.get("vpc_id")
-    if vpc_id is not None:
-        return vpc_id
-
-    name = module.params.get("name")
-    cidr_block = module.params.get("cidr_block")
-    multi = module.params.get("multi_ok")
-    vpc_filters = ansible_dict_to_boto3_filter_list({"tag:Name": name, "cidr-block": cidr_block})
-    matching_vpcs = describe_vpcs(connection, Filters=vpc_filters)
-    # If an exact matching using a list of CIDRs isn't found, check for a match with the first CIDR as is documented for C(cidr_block)
-    if not matching_vpcs:
-        vpc_filters = ansible_dict_to_boto3_filter_list({"tag:Name": name, "cidr-block": [cidr_block[0]]})
+    if not vpc_id:
+        name = module.params.get("name")
+        cidr_block = module.params.get("cidr_block")
+        multi = module.params.get("multi_ok")
+        vpc_filters = ansible_dict_to_boto3_filter_list({"tag:Name": name, "cidr-block": cidr_block})
         matching_vpcs = describe_vpcs(connection, Filters=vpc_filters)
+        # If an exact matching using a list of CIDRs isn't found, check for a match with the first CIDR as is documented for C(cidr_block)
+        if not matching_vpcs:
+            vpc_filters = ansible_dict_to_boto3_filter_list({"tag:Name": name, "cidr-block": [cidr_block[0]]})
+            matching_vpcs = describe_vpcs(connection, Filters=vpc_filters)
 
-    vpc_id = None
-    if multi:
-        vpc_id = None
-    elif len(matching_vpcs) == 1:
-        vpc_id = matching_vpcs[0]["VpcId"]
-    elif len(matching_vpcs) > 1:
-        module.fail_json(
-            msg=(
-                f"Currently there are {len(matching_vpcs)} VPCs that have the same name and CIDR block you specified."
-                " If you would like to create the VPC anyway please pass True to the multi_ok param."
+        if len(matching_vpcs) == 1:
+            vpc_id = matching_vpcs[0]["VpcId"]
+        elif len(matching_vpcs) > 1 and not multi:
+            module.fail_json(
+                msg=(
+                    f"Currently there are {len(matching_vpcs)} VPCs that have the same name and CIDR block you specified."
+                    " If you would like to create the VPC anyway please pass True to the multi_ok param."
+                )
             )
-        )
     return vpc_id
 
 
@@ -322,7 +317,7 @@ def create_vpc_net(
     tags: Dict[str, str],
     ipv6_cidr: bool,
     name: Optional[str],
-) -> str:
+) -> Dict[str, Any]:
     if module.check_mode:
         module.exit_json(changed=True, msg="VPC would be created if not in check mode")
 
@@ -348,7 +343,7 @@ def create_vpc_net(
     # Wait for the VPC to enter an 'Available' State
     wait_for_vpc(module, connection, waiter_name="vpc_available", max_attempts=30, VpcIds=[vpc_obj["VpcId"]])
 
-    return vpc_obj["VpcId"]
+    return vpc_obj
 
 
 def wait_for_vpc_attribute(connection, module, vpc_id, attribute, expected_value):
@@ -586,7 +581,7 @@ def wait_for_updates(connection, module, vpc_id, ipv6_cidr, expected_cidrs, dns_
     return
 
 
-def ensure_present(connection, module: AnsibleAWSModule, vpc_id: str) -> None:
+def ensure_present(connection, module: AnsibleAWSModule, vpc_id: Optional[str]) -> None:
     name = module.params.get("name")
     cidr_block = module.params.get("cidr_block")
     ipv6_cidr = module.params.get("ipv6_cidr")
@@ -598,17 +593,11 @@ def ensure_present(connection, module: AnsibleAWSModule, vpc_id: str) -> None:
     tags = module.params.get("tags")
     purge_tags = module.params.get("purge_tags")
 
-    if vpc_id is None:
-        if name is None:
+    if not vpc_id:
+        if not name:
             module.fail_json("The name parameter must be specified when creating a new VPC.")
-        vpc_id = create_vpc_net(connection, module, cidr_block[0], tenancy, tags, ipv6_cidr, name)
+        vpc_obj = create_vpc_net(connection, module, cidr_block[0], tenancy, tags, ipv6_cidr, name)
         changed = True
-        vpc_obj = get_vpc(module, connection, vpc_id)
-        if len(cidr_block) > 1:
-            cidrs_changed, desired_cidrs = update_cidrs(connection, module, vpc_obj, vpc_id, cidr_block, purge_cidrs)
-            changed |= cidrs_changed
-        else:
-            desired_cidrs = None
         # Set on-creation defaults
         if dns_hostnames is None:
             dns_hostnames = True
@@ -617,11 +606,11 @@ def ensure_present(connection, module: AnsibleAWSModule, vpc_id: str) -> None:
     else:
         changed = False
         vpc_obj = get_vpc(module, connection, vpc_id)
-        cidrs_changed, desired_cidrs = update_cidrs(connection, module, vpc_obj, vpc_id, cidr_block, purge_cidrs)
-        changed |= cidrs_changed
         changed |= update_ipv6_cidrs(connection, module, vpc_obj, vpc_id, ipv6_cidr)
         changed |= update_vpc_tags(connection, module, vpc_id, tags, name, purge_tags)
 
+    cidrs_changed, desired_cidrs = update_cidrs(connection, module, vpc_obj, vpc_id, cidr_block, purge_cidrs)
+    changed |= cidrs_changed
     changed |= update_dhcp_opts(connection, module, vpc_obj, dhcp_id)
     changed |= update_dns_enabled(connection, module, vpc_id, dns_support)
     changed |= update_dns_hostnames(connection, module, vpc_id, dns_hostnames)

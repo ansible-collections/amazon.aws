@@ -175,33 +175,23 @@ def list_vpcs(connection, module: AnsibleAWSModule) -> None:
     except AnsibleEC2Error as e:
         module.fail_json_aws(e, msg=f"Unable to describe VPCs {vpc_ids}")
 
-    # We can get these results in bulk but still needs two separate calls to the API
-    dns_support = {}
-    dns_hostnames = {}
     # Loop through the results and add the other VPC attributes we gathered
     for vpc in vpcs:
         error_message = "Unable to describe VPC attribute {0} on VPC {1}"
-        try:
-            attribute = "enableDnsSupport"
-            dns_support = describe_vpc_attribute(connection, vpc_id=vpc["VpcId"], attribute=attribute)
-            if not dns_support:
-                module.warn(error_message.format(attribute, vpc["VpcId"]))
-        except AnsibleEC2Error as e:
-            module.fail_json_aws(e, msg=error_message.format(attribute, vpc))
-
-        try:
-            attribute = "enableDnsHostnames"
-            dns_hostnames = describe_vpc_attribute(connection, vpc_id=vpc["VpcId"], attribute=attribute)
-            if not dns_hostnames:
-                module.warn(error_message.format(attribute, vpc["VpcId"]))
-        except AnsibleEC2Error as e:
-            module.fail_json_aws(e, msg=error_message.format(attribute, vpc))
+        vpc_attributes = {}
+        for attribute in ("enableDnsSupport", "enableDnsHostnames"):
+            try:
+                vpc_attributes[attribute] = describe_vpc_attribute(connection, vpc_id=vpc["VpcId"], attribute=attribute)
+                if not vpc_attributes[attribute]:
+                    module.warn(error_message.format(attribute, vpc["VpcId"]))
+            except AnsibleEC2Error as e:
+                module.fail_json_aws(e, msg=error_message.format(attribute, vpc))
 
         # add the two DNS attributes
-        if dns_support:
-            vpc["EnableDnsSupport"] = dns_support["EnableDnsSupport"].get("Value")
-        if dns_hostnames:
-            vpc["EnableDnsHostnames"] = dns_hostnames["EnableDnsHostnames"].get("Value")
+        if vpc_attributes["enableDnsSupport"]:
+            vpc["EnableDnsSupport"] = vpc_attributes["enableDnsSupport"]["EnableDnsSupport"].get("Value")
+        if vpc_attributes["enableDnsHostnames"]:
+            vpc["EnableDnsHostnames"] = vpc_attributes["enableDnsHostnames"]["EnableDnsHostnames"].get("Value")
         # for backwards compatibility
         vpc["id"] = vpc["VpcId"]
         vpc_info.append(camel_dict_to_snake_dict(vpc))
