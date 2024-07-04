@@ -461,21 +461,22 @@ snapshots_deleted:
 
 import time
 
-try:
-    import botocore
-except ImportError:
-    pass  # Handled by AnsibleAWSModule
-
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleEC2Error
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import add_ec2_tags
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import create_image
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import delete_snapshot
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import deregister_image
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_image_attribute
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_images
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import modify_image_attribute
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import register_image
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
-from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
+from ansible_collections.amazon.aws.plugins.module_utils.waiters import wait_for_resource_state
 
 
 class Ec2AmiFailure(Exception):
@@ -539,32 +540,25 @@ def get_ami_info(camel_image):
 
 def get_image_by_id(connection, image_id):
     try:
-        images_response = connection.describe_images(aws_retry=True, ImageIds=[image_id])
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        images = describe_images(connection, ImageIds=[image_id])
+    except AnsibleEC2Error as e:
         raise Ec2AmiFailure("Error retrieving image by image_id", e)
 
-    images = images_response.get("Images", [])
-    image_counter = len(images)
-    if image_counter == 0:
+    if len(images) == 0:
         return None
 
-    if image_counter > 1:
+    if len(images) > 1:
         raise Ec2AmiFailure(f"Invalid number of instances ({str(len(images))}) found for image_id: {image_id}.")
 
     result = images[0]
     try:
-        result["LaunchPermissions"] = connection.describe_image_attribute(
-            aws_retry=True, Attribute="launchPermission", ImageId=image_id
-        )["LaunchPermissions"]
-        result["ProductCodes"] = connection.describe_image_attribute(
-            aws_retry=True, Attribute="productCodes", ImageId=image_id
-        )["ProductCodes"]
-    except is_boto3_error_code("InvalidAMIID.Unavailable"):
-        pass
-    except (
-        botocore.exceptions.BotoCoreError,
-        botocore.exceptions.ClientError,
-    ) as e:  # pylint: disable=duplicate-except
+        image_attribue = describe_image_attribute(connection, attribute="launchPermission", image_id=image_id)
+        if image_attribue:
+            result["LaunchPermissions"] = image_attribue["LaunchPermissions"]
+        image_attribue = describe_image_attribute(connection, attribute="productCodes", image_id=image_id)
+        if image_attribue:
+            result["ProductCodes"] = image_attribue["ProductCodes"]
+    except AnsibleEC2Error as e:
         raise Ec2AmiFailure(f"Error retrieving image attributes for image {image_id}", e)
     return result
 
@@ -629,14 +623,9 @@ class DeregisterImage:
                     snapshot_id = mapping.get("Ebs", {}).get("SnapshotId")
                     if snapshot_id is None:
                         continue
-                    connection.delete_snapshot(aws_retry=True, SnapshotId=snapshot_id)
+                    delete_snapshot(connection, snapshot_id)
                     yield snapshot_id
-            except is_boto3_error_code("InvalidSnapshot.NotFound"):
-                pass
-            except (
-                botocore.exceptions.ClientError,
-                botocore.exceptions.BotoCoreError,
-            ) as e:  # pylint: disable=duplicate-except
+            except AnsibleEC2Error as e:
                 raise Ec2AmiFailure("Failed to delete snapshot.", e)
 
         return purge_snapshots
@@ -670,8 +659,8 @@ class DeregisterImage:
         # When trying to re-deregister an already deregistered image it doesn't raise an exception, it just returns an object without image attributes.
         if "ImageId" in image:
             try:
-                connection.deregister_image(aws_retry=True, ImageId=image_id)
-            except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+                deregister_image(connection, image_id)
+            except AnsibleEC2Error as e:
                 raise Ec2AmiFailure("Error deregistering image", e)
         else:
             module.exit_json(msg=f"Image {image_id} has already been deregistered.", changed=False)
@@ -738,14 +727,14 @@ class UpdateImage:
 
         try:
             if not check_mode:
-                connection.modify_image_attribute(
-                    aws_retry=True,
-                    ImageId=image["ImageId"],
+                changed = modify_image_attribute(
+                    connection,
+                    image_id=image["ImageId"],
                     Attribute="launchPermission",
                     LaunchPermission=dict(Add=to_add, Remove=to_remove),
                 )
             changed = True
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except AnsibleEC2Error as e:
             raise Ec2AmiFailure(f"Error updating launch permissions of image {image['ImageId']}", e)
         return changed
 
@@ -766,14 +755,14 @@ class UpdateImage:
 
         try:
             if not module.check_mode:
-                connection.modify_image_attribute(
-                    aws_retry=True,
+                modify_image_attribute(
+                    connection,
+                    image_id=image["ImageId"],
                     Attribute="Description",
-                    ImageId=image["ImageId"],
                     Description={"Value": description},
                 )
             return True
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except AnsibleEC2Error as e:
             raise Ec2AmiFailure(f"Error setting description for image {image['ImageId']}", e)
 
     @classmethod
@@ -804,21 +793,20 @@ class UpdateImage:
 class CreateImage:
     @staticmethod
     def do_check_mode(module, connection, _image_id):
-        image = connection.describe_images(Filters=[{"Name": "name", "Values": [str(module.params["name"])]}])
-        if not image["Images"]:
+        images = describe_images(connection, Filters=[{"Name": "name", "Values": [str(module.params["name"])]}])
+        if not images:
             module.exit_json(changed=True, msg="Would have created a AMI if not in check mode.")
         else:
             module.exit_json(changed=False, msg="Error registering image: AMI name is already in use by another AMI")
 
     @staticmethod
-    def wait(connection, wait_timeout, image_id):
-        if not wait_timeout:
-            return
-
-        delay = 15
-        max_attempts = wait_timeout // delay
-        waiter = get_waiter(connection, "image_available")
-        waiter.wait(ImageIds=[image_id], WaiterConfig={"Delay": delay, "MaxAttempts": max_attempts})
+    def wait(connection, module, image_id):
+        if module.params.get("wait") and module.params.get("wait_timeout"):
+            delay = 15
+            max_attempts = module.params.get("wait_timeout") // delay
+            wait_for_resource_state(
+                connection, module, "image_available", delay=delay, max_attempts=max_attempts, ImageIds=[image_id]
+            )
 
     @staticmethod
     def set_tags(connection, module, tags, image_id):
@@ -841,7 +829,7 @@ class CreateImage:
         # remove any keys with value=None
         launch_permissions = {k: v for k, v in launch_permissions.items() if v is not None}
         try:
-            params = {"Attribute": "LaunchPermission", "ImageId": image_id, "LaunchPermission": {"Add": []}}
+            params = {"Attribute": "LaunchPermission", "LaunchPermission": {"Add": []}}
             for group_name in launch_permissions.get("group_names", []):
                 params["LaunchPermission"]["Add"].append(dict(Group=group_name))
             for user_id in launch_permissions.get("user_ids", []):
@@ -851,14 +839,14 @@ class CreateImage:
             for org_unit_arn in launch_permissions.get("org_unit_arns", []):
                 params["LaunchPermission"]["Add"].append(dict(OrganizationalUnitArn=org_unit_arn))
             if params["LaunchPermission"]["Add"]:
-                connection.modify_image_attribute(aws_retry=True, **params)
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+                modify_image_attribute(connection, image_id=image_id, **params)
+        except AnsibleEC2Error as e:
             raise Ec2AmiFailure(f"Error setting launch permissions for image {image_id}", e)
 
     @staticmethod
-    def create_or_register(connection, create_image_parameters):
+    def create_or_register(create_image_parameters):
         create_from_instance = "InstanceId" in create_image_parameters
-        func = connection.create_image if create_from_instance else connection.register_image
+        func = create_image if create_from_instance else register_image
         return func
 
     @staticmethod
@@ -950,14 +938,14 @@ class CreateImage:
         """Entry point to create image"""
         create_image_parameters = cls.build_create_image_parameters(**module.params)
 
-        func = cls.create_or_register(connection, create_image_parameters)
+        func = cls.create_or_register(create_image_parameters)
         try:
-            image = func(aws_retry=True, **create_image_parameters)
+            image = func(connection, **create_image_parameters)
             image_id = image.get("ImageId")
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-            raise Ec2AmiFailure("Error registering image", e)
+        except AnsibleEC2Error as e:
+            raise Ec2AmiFailure("Error registering/creating image", e)
 
-        cls.wait(connection, module.params.get("wait") and module.params.get("wait_timeout"), image_id)
+        cls.wait(connection, module, image_id)
 
         if "TagSpecifications" not in create_image_parameters:
             CreateImage.set_tags(connection, module, module.params.get("tags"), image_id)
@@ -1027,7 +1015,7 @@ def main():
 
     validate_params(module, **module.params)
 
-    connection = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff())
+    connection = module.client("ec2")
 
     CHECK_MODE_TRUE = True
     CHECK_MODE_FALSE = False

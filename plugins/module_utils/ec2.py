@@ -792,8 +792,12 @@ class EC2ImageErrorHandler(AWSErrorHandler):
 def describe_images(
     client, **params: Dict[str, Union[List[str], bool, int, List[Dict[str, Union[str, List[str]]]]]]
 ) -> List[Dict[str, Any]]:
-    paginator = client.get_paginator("describe_images")
-    return paginator.paginate(**params).build_full_result()["Images"]
+    # 'DescribeImages' can be paginated depending on the boto3 version
+    if client.can_paginate("describe_images"):
+        paginator = client.get_paginator("describe_images")
+        return paginator.paginate(**params).build_full_result()["Images"]
+    else:
+        return client.describe_images(**params)["Images"]
 
 
 @EC2ImageErrorHandler.list_error_handler("describe image attribute", {})
