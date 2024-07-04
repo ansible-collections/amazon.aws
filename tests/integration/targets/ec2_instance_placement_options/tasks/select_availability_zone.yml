@@ -1,0 +1,23 @@
+# aws regions supporting 't3.micro' instance type
+- ansible.builtin.set_fact:
+    av_zones:
+      - us-east-1a
+      - us-east-1b
+      - us-east-1c
+      - us-east-1d
+      - us-east-1f
+
+- name: List t3.micro instances
+  amazon.aws.ec2_instance_info:
+    filters:
+      instance-type: t3.micro
+      instance-state-name:
+        - pending
+        - running
+  register: _instances
+
+- ansible.builtin.set_fact:
+    instances_zones: "{{ _instances.instances | map(attribute='placement.availability_zone') | list | ansible.builtin.unique }}"
+
+- ansible.builtin.set_fact:
+    ec2_availability_zone: "{{ av_zones | ansible.builtin.difference(instances_zones) | list | ansible.builtin.random }}"
