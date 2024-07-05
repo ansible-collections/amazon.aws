@@ -441,23 +441,17 @@ def update_subnet_attributes(
     if module.params["ipv6_cidr"] != subnet.get("ipv6_cidr_block"):
         changed |= ensure_ipv6_cidr_block(conn, module, subnet, start_time)
 
-    # Modify subnet attributes 'MapPublicIpOnLaunch' and 'AssignIpv6AddressOnCreation'
-    _ATTRIBUTES_MAPPING_ = {
-        "map_public": {"camelCase": "MapPublicIpOnLaunch", "snakeCase": "map_public_ip_on_launch"},
-        "assign_instances_ipv6": {
-            "camelCase": "AssignIpv6AddressOnCreation",
-            "snakeCase": "assign_ipv6_address_on_creation",
-        },
-    }
-    for k, v in _ATTRIBUTES_MAPPING_.items():
-        if module.params[k] != subnet.get(v["snakeCase"]):
-            changed = True
-            if not module.check_mode:
-                try:
-                    params = dict([(v["camelCase"], {"Value": module.params[k]})])
-                    modify_subnet_attribute(conn, subnet["id"], **params)
-                except AnsibleEC2Error as e:
-                    module.fail_json_aws_error(e)
+    # Modify subnet attribute 'MapPublicIpOnLaunch'
+    map_public = module.params["map_public"]
+    if map_public != subnet.get("map_public_ip_on_launch"):
+        params = {"MapPublicIpOnLaunch": {"Value": map_public}}
+        modify_subnet_attribute(conn, subnet["id"], **params)
+
+    # Modify subnet attribute 'AssignIpv6AddressOnCreation'
+    assign_instances_ipv6 = module.params["assign_instances_ipv6"]
+    if assign_instances_ipv6 != subnet.get("assign_ipv6_address_on_creation"):
+        params = {"AssignIpv6AddressOnCreation": {"Value": assign_instances_ipv6}}
+        modify_subnet_attribute(conn, subnet["id"], **params)
 
     # Ensure subnet tags
     tags_updated = ensure_ec2_tags(
