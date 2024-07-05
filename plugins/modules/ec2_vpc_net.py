@@ -343,7 +343,7 @@ def create_vpc_net(
     # Wait for the VPC to enter an 'Available' State
     wait_for_vpc(module, connection, waiter_name="vpc_available", max_attempts=30, VpcIds=[vpc_obj["VpcId"]])
 
-    return vpc_obj
+    return vpc_obj["Vpc"]
 
 
 def wait_for_vpc_attribute(connection, module, vpc_id, attribute, expected_value):
@@ -597,6 +597,7 @@ def ensure_present(connection, module: AnsibleAWSModule, vpc_id: Optional[str]) 
         if not name:
             module.fail_json("The name parameter must be specified when creating a new VPC.")
         vpc_obj = create_vpc_net(connection, module, cidr_block[0], tenancy, tags, ipv6_cidr, name)
+        vpc_id = vpc_obj["VpcId"]
         changed = True
         # Set on-creation defaults
         if dns_hostnames is None:
