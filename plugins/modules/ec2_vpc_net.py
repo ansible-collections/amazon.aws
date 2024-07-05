@@ -237,27 +237,26 @@ def get_vpc_id(connection, module: AnsibleAWSModule) -> Optional[str]:
     with a CIDR, it will check for matching tags to determine if it is a match
     otherwise it will assume the VPC does not exist and thus return None.
     """
-    vpc_id = module.params.get("vpc_id")
-    if not vpc_id:
-        name = module.params.get("name")
-        cidr_block = module.params.get("cidr_block")
-        multi = module.params.get("multi_ok")
-        vpc_filters = ansible_dict_to_boto3_filter_list({"tag:Name": name, "cidr-block": cidr_block})
+    name = module.params.get("name")
+    cidr_block = module.params.get("cidr_block")
+    multi_ok = module.params.get("multi_ok")
+    vpc_filters = ansible_dict_to_boto3_filter_list({"tag:Name": name, "cidr-block": cidr_block})
+    matching_vpcs = describe_vpcs(connection, Filters=vpc_filters)
+    # If an exact matching using a list of CIDRs isn't found, check for a match with the first CIDR as is documented for C(cidr_block)
+    if not matching_vpcs:
+        vpc_filters = ansible_dict_to_boto3_filter_list({"tag:Name": name, "cidr-block": [cidr_block[0]]})
         matching_vpcs = describe_vpcs(connection, Filters=vpc_filters)
-        # If an exact matching using a list of CIDRs isn't found, check for a match with the first CIDR as is documented for C(cidr_block)
-        if not matching_vpcs:
-            vpc_filters = ansible_dict_to_boto3_filter_list({"tag:Name": name, "cidr-block": [cidr_block[0]]})
-            matching_vpcs = describe_vpcs(connection, Filters=vpc_filters)
 
-        if len(matching_vpcs) == 1:
-            vpc_id = matching_vpcs[0]["VpcId"]
-        elif len(matching_vpcs) > 1 and not multi:
+    vpc_id = None
+    if not multi_ok and matching_vpcs:
+        if len(matching_vpcs) > 1:
             module.fail_json(
                 msg=(
                     f"Currently there are {len(matching_vpcs)} VPCs that have the same name and CIDR block you specified."
                     " If you would like to create the VPC anyway please pass True to the multi_ok param."
                 )
             )
+        vpc_id = matching_vpcs[0]["VpcId"]
     return vpc_id
 
 
@@ -343,7 +342,7 @@ def create_vpc_net(
     # Wait for the VPC to enter an 'Available' State
     wait_for_vpc(module, connection, waiter_name="vpc_available", max_attempts=30, VpcIds=[vpc_obj["VpcId"]])
 
-    return vpc_obj["Vpc"]
+    return vpc_obj
 
 
 def wait_for_vpc_attribute(connection, module, vpc_id, attribute, expected_value):
@@ -473,8 +472,8 @@ def update_ipv6_cidrs(connection, module, vpc_obj, vpc_id, ipv6_cidr):
     return True
 
 
-def update_cidrs(connection, module, vpc_obj, vpc_id, cidr_block, purge_cidrs):
-    if cidr_block is None:
+def update_cidrs(connection, module, vpc_obj, cidr_block, purge_cidrs):
+    if not cidr_block:
         return False, None
 
     associated_cidrs = dict(
@@ -494,26 +493,24 @@ def update_cidrs(connection, module, vpc_obj, vpc_id, cidr_block, purge_cidrs):
     if not cidrs_to_add and not cidrs_to_remove:
         return False, None
 
-    if module.check_mode:
-        return True, list(desired_cidrs)
+    if not module.check_mode:
+        for cidr in cidrs_to_add:
+            try:
+                associate_vpc_cidr_block(connection, vpc_id=vpc_obj["VpcId"], CidrBlock=cidr)
+            except AnsibleEC2Error as e:
+                module.fail_json_aws(e, f"Unable to associate CIDR {cidr}.")
 
-    for cidr in cidrs_to_add:
-        try:
-            associate_vpc_cidr_block(connection, vpc_id=vpc_id, CidrBlock=cidr)
-        except AnsibleEC2Error as e:
-            module.fail_json_aws(e, f"Unable to associate CIDR {cidr}.")
-
-    for cidr in cidrs_to_remove:
-        try:
-            disassociate_vpc_cidr_block(connection, associated_cidrs[cidr])
-        except AnsibleEC2Error as e:
-            module.fail_json_aws(
-                e,
-                (
-                    f"Unable to disassociate {associated_cidrs[cidr]}. You must detach or delete all gateways and resources"
-                    " that are associated with the CIDR block before you can disassociate it."
-                ),
-            )
+        for cidr in cidrs_to_remove:
+            try:
+                disassociate_vpc_cidr_block(connection, associated_cidrs[cidr])
+            except AnsibleEC2Error as e:
+                module.fail_json_aws(
+                    e,
+                    (
+                        f"Unable to disassociate {associated_cidrs[cidr]}. You must detach or delete all gateways and resources"
+                        " that are associated with the CIDR block before you can disassociate it."
+                    ),
+                )
     return True, list(desired_cidrs)
 
 
@@ -610,7 +607,7 @@ def ensure_present(connection, module: AnsibleAWSModule, vpc_id: Optional[str]) 
         changed |= update_ipv6_cidrs(connection, module, vpc_obj, vpc_id, ipv6_cidr)
         changed |= update_vpc_tags(connection, module, vpc_id, tags, name, purge_tags)
 
-    cidrs_changed, desired_cidrs = update_cidrs(connection, module, vpc_obj, vpc_id, cidr_block, purge_cidrs)
+    cidrs_changed, desired_cidrs = update_cidrs(connection, module, vpc_obj, cidr_block, purge_cidrs)
     changed |= cidrs_changed
     changed |= update_dhcp_opts(connection, module, vpc_obj, dhcp_id)
     changed |= update_dns_enabled(connection, module, vpc_id, dns_support)
@@ -669,7 +666,7 @@ def main():
 
     connection = module.client("ec2")
     try:
-        vpc_id = get_vpc_id(connection, module)
+        vpc_id = module.params.get("vpc_id") or get_vpc_id(connection, module)
         if state == "present":
             ensure_present(connection, module, vpc_id)
         else:
