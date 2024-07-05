@@ -339,7 +339,7 @@ def create_vpc_subnet(
     return subnet
 
 
-def disassociate_ipv6_cidr(conn, module, subnet, start_time):
+def disassociate_ipv6_cidr(conn, module: AnsibleAWSModule, subnet: Dict[str, Any], start_time: float):
     if subnet.get("assign_ipv6_address_on_creation"):
         try:
             modify_subnet_attribute(conn, subnet["id"], AssignIpv6AddressOnCreation={"Value": False})
