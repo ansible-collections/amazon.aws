@@ -1,0 +1,3 @@
+---
+minor_updates:
+  - s3_bucket_info - module should not call ListBuckets when `name` option is specified (https://github.com/ansible-collections/amazon.aws/issues/2183).

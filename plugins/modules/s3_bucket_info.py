@@ -20,12 +20,14 @@ options:
   name:
     description:
       - Name of bucket to query.
+      - This parameter is mutually exclusive with O(name_filter).
     type: str
     default: ""
     version_added: 1.4.0
   name_filter:
     description:
       - Limits buckets to only buckets who's name contain the string in O(name_filter).
+      - This parameter is mutually exclusive with O(name_filter).
     type: str
     default: ""
     version_added: 1.4.0
@@ -516,6 +518,10 @@ buckets:
       version_added: 7.2.0
 """
 
+from typing import Any
+from typing import Dict
+from typing import List
+
 try:
     import botocore
 except ImportError:
@@ -528,40 +534,19 @@ from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 
 
-def get_bucket_list(module, connection, name="", name_filter=""):
+def get_bucket_list(module: AnsibleAWSModule, connection) -> List[Dict[str, Any]]:
     """
     Return result of list_buckets json encoded
-    Filter only buckets matching 'name' or name_filter if defined
     :param module:
     :param connection:
     :return:
     """
-    buckets = []
-    filtered_buckets = []
-    final_buckets = []
 
     # Get all buckets
     try:
-        buckets = camel_dict_to_snake_dict(connection.list_buckets())["buckets"]
+        return camel_dict_to_snake_dict(connection.list_buckets())["buckets"]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as err_code:
         module.fail_json_aws(err_code, msg="Failed to list buckets")
-
-    # Filter buckets if requested
-    if name_filter:
-        for bucket in buckets:
-            if name_filter in bucket["name"]:
-                filtered_buckets.append(bucket)
-    elif name:
-        for bucket in buckets:
-            if name == bucket["name"]:
-                filtered_buckets.append(bucket)
-
-    # Return proper list (filtered or all)
-    if name or name_filter:
-        final_buckets = filtered_buckets
-    else:
-        final_buckets = buckets
-    return final_buckets
 
 
 def get_buckets_facts(connection, buckets, requested_facts, transform_location):
@@ -721,13 +706,16 @@ def main():
         module.fail_json_aws(err_code, msg="Failed to connect to AWS")
 
     # Get basic bucket list (name + creation date)
-    bucket_list = get_bucket_list(module, connection, name, name_filter)
-
-    # Add information about name/name_filter to result
     if name:
+        bucket_list = [{"name": name}]
+        # Add information about name to result
         result["bucket_name"] = name
-    elif name_filter:
-        result["bucket_name_filter"] = name_filter
+    else:
+        bucket_list = get_bucket_list(module, connection, name, name_filter)
+        if name_filter:
+            bucket_list = [bucket for bucket in bucket_list if name_filter in bucket["name"]]
+            # Add information about name/name_filter to result
+            result["bucket_name_filter"] = name_filter
 
     # Gather detailed information about buckets if requested
     bucket_facts = module.params.get("bucket_facts")
