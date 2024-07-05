@@ -444,14 +444,18 @@ def update_subnet_attributes(
     # Modify subnet attribute 'MapPublicIpOnLaunch'
     map_public = module.params["map_public"]
     if map_public != subnet.get("map_public_ip_on_launch"):
-        params = {"MapPublicIpOnLaunch": {"Value": map_public}}
-        modify_subnet_attribute(conn, subnet["id"], **params)
+        changed = True
+        if not module.check_mode:
+            params = {"MapPublicIpOnLaunch": {"Value": map_public}}
+            modify_subnet_attribute(conn, subnet["id"], **params)
 
     # Modify subnet attribute 'AssignIpv6AddressOnCreation'
     assign_instances_ipv6 = module.params["assign_instances_ipv6"]
     if assign_instances_ipv6 != subnet.get("assign_ipv6_address_on_creation"):
-        params = {"AssignIpv6AddressOnCreation": {"Value": assign_instances_ipv6}}
-        modify_subnet_attribute(conn, subnet["id"], **params)
+        changed = True
+        if not module.check_mode:
+            params = {"AssignIpv6AddressOnCreation": {"Value": assign_instances_ipv6}}
+            modify_subnet_attribute(conn, subnet["id"], **params)
 
     # Ensure subnet tags
     tags_updated = ensure_ec2_tags(
