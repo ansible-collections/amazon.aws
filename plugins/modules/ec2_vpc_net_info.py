@@ -145,21 +145,17 @@ vpcs:
             sample: dopt-12345678
 """
 
-try:
-    import botocore
-except ImportError:
-    pass  # Handled by AnsibleAWSModule
-
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleEC2Error
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_vpc_attribute
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_vpcs
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 
 
-def describe_vpcs(connection, module):
+def list_vpcs(connection, module: AnsibleAWSModule) -> None:
     """
     Describe VPCs.
 
@@ -175,24 +171,27 @@ def describe_vpcs(connection, module):
 
     # Get the basic VPC info
     try:
-        response = connection.describe_vpcs(VpcIds=vpc_ids, Filters=filters, aws_retry=True)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        vpcs = describe_vpcs(connection, VpcIds=vpc_ids, Filters=filters)
+    except AnsibleEC2Error as e:
         module.fail_json_aws(e, msg=f"Unable to describe VPCs {vpc_ids}")
 
-    # We can get these results in bulk but still needs two separate calls to the API
-    dns_support = {}
-    dns_hostnames = {}
     # Loop through the results and add the other VPC attributes we gathered
-    for vpc in response["Vpcs"]:
+    for vpc in vpcs:
         error_message = "Unable to describe VPC attribute {0} on VPC {1}"
-        dns_support = describe_vpc_attribute(module, connection, vpc["VpcId"], "enableDnsSupport", error_message)
-        dns_hostnames = describe_vpc_attribute(module, connection, vpc["VpcId"], "enableDnsHostnames", error_message)
+        vpc_attributes = {}
+        for attribute in ("enableDnsSupport", "enableDnsHostnames"):
+            try:
+                vpc_attributes[attribute] = describe_vpc_attribute(connection, vpc_id=vpc["VpcId"], attribute=attribute)
+                if not vpc_attributes[attribute]:
+                    module.warn(error_message.format(attribute, vpc["VpcId"]))
+            except AnsibleEC2Error as e:
+                module.fail_json_aws(e, msg=error_message.format(attribute, vpc))
 
         # add the two DNS attributes
-        if dns_support:
-            vpc["EnableDnsSupport"] = dns_support["EnableDnsSupport"].get("Value")
-        if dns_hostnames:
-            vpc["EnableDnsHostnames"] = dns_hostnames["EnableDnsHostnames"].get("Value")
+        if vpc_attributes["enableDnsSupport"]:
+            vpc["EnableDnsSupport"] = vpc_attributes["enableDnsSupport"]["EnableDnsSupport"].get("Value")
+        if vpc_attributes["enableDnsHostnames"]:
+            vpc["EnableDnsHostnames"] = vpc_attributes["enableDnsHostnames"]["EnableDnsHostnames"].get("Value")
         # for backwards compatibility
         vpc["id"] = vpc["VpcId"]
         vpc_info.append(camel_dict_to_snake_dict(vpc))
@@ -202,28 +201,16 @@ def describe_vpcs(connection, module):
     module.exit_json(vpcs=vpc_info)
 
 
-def describe_vpc_attribute(module, connection, vpc, attribute, error_message):
-    result = None
-    try:
-        return connection.describe_vpc_attribute(VpcId=vpc, Attribute=attribute, aws_retry=True)
-    except is_boto3_error_code("InvalidVpcID.NotFound"):
-        module.warn(error_message.format(attribute, vpc))
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg=error_message.format(attribute, vpc))
-    return result
-
-
-def main():
+def main() -> None:
     argument_spec = dict(
         vpc_ids=dict(type="list", elements="str", default=[]),
         filters=dict(type="dict", default={}),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
+    connection = module.client("ec2")
 
-    connection = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff(retries=10))
-
-    describe_vpcs(connection, module)
+    list_vpcs(connection, module)
 
 
 if __name__ == "__main__":
