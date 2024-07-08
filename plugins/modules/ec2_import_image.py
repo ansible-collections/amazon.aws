@@ -495,11 +495,7 @@ def main():
     )
 
     state = module.params.get("state")
-
-    try:
-        client = module.client("ec2")
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to connect to AWS.")
+    client = module.client("ec2")
 
     if state == "present":
         present(client, module)
