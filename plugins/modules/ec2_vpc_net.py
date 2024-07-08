@@ -260,20 +260,8 @@ def get_vpc_id(connection, module: AnsibleAWSModule) -> Optional[str]:
     return vpc_id
 
 
-def wait_for_vpc(
-    module: AnsibleAWSModule,
-    connection,
-    waiter_name: str,
-    delay: Optional[int] = None,
-    max_attempts: Optional[int] = None,
-    **params,
-) -> None:
-    # wait for vpc to be available
-    wait_for_resource_state(connection, module, waiter_name, delay=delay, max_attempts=max_attempts, **params)
-
-
 def get_vpc(module: AnsibleAWSModule, connection, vpc_id: str) -> Dict[str, Any]:
-    wait_for_vpc(module, connection, waiter_name="vpc_available", VpcIds=[vpc_id])
+    wait_for_resource_state(connection, module, "vpc_available", VpcIds=[vpc_id])
     return describe_vpcs(connection, VpcIds=[vpc_id])[0]
 
 
@@ -337,10 +325,9 @@ def create_vpc_net(
 
     vpc_obj = create_vpc(connection, **create_args)
 
-    # wait up to 30 seconds for vpc to exist
-    wait_for_vpc(module, connection, waiter_name="vpc_exists", max_attempts=30, VpcIds=[vpc_obj["VpcId"]])
-    # Wait for the VPC to enter an 'Available' State
-    wait_for_vpc(module, connection, waiter_name="vpc_available", max_attempts=30, VpcIds=[vpc_obj["VpcId"]])
+    # Wait up to 30 seconds for vpc to exist and for state 'available'
+    for waiter_name in ("vpc_exists", "vpc_available"):
+        wait_for_resource_state(connection, module, waiter_name, max_attempts=30, VpcIds=[vpc_obj["VpcId"]])
 
     return vpc_obj
 
@@ -553,10 +540,10 @@ def wait_for_updates(connection, module, vpc_id, ipv6_cidr, expected_cidrs, dns_
         return
 
     if expected_cidrs:
-        wait_for_vpc(
-            module,
+        wait_for_resource_state(
             connection,
-            waiter_name="vpc_available",
+            module,
+            "vpc_available",
             VpcIds=[vpc_id],
             Filters=[{"Name": "cidr-block-association.cidr-block", "Values": expected_cidrs}],
         )
@@ -565,7 +552,7 @@ def wait_for_updates(connection, module, vpc_id, ipv6_cidr, expected_cidrs, dns_
     if tags is not None:
         tag_list = ansible_dict_to_boto3_tag_list(tags)
         filters = [{"Name": f"tag:{t['Key']}", "Values": [t["Value"]]} for t in tag_list]
-        wait_for_vpc(module, connection, waiter_name="vpc_available", VpcIds=[vpc_id], Filters=filters)
+        wait_for_resource_state(connection, module, "vpc_available", VpcIds=[vpc_id], Filters=filters)
 
     wait_for_vpc_attribute(connection, module, vpc_id, "enableDnsSupport", dns_support)
     wait_for_vpc_attribute(connection, module, vpc_id, "enableDnsHostnames", dns_hostnames)
@@ -573,7 +560,7 @@ def wait_for_updates(connection, module, vpc_id, ipv6_cidr, expected_cidrs, dns_
     if dhcp_id is not None:
         # Wait for DhcpOptionsId to be updated
         filters = [{"Name": "dhcp-options-id", "Values": [dhcp_id]}]
-        wait_for_vpc(module, connection, waiter_name="vpc_available", VpcIds=[vpc_id], Filters=filters)
+        wait_for_resource_state(connection, module, "vpc_available", VpcIds=[vpc_id], Filters=filters)
 
     return
 
