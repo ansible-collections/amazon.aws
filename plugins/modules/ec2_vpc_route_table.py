@@ -383,10 +383,8 @@ def find_igw(connection, module: AnsibleAWSModule, vpc_id: str) -> str:
     Finds the Internet gateway for the given VPC ID.
     """
     filters = ansible_dict_to_boto3_filter_list({"attachment.vpc-id": vpc_id})
-    try:
-        igw = describe_internet_gateways(connection, Filters=filters)
-    except AnsibleEC2Error as e:
-        module.fail_json_aws_error(e)
+    igw = describe_internet_gateways(connection, Filters=filters)
+
     if len(igw) == 0:
         module.fail_json(msg=f"No IGWs found for VPC {vpc_id}")
     elif len(igw) > 1:
@@ -398,12 +396,10 @@ def tags_match(match_tags, candidate_tags):
     return all((k in candidate_tags and candidate_tags[k] == v for k, v in match_tags.items()))
 
 
-def get_route_table_by_id(connection, module: AnsibleAWSModule, route_table_id: str) -> Optional[Dict[str, Any]]:
+def get_route_table_by_id(connection, route_table_id: str) -> Optional[Dict[str, Any]]:
     route_table = None
-    try:
-        route_tables = describe_route_tables(connection, RouteTableIds=[route_table_id])
-    except AnsibleEC2Error as e:
-        module.fail_json_aws_error(e)
+    route_tables = describe_route_tables(connection, RouteTableIds=[route_table_id])
+
     if route_tables:
         route_table = route_tables[0]
 
@@ -416,10 +412,8 @@ def get_route_table_by_tags(
     count = 0
     route_table = None
     filters = ansible_dict_to_boto3_filter_list({"vpc-id": vpc_id})
-    try:
-        route_tables = describe_route_tables(connection, Filters=filters)
-    except AnsibleEC2Error as e:
-        module.fail_json_aws_error(e)
+    route_tables = describe_route_tables(connection, Filters=filters)
+
     for table in route_tables:
         this_tags = describe_ec2_tags(connection, module, table["RouteTableId"])
         if tags_match(tags, this_tags):
@@ -506,37 +500,32 @@ def ensure_routes(
         return bool(routes_to_delete or route_specs_to_create or route_specs_to_recreate)
 
     changed = False
-    try:
-        # Delete routes
-        for route in routes_to_delete:
-            changed |= delete_route(
-                connection,
-                route_table_id=route_table["RouteTableId"],
-                DestinationCidrBlock=route["DestinationCidrBlock"],
-            )
-        # Replace routes
-        for route_spec in route_specs_to_recreate:
-            replace_route(connection, route_table_id=route_table["RouteTableId"], **route_spec)
-            changed = True
-        # Create routes
-        for route_spec in route_specs_to_create:
-            create_route(connection, route_table_id=route_table["RouteTableId"], **route_spec)
-            changed = True
-    except AnsibleEC2Error as e:
-        module.fail_json_aws_error(e)
+    # Delete routes
+    for route in routes_to_delete:
+        changed |= delete_route(
+            connection,
+            route_table_id=route_table["RouteTableId"],
+            DestinationCidrBlock=route["DestinationCidrBlock"],
+        )
+    # Replace routes
+    for route_spec in route_specs_to_recreate:
+        replace_route(connection, route_table_id=route_table["RouteTableId"], **route_spec)
+        changed = True
+    # Create routes
+    for route_spec in route_specs_to_create:
+        create_route(connection, route_table_id=route_table["RouteTableId"], **route_spec)
+        changed = True
 
     return changed
 
 
 def ensure_subnet_association(
     connection, module: AnsibleAWSModule, vpc_id: str, route_table_id: str, subnet_id: str
-) -> Tuple[bool, str]:
+) -> Tuple[bool, Optional[str]]:
     filters = ansible_dict_to_boto3_filter_list({"association.subnet-id": subnet_id, "vpc-id": vpc_id})
-    try:
-        route_tables = describe_route_tables(connection, Filters=filters)
-    except AnsibleEC2Error as e:
-        module.fail_json_aws_error(e)
-    association_id = ""
+    route_tables = describe_route_tables(connection, Filters=filters)
+
+    association_id = None
     for route_table in route_tables:
         if route_table.get("RouteTableId"):
             for association in route_table["Associations"]:
@@ -545,19 +534,14 @@ def ensure_subnet_association(
                 if association["SubnetId"] == subnet_id:
                     if route_table["RouteTableId"] == route_table_id:
                         return False, association["RouteTableAssociationId"]
-                    if module.check_mode:
-                        return True, association_id
-                    try:
+                    if not module.check_mode:
                         disassociate_route_table(connection, association["RouteTableAssociationId"])
-                    except AnsibleEC2Error as e:
-                        module.fail_json_aws_error(e)
+                    return True, association_id
 
-    if module.check_mode:
-        return True, association_id
-    try:
-        association_id = associate_route_table(connection, route_table_id=route_table_id, SubnetId=subnet_id)
-    except AnsibleEC2Error as e:
-        module.fail_json_aws_error(e)
+    if not module.check_mode:
+        association_id = associate_route_table(connection, route_table_id=route_table_id, SubnetId=subnet_id)[
+            "AssociationId"
+        ]
     return True, association_id
 
 
@@ -595,10 +579,7 @@ def ensure_subnet_associations(
         for association_id in to_delete:
             changed = True
             if not module.check_mode:
-                try:
-                    disassociate_route_table(connection, association_id)
-                except AnsibleEC2Error as e:
-                    module.fail_json_aws_error(e)
+                disassociate_route_table(connection, association_id)
 
     return changed
 
@@ -617,20 +598,15 @@ def disassociate_gateway(connection, module: AnsibleAWSModule, route_table: Dict
     for association_id in associations_to_delete:
         changed = True
         if not module.check_mode:
-            try:
-                disassociate_route_table(connection, association_id)
-            except AnsibleEC2Error as e:
-                module.fail_json_aws_error(e)
+            disassociate_route_table(connection, association_id)
 
     return changed
 
 
 def associate_gateway(connection, module: AnsibleAWSModule, route_table: Dict[str, Any], gateway_id: str) -> bool:
     filters = ansible_dict_to_boto3_filter_list({"association.gateway-id": gateway_id, "vpc-id": route_table["VpcId"]})
-    try:
-        route_tables = describe_route_tables(connection, Filters=filters)
-    except AnsibleEC2Error as e:
-        module.fail_json_aws_error(e)
+    route_tables = describe_route_tables(connection, Filters=filters)
+
     for table in route_tables:
         if table.get("RouteTableId"):
             for association in table.get("Associations"):
@@ -644,16 +620,10 @@ def associate_gateway(connection, module: AnsibleAWSModule, route_table: Dict[st
                     elif module.check_mode:
                         return True
                     else:
-                        try:
-                            disassociate_route_table(connection, association["RouteTableAssociationId"])
-                        except AnsibleEC2Error as e:
-                            module.fail_json_aws_error(e)
+                        disassociate_route_table(connection, association["RouteTableAssociationId"])
 
     if not module.check_mode:
-        try:
-            associate_route_table(connection, route_table_id=route_table["RouteTableId"], GatewayId=gateway_id)
-        except AnsibleEC2Error as e:
-            module.fail_json_aws_error(e)
+        associate_route_table(connection, route_table_id=route_table["RouteTableId"], GatewayId=gateway_id)
     return True
 
 
@@ -664,15 +634,12 @@ def ensure_propagation(
     gateways = [gateway["GatewayId"] for gateway in route_table["PropagatingVgws"]]
     vgws_to_add = set(propagating_vgw_ids) - set(gateways)
     if not vgws_to_add:
-        return False
+        return changed
     changed = True
     if module.check_mode:
         return changed
     for vgw_id in vgws_to_add:
-        try:
-            enable_vgw_route_propagation(connection, route_table_id=route_table["RouteTableId"], gateway_id=vgw_id)
-        except AnsibleEC2Error as e:
-            module.fail_json_aws_error(e)
+        enable_vgw_route_propagation(connection, route_table_id=route_table["RouteTableId"], gateway_id=vgw_id)
 
     return changed
 
@@ -688,7 +655,7 @@ def ensure_route_table_absent(connection, module: AnsibleAWSModule) -> Dict[str,
     if lookup == "tag" and tags is not None:
         route_table = get_route_table_by_tags(connection, module, vpc_id, tags)
     elif lookup == "id":
-        route_table = get_route_table_by_id(connection, module, route_table_id)
+        route_table = get_route_table_by_id(connection, route_table_id)
 
     if route_table is None:
         return {"changed": False}
@@ -702,16 +669,13 @@ def ensure_route_table_absent(connection, module: AnsibleAWSModule) -> Dict[str,
             connection=connection, module=module, route_table=route_table, subnets=[], purge_subnets=purge_subnets
         )
         changed |= disassociate_gateway(connection=connection, module=module, route_table=route_table)
-        try:
-            changed |= delete_route_table(connection, route_table_id=route_table["RouteTableId"])
-        except AnsibleEC2Error as e:
-            module.fail_json_aws_error(e)
+        changed |= delete_route_table(connection, route_table_id=route_table["RouteTableId"])
 
     return {"changed": changed}
 
 
 def get_route_table_info(connection, module: AnsibleAWSModule, route_table: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-    result = get_route_table_by_id(connection, module, route_table["RouteTableId"]) or {}
+    result = get_route_table_by_id(connection, route_table["RouteTableId"]) or {}
     if result:
         result["Tags"] = describe_ec2_tags(connection, module, route_table["RouteTableId"])
         result = camel_dict_to_snake_dict(result, ignore_list=["Tags"])
@@ -760,7 +724,7 @@ def ensure_route_table_present(connection, module: AnsibleAWSModule) -> Dict[str
     if lookup == "tag" and tags is not None:
         route_table = get_route_table_by_tags(connection, module, vpc_id, tags)
     elif lookup == "id":
-        route_table = get_route_table_by_id(connection, module, route_table_id)
+        route_table = get_route_table_by_id(connection, route_table_id)
 
     # If no route table returned then create new route table
     if route_table is None:
@@ -769,14 +733,9 @@ def ensure_route_table_present(connection, module: AnsibleAWSModule) -> Dict[str
             route_table = {"id": "rtb-xxxxxxxx", "route_table_id": "rtb-xxxxxxxx", "vpc_id": vpc_id}
             module.exit_json(changed=changed, route_table=route_table)
 
-        try:
-            route_table = create_route_table(connection, vpc_id, tags)
-            # try to wait for route table to be present before moving on
-            wait_for_resource_state(
-                connection, module, "route_table_exists", RouteTableIds=[route_table["RouteTableId"]]
-            )
-        except AnsibleEC2Error as e:
-            module.fail_json_aws_error(e)
+        route_table = create_route_table(connection, vpc_id, tags)
+        # try to wait for route table to be present before moving on
+        wait_for_resource_state(connection, module, "route_table_exists", RouteTableIds=[route_table["RouteTableId"]])
 
     if routes is not None:
         changed |= ensure_routes(
@@ -853,16 +812,15 @@ def main() -> None:
         supports_check_mode=True,
     )
 
-    # The tests for RouteTable existing uses its own decorator, we can safely
-    # retry on InvalidRouteTableID.NotFound
     connection = module.client("ec2")
+    method_operation = (
+        ensure_route_table_present if module.params.get("state") == "present" else ensure_route_table_absent
+    )
 
-    state = module.params.get("state")
-
-    if state == "present":
-        result = ensure_route_table_present(connection, module)
-    elif state == "absent":
-        result = ensure_route_table_absent(connection, module)
+    try:
+        result = method_operation(connection, module)
+    except AnsibleEC2Error as e:
+        module.fail_json_aws_error(e)
 
     module.exit_json(**result)
 
