@@ -139,7 +139,6 @@ load_balancers:
                 zone_name:
                     description: The name of the Availability Zone.
                     type: str
-            sample: [{ "load_balancer_addresses": [], "subnet_id": "subnet-aabbccddff", "zone_name": "ap-southeast-2a" }]
         canonical_hosted_zone_id:
             description: The ID of the Amazon Route 53 hosted zone associated with the load balancer.
             type: str
@@ -196,7 +195,7 @@ load_balancers:
                         rule_arn:
                             description: The Amazon Resource Name (ARN) of the rule.
                             type: str
-                            sample: "arn:aws:elasticloadbalancing:us-east-1:123456789012:listener-rule/app/alb-test-169eb5ba/1659336d4100d496/8367c4262cc1d0cc/8f066464b82f7ca8"
+                            sample: ""
                         priority:
                             description: The priority.
                             type: str
@@ -204,7 +203,7 @@ load_balancers:
                         is_default:
                             description: Indicates whether this is the default rule.
                             type: bool
-                            sample false
+                            sample: false
                         conditions:
                             description: The conditions.
                             type: list
@@ -249,12 +248,12 @@ load_balancers:
                                         },
                                         "target_groups": [
                                             {
-                                                "target_group_arn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/alb-test-169eb5ba/09ba111f8079fb83",
+                                                "target_group_arn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/alb-test/09ba111f8079fb83",
                                                 "weight": 1
                                             }
                                         ]
                                     },
-                                    "target_group_arn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/alb-test-169eb5ba/09ba111f8079fb83",
+                                    "target_group_arn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/alb-test/09ba111f8079fb83",
                                     "type": "forward"
                                 }
                             ]
@@ -310,12 +309,12 @@ load_balancers:
                                 },
                                 "target_groups": [
                                     {
-                                        "target_group_arn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/alb-test-2-98b7f374/bf43c68602c51c02",
+                                        "target_group_arn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/alb-test/bf43c68602c51c02",
                                         "weight": 1
                                     }
                                 ]
                             },
-                            "target_group_arn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/alb-test-2-98b7f374/bf43c68602c51c02",
+                            "target_group_arn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/alb-test/bf43c68602c51c02",
                             "type": "forward"
                         }
                     ]

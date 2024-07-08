@@ -757,7 +757,7 @@ load_balancer:
                     type: dict
                     contains:
                         protocol:
-                            description: The load balancer transport protocol to use for routing: HTTP, HTTPS, TCP, or SSL.
+                            description: 'The load balancer transport protocol to use for routing: HTTP, HTTPS, TCP, or SSL.'
                             returned: when O(state=present)
                             type: str
                         load_balancer_port:
@@ -765,7 +765,7 @@ load_balancer:
                             returned: when O(state=present)
                             type: int
                         instance_protocol:
-                            escription: The protocol to use for routing traffic to instances
+                            description: The protocol to use for routing traffic to instances.
                             returned: when O(state=present)
                             type: str
                         instance_port:
@@ -795,7 +795,9 @@ load_balancer:
             elements: dict
             contains:
                 access_log:
-                    description: If enabled, the load balancer captures detailed information of all requests and delivers the information to the Amazon S3 bucket that you specify.
+                    description:
+                        - If enabled, the load balancer captures detailed information of all requests and delivers the information to the
+                          Amazon S3 bucket that you specify.
                     returned: when O(state=present)
                     type: dict
                     contains:
@@ -827,7 +829,9 @@ load_balancer:
                         }
                     ]
                 connection_draining:
-                    description: If enabled, the load balancer allows existing requests to complete before the load balancer shifts traffic away from a deregistered or unhealthy instance.
+                    description:
+                        - If enabled, the load balancer allows existing requests to complete before the load balancer shifts traffic away
+                          from a deregistered or unhealthy instance.
                     returned: when O(state=present)
                     type: dict
                     contains:
@@ -842,12 +846,16 @@ load_balancer:
                         "timeout": 300
                     }
                 connection_settings:
-                    description: If enabled, the load balancer allows the connections to remain idle (no data is sent over the connection) for the specified duration
+                    description:
+                        - If enabled, the load balancer allows the connections to remain idle (no data is sent over the connection) for the
+                          specified duration
                     returned: when O(state=present)
                     type: dict
                     contains:
                         idle_timeout:
-                            description: The time, in seconds, that the connection is allowed to be idle (no data has been sent over the connection) before it is closed by the load balancer.
+                            description:
+                                - The time, in seconds, that the connection is allowed to be idle (no data has been sent over the connection)
+                                  before it is closed by the load balancer.
                             type: int
                     sample: {
                         "idle_timeout": 60
@@ -857,10 +865,10 @@ load_balancer:
                     returned: when O(state=present)
                     type: dict
                     contains:
-                    enabled:
-                        description: Specifies whether cross-zone load balancing is enabled for the load balancer.
-                        returned: when O(state=present)
-                        type: bool
+                        enabled:
+                            description: Specifies whether cross-zone load balancing is enabled for the load balancer.
+                            returned: when O(state=present)
+                            type: bool
                     sample: {
                         "enabled": false
                     }

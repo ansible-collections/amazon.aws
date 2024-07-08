@@ -428,7 +428,7 @@ created_time:
     type: str
     sample: "2015-02-12T02:14:02+00:00"
 client_keep_alive_seconds:
-    description:
+    description: The client keep alive value, in seconds.
     returned: when O(state=present)
     type: str
     sample: "3600"
@@ -468,7 +468,7 @@ ip_address_type:
     type: str
     sample: "ipv4"
 ipv6_deny_all_igw_traffic:
-    description: locks internet gateway (IGW) access to the load balancer.
+    description: Locks internet gateway (IGW) access to the load balancer.
     returned: when O(state=present)
     type: str
     sample: "false"
@@ -487,7 +487,7 @@ listeners:
             description: The Amazon Resource Name (ARN) of the load balancer.
             returned: when O(state=present)
             type: str
-            sample:"arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/app/alb-test-169eb5ba/1659336d4100d496"
+            sample: "arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/app/alb-test-169eb5ba/1659336d4100d496"
         port:
             description: The port on which the load balancer is listening.
             returned: when O(state=present)
@@ -508,17 +508,17 @@ listeners:
                     description: The Amazon Resource Name (ARN) of the rule.
                     returned: when O(state=present)
                     type: str
-                    sample: "arn:aws:elasticloadbalancing:us-east-1:123456789012:listener-rule/app/alb-test-169eb5ba/1659336d4100d496/8367c4262cc1d0cc/8f066464b82f7ca8"
+                    sample: ""
                 priority:
                     description: The priority.
                     returned: when O(state=present)
                     type: str
-                    sample "default"
+                    sample: "default"
                 is_default:
                     description: Indicates whether this is the default rule.
                     returned: when O(state=present)
                     type: bool
-                    sample false
+                    sample: false
                 conditions:
                     description: The conditions.
                     returned: when O(state=present)
@@ -573,12 +573,12 @@ listeners:
                                 },
                                 "target_groups": [
                                     {
-                                        "target_group_arn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/alb-test-169eb5ba/09ba111f8079fb83",
+                                        "target_group_arn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/alb-test-169eb/09ba111f8079fb83",
                                         "weight": 1
                                     }
                                 ]
                             },
-                            "target_group_arn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/alb-test-169eb5ba/09ba111f8079fb83",
+                            "target_group_arn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/alb-test-169eb/09ba111f8079fb83",
                             "type": "forward"
                         }
                     ]
@@ -688,7 +688,8 @@ routing_http_drop_invalid_header_fields_enabled:
     type: str
     sample: "false"
 routing_http_preserve_host_header_enabled:
-    description: Indicates whether the Application Load Balancer should preserve the Host header in the HTTP request and send it to the target without any change.
+    description:
+      - Indicates whether the Application Load Balancer should preserve the Host header in the HTTP request and send it to the target without any change.
     returned: when O(state=present)
     type: str
     sample: "false"
@@ -703,7 +704,9 @@ routing_http_xff_client_port_enabled:
     type: str
     sample: "false"
 routing_http_xff_header_processing_mode:
-    description: Enables you to modify, preserve, or remove the X-Forwarded-For header in the HTTP request before the Application Load Balancer sends the request to the target.
+    description:
+      - Enables you to modify, preserve, or remove the X-Forwarded-For header in the HTTP request before the Application Load Balancer sends the
+        request to the target.
     returned: when O(state=present)
     type: str
     sample: "append"
