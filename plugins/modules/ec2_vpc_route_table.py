@@ -299,11 +299,6 @@ from typing import List
 from typing import Optional
 from typing import Tuple
 
-try:
-    import botocore
-except ImportError:
-    pass  # caught by AnsibleAWSModule
-
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 
@@ -352,7 +347,7 @@ def find_subnets(
         filters = ansible_dict_to_boto3_filter_list({"vpc-id": vpc_id})
         try:
             subnets_by_id = describe_subnets(connection, SubnetIds=subnet_ids, Filters=filters)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        except AnsibleEC2Error as e:
             module.fail_json_aws(e, msg=f"Couldn't find subnet with id {subnet_ids}")
 
     subnets_by_cidr = []
@@ -360,7 +355,7 @@ def find_subnets(
         filters = ansible_dict_to_boto3_filter_list({"vpc-id": vpc_id, "cidr": subnet_cidrs})
         try:
             subnets_by_cidr = describe_subnets(connection, Filters=filters)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        except AnsibleEC2Error as e:
             module.fail_json_aws(e, msg=f"Couldn't find subnet with cidr {subnet_cidrs}")
 
     subnets_by_name = []
@@ -368,7 +363,7 @@ def find_subnets(
         filters = ansible_dict_to_boto3_filter_list({"vpc-id": vpc_id, "tag:Name": subnet_names})
         try:
             subnets_by_name = describe_subnets(connection, Filters=filters)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        except AnsibleEC2Error as e:
             module.fail_json_aws(e, msg=f"Couldn't find subnet with names {subnet_names}")
 
         for name in subnet_names:
@@ -718,10 +713,7 @@ def ensure_route_table_absent(connection, module: AnsibleAWSModule) -> Dict[str,
 def get_route_table_info(connection, module: AnsibleAWSModule, route_table: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     result = get_route_table_by_id(connection, module, route_table["RouteTableId"]) or {}
     if result:
-        try:
-            result["Tags"] = describe_ec2_tags(connection, module, route_table["RouteTableId"])
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Couldn't get tags for route table")
+        result["Tags"] = describe_ec2_tags(connection, module, route_table["RouteTableId"])
         result = camel_dict_to_snake_dict(result, ignore_list=["Tags"])
         # backwards compatibility
         result["id"] = result["route_table_id"]
