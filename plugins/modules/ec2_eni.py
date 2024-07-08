@@ -668,8 +668,8 @@ def delete_eni(connection, module):
             if "Attachment" in eni:
                 detach_network_interface(
                     connection,
-                    AttachmentId=eni["Attachment"]["AttachmentId"],
-                    Force=True,
+                    attachment_id=eni["Attachment"]["AttachmentId"],
+                    force=True,
                 )
                 wait_for_resource_state(
                     connection,
@@ -698,8 +698,8 @@ def detach_eni(connection, eni, module):
     if "Attachment" in eni:
         detach_network_interface(
             connection,
-            AttachmentId=eni["Attachment"]["AttachmentId"],
-            Force=force_detach,
+            attachment_id=eni["Attachment"]["AttachmentId"],
+            force=force_detach,
         )
         wait_for_resource_state(
             connection, module, "network_interface_available", delay=5, max_attempts=80, NetworkInterfaceIds=[eni_id]

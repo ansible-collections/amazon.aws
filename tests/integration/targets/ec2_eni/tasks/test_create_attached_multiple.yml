@@ -5,6 +5,8 @@
     image_id: "{{ ec2_ami_id }}"
     vpc_subnet_id: "{{ vpc_subnet_id }}"
     instance_type: t2.micro
+    state: running
+    wait: true
   register: ec2_instances
 
 - name: set variable for the instance ID
