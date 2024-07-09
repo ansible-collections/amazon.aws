@@ -54,7 +54,7 @@ options:
     version_added_collection: community.aws
   http_drop_invalid_header_fields:
     description:
-      - Indicates whether HTTP headers with invalid header fields are removed by the load balancer C(true) or routed to targets C(false).
+      - Indicates whether HTTP headers with invalid header fields are removed by the load balancer V(true) or routed to targets V(false).
       - Defaults to V(false).
     type: bool
     version_added: 3.2.0
@@ -382,7 +382,7 @@ availability_zones:
     elements: dict
     contains:
         load_balancer_addresses:
-            description: Information about a static IP address for a load balancer.
+            description: Information about static IP addresses for a load balancer.
             returned: when O(state=present)
             type: list
             elements: dict

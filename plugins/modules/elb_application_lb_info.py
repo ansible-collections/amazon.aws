@@ -117,7 +117,7 @@ load_balancers:
             sample: [{ "load_balancer_addresses": [], "subnet_id": "subnet-aabbccddff", "zone_name": "ap-southeast-2a" }]
             contains:
                 load_balancer_addresses:
-                    description: Information about a static IP address for a load balancer.
+                    description: Information about static IP addresses for a load balancer.
                     type: list
                     elements: dict
                     contains:
