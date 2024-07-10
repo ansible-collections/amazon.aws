@@ -1,5 +1,4 @@
-# duration: 15
-slow
+time=10m
 
 cloud/aws
 

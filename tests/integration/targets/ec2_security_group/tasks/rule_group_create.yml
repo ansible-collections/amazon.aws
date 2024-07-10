@@ -61,6 +61,7 @@
       ansible.builtin.assert:
         that:
           - result is failed
+          - '"no description was provided" in result.msg'
 
     - name: Create a group with a target of a separate group
       amazon.aws.ec2_security_group:

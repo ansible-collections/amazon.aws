@@ -792,8 +792,12 @@ class EC2ImageErrorHandler(AWSErrorHandler):
 def describe_images(
     client, **params: Dict[str, Union[List[str], bool, int, List[Dict[str, Union[str, List[str]]]]]]
 ) -> List[Dict[str, Any]]:
-    paginator = client.get_paginator("describe_images")
-    return paginator.paginate(**params).build_full_result()["Images"]
+    # 'DescribeImages' can be paginated depending on the boto3 version
+    if client.can_paginate("describe_images"):
+        paginator = client.get_paginator("describe_images")
+        return paginator.paginate(**params).build_full_result()["Images"]
+    else:
+        return client.describe_images(**params)["Images"]
 
 
 @EC2ImageErrorHandler.list_error_handler("describe image attribute", {})
@@ -1325,14 +1329,3 @@ def normalize_ec2_vpc_dhcp_config(option_config: List[Dict[str, Any]]) -> Dict[s
                 config_data[option] = [val["Value"] for val in config_item["Values"]]
 
     return config_data
-
-
-@AWSRetry.jittered_backoff(retries=10)
-def helper_describe_import_image_tasks(
-    client, module, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
-) -> List[Dict[str, Any]]:
-    try:
-        paginator = client.get_paginator("describe_import_image_tasks")
-        return paginator.paginate(**params).build_full_result()["ImportImageTasks"]
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to describe the import image")
