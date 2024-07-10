@@ -66,3 +66,10 @@
           - presented_instance_fact.instances.0.metadata_options.http_endpoint == 'enabled'
           - presented_instance_fact.instances.0.metadata_options.http_tokens == 'optional'
           - presented_instance_fact.instances.0.metadata_options.http_put_response_hop_limit == 4
+  always:
+    - name: Delete instance from default VPC
+      amazon.aws.ec2_instance:
+        state: absent
+        instance_ids: "{{ instance_creation.instance_ids }}"
+        wait: false
+      ignore_errors: true
