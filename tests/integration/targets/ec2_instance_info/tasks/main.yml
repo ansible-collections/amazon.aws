@@ -17,6 +17,7 @@
         user_data: "{{ ec2_instance_user_data }}"
         instance_type: "{{ ec2_instance_type }}"
         wait: false
+      register: _instances
 
     - name: Gather {{ ec2_instance_name }} info
       amazon.aws.ec2_instance_info:
@@ -74,3 +75,11 @@
           - '"sriov_net_support" in _instance_info.instances[0].attributes'
           # Enclave Options
           - not (_instance_info.instances[0].attributes.enclave_options.enabled | bool)
+
+  always:
+    - name: Delete instance created for tests
+      amazon.aws.ec2_instance:
+        state: absent
+        instance_ids: "{{ _instances.instance_ids }}"
+        wait: false
+      ignore_errors: true

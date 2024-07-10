@@ -47,4 +47,5 @@ options:
           removed_at_date: '2024-12-01'
           collection_name: amazon.aws
           why: 'EC2 in the name implied it was limited to EC2 resources, when it is used for all connections'
+          alternatives: AWS_REGION
 """
