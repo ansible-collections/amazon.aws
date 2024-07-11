@@ -1,0 +1,3 @@
+---
+trivial:
+  - Switch to using t3a.micro in amazon.aws tests to avoid intermittent failures.
