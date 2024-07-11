@@ -193,7 +193,9 @@ from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 
 
-def common_snapshot_info(client, module: AnsibleAWSModule, describe_snapshots_method: Callable, params: Dict[str, Any]) -> List[Dict[str, Any]]:
+def common_snapshot_info(
+    client, module: AnsibleAWSModule, describe_snapshots_method: Callable, params: Dict[str, Any]
+) -> List[Dict[str, Any]]:
     try:
         results = describe_snapshots_method(client, **params)
     except AnsibleRDSError as e:
