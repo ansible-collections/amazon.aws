@@ -521,6 +521,10 @@ def get_snapshot(
         Raises:
             Failes the module if an exception is raised while retrieving the snapshot attributes.
     """
+    valid_types = ("cluster", "instance")
+    if snapshot_type not in valid_types:
+        raise ValueError(f"Invalid snapshot_type. Expected one of: {valid_types}")
+
     snapshot = {}
 
     try:

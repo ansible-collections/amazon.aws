@@ -193,7 +193,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 
 
-def common_snapshot_info(client, module: AnsibleAWSModule, describe_snapshots_method: Callable, params: Dict[str, Any]):
+def common_snapshot_info(client, module: AnsibleAWSModule, describe_snapshots_method: Callable, params: Dict[str, Any]) -> List[Dict[str, Any]]:
     try:
         results = describe_snapshots_method(client, **params)
     except AnsibleRDSError as e:
@@ -268,7 +268,7 @@ def main():
         ],
     )
 
-    client = module.client("rds", retry_decorator=AWSRetry.jittered_backoff())
+    client = module.client("rds")
     results = dict()
     if not module.params["db_cluster_identifier"] and not module.params["db_cluster_snapshot_identifier"]:
         results["snapshots"] = instance_snapshot_info(client, module)

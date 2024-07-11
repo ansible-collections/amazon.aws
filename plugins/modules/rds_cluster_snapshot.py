@@ -334,7 +334,7 @@ def main():
         argument_spec=argument_spec,
         supports_check_mode=True,
     )
-    client = module.client("rds", retry_decorator=AWSRetry.jittered_backoff())
+    client = module.client("rds")
     state = module.params.get("state")
 
     if state == "absent":

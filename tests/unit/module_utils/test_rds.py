@@ -792,6 +792,14 @@ def test_get_snapshot_success(
     assert rds.get_snapshot(client, module, "my-snapshot", snapshot_type, convert_tags) == expected
 
 
+def test_get_snapshot_error():
+    client = MagicMock()
+    module = MagicMock()
+    with pytest.raises(ValueError) as e:
+        rds.get_snapshot(client, module, "my-snapshot", "bad parameter")
+    assert "Invalid snapshot_type. Expected one of: ('cluster', 'instance')" in str(e)
+
+
 @patch(mod_name + ".describe_db_snapshots")
 @patch(mod_name + ".describe_db_cluster_snapshots")
 def test_get_snapshot_failure(m_describe_db_cluster_snapshots, m_describe_db_snapshots):
