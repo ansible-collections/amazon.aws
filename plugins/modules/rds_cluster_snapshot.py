@@ -231,7 +231,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.rds import call_method
 from ansible_collections.amazon.aws.plugins.module_utils.rds import ensure_tags
 from ansible_collections.amazon.aws.plugins.module_utils.rds import format_rds_client_method_parameters
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_snapshot
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 
 
 def ensure_snapshot_absent(client, module: AnsibleAWSModule) -> None:
