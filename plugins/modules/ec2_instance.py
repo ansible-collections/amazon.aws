@@ -131,6 +131,7 @@ options:
       kernel:
         description:
         - a string AKI to override the AMI kernel.
+        type: str
   image_id:
     description:
        - I(ami) ID to use for the instance. One of O(image) or O(image_id) are required when instance is not already present.
@@ -1312,6 +1313,8 @@ from typing import Any
 from typing import Dict
 from typing import List
 from typing import Optional
+from typing import Set
+from typing import Tuple
 from typing import Union
 
 try:
@@ -1327,10 +1330,27 @@ from ansible.module_utils.six import string_types
 
 from ansible_collections.amazon.aws.plugins.module_utils.arn import validate_aws_arn
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_message
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleEC2Error
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import associate_iam_instance_profile
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import attach_network_interface
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_iam_instance_profile_associations
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_instance_attribute
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_instance_status
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_instances
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_subnets
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_vpcs
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_ec2_security_group_ids_from_names
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import modify_instance_attribute
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import modify_instance_metadata_options
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import replace_iam_instance_profile_association
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import run_instances as run_ec2_instances
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import start_instances
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import stop_instances
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import terminate_instances
 from ansible_collections.amazon.aws.plugins.module_utils.exceptions import AnsibleAWSError
+from ansible_collections.amazon.aws.plugins.module_utils.exceptions import is_ansible_aws_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.exceptions import is_ansible_aws_error_message
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
@@ -1338,14 +1358,8 @@ from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_ta
 from ansible_collections.amazon.aws.plugins.module_utils.tower import tower_callback_script
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 
-module = None
 
-
-class Ec2InstanceAWSError(AnsibleAWSError):
-    pass
-
-
-def build_volume_spec(params):
+def build_volume_spec(params: Dict[str, Any]) -> List[Dict[str, Any]]:
     volumes = params.get("volumes") or []
     for volume in volumes:
         if "ebs" in volume:
@@ -1363,77 +1377,79 @@ def build_volume_spec(params):
     return [snake_dict_to_camel_dict(v, capitalize_first=True) for v in volumes]
 
 
-def add_or_update_instance_profile(instance, desired_profile_name):
+def add_or_update_instance_profile(
+    client, module: AnsibleAWSModule, instance: Dict[str, Any], desired_profile_name: str
+) -> bool:
     instance_profile_setting = instance.get("IamInstanceProfile")
     if instance_profile_setting and desired_profile_name:
         if desired_profile_name in (instance_profile_setting.get("Name"), instance_profile_setting.get("Arn")):
             # great, the profile we asked for is what's there
             return False
         else:
-            desired_arn = determine_iam_role(desired_profile_name)
+            desired_arn = determine_iam_role(module, desired_profile_name)
             if instance_profile_setting.get("Arn") == desired_arn:
                 return False
 
         # update association
         try:
-            association = client.describe_iam_instance_profile_associations(
-                aws_retry=True, Filters=[{"Name": "instance-id", "Values": [instance["InstanceId"]]}]
+            association = describe_iam_instance_profile_associations(
+                client, Filters=[{"Name": "instance-id", "Values": [instance["InstanceId"]]}]
             )
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except AnsibleEC2Error as e:
             # check for InvalidAssociationID.NotFound
             module.fail_json_aws(e, "Could not find instance profile association")
         try:
-            client.replace_iam_instance_profile_association(
-                aws_retry=True,
-                AssociationId=association["IamInstanceProfileAssociations"][0]["AssociationId"],
-                IamInstanceProfile={"Arn": determine_iam_role(desired_profile_name)},
+            replace_iam_instance_profile_association(
+                client,
+                association_id=association[0]["AssociationId"],
+                iam_instance_profile={"Arn": determine_iam_role(module, desired_profile_name)},
             )
             return True
-        except botocore.exceptions.ClientError as e:
+        except AnsibleEC2Error as e:
             module.fail_json_aws(e, "Could not associate instance profile")
 
     if not instance_profile_setting and desired_profile_name:
         # create association
         try:
-            client.associate_iam_instance_profile(
-                aws_retry=True,
-                IamInstanceProfile={"Arn": determine_iam_role(desired_profile_name)},
-                InstanceId=instance["InstanceId"],
+            associate_iam_instance_profile(
+                client,
+                iam_instance_profile={"Arn": determine_iam_role(module, desired_profile_name)},
+                instance_id=instance["InstanceId"],
             )
             return True
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except AnsibleEC2Error as e:
             module.fail_json_aws(e, "Could not associate new instance profile")
 
     return False
 
 
-def validate_assign_public_ip(params: Dict[str, Any]) -> None:
+def validate_assign_public_ip(module: AnsibleAWSModule) -> None:
     """
     Validate Network interface public IP configuration
         Parameters:
-            params: module parameters.
+            module: The ansible AWS module.
     """
-    network_interfaces = params.get("network_interfaces") or []
-    network_interfaces_ids = params.get("network_interfaces_ids") or []
+    network_interfaces = module.params.get("network_interfaces") or []
+    network_interfaces_ids = module.params.get("network_interfaces_ids") or []
     if len(network_interfaces + network_interfaces_ids) > 1 and any(
         i.get("assign_public_ip") for i in network_interfaces if i.get("assign_public_ip") is not None
     ):
         module.fail_json(msg="The option 'assign_public_ip' cannot be set to true with multiple network interfaces.")
 
 
-def validate_network_params(params: Dict[str, Any], nb_instances: int) -> None:
+def validate_network_params(module: AnsibleAWSModule, nb_instances: int) -> None:
     """
     This function is used to validate network specifications with the following constraints
         - 'assign_public_ip' cannot set to True when multiple network interfaces are specified
         - 'private_ip_addresses' only one IP can be set as primary
         - 'private_ip_addresses' or 'private_ip_address' can't be specified if launching more than one instance
         Parameters:
-            params: module parameters.
+            module: The ansible AWS module.
             nb_instances: number of instance to create.
     """
-    validate_assign_public_ip(params)
+    validate_assign_public_ip(module)
 
-    network_interfaces = params.get("network_interfaces")
+    network_interfaces = module.params.get("network_interfaces")
     if network_interfaces:
         # private_ip_addresses: ensure only one private ip is set as primary
         for inty in network_interfaces:
@@ -1453,7 +1469,11 @@ def validate_network_params(params: Dict[str, Any], nb_instances: int) -> None:
 
 
 def ansible_to_boto3_eni_specification(
-    interface: Dict[str, Any], subnet_id: Optional[str], groups: Optional[Union[List[str], str]]
+    client,
+    module: AnsibleAWSModule,
+    interface: Dict[str, Any],
+    subnet_id: Optional[str],
+    groups: Optional[Union[List[str], str]],
 ) -> Dict[str, Any]:
     """
     Converts Ansible network interface specifications into AWS network interface spec
@@ -1476,7 +1496,7 @@ def ansible_to_boto3_eni_specification(
     elif subnet_id:
         spec["SubnetId"] = subnet_id
     else:
-        spec["SubnetId"] = describe_default_subnet(module)
+        spec["SubnetId"] = describe_default_subnet(client, module)
 
     if interface.get("ipv6_addresses"):
         spec["Ipv6Addresses"] = [{"Ipv6Address": a} for a in interface["ipv6_addresses"]]
@@ -1498,23 +1518,24 @@ def ansible_to_boto3_eni_specification(
 
     interface_groups = interface.get("groups") or groups
     if interface_groups:
-        spec["Groups"] = discover_security_groups(groups=interface_groups, subnet_id=spec["SubnetId"])
+        spec["Groups"] = discover_security_groups(client, module, groups=interface_groups, subnet_id=spec["SubnetId"])
     if interface.get("description") is not None:
         spec["Description"] = interface["description"]
     return spec
 
 
-def build_network_spec(params: Dict[str, Any]) -> List[Dict[str, Any]]:
+def build_network_spec(client, module: AnsibleAWSModule) -> List[Dict[str, Any]]:
     """
     Returns network interface specifications for instance to be created.
         Parameters:
-            params: module parameters
+            module: The ansible AWS module.
         Returns:
             network specs (list): List of network interfaces specifications
     """
 
     # They specified network_interfaces_ids (mutually exclusive with security_group(s) options)
     interfaces = []
+    params = module.params
     network_interfaces_ids = params.get("network_interfaces_ids")
     if network_interfaces_ids:
         interfaces = [
@@ -1531,12 +1552,15 @@ def build_network_spec(params: Dict[str, Any]) -> List[Dict[str, Any]]:
         if network and not network.get("interfaces"):
             network_interfaces = [network]
         interfaces.extend(
-            [ansible_to_boto3_eni_specification(inty, vpc_subnet_id, groups) for inty in network_interfaces]
+            [
+                ansible_to_boto3_eni_specification(client, module, inty, vpc_subnet_id, groups)
+                for inty in network_interfaces
+            ]
         )
     elif not network and not network_interfaces_ids:
         # They did not specify any network interface configuration
         # build network interface using subnet_id and security group(s) defined on the module
-        interfaces.append(ansible_to_boto3_eni_specification({}, vpc_subnet_id, groups))
+        interfaces.append(ansible_to_boto3_eni_specification(client, module, {}, vpc_subnet_id, groups))
     elif network:
         # handle list of `network.interfaces` options
         interfaces.extend(
@@ -1548,10 +1572,10 @@ def build_network_spec(params: Dict[str, Any]) -> List[Dict[str, Any]]:
     return interfaces
 
 
-def warn_if_public_ip_assignment_changed(instance: Dict[str, Any]) -> None:
+def warn_if_public_ip_assignment_changed(module: AnsibleAWSModule, instance: Dict[str, Any]) -> None:
     # This is a non-modifiable attribute.
     assign_public_ip = (module.params.get("network") or {}).get("assign_public_ip")
-    validate_assign_public_ip(module.params)
+    validate_assign_public_ip(module)
     network_interfaces = module.params.get("network_interfaces")
     if network_interfaces:
         # Either we only have one network interface or multiple network interface with 'assign_public_ip=false'
@@ -1570,7 +1594,7 @@ def warn_if_public_ip_assignment_changed(instance: Dict[str, Any]) -> None:
         )
 
 
-def warn_if_cpu_options_changed(instance):
+def warn_if_cpu_options_changed(module: AnsibleAWSModule, instance: Dict[str, Any]) -> None:
     # This is a non-modifiable attribute.
     cpu_options = module.params.get("cpu_options")
     if cpu_options is None:
@@ -1595,22 +1619,23 @@ def warn_if_cpu_options_changed(instance):
 
 
 def discover_security_groups(
-    groups: Union[str, List[str]], parent_vpc_id: Optional[str] = None, subnet_id: Optional[str] = None
+    client,
+    module: AnsibleAWSModule,
+    groups: Union[str, List[str]],
+    parent_vpc_id: Optional[str] = None,
+    subnet_id: Optional[str] = None,
 ) -> List[str]:
     if subnet_id is not None:
         try:
-            sub = client.describe_subnets(aws_retry=True, SubnetIds=[subnet_id])
-        except is_boto3_error_code("InvalidGroup.NotFound"):
+            sub = describe_subnets(client, SubnetIds=[subnet_id])
+        except is_ansible_aws_error_code("InvalidGroup.NotFound"):
             module.fail_json(
                 f"Could not find subnet {subnet_id} to associate security groups. Please check the vpc_subnet_id and"
                 " security_groups parameters."
             )
-        except (
-            botocore.exceptions.ClientError,
-            botocore.exceptions.BotoCoreError,
-        ) as e:  # pylint: disable=duplicate-except
+        except AnsibleAWSError as e:  # pylint: disable=duplicate-except
             module.fail_json_aws(e, msg=f"Error while searching for subnet {subnet_id} parent VPC.")
-        parent_vpc_id = sub["Subnets"][0]["VpcId"]
+        parent_vpc_id = sub[0]["VpcId"]
 
     return get_ec2_security_group_ids_from_names(groups, client, vpc_id=parent_vpc_id)
 
@@ -1630,16 +1655,17 @@ def build_userdata(params):
     return {}
 
 
-def build_top_level_options(params):
+def build_top_level_options(module: AnsibleAWSModule) -> Dict[str, Any]:
     spec = {}
+    params = module.params
     if params.get("image_id"):
         spec["ImageId"] = params["image_id"]
-    elif isinstance(params.get("image"), dict):
-        image = params.get("image", {})
+    elif params.get("image"):
+        image = params.get("image")
         spec["ImageId"] = image.get("id")
-        if "ramdisk" in image:
+        if image.get("ramdisk"):
             spec["RamdiskId"] = image["ramdisk"]
-        if "kernel" in image:
+        if image.get("kernel"):
             spec["KernelId"] = image["kernel"]
     if not spec.get("ImageId") and not params.get("launch_template"):
         module.fail_json(
@@ -1736,7 +1762,7 @@ def build_top_level_options(params):
     return spec
 
 
-def build_instance_tags(params):
+def build_instance_tags(params: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     tags = params.get("tags") or {}
     if params.get("name") is not None:
         tags["Name"] = params.get("name")
@@ -1744,11 +1770,15 @@ def build_instance_tags(params):
     return specs
 
 
-def build_run_instance_spec(params, current_count=0):
+def build_run_instance_spec(client, module: AnsibleAWSModule, current_count: Optional[int] = None) -> Dict[str, Any]:
     spec = dict(
         ClientToken=uuid.uuid4().hex,
     )
-    spec.update(**build_top_level_options(params))
+    params = module.params
+    spec.update(**build_top_level_options(module))
+
+    if current_count is None:
+        current_count = 0
 
     nb_instances = params.get("count") or 1
     if params.get("exact_count"):
@@ -1758,9 +1788,9 @@ def build_run_instance_spec(params, current_count=0):
     spec["MaxCount"] = nb_instances
 
     # Validate network parameters
-    validate_network_params(params, nb_instances)
+    validate_network_params(module, nb_instances)
 
-    spec["NetworkInterfaces"] = build_network_spec(params)
+    spec["NetworkInterfaces"] = build_network_spec(client, module)
     spec["BlockDeviceMappings"] = build_volume_spec(params)
 
     tag_spec = build_instance_tags(params)
@@ -1769,20 +1799,22 @@ def build_run_instance_spec(params, current_count=0):
 
     # IAM profile
     if params.get("iam_instance_profile"):
-        spec["IamInstanceProfile"] = dict(Arn=determine_iam_role(params.get("iam_instance_profile")))
+        spec["IamInstanceProfile"] = dict(Arn=determine_iam_role(module, params.get("iam_instance_profile")))
 
     if params.get("instance_type"):
         spec["InstanceType"] = params["instance_type"]
 
     if not (params.get("instance_type") or params.get("launch_template")):
-        raise Ec2InstanceAWSError(
+        raise AnsibleEC2Error(
             "At least one of 'instance_type' and 'launch_template' must be passed when launching instances."
         )
 
     return spec
 
 
-def await_instances(ids, desired_module_state="present", force_wait=False):
+def await_instances(
+    client, module: AnsibleAWSModule, ids: List[str], desired_module_state: str = "present", force_wait: bool = False
+) -> None:
     if not module.params.get("wait", True) and not force_wait:
         # the user asked not to wait for anything
         return
@@ -1824,7 +1856,7 @@ def await_instances(ids, desired_module_state="present", force_wait=False):
         module.warn(f"Instances {instance_ids} took too long to reach state {boto3_waiter_type}. {to_native(e)}")
 
 
-def diff_instance_and_params(instance, params, skip=None):
+def diff_instance_and_params(client, module: AnsibleAWSModule, instance: Dict[str, Any], skip=None):
     """boto3 instance obj, module params"""
 
     if skip is None:
@@ -1846,33 +1878,33 @@ def diff_instance_and_params(instance, params, skip=None):
     ]
 
     for mapping in param_mappings:
-        if params.get(mapping.param_key) is None:
+        if module.params.get(mapping.param_key) is None:
             continue
         if mapping.instance_key in skip:
             continue
 
         try:
-            value = client.describe_instance_attribute(aws_retry=True, Attribute=mapping.attribute_name, InstanceId=id_)
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+            value = describe_instance_attribute(client, instance_id=id_, attribute=mapping.attribute_name)
+        except AnsibleEC2Error as e:
             module.fail_json_aws(e, msg=f"Could not describe attribute {mapping.attribute_name} for instance {id_}")
-        if value[mapping.instance_key]["Value"] != params.get(mapping.param_key):
+        if value[mapping.instance_key]["Value"] != module.params.get(mapping.param_key):
             arguments = dict(
                 InstanceId=instance["InstanceId"],
                 # Attribute=mapping.attribute_name,
             )
-            arguments[mapping.instance_key] = mapping.add_value(params.get(mapping.param_key))
+            arguments[mapping.instance_key] = mapping.add_value(module.params.get(mapping.param_key))
             changes_to_apply.append(arguments)
 
-    network_interfaces = params.get("network_interfaces")
-    if not network_interfaces and params.get("network") and not params["network"].get("interfaces"):
-        network_interfaces = [params["network"]]
-    if network_interfaces or params.get("security_groups") or params.get("security_group"):
+    network_interfaces = module.params.get("network_interfaces")
+    if not network_interfaces and module.params.get("network") and not module.params["network"].get("interfaces"):
+        network_interfaces = [module.params["network"]]
+    if network_interfaces or module.params.get("security_groups") or module.params.get("security_group"):
         if len(network_interfaces or []) > 1 or len(instance["NetworkInterfaces"]) > 1:
             module.warn("Skipping group modification because instance contains mutiple network interfaces.")
         else:
             try:
-                value = client.describe_instance_attribute(aws_retry=True, Attribute="groupSet", InstanceId=id_)
-            except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+                value = describe_instance_attribute(client, instance_id=id_, attribute="groupSet")
+            except AnsibleEC2Error as e:
                 module.fail_json_aws(e, msg=f"Could not describe attribute groupSet for instance {id_}")
 
             # Read interface subnet
@@ -1881,22 +1913,22 @@ def diff_instance_and_params(instance, params, skip=None):
             if network_interfaces:
                 subnet_id = network_interfaces[0].get("subnet_id")
                 groups = network_interfaces[0].get("groups")
-            elif params.get("vpc_subnet_id"):
-                subnet_id = params.get("vpc_subnet_id")
+            elif module.params.get("vpc_subnet_id"):
+                subnet_id = module.params.get("vpc_subnet_id")
             else:
-                subnet_id = describe_default_subnet(module=module, use_availability_zone=False)
+                subnet_id = describe_default_subnet(client, module, use_availability_zone=False)
 
             # Read groups
-            groups = groups or params.get("security_groups") or params.get("security_group")
+            groups = groups or module.params.get("security_groups") or module.params.get("security_group")
             if groups:
-                groups = discover_security_groups(groups=groups, subnet_id=subnet_id)
+                groups = discover_security_groups(client, module, groups=groups, subnet_id=subnet_id)
                 instance_groups = [g["GroupId"] for g in value["Groups"]]
                 if set(instance_groups) != set(groups):
                     changes_to_apply.append(dict(Groups=groups, InstanceId=instance["InstanceId"]))
 
-    source_dest_check = params.get("source_dest_check")
+    source_dest_check = module.params.get("source_dest_check")
     if source_dest_check is None:
-        source_dest_check = (params.get("network") or {}).get("source_dest_check")
+        source_dest_check = (module.params.get("network") or {}).get("source_dest_check")
         # network.source_dest_check is nested, so needs to be treated separately
         if source_dest_check is not None:
             source_dest_check = bool(source_dest_check)
@@ -1911,8 +1943,8 @@ def diff_instance_and_params(instance, params, skip=None):
     return changes_to_apply
 
 
-def change_instance_metadata_options(instance, params):
-    metadata_options_to_apply = params.get("metadata_options")
+def change_instance_metadata_options(client, module: AnsibleAWSModule, instance: Dict[str, str]) -> bool:
+    metadata_options_to_apply = module.params.get("metadata_options")
 
     if metadata_options_to_apply is None:
         return False
@@ -1929,7 +1961,6 @@ def change_instance_metadata_options(instance, params):
         return False
 
     request_args = {
-        "InstanceId": instance["InstanceId"],
         "HttpTokens": changes_to_apply.get("http_tokens") or existing_metadata_options.get("http_tokens"),
         "HttpPutResponseHopLimit": changes_to_apply.get("http_put_response_hop_limit")
         or existing_metadata_options.get("http_put_response_hop_limit"),
@@ -1940,29 +1971,32 @@ def change_instance_metadata_options(instance, params):
         or existing_metadata_options.get("instance_metadata_tags"),
     }
 
-    if module.check_mode:
-        return True
-    try:
-        client.modify_instance_metadata_options(aws_retry=True, **request_args)
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        module.fail_json_aws(
-            e, msg=f"Failed to update instance metadata options for instance ID: {instance['InstanceId']}"
-        )
-    return True
+    changed = True
+    if not module.check_mode:
+        try:
+            modify_instance_metadata_options(client, instance["InstanceId"], **request_args)
+        except AnsibleEC2Error as e:
+            module.fail_json_aws(
+                e, msg=f"Failed to update instance metadata options for instance ID: {instance['InstanceId']}"
+            )
+    return changed
 
 
-def change_network_attachments(instance: Dict[str, Any], params: Dict[str, Any]) -> bool:
+def change_network_attachments(client, module: AnsibleAWSModule, instance: Dict[str, Any]) -> bool:
     """
     Attach Network interfaces to the instance
         Parameters:
+            client: AWS API client.
+            module: The ansible AWS module.
             instance: A dictionnary describing the instance.
-            params: Ansible module parameters.
         Returns:
             A boolean set to True if changes have been done.
     """
     new_enis = [
         eni.get("id")
-        for eni in params.get("network_interfaces_ids") or (params.get("network") or {}).get("interfaces") or []
+        for eni in module.params.get("network_interfaces_ids")
+        or (module.params.get("network") or {}).get("interfaces")
+        or []
     ]
     if not new_enis:
         return False
@@ -1979,20 +2013,22 @@ def change_network_attachments(instance: Dict[str, Any], params: Dict[str, Any])
                 device_index = eni.get("device_index") or idx
             if eni_id in to_attach:
                 try:
-                    client.attach_network_interface(
-                        aws_retry=True,
+                    attach_network_interface(
+                        client,
                         DeviceIndex=device_index,
                         InstanceId=instance["InstanceId"],
                         NetworkInterfaceId=eni_id,
                     )
-                except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+                except AnsibleEC2Error as e:
                     module.fail_json_aws(
                         e, msg=f"Could not attach interface {eni_id} to instance {instance['InstanceId']}"
                     )
     return bool(to_attach)
 
 
-def find_instances(ids=None, filters=None):
+def find_instances(
+    client, module: AnsibleAWSModule, ids: Optional[List[str]] = None, filters: Optional[Dict[str, Any]] = None
+) -> List[Dict[str, Any]]:
     sanitized_filters = dict()
 
     if ids:
@@ -2007,35 +2043,26 @@ def find_instances(ids=None, filters=None):
                 sanitized_filters[key] = filters[key]
         params = dict(Filters=ansible_dict_to_boto3_filter_list(sanitized_filters))
 
+    instances = []
+    for reservation in describe_instances(client, **params):
+        instances.extend(reservation["Instances"])
+    return instances
+
+
+def get_default_vpc(client, module: AnsibleAWSModule) -> Optional[Dict[str, Any]]:
     try:
-        results = _describe_instances(**params)
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        module.fail_json_aws(e, msg="Could not describe instances")
-
-    retval = list(results)
-    return retval
-
-
-@AWSRetry.jittered_backoff()
-def _describe_instances(**params):
-    paginator = client.get_paginator("describe_instances")
-    return paginator.paginate(**params).search("Reservations[].Instances[]")
-
-
-def get_default_vpc():
-    try:
-        vpcs = client.describe_vpcs(aws_retry=True, Filters=ansible_dict_to_boto3_filter_list({"isDefault": "true"}))
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        vpcs = describe_vpcs(client, Filters=ansible_dict_to_boto3_filter_list({"isDefault": "true"}))
+    except AnsibleEC2Error as e:
         module.fail_json_aws(e, msg="Could not describe default VPC")
-    if len(vpcs.get("Vpcs", [])):
-        return vpcs.get("Vpcs")[0]
-    return None
+    return vpcs[0] if vpcs else None
 
 
-def get_default_subnet(vpc, availability_zone=None):
+def get_default_subnet(
+    client, module: AnsibleAWSModule, vpc: Dict[str, Any], availability_zone=None
+) -> Optional[Dict[str, Any]]:
     try:
-        subnets = client.describe_subnets(
-            aws_retry=True,
+        subnets = describe_subnets(
+            client,
             Filters=ansible_dict_to_boto3_filter_list(
                 {
                     "vpc-id": vpc["VpcId"],
@@ -2044,22 +2071,25 @@ def get_default_subnet(vpc, availability_zone=None):
                 }
             ),
         )
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+    except AnsibleEC2Error as e:
         module.fail_json_aws(e, msg=f"Could not describe default subnets for VPC {vpc['VpcId']}")
-    if len(subnets.get("Subnets", [])):
+    result = None
+    if subnets:
         if availability_zone is not None:
-            subs_by_az = dict((subnet["AvailabilityZone"], subnet) for subnet in subnets.get("Subnets"))
+            subs_by_az = dict((subnet["AvailabilityZone"], subnet) for subnet in subnets)
             if availability_zone in subs_by_az:
                 return subs_by_az[availability_zone]
 
         # to have a deterministic sorting order, we sort by AZ so we'll always pick the `a` subnet first
         # there can only be one default-for-az subnet per AZ, so the AZ key is always unique in this list
-        by_az = sorted(subnets.get("Subnets"), key=lambda s: s["AvailabilityZone"])
-        return by_az[0]
-    return None
+        by_az = sorted(subnets, key=lambda s: s["AvailabilityZone"])
+        result = by_az[0]
+    return result
 
 
-def ensure_instance_state(desired_module_state, filters):
+def ensure_instance_state(
+    client, module: AnsibleAWSModule, desired_module_state: str, filters: Optional[Dict[str, Any]]
+) -> Dict[str, Any]:
     """
     Sets return keys depending on the desired instance state
     """
@@ -2067,7 +2097,7 @@ def ensure_instance_state(desired_module_state, filters):
     changed = False
     if desired_module_state in ("running", "started"):
         _changed, failed, instances, failure_reason = change_instance_state(
-            filters=filters, desired_module_state=desired_module_state
+            client, module, filters=filters, desired_module_state=desired_module_state
         )
         changed |= bool(len(_changed))
 
@@ -2093,6 +2123,8 @@ def ensure_instance_state(desired_module_state, filters):
         # The Ansible behaviour of issuing a stop/start has a minor impact on user billing
         # This will need to be changelogged if we ever change to client.reboot_instance
         _changed, failed, instances, failure_reason = change_instance_state(
+            client,
+            module,
             filters=filters,
             desired_module_state="stopped",
         )
@@ -2106,6 +2138,8 @@ def ensure_instance_state(desired_module_state, filters):
 
         changed |= bool(len(_changed))
         _changed, failed, instances, failure_reason = change_instance_state(
+            client,
+            module,
             filters=filters,
             desired_module_state=desired_module_state,
         )
@@ -2127,6 +2161,8 @@ def ensure_instance_state(desired_module_state, filters):
         )
     elif desired_module_state in ("stopped",):
         _changed, failed, instances, failure_reason = change_instance_state(
+            client,
+            module,
             filters=filters,
             desired_module_state=desired_module_state,
         )
@@ -2148,6 +2184,8 @@ def ensure_instance_state(desired_module_state, filters):
         )
     elif desired_module_state in ("absent", "terminated"):
         terminated, terminate_failed, instances, failure_reason = change_instance_state(
+            client,
+            module,
             filters=filters,
             desired_module_state=desired_module_state,
         )
@@ -2168,7 +2206,9 @@ def ensure_instance_state(desired_module_state, filters):
     return results
 
 
-def change_instance_state(filters, desired_module_state):
+def change_instance_state(
+    client, module: AnsibleAWSModule, filters: Optional[Dict[str, Any]], desired_module_state: str
+) -> Tuple[Set[str], List[str], Optional[List[Dict[str, Any]]], str]:
     # Map ansible state to ec2 state
     ec2_instance_states = {
         "present": "running",
@@ -2182,7 +2222,7 @@ def change_instance_state(filters, desired_module_state):
     }
     desired_ec2_state = ec2_instance_states[desired_module_state]
     changed = set()
-    instances = find_instances(filters=filters)
+    instances = find_instances(client, module, filters=filters)
     to_change = set(i["InstanceId"] for i in instances if i["State"]["Name"] != desired_ec2_state)
     unchanged = set()
     failure_reason = ""
@@ -2193,9 +2233,13 @@ def change_instance_state(filters, desired_module_state):
                 # Before terminating an instance we need for them to leave
                 # 'pending' or 'stopping' (if they're in those states)
                 if inst["State"]["Name"] == "stopping":
-                    await_instances([inst["InstanceId"]], desired_module_state="stopped", force_wait=True)
+                    await_instances(
+                        client, module, [inst["InstanceId"]], desired_module_state="stopped", force_wait=True
+                    )
                 elif inst["State"]["Name"] == "pending":
-                    await_instances([inst["InstanceId"]], desired_module_state="running", force_wait=True)
+                    await_instances(
+                        client, module, [inst["InstanceId"]], desired_module_state="running", force_wait=True
+                    )
 
                 if module.check_mode:
                     changed.add(inst["InstanceId"])
@@ -2203,13 +2247,15 @@ def change_instance_state(filters, desired_module_state):
 
                 # TODO use a client-token to prevent double-sends of these start/stop/terminate commands
                 # https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html
-                resp = client.terminate_instances(aws_retry=True, InstanceIds=[inst["InstanceId"]])
-                [changed.add(i["InstanceId"]) for i in resp["TerminatingInstances"]]
+                resp = terminate_instances(client, instance_ids=[inst["InstanceId"]])
+                changed.update([i["InstanceId"] for i in resp])
             if desired_ec2_state == "stopped":
                 # Before stopping an instance we need for them to leave
                 # 'pending'
                 if inst["State"]["Name"] == "pending":
-                    await_instances([inst["InstanceId"]], desired_module_state="running", force_wait=True)
+                    await_instances(
+                        client, module, [inst["InstanceId"]], desired_module_state="running", force_wait=True
+                    )
                 # Already moving to the relevant state
                 elif inst["State"]["Name"] in ("stopping", "stopped"):
                     unchanged.add(inst["InstanceId"])
@@ -2218,34 +2264,33 @@ def change_instance_state(filters, desired_module_state):
                 if module.check_mode:
                     changed.add(inst["InstanceId"])
                     continue
-                resp = client.stop_instances(aws_retry=True, InstanceIds=[inst["InstanceId"]])
-                [changed.add(i["InstanceId"]) for i in resp["StoppingInstances"]]
+                resp = stop_instances(client, instance_ids=[inst["InstanceId"]])
+                changed.update([i["InstanceId"] for i in resp])
             if desired_ec2_state == "running":
                 if inst["State"]["Name"] in ("pending", "running"):
                     unchanged.add(inst["InstanceId"])
                     continue
                 if inst["State"]["Name"] == "stopping":
-                    await_instances([inst["InstanceId"]], desired_module_state="stopped", force_wait=True)
+                    await_instances(
+                        client, module, [inst["InstanceId"]], desired_module_state="stopped", force_wait=True
+                    )
 
                 if module.check_mode:
                     changed.add(inst["InstanceId"])
                     continue
 
-                resp = client.start_instances(aws_retry=True, InstanceIds=[inst["InstanceId"]])
-                [changed.add(i["InstanceId"]) for i in resp["StartingInstances"]]
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            try:
-                failure_reason = to_native(e.message)
-            except AttributeError:
-                failure_reason = to_native(e)
+                resp = start_instances(client, instance_ids=[inst["InstanceId"]])
+                changed.update([i["InstanceId"] for i in resp])
+        except AnsibleEC2Error as e:
+            failure_reason = str(e)
 
     if changed:
-        await_instances(ids=list(changed) + list(unchanged), desired_module_state=desired_module_state)
+        await_instances(client, module, ids=list(changed) + list(unchanged), desired_module_state=desired_module_state)
 
     change_failed = list(to_change - changed)
 
     if instances:
-        instances = find_instances(ids=list(i["InstanceId"] for i in instances))
+        instances = find_instances(client, module, ids=list(i["InstanceId"] for i in instances))
     return changed, change_failed, instances, failure_reason
 
 
@@ -2255,7 +2300,7 @@ def pretty_instance(i):
     return instance
 
 
-def determine_iam_role(name_or_arn):
+def determine_iam_role(module: AnsibleAWSModule, name_or_arn: Optional[str]) -> str:
     if validate_aws_arn(name_or_arn, service="iam", resource_type="instance-profile"):
         return name_or_arn
     iam = module.client("iam", retry_decorator=AWSRetry.jittered_backoff())
@@ -2274,7 +2319,13 @@ def determine_iam_role(name_or_arn):
         )
 
 
-def handle_existing(existing_matches, state, filters):
+def handle_existing(
+    client,
+    module: AnsibleAWSModule,
+    existing_matches: List[Dict[str, Any]],
+    state: str,
+    filters: Optional[Dict[str, Any]],
+) -> Dict[str, Any]:
     tags = module.params.get("tags")
     purge_tags = module.params.get("purge_tags")
     name = module.params.get("name")
@@ -2294,21 +2345,22 @@ def handle_existing(existing_matches, state, filters):
     for instance in existing_matches:
         changed |= ensure_ec2_tags(client, module, instance["InstanceId"], tags=tags, purge_tags=purge_tags)
 
-        changed |= change_instance_metadata_options(instance, module.params)
+        changed |= change_instance_metadata_options(client, module, instance)
 
-        changes = diff_instance_and_params(instance, module.params)
+        changes = diff_instance_and_params(client, module, instance)
         for c in changes:
             if not module.check_mode:
                 try:
-                    client.modify_instance_attribute(aws_retry=True, **c)
-                except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+                    instance_id = c.pop("InstanceId")
+                    modify_instance_attribute(client, instance_id=instance_id, **c)
+                except AnsibleEC2Error as e:
                     module.fail_json_aws(e, msg=f"Could not apply change {str(c)} to existing instance.")
         all_changes.extend(changes)
         changed |= bool(changes)
-        changed |= add_or_update_instance_profile(existing_matches[0], module.params.get("iam_instance_profile"))
-        changed |= change_network_attachments(existing_matches[0], module.params)
+        changed |= add_or_update_instance_profile(client, module, instance, module.params.get("iam_instance_profile"))
+        changed |= change_network_attachments(client, module, instance)
 
-    altered = find_instances(ids=[i["InstanceId"] for i in existing_matches])
+    altered = find_instances(client, module, ids=[i["InstanceId"] for i in existing_matches])
     alter_config_result = dict(
         changed=changed,
         instances=[pretty_instance(i) for i in altered],
@@ -2316,14 +2368,16 @@ def handle_existing(existing_matches, state, filters):
         changes=changes,
     )
 
-    state_results = ensure_instance_state(state, filters)
+    state_results = ensure_instance_state(client, module, state, filters)
     alter_config_result["changed"] |= state_results.pop("changed", False)
     result = {**state_results, **alter_config_result}
 
     return result
 
 
-def enforce_count(existing_matches, desired_module_state):
+def enforce_count(
+    client, module: AnsibleAWSModule, existing_matches: List[Dict[str, Any]], desired_module_state: str
+) -> Dict[str, Any]:
     exact_count = module.params.get("exact_count")
 
     current_count = len(existing_matches)
@@ -2338,6 +2392,8 @@ def enforce_count(existing_matches, desired_module_state):
     if current_count < exact_count:
         # launch instances
         return ensure_present(
+            client,
+            module,
             existing_matches=existing_matches,
             desired_module_state=desired_module_state,
             current_count=current_count,
@@ -2358,15 +2414,10 @@ def enforce_count(existing_matches, desired_module_state):
         )
     # terminate instances
     try:
-        client.terminate_instances(aws_retry=True, InstanceIds=terminate_ids)
-        await_instances(terminate_ids, desired_module_state="terminated", force_wait=True)
-    except is_boto3_error_code("InvalidInstanceID.NotFound"):
-        pass
-    except (
-        botocore.exceptions.BotoCoreError,
-        botocore.exceptions.ClientError,
-    ) as e:  # pylint: disable=duplicate-except
+        terminate_instances(client, terminate_ids)
+    except AnsibleAWSError as e:
         module.fail_json(e, msg="Unable to terminate instances")
+    await_instances(client, module, terminate_ids, desired_module_state="terminated", force_wait=True)
 
     # include data for all matched instances in addition to the list of terminations
     # allowing for recovery of metadata from the destructive operation
@@ -2379,126 +2430,130 @@ def enforce_count(existing_matches, desired_module_state):
     )
 
 
-def ensure_present(existing_matches, desired_module_state, current_count=None):
+def ensure_present(
+    client,
+    module: AnsibleAWSModule,
+    existing_matches: Optional[List[Dict[str, Any]]],
+    desired_module_state: str,
+    current_count: Optional[int] = None,
+) -> Dict[str, Any]:
     tags = dict(module.params.get("tags") or {})
     name = module.params.get("name")
     if name:
         tags["Name"] = name
 
-    try:
-        instance_spec = build_run_instance_spec(module.params, current_count)
-        # If check mode is enabled,suspend 'ensure function'.
-        if module.check_mode:
-            if existing_matches:
-                instance_ids = [x["InstanceId"] for x in existing_matches]
-                return dict(
-                    changed=True,
-                    instance_ids=instance_ids,
-                    instances=existing_matches,
-                    spec=instance_spec,
-                    msg="Would have launched instances if not in check_mode.",
-                )
-            else:
-                return dict(
-                    changed=True,
-                    spec=instance_spec,
-                    msg="Would have launched instances if not in check_mode.",
-                )
-        instance_response = run_instances(**instance_spec)
-        instances = instance_response["Instances"]
-        instance_ids = [i["InstanceId"] for i in instances]
+    instance_spec = build_run_instance_spec(client, module, current_count)
+    # If check mode is enabled,suspend 'ensure function'.
+    if module.check_mode:
+        if existing_matches:
+            instance_ids = [x["InstanceId"] for x in existing_matches]
+            return dict(
+                changed=True,
+                instance_ids=instance_ids,
+                instances=existing_matches,
+                spec=instance_spec,
+                msg="Would have launched instances if not in check_mode.",
+            )
+        else:
+            return dict(
+                changed=True,
+                spec=instance_spec,
+                msg="Would have launched instances if not in check_mode.",
+            )
+    instance_response = run_instances(client, **instance_spec)
+    instances = instance_response["Instances"]
+    instance_ids = [i["InstanceId"] for i in instances]
 
-        # Wait for instances to exist in the EC2 API before
-        # attempting to modify them
-        await_instances(instance_ids, desired_module_state="present", force_wait=True)
+    # Wait for instances to exist in the EC2 API before
+    # attempting to modify them
+    await_instances(client, module, instance_ids, desired_module_state="present", force_wait=True)
 
-        for ins in instances:
-            # Wait for instances to exist (don't check state)
+    for ins in instances:
+        # Wait for instances to exist (don't check state)
+        try:
+            describe_instance_status(
+                client,
+                InstanceIds=[ins["InstanceId"]],
+                IncludeAllInstances=True,
+            )
+        except AnsibleEC2Error as e:
+            module.fail_json_aws(e, msg="Failed to fetch status of new EC2 instance")
+        changes = diff_instance_and_params(client, module, ins, skip=["UserData", "EbsOptimized"])
+        for c in changes:
             try:
-                AWSRetry.jittered_backoff(
-                    catch_extra_error_codes=["InvalidInstanceID.NotFound"],
-                )(client.describe_instance_status)(
-                    InstanceIds=[ins["InstanceId"]],
-                    IncludeAllInstances=True,
-                )
-            except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-                module.fail_json_aws(e, msg="Failed to fetch status of new EC2 instance")
-            changes = diff_instance_and_params(ins, module.params, skip=["UserData", "EbsOptimized"])
-            for c in changes:
-                try:
-                    client.modify_instance_attribute(aws_retry=True, **c)
-                except botocore.exceptions.ClientError as e:
-                    module.fail_json_aws(e, msg=f"Could not apply change {str(c)} to new instance.")
+                instance_id = c.pop("InstanceId")
+                modify_instance_attribute(client, instance_id=instance_id, **c)
+            except AnsibleEC2Error as e:
+                module.fail_json_aws(e, msg=f"Could not apply change {str(c)} to new instance.")
+    if existing_matches:
+        # If we came from enforce_count, create a second list to distinguish
+        # between existing and new instances when returning the entire cohort
+        all_instance_ids = [x["InstanceId"] for x in existing_matches] + instance_ids
+    if not module.params.get("wait"):
         if existing_matches:
-            # If we came from enforce_count, create a second list to distinguish
-            # between existing and new instances when returning the entire cohort
-            all_instance_ids = [x["InstanceId"] for x in existing_matches] + instance_ids
-        if not module.params.get("wait"):
-            if existing_matches:
-                return dict(
-                    changed=True,
-                    changed_ids=instance_ids,
-                    instance_ids=all_instance_ids,
-                    spec=instance_spec,
-                )
-            else:
-                return dict(
-                    changed=True,
-                    instance_ids=instance_ids,
-                    spec=instance_spec,
-                )
-        await_instances(instance_ids, desired_module_state=desired_module_state)
-        instances = find_instances(ids=instance_ids)
-
-        if existing_matches:
-            all_instances = existing_matches + instances
             return dict(
                 changed=True,
                 changed_ids=instance_ids,
                 instance_ids=all_instance_ids,
-                instances=[pretty_instance(i) for i in all_instances],
                 spec=instance_spec,
             )
         else:
             return dict(
                 changed=True,
                 instance_ids=instance_ids,
-                instances=[pretty_instance(i) for i in instances],
                 spec=instance_spec,
             )
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        module.fail_json_aws(e, msg="Failed to create new EC2 instance")
+    await_instances(client, module, instance_ids, desired_module_state=desired_module_state)
+    instances = find_instances(client, module, ids=instance_ids)
+
+    if existing_matches:
+        all_instances = existing_matches + instances
+        return dict(
+            changed=True,
+            changed_ids=instance_ids,
+            instance_ids=all_instance_ids,
+            instances=[pretty_instance(i) for i in all_instances],
+            spec=instance_spec,
+        )
+    else:
+        return dict(
+            changed=True,
+            instance_ids=instance_ids,
+            instances=[pretty_instance(i) for i in instances],
+            spec=instance_spec,
+        )
 
 
-def run_instances(**instance_spec):
+def run_instances(client, **instance_spec: Dict[str, Any]) -> Dict[str, Any]:
     try:
-        return client.run_instances(aws_retry=True, **instance_spec)
-    except is_boto3_error_message("Invalid IAM Instance Profile ARN"):
+        return run_ec2_instances(client, **instance_spec)
+    except is_ansible_aws_error_message("Invalid IAM Instance Profile ARN"):
         # If the instance profile has just been created, it takes some time to be visible by ec2
         # So we wait 10 second and retry the run_instances
         time.sleep(10)
-        return client.run_instances(aws_retry=True, **instance_spec)
+        return run_ec2_instances(client, **instance_spec)
 
 
-def describe_default_subnet(module: AnsibleAWSModule, use_availability_zone: bool = True) -> str:
+def describe_default_subnet(client, module: AnsibleAWSModule, use_availability_zone: bool = True) -> str:
     """
     Read default subnet associated to the AWS account
         Parameters:
+            client: AWS API client
             module: The Ansible AWS module
             use_availability_zone: Whether to use availability zone to find the default subnet.
         Returns:
             The default subnet id.
     """
-    default_vpc = get_default_vpc()
+    default_vpc = get_default_vpc(client, module)
     if not default_vpc:
         module.fail_json(
             msg=("No default subnet could be found - you must include a VPC subnet ID (vpc_subnet_id parameter).")
         )
     availability_zone = module.params.get("availability_zone") if use_availability_zone else None
-    return get_default_subnet(default_vpc, availability_zone)["SubnetId"]
+    return get_default_subnet(client, module, default_vpc, availability_zone)["SubnetId"]
 
 
-def build_network_filters() -> Dict[str, List[str]]:
+def build_network_filters(client, module: AnsibleAWSModule) -> Dict[str, List[str]]:
     """
     Create Network filters for the DescribeInstances API
         Returns:
@@ -2515,11 +2570,11 @@ def build_network_filters() -> Dict[str, List[str]]:
             eni["id"] if isinstance(eni, dict) else eni for eni in network_interfaces_ids
         ]
     else:
-        filters["subnet-id"] = describe_default_subnet(module)
+        filters["subnet-id"] = describe_default_subnet(client, module)
     return filters
 
 
-def build_filters():
+def build_filters(client, module: AnsibleAWSModule) -> Dict[str, Any]:
     filters = {
         # all states except shutting-down and terminated
         "instance-state-name": ["pending", "running", "stopping", "stopped"],
@@ -2530,7 +2585,7 @@ def build_filters():
         filters["instance-id"] = module.params.get("instance_ids")
     else:
         # Network filters
-        filters.update(build_network_filters())
+        filters.update(build_network_filters(client, module))
         if module.params.get("name"):
             filters["tag:Name"] = [module.params.get("name")]
         elif module.params.get("tags"):
@@ -2546,9 +2601,6 @@ def build_filters():
 
 
 def main():
-    global module
-    global client
-
     argument_spec = dict(
         state=dict(
             default="present",
@@ -2558,7 +2610,14 @@ def main():
         wait_timeout=dict(default=600, type="int"),
         count=dict(type="int"),
         exact_count=dict(type="int"),
-        image=dict(type="dict"),
+        image=dict(
+            type="dict",
+            options=dict(
+                id=dict(type="str"),
+                ramdisk=dict(type="str"),
+                kernel=dict(type="str"),
+            ),
+        ),
         image_id=dict(type="str"),
         instance_type=dict(type="str"),
         user_data=dict(type="str"),
@@ -2742,29 +2801,29 @@ def main():
 
     filters = module.params.get("filters")
     if filters is None:
-        filters = build_filters()
+        filters = build_filters(client, module)
 
     try:
-        existing_matches = find_instances(filters=filters)
+        existing_matches = find_instances(client, module, filters=filters)
 
         if state in ("terminated", "absent"):
             if existing_matches:
-                result = ensure_instance_state(state, filters)
+                result = ensure_instance_state(client, module, state, filters)
             else:
                 result = dict(
                     msg="No matching instances found",
                     changed=False,
                 )
         elif module.params.get("exact_count"):
-            result = enforce_count(existing_matches, desired_module_state=state)
+            result = enforce_count(client, module, existing_matches, desired_module_state=state)
         elif existing_matches and not module.params.get("count"):
             for match in existing_matches:
-                warn_if_public_ip_assignment_changed(match)
-                warn_if_cpu_options_changed(match)
-            result = handle_existing(existing_matches, state, filters=filters)
+                warn_if_public_ip_assignment_changed(module, match)
+                warn_if_cpu_options_changed(module, match)
+            result = handle_existing(client, module, existing_matches, state, filters=filters)
         else:
-            result = ensure_present(existing_matches=existing_matches, desired_module_state=state)
-    except Ec2InstanceAWSError as e:
+            result = ensure_present(client, module, existing_matches=existing_matches, desired_module_state=state)
+    except AnsibleEC2Error as e:
         if e.exception:
             module.fail_json_aws(e.exception, msg=e.message)
         module.fail_json(msg=e.message)

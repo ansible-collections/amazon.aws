@@ -19,14 +19,14 @@
 
 - name: Make instance with 1 existing ENI
   amazon.aws.ec2_instance:
-    state: present
+    state: started
     name: "{{ ec2_instance_name }}-a"
     image_id: "{{ ec2_ami_id }}"
     network_interfaces_ids:
       - id: "{{ eni_a.interface.id }}"
         device_index: 0
     instance_type: "t2.micro"
-    wait: false
+    wait: true
   register: create_instance
 
 - name: Set instance Id
