@@ -2,7 +2,7 @@
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta content="2.11.0" name="antsibull-docs" />
+<meta content="2.12.0" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>amazon.aws.s3_bucket module – Manage S3 buckets in AWS, DigitalOcean, Ceph, Walrus, FakeS3 and StorageGRID &mdash; Ansible collections  documentation</title>
@@ -437,11 +437,9 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucke
 </div></td>
 <td><div class="ansible-option-cell"><p>Configure public access block for S3 bucket.</p>
 <p>This option cannot be used together with <em>delete_public_access</em>.</p>
-<dl class="simple">
-<dt>Note: At the end of April 2023 Amazon updated the default settings to block public access by</dt><dd><p>default.  While the defaults for this module remain unchanged, it is necessary to explicitly
+<p>Note: At the end of April 2023 Amazon updated the default settings to block public access by
+default.  While the defaults for this module remain unchanged, it is necessary to explicitly
 pass the <em>public_access</em> parameter to enable public access ACLs.</p>
-</dd>
-</dl>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
