@@ -54,24 +54,47 @@ RETURN = r"""
 policies:
     description: A list containing the matching IAM inline policy names and their data.
     returned: success
-    type: complex
+    type: list
+    elements: dict
     contains:
         policy_name:
             description: The Name of the inline policy.
             returned: success
             type: str
+            sample: "test-ec2-list-policy"
         policy_document:
             description: The JSON document representing the inline IAM policy.
             returned: success
-            type: list
+            type: str
+            sample: {
+                        "Statement": [
+                            {
+                                "Action": "ec2:DescribeAccountAttributes",
+                                "Effect": "Allow",
+                                "Resource": "*",
+                                "Sid": "VisualEditor0"
+                            }
+                        ],
+                        "Version": "2012-10-17"
+                        },
+                        "policy_name": "example-ec2-list-policy"
+                    }
 policy_names:
     description: A list of matching names of the IAM inline policies on the queried object.
     returned: success
     type: list
+    sample: [
+                "example-ec2-policy-1",
+                "example-ec2-policy-2"
+            ]
 all_policy_names:
     description: A list of names of all of the IAM inline policies on the queried object.
     returned: success
     type: list
+    sample: [
+                "example-ec2-policy-1",
+                "example-ec2-policy-2"
+            ]
 """
 
 try:
