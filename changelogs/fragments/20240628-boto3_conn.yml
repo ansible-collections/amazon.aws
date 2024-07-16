@@ -1,0 +1,10 @@
+breaking_changes:
+- module_utils.botocore - ``boto3_conn``'s  ``conn_type`` parameter is now mandatory (https://github.com/ansible-collections/amazon.aws/pull/2157).
+minor_changes:
+- module_utils.botocore - the ``boto3_conn`` method now catches ``BotoCoreError`` rather than an incomplete list of subclasses (https://github.com/ansible-collections/amazon.aws/pull/2157).
+- plugin_utils.botocore - the ``boto3_conn`` method now catches ``BotoCoreError`` rather than an incomplete list of subclasses (https://github.com/ansible-collections/amazon.aws/pull/2157).
+- module_utils.botocore - replace use of ``botocore.Session`` with ``boto3.Session`` for consistency (https://github.com/ansible-collections/amazon.aws/pull/2157).
+trivial:
+- module_utils.botocore - added Type hints (https://github.com/ansible-collections/amazon.aws/pull/2157).
+- plugin_utils.botocore - added Type hints (https://github.com/ansible-collections/amazon.aws/pull/2157).
+- plugin_utils.base - added Type hints (https://github.com/ansible-collections/amazon.aws/pull/2157).

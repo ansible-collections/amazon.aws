@@ -42,9 +42,9 @@ def test_boto3_conn_success(monkeypatch, aws_module, botocore_utils):
     monkeypatch.setattr(botocore_utils, "_boto3_conn", connection_method)
     connection_method.return_value = sentinel.RETURNED_CONNECTION
 
-    assert botocore_utils.boto3_conn(aws_module) is sentinel.RETURNED_CONNECTION
+    assert botocore_utils.boto3_conn(aws_module, sentinel.PARAM_CONNTYPE) is sentinel.RETURNED_CONNECTION
     passed_args = connection_method.call_args
-    assert passed_args == call(conn_type=None, resource=None, region=None, endpoint=None)
+    assert passed_args == call(conn_type=sentinel.PARAM_CONNTYPE, resource=None, region=None, endpoint=None)
 
     result = botocore_utils.boto3_conn(
         aws_module,
@@ -108,7 +108,7 @@ def test_boto3_conn_exception(monkeypatch, aws_module, botocore_utils, failure, 
         custom_error = str(failure)
 
     with pytest.raises(FailException):
-        botocore_utils.boto3_conn(aws_module)
+        botocore_utils.boto3_conn(aws_module, sentinel.PARAM_CONNTYPE)
 
     fail_args = aws_module.fail_json.call_args
     assert custom_error in fail_args[1]["msg"]
