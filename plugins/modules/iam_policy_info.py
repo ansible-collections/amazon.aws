@@ -76,8 +76,6 @@ policies:
                             }
                         ],
                         "Version": "2012-10-17"
-                        },
-                        "policy_name": "example-ec2-list-policy"
                     }
 policy_names:
     description: A list of matching names of the IAM inline policies on the queried object.
