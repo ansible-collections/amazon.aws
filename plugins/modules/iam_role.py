@@ -246,7 +246,7 @@ iam_role:
         role_last_used:
             description: Contains information about the last time that an IAM role was used.
             type: dict
-            returned:
+            returned: always
             sample: {
                         "last_used_date": "2023-11-22T21:54:29+00:00",
                         "region": "us-east-2"
