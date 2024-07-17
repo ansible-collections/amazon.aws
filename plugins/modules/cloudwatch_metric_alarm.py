@@ -161,6 +161,12 @@ options:
         type: str
         choices: ['ignore', 'evaluate']
         version_added: 9.0.0
+    datapoints_to_alarm:
+        description:
+          - The number of data points that must be breaching to trigger the alarm.
+        required: false
+        type: int
+        version_added: 8.2.0
     evaluation_periods:
         description:
           - The number of times in which the metric is evaluated before final calculation.
@@ -510,6 +516,7 @@ def create_metric_alarm(connection, module, params):
         dimensions=result.get("Dimensions"),
         extended_statistic=result.get("ExtendedStatistic"),
         evaluate_low_sample_count_percentile=result.get("EvaluateLowSampleCountPercentile"),
+        datapoints_to_alarm=result.get("DatapointsToAlarm"),
         evaluation_periods=result.get("EvaluationPeriods"),
         insufficient_data_actions=result.get("InsufficientDataActions"),
         last_updated=result.get("AlarmConfigurationUpdatedTimestamp"),
@@ -592,6 +599,7 @@ def main():
             ],
         ),
         evaluate_low_sample_count_percentile=dict(type="str", choices=["ignore", "evaluate"]),
+        datapoints_to_alarm=dict(type="int"),
         evaluation_periods=dict(type="int"),
         extended_statistic=dict(type="str"),
         description=dict(type="str"),
@@ -634,6 +642,7 @@ def main():
     params["Threshold"] = module.params.get("threshold")
     params["Period"] = module.params.get("period")
     params["EvaluateLowSampleCountPercentile"] = module.params.get("evaluate_low_sample_count_percentile")
+    params["DatapointsToAlarm"] = module.params.get("datapoints_to_alarm")
     params["EvaluationPeriods"] = module.params.get("evaluation_periods")
     if module.params.get("unit"):
         params["Unit"] = module.params.get("unit")
