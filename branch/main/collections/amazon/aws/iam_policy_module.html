@@ -439,11 +439,74 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-poli
 </thead>
 <tbody>
 <tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-diff"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-module-return-diff"><strong>diff</strong></p>
+<a class="ansibleOptionLink" href="#return-diff" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>A dict representing difference between policies applied on IAM resource (user, group, or role).</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-diff/after"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-module-return-diff-after"><strong>after</strong></p>
+<a class="ansibleOptionLink" href="#return-diff/after" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The current policy on IAM resource after new policy is applied.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;READ-ONLY&quot;:</span> <span class="pre">{&quot;Statement&quot;:</span> <span class="pre">[{&quot;Action&quot;:</span> <span class="pre">&quot;ec2:DescribeAccountAttributes&quot;,</span> <span class="pre">&quot;Effect&quot;:</span> <span class="pre">&quot;Allow&quot;,</span> <span class="pre">&quot;Resource&quot;:</span> <span class="pre">&quot;*&quot;,</span> <span class="pre">&quot;Sid&quot;:</span> <span class="pre">&quot;VisualEditor0&quot;}],</span> <span class="pre">&quot;Version&quot;:</span> <span class="pre">&quot;2012-10-17&quot;}}</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-diff/before"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-module-return-diff-before"><strong>before</strong></p>
+<a class="ansibleOptionLink" href="#return-diff/before" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The policy that exists on IAM resource before new policy is applied.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;READ-ONLY&quot;:</span> <span class="pre">{&quot;Statement&quot;:</span> <span class="pre">[{&quot;Action&quot;:</span> <span class="pre">&quot;ec2:DescribeAccountAttributes&quot;,</span> <span class="pre">&quot;Effect&quot;:</span> <span class="pre">&quot;Deny&quot;,</span> <span class="pre">&quot;Resource&quot;:</span> <span class="pre">&quot;*&quot;,</span> <span class="pre">&quot;Sid&quot;:</span> <span class="pre">&quot;VisualEditor0&quot;}],</span> <span class="pre">&quot;Version&quot;:</span> <span class="pre">&quot;2012-10-17&quot;}}</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-group_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-module-return-group-name"><strong>group_name</strong></p>
+<a class="ansibleOptionLink" href="#return-group_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Name of IAM group.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> When <em>iam_type=group</em></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;ExampleGroup001&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-policies"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-module-return-policies"><strong>policies</strong></p>
+<a class="ansibleOptionLink" href="#return-policies" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>A list of names of the inline policies embedded in the specified IAM resource (user, group, or role).</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[&quot;READ-ONLY&quot;]</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-policy_names"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-module-return-policy-names"><strong>policy_names</strong></p>
 <a class="ansibleOptionLink" href="#return-policy_names" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A list of names of the inline policies embedded in the specified IAM resource (user, group, or role).</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[&quot;READ-ONLY&quot;]</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-role_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-module-return-role-name"><strong>role_name</strong></p>
+<a class="ansibleOptionLink" href="#return-role_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Name of IAM role.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> When <em>iam_type=role</em></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;ExampleRole001&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-user_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-module-return-user-name"><strong>user_name</strong></p>
+<a class="ansibleOptionLink" href="#return-user_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Name of IAM user.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> When <em>iam_type=user</em></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;ExampleUser001&quot;</span></code></p>
 </div></td>
 </tr>
 </tbody>

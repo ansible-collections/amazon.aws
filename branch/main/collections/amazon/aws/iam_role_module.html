@@ -577,15 +577,34 @@ snake_case. This behaviour changed in release 8.0.0.</p>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Note: this return value has been deprecated and will be removed in a release after
 2026-05-01. <code class="ansible-return-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-module-return-iam-role-assume-role-policy-document"><span class="std std-ref"><span class="pre">iam_role.assume_role_policy_document</span></span></a></code> and <code class="ansible-return-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-module-return-iam-role-assume-role-policy-document-raw"><span class="std std-ref"><span class="pre">iam_role.assume_role_policy_document_raw</span></span></a></code>now use the same format.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;statement&quot;:</span> <span class="pre">[{&quot;action&quot;:</span> <span class="pre">&quot;sts:AssumeRole&quot;,</span> <span class="pre">&quot;effect&quot;:</span> <span class="pre">&quot;Allow&quot;,</span> <span class="pre">&quot;principal&quot;:</span> <span class="pre">{&quot;service&quot;:</span> <span class="pre">&quot;ec2.amazonaws.com&quot;},</span> <span class="pre">&quot;sid&quot;:</span> <span class="pre">&quot;&quot;}],</span> <span class="pre">&quot;version&quot;:</span> <span class="pre">&quot;2012-10-17&quot;}</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-iam_role/attached_policies"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-role-module-return-iam-role-attached-policies"><strong>attached_policies</strong></p>
-<a class="ansibleOptionLink" href="#return-iam_role/attached_policies" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+<a class="ansibleOptionLink" href="#return-iam_role/attached_policies" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A list of dicts containing the name and ARN of the managed IAM policies attached to the role.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[{&quot;policy_arn&quot;:</span> <span class="pre">&quot;arn:aws:iam::aws:policy/PowerUserAccess&quot;,</span> <span class="pre">&quot;policy_name&quot;:</span> <span class="pre">&quot;PowerUserAccess&quot;}]</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-iam_role/attached_policies/policy_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-role-module-return-iam-role-attached-policies-policy-arn"><strong>policy_arn</strong></p>
+<a class="ansibleOptionLink" href="#return-iam_role/attached_policies/policy_arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The Amazon Resource Name (ARN) specifying the managed policy.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:iam::123456789012:policy/test_policy&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-iam_role/attached_policies/policy_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-role-module-return-iam-role-attached-policies-policy-name"><strong>policy_name</strong></p>
+<a class="ansibleOptionLink" href="#return-iam_role/attached_policies/policy_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The friendly name that identifies the policy.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;test_policy&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -595,6 +614,24 @@ snake_case. This behaviour changed in release 8.0.0.</p>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The date and time, in ISO 8601 date-time format, when the role was created.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2016-08-14T04:36:28+00:00&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-iam_role/description"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-role-module-return-iam-role-description"><strong>description</strong></p>
+<a class="ansibleOptionLink" href="#return-iam_role/description" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A description of the role.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;This</span> <span class="pre">is</span> <span class="pre">My</span> <span class="pre">New</span> <span class="pre">Role&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-iam_role/max_session_duration"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-role-module-return-iam-role-max-session-duration"><strong>max_session_duration</strong></p>
+<a class="ansibleOptionLink" href="#return-iam_role/max_session_duration" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The maximum duration (in seconds) of a session when assuming the role.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">3600</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -616,6 +653,31 @@ snake_case. This behaviour changed in release 8.0.0.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-iam_role/role_last_used"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-role-module-return-iam-role-role-last-used"><strong>role_last_used</strong></p>
+<a class="ansibleOptionLink" href="#return-iam_role/role_last_used" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Contains information about the last time that an IAM role was used.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;last_used_date&quot;:</span> <span class="pre">&quot;2023-11-22T21:54:29+00:00&quot;,</span> <span class="pre">&quot;region&quot;:</span> <span class="pre">&quot;us-east-2&quot;}</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-iam_role/role_last_used/last_used_date"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-role-module-return-iam-role-role-last-used-last-used-date"><strong>last_used_date</strong></p>
+<a class="ansibleOptionLink" href="#return-iam_role/role_last_used/last_used_date" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The date and time, in  ISO 8601 date-time format that the role was last used.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-iam_role/role_last_used/region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-role-module-return-iam-role-role-last-used-region"><strong>region</strong></p>
+<a class="ansibleOptionLink" href="#return-iam_role/role_last_used/region" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The name of the Amazon Web Services Region in which the role was last used.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-iam_role/role_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-role-module-return-iam-role-role-name"><strong>role_name</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_role/role_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -624,7 +686,7 @@ snake_case. This behaviour changed in release 8.0.0.</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;myrole&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-iam_role/tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-role-module-return-iam-role-tags"><strong>tags</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_role/tags" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>

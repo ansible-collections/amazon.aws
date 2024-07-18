@@ -383,7 +383,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-inst
 <tbody>
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-iam_instance_profiles"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-instance-profile-info-module-return-iam-instance-profiles"><strong>iam_instance_profiles</strong></p>
-<a class="ansibleOptionLink" href="#return-iam_instance_profiles" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
+<a class="ansibleOptionLink" href="#return-iam_instance_profiles" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>List of IAM instance profiles.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
@@ -440,7 +440,16 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-inst
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>List of roles associated with this instance profile.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[]</span></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[{&quot;arn&quot;:</span> <span class="pre">&quot;arn:aws:iam::721234567890:role/Example-Role-1&quot;,</span> <span class="pre">&quot;assume_role_policy_document&quot;:</span> <span class="pre">{&quot;Statement&quot;:</span> <span class="pre">[{&quot;Action&quot;:</span> <span class="pre">&quot;sts:AssumeRole&quot;,</span> <span class="pre">&quot;Effect&quot;:</span> <span class="pre">&quot;Allow&quot;,</span> <span class="pre">&quot;Principal&quot;:</span> <span class="pre">{&quot;Service&quot;:</span> <span class="pre">&quot;ec2.amazonaws.com&quot;}}],</span> <span class="pre">&quot;Version&quot;:</span> <span class="pre">&quot;2012-10-17&quot;},</span> <span class="pre">&quot;create_date&quot;:</span> <span class="pre">&quot;2023-05-08T17:45:27+00:00&quot;,</span> <span class="pre">&quot;path&quot;:</span> <span class="pre">&quot;/&quot;,</span> <span class="pre">&quot;role_id&quot;:</span> <span class="pre">&quot;AAAA0AAAAAAA0AAA0AAAA&quot;,</span> <span class="pre">&quot;role_name&quot;:</span> <span class="pre">&quot;Example-Role-1&quot;,</span> <span class="pre">&quot;tags&quot;:</span> <span class="pre">{}}]</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-iam_instance_profiles/tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-instance-profile-info-module-return-iam-instance-profiles-tags"><strong>tags</strong></p>
+<a class="ansibleOptionLink" href="#return-iam_instance_profiles/tags" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A list of tags that are attached to the instance profile.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;Env&quot;:</span> <span class="pre">&quot;Prod&quot;}</span></code></p>
 </div></td>
 </tr>
 </tbody>

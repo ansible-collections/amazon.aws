@@ -575,17 +575,18 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-user
 <a class="ansibleOptionLink" href="#return-user/arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The Amazon Resource Name (ARN) specifying the user.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:iam::123456789012:user/testuser1&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-user/attached_policies"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-user-module-return-user-attached-policies"><strong>attached_policies</strong></p>
-<a class="ansibleOptionLink" href="#return-user/attached_policies" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
+<a class="ansibleOptionLink" href="#return-user/attached_policies" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
 <p><em class="ansible-option-versionadded">added in amazon.aws 7.2.0</em></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>List containing basic information about managed policies attached to the group.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[{&quot;policy_arn&quot;:</span> <span class="pre">&quot;arn:aws:iam::123456789012:policy/test_policy&quot;,</span> <span class="pre">&quot;policy_name&quot;:</span> <span class="pre">&quot;test_policy&quot;}]</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -611,7 +612,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-user
 <a class="ansibleOptionLink" href="#return-user/create_date" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The date and time, in ISO 8601 date-time format, when the user was created.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2017-02-08T04:36:28+00:00&quot;</span></code></p>
 </div></td>
 </tr>
@@ -620,7 +621,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-user
 <a class="ansibleOptionLink" href="#return-user/path" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The path to the user.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;/&quot;</span></code></p>
 </div></td>
 </tr>
@@ -638,7 +639,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-user
 <a class="ansibleOptionLink" href="#return-user/user_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The stable and unique string identifying the user.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;AGPA12345EXAMPLE54321&quot;</span></code></p>
 </div></td>
 </tr>
@@ -647,7 +648,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-user
 <a class="ansibleOptionLink" href="#return-user/user_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The friendly name that identifies the user.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;testuser1&quot;</span></code></p>
 </div></td>
 </tr>
