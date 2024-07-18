@@ -21,6 +21,8 @@ except ImportError:
 
 from ansible.module_utils.basic import to_text
 
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+
 
 def s3_head_objects(client, parts, bucket, obj, versionId):
     args = {"Bucket": bucket, "Key": obj}
@@ -151,3 +153,31 @@ def s3_extra_params(options, sigv4=False):
         config["signature_version"] = "s3v4"
     extra_params["config"] = config
     return extra_params
+
+
+@AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
+def _list_bucket_inventory_configurations(client, **params):
+    return client.list_bucket_inventory_configurations(**params)
+
+
+# _list_backup_inventory_configurations is a workaround for a missing paginator for listing
+# bucket inventory configuration in boto3:
+# https://github.com/boto/botocore/blob/1.34.141/botocore/data/s3/2006-03-01/paginators-1.json
+def list_bucket_inventory_configurations(client, bucket_name):
+    first_iteration = False
+    next_token = None
+
+    response = _list_bucket_inventory_configurations(client, Bucket=bucket_name)
+    next_token = response.get("NextToken", None)
+
+    if next_token is None:
+        return response.get("InventoryConfigurationList", [])
+
+    entries = []
+    while next_token is not None:
+        if first_iteration:
+            response = _list_bucket_inventory_configurations(client, NextToken=next_token, Bucket=bucket_name)
+        first_iteration = True
+        entries.extend(response["InventoryConfigurationList"])
+        next_token = response.get("NextToken")
+    return entries
