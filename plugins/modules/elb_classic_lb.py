@@ -159,9 +159,9 @@ options:
     suboptions:
       enabled:
         description:
-        - When set to V(True) will configure delivery of access logs to an S3
+        - When set to V(true) will configure delivery of access logs to an S3
           bucket.
-        - When set to V(False) will disable delivery of access logs.
+        - When set to V(false) will disable delivery of access logs.
         required: false
         type: bool
         default: true
@@ -170,7 +170,7 @@ options:
         - The S3 bucket to deliver access logs to.
         - See U(https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/enable-access-logs.html)
           for more information about the necessary S3 bucket policies.
-        - Required when O(access_logs.enabled=True).
+        - Required when O(access_logs.enabled=true).
         required: false
         type: str
       s3_prefix:
@@ -490,184 +490,506 @@ EXAMPLES = r"""
 
 RETURN = r"""
 elb:
-  description: Load Balancer attributes.
-  returned: always
-  type: dict
-  contains:
-    app_cookie_policy:
-      description: The name of the policy used to control if the ELB is using a application cookie stickiness policy.
-      type: str
-      sample: ec2-elb-lb-AppCookieStickinessPolicyType
-      returned: when O(state=present)
-    backends:
-      description: A description of the backend policy applied to the ELB (instance-port:policy-name).
-      type: str
-      sample: 8181:ProxyProtocol-policy
-      returned: when O(state=present)
-    connection_draining_timeout:
-      description: The maximum time, in seconds, to keep the existing connections open before deregistering the instances.
-      type: int
-      sample: 25
-      returned: when O(state=present)
-    cross_az_load_balancing:
-      description: Either C('yes') if cross-AZ load balancing is enabled, or C('no') if cross-AZ load balancing is disabled.
-      type: str
-      sample: 'yes'
-      returned: when O(state=present)
-    dns_name:
-      description: The DNS name of the ELB.
-      type: str
-      sample: internal-ansible-test-935c585850ac-1516306744.us-east-1.elb.amazonaws.com
-      returned: when O(state=present)
-    health_check:
-      description: A dictionary describing the health check used for the ELB.
-      type: dict
-      returned: when O(state=present)
-      contains:
-        healthy_threshold:
-          description: The number of consecutive successful health checks before marking an instance as healthy.
-          type: int
-          sample: 2
-        interval:
-          description: The time, in seconds, between each health check.
-          type: int
-          sample: 10
-        target:
-          description: The Protocol, Port, and for HTTP(S) health checks the path tested by the health check.
-          type: str
-          sample: TCP:22
-        timeout:
-          description: The time, in seconds, after which an in progress health check is considered failed due to a timeout.
-          type: int
-          sample: 5
-        unhealthy_threshold:
-          description: The number of consecutive failed health checks before marking an instance as unhealthy.
-          type: int
-          sample: 2
-    hosted_zone_id:
-      description: The ID of the Amazon Route 53 hosted zone for the load balancer.
-      type: str
-      sample: Z35SXDOTRQ7X7K
-      returned: when O(state=present)
-    hosted_zone_name:
-      description: The DNS name of the load balancer when using a custom hostname.
-      type: str
-      sample: 'ansible-module.example'
-      returned: when O(state=present)
-    idle_timeout:
-      description: The length of of time before an idle connection is dropped by the ELB.
-      type: int
-      sample: 50
-      returned: when O(state=present)
-    in_service_count:
-      description: The number of instances attached to the ELB in an in-service state.
-      type: int
-      sample: 1
-      returned: when O(state=present)
-    instance_health:
-      description: A list of dictionaries describing the health of each instance attached to the ELB.
-      type: list
-      elements: dict
-      returned: when O(state=present)
-      contains:
-        description:
-          description: A human readable description of why the instance is not in service.
-          type: str
-          sample: N/A
-          returned: when O(state=present)
-        instance_id:
-          description: The ID of the instance.
-          type: str
-          sample: i-03dcc8953a03d6435
-          returned: when O(state=present)
-        reason_code:
-          description: A code describing why the instance is not in service.
-          type: str
-          sample: N/A
-          returned: when O(state=present)
-        state:
-          description: The current service state of the instance.
-          type: str
-          sample: InService
-          returned: when O(state=present)
-    instances:
-      description: A list of the IDs of instances attached to the ELB.
-      type: list
-      elements: str
-      sample: ['i-03dcc8953a03d6435']
-      returned: when O(state=present)
-    lb_cookie_policy:
-      description: The name of the policy used to control if the ELB is using a cookie stickiness policy.
-      type: str
-      sample: ec2-elb-lb-LBCookieStickinessPolicyType
-      returned: when O(state=present)
-    listeners:
-      description:
-      - A list of lists describing the listeners attached to the ELB.
-      - The nested list contains the listener port, the instance port, the listener protoco, the instance port,
-        and where appropriate the ID of the SSL certificate for the port.
-      type: list
-      elements: list
-      sample: [[22, 22, 'TCP', 'TCP'], [80, 8181, 'HTTP', 'HTTP']]
-      returned: when O(state=present)
-    name:
-      description: The name of the ELB.  This name is unique per-region, per-account.
-      type: str
-      sample: ansible-test-935c585850ac
-      returned: when O(state=present)
-    out_of_service_count:
-      description: The number of instances attached to the ELB in an out-of-service state.
-      type: int
-      sample: 0
-      returned: when O(state=present)
-    proxy_policy:
-      description: The name of the policy used to control if the ELB operates using the Proxy protocol.
-      type: str
-      sample: ProxyProtocol-policy
-      returned: when the proxy protocol policy exists.
-    region:
-      description: The AWS region in which the ELB is running.
-      type: str
-      sample: us-east-1
-      returned: always
-    scheme:
-      description: Whether the ELB is an C('internal') or a C('internet-facing') load balancer.
-      type: str
-      sample: internal
-      returned: when O(state=present)
-    security_group_ids:
-      description: A list of the IDs of the Security Groups attached to the ELB.
-      type: list
-      elements: str
-      sample: ['sg-0c12ebd82f2fb97dc', 'sg-01ec7378d0c7342e6']
-      returned: when O(state=present)
-    status:
-      description: A minimal description of the current state of the ELB. Valid values are C('exists'), C('gone'), C('deleted'), C('created').
-      type: str
-      sample: exists
-      returned: always
-    subnets:
-      description: A list of the subnet IDs attached to the ELB.
-      type: list
-      elements: str
-      sample: ['subnet-00d9d0f70c7e5f63c', 'subnet-03fa5253586b2d2d5']
-      returned: when O(state=present)
-    tags:
-      description: A dictionary describing the tags attached to the ELB.
-      type: dict
-      sample: {'Name': 'ansible-test-935c585850ac', 'ExampleTag': 'Example Value'}
-      returned: when O(state=present)
-    unknown_instance_state_count:
-      description: The number of instances attached to the ELB in an unknown state.
-      type: int
-      sample: 0
-      returned: when O(state=present)
-    zones:
-      description: A list of the AWS regions in which the ELB is running.
-      type: list
-      elements: str
-      sample: ['us-east-1b', 'us-east-1a']
-      returned: when O(state=present)
+    description: Original boto-style Load Balancer attributes.
+    returned: always
+    type: dict
+    contains:
+        app_cookie_policy:
+            description: The name of the policy used to control if the ELB is using a application cookie stickiness policy.
+            type: str
+            sample: "ec2-elb-lb-AppCookieStickinessPolicyType"
+            returned: when O(state=present)
+        backends:
+            description: A description of the backend policy applied to the ELB (instance-port:policy-name).
+            type: str
+            sample: "8181:ProxyProtocol-policy"
+            returned: when O(state=present)
+        connection_draining_timeout:
+            description: The maximum time, in seconds, to keep the existing connections open before deregistering the instances.
+            type: int
+            sample: 25
+            returned: when O(state=present)
+        cross_az_load_balancing:
+            description: Either V("yes") if cross-AZ load balancing is enabled, or V("no") if cross-AZ load balancing is disabled.
+            type: str
+            sample: "yes"
+            returned: when O(state=present)
+        dns_name:
+            description: The DNS name of the ELB.
+            type: str
+            sample: "internal-ansible-test-935c585850ac-1516306744.us-east-1.elb.amazonaws.com"
+            returned: when O(state=present)
+        health_check:
+            description: A dictionary describing the health check used for the ELB.
+            type: dict
+            returned: when O(state=present)
+            contains:
+                healthy_threshold:
+                    description: The number of consecutive successful health checks before marking an instance as healthy.
+                    type: int
+                    sample: 2
+                interval:
+                    description: The time, in seconds, between each health check.
+                    type: int
+                    sample: 10
+                target:
+                    description: The Protocol, Port, and for HTTP(S) health checks the path tested by the health check.
+                    type: str
+                    sample: "TCP:22"
+                timeout:
+                    description: The time, in seconds, after which an in progress health check is considered failed due to a timeout.
+                    type: int
+                    sample: 5
+                unhealthy_threshold:
+                    description: The number of consecutive failed health checks before marking an instance as unhealthy.
+                    type: int
+                    sample: 2
+        hosted_zone_id:
+            description: The ID of the Amazon Route 53 hosted zone for the load balancer.
+            type: str
+            sample: "Z35SXDOTRQ7X7K"
+            returned: when O(state=present)
+        hosted_zone_name:
+            description: The DNS name of the load balancer when using a custom hostname.
+            type: str
+            sample: "ansible-module.example"
+            returned: when O(state=present)
+        idle_timeout:
+            description: The length of of time before an idle connection is dropped by the ELB.
+            type: int
+            sample: 50
+            returned: when O(state=present)
+        in_service_count:
+            description: The number of instances attached to the ELB in an in-service state.
+            type: int
+            sample: 1
+            returned: when O(state=present)
+        instance_health:
+            description: A list of dictionaries describing the health of each instance attached to the ELB.
+            type: list
+            elements: dict
+            returned: when O(state=present)
+            contains:
+                description:
+                    description: A human readable description of why the instance is not in service.
+                    type: str
+                    sample: N/A
+                    returned: when O(state=present)
+                instance_id:
+                    description: The ID of the instance.
+                    type: str
+                    sample: "i-03dcc8953a03d6435"
+                    returned: when O(state=present)
+                reason_code:
+                    description: A code describing why the instance is not in service.
+                    type: str
+                    sample: N/A
+                    returned: when O(state=present)
+                state:
+                    description: The current service state of the instance.
+                    type: str
+                    sample: InService
+                    returned: when O(state=present)
+        instances:
+            description: A list of the IDs of instances attached to the ELB.
+            type: list
+            elements: str
+            sample: ["i-03dcc8953a03d6435"]
+            returned: when O(state=present)
+        lb_cookie_policy:
+            description: The name of the policy used to control if the ELB is using a cookie stickiness policy.
+            type: str
+            sample: "ec2-elb-lb-LBCookieStickinessPolicyType"
+            returned: when O(state=present)
+        listeners:
+            description:
+            - A list of lists describing the listeners attached to the ELB.
+            - The nested list contains the listener port, the instance port, the listener protoco, the instance port,
+                and where appropriate the ID of the SSL certificate for the port.
+            type: list
+            elements: list
+            sample: [[22, 22, 'TCP', 'TCP'], [80, 8181, 'HTTP', 'HTTP']]
+            returned: when O(state=present)
+        name:
+            description: The name of the ELB.  This name is unique per-region, per-account.
+            type: str
+            sample: "ansible-test-935c585850ac"
+            returned: when O(state=present)
+        out_of_service_count:
+            description: The number of instances attached to the ELB in an out-of-service state.
+            type: int
+            sample: 0
+            returned: when O(state=present)
+        proxy_policy:
+            description: The name of the policy used to control if the ELB operates using the Proxy protocol.
+            type: str
+            sample: "ProxyProtocol-policy"
+            returned: when the proxy protocol policy exists.
+        region:
+            description: The AWS region in which the ELB is running.
+            type: str
+            sample: "us-east-1"
+            returned: always
+        scheme:
+            description: Whether the ELB is an C('internal') or a C('internet-facing') load balancer.
+            type: str
+            sample: "internal"
+            returned: when O(state=present)
+        security_group_ids:
+            description: A list of the IDs of the Security Groups attached to the ELB.
+            type: list
+            elements: str
+            sample: ["sg-0c12ebd82f2fb97dc", "sg-01ec7378d0c7342e6"]
+            returned: when O(state=present)
+        status:
+            description: A minimal description of the current state of the ELB. Valid values are C('exists'), C('gone'), C('deleted'), C('created').
+            type: str
+            sample: exists
+            returned: always
+        subnets:
+            description: A list of the subnet IDs attached to the ELB.
+            type: list
+            elements: str
+            sample: ["subnet-00d9d0f70c7e5f63c", "subnet-03fa5253586b2d2d5"]
+            returned: when O(state=present)
+        tags:
+            description: A dictionary describing the tags attached to the ELB.
+            type: dict
+            sample: {"Name": "ansible-test-935c585850ac", "ExampleTag": "Example Value"}
+            returned: when O(state=present)
+        unknown_instance_state_count:
+            description: The number of instances attached to the ELB in an unknown state.
+            type: int
+            sample: 0
+            returned: when O(state=present)
+        zones:
+            description: A list of the AWS regions in which the ELB is running.
+            type: list
+            elements: str
+            sample: ["us-east-1b", "us-east-1a"]
+            returned: when O(state=present)
+load_balancer:
+    description: Boto3-style Load Balancer attributes.
+    returned: always
+    type: dict
+    contains:
+        availability_zone:
+            description: A list of the AWS regions in which the ELB is running.
+            type: list
+            elements: str
+            sample: ["us-east-1b", "us-east-1a"]
+            returned: when O(state=present)
+        backend_server_descriptions:
+            description: Information about your EC2 instances.
+            returned: when O(state=present)
+            type: list
+            elements: dict
+            sample: []
+            contains:
+                instance_port:
+                    description: The port on which the EC2 instance is listening.
+                    returned: when O(state=present)
+                    type: int
+                policy_names:
+                    description: The names of the policies enabled for the EC2 instance.
+                    returned: when O(state=present)
+                    type: list
+                    elements: str
+        canonical_hosted_zone_id:
+            description: The ID of the Amazon Route 53 hosted zone for the load balancer.
+            type: str
+            sample: "Z35SXDOTRQ7X7K"
+            returned: when O(state=present)
+        created_time:
+            description: The date and time the load balancer was created.
+            type: str
+            sample: "2024-06-27T10:18:48.390000+00:00"
+            returned: when O(state=present)
+        dns_name:
+            description: The DNS name of the ELB.
+            type: str
+            sample: "internal-ansible-test-935c585850ac-1516306744.us-east-1.elb.amazonaws.com"
+            returned: when O(state=present)
+        health_check:
+            description: Information about the health checks conducted on the load balancer.
+            type: dict
+            returned: when O(state=present)
+            contains:
+                healthy_threshold:
+                    description: The number of consecutive successful health checks before marking an instance as healthy.
+                    type: int
+                    sample: 2
+                interval:
+                    description: The time, in seconds, between each health check.
+                    type: int
+                    sample: 10
+                target:
+                    description: The Protocol, Port, and for HTTP(S) health checks the path tested by the health check.
+                    type: str
+                    sample: "TCP:22"
+                timeout:
+                    description: The time, in seconds, after which an in progress health check is considered failed due to a timeout.
+                    type: int
+                    sample: 5
+                unhealthy_threshold:
+                    description: The number of consecutive failed health checks before marking an instance as unhealthy.
+                    type: int
+                    sample: 2
+        instances:
+            description: The IDs of the instances for the load balancer.
+            type: list
+            elements: dict
+            returned: when O(state=present)
+            contains:
+                instance_id:
+                    description: The instance ID.
+                    type: str
+            sample: []
+        listener_descriptions:
+            description: The listeners for the load balancer.
+            returned: when O(state=present)
+            type: list
+            elements: dict
+            contains:
+                listener:
+                    description: The listener.
+                    returned: when O(state=present)
+                    type: dict
+                    contains:
+                        protocol:
+                            description: 'The load balancer transport protocol to use for routing: HTTP, HTTPS, TCP, or SSL.'
+                            returned: when O(state=present)
+                            type: str
+                        load_balancer_port:
+                            description: The port on which the load balancer is listening.
+                            returned: when O(state=present)
+                            type: int
+                        instance_protocol:
+                            description: The protocol to use for routing traffic to instances.
+                            returned: when O(state=present)
+                            type: str
+                        instance_port:
+                            description: The port on which the instance is listening.
+                            returned: when O(state=present)
+                            type: int
+                policy_names:
+                    description: The policies. If there are no policies enabled, the list is empty.
+                    returned: when O(state=present)
+                    type: list
+                    elements: str
+            sample:  [
+                {
+                    "listener": {
+                        "instance_port": 8080,
+                        "instance_protocol": "HTTP",
+                        "load_balancer_port": 8080,
+                        "protocol": "HTTP"
+                    },
+                    "policy_names": []
+                }
+            ]
+        load_balancer_attributes:
+            description: The listeners for the load balancer.
+            returned: when O(state=present)
+            type: list
+            elements: dict
+            contains:
+                access_log:
+                    description:
+                        - If enabled, the load balancer captures detailed information of all requests and delivers the information to the
+                          Amazon S3 bucket that you specify.
+                    returned: when O(state=present)
+                    type: dict
+                    contains:
+                        enabled:
+                            description: Specifies whether access logs are enabled for the load balancer.
+                            type: bool
+                            sample: false
+                        s3_bucket_name:
+                            description: The name of the Amazon S3 bucket where the access logs are stored.
+                            type: str
+                            sample: ""
+                        emit_interval:
+                            description: The interval for publishing the access logs.
+                            type: int
+                            sample: 60
+                        s3_bucket_prefix:
+                            description: The logical hierarchy you created for your Amazon S3 bucket.
+                            type: str
+                            sample: ""
+                addtional_attributes:
+                    description: Any additional attributes.
+                    returned: when O(state=present)
+                    type: list
+                    elements: dict
+                    sample: [
+                        {
+                            "key": "elb.http.desyncmitigationmode",
+                            "value": "defensive"
+                        }
+                    ]
+                connection_draining:
+                    description:
+                        - If enabled, the load balancer allows existing requests to complete before the load balancer shifts traffic away
+                          from a deregistered or unhealthy instance.
+                    returned: when O(state=present)
+                    type: dict
+                    contains:
+                        enabled:
+                            description: Specifies whether connection draining is enabled for the load balancer.
+                            type: bool
+                        timeout:
+                            description: The maximum time, in seconds, to keep the existing connections open before deregistering the instances.
+                            type: int
+                    sample: {
+                        "enabled": false,
+                        "timeout": 300
+                    }
+                connection_settings:
+                    description:
+                        - If enabled, the load balancer allows the connections to remain idle (no data is sent over the connection) for the
+                          specified duration
+                    returned: when O(state=present)
+                    type: dict
+                    contains:
+                        idle_timeout:
+                            description:
+                                - The time, in seconds, that the connection is allowed to be idle (no data has been sent over the connection)
+                                  before it is closed by the load balancer.
+                            type: int
+                    sample: {
+                        "idle_timeout": 60
+                    }
+                cross_zone_load_balancing:
+                    description: If enabled, the load balancer routes the request traffic evenly across all instances regardless of the Availability Zones.
+                    returned: when O(state=present)
+                    type: dict
+                    contains:
+                        enabled:
+                            description: Specifies whether cross-zone load balancing is enabled for the load balancer.
+                            returned: when O(state=present)
+                            type: bool
+                    sample: {
+                        "enabled": false
+                    }
+        load_balancer_name:
+            description: The name of the ELB.
+            type: str
+            sample: "ansible-test-935c585850ac"
+            returned: when O(state=present)
+        load_balancer_policies:
+            description: Information about the policies.
+            type: list
+            sample: []
+            elements: dict
+            returned: when O(state=present)
+            contains:
+                policy_name:
+                    description: The name of the policy.
+                    returned: when O(state=present)
+                    type: str
+                policy_type_name:
+                    description: The name of the policy type.
+                    returned: when O(state=present)
+                    type: str
+                policy_attributes_description:
+                    description: Information about a policy attribute.
+                    returned: when O(state=present)
+                    type: dict
+                    contains:
+                        attribute_name:
+                            description: The name of the attribute.
+                            returned: when O(state=present)
+                            type: str
+                        attribute_value:
+                            description: The value of the attribute.
+                            returned: when O(state=present)
+                            type: str
+        policies:
+            description: The policies defined for the load balancer.
+            returned: when O(state=present)
+            type: dict
+            contains:
+                app_cookie_stickiness_policies:
+                    description: The stickiness policies created using CreateAppCookieStickinessPolicy.
+                    returned: when O(state=present)
+                    type: list
+                    elements: dict
+                    contains:
+                        policy_name:
+                            description: The mnemonic name for the policy being created.
+                            returned: when O(state=present)
+                            type: str
+                            sample: ""
+                        cookie_name:
+                            description: The name of the application cookie used for stickiness.
+                            returned: when O(state=present)
+                            type: str
+                            sample: ""
+                lb_cookie_stickiness_policies :
+                    description: The stickiness policies created using CreateLBCookieStickinessPolicy.
+                    returned: when O(state=present)
+                    type: list
+                    elements: dict
+                    contains:
+                        policy_name:
+                            description: The mnemonic name for the policy being created.
+                            returned: when O(state=present)
+                            type: str
+                            sample: ""
+                        cookie_expiration_period:
+                            description: The time period, in seconds, after which the cookie should be considered stale.
+                            returned: when O(state=present)
+                            type: str
+                            sample: ""
+                other_policies :
+                    description: The policies other than the stickiness policies.
+                    returned: when O(state=present)
+                    type: list
+                    elements: str
+                    sample: []
+        scheme:
+            description: The type of load balancer.
+            type: str
+            sample: "internal"
+            returned: when O(state=present)
+        security_groups:
+            description: The security groups for the load balancer.
+            type: list
+            elements: str
+            sample: ["sg-0c12ebd82f2fb97dc", "sg-01ec7378d0c7342e6"]
+            returned: when O(state=present)
+        source_security_groups:
+            description: The security group for the load balancer, which you can use as part of your inbound rules for your registered instances.
+            type: dict
+            returned: when O(state=present)
+            contains:
+                owner_alias:
+                    description: The owner of the security group.
+                    type: str
+                group_name:
+                    description: The name of the security group..
+                    type: str
+            sample: {
+                    "group_name": "default",
+                    "owner_alias": "721066863947"
+            }
+        subnets:
+            description: A list of the subnet IDs attached to the ELB.
+            type: list
+            elements: str
+            sample: ["subnet-00d9d0f70c7e5f63c", "subnet-03fa5253586b2d2d5"]
+            returned: when O(state=present)
+        tags:
+            description: A dictionary describing the tags attached to the ELB.
+            type: dict
+            sample: {"Name": "ansible-test-935c585850ac", "ExampleTag": "Example Value"}
+            returned: when O(state=present)
+        vpc_id:
+            description: The ID of the VPC for the load balancer.
+            type: str
+            sample: "vpc-0c112c24b41d89c34"
+            returned: when O(state=present)
 """
 
 try:
