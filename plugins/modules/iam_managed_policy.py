@@ -125,58 +125,69 @@ EXAMPLES = r"""
 
 RETURN = r"""
 policy:
-  description: Returns the basic policy information, when state == absent this will return the value of the removed policy.
-  returned: success
+  description: Returns the basic policy information, when O(state=absent) this will return the value of the removed policy.
+  returned: always
   type: complex
   contains:
     arn:
       description: The Amazon Resource Name (ARN) of the policy.
       type: str
+      returned: success
       sample: "arn:aws:iam::123456789012:policy/ansible-test-12345/ansible-test-12345-policy"
     attachment_count:
       description: The number of entities (users, groups, and roles) that the policy is attached to.
       type: int
-      sample: "5"
+      returned: success
+      sample: 5
     create_date:
       description: The date and time, in ISO 8601 date-time format, when the policy was created.
       type: str
+      returned: success
       sample: "2017-02-08T04:36:28+00:00"
     default_version_id:
       description: The default policy version to use.
       type: str
+      returned: success
       sample: "/ansible-test-12345/"
     description:
       description: A friendly description of the policy.
       type: str
+      returned: success
       sample: "My Example Policy"
     is_attachable:
       description: Specifies whether the policy can be attached to an IAM entities.
       type: bool
+      returned: success
       sample: False
     path:
       description: The path to the policy.
       type: str
+      returned: success
       sample: "/ansible-test-12345/"
     permissions_boundary_usage_count:
       description: The number of IAM entities (users, groups, and roles) using the policy as a permissions boundary.
       type: int
-      sample: "5"
+      returned: success
+      sample: 5
     policy_id:
       description: The stable and globally unique string identifying the policy.
       type: str
+      returned: success
       sample: "ANPA12345EXAMPLE12345"
     policy_name:
       description: The friendly name identifying the policy.
       type: str
+      returned: success
       sample: "ansible-test-12345-policy"
     tags:
       description: A dictionary representing the tags attached to the managed policy.
       type: dict
-      returned: always
+      returned: success
       sample: {"Env": "Prod"}
     update_date:
       description: The date and time, in ISO 8601 date-time format, when the policy was last updated.
       type: str
+      returned: success
       sample: "2017-02-08T05:12:13+00:00"
 """
 
