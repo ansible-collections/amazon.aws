@@ -653,22 +653,22 @@ def modify_instance_attribute(
     return True
 
 
-@EC2InstanceErrorHandler.common_error_handler("terminate instances")
-@AWSRetry.jittered_backoff(catch_extra_error_codes=EC2_INSTANCE_CATCH_EXTRA_CODES)
+@EC2InstanceErrorHandler.list_error_handler("terminate instances", [])
+@AWSRetry.jittered_backoff()
 def terminate_instances(client, instance_ids: List[str]) -> List[Dict[str, Any]]:
     return client.terminate_instances(InstanceIds=instance_ids)["TerminatingInstances"]
 
 
-@EC2InstanceErrorHandler.common_error_handler("stop instances")
-@AWSRetry.jittered_backoff(catch_extra_error_codes=EC2_INSTANCE_CATCH_EXTRA_CODES)
+@EC2InstanceErrorHandler.list_error_handler("stop instances", [])
+@AWSRetry.jittered_backoff()
 def stop_instances(
     client, instance_ids: List[str], **params: Dict[str, Union[bool, List[str]]]
 ) -> List[Dict[str, Any]]:
     return client.stop_instances(InstanceIds=instance_ids, **params)["StoppingInstances"]
 
 
-@EC2InstanceErrorHandler.common_error_handler("start instances")
-@AWSRetry.jittered_backoff(catch_extra_error_codes=EC2_INSTANCE_CATCH_EXTRA_CODES)
+@EC2InstanceErrorHandler.list_error_handler("start instances", [])
+@AWSRetry.jittered_backoff()
 def start_instances(
     client, instance_ids: List[str], **params: Dict[str, Union[str, List[str]]]
 ) -> List[Dict[str, Any]]:
