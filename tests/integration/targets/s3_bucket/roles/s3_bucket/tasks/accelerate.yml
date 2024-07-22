@@ -20,7 +20,7 @@
     - ansible.builtin.assert:
         that:
           - output.changed
-          - '"accelerate_enabled" not in output'
+          - not output.accelerate_enabled
 
     - name: Re-disable transfer acceleration (idempotency)
       amazon.aws.s3_bucket:

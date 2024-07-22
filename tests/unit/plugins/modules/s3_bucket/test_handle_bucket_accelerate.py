@@ -52,7 +52,7 @@ def test_unsupported(m_get_bucket_accelerate_status, ansible_module):
     m_get_bucket_accelerate_status.side_effect = a_botocore_exception("UnsupportedArgument")
     changed, result = handle_bucket_accelerate(client, ansible_module, bucket_name)
     assert changed is False
-    assert result is None
+    assert result is False
     ansible_module.warn.assert_called_once()
 
 

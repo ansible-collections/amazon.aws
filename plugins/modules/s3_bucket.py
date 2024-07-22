@@ -172,6 +172,7 @@ options:
       - Transfer Acceleration is not available in AWS GovCloud (US).
       - See U(https://docs.aws.amazon.com/govcloud-us/latest/UserGuide/govcloud-s3.html#govcloud-S3-diffs).
     type: bool
+    default: false
     version_added: 8.1.0
   object_lock_default_retention:
     description:
@@ -449,7 +450,7 @@ public_access_block:
 accelerate_enabled:
     description: S3 bucket acceleration status.
     type: bool
-    returned: When O(state=present) and tranfer acceleration is available in the AWS region where the bucket is located.
+    returned: O(state=present)
     sample: true
 """
 
@@ -457,7 +458,6 @@ import json
 import time
 from typing import Iterator
 from typing import List
-from typing import Optional
 from typing import Tuple
 
 try:
@@ -935,7 +935,7 @@ def handle_bucket_object_lock(s3_client, module: AnsibleAWSModule, name: str) ->
     return object_lock_result
 
 
-def handle_bucket_accelerate(s3_client, module: AnsibleAWSModule, name: str) -> tuple[bool, Optional[bool]]:
+def handle_bucket_accelerate(s3_client, module: AnsibleAWSModule, name: str) -> tuple[bool, bool]:
     """
     Manage transfer accelerate for an S3 bucket.
     Parameters:
@@ -953,14 +953,16 @@ def handle_bucket_accelerate(s3_client, module: AnsibleAWSModule, name: str) -> 
         accelerate_status = get_bucket_accelerate_status(s3_client, name)
         accelerate_enabled_result = accelerate_status
     except is_boto3_error_code(["NotImplemented", "XNotImplemented"]) as e:
-        module.fail_json_aws(e, msg="Fetching bucket transfer acceleration state is not supported")
+        if accelerate_enabled is not None:
+            module.fail_json_aws(e, msg="Fetching bucket transfer acceleration state is not supported")
     except is_boto3_error_code("UnsupportedArgument") as e:  # pylint: disable=duplicate-except
         # -- Transfer Acceleration is not available in AWS GovCloud (US).
         # -- https://docs.aws.amazon.com/govcloud-us/latest/UserGuide/govcloud-s3.html#govcloud-S3-diffs
         module.warn("Tranfer acceleration is not available in S3 bucket region.")
-        accelerate_enabled_result = None
+        accelerate_enabled_result = False
     except is_boto3_error_code("AccessDenied") as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Permission denied fetching transfer acceleration for bucket")
+        if accelerate_enabled is not None:
+            module.fail_json_aws(e, msg="Permission denied fetching transfer acceleration for bucket")
     except (
         botocore.exceptions.BotoCoreError,
         botocore.exceptions.ClientError,
@@ -1108,11 +1110,8 @@ def create_or_update_bucket(s3_client, module: AnsibleAWSModule):
     result["object_lock_enabled"] = bucket_object_lock_result
 
     # -- Transfer Acceleration
-    bucket_accelerate_changed = False
-    if module.params.get("accelerate_enabled") is not None:
-        bucket_accelerate_changed, bucket_accelerate_result = handle_bucket_accelerate(s3_client, module, name)
-        if bucket_accelerate_result is not None:
-            result["accelerate_enabled"] = bucket_accelerate_result
+    bucket_accelerate_changed, bucket_accelerate_result = handle_bucket_accelerate(s3_client, module, name)
+    result["accelerate_enabled"] = bucket_accelerate_result
 
     # -- Object Lock Default Retention
     bucket_object_lock_retention_changed, bucket_object_lock_retention_result = handle_bucket_object_lock_retention(
@@ -2017,7 +2016,7 @@ def main():
         acl=dict(type="str", choices=["private", "public-read", "public-read-write", "authenticated-read"]),
         validate_bucket_name=dict(type="bool", default=True),
         dualstack=dict(default=False, type="bool"),
-        accelerate_enabled=dict(type="bool"),
+        accelerate_enabled=dict(default=False, type="bool"),
         object_lock_enabled=dict(type="bool"),
         object_lock_default_retention=dict(
             type="dict",
