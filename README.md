@@ -1,7 +1,7 @@
 # Amazon AWS Collection
 The Ansible Amazon AWS collection includes a variety of Ansible content to help automate the management of AWS services. This collection is maintained by the Ansible cloud team.
 
-## Description:
+## Description
 
 The primary purpose of this collection is to simplify and streamline the management of AWS resources through automation. By leveraging this collection, organizations can reduce manual intervention, minimize errors, and ensure consistent and repeatable deployments. This leads to increased efficiency, faster deployments, and a more agile IT infrastructure. 
 
@@ -55,7 +55,7 @@ See the complete list of collection content in the [Plugin Index](https://ansibl
 
 ## Installation
 
-Before using this collection, you need to install it with the Ansible Galaxy command-line tool:
+The amazon.aws collection can be installed with Ansible Galaxy command-line tool:
 
 ```
     ansible-galaxy collection install amazon.aws
@@ -84,7 +84,7 @@ collections:
     version: 3.1.1
 ```
 
-or using the ansibble-galaxy command as follows
+or using the ansible-galaxy command as follows
 
 ```
 ansible-galaxy collection install amazon.aws:==1.0.0
