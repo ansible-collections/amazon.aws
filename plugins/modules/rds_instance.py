@@ -1758,11 +1758,11 @@ def main():
                     sleep(5)
 
         if state == "absent" and changed and not module.params["skip_final_snapshot"]:
-            instance.update(
-                FinalSnapshot=get_snapshot(
-                    client, module, module.params["final_db_snapshot_identifier"], "instance", False
-                )
-            )
+            snapshot_id = module.params["final_db_snapshot_identifier"]
+            try:
+                instance.update(FinalSnapshot=get_snapshot(client, module, snapshot_id, "instance", False))
+            except AnsibleRDSError as e:
+                module.fail_json_aws(e, msg=f"Failed to get snapshot: {snapshot_id}")
 
     pending_processor_features = None
     if instance.get("PendingModifiedValues", {}).get("ProcessorFeatures"):

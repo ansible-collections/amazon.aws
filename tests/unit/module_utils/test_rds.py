@@ -786,30 +786,16 @@ def test_get_snapshot_success(
     m_describe_db_cluster_snapshots, m_describe_db_snapshots, snapshots, snapshot_type, convert_tags, expected
 ):
     client = MagicMock()
-    module = MagicMock()
     m_describe_db_cluster_snapshots.return_value = snapshots
     m_describe_db_snapshots.return_value = snapshots
-    assert rds.get_snapshot(client, module, "my-snapshot", snapshot_type, convert_tags) == expected
+    assert rds.get_snapshot(client, "my-snapshot", snapshot_type, convert_tags) == expected
 
 
 def test_get_snapshot_error():
     client = MagicMock()
-    module = MagicMock()
     with pytest.raises(ValueError) as e:
-        rds.get_snapshot(client, module, "my-snapshot", "bad parameter")
+        rds.get_snapshot(client, "my-snapshot", "bad parameter")
     assert "Invalid snapshot_type. Expected one of: ('cluster', 'instance')" in str(e)
-
-
-@patch(mod_name + ".describe_db_snapshots")
-@patch(mod_name + ".describe_db_cluster_snapshots")
-def test_get_snapshot_failure(m_describe_db_cluster_snapshots, m_describe_db_snapshots):
-    client = MagicMock()
-    module = MagicMock()
-    e = rds.AnsibleRDSError()
-    m_describe_db_cluster_snapshots.side_effect = e
-    m_describe_db_snapshots.side_effect = e
-    rds.get_snapshot(client, module, "my-snapshot", "instance")
-    module.fail_json_aws.assert_called_once_with(e, msg="Failed to get snapshot: my-snapshot")
 
 
 @pytest.mark.parametrize(

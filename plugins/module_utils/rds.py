@@ -502,15 +502,12 @@ def wait_for_status(client, module: AnsibleAWSModule, identifier: str, method_na
         wait_for_cluster_snapshot_status(client, module, identifier, waiter_name)
 
 
-def get_snapshot(
-    client, module: AnsibleAWSModule, snapshot_identifier: str, snapshot_type: str, convert_tags: bool = True
-) -> Dict[str, Any]:
+def get_snapshot(client, snapshot_identifier: str, snapshot_type: str, convert_tags: bool = True) -> Dict[str, Any]:
     """
     Returns instance or cluster snapshot attributes given the snapshot identifier.
 
         Parameters:
             client: boto3 rds client
-            module: AnsibleAWSModule
             snapshot_identifier (str): Unique snapshot identifier
             snapshot_type (str): Which type of snapshot to get, one of: cluster, instance
             convert_tags (bool): Whether to convert the snapshot tags from boto3 list of dicts to Ansible dict; defaults to True
@@ -519,23 +516,19 @@ def get_snapshot(
             snapshot (dict): Snapshot attributes. If snapshot with provided id is not found, returns an empty dict
 
         Raises:
-            Failes the module if an exception is raised while retrieving the snapshot attributes.
+            ValueError if an invalid snapshot_type is passed
     """
     valid_types = ("cluster", "instance")
     if snapshot_type not in valid_types:
         raise ValueError(f"Invalid snapshot_type. Expected one of: {valid_types}")
 
     snapshot = {}
-
-    try:
-        if snapshot_type == "cluster":
-            snapshots = describe_db_cluster_snapshots(client, DBClusterSnapshotIdentifier=snapshot_identifier)
-        elif snapshot_type == "instance":
-            snapshots = describe_db_snapshots(client, DBSnapshotIdentifier=snapshot_identifier)
-        if snapshots:
-            snapshot = snapshots[0]
-    except AnsibleRDSError as e:
-        module.fail_json_aws(e, msg=f"Failed to get snapshot: {snapshot_identifier}")
+    if snapshot_type == "cluster":
+        snapshots = describe_db_cluster_snapshots(client, DBClusterSnapshotIdentifier=snapshot_identifier)
+    elif snapshot_type == "instance":
+        snapshots = describe_db_snapshots(client, DBSnapshotIdentifier=snapshot_identifier)
+    if snapshots:
+        snapshot = snapshots[0]
 
     if snapshot and convert_tags:
         snapshot["Tags"] = boto3_tag_list_to_ansible_dict(snapshot.pop("TagList"))

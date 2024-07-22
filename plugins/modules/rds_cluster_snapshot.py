@@ -226,6 +226,7 @@ from typing import Dict
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.rds import AnsibleRDSError
 from ansible_collections.amazon.aws.plugins.module_utils.rds import arg_spec_to_rds_params
 from ansible_collections.amazon.aws.plugins.module_utils.rds import call_method
 from ansible_collections.amazon.aws.plugins.module_utils.rds import ensure_tags
@@ -237,10 +238,11 @@ def ensure_snapshot_absent(client, module: AnsibleAWSModule) -> None:
     snapshot_id = module.params.get("db_cluster_snapshot_identifier")
     changed = False
 
-    snapshot = get_snapshot(client, module, snapshot_id, "cluster")
-    if not snapshot:
-        module.exit_json(changed=changed)
-    elif snapshot and snapshot["Status"] != "deleting":
+    try:
+        snapshot = get_snapshot(client, snapshot_id, "cluster")
+    except AnsibleRDSError as e:
+        module.fail_json_aws(e, msg=f"Failed to get snapshot: {snapshot_id}")
+    if snapshot and snapshot["Status"] != "deleting":
         snapshot, changed = call_method(
             client, module, "delete_db_cluster_snapshot", {"DBClusterSnapshotIdentifier": snapshot_id}
         )
@@ -252,7 +254,10 @@ def copy_snapshot(client, module: AnsibleAWSModule, params: Dict[str, Any]) -> b
     changed = False
     snapshot_id = module.params.get("db_cluster_snapshot_identifier")
 
-    snapshot = get_snapshot(client, module, snapshot_id, "cluster")
+    try:
+        snapshot = get_snapshot(client, snapshot_id, "cluster")
+    except AnsibleRDSError as e:
+        module.fail_json_aws(e, msg=f"Failed to get snapshot: {snapshot_id}")
     if not snapshot:
         params["TargetDBClusterSnapshotIdentifier"] = snapshot_id
         method_params = format_rds_client_method_parameters(
@@ -268,7 +273,10 @@ def ensure_snapshot_present(client, module: AnsibleAWSModule, params: Dict[str, 
     snapshot_id = module.params.get("db_cluster_snapshot_identifier")
     changed = False
 
-    snapshot = get_snapshot(client, module, snapshot_id, "cluster")
+    try:
+        snapshot = get_snapshot(client, snapshot_id, "cluster")
+    except AnsibleRDSError as e:
+        module.fail_json_aws(e, msg=f"Failed to get snapshot: {snapshot_id}")
 
     # Copy snapshot
     if source_id:
@@ -282,7 +290,11 @@ def ensure_snapshot_present(client, module: AnsibleAWSModule, params: Dict[str, 
     else:
         changed |= modify_snapshot(client, module)
 
-    snapshot = get_snapshot(client, module, snapshot_id, "cluster")
+    try:
+        snapshot = get_snapshot(client, snapshot_id, "cluster")
+    except AnsibleRDSError as e:
+        module.fail_json_aws(e, msg=f"Failed to get snapshot: {snapshot_id}")
+
     module.exit_json(changed=changed, **camel_dict_to_snake_dict(snapshot, ignore_list=["Tags"]))
 
 
@@ -300,7 +312,10 @@ def modify_snapshot(client, module: AnsibleAWSModule) -> bool:
     changed = False
     snapshot_id = module.params.get("db_cluster_snapshot_identifier")
 
-    snapshot = get_snapshot(client, module, snapshot_id, "cluster")
+    try:
+        snapshot = get_snapshot(client, snapshot_id, "cluster")
+    except AnsibleRDSError as e:
+        module.fail_json_aws(e, msg=f"Failed to get snapshot: {snapshot_id}")
 
     if module.params.get("tags"):
         changed |= ensure_tags(
