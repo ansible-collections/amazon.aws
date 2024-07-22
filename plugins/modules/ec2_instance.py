@@ -1770,15 +1770,12 @@ def build_instance_tags(params: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     return specs
 
 
-def build_run_instance_spec(client, module: AnsibleAWSModule, current_count: Optional[int] = None) -> Dict[str, Any]:
+def build_run_instance_spec(client, module: AnsibleAWSModule, current_count: int = 0) -> Dict[str, Any]:
     spec = dict(
         ClientToken=uuid.uuid4().hex,
     )
     params = module.params
     spec.update(**build_top_level_options(module))
-
-    if current_count is None:
-        current_count = 0
 
     nb_instances = params.get("count") or 1
     if params.get("exact_count"):
