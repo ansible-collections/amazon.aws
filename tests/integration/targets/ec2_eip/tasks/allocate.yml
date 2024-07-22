@@ -3,15 +3,10 @@
     # ------------------------------------------------------------------------------------------
     # Allocate EIP with no condition
     # ------------------------------------------------------------------------------------------
-    - name: Get current state of EIPs
-      amazon.aws.ec2_eip_info:
-      register: eip_info_start
-
     - name: Allocate a new EIP with no conditions - check_mode
       amazon.aws.ec2_eip:
         state: present
-        tags:
-          AnsibleEIPTestPrefix: "{{ resource_prefix }}"
+        tags: "{{ eip_test_tags }}"
       register: eip
       check_mode: true
 
@@ -19,16 +14,16 @@
         that:
           - eip is changed
 
+    - name: Ensure no new EIP was created
+      ansible.builtin.include_tasks: tasks/common.yml
+      vars:
+        has_no_new_eip: true
+
     - name: Allocate a new EIP with no conditions
       amazon.aws.ec2_eip:
         state: present
-        tags:
-          AnsibleEIPTestPrefix: "{{ resource_prefix }}"
+        tags: "{{ eip_test_tags }}"
       register: eip
-
-    - amazon.aws.ec2_eip_info:
-      register: eip_info
-      check_mode: true
 
     - ansible.builtin.assert:
         that:
@@ -37,7 +32,11 @@
           - "'ec2:DeleteTags' not in eip.resource_actions"
           - eip.public_ip is defined and ( eip.public_ip | ansible.utils.ipaddr )
           - eip.allocation_id is defined and eip.allocation_id.startswith("eipalloc-")
-          - ( eip_info_start.addresses | length ) + 1 == ( eip_info.addresses | length )
+
+    - name: Ensure New EIP was created
+      ansible.builtin.include_tasks: tasks/common.yml
+      vars:
+        has_new_eip: true
 
     - name: Get EIP info via public ip
       amazon.aws.ec2_eip_info:
@@ -82,33 +81,36 @@
         that:
           - eip is not changed
 
+    - name: Ensure EIP was not created
+      ansible.builtin.include_tasks: tasks/common.yml
+      vars:
+        has_no_new_eip: true
+
     - name: Allocate a new ip (idempotence)
       amazon.aws.ec2_eip:
         state: present
         public_ip: "{{ eip.public_ip }}"
       register: eip
 
-    - amazon.aws.ec2_eip_info:
-      register: eip_info
-
     - ansible.builtin.assert:
         that:
           - eip is not changed
           - eip.public_ip is defined and ( eip.public_ip | ansible.utils.ipaddr )
           - eip.allocation_id is defined and eip.allocation_id.startswith("eipalloc-")
-          - ( eip_info_start.addresses | length ) + 1  == ( eip_info.addresses | length )
+
+    - name: Ensure EIP was not created
+      ansible.builtin.include_tasks: tasks/common.yml
+      vars:
+        has_no_new_eip: true
 
     # ------------------------------------------------------------------------------------------
     # Allocate EIP from a pool
     # ------------------------------------------------------------------------------------------
-    - name: Get current state of EIPs
-      amazon.aws.ec2_eip_info:
-      register: eip_info_start
-
     - name: Allocate a new EIP from a pool - check_mode
       amazon.aws.ec2_eip:
         state: present
         public_ipv4_pool: amazon
+        tags: "{{ eip_test_tags }}"
       register: eip_pool
       check_mode: true
 
@@ -116,31 +118,31 @@
         that:
           - eip_pool is changed
 
+    - name: Ensure EIP was not created
+      ansible.builtin.include_tasks: tasks/common.yml
+      vars:
+        has_no_new_eip: true
+
     - name: Allocate a new EIP from a pool
       amazon.aws.ec2_eip:
         state: present
         public_ipv4_pool: amazon
+        tags: "{{ eip_test_tags }}"
       register: eip_pool
-
-    - amazon.aws.ec2_eip_info:
-      register: eip_info
 
     - ansible.builtin.assert:
         that:
           - eip_pool is changed
           - eip_pool.public_ip is defined and ( eip_pool.public_ip | ansible.utils.ipaddr )
           - eip_pool.allocation_id is defined and eip_pool.allocation_id.startswith("eipalloc-")
-          - ( eip_info_start.addresses | length ) + 1  == ( eip_info.addresses | length )
+
+    - name: Ensure new EIP was created
+      ansible.builtin.include_tasks: tasks/common.yml
+      vars:
+        has_new_eip: true
 
   always:
-    - name: Release EIP
-      amazon.aws.ec2_eip:
-        state: absent
-        public_ip: "{{ eip.public_ip }}"
-      when: eip is defined
-
-    - name: Release EIP created from pool
-      amazon.aws.ec2_eip:
-        state: absent
-        public_ip: "{{ eip_pool.public_ip }}"
-      when: eip_pool is defined
+    - name: Delete EIP
+      ansible.builtin.include_tasks: tasks/common.yml
+      vars:
+        delete_eips: true
