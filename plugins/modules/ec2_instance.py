@@ -1762,7 +1762,7 @@ def build_top_level_options(module: AnsibleAWSModule) -> Dict[str, Any]:
     return spec
 
 
-def build_instance_tags(params: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+def build_instance_tags(params: Dict[str, Any]) -> List[Dict[str, Any]]:
     tags = params.get("tags") or {}
     if params.get("name") is not None:
         tags["Name"] = params.get("name")
@@ -1853,7 +1853,7 @@ def await_instances(
         module.warn(f"Instances {instance_ids} took too long to reach state {boto3_waiter_type}. {to_native(e)}")
 
 
-def diff_instance_and_params(client, module: AnsibleAWSModule, instance: Dict[str, Any], skip=None):
+def diff_instance_and_params(client, module: AnsibleAWSModule, instance: Dict[str, Any], skip: Optional[List[str]] = None) -> List[Dict[str, Any]]:
     """boto3 instance obj, module params"""
 
     if skip is None:
