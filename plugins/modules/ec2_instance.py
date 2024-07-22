@@ -1853,7 +1853,9 @@ def await_instances(
         module.warn(f"Instances {instance_ids} took too long to reach state {boto3_waiter_type}. {to_native(e)}")
 
 
-def diff_instance_and_params(client, module: AnsibleAWSModule, instance: Dict[str, Any], skip: Optional[List[str]] = None) -> List[Dict[str, Any]]:
+def diff_instance_and_params(
+    client, module: AnsibleAWSModule, instance: Dict[str, Any], skip: Optional[List[str]] = None
+) -> List[Dict[str, Any]]:
     """boto3 instance obj, module params"""
 
     if skip is None:
