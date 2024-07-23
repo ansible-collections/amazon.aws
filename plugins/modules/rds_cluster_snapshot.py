@@ -220,122 +220,102 @@ tags:
         }
 """
 
-try:
-    import botocore
-except ImportError:
-    pass  # caught by AnsibleAWSModule
+from typing import Any
+from typing import Dict
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import get_boto3_client_method_parameters
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.rds import AnsibleRDSError
 from ansible_collections.amazon.aws.plugins.module_utils.rds import arg_spec_to_rds_params
 from ansible_collections.amazon.aws.plugins.module_utils.rds import call_method
 from ansible_collections.amazon.aws.plugins.module_utils.rds import ensure_tags
-from ansible_collections.amazon.aws.plugins.module_utils.rds import get_rds_method_attribute
-from ansible_collections.amazon.aws.plugins.module_utils.rds import get_tags
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.rds import format_rds_client_method_parameters
+from ansible_collections.amazon.aws.plugins.module_utils.rds import get_snapshot
 
 
-def get_snapshot(snapshot_id):
-    try:
-        snapshot = client.describe_db_cluster_snapshots(DBClusterSnapshotIdentifier=snapshot_id, aws_retry=True)[
-            "DBClusterSnapshots"
-        ][0]
-        snapshot["Tags"] = get_tags(client, module, snapshot["DBClusterSnapshotArn"])
-    except is_boto3_error_code("DBClusterSnapshotNotFound"):
-        return {}
-    except is_boto3_error_code("DBClusterSnapshotNotFoundFault"):  # pylint: disable=duplicate-except
-        return {}
-    except (
-        botocore.exceptions.BotoCoreError,
-        botocore.exceptions.ClientError,
-    ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg=f"Couldn't get snapshot {snapshot_id}")
-    return snapshot
-
-
-def get_parameters(parameters, method_name):
-    if method_name == "copy_db_cluster_snapshot":
-        parameters["TargetDBClusterSnapshotIdentifier"] = module.params["db_cluster_snapshot_identifier"]
-
-    required_options = get_boto3_client_method_parameters(client, method_name, required=True)
-    if any(parameters.get(k) is None for k in required_options):
-        attribute_description = get_rds_method_attribute(method_name, module).operation_description
-        module.fail_json(msg=f"To {attribute_description} requires the parameters: {required_options}")
-    options = get_boto3_client_method_parameters(client, method_name)
-    parameters = dict((k, v) for k, v in parameters.items() if k in options and v is not None)
-
-    return parameters
-
-
-def ensure_snapshot_absent():
-    snapshot_name = module.params.get("db_cluster_snapshot_identifier")
-    params = {"DBClusterSnapshotIdentifier": snapshot_name}
+def ensure_snapshot_absent(client, module: AnsibleAWSModule) -> None:
+    snapshot_id = module.params.get("db_cluster_snapshot_identifier")
     changed = False
 
-    snapshot = get_snapshot(snapshot_name)
-    if not snapshot:
-        module.exit_json(changed=changed)
-    elif snapshot and snapshot["Status"] != "deleting":
-        snapshot, changed = call_method(client, module, "delete_db_cluster_snapshot", params)
+    try:
+        snapshot = get_snapshot(client, snapshot_id, "cluster")
+    except AnsibleRDSError as e:
+        module.fail_json_aws(e, msg=f"Failed to get snapshot: {snapshot_id}")
+    if snapshot and snapshot["Status"] != "deleting":
+        snapshot, changed = call_method(
+            client, module, "delete_db_cluster_snapshot", {"DBClusterSnapshotIdentifier": snapshot_id}
+        )
 
     module.exit_json(changed=changed)
 
 
-def copy_snapshot(params):
+def copy_snapshot(client, module: AnsibleAWSModule, params: Dict[str, Any]) -> bool:
     changed = False
     snapshot_id = module.params.get("db_cluster_snapshot_identifier")
-    snapshot = get_snapshot(snapshot_id)
 
+    try:
+        snapshot = get_snapshot(client, snapshot_id, "cluster")
+    except AnsibleRDSError as e:
+        module.fail_json_aws(e, msg=f"Failed to get snapshot: {snapshot_id}")
     if not snapshot:
-        method_params = get_parameters(params, "copy_db_cluster_snapshot")
-        if method_params.get("Tags"):
-            method_params["Tags"] = ansible_dict_to_boto3_tag_list(method_params["Tags"])
+        params["TargetDBClusterSnapshotIdentifier"] = snapshot_id
+        method_params = format_rds_client_method_parameters(
+            client, module, params, "copy_db_cluster_snapshot", format_tags=True
+        )
         _result, changed = call_method(client, module, "copy_db_cluster_snapshot", method_params)
 
     return changed
 
 
-def ensure_snapshot_present(params):
+def ensure_snapshot_present(client, module: AnsibleAWSModule, params: Dict[str, Any]) -> None:
     source_id = module.params.get("source_db_cluster_snapshot_identifier")
-    snapshot_name = module.params.get("db_cluster_snapshot_identifier")
+    snapshot_id = module.params.get("db_cluster_snapshot_identifier")
     changed = False
 
-    snapshot = get_snapshot(snapshot_name)
+    try:
+        snapshot = get_snapshot(client, snapshot_id, "cluster")
+    except AnsibleRDSError as e:
+        module.fail_json_aws(e, msg=f"Failed to get snapshot: {snapshot_id}")
 
     # Copy snapshot
     if source_id:
-        changed |= copy_snapshot(params)
+        changed |= copy_snapshot(client, module, params)
 
     # Create snapshot
     elif not snapshot:
-        changed |= create_snapshot(params)
+        changed |= create_snapshot(client, module, params)
 
     # Snapshot exists and we're not creating a copy - modify exising snapshot
     else:
-        changed |= modify_snapshot()
+        changed |= modify_snapshot(client, module)
 
-    snapshot = get_snapshot(snapshot_name)
+    try:
+        snapshot = get_snapshot(client, snapshot_id, "cluster")
+    except AnsibleRDSError as e:
+        module.fail_json_aws(e, msg=f"Failed to get snapshot: {snapshot_id}")
+
     module.exit_json(changed=changed, **camel_dict_to_snake_dict(snapshot, ignore_list=["Tags"]))
 
 
-def create_snapshot(params):
-    method_params = get_parameters(params, "create_db_cluster_snapshot")
-    if method_params.get("Tags"):
-        method_params["Tags"] = ansible_dict_to_boto3_tag_list(method_params["Tags"])
+def create_snapshot(client, module: AnsibleAWSModule, params: Dict[str, Any]) -> bool:
+    method_params = format_rds_client_method_parameters(
+        client, module, params, "create_db_cluster_snapshot", format_tags=True
+    )
     _snapshot, changed = call_method(client, module, "create_db_cluster_snapshot", method_params)
 
     return changed
 
 
-def modify_snapshot():
+def modify_snapshot(client, module: AnsibleAWSModule) -> bool:
     # TODO - add other modifications aside from purely tags
     changed = False
     snapshot_id = module.params.get("db_cluster_snapshot_identifier")
-    snapshot = get_snapshot(snapshot_id)
+
+    try:
+        snapshot = get_snapshot(client, snapshot_id, "cluster")
+    except AnsibleRDSError as e:
+        module.fail_json_aws(e, msg=f"Failed to get snapshot: {snapshot_id}")
 
     if module.params.get("tags"):
         changed |= ensure_tags(
@@ -351,9 +331,6 @@ def modify_snapshot():
 
 
 def main():
-    global client
-    global module
-
     argument_spec = dict(
         state=dict(type="str", choices=["present", "absent"], default="present"),
         db_cluster_snapshot_identifier=dict(type="str", aliases=["id", "snapshot_id", "snapshot_name"], required=True),
@@ -371,20 +348,14 @@ def main():
         argument_spec=argument_spec,
         supports_check_mode=True,
     )
-
-    retry_decorator = AWSRetry.jittered_backoff(retries=10)
-    try:
-        client = module.client("rds", retry_decorator=retry_decorator)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to connect to AWS.")
-
+    client = module.client("rds")
     state = module.params.get("state")
 
     if state == "absent":
-        ensure_snapshot_absent()
+        ensure_snapshot_absent(client, module)
     elif state == "present":
         params = arg_spec_to_rds_params(dict((k, module.params[k]) for k in module.params if k in argument_spec))
-        ensure_snapshot_present(params)
+        ensure_snapshot_present(client, module, params)
 
 
 if __name__ == "__main__":

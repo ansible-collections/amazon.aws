@@ -178,52 +178,43 @@ cluster_snapshots:
       sample: "vpc-abcd1234"
 """
 
+from typing import Any
+from typing import Callable
+from typing import Dict
+from typing import List
+
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.rds import AnsibleRDSError
+from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_cluster_snapshots
+from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_snapshots
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 
-try:
-    import botocore
-except ImportError:
-    pass  # caught by AnsibleAWSModule
 
-
-def common_snapshot_info(module, conn, method, prefix, params):
-    paginator = conn.get_paginator(method)
+def common_snapshot_info(
+    client, module: AnsibleAWSModule, describe_snapshots_method: Callable, params: Dict[str, Any]
+) -> List[Dict[str, Any]]:
     try:
-        results = paginator.paginate(**params).build_full_result()[f"{prefix}s"]
-    except is_boto3_error_code(f"{prefix}NotFound"):
-        results = []
-    except (
-        botocore.exceptions.ClientError,
-        botocore.exceptions.BotoCoreError,
-    ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, "trying to get snapshot information")
+        results = describe_snapshots_method(client, **params)
+    except AnsibleRDSError as e:
+        module.fail_json_aws(e, "Failed to get snapshot information")
 
     for snapshot in results:
-        try:
-            if snapshot["SnapshotType"] != "shared":
-                snapshot["Tags"] = boto3_tag_list_to_ansible_dict(
-                    conn.list_tags_for_resource(ResourceName=snapshot[f"{prefix}Arn"], aws_retry=True)["TagList"]
-                )
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            snapshot_name = snapshot[f"{prefix}Identifier"]
-            module.fail_json_aws(e, f"Couldn't get tags for snapshot {snapshot_name}")
+        if snapshot["SnapshotType"] != "shared":
+            snapshot["Tags"] = boto3_tag_list_to_ansible_dict(snapshot.pop("Tags", []))
 
     return [camel_dict_to_snake_dict(snapshot, ignore_list=["Tags"]) for snapshot in results]
 
 
-def cluster_snapshot_info(module, conn):
-    snapshot_name = module.params.get("db_cluster_snapshot_identifier")
+def cluster_snapshot_info(client, module: AnsibleAWSModule) -> List[Dict[str, Any]]:
+    snapshot_id = module.params.get("db_cluster_snapshot_identifier")
     snapshot_type = module.params.get("snapshot_type")
     instance_name = module.params.get("db_cluster_identifier")
 
     params = dict()
-    if snapshot_name:
-        params["DBClusterSnapshotIdentifier"] = snapshot_name
+    if snapshot_id:
+        params["DBClusterSnapshotIdentifier"] = snapshot_id
     if instance_name:
         params["DBClusterIdentifier"] = instance_name
     if snapshot_type:
@@ -233,17 +224,17 @@ def cluster_snapshot_info(module, conn):
         elif snapshot_type == "shared":
             params["IncludeShared"] = True
 
-    return common_snapshot_info(module, conn, "describe_db_cluster_snapshots", "DBClusterSnapshot", params)
+    return common_snapshot_info(client, module, describe_db_cluster_snapshots, params)
 
 
-def standalone_snapshot_info(module, conn):
-    snapshot_name = module.params.get("db_snapshot_identifier")
+def instance_snapshot_info(client, module: AnsibleAWSModule) -> List[Dict[str, Any]]:
+    snapshot_id = module.params.get("db_snapshot_identifier")
     snapshot_type = module.params.get("snapshot_type")
     instance_name = module.params.get("db_instance_identifier")
 
     params = dict()
-    if snapshot_name:
-        params["DBSnapshotIdentifier"] = snapshot_name
+    if snapshot_id:
+        params["DBSnapshotIdentifier"] = snapshot_id
     if instance_name:
         params["DBInstanceIdentifier"] = instance_name
     if snapshot_type:
@@ -253,7 +244,7 @@ def standalone_snapshot_info(module, conn):
         elif snapshot_type == "shared":
             params["IncludeShared"] = True
 
-    return common_snapshot_info(module, conn, "describe_db_snapshots", "DBSnapshot", params)
+    return common_snapshot_info(client, module, describe_db_snapshots, params)
 
 
 def main():
@@ -278,12 +269,12 @@ def main():
         ],
     )
 
-    conn = module.client("rds", retry_decorator=AWSRetry.jittered_backoff(retries=10))
+    client = module.client("rds")
     results = dict()
     if not module.params["db_cluster_identifier"] and not module.params["db_cluster_snapshot_identifier"]:
-        results["snapshots"] = standalone_snapshot_info(module, conn)
+        results["snapshots"] = instance_snapshot_info(client, module)
     if not module.params["db_snapshot_identifier"] and not module.params["db_instance_identifier"]:
-        results["cluster_snapshots"] = cluster_snapshot_info(module, conn)
+        results["cluster_snapshots"] = cluster_snapshot_info(client, module)
 
     module.exit_json(changed=False, **results)
 

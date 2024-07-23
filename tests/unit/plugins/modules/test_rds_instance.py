@@ -9,7 +9,6 @@ from unittest.mock import patch
 import pytest
 
 from ansible_collections.amazon.aws.plugins.module_utils.rds import AnsibleRDSError
-from ansible_collections.amazon.aws.plugins.modules.rds_instance import get_final_snapshot
 from ansible_collections.amazon.aws.plugins.modules.rds_instance import get_instance
 
 mod_name = "ansible_collections.amazon.aws.plugins.modules.rds_instance"
@@ -71,34 +70,3 @@ def test_get_instance_failure(m_describe_db_instances):
     m_describe_db_instances.side_effect = e
     get_instance(client, module, "my-instance")
     module.fail_json_aws.assert_called_once_with(e, msg="Failed to get DB instance my-instance")
-
-
-@pytest.mark.parametrize(
-    "snapshots, expected",
-    [
-        ([], {}),
-        (
-            [{"DBSnapshotIdentifier": "my-snapshot", "DBInstanceIdentifier": "my-instance"}],
-            {"DBSnapshotIdentifier": "my-snapshot", "DBInstanceIdentifier": "my-instance"},
-        ),
-        ([{"DBSnapshotIdentifier": "snapshot-1"}, {"DBSnapshotIdentifier": "snapshot-2"}], {}),
-    ],
-)
-@patch(mod_name + ".describe_db_snapshots")
-def test_get_final_snapshot_success(m_describe_db_snapshots, snapshots, expected):
-    client = MagicMock()
-    module = MagicMock()
-    m_describe_db_snapshots.return_value = snapshots
-    assert get_final_snapshot(client, module, "my-snapshot") == expected
-
-
-@patch(mod_name + ".describe_db_snapshots")
-def test_get_final_snapshot_failure(m_describe_db_snapshots):
-    client = MagicMock()
-    module = MagicMock()
-    e = AnsibleRDSError()
-    m_describe_db_snapshots.side_effect = e
-    get_final_snapshot(client, module, "my-snapshot")
-    module.fail_json_aws.assert_called_once_with(
-        e, msg="Failed to retrieve information about the final snapshot: my-snapshot"
-    )
