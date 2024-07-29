@@ -1,0 +1,8 @@
+---
+minor_changes:
+  - module_utils/rds.py - Add shared functionality from rds snapshot modules (https://github.com/ansible-collections/amazon.aws/pull/2138).
+  - rds_cluster_snapshot - Refactor shared boto3 client functionality, add type hinting and function docstrings (https://github.com/ansible-collections/amazon.aws/pull/2138).
+  - rds_instance - Remove shared functioanlity added to module_utils/rds.py (https://github.com/ansible-collections/amazon.aws/pull/2138).
+  - rds_instance_info - Refactor shared boto3 client functionality, add type hinting and function docstrings (https://github.com/ansible-collections/amazon.aws/pull/2138).
+  - rds_instance_snapshot - Refactor shared boto3 client functionality, add type hinting and function docstrings (https://github.com/ansible-collections/amazon.aws/pull/2138).
+  - rds_snapshot_info - Refactor shared boto3 client functionality, add type hinting and function docstrings (https://github.com/ansible-collections/amazon.aws/pull/2138).

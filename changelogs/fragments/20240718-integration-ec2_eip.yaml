@@ -1,0 +1,3 @@
+---
+trivial:
+  - integration/ec2_eip - tags all created Elastic IP to ensure isolation of the tests.

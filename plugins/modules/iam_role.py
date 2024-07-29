@@ -199,11 +199,24 @@ iam_role:
                 now use the same format.
             type: dict
             returned: always
+            sample: {
+                        'statement': [
+                            {
+                                'action': 'sts:AssumeRole',
+                                'effect': 'Allow',
+                                'principal': {
+                                    'service': 'ec2.amazonaws.com'
+                                },
+                                'sid': ''
+                            }
+                        ],
+                        'version': '2012-10-17'
+                    }
             version_added: 5.3.0
-
         attached_policies:
             description: A list of dicts containing the name and ARN of the managed IAM policies attached to the role.
             type: list
+            elements: dict
             returned: always
             sample: [
                 {
@@ -211,6 +224,42 @@ iam_role:
                     'policy_name': 'PowerUserAccess'
                 }
             ]
+            contains:
+                policy_arn:
+                    description: The Amazon Resource Name (ARN) specifying the managed policy.
+                    type: str
+                    sample: "arn:aws:iam::123456789012:policy/test_policy"
+                policy_name:
+                    description: The friendly name that identifies the policy.
+                    type: str
+                    sample: test_policy
+        description:
+            description: A description of the role.
+            type: str
+            returned: always
+            sample: "This is My New Role"
+        max_session_duration:
+            description: The maximum duration (in seconds) of a session when assuming the role.
+            type: int
+            returned: always
+            sample: 3600
+        role_last_used:
+            description: Contains information about the last time that an IAM role was used.
+            type: dict
+            returned: always
+            sample: {
+                        "last_used_date": "2023-11-22T21:54:29+00:00",
+                        "region": "us-east-2"
+                    }
+            contains:
+                last_used_date:
+                    description: The date and time, in  ISO 8601 date-time format that the role was last used.
+                    type: str
+                    returned: always
+                region:
+                    description: The name of the Amazon Web Services Region in which the role was last used.
+                    type: str
+                    returned: always
         tags:
             description: role tags
             type: dict

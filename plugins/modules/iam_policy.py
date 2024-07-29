@@ -92,11 +92,72 @@ EXAMPLES = r"""
 """
 
 RETURN = r"""
+user_name:
+    description: Name of IAM user.
+    returned: When I(iam_type=user)
+    type: str
+    sample: "ExampleUser001"
+group_name:
+    description: Name of IAM group.
+    returned: When I(iam_type=group)
+    type: str
+    sample: "ExampleGroup001"
+role_name:
+    description: Name of IAM role.
+    returned: When I(iam_type=role)
+    type: str
+    sample: "ExampleRole001"
+policies:
+    description: A list of names of the inline policies embedded in the specified IAM resource (user, group, or role).
+    returned: always
+    type: list
+    elements: str
+    sample: ["READ-ONLY"]
 policy_names:
     description: A list of names of the inline policies embedded in the specified IAM resource (user, group, or role).
     returned: always
     type: list
     elements: str
+    sample: ["READ-ONLY"]
+diff:
+    description: A dict representing difference between policies applied on IAM resource (user, group, or role).
+    returned: always
+    type: dict
+    contains:
+        before:
+            description: The policy that exists on IAM resource before new policy is applied.
+            returned: always
+            type: dict
+            sample: {
+                        "READ-ONLY": {
+                            "Statement": [
+                                {
+                                    "Action": "ec2:DescribeAccountAttributes",
+                                    "Effect": "Deny",
+                                    "Resource": "*",
+                                    "Sid": "VisualEditor0"
+                                }
+                            ],
+                            "Version": "2012-10-17"
+                        }
+                    }
+        after:
+            description: The current policy on IAM resource after new policy is applied.
+            returned: always
+            type: dict
+            sample: {
+                        "READ-ONLY": {
+                            "Statement": [
+                                {
+                                    "Action": "ec2:DescribeAccountAttributes",
+                                    "Effect": "Allow",
+                                    "Resource": "*",
+                                    "Sid": "VisualEditor0"
+                                }
+                            ],
+                            "Version": "2012-10-17"
+                        }
+                    }
 """
 
 import json

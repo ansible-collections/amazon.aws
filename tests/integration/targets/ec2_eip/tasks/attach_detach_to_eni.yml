@@ -4,9 +4,13 @@
     - name: Allocate a new EIP with no conditions
       amazon.aws.ec2_eip:
         state: present
-        tags:
-          AnsibleEIPTestPrefix: "{{ resource_prefix }}"
+        tags: "{{ eip_test_tags }}"
       register: eip
+
+    - name: Ensure EIP was allocated
+      ansible.builtin.include_tasks: tasks/common.yml
+      vars:
+        has_new_eip: true
 
     # ------------------------------------------------------------------------------------------
     # Test attach EIP to ENI
@@ -21,6 +25,11 @@
     - ansible.builtin.assert:
         that:
           - associate_eip is changed
+
+    - name: Ensure no new EIP was allocated
+      ansible.builtin.include_tasks: tasks/common.yml
+      vars:
+        has_no_new_eip: true
 
     - name: Attach EIP to ENI A
       amazon.aws.ec2_eip:
@@ -47,6 +56,11 @@
           - eip_info.addresses[0].private_ip_address is defined and ( eip_info.addresses[0].private_ip_address | ansible.utils.ipaddr )
           - eip_info.addresses[0].network_interface_owner_id == caller_info.account
 
+    - name: Ensure no new EIP was allocated
+      ansible.builtin.include_tasks: tasks/common.yml
+      vars:
+        has_no_new_eip: true
+
     - name: Attach EIP to ENI A (idempotence) - check_mode
       amazon.aws.ec2_eip:
         public_ip: "{{ eip.public_ip }}"
@@ -57,6 +71,11 @@
     - ansible.builtin.assert:
         that:
           - associate_eip is not changed
+
+    - name: Ensure no new EIP was allocated
+      ansible.builtin.include_tasks: tasks/common.yml
+      vars:
+        has_no_new_eip: true
 
     - name: Attach EIP to ENI A (idempotence)
       amazon.aws.ec2_eip:
@@ -81,6 +100,11 @@
           - eip_info.addresses[0].association_id is defined and eip_info.addresses[0].association_id.startswith("eipassoc-")
           - eip_info.addresses[0].network_interface_id == eni_create_a.interface.id
           - eip_info.addresses[0].private_ip_address is defined and ( eip_info.addresses[0].private_ip_address | ansible.utils.ipaddr )
+
+    - name: Ensure no new EIP was allocated
+      ansible.builtin.include_tasks: tasks/common.yml
+      vars:
+        has_no_new_eip: true
 
     # ------------------------------------------------------------------------------------------
     # Test attach EIP already attached
@@ -108,6 +132,11 @@
           - eip_info.addresses[0].network_interface_id == eni_create_a.interface.id
           - eip_info.addresses[0].private_ip_address is defined and ( eip_info.addresses[0].private_ip_address | ansible.utils.ipaddr )
 
+    - name: Ensure no new EIP was allocated
+      ansible.builtin.include_tasks: tasks/common.yml
+      vars:
+        has_no_new_eip: true
+
     - name: Attach EIP to ENI B - check_mode
       amazon.aws.ec2_eip:
         public_ip: "{{ eip.public_ip }}"
@@ -119,6 +148,11 @@
     - ansible.builtin.assert:
         that:
           - associate_eip is changed
+
+    - name: Ensure no new EIP was allocated
+      ansible.builtin.include_tasks: tasks/common.yml
+      vars:
+        has_no_new_eip: true
 
     - name: Attach EIP to ENI B
       amazon.aws.ec2_eip:
@@ -144,6 +178,11 @@
           - eip_info.addresses[0].association_id is defined and eip_info.addresses[0].association_id.startswith("eipassoc-")
           - eip_info.addresses[0].network_interface_id == eni_create_b.interface.id
           - eip_info.addresses[0].private_ip_address is defined and ( eip_info.addresses[0].private_ip_address | ansible.utils.ipaddr )
+
+    - name: Ensure no new EIP was allocated
+      ansible.builtin.include_tasks: tasks/common.yml
+      vars:
+        has_no_new_eip: true
 
     - name: Attach EIP to ENI B (idempotence) - check_mode
       amazon.aws.ec2_eip:
@@ -182,6 +221,10 @@
           - eip_info.addresses[0].network_interface_id == eni_create_b.interface.id
           - eip_info.addresses[0].private_ip_address is defined and ( eip_info.addresses[0].private_ip_address | ansible.utils.ipaddr )
 
+    - name: Ensure no new EIP was allocated
+      ansible.builtin.include_tasks: tasks/common.yml
+      vars:
+        has_no_new_eip: true
     # ------------------------------------------------------------------------------------------
     # Detach EIP from ENI B without enabling release on disassociation
     # ------------------------------------------------------------------------------------------
@@ -196,6 +239,11 @@
     - ansible.builtin.assert:
         that:
           - disassociate_eip is changed
+
+    - name: Ensure EIP was not released
+      ansible.builtin.include_tasks: tasks/common.yml
+      vars:
+        has_no_new_eip: true
 
     - name: Detach EIP from ENI B, without enabling release on disassociation
       amazon.aws.ec2_eip:
@@ -215,6 +263,11 @@
           - disassociate_eip.disassociated
           - not disassociate_eip.released
           - eip_info.addresses | length == 1
+
+    - name: Ensure EIP was not released
+      ansible.builtin.include_tasks: tasks/common.yml
+      vars:
+        has_no_new_eip: true
 
     - name: Detach EIP from ENI B, without enabling release on disassociation (idempotence) - check_mode
       amazon.aws.ec2_eip:
@@ -247,6 +300,11 @@
           - not disassociate_eip.released
           - eip_info.addresses | length == 1
 
+    - name: Ensure EIP was not released
+      ansible.builtin.include_tasks: tasks/common.yml
+      vars:
+        has_no_new_eip: true
+
     # ------------------------------------------------------------------------------------------
     # Detach EIP from ENI A enabling release on disassociation
     # ------------------------------------------------------------------------------------------
@@ -256,6 +314,11 @@
         public_ip: "{{ eip.public_ip }}"
         device_id: "{{ eni_create_a.interface.id }}"
       register: associate_eip
+
+    - name: Ensure no new EIP was allocated
+      ansible.builtin.include_tasks: tasks/common.yml
+      vars:
+        has_no_new_eip: true
 
     - name: Detach EIP from ENI A, enabling release on disassociation - check_mode
       amazon.aws.ec2_eip:
@@ -269,6 +332,11 @@
     - ansible.builtin.assert:
         that:
           - disassociate_eip is changed
+
+    - name: Ensure EIP was not released
+      ansible.builtin.include_tasks: tasks/common.yml
+      vars:
+        has_no_new_eip: true
 
     - name: Detach EIP from ENI A, enabling release on disassociation
       amazon.aws.ec2_eip:
@@ -289,6 +357,11 @@
           - disassociate_eip.disassociated
           - disassociate_eip.released
           - eip_info.addresses | length == 0
+
+    - name: Ensure EIP was released
+      ansible.builtin.include_tasks: tasks/common.yml
+      vars:
+        has_released_eip: true
 
     - name: Detach EIP from ENI A, enabling release on disassociation (idempotence) - check_mode
       amazon.aws.ec2_eip:
@@ -323,9 +396,13 @@
           - not disassociate_eip.released
           - eip_info.addresses | length == 0
 
+    - name: Ensure no EIP was released
+      ansible.builtin.include_tasks: tasks/common.yml
+      vars:
+        has_no_new_eip: true
+
   always:
-    - name: Release EIP
-      amazon.aws.ec2_eip:
-        state: absent
-        public_ip: "{{ eip.public_ip }}"
-      when: eip is defined
+    - name: Release all allocated EIP
+      ansible.builtin.include_tasks: tasks/common.yml
+      vars:
+        delete_eips: true

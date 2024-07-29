@@ -179,22 +179,27 @@ user:
         arn:
             description: The Amazon Resource Name (ARN) specifying the user.
             type: str
+            returned: always
             sample: "arn:aws:iam::123456789012:user/testuser1"
         create_date:
             description: The date and time, in ISO 8601 date-time format, when the user was created.
             type: str
+            returned: always
             sample: "2017-02-08T04:36:28+00:00"
         user_id:
             description: The stable and unique string identifying the user.
             type: str
+            returned: always
             sample: "AGPA12345EXAMPLE54321"
         user_name:
             description: The friendly name that identifies the user.
             type: str
+            returned: always
             sample: "testuser1"
         path:
             description: The path to the user.
             type: str
+            returned: always
             sample: "/"
         tags:
             description: User tags.
@@ -205,8 +210,15 @@ user:
             version_added: 7.2.0
             description:
                 - List containing basic information about managed policies attached to the group.
-            returned: success
-            type: complex
+            returned: always
+            type: list
+            elements: dict
+            sample: [
+                        {
+                            "policy_arn": "arn:aws:iam::123456789012:policy/test_policy",
+                            "policy_name": "test_policy"
+                        }
+                    ]
             contains:
                 policy_arn:
                     description: The Amazon Resource Name (ARN) specifying the managed policy.

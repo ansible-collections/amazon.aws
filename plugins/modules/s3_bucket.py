@@ -155,7 +155,7 @@ options:
     description:
       - Whether the bucket name should be validated to conform to AWS S3 naming rules.
       - On by default, this may be disabled for S3 backends that do not enforce these rules.
-      - See https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html
+      - See U(https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html).
     type: bool
     version_added: 3.1.0
     default: true
@@ -169,6 +169,8 @@ options:
   accelerate_enabled:
     description:
       - Enables Amazon S3 Transfer Acceleration, sent data will be routed to Amazon S3 over an optimized network path.
+      - Transfer Acceleration is not available in AWS GovCloud (US).
+      - See U(https://docs.aws.amazon.com/govcloud-us/latest/UserGuide/govcloud-s3.html#govcloud-S3-diffs).
     type: bool
     default: false
     version_added: 8.1.0
@@ -953,6 +955,11 @@ def handle_bucket_accelerate(s3_client, module: AnsibleAWSModule, name: str) -> 
     except is_boto3_error_code(["NotImplemented", "XNotImplemented"]) as e:
         if accelerate_enabled is not None:
             module.fail_json_aws(e, msg="Fetching bucket transfer acceleration state is not supported")
+    except is_boto3_error_code("UnsupportedArgument") as e:  # pylint: disable=duplicate-except
+        # -- Transfer Acceleration is not available in AWS GovCloud (US).
+        # -- https://docs.aws.amazon.com/govcloud-us/latest/UserGuide/govcloud-s3.html#govcloud-S3-diffs
+        module.warn("Tranfer acceleration is not available in S3 bucket region.")
+        accelerate_enabled_result = False
     except is_boto3_error_code("AccessDenied") as e:  # pylint: disable=duplicate-except
         if accelerate_enabled is not None:
             module.fail_json_aws(e, msg="Permission denied fetching transfer acceleration for bucket")

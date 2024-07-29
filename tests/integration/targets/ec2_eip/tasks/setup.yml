@@ -52,3 +52,8 @@
   amazon.aws.ec2_eni:
     subnet_id: "{{ vpc_subnet_create.subnet.id }}"
   register: eni_create_b
+
+- name: Delete all existing EIP with the same tag
+  ansible.builtin.include_tasks: tasks/common.yml
+  vars:
+    delete_eips: true

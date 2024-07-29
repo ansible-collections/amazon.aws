@@ -65,17 +65,17 @@ EXAMPLES = r"""
 RETURN = r"""
 iam_users:
     description: List of maching iam users.
-    returned: success
+    returned: always
     type: complex
     contains:
         arn:
             description: The ARN of the user.
-            returned: if user exists
+            returned: when user exists.
             type: str
             sample: "arn:aws:iam::123456789012:user/dev/test_user"
         create_date:
             description: The datetime user was created.
-            returned: if user exists
+            returned: when user exists.
             type: str
             sample: "2016-05-24T12:24:59+00:00"
         password_last_used:
@@ -85,29 +85,44 @@ iam_users:
             sample: "2016-05-25T13:39:11+00:00"
         path:
             description: The path to user.
-            returned: if user exists
+            returned: when user exists.
             type: str
             sample: "/dev/"
         user_id:
             description: The unique user id.
-            returned: if user exists
+            returned: when user exists.
             type: str
             sample: "AIDUIOOCQKTUGI6QJLGH2"
         user_name:
             description: The user name.
-            returned: if user exists
+            returned: when user exists.
             type: str
             sample: "test_user"
         tags:
             description: User tags.
             type: dict
-            returned: if user exists
+            returned: when user exists.
             sample: '{"Env": "Prod"}'
         login_profile:
-            description: Detailed login profile information if the user has access to log in from AWS default console. Returns an empty object {} if no access.
-            returned: always
+            description:
+              - Detailed login profile information if the user has access to log in from AWS default console.
+              - Returns an empty object {} if no access.
+            returned: when user exists.
             type: dict
             sample: {"create_date": "2024-03-20T12:50:56+00:00", "password_reset_required": false, "user_name": "i_am_a_user"}
+            contains:
+              create_date:
+                description: The date and time, in ISO 8601 date-time format, when the user was created.
+                type: str
+                returned: always
+              password_reset_required:
+                description: Specifies whether the user is required to set a new password on next sign-in.
+                type: bool
+                returned: always
+              user_name:
+                description: The name of the IAM user
+                type: str
+                returned: always
 """
 
 from ansible_collections.amazon.aws.plugins.module_utils.iam import AnsibleIAMError

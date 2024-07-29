@@ -1,0 +1,43 @@
+---
+- name: Validate number of EIPs
+  when: (has_new_eip is defined) or (has_no_new_eip is defined) or (has_released_eip is defined)
+  block:
+    - name: Get current state of EIPs
+      amazon.aws.ec2_eip_info:
+        filters: "{{ eip_info_filters }}"
+      register: eips
+
+    - ansible.builtin.assert:
+        that:
+          - (current_addresses | length + 1) == (eips.addresses | length)
+      when: has_new_eip | default('false') | bool
+
+    - ansible.builtin.assert:
+        that:
+          - current_addresses | length == (eips.addresses | length)
+      when: has_no_new_eip | default('false') | bool
+
+    - ansible.builtin.assert:
+        that:
+          - (current_addresses | length - 1) == (eips.addresses | length)
+      when: has_released_eip | default('false') | bool
+
+    - ansible.builtin.set_fact:
+        current_addresses: "{{ eips.addresses }}"
+
+- name: Delete EIPs
+  when: delete_eips | default('false') | bool
+  block:
+    - name: Get current state of EIPs
+      amazon.aws.ec2_eip_info:
+        filters: "{{ eip_info_filters }}"
+      register: eips
+
+    - name: Delete EIP
+      amazon.aws.ec2_eip:
+        state: absent
+        public_ip: "{{ item.public_ip }}"
+      with_items: "{{ eips.addresses }}"
+
+    - ansible.builtin.set_fact:
+        current_addresses: []

@@ -54,38 +54,65 @@ RETURN = r"""
 iam_instance_profiles:
   description: List of IAM instance profiles.
   returned: always
-  type: complex
+  type: list
+  elements: dict
   contains:
     arn:
       description: Amazon Resource Name for the instance profile.
       returned: always
       type: str
-      sample: arn:aws:iam::123456789012:instance-profile/AnsibleTestProfile
+      sample: "arn:aws:iam::123456789012:instance-profile/AnsibleTestProfile"
     create_date:
       description: Date instance profile was created.
       returned: always
       type: str
-      sample: '2023-01-12T11:18:29+00:00'
+      sample: "2023-01-12T11:18:29+00:00"
     instance_profile_id:
       description: Amazon Identifier for the instance profile.
       returned: always
       type: str
-      sample: AROA12345EXAMPLE54321
+      sample: "AROA12345EXAMPLE54321"
     instance_profile_name:
       description: Name of instance profile.
       returned: always
       type: str
-      sample: AnsibleTestEC2Policy
+      sample: "AnsibleTestEC2Policy"
     path:
       description: Path of instance profile.
       returned: always
       type: str
-      sample: /
+      sample: "/"
     roles:
       description: List of roles associated with this instance profile.
       returned: always
       type: list
-      sample: []
+      sample: [
+                {
+                        "arn": "arn:aws:iam::721234567890:role/Example-Role-1",
+                        "assume_role_policy_document": {
+                            "Statement": [
+                                {
+                                    "Action": "sts:AssumeRole",
+                                    "Effect": "Allow",
+                                    "Principal": {
+                                        "Service": "ec2.amazonaws.com"
+                                    }
+                                }
+                            ],
+                            "Version": "2012-10-17"
+                        },
+                        "create_date": "2023-05-08T17:45:27+00:00",
+                        "path": "/",
+                        "role_id": "AAAA0AAAAAAA0AAA0AAAA",
+                        "role_name": "Example-Role-1",
+                        "tags": {}
+                    }
+              ]
+    tags:
+      description: A list of tags that are attached to the instance profile.
+      returned: always
+      type: dict
+      sample: {"Env": "Prod"}
 """
 
 from ansible_collections.amazon.aws.plugins.module_utils.iam import AnsibleIAMError

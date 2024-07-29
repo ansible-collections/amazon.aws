@@ -4,3 +4,7 @@
 vpc_cidr: 10.{{ 256 | random(seed=resource_prefix) }}.0.0/16
 subnet_cidr: 10.{{ 256 | random(seed=resource_prefix) }}.42.0/24
 subnet_az: "{{ ec2_availability_zone_names[0] }}"
+eip_test_tags:
+  AnsibleEIPTestPrefix: "{{ resource_prefix }}"
+eip_info_filters:
+  tag:AnsibleEIPTestPrefix: "{{ resource_prefix }}"
