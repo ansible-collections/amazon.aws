@@ -29,7 +29,7 @@ options:
             - Specify a value for the V(X-aws-ec2-metadata-token-ttl-seconds) header.
             - Value must be between V(1) and V(21600).
         type: int
-        default: V(60)
+        default: 60
 """
 
 EXAMPLES = r"""
