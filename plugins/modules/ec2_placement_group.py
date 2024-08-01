@@ -43,6 +43,11 @@ options:
     default: cluster
     choices: [ 'cluster', 'spread', 'partition' ]
     type: str
+  tags:
+    description:
+      - A dict of key value pairs to associate with the placement group
+    type: dict
+    version_added: 8.1.0
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
@@ -95,6 +100,14 @@ placement_group:
       description: PG strategy
       type: str
       sample: "cluster"
+    tags:
+      description: Tags associated with the placement group
+      type: dict
+      version_added: 8.1.0
+      sample:
+        tags:
+          some: value1
+          other: value2
 """
 
 try:
@@ -104,6 +117,8 @@ except ImportError:
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
 
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
@@ -127,6 +142,7 @@ def search_placement_group(connection, module):
             "name": placement_group["GroupName"],
             "state": placement_group["State"],
             "strategy": placement_group["Strategy"],
+            "tags": boto3_tag_list_to_ansible_dict(placement_group.get("Tags")),
         }
 
 
@@ -141,6 +157,7 @@ def get_placement_group_information(connection, name):
         "name": placement_group["GroupName"],
         "state": placement_group["State"],
         "strategy": placement_group["Strategy"],
+        "tags": boto3_tag_list_to_ansible_dict(placement_group.get("Tags")),
     }
 
 
@@ -148,6 +165,7 @@ def get_placement_group_information(connection, name):
 def create_placement_group(connection, module):
     name = module.params.get("name")
     strategy = module.params.get("strategy")
+    tags = module.params.get("tags")
     partition_count = module.params.get("partition_count")
 
     if strategy != "partition" and partition_count:
@@ -156,6 +174,8 @@ def create_placement_group(connection, module):
     params = {}
     params["GroupName"] = name
     params["Strategy"] = strategy
+    if tags:
+        params["TagSpecifications"] = boto3_tag_specifications(tags, types=["placement-group"])
     if partition_count:
         params["PartitionCount"] = partition_count
     params["DryRun"] = module.check_mode
@@ -169,6 +189,7 @@ def create_placement_group(connection, module):
                 "name": name,
                 "state": "DryRun",
                 "strategy": strategy,
+                "tags": tags,
             },
         )
     except (
@@ -198,6 +219,7 @@ def main():
         partition_count=dict(type="int"),
         state=dict(default="present", choices=["present", "absent"]),
         strategy=dict(default="cluster", choices=["cluster", "spread", "partition"]),
+        tags=dict(type="dict"),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
