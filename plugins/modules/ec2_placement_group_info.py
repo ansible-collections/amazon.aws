@@ -67,6 +67,14 @@ placement_groups:
       description: PG strategy
       type: str
       sample: "cluster"
+    tags:
+      description: Tags associated with the placement group
+      type: dict
+      version_added: 8.1.0
+      sample:
+        tags:
+          some: value1
+          other: value2
 """
 
 try:
@@ -74,6 +82,8 @@ try:
     from botocore.exceptions import ClientError
 except ImportError:
     pass  # caught by AnsibleAWSModule
+
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
@@ -102,6 +112,7 @@ def get_placement_groups_details(connection, module):
                 "name": placement_group["GroupName"],
                 "state": placement_group["State"],
                 "strategy": placement_group["Strategy"],
+                "tags": boto3_tag_list_to_ansible_dict(placement_group.get("Tags")),
             }
         )
     return results
