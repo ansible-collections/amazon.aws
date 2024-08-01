@@ -621,7 +621,7 @@ class Ec2Metadata:
 
     def fetch_session_token(self, uri_token):
         """Used to get a session token for IMDSv2"""
-        metadata_token_ttl_seconds = module.params.get("metadata_token_ttl_seconds")
+        metadata_token_ttl_seconds = self.module.params.get("metadata_token_ttl_seconds")
         headers = {"X-aws-ec2-metadata-token-ttl-seconds": metadata_token_ttl_seconds}
         response, info = fetch_url(self.module, uri_token, method="PUT", headers=headers, force=True)
 
