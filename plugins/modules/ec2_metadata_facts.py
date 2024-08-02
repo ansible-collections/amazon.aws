@@ -30,6 +30,7 @@ options:
             - Value must be between V(1) and V(21600).
         type: int
         default: 60
+        version_added: 8.2.0
 """
 
 EXAMPLES = r"""
