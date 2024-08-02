@@ -1,8 +1,0 @@
----
-name: sanity tests
-
-on: [workflow_call] # allow this workflow to be called from other workflows
-
-jobs:
-  sanity:
-    uses: ansible-network/github_actions/.github/workflows/sanity.yml@main
