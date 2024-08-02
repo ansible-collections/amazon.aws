@@ -414,7 +414,6 @@ options:
         - The storage throughput when the O(storage_type) is V(gp3).
         - When the allocated storage is below 400 GB, the storage throughput will always be 125 mb/s.
         - When the allocated storage is large than or equal 400 GB, the througput starts at 500 mb/s.
-        - Requires botocore >= 1.29.0.
       type: int
       version_added: 5.2.0
     tde_credential_arn:
@@ -584,7 +583,6 @@ backup_retention_period:
 ca_certificate_identifier:
   description:
     - The identifier of the CA certificate for the DB instance.
-    - Requires minimum botocore version 1.29.44.
   returned: always
   type: str
   sample: rds-ca-2015
@@ -1676,11 +1674,6 @@ def main():
         mutually_exclusive=mutually_exclusive,
         supports_check_mode=True,
     )
-
-    if module.params["ca_certificate_identifier"]:
-        module.require_botocore_at_least(
-            "1.29.44", reason="to use 'ca_certificate_identifier' while creating/updating rds instance"
-        )
 
     # Sanitize instance identifiers
     module.params["db_instance_identifier"] = module.params["db_instance_identifier"].lower()

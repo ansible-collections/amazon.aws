@@ -208,8 +208,6 @@
           Created_by: Ansible rds_instance tests
       register: result
       check_mode: true
-      vars:
-        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
 
     - name: Get curent CA certificate identifier
       amazon.aws.rds_instance_info:
@@ -233,8 +231,6 @@
           Name: "{{ modified_instance_id }}"
           Created_by: Ansible rds_instance tests
       register: result
-      vars:
-        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
 
     - name: Get curent CA certificate identifier
       amazon.aws.rds_instance_info:
@@ -260,8 +256,6 @@
           Name: "{{ modified_instance_id }}"
           Created_by: Ansible rds_instance tests
       register: result
-      vars:
-        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
 
     - name: Get curent CA certificate identifier
       amazon.aws.rds_instance_info:
@@ -288,8 +282,6 @@
           Created_by: Ansible rds_instance tests
       register: result
       check_mode: true
-      vars:
-        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
 
     - name: Get curent CA certificate identifier
       amazon.aws.rds_instance_info:
@@ -314,8 +306,6 @@
         enable_cloudwatch_logs_exports: ["audit", "error", "general", "slowquery"]
       register: result
       check_mode: true
-      vars:
-        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
 
     - name: Get current cloudwatch log exports
       amazon.aws.rds_instance_info:
@@ -334,8 +324,6 @@
         db_instance_identifier: "{{ modified_instance_id }}"
         enable_cloudwatch_logs_exports: ["audit", "error", "general", "slowquery"]
       register: result
-      vars:
-        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
 
     - name: Get current cloudwatch log exports
       amazon.aws.rds_instance_info:
@@ -361,8 +349,6 @@
         db_instance_identifier: "{{ modified_instance_id }}"
         enable_cloudwatch_logs_exports: ["audit", "error", "general", "slowquery"]
       register: result
-      vars:
-        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
 
     - name: Get current cloudwatch log exports
       amazon.aws.rds_instance_info:
@@ -383,8 +369,6 @@
         enable_cloudwatch_logs_exports: ["audit", "error"]
       register: result
       check_mode: true
-      vars:
-        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
 
     - name: Get current cloudwatch log exports
       amazon.aws.rds_instance_info:
@@ -403,8 +387,6 @@
         db_instance_identifier: "{{ modified_instance_id }}"
         enable_cloudwatch_logs_exports: ["audit", "error"]
       register: result
-      vars:
-        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
 
     - name: Get current cloudwatch log exports
       amazon.aws.rds_instance_info:
@@ -430,8 +412,6 @@
         enable_cloudwatch_logs_exports: []
         purge_cloudwatch_logs_exports: false
       register: result
-      vars:
-        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
 
     - name: Get current cloudwatch log exports
       amazon.aws.rds_instance_info:
@@ -452,8 +432,6 @@
         enable_cloudwatch_logs_exports: []
       register: result
       check_mode: true
-      vars:
-        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
 
     - name: Get current cloudwatch log exports
       amazon.aws.rds_instance_info:
@@ -472,8 +450,6 @@
         db_instance_identifier: "{{ modified_instance_id }}"
         enable_cloudwatch_logs_exports: []
       register: result
-      vars:
-        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
 
     - name: Get current cloudwatch log exports
       amazon.aws.rds_instance_info:
