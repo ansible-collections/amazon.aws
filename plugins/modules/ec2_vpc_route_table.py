@@ -93,6 +93,7 @@ EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Basic creation example:
+# Testing
 - name: Set up public subnet route table
   amazon.aws.ec2_vpc_route_table:
     vpc_id: vpc-1245678
