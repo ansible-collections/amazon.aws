@@ -60,6 +60,13 @@ EXAMPLES = r"""
     profile: production
     internet_gateway_ids: igw-c1231234
   register: igw_info
+
+- name: Check if Internet Gateway Exists
+  amazon.aws.ec2_vpc_igw_info:
+    vpc_id: vpc-test
+  register: igw_info
+- debug:
+    var: igw_info.exists
 """
 
 RETURN = r"""
