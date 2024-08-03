@@ -56,7 +56,7 @@ async def main(queue: asyncio.Queue, args: dict[str, Any]) -> None:
         queue_url = response["QueueUrl"]
 
         while True:
-            # This loop wont spin really fast as there is
+            # This loop won't spin really fast as there is
             # essentially a sleep in the receive_message call
             response = await client.receive_message(
                 QueueUrl=queue_url,

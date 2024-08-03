@@ -12,7 +12,7 @@ Arguments:
     delay_seconds: The number of seconds to wait between polling (default 10sec)
 
     lookup_attributes:  The optional list of lookup attributes.
-                        lookup attribute are dictionnary with an AttributeKey (string),
+                        lookup attribute are dictionary with an AttributeKey (string),
                         which specifies an attribute on which to filter the events
                         returned and an AttributeValue (string) which specifies
                         a value for the specified AttributeKey
