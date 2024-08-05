@@ -13,6 +13,7 @@ acl
 object_lock
 accelerate
 default_retention
+inventory
 
 [all:vars]
 ansible_connection=local
