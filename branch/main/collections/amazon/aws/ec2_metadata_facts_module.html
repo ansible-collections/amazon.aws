@@ -151,9 +151,10 @@ To check whether it is installed, run <code class="code docutils literal notrans
 <nav class="contents local" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#synopsis" id="id4">Synopsis</a></p></li>
-<li><p><a class="reference internal" href="#notes" id="id5">Notes</a></p></li>
-<li><p><a class="reference internal" href="#examples" id="id6">Examples</a></p></li>
-<li><p><a class="reference internal" href="#returned-facts" id="id7">Returned Facts</a></p></li>
+<li><p><a class="reference internal" href="#parameters" id="id5">Parameters</a></p></li>
+<li><p><a class="reference internal" href="#notes" id="id6">Notes</a></p></li>
+<li><p><a class="reference internal" href="#examples" id="id7">Examples</a></p></li>
+<li><p><a class="reference internal" href="#returned-facts" id="id8">Returned Facts</a></p></li>
 </ul>
 </nav>
 <section id="synopsis">
@@ -165,8 +166,30 @@ To check whether it is installed, run <code class="code docutils literal notrans
 <li><p>If the HttpEndpoint parameter <a class="reference external" href="https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_ModifyInstanceMetadataOptions.html#API_ModifyInstanceMetadataOptions_RequestParameters">https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_ModifyInstanceMetadataOptions.html#API_ModifyInstanceMetadataOptions_RequestParameters</a> is set to disabled for the EC2 instance, the module will return an error while retrieving a session token.</p></li>
 </ul>
 </section>
+<section id="parameters">
+<h2><a class="toc-backref" href="#id5" role="doc-backlink">Parameters</a><a class="headerlink" href="#parameters" title="Link to this heading"></a></h2>
+<table class="longtable ansible-option-table docutils align-default" style="width: 100%">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Comments</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-metadata_token_ttl_seconds"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-metadata-facts-module-parameter-metadata-token-ttl-seconds"><strong>metadata_token_ttl_seconds</strong></p>
+<a class="ansibleOptionLink" href="#parameter-metadata_token_ttl_seconds" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 8.2.0</em></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Specify a value for the <code class="docutils literal notranslate"><span class="pre">X-aws-ec2-metadata-token-ttl-seconds</span></code> header.</p>
+<p>Value must be between <code class="ansible-value docutils literal notranslate"><span class="pre">1</span></code> and <code class="ansible-value docutils literal notranslate"><span class="pre">21600</span></code>.</p>
+<p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">60</span></code></p>
+</div></td>
+</tr>
+</tbody>
+</table>
+</section>
 <section id="notes">
-<h2><a class="toc-backref" href="#id5" role="doc-backlink">Notes</a><a class="headerlink" href="#notes" title="Link to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id6" role="doc-backlink">Notes</a><a class="headerlink" href="#notes" title="Link to this heading"></a></h2>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <ul class="simple">
@@ -175,9 +198,13 @@ To check whether it is installed, run <code class="code docutils literal notrans
 </div>
 </section>
 <section id="examples">
-<h2><a class="toc-backref" href="#id6" role="doc-backlink">Examples</a><a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id7" role="doc-backlink">Examples</a><a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
 <div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># Gather EC2 metadata facts</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.ec2_metadata_facts</span><span class="p">:</span>
+
+<span class="c1"># Set a bigger value for X-aws-ec2-metadata-token-ttl-seconds header</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.ec2_metadata_facts</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">metadata_token_ttl_seconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">240</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">debug</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">msg</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;This</span><span class="nv"> </span><span class="s">instance</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">a</span><span class="nv"> </span><span class="s">t1.micro&quot;</span>
@@ -186,7 +213,7 @@ To check whether it is installed, run <code class="code docutils literal notrans
 </div>
 </section>
 <section id="returned-facts">
-<h2><a class="toc-backref" href="#id7" role="doc-backlink">Returned Facts</a><a class="headerlink" href="#returned-facts" title="Link to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id8" role="doc-backlink">Returned Facts</a><a class="headerlink" href="#returned-facts" title="Link to this heading"></a></h2>
 <p>Facts returned by this module are added/updated in the <code class="docutils literal notranslate"><span class="pre">hostvars</span></code> host facts and can be referenced by name just like any other host fact. They do not need to be registered in order to use them.</p>
 <table class="longtable ansible-option-table docutils align-default" style="width: 100%">
 <thead>
