@@ -26,7 +26,7 @@ notes:
 options:
     metadata_token_ttl_seconds:
         description:
-            - Specify a value for the V(X-aws-ec2-metadata-token-ttl-seconds) header.
+            - Specify a value for the C(X-aws-ec2-metadata-token-ttl-seconds) header.
             - Value must be between V(1) and V(21600).
         type: int
         default: 60
