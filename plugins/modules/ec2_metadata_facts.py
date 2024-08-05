@@ -23,11 +23,23 @@ description:
       is set to disabled for the EC2 instance, the module will return an error while retrieving a session token.
 notes:
     - Parameters to filter on ec2_metadata_facts may be added later.
+options:
+    metadata_token_ttl_seconds:
+        description:
+            - Specify a value for the C(X-aws-ec2-metadata-token-ttl-seconds) header.
+            - Value must be between V(1) and V(21600).
+        type: int
+        default: 60
+        version_added: 8.2.0
 """
 
 EXAMPLES = r"""
 # Gather EC2 metadata facts
 - amazon.aws.ec2_metadata_facts:
+
+# Set a bigger value for X-aws-ec2-metadata-token-ttl-seconds header
+- amazon.aws.ec2_metadata_facts:
+    metadata_token_ttl_seconds: 240
 
 - debug:
     msg: "This instance is a t1.micro"
@@ -610,7 +622,8 @@ class Ec2Metadata:
 
     def fetch_session_token(self, uri_token):
         """Used to get a session token for IMDSv2"""
-        headers = {"X-aws-ec2-metadata-token-ttl-seconds": "60"}
+        metadata_token_ttl_seconds = self.module.params.get("metadata_token_ttl_seconds")
+        headers = {"X-aws-ec2-metadata-token-ttl-seconds": metadata_token_ttl_seconds}
         response, info = fetch_url(self.module, uri_token, method="PUT", headers=headers, force=True)
 
         if info.get("status") == 403:
@@ -657,10 +670,19 @@ class Ec2Metadata:
 
 
 def main():
+    argument_spec = dict(
+        metadata_token_ttl_seconds=dict(required=False, default=60, type="int", no_log=False),
+    )
+
     module = AnsibleModule(
-        argument_spec={},
+        argument_spec=argument_spec,
         supports_check_mode=True,
     )
+
+    metadata_token_ttl_seconds = module.params.get("metadata_token_ttl_seconds")
+
+    if metadata_token_ttl_seconds <= 0 or metadata_token_ttl_seconds > 21600:
+        module.fail_json(msg="The option 'metadata_token_ttl_seconds' must be set to a value between 1 and 21600.")
 
     ec2_metadata_facts = Ec2Metadata(module).run()
     ec2_metadata_facts_result = dict(changed=False, ansible_facts=ec2_metadata_facts)

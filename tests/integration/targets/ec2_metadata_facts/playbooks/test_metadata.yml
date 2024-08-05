@@ -15,3 +15,19 @@
           - ansible_ec2_user_data == "None"
           - ansible_ec2_instance_tags_keys is defined
           - ansible_ec2_instance_tags_keys | length == 3
+
+    - name: Clear facts for another test
+      ansible.builtin.meta: clear_facts
+
+    - amazon.aws.ec2_metadata_facts:
+        metadata_token_ttl_seconds: 240
+
+    - name: Assert initial metadata for the instance
+      ansible.builtin.assert:
+        that:
+          - ansible_ec2_ami_id == image_id
+          - ansible_ec2_placement_availability_zone == availability_zone
+          - ansible_ec2_security_groups == resource_prefix+"-sg"
+          - ansible_ec2_user_data == "None"
+          - ansible_ec2_instance_tags_keys is defined
+          - ansible_ec2_instance_tags_keys | length == 3
