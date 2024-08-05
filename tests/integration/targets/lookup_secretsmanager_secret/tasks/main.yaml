@@ -63,6 +63,7 @@
         tags:
           ansible-test: aws-tests-integration
         state: present
+      register: create_secret
 
     - name: read secret value
       ansible.builtin.set_fact:
@@ -72,6 +73,15 @@
       ansible.builtin.assert:
         that:
           - look_secret == secret_value
+
+    - name: read secret value (by ARN)
+      ansible.builtin.set_fact:
+        look_secret_by_arn: "{{ lookup('amazon.aws.secretsmanager_secret', create_secret.secret.arn, **connection_args) }}"
+
+    - name: assert that secret was successfully retrieved
+      ansible.builtin.assert:
+        that:
+          - look_secret_by_arn == secret_value
 
     - name: delete secret
       community.aws.secretsmanager_secret:
