@@ -671,7 +671,7 @@ class Ec2Metadata:
 
 def main():
     argument_spec = dict(
-        metadata_token_ttl_seconds=dict(required=False, default=60, type="int"),
+        metadata_token_ttl_seconds=dict(required=False, default=60, type="int", no_log=False),
     )
 
     module = AnsibleModule(
