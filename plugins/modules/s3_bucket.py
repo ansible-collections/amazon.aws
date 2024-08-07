@@ -2016,7 +2016,7 @@ def main():
         acl=dict(type="str", choices=["private", "public-read", "public-read-write", "authenticated-read"]),
         validate_bucket_name=dict(type="bool", default=True),
         dualstack=dict(default=False, type="bool"),
-        accelerate_enabled=dict(default=False, type="bool"),
+        accelerate_enabled=dict(type="bool"),
         object_lock_enabled=dict(type="bool"),
         object_lock_default_retention=dict(
             type="dict",
