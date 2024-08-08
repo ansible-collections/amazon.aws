@@ -1124,11 +1124,15 @@ def changing_cluster_options(modify_params, current_cluster):
     if module.params["state"] == "started":
         if current_cluster["Engine"] in ["mysql", "postgres"]:
             module.fail_json("Only aurora clusters can use the state started")
+        # start_db_cluster supports only DBClusterIdentifier
+        changing_params = {}
         changing_params["DBClusterIdentifier"] = db_cluster_id
 
     if module.params["state"] == "stopped":
         if current_cluster["Engine"] in ["mysql", "postgres"]:
             module.fail_json("Only aurora clusters can use the state stopped")
+        # stop_db_cluster supports only DBClusterIdentifier
+        changing_params = {}
         changing_params["DBClusterIdentifier"] = db_cluster_id
 
     return changing_params
