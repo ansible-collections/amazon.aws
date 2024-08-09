@@ -228,6 +228,11 @@ options:
       - List of VPC subnets to use
     type: list
     elements: str
+  protected_from_scale_in:
+    description:
+      - If V(true) instances will have scale-in protection enabled.
+    type: bool
+    default: false
   tags:
     description:
       - A list of tags to add to the Auto Scale Group.
@@ -1128,6 +1133,7 @@ def create_autoscaling_group(connection):
     vpc_zone_identifier = module.params.get("vpc_zone_identifier")
     set_tags = module.params.get("tags")
     purge_tags = module.params.get("purge_tags")
+    protected_from_scale_in = module.params.get("protected_from_scale_in")
     health_check_period = module.params.get("health_check_period")
     health_check_type = module.params.get("health_check_type")
     default_cooldown = module.params.get("default_cooldown")
@@ -1186,6 +1192,7 @@ def create_autoscaling_group(connection):
             HealthCheckType=health_check_type,
             DefaultCooldown=default_cooldown,
             TerminationPolicies=termination_policies,
+            NewInstancesProtectedFromScaleIn=protected_from_scale_in,
         )
         if vpc_zone_identifier:
             ag["VPCZoneIdentifier"] = vpc_zone_identifier
@@ -1483,7 +1490,7 @@ def get_chunks(l, n):
         yield l[i:i + n]  # fmt: skip
 
 
-def update_size(connection, group, max_size, min_size, dc):
+def update_size(connection, group, max_size, min_size, dc, protected_from_scale_in):
     module.debug("setting ASG sizes")
     module.debug(f"minimum size: {min_size}, desired_capacity: {dc}, max size: {max_size}")
     updated_group = dict()
@@ -1491,6 +1498,7 @@ def update_size(connection, group, max_size, min_size, dc):
     updated_group["MinSize"] = min_size
     updated_group["MaxSize"] = max_size
     updated_group["DesiredCapacity"] = dc
+    updated_group["NewInstancesProtectedFromScaleIn"] = protected_from_scale_in
     update_asg(connection, **updated_group)
 
 
@@ -1501,6 +1509,7 @@ def replace(connection):
     group_name = module.params.get("name")
     max_size = module.params.get("max_size")
     min_size = module.params.get("min_size")
+    protected_from_scale_in = module.params.get("protected_from_scale_in")
     desired_capacity = module.params.get("desired_capacity")
     launch_config_name = module.params.get("launch_config_name")
 
@@ -1570,7 +1579,7 @@ def replace(connection):
     # This should get overwritten if the number of instances left is less than the batch size.
 
     as_group = describe_autoscaling_groups(connection, group_name)[0]
-    update_size(connection, as_group, max_size + batch_size, min_size + batch_size, desired_capacity + batch_size)
+    update_size(connection, as_group, max_size + batch_size, min_size + batch_size, desired_capacity + batch_size, protected_from_scale_in)
 
     if wait_for_instances:
         wait_for_new_inst(connection, group_name, wait_timeout, as_group["MinSize"] + batch_size, "viable_instances")
@@ -1598,7 +1607,7 @@ def replace(connection):
             module.debug("breaking loop")
             break
 
-    update_size(connection, as_group, max_size, min_size, desired_capacity)
+    update_size(connection, as_group, max_size, min_size, desired_capacity, protected_from_scale_in)
     as_group = describe_autoscaling_groups(connection, group_name)[0]
     asg_properties = get_properties(as_group)
     module.debug("Rolling update complete.")
@@ -1902,6 +1911,7 @@ def main():
         state=dict(default="present", choices=["present", "absent"]),
         tags=dict(type="list", default=[], elements="dict"),
         purge_tags=dict(type="bool", default=False),
+        protected_from_scale_in=dict(type="bool", default=False),
         health_check_period=dict(type="int", default=300),
         health_check_type=dict(default="EC2", choices=["EC2", "ELB"]),
         default_cooldown=dict(type="int", default=300),
