@@ -571,18 +571,32 @@ def arg_spec_to_rds_params(options_dict: Dict[str, Any]) -> Dict[str, Any]:
             camel_options (dct): Options formatted for boto3 rds client
     """
     tags = options_dict.pop("tags")
+
     has_processor_features = False
+    has_performance_insights_kms_key = False
+
     if "processor_features" in options_dict:
         has_processor_features = True
         processor_features = options_dict.pop("processor_features")
+
+    if "performance_insights_kms_key_id" in options_dict:
+        has_performance_insights_kms_key = True
+        performance_insights_kms_key_id = options_dict.pop("performance_insights_kms_key_id")
+
     camel_options = snake_dict_to_camel_dict(options_dict, capitalize_first=True)
     for key in list(camel_options.keys()):
         for old, new in (("Db", "DB"), ("Iam", "IAM"), ("Az", "AZ"), ("Ca", "CA")):
             if old in key:
                 camel_options[key.replace(old, new)] = camel_options.pop(key)
+
     camel_options["Tags"] = tags
+
     if has_processor_features:
         camel_options["ProcessorFeatures"] = processor_features
+
+    if has_performance_insights_kms_key:
+        camel_options["PerformanceInsightsKMSKeyId"] = performance_insights_kms_key_id
+
     return camel_options
 
 
