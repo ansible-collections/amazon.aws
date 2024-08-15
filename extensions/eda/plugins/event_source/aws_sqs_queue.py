@@ -58,13 +58,20 @@ async def main(queue: asyncio.Queue, args: dict[str, Any]) -> None:
         while True:
             # This loop won't spin really fast as there is
             # essentially a sleep in the receive_message call
-            response = await client.receive_message(
+            response_msg = await client.receive_message(
                 QueueUrl=queue_url,
                 WaitTimeSeconds=wait_seconds,
             )
 
-            if "Messages" in response:
-                for msg in response["Messages"]:  # type: ignore[typeddict-item]
+            if "Messages" in response_msg:
+                for msg in response_msg["Messages"]:
+                    if (
+                        not isinstance(msg, dict) or "MessageId" not in msg
+                    ):  # pragma: no cover
+                        err_msg = (
+                            f"Unexpected response {response_msg}, missing MessageId."
+                        )
+                        raise ValueError(err_msg)
                     meta = {"MessageId": msg["MessageId"]}
                     try:
                         msg_body = json.loads(msg["Body"])
