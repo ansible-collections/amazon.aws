@@ -64,7 +64,7 @@ async def main(queue: asyncio.Queue, args: dict[str, Any]) -> None:
             )
 
             if "Messages" in response:
-                for msg in response["Messages"]:
+                for msg in response["Messages"]:  # type: ignore[typeddict-item]
                     meta = {"MessageId": msg["MessageId"]}
                     try:
                         msg_body = json.loads(msg["Body"])
