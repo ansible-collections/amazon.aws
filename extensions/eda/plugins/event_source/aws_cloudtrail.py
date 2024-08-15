@@ -46,7 +46,7 @@ def _cloudtrail_event_to_dict(event: dict) -> dict:
     return event
 
 
-def _get_events(events: list[dict], last_event_ids: list) -> list:
+def _get_events(events: list[dict], last_event_ids: list[str]) -> list:
     event_time = None
     event_ids = []
     result = []
@@ -89,7 +89,7 @@ async def main(queue: asyncio.Queue, args: dict[str, Any]) -> None:
 
     async with session.create_client("cloudtrail", **connection_args(args)) as client:
         event_time = None
-        event_ids = []
+        event_ids: list[str] = []
         while True:
             if event_time is not None:
                 params["StartTime"] = event_time

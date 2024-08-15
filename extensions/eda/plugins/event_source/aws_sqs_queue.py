@@ -30,6 +30,7 @@ import botocore.exceptions
 from aiobotocore.session import get_session
 
 
+# pylint: disable=too-many-locals
 async def main(queue: asyncio.Queue, args: dict[str, Any]) -> None:
     """Receive events via an AWS SQS queue."""
     logger = logging.getLogger()
@@ -64,19 +65,19 @@ async def main(queue: asyncio.Queue, args: dict[str, Any]) -> None:
             )
 
             if "Messages" in response_msg:
-                for msg in response_msg["Messages"]:
+                for entry in response_msg["Messages"]:
                     if (
-                        not isinstance(msg, dict) or "MessageId" not in msg
+                        not isinstance(entry, dict) or "MessageId" not in entry
                     ):  # pragma: no cover
                         err_msg = (
                             f"Unexpected response {response_msg}, missing MessageId."
                         )
                         raise ValueError(err_msg)
-                    meta = {"MessageId": msg["MessageId"]}
+                    meta = {"MessageId": entry["MessageId"]}
                     try:
-                        msg_body = json.loads(msg["Body"])
+                        msg_body = json.loads(entry["Body"])
                     except json.JSONDecodeError:
-                        msg_body = msg["Body"]
+                        msg_body = entry["Body"]
 
                     await queue.put({"body": msg_body, "meta": meta})
                     await asyncio.sleep(0)
@@ -84,7 +85,7 @@ async def main(queue: asyncio.Queue, args: dict[str, Any]) -> None:
                     # Need to remove msg from queue or else it'll reappear
                     await client.delete_message(
                         QueueUrl=queue_url,
-                        ReceiptHandle=msg["ReceiptHandle"],
+                        ReceiptHandle=entry["ReceiptHandle"],
                     )
             else:
                 logger.debug("No messages in queue")
