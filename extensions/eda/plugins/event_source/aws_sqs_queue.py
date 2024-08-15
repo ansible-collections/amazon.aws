@@ -106,7 +106,7 @@ def connection_args(args: dict[str, Any]) -> dict[str, Any]:
 if __name__ == "__main__":
     # MockQueue if running directly
 
-    class MockQueue:
+    class MockQueue(asyncio.Queue[Any]):
         """A fake queue."""
 
         async def put(self: "MockQueue", event: dict) -> None:

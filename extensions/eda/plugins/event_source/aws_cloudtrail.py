@@ -60,7 +60,7 @@ def _get_events(events: list[dict], last_event_ids: list) -> list:
         elif event_time == event["EventTime"]:
             event_ids.append(event["EventId"])
         result.append(event)
-    return result, event_time, event_ids
+    return [result, event_time, event_ids]
 
 
 async def _get_cloudtrail_events(client: BaseClient, params: dict) -> list[dict]:
@@ -128,7 +128,7 @@ def connection_args(args: dict[str, Any]) -> dict[str, Any]:
 if __name__ == "__main__":
     """MockQueue if running directly."""
 
-    class MockQueue:
+    class MockQueue(asyncio.Queue[Any]):
         """A fake queue."""
 
         async def put(self: "MockQueue", event: dict) -> None:
