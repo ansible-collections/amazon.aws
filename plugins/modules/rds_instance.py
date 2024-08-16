@@ -1144,9 +1144,8 @@ def get_options_with_changing_values(client, module: AnsibleAWSModule, parameter
 
     instance_performance_insights_kms_key_id = instance.get("PerformanceInsightsKMSKeyId")
     if (
-            instance_performance_insights_kms_key_id == module.params.get("performance_insights_kms_key_id")
-            or
-            instance_performance_insights_kms_key_id[-1] == module.params.get("performance_insights_kms_key_id")
+        instance_performance_insights_kms_key_id == module.params.get("performance_insights_kms_key_id")
+        or instance_performance_insights_kms_key_id.split('/')[-1] == module.params.get("performance_insights_kms_key_id")
     ):
         parameters.pop("PerformanceInsightsKMSKeyId")
 
