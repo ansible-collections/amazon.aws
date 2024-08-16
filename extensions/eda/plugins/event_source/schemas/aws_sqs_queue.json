@@ -1,0 +1,51 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://redhat.com/ansible_events/sources/aws_sqs_queue.json",
+    "title": "Source Plugin for AWS SQS Queue",
+    "description": "An ansible-rulebook event source plugin for receiving events via an AWS SQS queue.",
+    "type": "object",
+    "properties": {
+        "access_key": {
+            "description": "AWS access key ID",
+            "type": "string",
+            "title": "Access Key",
+            "format": "password"
+        },
+        "secret_key": {
+            "description": "AWS secret key",
+            "type": "string",
+            "title": "Secret Key",
+            "format": "password"
+        },
+        "session_token": {
+            "description": "STS session token for use with temporary credentials",
+            "title": "Session Token",
+            "type": "string",
+            "format": "password"
+        },
+        "endpoint_url": {
+            "description": "URL to connect to instead of the default AWS endpoints",
+            "type": "string",
+            "title": "End Point URL"
+        },
+        "region": {
+            "description": "AWS region to use",
+            "type": "string",
+            "title": "Region"
+        },
+        "name": {
+            "description": "The name of the queue",
+            "type": "string",
+            "title": "Queue Name"
+        },
+        "delay_seconds": {
+            "description": "The SQS long polling duration. Set to 0 to disable",
+            "title": "Polling Interval",
+            "type": "integer",
+            "default": 2
+        }
+    },
+    "required": [
+        "name"
+    ]
+}

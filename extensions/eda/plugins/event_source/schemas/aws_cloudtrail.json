@@ -1,0 +1,81 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://redhat.com/ansible_events/sources/aws_cloudtrail.json",
+    "title": "Source Plugin for AWS CloudTrail",
+    "description": "An ansible-rulebook event source module for getting events from an AWS CloudTrail",
+    "type": "object",
+    "properties": {
+        "access_key": {
+            "description": "AWS access key ID",
+            "title": "Access Key",
+            "type": "string",
+            "format": "password"
+        },
+        "secret_key": {
+            "description": "AWS secret key",
+            "title": "Secret Key",
+            "type": "string",
+            "format": "password"
+        },
+        "session_token": {
+            "description": "STS session token for use with temporary credentials",
+            "title": "Session Token",
+            "type": "string",
+            "format": "password"
+        },
+        "endpoint_url": {
+            "description": "URL to connect to instead of the default AWS endpoints",
+            "title": "Endpoint URL",
+            "type": "string"
+        },
+        "region": {
+            "description": "AWS region to use",
+            "title": "Region",
+            "type": "string"
+        },
+        "delay_seconds": {
+            "description": "The number of seconds to wait between polling",
+            "title": "Poll Delay",
+            "type": "integer",
+            "default": 10
+        },
+        "lookup_attributes": {
+            "description": "Lookup attributes",
+            "title": "Filters",
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/lookup"
+            }
+        },
+        "event_category": {
+            "description": "Event Category",
+            "title": "Event Category",
+            "type": "string"
+        }
+    },
+    "$defs": {
+        "lookup": {
+            "type": "object",
+            "required": [
+                "AttributeKey",
+                "AttributeValue"
+            ],
+            "properties": {
+                "AttributeKey": {
+                    "type": "string",
+                    "title": "Key",
+                    "description": "Specifies an attribute on which to filter the events"
+                },
+                "AttributeValue": {
+                    "type": "string",
+                    "title": "Value",
+                    "description": "Specifies a value for the specified AttributeKey"
+                }
+            }
+        }
+    },
+    "required": [
+        "lookup_attributes",
+        "event_category"
+    ]
+}
