@@ -36,8 +36,8 @@ import json
 from datetime import datetime
 from typing import Any
 
-from aiobotocore.client import BaseClient
 from aiobotocore.session import get_session
+from botocore.client import BaseClient
 
 
 def _cloudtrail_event_to_dict(event: dict) -> dict:
