@@ -531,7 +531,7 @@ def get_snapshot(client, snapshot_identifier: str, snapshot_type: str, convert_t
         snapshot = snapshots[0]
 
     if snapshot and convert_tags:
-        snapshot["Tags"] = boto3_tag_list_to_ansible_dict(snapshot.pop("TagList"))
+        snapshot["Tags"] = boto3_tag_list_to_ansible_dict(snapshot.pop("TagList", None))
 
     return snapshot
 
