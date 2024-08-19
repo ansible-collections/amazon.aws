@@ -581,7 +581,7 @@ def arg_spec_to_rds_params(options_dict: Dict[str, Any]) -> Dict[str, Any]:
         ("Iam", "IAM"),
         ("Az", "AZ"),
         ("Ca", "CA"),
-        ("PerformanceInsightsKmsKeyId", "PerformanceInsightsKMSKeyId")
+        ("PerformanceInsightsKmsKeyId", "PerformanceInsightsKMSKeyId"),
     )
     for key in list(camel_options.keys()):
         for old, new in aws_replace_keys:
