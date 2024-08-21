@@ -1994,6 +1994,10 @@ def main():
         dualstack=dict(default=False, type="bool"),
         state=dict(default="present", choices=["present", "absent"]),
         ceph=dict(default=False, type="bool", aliases=["rgw"]),
+        # ** Warning **
+        # we support non-AWS implementations, only force/purge options should have a
+        # default set for any top-level option.  We need to be able to identify
+        # unset options where we can ignore NotImplemented exceptions.
         tags=dict(type="dict", aliases=["resource_tags"]),
         purge_tags=dict(type="bool", default=True),
         force=dict(default=False, type="bool"),
