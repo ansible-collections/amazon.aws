@@ -170,7 +170,6 @@ options:
     description:
       - Enables Amazon S3 Transfer Acceleration, sent data will be routed to Amazon S3 over an optimized network path.
     type: bool
-    default: false
     version_added: 8.1.0
   object_lock_default_retention:
     description:
@@ -920,17 +919,18 @@ def handle_bucket_accelerate(s3_client, module: AnsibleAWSModule, name: str) -> 
     ) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to fetch bucket transfer acceleration state")
     else:
-        try:
-            if not accelerate_enabled and accelerate_status:
-                delete_bucket_accelerate_configuration(s3_client, name)
-                accelerate_enabled_changed = True
-                accelerate_enabled_result = False
-            if accelerate_enabled and not accelerate_status:
-                put_bucket_accelerate_configuration(s3_client, name)
-                accelerate_enabled_changed = True
-                accelerate_enabled_result = True
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-            module.fail_json_aws(e, msg="Failed to update bucket transfer acceleration")
+        if accelerate_enabled is not None:
+            try:
+                if not accelerate_enabled and accelerate_status:
+                    delete_bucket_accelerate_configuration(s3_client, name)
+                    accelerate_enabled_changed = True
+                    accelerate_enabled_result = False
+                if accelerate_enabled and not accelerate_status:
+                    put_bucket_accelerate_configuration(s3_client, name)
+                    accelerate_enabled_changed = True
+                    accelerate_enabled_result = True
+            except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+                module.fail_json_aws(e, msg="Failed to update bucket transfer acceleration")
     return accelerate_enabled_changed, accelerate_enabled_result
 
 
@@ -1940,15 +1940,21 @@ def destroy_bucket(s3_client, module: AnsibleAWSModule) -> None:
 
 def main():
     argument_spec = dict(
-        force=dict(default=False, type="bool"),
-        policy=dict(type="json"),
         name=dict(required=True),
-        requester_pays=dict(type="bool"),
+        validate_bucket_name=dict(type="bool", default=True),
+        dualstack=dict(default=False, type="bool"),
         state=dict(default="present", choices=["present", "absent"]),
+        ceph=dict(default=False, type="bool", aliases=["rgw"]),
+        # ** Warning **
+        # we support non-AWS implementations, only force/purge options should have a
+        # default set for any top-level option.  We need to be able to identify
+        # unset options where we can ignore NotImplemented exceptions.
         tags=dict(type="dict", aliases=["resource_tags"]),
         purge_tags=dict(type="bool", default=True),
+        force=dict(default=False, type="bool"),
+        policy=dict(type="json"),
         versioning=dict(type="bool"),
-        ceph=dict(default=False, type="bool", aliases=["rgw"]),
+        requester_pays=dict(type="bool"),
         encryption=dict(choices=["none", "AES256", "aws:kms"]),
         encryption_key_id=dict(),
         bucket_key_enabled=dict(type="bool"),
@@ -1965,9 +1971,7 @@ def main():
         object_ownership=dict(type="str", choices=["BucketOwnerEnforced", "BucketOwnerPreferred", "ObjectWriter"]),
         delete_object_ownership=dict(type="bool", default=False),
         acl=dict(type="str", choices=["private", "public-read", "public-read-write", "authenticated-read"]),
-        validate_bucket_name=dict(type="bool", default=True),
-        dualstack=dict(default=False, type="bool"),
-        accelerate_enabled=dict(default=False, type="bool"),
+        accelerate_enabled=dict(type="bool"),
         object_lock_enabled=dict(type="bool"),
         object_lock_default_retention=dict(
             type="dict",
