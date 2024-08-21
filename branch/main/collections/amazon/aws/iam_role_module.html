@@ -242,10 +242,12 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-role
 <a class="ansibleOptionLink" href="#parameter-create_instance_profile" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Creates an IAM instance profile along with the role.</p>
+<p>This option has been deprecated and will be removed in a release after 2026-05-01.  The <a class="reference internal" href="iam_instance_profile_module.html#ansible-collections-amazon-aws-iam-instance-profile-module"><span class="std std-ref">amazon.aws.iam_instance_profile</span></a> module can be used to manage instance profiles.</p>
+<p>Defaults to <code class="ansible-value docutils literal notranslate"><span class="pre">True</span></code></p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
-<li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">true</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
 </tr>
@@ -268,9 +270,11 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-role
 </div></td>
 <td><div class="ansible-option-cell"><p>When <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-module-parameter-delete-instance-profile"><span class="std std-ref"><span class="pre">delete_instance_profile=true</span></span></a></code> and <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-module-parameter-state"><span class="std std-ref"><span class="pre">state=absent</span></span></a></code> deleting a role will also delete the instance profile created with the same <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-module-parameter-name"><span class="std std-ref"><span class="pre">name</span></span></a></strong></code> as the role.</p>
 <p>Only applies when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-module-parameter-state"><span class="std std-ref"><span class="pre">state=absent</span></span></a></code>.</p>
+<p>This option has been deprecated and will be removed in a release after 2026-05-01.  The <a class="reference internal" href="iam_instance_profile_module.html#ansible-collections-amazon-aws-iam-instance-profile-module"><span class="std std-ref">amazon.aws.iam_instance_profile</span></a> module can be used to manage instance profiles.</p>
+<p>Defaults to <code class="ansible-value docutils literal notranslate"><span class="pre">False</span></code></p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
-<li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
 </div></td>
@@ -302,7 +306,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-role
 <a class="ansibleOptionLink" href="#parameter-managed_policies" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: managed_policy</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>A list of managed policy ARNs, managed policy ARNs or friendly names.</p>
+<td><div class="ansible-option-cell"><p>A list of managed policy ARNs, or friendly names.</p>
 <p>To remove all policies set <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-module-parameter-purge-policies"><span class="std std-ref"><span class="pre">purge_policies=true</span></span></a></code> and <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-module-parameter-managed-policies"><span class="std std-ref"><span class="pre">managed_policies=[]</span></span></a></code>.</p>
 <p>To embed an inline policy, use <a class="reference internal" href="iam_policy_module.html#ansible-collections-amazon-aws-iam-policy-module"><span class="std std-ref">amazon.aws.iam_policy</span></a>.</p>
 </div></td>
