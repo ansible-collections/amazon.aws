@@ -531,7 +531,7 @@ def get_snapshot(client, snapshot_identifier: str, snapshot_type: str, convert_t
         snapshot = snapshots[0]
 
     if snapshot and convert_tags:
-        snapshot["Tags"] = boto3_tag_list_to_ansible_dict(snapshot.pop("TagList"))
+        snapshot["Tags"] = boto3_tag_list_to_ansible_dict(snapshot.pop("TagList", None))
 
     return snapshot
 
@@ -576,8 +576,15 @@ def arg_spec_to_rds_params(options_dict: Dict[str, Any]) -> Dict[str, Any]:
         has_processor_features = True
         processor_features = options_dict.pop("processor_features")
     camel_options = snake_dict_to_camel_dict(options_dict, capitalize_first=True)
+    aws_replace_keys = (
+        ("Db", "DB"),
+        ("Iam", "IAM"),
+        ("Az", "AZ"),
+        ("Ca", "CA"),
+        ("PerformanceInsightsKmsKeyId", "PerformanceInsightsKMSKeyId"),
+    )
     for key in list(camel_options.keys()):
-        for old, new in (("Db", "DB"), ("Iam", "IAM"), ("Az", "AZ"), ("Ca", "CA")):
+        for old, new in aws_replace_keys:
             if old in key:
                 camel_options[key.replace(old, new)] = camel_options.pop(key)
     camel_options["Tags"] = tags
