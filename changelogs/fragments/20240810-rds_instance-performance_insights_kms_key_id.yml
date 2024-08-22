@@ -1,0 +1,3 @@
+---
+minor_changes:
+  - rds_instance - snake case for parameter ``performance_insights_kms_key_id`` was incorrect according to boto documentation (https://github.com/ansible-collections/amazon.aws/pull/2163).
