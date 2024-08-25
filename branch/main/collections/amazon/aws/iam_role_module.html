@@ -2,7 +2,7 @@
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta content="2.12.0" name="antsibull-docs" />
+<meta content="2.13.0" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>amazon.aws.iam_role module – Manage AWS IAM roles &mdash; Ansible collections  documentation</title>
@@ -242,7 +242,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-role
 <a class="ansibleOptionLink" href="#parameter-create_instance_profile" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Creates an IAM instance profile along with the role.</p>
-<p>This option has been deprecated and will be removed in a release after 2026-05-01.  The <a class="reference internal" href="iam_instance_profile_module.html#ansible-collections-amazon-aws-iam-instance-profile-module"><span class="std std-ref">amazon.aws.iam_instance_profile</span></a> module can be used to manage instance profiles.</p>
+<p>This option has been deprecated and will be removed in a release after 2026-05-01. The <a class="reference internal" href="iam_instance_profile_module.html#ansible-collections-amazon-aws-iam-instance-profile-module"><span class="std std-ref">amazon.aws.iam_instance_profile</span></a> module can be used to manage instance profiles.</p>
 <p>Defaults to <code class="ansible-value docutils literal notranslate"><span class="pre">True</span></code></p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
@@ -270,7 +270,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-role
 </div></td>
 <td><div class="ansible-option-cell"><p>When <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-module-parameter-delete-instance-profile"><span class="std std-ref"><span class="pre">delete_instance_profile=true</span></span></a></code> and <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-module-parameter-state"><span class="std std-ref"><span class="pre">state=absent</span></span></a></code> deleting a role will also delete the instance profile created with the same <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-module-parameter-name"><span class="std std-ref"><span class="pre">name</span></span></a></strong></code> as the role.</p>
 <p>Only applies when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-module-parameter-state"><span class="std std-ref"><span class="pre">state=absent</span></span></a></code>.</p>
-<p>This option has been deprecated and will be removed in a release after 2026-05-01.  The <a class="reference internal" href="iam_instance_profile_module.html#ansible-collections-amazon-aws-iam-instance-profile-module"><span class="std std-ref">amazon.aws.iam_instance_profile</span></a> module can be used to manage instance profiles.</p>
+<p>This option has been deprecated and will be removed in a release after 2026-05-01. The <a class="reference internal" href="iam_instance_profile_module.html#ansible-collections-amazon-aws-iam-instance-profile-module"><span class="std std-ref">amazon.aws.iam_instance_profile</span></a> module can be used to manage instance profiles.</p>
 <p>Defaults to <code class="ansible-value docutils literal notranslate"><span class="pre">False</span></code></p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
@@ -294,8 +294,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-role
 <a class="ansibleOptionLink" href="#parameter-endpoint_url" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: ec2_url, aws_endpoint_url, s3_url</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>URL to connect to instead of the default AWS endpoints.  While this can be used to connection to other AWS-compatible services the amazon.aws and community.aws collections are only tested against AWS.</p>
-<p>The  <code class="docutils literal notranslate"><span class="pre">AWS_URL</span></code> or <code class="docutils literal notranslate"><span class="pre">EC2_URL</span></code> environment variables may also be used, in decreasing order of preference.</p>
+<td><div class="ansible-option-cell"><p>URL to connect to instead of the default AWS endpoints. While this can be used to connection to other AWS-compatible services the amazon.aws and community.aws collections are only tested against AWS.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">AWS_URL</span></code> or <code class="docutils literal notranslate"><span class="pre">EC2_URL</span></code> environment variables may also be used, in decreasing order of preference.</p>
 <p>The <em>ec2_url</em> and <em>s3_url</em> aliases have been deprecated and will be removed in a release after 2024-12-01.</p>
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_URL</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
@@ -326,7 +326,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-role
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The name of the role.</p>
-<p>Note: Role names are unique within an account.  Paths (<code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-module-parameter-path"><span class="std std-ref"><span class="pre">path</span></span></a></strong></code>) do <strong>not</strong> affect the uniqueness requirements of <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-module-parameter-name"><span class="std std-ref"><span class="pre">name</span></span></a></strong></code>.  For example it is not permitted to have both <code class="docutils literal notranslate"><span class="pre">/Path1/MyRole</span></code> and <code class="docutils literal notranslate"><span class="pre">/Path2/MyRole</span></code> in the same account.</p>
+<p>Note: Role names are unique within an account. Paths (<code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-module-parameter-path"><span class="std std-ref"><span class="pre">path</span></span></a></strong></code>) do <strong>not</strong> affect the uniqueness requirements of <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-module-parameter-name"><span class="std std-ref"><span class="pre">name</span></span></a></strong></code>. For example it is not permitted to have both <code class="docutils literal notranslate"><span class="pre">/Path1/MyRole</span></code> and <code class="docutils literal notranslate"><span class="pre">/Path2/MyRole</span></code> in the same account.</p>
 <p><code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-module-parameter-role-name"><span class="std std-ref"><span class="pre">role_name</span></span></a></strong></code> was added as an alias in release 7.2.0.</p>
 </div></td>
 </tr>
@@ -376,7 +376,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-role
 </div></td>
 <td><div class="ansible-option-cell"><p>If <em>purge_tags=true</em> and <em>tags</em> is set, existing tags will be purged from the resource to match exactly what is defined by <em>tags</em> parameter.</p>
 <p>If the <em>tags</em> parameter is not set then tags will not be modified, even if <em>purge_tags=True</em>.</p>
-<p>Tag keys beginning with <code class="docutils literal notranslate"><span class="pre">aws:</span></code> are reserved by Amazon and can not be modified.  As such they will be ignored for the purposes of the <em>purge_tags</em> parameter.  See the Amazon documentation for more information <a class="reference external" href="https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions">https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions</a>.</p>
+<p>Tag keys beginning with <code class="docutils literal notranslate"><span class="pre">aws:</span></code> are reserved by Amazon and can not be modified. As such they will be ignored for the purposes of the <em>purge_tags</em> parameter. See the Amazon documentation for more information <a class="reference external" href="https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions">https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions</a>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
@@ -497,7 +497,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-role
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <ul class="simple">
-<li><p><strong>Caution:</strong> For modules, environment variables and configuration files are read from the Ansible ‘host’ context and not the ‘controller’ context. As such, files may need to be explicitly copied to the ‘host’.  For lookup and connection plugins, environment variables and configuration files are read from the Ansible ‘controller’ context and not the ‘host’ context.</p></li>
+<li><p><strong>Caution:</strong> For modules, environment variables and configuration files are read from the Ansible ‘host’ context and not the ‘controller’ context. As such, files may need to be explicitly copied to the ‘host’. For lookup and connection plugins, environment variables and configuration files are read from the Ansible ‘controller’ context and not the ‘host’ context.</p></li>
 <li><p>The AWS SDK (boto3) that Ansible uses may also read defaults for credentials and other settings, such as the region, from its configuration files in the Ansible ‘host’ context (typically <code class="docutils literal notranslate"><span class="pre">~/.aws/credentials</span></code>). See <a class="reference external" href="https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html">https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html</a> for more information.</p></li>
 </ul>
 </div>
@@ -579,7 +579,8 @@ snake_case. This behaviour changed in release 8.0.0.</p>
 <p><em class="ansible-option-versionadded">added in amazon.aws 5.3.0</em></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Note: this return value has been deprecated and will be removed in a release after
-2026-05-01. <code class="ansible-return-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-module-return-iam-role-assume-role-policy-document"><span class="std std-ref"><span class="pre">iam_role.assume_role_policy_document</span></span></a></code> and <code class="ansible-return-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-module-return-iam-role-assume-role-policy-document-raw"><span class="std std-ref"><span class="pre">iam_role.assume_role_policy_document_raw</span></span></a></code>now use the same format.</p>
+2026-05-01. <code class="ansible-return-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-module-return-iam-role-assume-role-policy-document"><span class="std std-ref"><span class="pre">iam_role.assume_role_policy_document</span></span></a></code> and <code class="ansible-return-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-module-return-iam-role-assume-role-policy-document-raw"><span class="std std-ref"><span class="pre">iam_role.assume_role_policy_document_raw</span></span></a></code>
+now use the same format.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;statement&quot;:</span> <span class="pre">[{&quot;action&quot;:</span> <span class="pre">&quot;sts:AssumeRole&quot;,</span> <span class="pre">&quot;effect&quot;:</span> <span class="pre">&quot;Allow&quot;,</span> <span class="pre">&quot;principal&quot;:</span> <span class="pre">{&quot;service&quot;:</span> <span class="pre">&quot;ec2.amazonaws.com&quot;},</span> <span class="pre">&quot;sid&quot;:</span> <span class="pre">&quot;&quot;}],</span> <span class="pre">&quot;version&quot;:</span> <span class="pre">&quot;2012-10-17&quot;}</span></code></p>
 </div></td>
@@ -669,7 +670,7 @@ snake_case. This behaviour changed in release 8.0.0.</p>
 <div class="ansibleOptionAnchor" id="return-iam_role/role_last_used/last_used_date"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-role-module-return-iam-role-role-last-used-last-used-date"><strong>last_used_date</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_role/role_last_used/last_used_date" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The date and time, in  ISO 8601 date-time format that the role was last used.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The date and time, in ISO 8601 date-time format that the role was last used.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 </div></td>
 </tr>
