@@ -2,7 +2,7 @@
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta content="2.13.0" name="antsibull-docs" />
+<meta content="2.13.1" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>amazon.aws.iam_role_info module – Gather information on IAM roles &mdash; Ansible collections  documentation</title>
@@ -251,7 +251,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-role
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Name of a role to search for.</p>
-<p>Mutually exclusive with <em>path_prefix</em>.</p>
+<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-info-module-parameter-path-prefix"><span class="std std-ref"><span class="pre">path_prefix</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -262,8 +262,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-role
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Prefix of role to restrict IAM role search for.</p>
-<p>Mutually exclusive with <em>name</em>.</p>
-<p><code class="docutils literal notranslate"><span class="pre">path</span></code> and <code class="docutils literal notranslate"><span class="pre">prefix</span></code> were added as aliases in release 7.2.0.</p>
+<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-info-module-parameter-name"><span class="std std-ref"><span class="pre">name</span></span></a></strong></code>.</p>
+<p><code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-info-module-parameter-path"><span class="std std-ref"><span class="pre">path</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-info-module-parameter-prefix"><span class="std std-ref"><span class="pre">prefix</span></span></a></strong></code> were added as aliases in release 7.2.0.</p>
 <p>In a release after 2026-05-01 paths must begin and end with <code class="docutils literal notranslate"><span class="pre">/</span></code>. Prior to this paths will automatically have <code class="docutils literal notranslate"><span class="pre">/</span></code> added as appropriate to ensure that they start and end with <code class="docutils literal notranslate"><span class="pre">/</span></code>.</p>
 </div></td>
 </tr>
@@ -385,7 +385,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-role
 <div class="ansibleOptionAnchor" id="return-iam_roles"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-role-info-module-return-iam-roles"><strong>iam_roles</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_roles" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>List of IAM roles</p>
+<td><div class="ansible-option-cell"><p>List of IAM roles.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 </div></td>
 </tr>
@@ -402,7 +402,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-role
 <div class="ansibleOptionAnchor" id="return-iam_roles/assume_role_policy_document"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-role-info-module-return-iam-roles-assume-role-policy-document"><strong>assume_role_policy_document</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_roles/assume_role_policy_document" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The policy that grants an entity permission to assume the role</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The policy that grants an entity permission to assume the role.</p>
 <p>Note: the case of keys in this dictionary are no longer converted from CamelCase to
 snake_case. This behaviour changed in release 8.0.0.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
@@ -414,8 +414,8 @@ snake_case. This behaviour changed in release 8.0.0.</p>
 <p><em class="ansible-option-versionadded">added in amazon.aws 5.3.0</em></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Note: this return value has been deprecated and will be removed in a release after
-2026-05-01. assume_role_policy_document and assume_role_policy_document_raw now use
-the same format.</p>
+2026-05-01. <code class="ansible-return-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-info-module-return-iam-roles-assume-role-policy-document"><span class="std std-ref"><span class="pre">iam_roles.assume_role_policy_document</span></span></a></code> and <code class="ansible-return-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-info-module-return-iam-roles-assume-role-policy-document-raw"><span class="std std-ref"><span class="pre">iam_roles.assume_role_policy_document_raw</span></span></a></code>
+now use the same format.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 </div></td>
 </tr>
