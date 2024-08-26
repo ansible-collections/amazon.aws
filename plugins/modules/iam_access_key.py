@@ -24,14 +24,14 @@ options:
   id:
     description:
       - The ID of the access key.
-      - Required when I(state=absent).
-      - Mutually exclusive with I(rotate_keys).
+      - Required when O(state=absent).
+      - Mutually exclusive with O(rotate_keys).
     required: false
     type: str
   state:
     description:
       - Create or remove the access key.
-      - When I(state=present) and I(id) is not defined a new key will be created.
+      - When O(state=present) and O(id) is not defined a new key will be created.
     required: false
     type: str
     default: 'present'
@@ -39,7 +39,7 @@ options:
   active:
     description:
       - Whether the key should be enabled or disabled.
-      - Defaults to C(true) when creating a new key.
+      - Defaults to V(true) when creating a new key.
     required: false
     type: bool
     aliases: ['enabled']
@@ -47,8 +47,8 @@ options:
     description:
       - When there are already 2 access keys attached to the IAM user the oldest
         key will be removed and a new key created.
-      - Ignored if I(state=absent)
-      - Mutually exclusive with I(id).
+      - Ignored if O(state=absent)
+      - Mutually exclusive with O(id).
     required: false
     type: bool
     default: false
@@ -113,7 +113,7 @@ secret_access_key:
       - Secret access keys can only be accessed at creation time.
     returned: When a new key is created.
     type: str
-    sample:  example/Example+EXAMPLE+example/Example
+    sample: example/Example+EXAMPLE+example/Example
 deleted_access_key_id:
     description:
       - The access key deleted during rotation.

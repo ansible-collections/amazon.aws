@@ -11,7 +11,7 @@ version_added: 2.1.0
 version_added_collection: community.aws
 short_description: fetch information about AWS IAM User access keys
 description:
-  - 'Fetches information AWS IAM user access keys.'
+  - Fetches information AWS IAM user access keys.
   - 'Note: It is not possible to fetch the secret access key.'
 author:
   - Mark Chappell (@tremble)

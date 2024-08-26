@@ -24,8 +24,8 @@ options:
     description:
       - Name of the instance profile.
       - >-
-        Note: Profile names are unique within an account.  Paths (I(path)) do B(not) affect
-        the uniqueness requirements of I(name).  For example it is not permitted to have both
+        Note: Profile names are unique within an account.  Paths (O(path)) do B(not) affect
+        the uniqueness requirements of O(name).  For example it is not permitted to have both
         C(/Path1/MyProfile) and C(/Path2/MyProfile) in the same account.
     aliases: ["instance_profile_name"]
     type: str
@@ -37,13 +37,13 @@ options:
         U(https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html).
       - Updating the path on an existing profile is not currently supported and will result in a
         warning.
-      - The parameter was renamed from C(prefix) to C(path) in release 7.2.0.
+      - The parameter was renamed from O(prefix) to O(path) in release 7.2.0.
     aliases: ["path_prefix", "prefix"]
     type: str
   role:
     description:
       - The name of the role to attach to the instance profile.
-      - To remove all roles from the instance profile set I(role="").
+      - To remove all roles from the instance profile set O(role="").
     type: str
 
 extends_documentation_fragment:
@@ -84,7 +84,7 @@ EXAMPLES = r"""
 
 RETURN = r"""
 iam_instance_profile:
-  description: List of IAM instance profiles
+  description: List of IAM instance profiles.
   returned: always
   type: complex
   contains:

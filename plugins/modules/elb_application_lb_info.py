@@ -10,7 +10,7 @@ module: elb_application_lb_info
 version_added: 5.0.0
 short_description: Gather information about Application Load Balancers in AWS
 description:
-  - Gather information about Application Load Balancers in AWS
+  - Gather information about Application Load Balancers in AWS.
   - This module was originally added to C(community.aws) in release 1.0.0.
 author:
   - Rob White (@wimnat)
@@ -44,7 +44,7 @@ options:
   include_listener_rules:
     description:
       - Whether or not to include load balancer listener rules in the response.
-      - Implies I(include_listeners=true)
+      - Implies O(include_listeners=true)
     required: false
     type: bool
     default: true
@@ -91,23 +91,23 @@ EXAMPLES = r"""
 
 RETURN = r"""
 load_balancers:
-    description: a list of load balancers
+    description: A list of load balancers.
     returned: always
     type: complex
     contains:
         access_logs_s3_bucket:
             description: The name of the S3 bucket for the access logs.
-            returned: when include_attributes is true
+            returned: when O(include_attributes=true)
             type: str
             sample: "mys3bucket"
         access_logs_s3_enabled:
             description: Indicates whether access logs stored in Amazon S3 are enabled.
-            returned: when include_attributes is true
+            returned: when O(include_attributes=true)
             type: bool
             sample: true
         access_logs_s3_prefix:
             description: The prefix for the location in the S3 bucket.
-            returned: when include_attributes is true
+            returned: when O(include_attributes=true)
             type: str
             sample: "my/logs"
         availability_zones:
@@ -124,7 +124,7 @@ load_balancers:
             sample: "2015-02-12T02:14:02+00:00"
         deletion_protection_enabled:
             description: Indicates whether deletion protection is enabled.
-            returned: when include_attributes is true
+            returned: when O(include_attributes=true)
             type: bool
             sample: true
         dns_name:
@@ -133,7 +133,7 @@ load_balancers:
             sample: "internal-my-alb-123456789.ap-southeast-2.elb.amazonaws.com"
         idle_timeout_timeout_seconds:
             description: The idle timeout value, in seconds.
-            returned: when include_attributes is true
+            returned: when O(include_attributes=true)
             type: int
             sample: 60
         ip_address_type:
@@ -142,7 +142,7 @@ load_balancers:
             sample: "ipv4"
         listeners:
             description: Information about the listeners.
-            returned: when include_listeners or include_listener_rules is true
+            returned: when O(include_listeners=true) or O(include_listener_rules=true)
             type: complex
             contains:
                 listener_arn:
@@ -163,7 +163,7 @@ load_balancers:
                     sample: "HTTPS"
                 rules:
                     description: List of listener rules.
-                    returned: when include_listener_rules is true
+                    returned: when O(include_listener_rules=true)
                     type: list
                     sample: ""
                 certificates:
@@ -200,32 +200,32 @@ load_balancers:
             sample: "my-alb"
         load_balancing_cross_zone_enabled:
             description: Indicates whether or not cross-zone load balancing is enabled.
-            returned: when include_attributes is true
+            returned: when O(include_attributes=true)
             type: bool
             sample: true
         routing_http2_enabled:
             description: Indicates whether HTTP/2 is enabled.
-            returned: when include_attributes is true
+            returned: when O(include_attributes=true)
             type: bool
             sample: true
         routing_http_desync_mitigation_mode:
             description: Determines how the load balancer handles requests that might pose a security risk to an application.
-            returned: when include_attributes is true
+            returned: when O(include_attributes=true)
             type: str
             sample: "defensive"
         routing_http_drop_invalid_header_fields_enabled:
             description: Indicates whether HTTP headers with invalid header fields are removed by the load balancer (true) or routed to targets (false).
-            returned: when include_attributes is true
+            returned: when O(include_attributes=true)
             type: bool
             sample: false
         routing_http_x_amzn_tls_version_and_cipher_suite_enabled:
             description: Indicates whether the two headers are added to the client request before sending it to the target.
-            returned: when include_attributes is true
+            returned: when O(include_attributes=true)
             type: bool
             sample: false
         routing_http_xff_client_port_enabled:
             description: Indicates whether the X-Forwarded-For header should preserve the source port that the client used to connect to the load balancer.
-            returned: when include_attributes is true
+            returned: when O(include_attributes=true)
             type: bool
             sample: false
         scheme:
@@ -257,7 +257,7 @@ load_balancers:
         waf_fail_open_enabled:
             description: Indicates whether to allow a AWS WAF-enabled load balancer to route requests to targets
                 if it is unable to forward the request to AWS WAF.
-            returned: when include_attributes is true
+            returned: when O(include_attributes=true)
             type: bool
             sample: false
 """
