@@ -55,7 +55,7 @@ options:
     type: json
   managed_policies:
     description:
-      - A list of managed policy ARNs, managed policy ARNs or friendly names.
+      - A list of managed policy ARNs, or friendly names.
       - To remove all policies set O(purge_policies=true) and O(managed_policies=[]).
       - To embed an inline policy, use M(amazon.aws.iam_policy).
     aliases: ['managed_policy']
@@ -81,14 +81,18 @@ options:
   create_instance_profile:
     description:
       - Creates an IAM instance profile along with the role.
-    default: true
+      - This option has been deprecated and will be removed in a release after 2026-05-01.  The
+        M(amazon.aws.iam_instance_profile) module can be used to manage instance profiles.
+      - Defaults to V(True)
     type: bool
   delete_instance_profile:
     description:
       - When O(delete_instance_profile=true) and O(state=absent) deleting a role will also delete the instance
         profile created with the same O(name) as the role.
       - Only applies when O(state=absent).
-    default: false
+      - This option has been deprecated and will be removed in a release after 2026-05-01.  The
+        M(amazon.aws.iam_instance_profile) module can be used to manage instance profiles.
+      - Defaults to V(False)
     type: bool
   wait_timeout:
     description:
@@ -505,12 +509,10 @@ def update_basic_role(module, client, role_name, role):
     return changed
 
 
-def create_or_update_role(module, client):
+def create_or_update_role(module, client, role_name, create_instance_profile):
     check_mode = module.check_mode
     wait = module.params.get("wait")
     wait_timeout = module.params.get("wait_timeout")
-    role_name = module.params.get("name")
-    create_instance_profile = module.params.get("create_instance_profile")
     path = module.params.get("path")
     purge_policies = module.params.get("purge_policies")
     managed_policies = module.params.get("managed_policies")
@@ -656,7 +658,8 @@ def update_role_tags(client, check_mode, role_name, new_tags, purge_tags, existi
 
 def validate_params(module):
     if module.params.get("boundary"):
-        if module.params.get("create_instance_profile"):
+        # We need to handle both None and True
+        if module.params.get("create_instance_profile") is not False:
             module.fail_json(msg="When using a boundary policy, `create_instance_profile` must be set to `false`.")
         if not validate_aws_arn(module.params.get("boundary"), service="iam"):
             module.fail_json(msg="Boundary policy must be an ARN")
@@ -682,8 +685,8 @@ def main():
         state=dict(type="str", choices=["present", "absent"], default="present"),
         description=dict(type="str"),
         boundary=dict(type="str", aliases=["boundary_policy_arn"]),
-        create_instance_profile=dict(type="bool", default=True),
-        delete_instance_profile=dict(type="bool", default=False),
+        create_instance_profile=dict(type="bool"),
+        delete_instance_profile=dict(type="bool"),
         purge_policies=dict(default=True, type="bool", aliases=["purge_policy", "purge_managed_policies"]),
         tags=dict(type="dict", aliases=["resource_tags"]),
         purge_tags=dict(type="bool", default=True),
@@ -704,6 +707,21 @@ def main():
         date="2026-05-01",
         collection_name="amazon.aws",
     )
+    if module.params.get("create_instance_profile") is None:
+        module.deprecate(
+            "In a release after 2026-05-01 the 'create_instance_profile' option will be removed. "
+            "The amazon.aws.iam_instance_profile module can be used to manage instance profiles instead.",
+            date="2026-05-01",
+            collection_name="amazon.aws",
+        )
+    if module.params.get("delete_instance_profile") is None:
+        module.deprecate(
+            "In a release after 2026-05-01 the 'delete_instance_profile' option will be removed. "
+            "The amazon.aws.iam_instance_profile module can be used to manage and delete instance "
+            "profiles instead.",
+            date="2026-05-01",
+            collection_name="amazon.aws",
+        )
 
     validate_params(module)
 
@@ -711,13 +729,15 @@ def main():
 
     state = module.params.get("state")
     role_name = module.params.get("name")
-    delete_profiles = module.params.get("delete_instance_profile")
+
+    create_profile = module.params.get("create_instance_profile") or True
+    delete_profile = module.params.get("delete_instance_profile") or False
 
     try:
         if state == "present":
-            create_or_update_role(module, client)
+            create_or_update_role(module, client, role_name, create_profile)
         elif state == "absent":
-            changed = destroy_role(client, module.check_mode, role_name, delete_profiles)
+            changed = destroy_role(client, module.check_mode, role_name, delete_profile)
             module.exit_json(changed=changed)
     except AnsibleIAMError as e:
         module.fail_json_aws_error(e)
