@@ -391,11 +391,12 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-poli
 </div></td>
 <td><div class="ansible-option-cell"><p>A list of names of all of the IAM inline policies on the queried object.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[&quot;example-ec2-policy-1&quot;,</span> <span class="pre">&quot;example-ec2-policy-2&quot;]</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-policies"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-info-module-return-policies"><strong>policies</strong></p>
-<a class="ansibleOptionLink" href="#return-policies" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
+<a class="ansibleOptionLink" href="#return-policies" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A list containing the matching IAM inline policy names and their data.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
@@ -403,10 +404,11 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-poli
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-policies/policy_document"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-policy-info-module-return-policies-policy-document"><strong>policy_document</strong></p>
-<a class="ansibleOptionLink" href="#return-policies/policy_document" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+<a class="ansibleOptionLink" href="#return-policies/policy_document" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The JSON document representing the inline IAM policy.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;{'Statement':</span> <span class="pre">[{'Action':</span> <span class="pre">'ec2:DescribeAccountAttributes',</span> <span class="pre">'Effect':</span> <span class="pre">'Allow',</span> <span class="pre">'Resource':</span> <span class="pre">'*',</span> <span class="pre">'Sid':</span> <span class="pre">'VisualEditor0'}],</span> <span class="pre">'Version':</span> <span class="pre">'2012-10-17'}&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -415,6 +417,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-poli
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The Name of the inline policy.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;test-ec2-list-policy&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -423,6 +426,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-poli
 </div></td>
 <td><div class="ansible-option-cell"><p>A list of matching names of the IAM inline policies on the queried object.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[&quot;example-ec2-policy-1&quot;,</span> <span class="pre">&quot;example-ec2-policy-2&quot;]</span></code></p>
 </div></td>
 </tr>
 </tbody>

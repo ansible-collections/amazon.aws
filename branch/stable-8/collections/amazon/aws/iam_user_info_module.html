@@ -400,7 +400,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-user
 <a class="ansibleOptionLink" href="#return-iam_users" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>List of maching iam users.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -408,7 +408,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-user
 <a class="ansibleOptionLink" href="#return-iam_users/arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ARN of the user.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> if user exists</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when user exists.</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:iam::123456789012:user/dev/test_user&quot;</span></code></p>
 </div></td>
 </tr>
@@ -417,7 +417,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-user
 <a class="ansibleOptionLink" href="#return-iam_users/create_date" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The datetime user was created.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> if user exists</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when user exists.</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2016-05-24T12:24:59+00:00&quot;</span></code></p>
 </div></td>
 </tr>
@@ -425,12 +425,37 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-user
 <div class="ansibleOptionAnchor" id="return-iam_users/login_profile"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-user-info-module-return-iam-users-login-profile"><strong>login_profile</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_users/login_profile" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Detailed login profile information if the user has access to log in from AWS default console. Returns an empty object {} if no access.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Detailed login profile information if the user has access to log in from AWS default console.</p>
+<p>Returns an empty object {} if no access.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when user exists.</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;create_date&quot;:</span> <span class="pre">&quot;2024-03-20T12:50:56+00:00&quot;,</span> <span class="pre">&quot;password_reset_required&quot;:</span> <span class="pre">false,</span> <span class="pre">&quot;user_name&quot;:</span> <span class="pre">&quot;i_am_a_user&quot;}</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-iam_users/login_profile/create_date"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-user-info-module-return-iam-users-login-profile-create-date"><strong>create_date</strong></p>
+<a class="ansibleOptionLink" href="#return-iam_users/login_profile/create_date" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The date and time, in ISO 8601 date-time format, when the user was created.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-iam_users/login_profile/password_reset_required"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-user-info-module-return-iam-users-login-profile-password-reset-required"><strong>password_reset_required</strong></p>
+<a class="ansibleOptionLink" href="#return-iam_users/login_profile/password_reset_required" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Specifies whether the user is required to set a new password on next sign-in.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-iam_users/login_profile/user_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-user-info-module-return-iam-users-login-profile-user-name"><strong>user_name</strong></p>
+<a class="ansibleOptionLink" href="#return-iam_users/login_profile/user_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The name of the IAM user</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-iam_users/password_last_used"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-user-info-module-return-iam-users-password-last-used"><strong>password_last_used</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_users/password_last_used" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -439,39 +464,39 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-user
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2016-05-25T13:39:11+00:00&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-iam_users/path"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-user-info-module-return-iam-users-path"><strong>path</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_users/path" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The path to user.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> if user exists</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when user exists.</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;/dev/&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-iam_users/tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-user-info-module-return-iam-users-tags"><strong>tags</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_users/tags" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>User tags.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> if user exists</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when user exists.</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;Env&quot;:</span> <span class="pre">&quot;Prod&quot;}</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-iam_users/user_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-user-info-module-return-iam-users-user-id"><strong>user_id</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_users/user_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The unique user id.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> if user exists</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when user exists.</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;AIDUIOOCQKTUGI6QJLGH2&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-iam_users/user_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-user-info-module-return-iam-users-user-name"><strong>user_name</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_users/user_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The user name.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> if user exists</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when user exists.</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;test_user&quot;</span></code></p>
 </div></td>
 </tr>
