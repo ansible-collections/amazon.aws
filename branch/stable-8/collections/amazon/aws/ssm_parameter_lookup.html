@@ -2,7 +2,7 @@
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta content="2.12.0" name="antsibull-docs" />
+<meta content="2.13.0" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>amazon.aws.ssm_parameter lookup – gets the value for a SSM parameter or all parameters under a path &mdash; Ansible collections  documentation</title>
@@ -164,7 +164,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ssm-para
 <li><p>Get the value for an Amazon Simple Systems Manager parameter or a hierarchy of parameters. The first argument you pass the lookup can either be a parameter name or a hierarchy of parameters. Hierarchies start with a forward slash and end with the parameter name. Up to 5 layers may be specified.</p></li>
 <li><p>If looking up an explicitly listed parameter by name which does not exist then the lookup will generate an error. You can use the <code class="docutils literal notranslate"><span class="pre">default</span></code> filter to give a default value in this case but must set the <em>on_missing</em> parameter to <code class="docutils literal notranslate"><span class="pre">skip</span></code> or <code class="docutils literal notranslate"><span class="pre">warn</span></code>. You must also set the second parameter of the <code class="docutils literal notranslate"><span class="pre">default</span></code> filter to <code class="docutils literal notranslate"><span class="pre">true</span></code> (see examples below).</p></li>
 <li><p>When looking up a path for parameters under it a dictionary will be returned for each path. If there is no parameter under that path then the lookup will generate an error.</p></li>
-<li><p>If the lookup fails due to lack of permissions or due to an AWS client error then the aws_ssm will generate an error. If you want to continue in this case then you will have to set up two ansible tasks, one which sets a variable and ignores failures and one which uses the value of that variable with a default.  See the examples below.</p></li>
+<li><p>If the lookup fails due to lack of permissions or due to an AWS client error then the aws_ssm will generate an error. If you want to continue in this case then you will have to set up two ansible tasks, one which sets a variable and ignores failures and one which uses the value of that variable with a default. See the examples below.</p></li>
 <li><p>Prior to release 6.0.0 this module was known as <code class="docutils literal notranslate"><span class="pre">aws_ssm</span></code>, the usage remains the same.</p></li>
 </ul>
 <p>Aliases: aws_ssm</p>
@@ -208,7 +208,7 @@ examples: <code class="docutils literal notranslate"><span class="pre">lookup('a
 <li><p>Environment variable: <span class="target" id="index-1"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_ACCESS_KEY"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_ACCESS_KEY</span></code></a></p></li>
 <li><p>Environment variable: <span class="target" id="index-2"></span><a class="reference internal" href="../../environment_variables.html#envvar-EC2_ACCESS_KEY"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">EC2_ACCESS_KEY</span></code></a></p>
 <p>Removed in: major release after 2024-12-01</p>
-<p>Why: EC2 in the name implied it was limited to EC2 resources.  However, it is used for all connections.</p>
+<p>Why: EC2 in the name implied it was limited to EC2 resources. However, it is used for all connections.</p>
 <p>Alternative: AWS_ACCESS_KEY_ID</p>
 </li>
 </ul>
@@ -245,14 +245,14 @@ examples: <code class="docutils literal notranslate"><span class="pre">lookup('a
 <a class="ansibleOptionLink" href="#parameter-endpoint_url" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_endpoint_url, endpoint</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>URL to connect to instead of the default AWS endpoints.  While this can be used to connection to other AWS-compatible services the amazon.aws and community.aws collections are only tested against AWS.</p>
+<td><div class="ansible-option-cell"><p>URL to connect to instead of the default AWS endpoints. While this can be used to connection to other AWS-compatible services the amazon.aws and community.aws collections are only tested against AWS.</p>
 <p>The <em>endpoint</em> alias has been deprecated and will be removed in a release after 2024-12-01.</p>
 <p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
 <ul>
 <li><p>Environment variable: <span class="target" id="index-3"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_URL"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_URL</span></code></a></p></li>
 <li><p>Environment variable: <span class="target" id="index-4"></span><a class="reference internal" href="../../environment_variables.html#envvar-EC2_URL"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">EC2_URL</span></code></a></p>
 <p>Removed in: major release after 2024-12-01</p>
-<p>Why: EC2 in the name implied it was limited to EC2 resources.  However, it is used for all connections.</p>
+<p>Why: EC2 in the name implied it was limited to EC2 resources. However, it is used for all connections.</p>
 <p>Alternative: AWS_URL</p>
 </li>
 </ul>
@@ -361,7 +361,7 @@ examples: <code class="docutils literal notranslate"><span class="pre">lookup('a
 <li><p>Environment variable: <span class="target" id="index-10"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_SECRET_KEY"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_SECRET_KEY</span></code></a></p></li>
 <li><p>Environment variable: <span class="target" id="index-11"></span><a class="reference internal" href="../../environment_variables.html#envvar-EC2_SECRET_KEY"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">EC2_SECRET_KEY</span></code></a></p>
 <p>Removed in: major release after 2024-12-01</p>
-<p>Why: EC2 in the name implied it was limited to EC2 resources.  However, it is used for all connections.</p>
+<p>Why: EC2 in the name implied it was limited to EC2 resources. However, it is used for all connections.</p>
 <p>Alternative: AWS_SECRET_ACCESS_KEY</p>
 </li>
 </ul>
@@ -391,7 +391,7 @@ examples: <code class="docutils literal notranslate"><span class="pre">lookup('a
 </li>
 <li><p>Environment variable: <span class="target" id="index-14"></span><a class="reference internal" href="../../environment_variables.html#envvar-EC2_SECURITY_TOKEN"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">EC2_SECURITY_TOKEN</span></code></a></p>
 <p>Removed in: major release after 2024-12-01</p>
-<p>Why: EC2 in the name implied it was limited to EC2 resources.  However, it is used for all connections.</p>
+<p>Why: EC2 in the name implied it was limited to EC2 resources. However, it is used for all connections.</p>
 <p>Alternative: AWS_SESSION_TOKEN</p>
 </li>
 </ul>
@@ -417,7 +417,7 @@ examples: <code class="docutils literal notranslate"><span class="pre">lookup('a
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <ul class="simple">
-<li><p><strong>Caution:</strong> For modules, environment variables and configuration files are read from the Ansible ‘host’ context and not the ‘controller’ context. As such, files may need to be explicitly copied to the ‘host’.  For lookup and connection plugins, environment variables and configuration files are read from the Ansible ‘controller’ context and not the ‘host’ context.</p></li>
+<li><p><strong>Caution:</strong> For modules, environment variables and configuration files are read from the Ansible ‘host’ context and not the ‘controller’ context. As such, files may need to be explicitly copied to the ‘host’. For lookup and connection plugins, environment variables and configuration files are read from the Ansible ‘controller’ context and not the ‘host’ context.</p></li>
 <li><p>The AWS SDK (boto3) that Ansible uses may also read defaults for credentials and other settings, such as the region, from its configuration files in the Ansible ‘host’ context (typically <code class="docutils literal notranslate"><span class="pre">~/.aws/credentials</span></code>). See <a class="reference external" href="https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html">https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html</a> for more information.</p></li>
 </ul>
 </div>

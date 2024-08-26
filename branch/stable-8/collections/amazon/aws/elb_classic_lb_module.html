@@ -2,7 +2,7 @@
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta content="2.12.0" name="antsibull-docs" />
+<meta content="2.13.0" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>amazon.aws.elb_classic_lb module – Creates, updates or destroys an Amazon ELB &mdash; Ansible collections  documentation</title>
@@ -311,8 +311,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 <a class="ansibleOptionLink" href="#parameter-endpoint_url" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: ec2_url, aws_endpoint_url, s3_url</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>URL to connect to instead of the default AWS endpoints.  While this can be used to connection to other AWS-compatible services the amazon.aws and community.aws collections are only tested against AWS.</p>
-<p>The  <code class="docutils literal notranslate"><span class="pre">AWS_URL</span></code> or <code class="docutils literal notranslate"><span class="pre">EC2_URL</span></code> environment variables may also be used, in decreasing order of preference.</p>
+<td><div class="ansible-option-cell"><p>URL to connect to instead of the default AWS endpoints. While this can be used to connection to other AWS-compatible services the amazon.aws and community.aws collections are only tested against AWS.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">AWS_URL</span></code> or <code class="docutils literal notranslate"><span class="pre">EC2_URL</span></code> environment variables may also be used, in decreasing order of preference.</p>
 <p>The <em>ec2_url</em> and <em>s3_url</em> aliases have been deprecated and will be removed in a release after 2024-12-01.</p>
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_URL</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
@@ -434,7 +434,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 <a class="ansibleOptionLink" href="#parameter-listeners/proxy_protocol" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Enable proxy protocol for the listener.</p>
-<p>Beware, ELB controls for the proxy protocol are based on the <em>instance_port</em>.  If you have multiple listeners talking to the same <em>instance_port</em>, this will affect all of them.</p>
+<p>Beware, ELB controls for the proxy protocol are based on the <em>instance_port</em>. If you have multiple listeners talking to the same <em>instance_port</em>, this will affect all of them.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
@@ -498,7 +498,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 <a class="ansibleOptionLink" href="#parameter-purge_subnets" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Purge existing subnets on the ELB that are not found in <em>subnets</em>.</p>
-<p>Because it is not permitted to add multiple subnets from the same availability zone, subnets to be purged will be removed before new subnets are added.  This may cause a brief outage if you try to replace all subnets at once.</p>
+<p>Because it is not permitted to add multiple subnets from the same availability zone, subnets to be purged will be removed before new subnets are added. This may cause a brief outage if you try to replace all subnets at once.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -512,7 +512,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 </div></td>
 <td><div class="ansible-option-cell"><p>If <em>purge_tags=true</em> and <em>tags</em> is set, existing tags will be purged from the resource to match exactly what is defined by <em>tags</em> parameter.</p>
 <p>If the <em>tags</em> parameter is not set then tags will not be modified, even if <em>purge_tags=True</em>.</p>
-<p>Tag keys beginning with <code class="docutils literal notranslate"><span class="pre">aws:</span></code> are reserved by Amazon and can not be modified.  As such they will be ignored for the purposes of the <em>purge_tags</em> parameter.  See the Amazon documentation for more information <a class="reference external" href="https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions">https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions</a>.</p>
+<p>Tag keys beginning with <code class="docutils literal notranslate"><span class="pre">aws:</span></code> are reserved by Amazon and can not be modified. As such they will be ignored for the purposes of the <em>purge_tags</em> parameter. See the Amazon documentation for more information <a class="reference external" href="https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions">https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions</a>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
@@ -746,7 +746,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 <ul class="simple">
 <li><p>The ec2_elb fact previously set by this module was deprecated in release 2.1.0 and since release 4.0.0 is no longer set.</p></li>
 <li><p>Support for <em>purge_tags</em> was added in release 2.1.0.</p></li>
-<li><p><strong>Caution:</strong> For modules, environment variables and configuration files are read from the Ansible ‘host’ context and not the ‘controller’ context. As such, files may need to be explicitly copied to the ‘host’.  For lookup and connection plugins, environment variables and configuration files are read from the Ansible ‘controller’ context and not the ‘host’ context.</p></li>
+<li><p><strong>Caution:</strong> For modules, environment variables and configuration files are read from the Ansible ‘host’ context and not the ‘controller’ context. As such, files may need to be explicitly copied to the ‘host’. For lookup and connection plugins, environment variables and configuration files are read from the Ansible ‘controller’ context and not the ‘host’ context.</p></li>
 <li><p>The AWS SDK (boto3) that Ansible uses may also read defaults for credentials and other settings, such as the region, from its configuration files in the Ansible ‘host’ context (typically <code class="docutils literal notranslate"><span class="pre">~/.aws/credentials</span></code>). See <a class="reference external" href="https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html">https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html</a> for more information.</p></li>
 </ul>
 </div>
@@ -1183,7 +1183,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 <div class="ansibleOptionAnchor" id="return-elb/name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-classic-lb-module-return-elb-name"><strong>name</strong></p>
 <a class="ansibleOptionLink" href="#return-elb/name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The name of the ELB.  This name is unique per-region, per-account.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The name of the ELB. This name is unique per-region, per-account.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when state is not ‘absent’</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;ansible-test-935c585850ac&quot;</span></code></p>
 </div></td>
@@ -1237,7 +1237,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-clas
 <div class="ansibleOptionAnchor" id="return-elb/status"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-classic-lb-module-return-elb-status"><strong>status</strong></p>
 <a class="ansibleOptionLink" href="#return-elb/status" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A minimal description of the current state of the ELB.  Valid values are <code class="docutils literal notranslate"><span class="pre">'exists'</span></code>, <code class="docutils literal notranslate"><span class="pre">'gone'</span></code>, <code class="docutils literal notranslate"><span class="pre">'deleted'</span></code>, <code class="docutils literal notranslate"><span class="pre">'created'</span></code>.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A minimal description of the current state of the ELB. Valid values are <code class="docutils literal notranslate"><span class="pre">'exists'</span></code>, <code class="docutils literal notranslate"><span class="pre">'gone'</span></code>, <code class="docutils literal notranslate"><span class="pre">'deleted'</span></code>, <code class="docutils literal notranslate"><span class="pre">'created'</span></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;exists&quot;</span></code></p>
 </div></td>
