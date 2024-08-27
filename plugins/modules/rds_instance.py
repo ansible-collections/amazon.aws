@@ -536,6 +536,14 @@ EXAMPLES = r"""
     state: present
     purge_iam_roles: true
 
+# Modify the DB instance type without waiting for a maintenance window 
+- name: Modify an RDS Instance
+  amazon.aws.rds_instance:
+    db_instance_identifier: mydbinstance123
+    instance_class: db.t2.small
+    apply_immediately: yes
+  register: rds_instance
+
 # Restore DB instance from snapshot
 - name: Create a snapshot and wait until completion
   amazon.aws.rds_instance_snapshot:
