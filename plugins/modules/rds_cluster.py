@@ -26,8 +26,8 @@ options:
     state:
         description:
           - Whether the snapshot should exist or not.
-          - C(started) and C(stopped) can only be used with aurora clusters
-          - Support for C(started) and C(stopped) was added in release 6.3.0.
+          - V(started) and V(stopped) can only be used with aurora clusters.
+          - Support for V(started) and V(stopped) was added in release 6.3.0.
         choices: ['present', 'absent', 'started', 'stopped']
         default: 'present'
         type: str
@@ -37,24 +37,24 @@ options:
         type: str
     force_update_password:
         description:
-          - Set to C(true) to update your cluster password with I(master_user_password).
-          - Since comparing passwords to determine if it needs to be updated is not possible this is set to C(false) by default to allow idempotence.
+          - Set to V(true) to update your cluster password with O(master_user_password).
+          - Since comparing passwords to determine if it needs to be updated is not possible this is set to V(false) by default to allow idempotence.
         type: bool
         default: false
     promote:
-        description: Set to C(true) to promote a read replica cluster.
+        description: Set to V(true) to promote a read replica cluster.
         type: bool
         default: false
     purge_cloudwatch_logs_exports:
         description:
-          - Whether or not to disable Cloudwatch logs enabled for the DB cluster that are not provided in I(enable_cloudwatch_logs_exports).
-            Set I(enable_cloudwatch_logs_exports) to an empty list to disable all.
+          - Whether or not to disable Cloudwatch logs enabled for the DB cluster that are not provided in O(enable_cloudwatch_logs_exports).
+            Set O(enable_cloudwatch_logs_exports) to an empty list to disable all.
         type: bool
         default: true
     purge_security_groups:
         description:
-          - Set to C(false) to retain any enabled security groups that aren't specified in the task and are associated with the cluster.
-          - Can be applied to I(vpc_security_group_ids)
+          - Set to V(false) to retain any enabled security groups that aren't specified in the task and are associated with the cluster.
+          - Can be applied to O(vpc_security_group_ids)
         type: bool
         default: true
     wait:
@@ -64,8 +64,8 @@ options:
     # Options that have a corresponding boto3 parameter
     apply_immediately:
         description:
-          - A value that specifies whether modifying a cluster with I(new_db_cluster_identifier) and I(master_user_password)
-            should be applied as soon as possible, regardless of the I(preferred_maintenance_window) setting. If C(false), changes
+          - A value that specifies whether modifying a cluster with O(new_db_cluster_identifier) and O(master_user_password)
+            should be applied as soon as possible, regardless of the O(preferred_maintenance_window) setting. If V(false), changes
             are applied during the next maintenance window.
         type: bool
         default: false
@@ -84,12 +84,12 @@ options:
         type: str
     backtrack_window:
         description:
-          - The target backtrack window, in seconds. To disable backtracking, set this value to C(0).
-          - If specified, this value must be set to a number from C(0) to C(259,200) (72 hours).
+          - The target backtrack window, in seconds. To disable backtracking, set this value to V(0).
+          - If specified, this value must be set to a number from V(0) to V(259,200) (72 hours).
         type: int
     backup_retention_period:
         description:
-          - The number of days for which automated backups are retained (must be within C(1) to C(35)).
+          - The number of days for which automated backups are retained (must be within V(1) to V(35)).
             May be used when creating a new cluster, when restoring from S3, or when modifying a cluster.
         type: int
         default: 1
@@ -125,8 +125,8 @@ options:
     enable_cloudwatch_logs_exports:
         description:
           - A list of log types that need to be enabled for exporting to CloudWatch Logs.
-          - Engine aurora-mysql supports C(audit), C(error), C(general) and C(slowquery).
-          - Engine aurora-postgresql supports C(postgresql).
+          - Engine aurora-mysql supports V(audit), V(error), V(general) and V(slowquery).
+          - Engine aurora-postgresql supports V(postgresql).
         type: list
         elements: str
     deletion_protection:
@@ -165,7 +165,7 @@ options:
         type: bool
     db_cluster_instance_class:
         description:
-          - The compute and memory capacity of each DB instance in the Multi-AZ DB cluster, for example C(db.m6gd.xlarge).
+          - The compute and memory capacity of each DB instance in the Multi-AZ DB cluster, for example V(db.m6gd.xlarge).
           - Not all DB instance classes are available in all Amazon Web Services Regions, or for all database engines.
           - For the full list of DB instance classes and availability for your engine visit
             U(https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html).
@@ -206,9 +206,9 @@ options:
           - The combinaison of I(engine) and I(engine_mode) may not be supported.
           - "See AWS documentation for details:
             L(Amazon RDS Documentation,https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_CreateDBCluster.html)."
-          - When I(engine=mysql), I(allocated_storage), I(iops) and I(db_cluster_instance_class) must also be specified.
-          - When I(engine=postgres), I(allocated_storage), I(iops) and I(db_cluster_instance_class) must also be specified.
-          - Support for C(postgres) and C(mysql) was added in amazon.aws 5.5.0.
+          - When O(engine=mysql), O(allocated_storage), O(iops) and O(db_cluster_instance_class) must also be specified.
+          - When I(engine=postgres), O(allocated_storage), O(iops) and O(db_cluster_instance_class) must also be specified.
+          - Support for V(postgres) and V(mysql) was added in amazon.aws 5.5.0.
         choices:
           - aurora
           - aurora-mysql
@@ -218,7 +218,7 @@ options:
         type: str
     engine_mode:
         description:
-          - The DB engine mode of the DB cluster. The combination of I(engine) and I(engine_mode) may not be supported.
+          - The DB engine mode of the DB cluster. The combination of O(engine) and O(engine_mode) may not be supported.
           - "See AWS documentation for details:
             L(Amazon RDS Documentation,https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_CreateDBCluster.html)."
         choices:
@@ -232,12 +232,12 @@ options:
     engine_version:
         description:
           - The version number of the database engine to use.
-          - For Aurora MySQL that could be C(5.6.10a), C(5.7.12).
-          - Aurora PostgreSQL example, C(9.6.3).
+          - For Aurora MySQL that could be V(5.6.10a), V(5.7.12).
+          - Aurora PostgreSQL example, V(9.6.3).
         type: str
     final_snapshot_identifier:
         description:
-          - The DB cluster snapshot identifier of the new DB cluster snapshot created when I(skip_final_snapshot=false).
+          - The DB cluster snapshot identifier of the new DB cluster snapshot created when O(skip_final_snapshot=false).
         type: str
     force_backtrack:
         description:
@@ -248,14 +248,14 @@ options:
         description:
           - The AWS KMS key identifier (the ARN, unless you are creating a cluster in the same account that owns the
             KMS key, in which case the KMS key alias may be used).
-          - If I(replication_source_identifier) specifies an encrypted source Amazon RDS will use the key used toe encrypt the source.
-          - If I(storage_encrypted=true) and and I(replication_source_identifier) is not provided, the default encryption key is used.
+          - If O(replication_source_identifier) specifies an encrypted source Amazon RDS will use the key used toe encrypt the source.
+          - If O(storage_encrypted=true) and and O(replication_source_identifier) is not provided, the default encryption key is used.
         type: str
     master_user_password:
         description:
           - An 8-41 character password for the master database user.
-          - The password can contain any printable ASCII character except C(/), C("), or C(@).
-          - To modify the password use I(force_password_update). Use I(apply immediately) to change
+          - The password can contain any printable ASCII character except V(/), V("), or V(@).
+          - To modify the password use O(force_update_password). Use O(apply_immediately) to change
             the password immediately, otherwise it is updated during the next maintenance window.
         aliases:
           - password
@@ -271,7 +271,7 @@ options:
           - The new DB cluster (lowercase) identifier for the DB cluster when renaming a DB cluster.
           - The identifier must contain from 1 to 63 letters, numbers, or hyphens and the first character must be a
             letter and may not end in a hyphen or contain consecutive hyphens.
-          - Use I(apply_immediately) to rename immediately, otherwise it is updated during the next maintenance window.
+          - Use O(apply_immediately) to rename immediately, otherwise it is updated during the next maintenance window.
         aliases:
           - new_cluster_id
           - new_id
@@ -284,13 +284,13 @@ options:
     port:
         description:
           - The port number on which the instances in the DB cluster accept connections. If not specified, Amazon RDS
-            defaults this to C(3306) if the I(engine) is C(aurora) and c(5432) if the I(engine) is C(aurora-postgresql).
+            defaults this to V(3306) if the O(engine) is V(aurora) and V(5432) if the O(engine) is V(aurora-postgresql).
         type: int
     preferred_backup_window:
         description:
           - The daily time range (in UTC) of at least 30 minutes, during which automated backups are created if automated backups are
-            enabled using I(backup_retention_period). The option must be in the format of "hh24:mi-hh24:mi" and not conflict with
-            I(preferred_maintenance_window).
+            enabled using O(backup_retention_period). The option must be in the format of "hh24:mi-hh24:mi" and not conflict with
+            O(preferred_maintenance_window).
         aliases:
           - backup_window
         type: str
@@ -303,8 +303,8 @@ options:
         type: str
     remove_from_global_db:
         description:
-          - If set to C(true), the cluster will be removed from global DB.
-          - Parameters I(global_cluster_identifier), I(db_cluster_identifier) must be specified when I(remove_from_global_db=true).
+          - If set to V(true), the cluster will be removed from global DB.
+          - Parameters O(global_cluster_identifier), O(db_cluster_identifier) must be specified when O(remove_from_global_db=true).
         type: bool
         required: false
         version_added: 6.5.0
@@ -317,8 +317,8 @@ options:
     restore_to_time:
         description:
           - The UTC date and time to restore the DB cluster to. Must be in the format "2015-03-07T23:45:00Z".
-          - If this is not provided while restoring a cluster, I(use_latest_restorable_time) must be.
-            May not be specified if I(restore_type) is copy-on-write.
+          - If this is not provided while restoring a cluster, O(use_latest_restorable_time) must be.
+            May not be specified if O(restore_type) is copy-on-write.
         type: str
     restore_type:
         description:
@@ -354,20 +354,20 @@ options:
           min_capacity:
             description:
               - The minimum number of Aurora capacity units (ACUs) for a DB instance in an Aurora Serverless v2 cluster.
-              - ACU values can be specified in in half-step increments, such as C(8), C(8.5), C(9), and so on.
-              - The smallest possible value is C(0.5).
+              - ACU values can be specified in in half-step increments, such as V(8), V(8.5), V(9), and so on.
+              - The smallest possible value is V(0.5).
             type: float
           max_capacity:
             description:
               - The maximum number of Aurora capacity units (ACUs) for a DB instance in an Aurora Serverless v2 cluster.
-              - ACU values can be specified in in half-step increments, such as C(40), C(40.5), C(41), and so on.
-              - The largest possible value is C(128).
+              - ACU values can be specified in in half-step increments, such as V(40), V(40.5), V(41), and so on.
+              - The largest possible value is V(128).
             type: float
         version_added: 7.3.0
     skip_final_snapshot:
         description:
           - Whether a final DB cluster snapshot is created before the DB cluster is deleted.
-          - If this is C(false), I(final_snapshot_identifier) must be provided.
+          - If this is V(false), O(final_snapshot_identifier) must be provided.
         type: bool
         default: false
     snapshot_identifier:
@@ -399,13 +399,13 @@ options:
         type: bool
     use_earliest_time_on_point_in_time_unavailable:
         description:
-          - If I(backtrack_to) is set to a timestamp earlier than the earliest backtrack time, this value backtracks the DB cluster to
+          - If O(backtrack_to) is set to a timestamp earlier than the earliest backtrack time, this value backtracks the DB cluster to
             the earliest possible backtrack time. Otherwise, an error occurs.
         type: bool
     use_latest_restorable_time:
         description:
-          - Whether to restore the DB cluster to the latest restorable backup time. Only one of I(use_latest_restorable_time)
-            and I(restore_to_time) may be provided.
+          - Whether to restore the DB cluster to the latest restorable backup time. Only one of O(use_latest_restorable_time)
+            and O(restore_to_time) may be provided.
         type: bool
     vpc_security_group_ids:
         description:
@@ -416,7 +416,7 @@ options:
 
 EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
-- name: Create minimal aurora cluster in default VPC and default subnet group
+- name: Create minimal Aurora cluster in default VPC and default subnet group
   amazon.aws.rds_cluster:
     cluster_id: "{{ cluster_id }}"
     engine: "aurora"
@@ -448,7 +448,7 @@ EXAMPLES = r"""
     new_cluster_id: "cluster-{{ resource_prefix }}-renamed"
     apply_immediately: true
 
-- name: Delete aurora cluster without creating a final snapshot
+- name: Delete Aurora cluster without creating a final snapshot
   amazon.aws.rds_cluster:
     engine: aurora
     password: "{{ password }}"

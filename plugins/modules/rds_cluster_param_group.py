@@ -93,30 +93,30 @@ EXAMPLES = r"""
 
 RETURN = r"""
 db_cluster_parameter_group:
-    description: dictionary containing all the RDS cluster parameter group information
+    description: dictionary containing all the RDS cluster parameter group information.
     returned: success
     type: complex
     contains:
         db_cluster_parameter_group_arn:
             description: The Amazon Resource Name (ARN) for the RDS cluster parameter group.
             type: str
-            returned: when state is present
+            returned: when O(state=present)
         db_cluster_parameter_group_name:
             description: The name of the RDS cluster parameter group.
             type: str
-            returned: when state is present
+            returned: when O(state=present)
         db_parameter_group_family:
             description: The name of the RDS parameter group family that this RDS cluster parameter group is compatible with.
             type: str
-            returned: when state is present
+            returned: when O(state=present)
         description:
             description: Provides the customer-specified description for this RDS cluster parameter group.
             type: str
-            returned: when state is present
+            returned: when O(state=present)
         tags:
-            description: dictionary of tags
+            description: A dictionary of tags.
             type: dict
-            returned: when state is present
+            returned: when O(state=present)
 """
 
 from itertools import zip_longest
