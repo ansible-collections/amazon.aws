@@ -510,11 +510,194 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-e
 </thead>
 <tbody>
 <tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-lambda_stream_events"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-return-lambda-stream-events"><strong>lambda_stream_events</strong></p>
-<a class="ansibleOptionLink" href="#return-lambda_stream_events" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+<div class="ansibleOptionAnchor" id="return-events"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-return-events"><strong>events</strong></p>
+<a class="ansibleOptionLink" href="#return-events" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>list of dictionaries returned by the API describing stream event mappings</p>
+<td><div class="ansible-option-cell"><p>Dictionary returned by the API describing stream event mappings</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-events/batch_size"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-return-events-batch-size"><strong>batch_size</strong></p>
+<a class="ansibleOptionLink" href="#return-events/batch_size" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The maximum number of records in each batch that Lambda pulls.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-events/bisect_batch_on_function_error"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-return-events-bisect-batch-on-function-error"><strong>bisect_batch_on_function_error</strong></p>
+<a class="ansibleOptionLink" href="#return-events/bisect_batch_on_function_error" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>If the function returns an error, split the batch in two and retry.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> for Kinesis and DynamoDB Streams only</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">false</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-events/destination_config"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-return-events-destination-config"><strong>destination_config</strong></p>
+<a class="ansibleOptionLink" href="#return-events/destination_config" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Configuration object that specifies the destination of an event after Lambda processes it.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> For Kinesis, DynamoDB Streams, Amazon MSK, and self-managed Kafka only</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-events/destination_config/on_failure"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-return-events-destination-config-on-failure"><strong>on_failure</strong></p>
+<a class="ansibleOptionLink" href="#return-events/destination_config/on_failure" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The destination configuration for failed invocations.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-events/destination_config/on_failure/destination"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-return-events-destination-config-on-failure-destination"><strong>destination</strong></p>
+<a class="ansibleOptionLink" href="#return-events/destination_config/on_failure/destination" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Destination resource ARN.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-events/destination_config/on_success"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-return-events-destination-config-on-success"><strong>on_success</strong></p>
+<a class="ansibleOptionLink" href="#return-events/destination_config/on_success" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The destination configuration for failed invocations.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-events/destination_config/on_success/destination"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-return-events-destination-config-on-success-destination"><strong>destination</strong></p>
+<a class="ansibleOptionLink" href="#return-events/destination_config/on_success/destination" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Destination resource ARN.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-events/event_source_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-return-events-event-source-arn"><strong>event_source_arn</strong></p>
+<a class="ansibleOptionLink" href="#return-events/event_source_arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The Amazon Resource Name (ARN) of the event source.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:dynamodb:us-west-2:123456789012:table/yyyy/stream/2024-06-06T07:03:58.956&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-events/function_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-return-events-function-arn"><strong>function_arn</strong></p>
+<a class="ansibleOptionLink" href="#return-events/function_arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ARN of the Lambda function.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:lambda:us-west-2:123456789012:function:test-lambda-3a0a29d0dbb5:1&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-events/function_response_types"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-return-events-function-response-types"><strong>function_response_types</strong></p>
+<a class="ansibleOptionLink" href="#return-events/function_response_types" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A list of current response type enums applied to the event source mapping.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> For Kinesis, DynamoDB Streams, and Amazon SQS</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[&quot;ReportBatchItemFailures&quot;]</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-events/last_modified"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-return-events-last-modified"><strong>last_modified</strong></p>
+<a class="ansibleOptionLink" href="#return-events/last_modified" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The date that the event source mapping was last updated or that its state changed.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2024-06-06T12:34:21.990000+05:30&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-events/last_processing_result"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-return-events-last-processing-result"><strong>last_processing_result</strong></p>
+<a class="ansibleOptionLink" href="#return-events/last_processing_result" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The result of the last Lambda invocation of your function.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;No</span> <span class="pre">records</span> <span class="pre">processed&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-events/maximum_batching_window_in_seconds"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-return-events-maximum-batching-window-in-seconds"><strong>maximum_batching_window_in_seconds</strong></p>
+<a class="ansibleOptionLink" href="#return-events/maximum_batching_window_in_seconds" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The maximum amount of time, in seconds, that Lambda spends gathering records before invoking the function.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">1</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-events/maximum_record_age_in_seconds"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-return-events-maximum-record-age-in-seconds"><strong>maximum_record_age_in_seconds</strong></p>
+<a class="ansibleOptionLink" href="#return-events/maximum_record_age_in_seconds" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Discard records older than the specified age. The default value is infinite (-1).</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> For Kinesis and DynamoDB Streams only</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">-1</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-events/maximum_retry_attempts"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-return-events-maximum-retry-attempts"><strong>maximum_retry_attempts</strong></p>
+<a class="ansibleOptionLink" href="#return-events/maximum_retry_attempts" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Discard records after the specified number of retries.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> For Kinesis and DynamoDB Streams only</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">-1</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-events/parallelization_factor"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-return-events-parallelization-factor"><strong>parallelization_factor</strong></p>
+<a class="ansibleOptionLink" href="#return-events/parallelization_factor" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The number of batches to process concurrently from each shard.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> For Kinesis and DynamoDB Streams only</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">1</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-events/starting_position"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-return-events-starting-position"><strong>starting_position</strong></p>
+<a class="ansibleOptionLink" href="#return-events/starting_position" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The position in a stream from which to start reading.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> For Kinesis and DynamoDB Streams only</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;LATEST&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-events/state"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-return-events-state"><strong>state</strong></p>
+<a class="ansibleOptionLink" href="#return-events/state" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The state of the event source mapping.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;deleting&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-events/state_transition_reason"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-return-events-state-transition-reason"><strong>state_transition_reason</strong></p>
+<a class="ansibleOptionLink" href="#return-events/state_transition_reason" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Indicates whether a user or Lambda made the last change to the event source mapping.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;USER_INITIATED&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-events/tumbling_window_in_seconds"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-return-events-tumbling-window-in-seconds"><strong>tumbling_window_in_seconds</strong></p>
+<a class="ansibleOptionLink" href="#return-events/tumbling_window_in_seconds" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The duration in seconds of a processing window for DynamoDB and Kinesis Streams event sources.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> For Kinesis and DynamoDB Streams only</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">1</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-events/uuid"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-event-module-return-events-uuid"><strong>uuid</strong></p>
+<a class="ansibleOptionLink" href="#return-events/uuid" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The identifier of the event source mapping.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;a1b2c3d4-5678-90ab-cdef-11111EXAMPLE&quot;</span></code></p>
 </div></td>
 </tr>
 </tbody>
