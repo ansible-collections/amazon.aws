@@ -5,7 +5,7 @@
 <meta content="2.13.1" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>amazon.aws.route53_health_check module – Manage health-checks in Amazons Route53 DNS service &mdash; Ansible collections  documentation</title>
+  <title>amazon.aws.route53_health_check module – Manage health checks in Amazons Route 53 DNS service &mdash; Ansible collections  documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=5707b69d" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/ansible.css?v=c5b67dd2" />
       <link rel="stylesheet" type="text/css" href="../../../_static/antsibull-minimal.css" />
@@ -24,7 +24,7 @@
         <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="amazon.aws.route53_info module – Retrieves route53 details using AWS methods" href="route53_info_module.html" />
+    <link rel="next" title="amazon.aws.route53_info module – Retrieves Route 53 details using AWS methods" href="route53_info_module.html" />
     <link rel="prev" title="amazon.aws.route53 module – add or delete entries in Amazons Route 53 DNS service" href="route53_module.html" /><!-- extra head elements for Ansible beyond RTD Sphinx Theme -->
 
 
@@ -124,7 +124,7 @@
           <li class="breadcrumb-item"><a href="../../index.html">Collection Index</a></li>
           <li class="breadcrumb-item"><a href="../index.html">Collections in the Amazon Namespace</a></li>
           <li class="breadcrumb-item"><a href="index.html">Amazon.Aws</a></li>
-      <li class="breadcrumb-item active">amazon.aws.route53_health_check module – Manage health-checks in Amazons Route53 DNS service</li>
+      <li class="breadcrumb-item active">amazon.aws.route53_health_check module – Manage health checks in Amazons Route 53 DNS service</li>
       <li class="wy-breadcrumbs-aside">
               <!-- User defined GitHub URL -->
               <a href="https://github.com/ansible-collections/amazon.aws/edit/stable-8/plugins/modules/route53_health_check.py?description=%23%23%23%23%23%20SUMMARY%0A%3C!—%20Your%20description%20here%20–%3E%0A%0A%0A%23%23%23%23%23%20ISSUE%20TYPE%0A-%20Docs%20Pull%20Request%0A%0A%2Blabel:%20docsite_pr" class="fa fa-github"> Edit on GitHub</a>
@@ -137,8 +137,8 @@
   
            <div itemprop="articleBody">
              
-  <span class="target" id="ansible-collections-amazon-aws-route53-health-check-module"></span><section id="amazon-aws-route53-health-check-module-manage-health-checks-in-amazons-route53-dns-service">
-<h1>amazon.aws.route53_health_check module – Manage health-checks in Amazons Route53 DNS service<a class="headerlink" href="#amazon-aws-route53-health-check-module-manage-health-checks-in-amazons-route53-dns-service" title="Link to this heading"></a></h1>
+  <span class="target" id="ansible-collections-amazon-aws-route53-health-check-module"></span><section id="amazon-aws-route53-health-check-module-manage-health-checks-in-amazons-route-53-dns-service">
+<h1>amazon.aws.route53_health_check module – Manage health checks in Amazons Route 53 DNS service<a class="headerlink" href="#amazon-aws-route53-health-check-module-manage-health-checks-in-amazons-route-53-dns-service" title="Link to this heading"></a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This module is part of the <a class="reference external" href="https://galaxy.ansible.com/ui/repo/published/amazon/aws/">amazon.aws collection</a> (version 8.1.0).</p>
@@ -163,8 +163,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <section id="synopsis">
 <h2><a class="toc-backref" href="#id1" role="doc-backlink">Synopsis</a><a class="headerlink" href="#synopsis" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p>Creates and deletes DNS Health checks in Amazons Route53 service.</p></li>
-<li><p>Only the port, resource_path, string_match and request_interval are considered when updating existing health-checks.</p></li>
+<li><p>Creates and deletes DNS Health checks in Amazons Route 53 service.</p></li>
+<li><p>Only the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-route53-health-check-module-parameter-port"><span class="std std-ref"><span class="pre">port</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-route53-health-check-module-parameter-resource-path"><span class="std std-ref"><span class="pre">resource_path</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-route53-health-check-module-parameter-string-match"><span class="std std-ref"><span class="pre">string_match</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-route53-health-check-module-parameter-request-interval"><span class="std std-ref"><span class="pre">request_interval</span></span></a></strong></code> are considered when updating existing health checks.</p></li>
 <li><p>This module was originally added to <code class="docutils literal notranslate"><span class="pre">community.aws</span></code> in release 1.0.0.</p></li>
 </ul>
 </section>
@@ -248,7 +248,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </div></td>
 <td><div class="ansible-option-cell"><p>Stops Route 53 from performing health checks.</p>
 <p>See the AWS documentation for more details on the exact implications. <a class="reference external" href="https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/health-checks-creating-values.html">https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/health-checks-creating-values.html</a></p>
-<p>Defaults to <code class="docutils literal notranslate"><span class="pre">true</span></code> when creating a new health check.</p>
+<p>Defaults to <code class="ansible-value docutils literal notranslate"><span class="pre">true</span></code> when creating a new health check.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
@@ -295,7 +295,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <div class="ansibleOptionAnchor" id="parameter-fqdn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-health-check-module-parameter-fqdn"><strong>fqdn</strong></p>
 <a class="ansibleOptionLink" href="#parameter-fqdn" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Domain name of the endpoint to check. Either this or <em>ip_address</em> has to be provided. When both are given the <em>fqdn</em> is used in the <code class="docutils literal notranslate"><span class="pre">Host:</span></code> header of the HTTP request.</p>
+<td><div class="ansible-option-cell"><p>Domain name of the endpoint to check. Either this or <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-route53-health-check-module-parameter-ip-address"><span class="std std-ref"><span class="pre">ip_address</span></span></a></strong></code> has to be provided. When both are given the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-route53-health-check-module-parameter-fqdn"><span class="std std-ref"><span class="pre">fqdn</span></span></a></strong></code> is used in the <code class="ansible-value docutils literal notranslate"><span class="pre">Host:</span></code> header of the HTTP request.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -317,7 +317,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <p><em class="ansible-option-versionadded">added in community.aws 4.1.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Name of the Health Check.</p>
-<p>Used together with <em>use_unique_names</em> to set/make use of <em>health_check_name</em> as a unique identifier.</p>
+<p>Used together with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-route53-health-check-module-parameter-use-unique-names"><span class="std std-ref"><span class="pre">use_unique_names</span></span></a></strong></code> to set/make use of <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-route53-health-check-module-parameter-health-check-name"><span class="std std-ref"><span class="pre">health_check_name</span></span></a></strong></code> as a unique identifier.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -333,7 +333,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <div class="ansibleOptionAnchor" id="parameter-ip_address"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-health-check-module-parameter-ip-address"><strong>ip_address</strong></p>
 <a class="ansibleOptionLink" href="#parameter-ip_address" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>IP address of the end-point to check. Either this or <em>fqdn</em> has to be provided.</p>
+<td><div class="ansible-option-cell"><p>IP address of the end-point to check. Either this or <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-route53-health-check-module-parameter-fqdn"><span class="std std-ref"><span class="pre">fqdn</span></span></a></strong></code> has to be provided.</p>
 <p>IP addresses must be publicly routable.</p>
 </div></td>
 </tr>
@@ -343,7 +343,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <p><em class="ansible-option-versionadded">added in amazon.aws 5.4.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>To enable/disable latency graphs to monitor the latency between health checkers in multiple Amazon Web Services regions and your endpoint.</p>
-<p>Value of <em>measure_latency</em> is immutable and can not be modified after creating a health check. See <a class="reference external" href="https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/monitoring-health-check-latency.html">https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/monitoring-health-check-latency.html</a></p>
+<p>Value of <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-route53-health-check-module-parameter-measure-latency"><span class="std std-ref"><span class="pre">measure_latency</span></span></a></strong></code> is immutable and can not be modified after creating a health check. See <a class="reference external" href="https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/monitoring-health-check-latency.html">https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/monitoring-health-check-latency.html</a></p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
@@ -403,7 +403,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <div class="ansibleOptionAnchor" id="parameter-request_interval"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-health-check-module-parameter-request-interval"><strong>request_interval</strong></p>
 <a class="ansibleOptionLink" href="#parameter-request_interval" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>The number of seconds between the time that Amazon Route 53 gets a response from your endpoint and the time that it sends the next health-check request.</p>
+<td><div class="ansible-option-cell"><p>The number of seconds between the time that Amazon Route 53 gets a response from your endpoint and the time that it sends the next health check request.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">10</span></code></p></li>
@@ -416,7 +416,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <a class="ansibleOptionLink" href="#parameter-resource_path" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The path that you want Amazon Route 53 to request when performing health checks. The path can be any value for which your endpoint will return an HTTP status code of 2xx or 3xx when the endpoint is healthy, for example the file /docs/route53-health-check.html.</p>
-<p>Mutually exclusive with <em>type=’TCP’</em>.</p>
+<p>Mutually exclusive with <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-route53-health-check-module-parameter-type"><span class="std std-ref"><span class="pre">type='TCP'</span></span></a></code>.</p>
 <p>The path must begin with a /</p>
 <p>Maximum 255 characters.</p>
 </div></td>
@@ -490,8 +490,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <a class="ansibleOptionLink" href="#parameter-type" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The type of health check that you want to create, which indicates how Amazon Route 53 determines whether an endpoint is healthy.</p>
-<p>Once health_check is created, type can not be changed.</p>
-<p>The CALCULATED choice was added in 6.3.0.</p>
+<p>Once health check is created, type can not be changed.</p>
+<p>The <code class="ansible-value docutils literal notranslate"><span class="pre">CALCULATED</span></code> choice was added in 6.3.0.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;HTTP&quot;</span></code></p></li>
@@ -508,7 +508,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <a class="ansibleOptionLink" href="#parameter-use_unique_names" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 <p><em class="ansible-option-versionadded">added in community.aws 4.1.0</em></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Used together with <em>health_check_name</em> to set/make use of <em>health_check_name</em> as a unique identifier.</p>
+<td><div class="ansible-option-cell"><p>Used together with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-route53-health-check-module-parameter-health-check-name"><span class="std std-ref"><span class="pre">health_check_name</span></span></a></strong></code> to set/make use of <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-route53-health-check-module-parameter-health-check-name"><span class="std std-ref"><span class="pre">health_check_name</span></span></a></strong></code> as a unique identifier.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
@@ -537,7 +537,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <ul class="simple">
-<li><p>Support for <em>tags</em> and <em>purge_tags</em> was added in release 2.1.0.</p></li>
+<li><p>Support for <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-route53-health-check-module-parameter-tags"><span class="std std-ref"><span class="pre">tags</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-route53-health-check-module-parameter-purge-tags"><span class="std std-ref"><span class="pre">purge_tags</span></span></a></strong></code> was added in release 2.1.0.</p></li>
 <li><p><strong>Caution:</strong> For modules, environment variables and configuration files are read from the Ansible ‘host’ context and not the ‘controller’ context. As such, files may need to be explicitly copied to the ‘host’. For lookup and connection plugins, environment variables and configuration files are read from the Ansible ‘controller’ context and not the ‘host’ context.</p></li>
 <li><p>The AWS SDK (boto3) that Ansible uses may also read defaults for credentials and other settings, such as the region, from its configuration files in the Ansible ‘host’ context (typically <code class="docutils literal notranslate"><span class="pre">~/.aws/credentials</span></code>). See <a class="reference external" href="https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html">https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html</a> for more information.</p></li>
 </ul>
@@ -545,7 +545,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </section>
 <section id="examples">
 <h2><a class="toc-backref" href="#id5" role="doc-backlink">Examples</a><a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
-<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create a health-check for host1.example.com and use it in record</span>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create a health check for host1.example.com and use it in record</span>
 <span class="w">  </span><span class="nt">amazon.aws.route53_health_check</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
 <span class="w">    </span><span class="nt">fqdn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">host1.example.com</span>
@@ -587,7 +587,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <span class="w">    </span><span class="nt">use_unique_names</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 <span class="w">    </span><span class="nt">measure_latency</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Delete health-check</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Delete health check</span>
 <span class="w">  </span><span class="nt">amazon.aws.route53_health_check</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">absent</span>
 <span class="w">    </span><span class="nt">fqdn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">host1.example.com</span>
@@ -806,7 +806,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 
 <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="route53_module.html" class="btn btn-neutral float-left" title="amazon.aws.route53 module – add or delete entries in Amazons Route 53 DNS service" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="route53_info_module.html" class="btn btn-neutral float-right" title="amazon.aws.route53_info module – Retrieves route53 details using AWS methods" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="route53_info_module.html" class="btn btn-neutral float-right" title="amazon.aws.route53_info module – Retrieves Route 53 details using AWS methods" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

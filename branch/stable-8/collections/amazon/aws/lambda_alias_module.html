@@ -265,7 +265,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-a
 <a class="ansibleOptionLink" href="#parameter-function_version" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: version</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Version associated with the Lambda function alias. A value of 0 (or omitted parameter) sets the alias to the $LATEST version.</p>
+<td><div class="ansible-option-cell"><p>Version associated with the Lambda function alias. A value of <code class="ansible-value docutils literal notranslate"><span class="pre">0</span></code> (or omitted parameter) sets the alias to the $LATEST version.</p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">0</span></code></p>
 </div></td>
 </tr>
@@ -457,7 +457,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-a
 <div class="ansibleOptionAnchor" id="return-alias_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-alias-module-return-alias-arn"><strong>alias_arn</strong></p>
 <a class="ansibleOptionLink" href="#return-alias_arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Full ARN of the function, including the alias</p>
+<td><div class="ansible-option-cell"><p>Full ARN of the function, including the alias.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:lambda:us-west-2:123456789012:function:myFunction:dev&quot;</span></code></p>
 </div></td>
@@ -466,16 +466,16 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-a
 <div class="ansibleOptionAnchor" id="return-description"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-alias-module-return-description"><strong>description</strong></p>
 <a class="ansibleOptionLink" href="#return-description" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>A short description of the alias</p>
+<td><div class="ansible-option-cell"><p>A short description of the alias.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;The</span> <span class="pre">development</span> <span class="pre">stage</span> <span class="pre">for</span> <span class="pre">my</span> <span class="pre">hot</span> <span class="pre">new</span> <span class="pre">app&quot;</span></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;The</span> <span class="pre">development</span> <span class="pre">stage</span> <span class="pre">for</span> <span class="pre">my</span> <span class="pre">hot</span> <span class="pre">new</span> <span class="pre">app.&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-function_version"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-alias-module-return-function-version"><strong>function_version</strong></p>
 <a class="ansibleOptionLink" href="#return-function_version" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>The qualifier that the alias refers to</p>
+<td><div class="ansible-option-cell"><p>The qualifier that the alias refers to.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;$LATEST&quot;</span></code></p>
 </div></td>
@@ -484,7 +484,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-a
 <div class="ansibleOptionAnchor" id="return-name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-alias-module-return-name"><strong>name</strong></p>
 <a class="ansibleOptionLink" href="#return-name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>The name of the alias assigned</p>
+<td><div class="ansible-option-cell"><p>The name of the alias assigned.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;dev&quot;</span></code></p>
 </div></td>

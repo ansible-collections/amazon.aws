@@ -165,7 +165,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <ul class="simple">
 <li><p>Describes objects in S3.</p></li>
 <li><p>Compatible with AWS, DigitalOcean, Ceph, Walrus, FakeS3 and StorageGRID (only supports list_keys currently).</p></li>
-<li><p>When using non-AWS services, <em>endpoint_url</em> should be specified.</p></li>
+<li><p>When using non-AWS services, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-info-module-parameter-endpoint-url"><span class="std std-ref"><span class="pre">endpoint_url</span></span></a></strong></code> should be specified.</p></li>
 </ul>
 </section>
 <section id="requirements">
@@ -234,7 +234,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 </div></td>
 <td><div class="ansible-option-cell"><p>Enable API compatibility with Ceph RGW.</p>
 <p>It takes into account the S3 API subset working with Ceph in order to provide the same module behaviour where possible.</p>
-<p>Requires <em>endpoint_url</em> if <em>ceph=true</em>.</p>
+<p>Requires <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-info-module-parameter-endpoint-url"><span class="std std-ref"><span class="pre">endpoint_url</span></span></a></strong></code> if <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-info-module-parameter-ceph"><span class="std std-ref"><span class="pre">ceph=true</span></span></a></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -260,7 +260,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <a class="ansibleOptionLink" href="#parameter-dualstack" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Enables Amazon S3 Dual-Stack Endpoints, allowing S3 communications using both IPv4 and IPv6.</p>
-<p>Support for passing <em>dualstack</em> and <em>endpoint_url</em> at the same time has been deprecated, the dualstack endpoints are automatically configured using the configured <em>region</em>. Support will be removed in a release after 2024-12-01.</p>
+<p>Support for passing <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-info-module-parameter-dualstack"><span class="std std-ref"><span class="pre">dualstack</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-info-module-parameter-endpoint-url"><span class="std std-ref"><span class="pre">endpoint_url</span></span></a></strong></code> at the same time has been deprecated, the dualstack endpoints are automatically configured using the configured <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-info-module-parameter-region"><span class="std std-ref"><span class="pre">region</span></span></a></strong></code>. Support will be removed in a release after 2024-12-01.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -291,7 +291,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <a class="ansibleOptionLink" href="#parameter-object_details/attributes_list" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The fields/details that should be returned.</p>
-<p>Required when <em>object_attributes</em> is <code class="docutils literal notranslate"><span class="pre">true</span></code> in <em>object_details</em>.</p>
+<p>Required when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-info-module-parameter-object-details-object-attributes"><span class="std std-ref"><span class="pre">object_details.object_attributes=true</span></span></a></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;ETag&quot;</span></code></p></li>
@@ -465,7 +465,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <ul class="simple">
-<li><p>Support for the <code class="docutils literal notranslate"><span class="pre">S3_URL</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01, please use the <em>endpoint_url</em> parameter or the <code class="docutils literal notranslate"><span class="pre">AWS_URL</span></code> environment variable.</p></li>
+<li><p>Support for the <code class="xref std std-envvar docutils literal notranslate"><span class="pre">S3_URL</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01, please use the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-info-module-parameter-endpoint-url"><span class="std std-ref"><span class="pre">endpoint_url</span></span></a></strong></code> parameter or the <a class="reference internal" href="../../environment_variables.html#envvar-AWS_URL"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_URL</span></code></a> environment variable.</p></li>
 <li><p><strong>Caution:</strong> For modules, environment variables and configuration files are read from the Ansible ‘host’ context and not the ‘controller’ context. As such, files may need to be explicitly copied to the ‘host’. For lookup and connection plugins, environment variables and configuration files are read from the Ansible ‘controller’ context and not the ‘host’ context.</p></li>
 <li><p>The AWS SDK (boto3) that Ansible uses may also read defaults for credentials and other settings, such as the region, from its configuration files in the Ansible ‘host’ context (typically <code class="docutils literal notranslate"><span class="pre">~/.aws/credentials</span></code>). See <a class="reference external" href="https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html">https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html</a> for more information.</p></li>
 </ul>
@@ -531,7 +531,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <a class="ansibleOptionLink" href="#return-object_info" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>S3 object details.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <em>bucket_name</em> and <em>object_name</em> are specified.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-info-module-parameter-bucket-name"><span class="std std-ref"><span class="pre">bucket_name</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-info-module-parameter-object-name"><span class="std std-ref"><span class="pre">object_name</span></span></a></strong></code> are specified.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -539,7 +539,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <a class="ansibleOptionLink" href="#return-object_info/object_acl" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Access control list (ACL) of an object.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <em>object_acl</em> is set to <em>true</em>.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-info-module-parameter-object-details-object-acl"><span class="std std-ref"><span class="pre">object_details.object_acl=true</span></span></a></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -616,7 +616,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <a class="ansibleOptionLink" href="#return-object_info/object_attributes" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Object attributes.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <em>object_attributes</em> is set to <em>true</em>.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-info-module-parameter-object-details-object-attributes"><span class="std std-ref"><span class="pre">object_details.object_attributes=true</span></span></a></code>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -813,7 +813,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <a class="ansibleOptionLink" href="#return-object_info/object_data" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A dict containing the metadata of S3 object.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <em>bucket_name</em> and <em>object_name</em> are specified but <em>object_details</em> is not specified.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-info-module-parameter-bucket-name"><span class="std std-ref"><span class="pre">bucket_name</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-info-module-parameter-object-name"><span class="std std-ref"><span class="pre">object_name</span></span></a></strong></code> are specified but <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-info-module-parameter-object-details"><span class="std std-ref"><span class="pre">object_details</span></span></a></strong></code> is not specified.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -885,7 +885,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <a class="ansibleOptionLink" href="#return-object_info/object_legal_hold" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Object’s current legal hold status</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <em>object_legal_hold</em> is set to <em>true</em> and object legal hold is set on the bucket.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-info-module-parameter-object-details-object-legal-hold"><span class="std std-ref"><span class="pre">object_details.object_legal_hold=true</span></span></a></code> and object legal hold is set on the bucket.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -910,7 +910,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <a class="ansibleOptionLink" href="#return-object_info/object_lock_configuration" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Object Lock configuration for a bucket.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <em>object_lock_configuration</em> is set to <em>true</em> and object lock configuration is set on the bucket.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-info-module-parameter-object-details-object-lock-configuration"><span class="std std-ref"><span class="pre">object_details.object_lock_configuration=true</span></span></a></code> and object lock configuration is set on the bucket.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -967,7 +967,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <a class="ansibleOptionLink" href="#return-object_info/object_retention" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Object’s retention settings.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <em>object_retention</em> is set to <em>true</em> and object retention is set on the bucket.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-info-module-parameter-object-details-object-retention"><span class="std std-ref"><span class="pre">object_details.object_retention=true</span></span></a></code> and object retention is set on the bucket.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -999,7 +999,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <a class="ansibleOptionLink" href="#return-object_info/object_tagging" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The tag-set of an object</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <em>object_tagging</em> is set to <em>true</em>.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-info-module-parameter-object-details-object-tagging"><span class="std std-ref"><span class="pre">object_details.object_tagging=true</span></span></a></code>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -1007,7 +1007,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <a class="ansibleOptionLink" href="#return-s3_keys" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>List of object keys.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when only <em>bucket_name</em> is specified and <em>object_name</em>, <em>object_details</em> are not specified.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when only <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-info-module-parameter-bucket-name"><span class="std std-ref"><span class="pre">bucket_name</span></span></a></strong></code> is specified and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-info-module-parameter-object-name"><span class="std std-ref"><span class="pre">object_name</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-info-module-parameter-object-details"><span class="std std-ref"><span class="pre">object_details</span></span></a></strong></code> are not specified.</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[&quot;prefix1/&quot;,</span> <span class="pre">&quot;prefix1/key1&quot;,</span> <span class="pre">&quot;prefix1/key2&quot;]</span></code></p>
 </div></td>
 </tr>

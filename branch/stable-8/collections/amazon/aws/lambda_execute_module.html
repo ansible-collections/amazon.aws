@@ -164,7 +164,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-e
 <h2><a class="toc-backref" href="#id1" role="doc-backlink">Synopsis</a><a class="headerlink" href="#synopsis" title="Link to this heading"></a></h2>
 <ul class="simple">
 <li><p>This module executes AWS Lambda functions, allowing synchronous and asynchronous invocation.</p></li>
-<li><p>Prior to release 5.0.0 this module was called <code class="docutils literal notranslate"><span class="pre">community.aws.execute_lambda</span></code>. The usage did not change.</p></li>
+<li><p>Prior to release 5.0.0 this module was called <a class="reference external" href="https://ansible-collections.github.io/community.aws/branch/main/collections/community/aws/execute_lambda_module.html#ansible-collections-community-aws-execute-lambda-module" title="(in Ansible collections)"><span class="xref std std-ref">community.aws.execute_lambda</span></a>. The usage did not change.</p></li>
 <li><p>This module was originally added to <code class="docutils literal notranslate"><span class="pre">community.aws</span></code> in release 1.0.0.</p></li>
 </ul>
 <p>Aliases: execute_lambda</p>
@@ -270,7 +270,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-e
 <div class="ansibleOptionAnchor" id="parameter-name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-execute-module-parameter-name"><strong>name</strong></p>
 <a class="ansibleOptionLink" href="#parameter-name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>The name of the function to be invoked. This can only be used for invocations within the calling account. To invoke a function in another account, use <em>function_arn</em> to specify the full ARN.</p>
+<td><div class="ansible-option-cell"><p>The name of the function to be invoked. This can only be used for invocations within the calling account. To invoke a function in another account, use <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-execute-module-parameter-function-arn"><span class="std std-ref"><span class="pre">function_arn</span></span></a></strong></code> to specify the full ARN.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -347,7 +347,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-e
 <div class="ansibleOptionAnchor" id="parameter-tail_log"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-execute-module-parameter-tail-log"><strong>tail_log</strong></p>
 <a class="ansibleOptionLink" href="#parameter-tail_log" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>If <em>tail_log=true</em>, the result of the task will include the last 4 KB of the CloudWatch log for the function execution. Log tailing only works if you use synchronous invocation <em>wait=true</em>. This is usually used for development or testing Lambdas.</p>
+<td><div class="ansible-option-cell"><p>If <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-execute-module-parameter-tail-log"><span class="std std-ref"><span class="pre">tail_log=true</span></span></a></code>, the result of the task will include the last 4 KB of the CloudWatch log for the function execution. Log tailing only works if you use synchronous invocation <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-execute-module-parameter-wait"><span class="std std-ref"><span class="pre">wait=true</span></span></a></code>. This is usually used for development or testing Lambdas.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -372,14 +372,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-e
 <div class="ansibleOptionAnchor" id="parameter-version_qualifier"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-execute-module-parameter-version-qualifier"><strong>version_qualifier</strong></p>
 <a class="ansibleOptionLink" href="#parameter-version_qualifier" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Which version/alias of the function to run. This defaults to the <code class="docutils literal notranslate"><span class="pre">LATEST</span></code> revision, but can be set to any existing version or alias. See <a class="reference external" href="https://docs.aws.amazon.com/lambda/latest/dg/versioning-aliases.html">https://docs.aws.amazon.com/lambda/latest/dg/versioning-aliases.html</a> for details.</p>
+<td><div class="ansible-option-cell"><p>Which version/alias of the function to run. This defaults to the <code class="ansible-value docutils literal notranslate"><span class="pre">LATEST</span></code> revision, but can be set to any existing version or alias. See <a class="reference external" href="https://docs.aws.amazon.com/lambda/latest/dg/versioning-aliases.html">https://docs.aws.amazon.com/lambda/latest/dg/versioning-aliases.html</a> for details.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-wait"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-execute-module-parameter-wait"><strong>wait</strong></p>
 <a class="ansibleOptionLink" href="#parameter-wait" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Whether to wait for the function results or not. If <em>wait=no</em> the task will not return any results. To wait for the Lambda function to complete, set <em>wait=true</em> and the result will be available in the <em>output</em> key.</p>
+<td><div class="ansible-option-cell"><p>Whether to wait for the function results or not. If <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-execute-module-parameter-wait"><span class="std std-ref"><span class="pre">wait=no</span></span></a></code> the task will not return any results. To wait for the Lambda function to complete, set <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-execute-module-parameter-wait"><span class="std std-ref"><span class="pre">wait=true</span></span></a></code> and the result will be available in the <em>output</em> key.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
@@ -395,8 +395,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-e
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <ul class="simple">
-<li><p>Async invocation will always return an empty <code class="docutils literal notranslate"><span class="pre">output</span></code> key.</p></li>
-<li><p>Synchronous invocation may result in a function timeout, resulting in an empty <code class="docutils literal notranslate"><span class="pre">output</span></code> key.</p></li>
+<li><p>Async invocation will always return an empty <code class="ansible-return-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-execute-module-return-result-output"><span class="std std-ref"><span class="pre">result.output</span></span></a></code> key.</p></li>
+<li><p>Synchronous invocation may result in a function timeout, resulting in an empty <code class="ansible-return-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-execute-module-return-result-output"><span class="std std-ref"><span class="pre">result.output</span></span></a></code> key.</p></li>
 <li><p><strong>Caution:</strong> For modules, environment variables and configuration files are read from the Ansible ‘host’ context and not the ‘controller’ context. As such, files may need to be explicitly copied to the ‘host’. For lookup and connection plugins, environment variables and configuration files are read from the Ansible ‘controller’ context and not the ‘host’ context.</p></li>
 <li><p>The AWS SDK (boto3) that Ansible uses may also read defaults for credentials and other settings, such as the region, from its configuration files in the Ansible ‘host’ context (typically <code class="docutils literal notranslate"><span class="pre">~/.aws/credentials</span></code>). See <a class="reference external" href="https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html">https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html</a> for more information.</p></li>
 </ul>
@@ -462,15 +462,15 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-e
 <div class="ansibleOptionAnchor" id="return-result/logs"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-execute-module-return-result-logs"><strong>logs</strong></p>
 <a class="ansibleOptionLink" href="#return-result/logs" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The last 4KB of the function logs. Only provided if <em>tail_log</em> is <code class="docutils literal notranslate"><span class="pre">true</span></code></p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> if <em>tail_log</em> == true</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The last 4KB of the function logs. Only provided if <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-execute-module-parameter-tail-log"><span class="std std-ref"><span class="pre">tail_log=true</span></span></a></code>.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> if <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-execute-module-parameter-tail-log"><span class="std std-ref"><span class="pre">tail_log=true</span></span></a></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-result/output"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-execute-module-return-result-output"><strong>output</strong></p>
 <a class="ansibleOptionLink" href="#return-result/output" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Function output if wait=true and the function returns a value</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Function output if <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-execute-module-parameter-wait"><span class="std std-ref"><span class="pre">wait=true</span></span></a></code> and the function returns a value.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;output&quot;:</span> <span class="pre">&quot;something&quot;}</span></code></p>
 </div></td>
@@ -479,7 +479,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-e
 <div class="ansibleOptionAnchor" id="return-result/status"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-execute-module-return-result-status"><strong>status</strong></p>
 <a class="ansibleOptionLink" href="#return-result/status" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p><code class="docutils literal notranslate"><span class="pre">StatusCode</span></code> of API call exit (200 for synchronous invokes, 202 for async)</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p><code class="ansible-value docutils literal notranslate"><span class="pre">StatusCode</span></code> of API call exit (200 for synchronous invokes, 202 for async).</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">200</span></code></p>
 </div></td>

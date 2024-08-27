@@ -5,7 +5,7 @@
 <meta content="2.13.1" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>amazon.aws.route53_info module – Retrieves route53 details using AWS methods &mdash; Ansible collections  documentation</title>
+  <title>amazon.aws.route53_info module – Retrieves Route 53 details using AWS methods &mdash; Ansible collections  documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=5707b69d" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/ansible.css?v=c5b67dd2" />
       <link rel="stylesheet" type="text/css" href="../../../_static/antsibull-minimal.css" />
@@ -24,8 +24,8 @@
         <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="amazon.aws.route53_zone module – add or delete Route53 zones" href="route53_zone_module.html" />
-    <link rel="prev" title="amazon.aws.route53_health_check module – Manage health-checks in Amazons Route53 DNS service" href="route53_health_check_module.html" /><!-- extra head elements for Ansible beyond RTD Sphinx Theme -->
+    <link rel="next" title="amazon.aws.route53_zone module – add or delete Route 53 zones" href="route53_zone_module.html" />
+    <link rel="prev" title="amazon.aws.route53_health_check module – Manage health checks in Amazons Route 53 DNS service" href="route53_health_check_module.html" /><!-- extra head elements for Ansible beyond RTD Sphinx Theme -->
 
 
 
@@ -124,7 +124,7 @@
           <li class="breadcrumb-item"><a href="../../index.html">Collection Index</a></li>
           <li class="breadcrumb-item"><a href="../index.html">Collections in the Amazon Namespace</a></li>
           <li class="breadcrumb-item"><a href="index.html">Amazon.Aws</a></li>
-      <li class="breadcrumb-item active">amazon.aws.route53_info module – Retrieves route53 details using AWS methods</li>
+      <li class="breadcrumb-item active">amazon.aws.route53_info module – Retrieves Route 53 details using AWS methods</li>
       <li class="wy-breadcrumbs-aside">
               <!-- User defined GitHub URL -->
               <a href="https://github.com/ansible-collections/amazon.aws/edit/stable-8/plugins/modules/route53_info.py?description=%23%23%23%23%23%20SUMMARY%0A%3C!—%20Your%20description%20here%20–%3E%0A%0A%0A%23%23%23%23%23%20ISSUE%20TYPE%0A-%20Docs%20Pull%20Request%0A%0A%2Blabel:%20docsite_pr" class="fa fa-github"> Edit on GitHub</a>
@@ -137,8 +137,8 @@
   
            <div itemprop="articleBody">
              
-  <span class="target" id="ansible-collections-amazon-aws-route53-info-module"></span><section id="amazon-aws-route53-info-module-retrieves-route53-details-using-aws-methods">
-<h1>amazon.aws.route53_info module – Retrieves route53 details using AWS methods<a class="headerlink" href="#amazon-aws-route53-info-module-retrieves-route53-details-using-aws-methods" title="Link to this heading"></a></h1>
+  <span class="target" id="ansible-collections-amazon-aws-route53-info-module"></span><section id="amazon-aws-route53-info-module-retrieves-route-53-details-using-aws-methods">
+<h1>amazon.aws.route53_info module – Retrieves Route 53 details using AWS methods<a class="headerlink" href="#amazon-aws-route53-info-module-retrieves-route-53-details-using-aws-methods" title="Link to this heading"></a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This module is part of the <a class="reference external" href="https://galaxy.ansible.com/ui/repo/published/amazon/aws/">amazon.aws collection</a> (version 8.1.0).</p>
@@ -163,7 +163,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <section id="synopsis">
 <h2><a class="toc-backref" href="#id1" role="doc-backlink">Synopsis</a><a class="headerlink" href="#synopsis" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p>Gets various details related to Route53 zone, record set or health check details.</p></li>
+<li><p>Gets various details related to Route 53 zone, record set or health check details.</p></li>
 <li><p>This module was originally added to <code class="docutils literal notranslate"><span class="pre">community.aws</span></code> in release 1.0.0.</p></li>
 </ul>
 </section>
@@ -224,7 +224,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </div></td>
 <td><div class="ansible-option-cell"><p>The ID of the change batch request.</p>
 <p>The value that you specify here is the value that ChangeResourceRecordSets returned in the Id element when you submitted the request.</p>
-<p>Required if <em>query=change</em>.</p>
+<p>Required if <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-route53-info-module-parameter-query"><span class="std std-ref"><span class="pre">query=change</span></span></a></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -273,7 +273,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <a class="ansibleOptionLink" href="#parameter-health_check_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The ID of the health check.</p>
-<p>Required if <code class="docutils literal notranslate"><span class="pre">query</span></code> is set to <code class="docutils literal notranslate"><span class="pre">health_check</span></code> and <code class="docutils literal notranslate"><span class="pre">health_check_method</span></code> is set to <code class="docutils literal notranslate"><span class="pre">details</span></code> or <code class="docutils literal notranslate"><span class="pre">status</span></code> or <code class="docutils literal notranslate"><span class="pre">failure_reason</span></code>.</p>
+<p>Required if <code class="ansible-value docutils literal notranslate"><span class="pre">query</span></code> is set to <code class="ansible-value docutils literal notranslate"><span class="pre">health_check</span></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-route53-info-module-parameter-health-check-method"><span class="std std-ref"><span class="pre">health_check_method</span></span></a></strong></code> is set to <code class="ansible-value docutils literal notranslate"><span class="pre">details</span></code> or <code class="ansible-value docutils literal notranslate"><span class="pre">status</span></code> or <code class="ansible-value docutils literal notranslate"><span class="pre">failure_reason</span></code>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -297,8 +297,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <a class="ansibleOptionLink" href="#parameter-hosted_zone_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The Hosted Zone ID of the DNS zone.</p>
-<p>Required if <em>query</em> is set to <em>hosted_zone</em> and <em>hosted_zone_method</em> is set to <em>details</em>.</p>
-<p>Required if <em>query</em> is set to <em>record_sets</em>.</p>
+<p>Required if <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-route53-info-module-parameter-query"><span class="std std-ref"><span class="pre">query</span></span></a></strong></code> is set to <code class="ansible-value docutils literal notranslate"><span class="pre">hosted_zone</span></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-route53-info-module-parameter-hosted-zone-method"><span class="std std-ref"><span class="pre">hosted_zone_method</span></span></a></strong></code> is set to <code class="ansible-value docutils literal notranslate"><span class="pre">details</span></code>.</p>
+<p>Required if <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-route53-info-module-parameter-query"><span class="std std-ref"><span class="pre">query</span></span></a></strong></code> is set to <code class="ansible-value docutils literal notranslate"><span class="pre">record_sets</span></code>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -327,7 +327,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <div class="ansibleOptionAnchor" id="parameter-next_marker"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-info-module-parameter-next-marker"><strong>next_marker</strong></p>
 <a class="ansibleOptionLink" href="#parameter-next_marker" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Some requests such as list_command: hosted_zones will return a maximum number of entries - EG 100 or the number specified by <em>max_items</em>. If the number of entries exceeds this maximum another request can be sent using the NextMarker entry from the first response to get the next page of results.</p>
+<td><div class="ansible-option-cell"><p>Some requests such as list_command: hosted_zones will return a maximum number of entries - EG 100 or the number specified by <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-route53-info-module-parameter-max-items"><span class="std std-ref"><span class="pre">max_items</span></span></a></strong></code>. If the number of entries exceeds this maximum another request can be sent using the NextMarker entry from the first response to get the next page of results.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -380,8 +380,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The ID/s of the specified resource/s.</p>
-<p>Required if <em>query=health_check</em> and <em>health_check_method=tags</em>.</p>
-<p>Required if <em>query=hosted_zone</em> and <em>hosted_zone_method=tags</em>.</p>
+<p>Required if <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-route53-info-module-parameter-query"><span class="std std-ref"><span class="pre">query=health_check</span></span></a></code> and <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-route53-info-module-parameter-health-check-method"><span class="std std-ref"><span class="pre">health_check_method=tags</span></span></a></code>.</p>
+<p>Required if <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-route53-info-module-parameter-query"><span class="std std-ref"><span class="pre">query=hosted_zone</span></span></a></code> and <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-route53-info-module-parameter-hosted-zone-method"><span class="std std-ref"><span class="pre">hosted_zone_method=tags</span></span></a></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -564,7 +564,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <p><em class="ansible-option-versionadded">added in community.aws 4.1.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A list of IP ranges in CIDR format for Amazon Route 53 health checkers.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <em>query=checker_ip_range</em></p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-route53-info-module-parameter-query"><span class="std std-ref"><span class="pre">query=checker_ip_range</span></span></a></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -572,7 +572,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <a class="ansibleOptionLink" href="#return-CheckerIpRanges" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A deprecated CamelCased list of IP ranges in CIDR format for Amazon Route 53 health checkers.\ This list contains same elements/parameters as it’s snake_cased version mentioned abobe. \ This field is deprecated and will be removed in 6.0.0 version release.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <em>query=checker_ip_range</em></p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-route53-info-module-parameter-query"><span class="std std-ref"><span class="pre">query=checker_ip_range</span></span></a></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -581,7 +581,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <p><em class="ansible-option-versionadded">added in community.aws 4.1.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A list of dicts that contains information about the reusable delegation set.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <em>query=reusable_delegation_set</em></p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-route53-info-module-parameter-query"><span class="std std-ref"><span class="pre">query=reusable_delegation_set</span></span></a></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -589,7 +589,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <a class="ansibleOptionLink" href="#return-DelegationSets" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A deprecated CamelCased list of dicts that contains information about the reusable delegation set. \ This list contains same elements/parameters as it’s snake_cased version mentioned above. \ This field is deprecated and will be removed in 6.0.0 version release.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <em>query=reusable_delegation_set</em></p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-route53-info-module-parameter-query"><span class="std std-ref"><span class="pre">query=reusable_delegation_set</span></span></a></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -598,7 +598,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <p><em class="ansible-option-versionadded">added in community.aws 4.1.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A dict of Route53 health check details returned by get_health_check in boto3.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <em>query=health_check</em> and <em>health_check_method=details</em></p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-route53-info-module-parameter-query"><span class="std std-ref"><span class="pre">query=health_check</span></span></a></code> and <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-route53-info-module-parameter-health-check-method"><span class="std std-ref"><span class="pre">health_check_method=details</span></span></a></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -739,7 +739,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <div class="ansibleOptionAnchor" id="return-health_check/id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-info-module-return-health-check-id"><strong>id</strong></p>
 <a class="ansibleOptionLink" href="#return-health_check/id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The identifier that Amazon Route53 assigned to the health check at the time of creation.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The identifier that Amazon Route 53 assigned to the health check at the time of creation.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;12345cdc-2cc4-1234-bed2-123456abc1a2&quot;</span></code></p>
 </div></td>
@@ -750,7 +750,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <p><em class="ansible-option-versionadded">added in amazon.aws 5.4.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A dict of Route53 health check details returned by get_health_check_status and get_health_check_last_failure_reason in boto3.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <em>query=health_check</em> and <em>health_check_method=status</em> or <em>health_check_method=failure_reason</em></p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-route53-info-module-parameter-query"><span class="std std-ref"><span class="pre">query=health_check</span></span></a></code> and <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-route53-info-module-parameter-health-check-method"><span class="std std-ref"><span class="pre">health_check_method=status</span></span></a></code> or <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-route53-info-module-parameter-health-check-method"><span class="std std-ref"><span class="pre">health_check_method=failure_reason</span></span></a></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -802,8 +802,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <a class="ansibleOptionLink" href="#return-health_checks" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
 <p><em class="ansible-option-versionadded">added in community.aws 4.0.0</em></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>A list of Route53 health checks returned by list_health_checks in boto3.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <em>query=health_check</em></p>
+<td><div class="ansible-option-cell"><p>A list of Route 53 health checks returned by list_health_checks in boto3.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-route53-info-module-parameter-query"><span class="std std-ref"><span class="pre">query=health_check</span></span></a></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -845,7 +845,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <div class="ansibleOptionAnchor" id="return-health_checks/health_check_config/failure_threshold"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-info-module-return-health-checks-health-check-config-failure-threshold"><strong>failure_threshold</strong></p>
 <a class="ansibleOptionLink" href="#return-health_checks/health_check_config/failure_threshold" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The number of consecutive health checks that an endpoint must pass/fail for Route53 to change current status of endpoint.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The number of consecutive health checks that an endpoint must pass/fail for Route 53 to change current status of endpoint.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">3</span></code></p>
 </div></td>
@@ -917,7 +917,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <div class="ansibleOptionAnchor" id="return-health_checks/health_check_config/search_string"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-info-module-return-health-checks-health-check-config-search-string"><strong>search_string</strong></p>
 <a class="ansibleOptionLink" href="#return-health_checks/health_check_config/search_string" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The string that Route53 uses to search for in the response body from specified resource.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The string that Route 53 uses to search for in the response body from specified resource.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;test-string-to-match&quot;</span></code></p>
 </div></td>
@@ -954,7 +954,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <a class="ansibleOptionLink" href="#return-HealthCheck" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A deprecated CamelCased dict of Route53 health check details returned by get_health_check in boto3. \ This dict contains same elements/parameters as it’s snake_cased version mentioned above. \ This field is deprecated and will be removed in 6.0.0 version release.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <em>query=health_check</em> and <em>health_check_method=details</em></p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-route53-info-module-parameter-query"><span class="std std-ref"><span class="pre">query=health_check</span></span></a></code> and <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-route53-info-module-parameter-health-check-method"><span class="std std-ref"><span class="pre">health_check_method=details</span></span></a></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -962,7 +962,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <a class="ansibleOptionLink" href="#return-HealthChecks" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A deprecated CamelCased list of Route53 health checks returned by list_health_checks in boto3. \ This list contains same elements/parameters as it’s snake_cased version mentioned above. \ This field is deprecated and will be removed in 6.0.0 version release.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <em>query=health_check</em></p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-route53-info-module-parameter-query"><span class="std std-ref"><span class="pre">query=health_check</span></span></a></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -971,7 +971,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <p><em class="ansible-option-versionadded">added in community.aws 4.0.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A list of hosted zones returned by list_hosted_zones in boto3.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <em>query=hosted_zone</em></p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-route53-info-module-parameter-query"><span class="std std-ref"><span class="pre">query=hosted_zone</span></span></a></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -1041,7 +1041,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <a class="ansibleOptionLink" href="#return-HostedZones" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A deprecated CamelCased list of hosted zones returned by list_hosted_zones in boto3. \ This list contains same elements/parameters as it’s snake_cased version mentioned above. \ This field is deprecated and will be removed in 6.0.0 version release.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <em>query=hosted_zone</em></p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-route53-info-module-parameter-query"><span class="std std-ref"><span class="pre">query=hosted_zone</span></span></a></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -1050,7 +1050,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <p><em class="ansible-option-versionadded">added in community.aws 4.0.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A list of resource record sets returned by list_resource_record_sets in boto3.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <em>query=record_sets</em></p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-route53-info-module-parameter-query"><span class="std std-ref"><span class="pre">query=record_sets</span></span></a></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -1146,7 +1146,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <a class="ansibleOptionLink" href="#return-ResourceRecordSets" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A deprecated CamelCased list of resource record sets returned by list_resource_record_sets in boto3. \ This list contains same elements/parameters as it’s snake_cased version mentioned above. \ This field is deprecated and will be removed in 6.0.0 version release.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <em>query=record_sets</em></p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-route53-info-module-parameter-query"><span class="std std-ref"><span class="pre">query=record_sets</span></span></a></code></p>
 </div></td>
 </tr>
 </tbody>
@@ -1174,8 +1174,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
           
 
 <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="route53_health_check_module.html" class="btn btn-neutral float-left" title="amazon.aws.route53_health_check module – Manage health-checks in Amazons Route53 DNS service" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="route53_zone_module.html" class="btn btn-neutral float-right" title="amazon.aws.route53_zone module – add or delete Route53 zones" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="route53_health_check_module.html" class="btn btn-neutral float-left" title="amazon.aws.route53_health_check module – Manage health checks in Amazons Route 53 DNS service" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="route53_zone_module.html" class="btn btn-neutral float-right" title="amazon.aws.route53_zone module – add or delete Route 53 zones" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

@@ -24,7 +24,7 @@
         <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="amazon.aws.route53_health_check module – Manage health-checks in Amazons Route53 DNS service" href="route53_health_check_module.html" />
+    <link rel="next" title="amazon.aws.route53_health_check module – Manage health checks in Amazons Route 53 DNS service" href="route53_health_check_module.html" />
     <link rel="prev" title="amazon.aws.rds_subnet_group module – manage RDS database subnet groups" href="rds_subnet_group_module.html" /><!-- extra head elements for Ansible beyond RTD Sphinx Theme -->
 
 
@@ -207,8 +207,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <a class="ansibleOptionLink" href="#parameter-alias" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Indicates if this is an alias record.</p>
-<p>Mutually exclusive with <em>ttl</em>.</p>
-<p>Defaults to <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p>
+<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-route53-module-parameter-ttl"><span class="std std-ref"><span class="pre">ttl</span></span></a></strong></code>.</p>
+<p>Defaults to <code class="ansible-value docutils literal notranslate"><span class="pre">false</span></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
@@ -282,8 +282,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <div class="ansibleOptionAnchor" id="parameter-failover"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-module-parameter-failover"><strong>failover</strong></p>
 <a class="ansibleOptionLink" href="#parameter-failover" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Failover resource record sets only. Whether this is the primary or secondary resource record set. Allowed values are PRIMARY and SECONDARY</p>
-<p>Mutually exclusive with <em>weight</em> and <em>region</em>.</p>
+<td><div class="ansible-option-cell"><p>Failover resource record sets only. Whether this is the primary or secondary resource record set. Allowed values are <code class="ansible-value docutils literal notranslate"><span class="pre">PRIMARY</span></code> and <code class="ansible-value docutils literal notranslate"><span class="pre">SECONDARY</span></code>.</p>
+<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-route53-module-parameter-weight"><span class="std std-ref"><span class="pre">weight</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-route53-module-parameter-region"><span class="std std-ref"><span class="pre">region</span></span></a></strong></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;SECONDARY&quot;</span></code></p></li>
@@ -306,7 +306,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <a class="ansibleOptionLink" href="#parameter-geo_location/continent_code" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The two-letter code for the continent.</p>
-<p>Specifying <em>continent_code</em> with either <em>country_code</em> or <em>subdivision_code</em> returns an InvalidInput error.</p>
+<p>Specifying <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-route53-module-parameter-geo-location-continent-code"><span class="std std-ref"><span class="pre">geo_location.continent_code</span></span></a></strong></code> with either <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-route53-module-parameter-geo-location-country-code"><span class="std std-ref"><span class="pre">geo_location.country_code</span></span></a></strong></code> or <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-route53-module-parameter-geo-location-subdivision-code"><span class="std std-ref"><span class="pre">geo_location.subdivision_code</span></span></a></strong></code> returns an InvalidInput error.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -322,7 +322,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <a class="ansibleOptionLink" href="#parameter-geo_location/subdivision_code" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The two-letter code for a state of the United States.</p>
-<p>To specify <em>subdivision_code</em>, <em>country_code</em> must be set to <code class="docutils literal notranslate"><span class="pre">US</span></code>.</p>
+<p>To specify <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-route53-module-parameter-geo-location-subdivision-code"><span class="std std-ref"><span class="pre">geo_location.subdivision_code</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-route53-module-parameter-geo-location-country-code"><span class="std std-ref"><span class="pre">geo_location.country_code</span></span></a></strong></code> must be set to <code class="ansible-value docutils literal notranslate"><span class="pre">US</span></code>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -337,7 +337,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <a class="ansibleOptionLink" href="#parameter-hosted_zone_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The Hosted Zone ID of the DNS zone to modify.</p>
-<p>This is a required parameter, if parameter <em>zone</em> is not supplied.</p>
+<p>This is a required parameter, if parameter <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-route53-module-parameter-zone"><span class="std std-ref"><span class="pre">zone</span></span></a></strong></code> is not supplied.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -363,7 +363,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <div class="ansibleOptionAnchor" id="parameter-private_zone"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-module-parameter-private-zone"><strong>private_zone</strong></p>
 <a class="ansibleOptionLink" href="#parameter-private_zone" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>If set to <code class="docutils literal notranslate"><span class="pre">true</span></code>, the private zone matching the requested name within the domain will be used if there are both public and private zones.</p>
+<td><div class="ansible-option-cell"><p>If set to <code class="ansible-value docutils literal notranslate"><span class="pre">true</span></code>, the private zone matching the requested name within the domain will be used if there are both public and private zones.</p>
 <p>The default is to use the public zone.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
@@ -396,14 +396,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <a class="ansibleOptionLink" href="#parameter-region" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Latency-based resource record sets only Among resource record sets that have the same combination of DNS name and type, a value that determines which region this should be associated with for the latency-based routing</p>
-<p>Mutually exclusive with <em>weight</em> and <em>failover</em>.</p>
+<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-route53-module-parameter-weight"><span class="std std-ref"><span class="pre">weight</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-route53-module-parameter-failover"><span class="std std-ref"><span class="pre">failover</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-retry_interval"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-module-parameter-retry-interval"><strong>retry_interval</strong></p>
 <a class="ansibleOptionLink" href="#parameter-retry_interval" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>In the case that Route 53 is still servicing a prior request, this module will wait and try again after this many seconds. If you have many domain names, the default of <code class="docutils literal notranslate"><span class="pre">500</span></code> seconds may be too long.</p>
+<td><div class="ansible-option-cell"><p>In the case that Route 53 is still servicing a prior request, this module will wait and try again after this many seconds. If you have many domain names, the default of <code class="ansible-value docutils literal notranslate"><span class="pre">500</span></code> seconds may be too long.</p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">500</span></code></p>
 </div></td>
 </tr>
@@ -464,7 +464,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <a class="ansibleOptionLink" href="#parameter-ttl" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The TTL, in second, to give the new record.</p>
-<p>Mutually exclusive with <em>alias</em>.</p>
+<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-route53-module-parameter-alias"><span class="std std-ref"><span class="pre">alias</span></span></a></strong></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">3600</span></code></p>
 </div></td>
 </tr>
@@ -513,7 +513,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <div class="ansibleOptionAnchor" id="parameter-vpc_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-module-parameter-vpc-id"><strong>vpc_id</strong></p>
 <a class="ansibleOptionLink" href="#parameter-vpc_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>When used in conjunction with private_zone: true, this will only modify records in the private hosted zone attached to this VPC.</p>
+<td><div class="ansible-option-cell"><p>When used in conjunction with <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-route53-module-parameter-private-zone"><span class="std std-ref"><span class="pre">private_zone=true</span></span></a></code>, this will only modify records in the private hosted zone attached to this VPC.</p>
 <p>This allows you to have multiple private hosted zones, all with the same name, attached to different VPCs.</p>
 </div></td>
 </tr>
@@ -542,7 +542,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <a class="ansibleOptionLink" href="#parameter-weight" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Weighted resource record sets only. Among resource record sets that have the same combination of DNS name and type, a value that determines what portion of traffic for the current resource record set is routed to the associated location.</p>
-<p>Mutually exclusive with <em>region</em> and <em>failover</em>.</p>
+<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-route53-module-parameter-region"><span class="std std-ref"><span class="pre">region</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-route53-module-parameter-failover"><span class="std std-ref"><span class="pre">failover</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -550,7 +550,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <a class="ansibleOptionLink" href="#parameter-zone" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The DNS zone to modify.</p>
-<p>This is a required parameter, if parameter <em>hosted_zone_id</em> is not supplied.</p>
+<p>This is a required parameter, if parameter <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-route53-module-parameter-hosted-zone-id"><span class="std std-ref"><span class="pre">hosted_zone_id</span></span></a></strong></code> is not supplied.</p>
 </div></td>
 </tr>
 </tbody>
@@ -776,7 +776,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <a class="ansibleOptionLink" href="#return-set/geo_location" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 <p><em class="ansible-option-versionadded">added in community.aws 3.3.0</em></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>geograpic location based on which Route53 resonds to DNS queries.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Geograpic location based on which Route53 resonds to DNS queries.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when configured</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;continent_code&quot;:</span> <span class="pre">&quot;NA&quot;,</span> <span class="pre">&quot;country_code&quot;:</span> <span class="pre">&quot;US&quot;,</span> <span class="pre">&quot;subdivision_code&quot;:</span> <span class="pre">&quot;CA&quot;}</span></code></p>
 </div></td>
@@ -785,7 +785,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <div class="ansibleOptionAnchor" id="return-set/health_check"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-module-return-set-health-check"><strong>health_check</strong></p>
 <a class="ansibleOptionLink" href="#return-set/health_check" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>health_check associated with this record.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Health check associated with this record.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 </div></td>
 </tr>
@@ -874,7 +874,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <a class="ansibleOptionLink" href="#return-wait_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 <p><em class="ansible-option-versionadded">added in amazon.aws 6.3.0</em></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>The wait ID for the applied change. Can be used to wait for the change to propagate later on when <em>wait=false</em>.</p>
+<td><div class="ansible-option-cell"><p>The wait ID for the applied change. Can be used to wait for the change to propagate later on when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-route53-module-parameter-wait"><span class="std std-ref"><span class="pre">wait=false</span></span></a></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when changed</p>
 </div></td>
 </tr>
@@ -905,7 +905,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 
 <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="rds_subnet_group_module.html" class="btn btn-neutral float-left" title="amazon.aws.rds_subnet_group module – manage RDS database subnet groups" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="route53_health_check_module.html" class="btn btn-neutral float-right" title="amazon.aws.route53_health_check module – Manage health-checks in Amazons Route53 DNS service" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="route53_health_check_module.html" class="btn btn-neutral float-right" title="amazon.aws.route53_health_check module – Manage health checks in Amazons Route 53 DNS service" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

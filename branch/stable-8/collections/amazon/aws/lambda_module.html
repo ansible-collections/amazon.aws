@@ -210,7 +210,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <p><em class="ansible-option-versionadded">added in amazon.aws 5.0.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The instruction set architecture that the function supports.</p>
-<p>Requires one of <em>s3_bucket</em> or <em>zip_file</em>.</p>
+<p>Requires one of <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-module-parameter-s3-bucket"><span class="std std-ref"><span class="pre">s3_bucket</span></span></a></strong></code> or <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-module-parameter-zip-file"><span class="std std-ref"><span class="pre">zip_file</span></span></a></strong></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;x86_64&quot;</span></code></p></li>
@@ -297,7 +297,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 </div></td>
 <td><div class="ansible-option-cell"><p>The Amazon ECR URI of the image to use.</p>
 <p>Required (alternative to runtime zip_file and s3_bucket) when creating a function.</p>
-<p>Required when <em>state=present</em>.</p>
+<p>Required when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -324,7 +324,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The name or Amazon Resource Name (ARN) of the layer.</p>
-<p>Mutually exclusive with <em>layer_version_arn</em>.</p>
+<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-module-parameter-layers-layer-version-arn"><span class="std std-ref"><span class="pre">layers.layer_version_arn</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -332,7 +332,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <a class="ansibleOptionLink" href="#parameter-layers/layer_version_arn" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ARN of the layer version.</p>
-<p>Mutually exclusive with <em>layer_version_arn</em>.</p>
+<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-module-parameter-layers-layer-name"><span class="std std-ref"><span class="pre">layers.layer_name</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -342,7 +342,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The version number.</p>
-<p>Required when <em>layer_name</em> is provided, ignored if not.</p>
+<p>Required when <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-module-parameter-layers-layer-name"><span class="std std-ref"><span class="pre">layers.layer_name</span></span></a></strong></code> is provided, ignored if not.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -406,7 +406,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <a class="ansibleOptionLink" href="#parameter-role" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The Amazon Resource Name (ARN) of the IAM role that Lambda assumes when it executes your function to access any other Amazon Web Services (AWS) resources. You may use the bare ARN if the role belongs to the same AWS account.</p>
-<p>Required when <em>state=present</em>.</p>
+<p>Required when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -415,7 +415,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 </div></td>
 <td><div class="ansible-option-cell"><p>The runtime environment for the Lambda function you are uploading.</p>
 <p>Required when creating a function. Uses parameters as described in boto3 docs.</p>
-<p>Required when <em>state=present</em>.</p>
+<p>Required when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code>.</p>
 <p>For supported list of runtimes, see <a class="reference external" href="https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html">https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html</a>.</p>
 </div></td>
 </tr>
@@ -424,8 +424,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <a class="ansibleOptionLink" href="#parameter-s3_bucket" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Amazon S3 bucket name where the .zip file containing your deployment package is stored.</p>
-<p>If <em>state=present</em> then either <em>zip_file</em> or <em>s3_bucket</em> must be present.</p>
-<p><em>s3_bucket</em> and <em>s3_key</em> are required together.</p>
+<p>If <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code> then either <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-module-parameter-zip-file"><span class="std std-ref"><span class="pre">zip_file</span></span></a></strong></code> or <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-module-parameter-s3-bucket"><span class="std std-ref"><span class="pre">s3_bucket</span></span></a></strong></code> must be present.</p>
+<p><code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-module-parameter-s3-bucket"><span class="std std-ref"><span class="pre">s3_bucket</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-module-parameter-s3-key"><span class="std std-ref"><span class="pre">s3_key</span></span></a></strong></code> are required together.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -433,7 +433,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <a class="ansibleOptionLink" href="#parameter-s3_key" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The Amazon S3 object (the deployment package) key name you want to upload.</p>
-<p><em>s3_bucket</em> and <em>s3_key</em> are required together.</p>
+<p><code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-module-parameter-s3-bucket"><span class="std std-ref"><span class="pre">s3_bucket</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-module-parameter-s3-key"><span class="std std-ref"><span class="pre">s3_key</span></span></a></strong></code> are required together.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -538,7 +538,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <a class="ansibleOptionLink" href="#parameter-vpc_security_group_ids" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>List of VPC security group IDs to associate with the Lambda function.</p>
-<p>Required when <em>vpc_subnet_ids</em> is used.</p>
+<p>Required when <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-module-parameter-vpc-subnet-ids"><span class="std std-ref"><span class="pre">vpc_subnet_ids</span></span></a></strong></code> is used.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -547,7 +547,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 </div></td>
 <td><div class="ansible-option-cell"><p>List of subnet IDs to run Lambda function in.</p>
 <p>Use this option if you need to access resources in your VPC. Leave empty if you don’t want to run the function in a VPC.</p>
-<p>If set, <em>vpc_security_group_ids</em> must also be set.</p>
+<p>If set, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-module-parameter-vpc-security-group-ids"><span class="std std-ref"><span class="pre">vpc_security_group_ids</span></span></a></strong></code> must also be set.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -557,7 +557,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A .zip file containing your deployment package</p>
-<p>If <em>state=present</em> then either <em>zip_file</em> or <em>s3_bucket</em> must be present.</p>
+<p>If <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code> then either <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-module-parameter-zip-file"><span class="std std-ref"><span class="pre">zip_file</span></span></a></strong></code> or <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-module-parameter-s3-bucket"><span class="std std-ref"><span class="pre">s3_bucket</span></span></a></strong></code> must be present.</p>
 </div></td>
 </tr>
 </tbody>
@@ -680,7 +680,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-m
 <div class="ansibleOptionAnchor" id="return-configuration"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-module-return-configuration"><strong>configuration</strong></p>
 <a class="ansibleOptionLink" href="#return-configuration" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>the lambda function’s configuration metadata returned by get_function in boto3</p>
+<td><div class="ansible-option-cell"><p>The Lambda function’s configuration metadata returned by get_function in boto3.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 </div></td>
 </tr>
