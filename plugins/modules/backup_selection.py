@@ -155,10 +155,20 @@ EXAMPLES = r"""
 - name: Create backup selection
   amazon.aws.backup_selection:
     selection_name: elastic
-    backup_plan_name: 1111f877-1ecf-4d79-9718-a861cd09df3b
+    backup_plan_name: test-backup-plan
     iam_role_arn: arn:aws:iam::111122223333:role/system-backup
     resources:
       - arn:aws:elasticfilesystem:*:*:file-system/*
+
+- name: Create backup selection, assign resources using tags
+  amazon.aws.backup_selection:
+    selection_name: elastic
+    backup_plan_name: test-backup-plan
+    iam_role_arn: arn:aws:iam::111122223333:role/system-backup
+    list_of_tags:
+      - condition_type: STRINGEQUALS
+        condition_key: Owner
+        condition_value: Dev01
 """
 
 
@@ -169,17 +179,17 @@ backup_selection:
   type: complex
   contains:
     backup_plan_id:
-      description: Backup plan id.
+      description: ID of the backup plan.
       returned: always
       type: str
       sample: "1111f877-1ecf-4d79-9718-a861cd09df3b"
     creation_date:
-      description: Backup plan creation date.
-      returned: always
+      description: Creation date of the backup plan.
+      returned: on create/update
       type: str
-      sample: "2023-01-24T10:08:03.193000+01:00"
+      sample: '2023-01-24T10:08:03.193000+01:00'
     iam_role_arn:
-      description: The ARN of the IAM role that Backup uses.
+      description: The ARN of the IAM role that Backup uses to authenticate when backing up the target resource.
       returned: always
       type: str
       sample: "arn:aws:iam::111122223333:role/system-backup"
@@ -189,21 +199,69 @@ backup_selection:
       type: str
       sample: "1111c217-5d71-4a55-8728-5fc4e63d437b"
     selection_name:
-      description: Backup selection name.
+      description: The display name of a resource selection document.
       returned: always
       type: str
       sample: elastic
     conditions:
-      description: List of conditions (expressed as a dict) that are defined to assign resources to the backup plan using tags.
+      description: A list of conditions that defines how resources are assigned to backup plans using tags.
       returned: always
       type: dict
-      sample: {}
+      sample: {
+                "string_equals": [],
+                "string_like": [],
+                "string_not_equals": [],
+                "string_not_like": []
+            }
+      contains:
+        string_equals:
+          description: Filters the values of tagged resources for only those resources that are tagged with the same value.
+          returned: always
+          type: list
+          sample: []
+        string_like:
+          description: Filters the values of tagged resources for matching tag values with the use of a wildcard character (*) anywhere in the string.
+          returned: always
+          type: list
+          sample: []
+        string_not_equals:
+          description: Filters the values of tagged resources for only those resources that are not tagged with the same value.
+          returned: always
+          type: list
+          sample: []
+        string_not_like:
+          description: Filters the values of tagged resources for non-matching tag values with the use of a wildcard character (*) anywhere in the string.
+          returned: always
+          type: list
+          sample: []
     list_of_tags:
       description: Conditions defined to assign resources to the backup plans using tags.
       returned: always
       type: list
       elements: dict
-      sample: []
+      sample: [
+                {
+                    "condition_key": "Environment",
+                    "condition_type": "STRINGEQUALS",
+                    "condition_value": "Dev"
+                }
+            ]
+      contains:
+        condition_key:
+          description: The key in a key-value pair.
+          returned: always
+          type: str
+          sample: "Environment"
+        condition_type:
+          description: An operation applied to a key-value pair used to assign resources to backup plan.
+          returned: always
+          type: str
+          sample: "STRINGEQUALS"
+        condition_value:
+          description: The value in a key-value pair.
+          returned: always
+          type: str
+          sample: "Dev"
     not_resources:
       description: List of Amazon Resource Names (ARNs) that are excluded from the backup plan.
       returned: always
