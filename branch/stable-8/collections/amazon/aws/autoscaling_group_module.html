@@ -165,7 +165,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <ul class="simple">
 <li><p>Can create or delete AWS AutoScaling Groups.</p></li>
 <li><p>Can be used with the <a class="reference external" href="https://ansible-collections.github.io/community.aws/branch/main/collections/community/aws/autoscaling_launch_config_module.html#ansible-collections-community-aws-autoscaling-launch-config-module" title="(in Ansible collections)"><span class="xref std std-ref">community.aws.autoscaling_launch_config</span></a> module to manage Launch Configurations.</p></li>
-<li><p>Prior to release 5.0.0 this module was called <code class="docutils literal notranslate"><span class="pre">community.aws.ec2_asg</span></code>. The usage did not change.</p></li>
+<li><p>Prior to release 5.0.0 this module was called <a class="reference external" href="https://ansible-collections.github.io/community.aws/branch/main/collections/community/aws/ec2_asg_module.html#ansible-collections-community-aws-ec2-asg-module" title="(in Ansible collections)"><span class="xref std std-ref">community.aws.ec2_asg</span></a>. The usage did not change.</p></li>
 <li><p>This module was originally added to <code class="docutils literal notranslate"><span class="pre">community.aws</span></code> in release 1.0.0.</p></li>
 </ul>
 <p>Aliases: ec2_asg</p>
@@ -210,7 +210,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <a class="ansibleOptionLink" href="#parameter-availability_zones" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>List of availability zone names in which to create the group.</p>
-<p>Defaults to all the availability zones in the region if <em>vpc_zone_identifier</em> is not set.</p>
+<p>Defaults to all the availability zones in the region if <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-vpc-zone-identifier"><span class="std std-ref"><span class="pre">vpc_zone_identifier</span></span></a></strong></code> is not set.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -276,7 +276,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <p><em class="ansible-option-versionadded">added in community.aws 3.2.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Removes one or more instances from the specified AutoScalingGroup.</p>
-<p>If <em>decrement_desired_capacity</em> flag is not set, new instance(s) are launched to replace the detached instance(s).</p>
+<p>If <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-decrement-desired-capacity"><span class="std std-ref"><span class="pre">decrement_desired_capacity</span></span></a></strong></code> flag is not set, new instance(s) are launched to replace the detached instance(s).</p>
 <p>If a Classic Load Balancer is attached to the AutoScalingGroup, the instances are also deregistered from the load balancer.</p>
 <p>If there are target groups attached to the AutoScalingGroup, the instances are also deregistered from the target groups.</p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[]</span></code></p>
@@ -320,8 +320,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <div class="ansibleOptionAnchor" id="parameter-launch_config_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-module-parameter-launch-config-name"><strong>launch_config_name</strong></p>
 <a class="ansibleOptionLink" href="#parameter-launch_config_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Name of the Launch configuration to use for the group. See the community.aws.autoscaling_launch_config) module for managing these.</p>
-<p>If unspecified then the current group value will be used. One of <em>launch_config_name</em> or <em>launch_template</em> must be provided.</p>
+<td><div class="ansible-option-cell"><p>Name of the Launch configuration to use for the group. See the <a class="reference external" href="https://ansible-collections.github.io/community.aws/branch/main/collections/community/aws/autoscaling_launch_config_module.html#ansible-collections-community-aws-autoscaling-launch-config-module" title="(in Ansible collections)"><span class="xref std std-ref">community.aws.autoscaling_launch_config</span></a> module for managing these.</p>
+<p>If unspecified then the current group value will be used. One of <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-launch-config-name"><span class="std std-ref"><span class="pre">launch_config_name</span></span></a></strong></code> or <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-launch-template"><span class="std std-ref"><span class="pre">launch_template</span></span></a></strong></code> must be provided.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -335,14 +335,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <div class="ansibleOptionAnchor" id="parameter-launch_template/launch_template_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-module-parameter-launch-template-launch-template-id"><strong>launch_template_id</strong></p>
 <a class="ansibleOptionLink" href="#parameter-launch_template/launch_template_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The id of the launch template. Only one of <em>launch_template_name</em> or <em>launch_template_id</em> is required.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The id of the launch template. Only one of <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-launch-template-launch-template-name"><span class="std std-ref"><span class="pre">launch_template.launch_template_name</span></span></a></strong></code> or <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-launch-template-launch-template-id"><span class="std std-ref"><span class="pre">launch_template.launch_template_id</span></span></a></strong></code> is required.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-launch_template/launch_template_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-module-parameter-launch-template-launch-template-name"><strong>launch_template_name</strong></p>
 <a class="ansibleOptionLink" href="#parameter-launch_template/launch_template_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The name of the launch template. Only one of <em>launch_template_name</em> or <em>launch_template_id</em> is required.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The name of the launch template. Only one of <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-launch-template-launch-template-name"><span class="std std-ref"><span class="pre">launch_template.launch_template_name</span></span></a></strong></code> or <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-launch-template-launch-template-id"><span class="std std-ref"><span class="pre">launch_template.launch_template_id</span></span></a></strong></code> is required.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -357,7 +357,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <div class="ansibleOptionAnchor" id="parameter-lc_check"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-module-parameter-lc-check"><strong>lc_check</strong></p>
 <a class="ansibleOptionLink" href="#parameter-lc_check" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Check to make sure instances that are being replaced with <em>replace_instances</em> do not already have the current <em>launch_config</em>.</p>
+<td><div class="ansible-option-cell"><p>Check to make sure instances that are being replaced with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-replace-instances"><span class="std std-ref"><span class="pre">replace_instances</span></span></a></strong></code> do not already have the current launch config.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
@@ -376,7 +376,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <div class="ansibleOptionAnchor" id="parameter-lt_check"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-module-parameter-lt-check"><strong>lt_check</strong></p>
 <a class="ansibleOptionLink" href="#parameter-lt_check" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Check to make sure instances that are being replaced with <em>replace_instances</em> do not already have the current <em>launch_template or I(launch_template</em> <em>version</em>.</p>
+<td><div class="ansible-option-cell"><p>Check to make sure instances that are being replaced with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-replace-instances"><span class="std std-ref"><span class="pre">replace_instances</span></span></a></strong></code> do not already have the current <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-launch-template"><span class="std std-ref"><span class="pre">launch_template</span></span></a></strong></code> or <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-launch-template"><span class="std std-ref"><span class="pre">launch_template</span></span></a></strong></code> <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-launch-template-version"><span class="std std-ref"><span class="pre">launch_template.version</span></span></a></strong></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
@@ -389,8 +389,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <a class="ansibleOptionLink" href="#parameter-max_instance_lifetime" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The maximum amount of time, in seconds, that an instance can be in service.</p>
-<p>Maximum instance lifetime must be equal to 0, between 604800 and 31536000 seconds (inclusive), or not specified.</p>
-<p>Value of 0 removes lifetime restriction.</p>
+<p>Maximum instance lifetime must be equal to <code class="ansible-value docutils literal notranslate"><span class="pre">0</span></code>, between <code class="ansible-value docutils literal notranslate"><span class="pre">604800</span></code> and <code class="ansible-value docutils literal notranslate"><span class="pre">31536000</span></code> seconds (inclusive), or not specified.</p>
+<p>Value of <code class="ansible-value docutils literal notranslate"><span class="pre">0</span></code> removes lifetime restriction.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -416,7 +416,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <div class="ansibleOptionAnchor" id="parameter-metrics_granularity"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-module-parameter-metrics-granularity"><strong>metrics_granularity</strong></p>
 <a class="ansibleOptionLink" href="#parameter-metrics_granularity" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>When <em>metrics_collection=true</em> this will determine the granularity of metrics collected by CloudWatch.</p>
+<td><div class="ansible-option-cell"><p>When <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-metrics-collection"><span class="std std-ref"><span class="pre">metrics_collection=true</span></span></a></code> this will determine the granularity of metrics collected by CloudWatch.</p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;1Minute&quot;</span></code></p>
 </div></td>
 </tr>
@@ -424,7 +424,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <div class="ansibleOptionAnchor" id="parameter-metrics_list"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-module-parameter-metrics-list"><strong>metrics_list</strong></p>
 <a class="ansibleOptionLink" href="#parameter-metrics_list" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>List of autoscaling metrics to collect when <em>metrics_collection=true</em>.</p>
+<td><div class="ansible-option-cell"><p>List of autoscaling metrics to collect when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-metrics-collection"><span class="std std-ref"><span class="pre">metrics_collection=true</span></span></a></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[&quot;GroupMinSize&quot;,</span> <span class="pre">&quot;GroupMaxSize&quot;,</span> <span class="pre">&quot;GroupDesiredCapacity&quot;,</span> <span class="pre">&quot;GroupInServiceInstances&quot;,</span> <span class="pre">&quot;GroupPendingInstances&quot;,</span> <span class="pre">&quot;GroupStandbyInstances&quot;,</span> <span class="pre">&quot;GroupTerminatingInstances&quot;,</span> <span class="pre">&quot;GroupTotalInstances&quot;]</span></code></p>
 </div></td>
 </tr>
@@ -440,7 +440,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <a class="ansibleOptionLink" href="#parameter-mixed_instances_policy" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A mixed instance policy to use for the ASG.</p>
-<p>Only used when the ASG is configured to use a Launch Template (<em>launch_template</em>).</p>
+<p>Only used when the ASG is configured to use a Launch Template (<code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-launch-template"><span class="std std-ref"><span class="pre">launch_template</span></span></a></strong></code>).</p>
 <p>See also <a class="reference external" href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-autoscaling-autoscalinggroup-mixedinstancespolicy.html">https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-autoscaling-autoscalinggroup-mixedinstancespolicy.html</a></p>
 </div></td>
 </tr>
@@ -448,7 +448,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <div class="ansibleOptionAnchor" id="parameter-mixed_instances_policy/instance_types"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-module-parameter-mixed-instances-policy-instance-types"><strong>instance_types</strong></p>
 <a class="ansibleOptionLink" href="#parameter-mixed_instances_policy/instance_types" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A list of instance_types.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A list of instance types.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -474,7 +474,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <p><em class="ansible-option-versionadded">added in community.aws 1.5.0</em></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The minimum amount of the Auto Scaling group’s capacity that must be fulfilled by On-Demand Instances. This base portion is provisioned first as your group scales.</p>
-<p>Default if not set is 0. If you leave it set to 0, On-Demand Instances are launched as a percentage of the Auto Scaling group’s desired capacity, per the OnDemandPercentageAboveBaseCapacity setting.</p>
+<p>Default if not set is <code class="ansible-value docutils literal notranslate"><span class="pre">0</span></code>. If you leave it set to <code class="ansible-value docutils literal notranslate"><span class="pre">0</span></code>, On-Demand Instances are launched as a percentage of the Auto Scaling group’s desired capacity, per the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-mixed-instances-policy-instances-distribution-on-demand-percentage-above-base-capacity"><span class="std std-ref"><span class="pre">mixed_instances_policy.instances_distribution.on_demand_percentage_above_base_capacity</span></span></a></strong></code> setting.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -482,9 +482,9 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <a class="ansibleOptionLink" href="#parameter-mixed_instances_policy/instances_distribution/on_demand_percentage_above_base_capacity" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 <p><em class="ansible-option-versionadded">added in community.aws 1.5.0</em></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Controls the percentages of On-Demand Instances and Spot Instances for your additional capacity beyond OnDemandBaseCapacity.</p>
-<p>Default if not set is 100. If you leave it set to 100, the percentages are 100% for On-Demand Instances and 0% for Spot Instances.</p>
-<p>Valid range: 0 to 100</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Controls the percentages of On-Demand Instances and Spot Instances for your additional capacity beyond <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-mixed-instances-policy-instances-distribution-on-demand-base-capacity"><span class="std std-ref"><span class="pre">mixed_instances_policy.instances_distribution.on_demand_base_capacity</span></span></a></strong></code>.</p>
+<p>Default if not set is <code class="ansible-value docutils literal notranslate"><span class="pre">100</span></code>. If you leave it set to <code class="ansible-value docutils literal notranslate"><span class="pre">100</span></code>, the percentages are 100% for On-Demand Instances and 0% for Spot Instances.</p>
+<p>Valid range: <code class="ansible-value docutils literal notranslate"><span class="pre">0</span></code> to <code class="ansible-value docutils literal notranslate"><span class="pre">100</span></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -500,9 +500,9 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <a class="ansibleOptionLink" href="#parameter-mixed_instances_policy/instances_distribution/spot_instance_pools" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 <p><em class="ansible-option-versionadded">added in community.aws 1.5.0</em></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The number of Spot Instance pools across which to allocate your Spot Instances. The Spot pools are determined from the different instance types in the Overrides array of LaunchTemplate. Default if not set is 2.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The number of Spot Instance pools across which to allocate your Spot Instances. The Spot pools are determined from the different instance types in the Overrides array of LaunchTemplate. Default if not set is <code class="ansible-value docutils literal notranslate"><span class="pre">2</span></code>.</p>
 <p>Used only when the Spot allocation strategy is lowest-price.</p>
-<p>Valid Range: Minimum value of 1. Maximum value of 20.</p>
+<p>Valid Range: Minimum value of <code class="ansible-value docutils literal notranslate"><span class="pre">1</span></code>. Maximum value of <code class="ansible-value docutils literal notranslate"><span class="pre">20</span></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -561,8 +561,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <a class="ansibleOptionLink" href="#parameter-purge_tags" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 <p><em class="ansible-option-versionadded">added in community.aws 3.2.0</em></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>If <code class="docutils literal notranslate"><span class="pre">true</span></code>, existing tags will be purged from the resource to match exactly what is defined by <em>tags</em> parameter.</p>
-<p>If the <em>tags</em> parameter is not set then tags will not be modified.</p>
+<td><div class="ansible-option-cell"><p>If <code class="ansible-value docutils literal notranslate"><span class="pre">true</span></code>, existing tags will be purged from the resource to match exactly what is defined by <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-tags"><span class="std std-ref"><span class="pre">tags</span></span></a></strong></code> parameter.</p>
+<p>If the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-tags"><span class="std std-ref"><span class="pre">tags</span></span></a></strong></code> parameter is not set then tags will not be modified.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -589,7 +589,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <div class="ansibleOptionAnchor" id="parameter-replace_all_instances"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-module-parameter-replace-all-instances"><strong>replace_all_instances</strong></p>
 <a class="ansibleOptionLink" href="#parameter-replace_all_instances" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>In a rolling fashion, replace all instances that used the old launch configuration with one from the new launch configuration. It increases the ASG size by <em>replace_batch_size</em>, waits for the new instances to be up and running. After that, it terminates a batch of old instances, waits for the replacements, and repeats, until all old instances are replaced. Once that’s done the ASG size is reduced back to the expected size.</p>
+<td><div class="ansible-option-cell"><p>In a rolling fashion, replace all instances that used the old launch configuration with one from the new launch configuration. It increases the ASG size by <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-replace-batch-size"><span class="std std-ref"><span class="pre">replace_batch_size</span></span></a></strong></code>, waits for the new instances to be up and running. After that, it terminates a batch of old instances, waits for the replacements, and repeats, until all old instances are replaced. Once that’s done the ASG size is reduced back to the expected size.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -601,7 +601,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <div class="ansibleOptionAnchor" id="parameter-replace_batch_size"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-module-parameter-replace-batch-size"><strong>replace_batch_size</strong></p>
 <a class="ansibleOptionLink" href="#parameter-replace_batch_size" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Number of instances you’d like to replace at a time. Used with <em>replace_all_instances</em>.</p>
+<td><div class="ansible-option-cell"><p>Number of instances you’d like to replace at a time. Used with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-replace-all-instances"><span class="std std-ref"><span class="pre">replace_all_instances</span></span></a></strong></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">1</span></code></p>
 </div></td>
 </tr>
@@ -609,7 +609,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <div class="ansibleOptionAnchor" id="parameter-replace_instances"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-module-parameter-replace-instances"><strong>replace_instances</strong></p>
 <a class="ansibleOptionLink" href="#parameter-replace_instances" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>List of <em>instance_ids</em> belonging to the named AutoScalingGroup that you would like to terminate and be replaced with instances matching the current launch configuration.</p>
+<td><div class="ansible-option-cell"><p>List of instance ids belonging to the named AutoScalingGroup that you would like to terminate and be replaced with instances matching the current launch configuration.</p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[]</span></code></p>
 </div></td>
 </tr>
@@ -666,7 +666,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 </div></td>
 <td><div class="ansible-option-cell"><p>A list of scaling processes to suspend.</p>
 <p>Valid values include:</p>
-<p><code class="docutils literal notranslate"><span class="pre">Launch</span></code>, <code class="docutils literal notranslate"><span class="pre">Terminate</span></code>, <code class="docutils literal notranslate"><span class="pre">HealthCheck</span></code>, <code class="docutils literal notranslate"><span class="pre">ReplaceUnhealthy</span></code>, <code class="docutils literal notranslate"><span class="pre">AZRebalance</span></code>, <code class="docutils literal notranslate"><span class="pre">AlarmNotification</span></code>, <code class="docutils literal notranslate"><span class="pre">ScheduledActions</span></code>, <code class="docutils literal notranslate"><span class="pre">AddToLoadBalancer</span></code></p>
+<p><code class="ansible-value docutils literal notranslate"><span class="pre">Launch</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">Terminate</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">HealthCheck</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">ReplaceUnhealthy</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">AZRebalance</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">AlarmNotification</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">ScheduledActions</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">AddToLoadBalancer</span></code></p>
 <p>Full documentation of valid values can be found in the AWS documentation:</p>
 <p><a class="reference external" href="https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-suspend-resume-processes.html">https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-suspend-resume-processes.html</a></p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[]</span></code></p>
@@ -677,8 +677,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <a class="ansibleOptionLink" href="#parameter-tags" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A list of tags to add to the Auto Scale Group.</p>
-<p>Optional key is <em>propagate_at_launch</em>, which defaults to true.</p>
-<p>When <em>propagate_at_launch</em> is true the tags will be propagated to the Instances created.</p>
+<p>Optional key is <code class="ansible-value docutils literal notranslate"><span class="pre">propagate_at_launch</span></code>, which defaults to <code class="ansible-value docutils literal notranslate"><span class="pre">true</span></code>.</p>
+<p>When <code class="ansible-value docutils literal notranslate"><span class="pre">propagate_at_launch</span></code> is <code class="ansible-value docutils literal notranslate"><span class="pre">true</span></code> the tags will be propagated to the Instances created.</p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[]</span></code></p>
 </div></td>
 </tr>
@@ -694,8 +694,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <a class="ansibleOptionLink" href="#parameter-termination_policies" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>An ordered list of criteria used for selecting instances to be removed from the Auto Scaling group when reducing capacity.</p>
-<p>Using <em>termination_policies=Default</em> when modifying an existing AutoScalingGroup will result in the existing policy being retained instead of changed to <code class="docutils literal notranslate"><span class="pre">Default</span></code>.</p>
-<p>Valid values include: <code class="docutils literal notranslate"><span class="pre">Default</span></code>, <code class="docutils literal notranslate"><span class="pre">OldestInstance</span></code>, <code class="docutils literal notranslate"><span class="pre">NewestInstance</span></code>, <code class="docutils literal notranslate"><span class="pre">OldestLaunchConfiguration</span></code>, <code class="docutils literal notranslate"><span class="pre">ClosestToNextInstanceHour</span></code></p>
+<p>Using <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-termination-policies"><span class="std std-ref"><span class="pre">termination_policies=Default</span></span></a></code> when modifying an existing AutoScalingGroup will result in the existing policy being retained instead of changed to <code class="ansible-value docutils literal notranslate"><span class="pre">Default</span></code>.</p>
+<p>Valid values include: <code class="ansible-value docutils literal notranslate"><span class="pre">Default</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">OldestInstance</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">NewestInstance</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">OldestLaunchConfiguration</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">ClosestToNextInstanceHour</span></code></p>
 <p>Full documentation of valid values can be found in the AWS documentation:</p>
 <p><a class="reference external" href="https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-instance-termination.html#custom-termination-policy">https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-instance-termination.html#custom-termination-policy</a></p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[&quot;Default&quot;]</span></code></p>
