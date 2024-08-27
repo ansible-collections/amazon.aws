@@ -250,6 +250,13 @@ options:
     type: bool
     version_added: 3.1.0
     default: True
+  expected_bucket_owner:
+    description:
+      - The account ID of the expected bucket owner.
+      - If the account ID that you provide does not match the actual owner of the bucket,
+        the request fails with the HTTP status code 403 Forbidden (access denied).
+    type: str
+    version_added: 8.2.0
 author:
   - "Lester Wade (@lwade)"
   - "Sloane Hertel (@s-hertel)"
@@ -862,13 +869,15 @@ def put_download_url(s3, bucket, obj, expiry):
 
 
 def get_current_object_tags_dict(module, s3, bucket, obj, version=None):
+    params = {"Bucket": bucket, "Key": obj}
+
+    if module.params.get("expected_bucket_owner"):
+        params["ExpectedBucketOwner"] = module.params["expected_bucket_owner"]
+    if version:
+        params["VersionId"] = version
+
     try:
-        if version:
-            current_tags = s3.get_object_tagging(aws_retry=True, Bucket=bucket, Key=obj, VersionId=version).get(
-                "TagSet"
-            )
-        else:
-            current_tags = s3.get_object_tagging(aws_retry=True, Bucket=bucket, Key=obj).get("TagSet")
+        current_tags = s3.get_object_tagging(aws_retry=True, **params).get("TagSet")
     except is_boto3_error_code(IGNORE_S3_DROP_IN_EXCEPTIONS):
         module.warn("GetObjectTagging is not implemented by your storage provider.")
         return {}
@@ -1508,6 +1517,7 @@ def main():
             ),
         ),
         validate_bucket_name=dict(type="bool", default=True),
+        expected_bucket_owner=dict(type="str"),
     )
 
     required_if = [
