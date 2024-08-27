@@ -215,7 +215,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <div class="ansibleOptionAnchor" id="parameter-apply_immediately"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-apply-immediately"><strong>apply_immediately</strong></p>
 <a class="ansibleOptionLink" href="#parameter-apply_immediately" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>A value that specifies whether modifying a cluster with <em>new_db_cluster_identifier</em> and <em>master_user_password</em> should be applied as soon as possible, regardless of the <em>preferred_maintenance_window</em> setting. If <code class="docutils literal notranslate"><span class="pre">false</span></code>, changes are applied during the next maintenance window.</p>
+<td><div class="ansible-option-cell"><p>A value that specifies whether modifying a cluster with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-cluster-module-parameter-new-db-cluster-identifier"><span class="std std-ref"><span class="pre">new_db_cluster_identifier</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-cluster-module-parameter-master-user-password"><span class="std std-ref"><span class="pre">master_user_password</span></span></a></strong></code> should be applied as soon as possible, regardless of the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-cluster-module-parameter-preferred-maintenance-window"><span class="std std-ref"><span class="pre">preferred_maintenance_window</span></span></a></strong></code> setting. If <code class="ansible-value docutils literal notranslate"><span class="pre">false</span></code>, changes are applied during the next maintenance window.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -260,15 +260,15 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <div class="ansibleOptionAnchor" id="parameter-backtrack_window"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-backtrack-window"><strong>backtrack_window</strong></p>
 <a class="ansibleOptionLink" href="#parameter-backtrack_window" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>The target backtrack window, in seconds. To disable backtracking, set this value to <code class="docutils literal notranslate"><span class="pre">0</span></code>.</p>
-<p>If specified, this value must be set to a number from <code class="docutils literal notranslate"><span class="pre">0</span></code> to <code class="docutils literal notranslate"><span class="pre">259,200</span></code> (72 hours).</p>
+<td><div class="ansible-option-cell"><p>The target backtrack window, in seconds. To disable backtracking, set this value to <code class="ansible-value docutils literal notranslate"><span class="pre">0</span></code>.</p>
+<p>If specified, this value must be set to a number from <code class="ansible-value docutils literal notranslate"><span class="pre">0</span></code> to <code class="ansible-value docutils literal notranslate"><span class="pre">259,200</span></code> (72 hours).</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-backup_retention_period"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-backup-retention-period"><strong>backup_retention_period</strong></p>
 <a class="ansibleOptionLink" href="#parameter-backup_retention_period" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>The number of days for which automated backups are retained (must be within <code class="docutils literal notranslate"><span class="pre">1</span></code> to <code class="docutils literal notranslate"><span class="pre">35</span></code>). May be used when creating a new cluster, when restoring from S3, or when modifying a cluster.</p>
+<td><div class="ansible-option-cell"><p>The number of days for which automated backups are retained (must be within <code class="ansible-value docutils literal notranslate"><span class="pre">1</span></code> to <code class="ansible-value docutils literal notranslate"><span class="pre">35</span></code>). May be used when creating a new cluster, when restoring from S3, or when modifying a cluster.</p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">1</span></code></p>
 </div></td>
 </tr>
@@ -329,7 +329,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <a class="ansibleOptionLink" href="#parameter-db_cluster_instance_class" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 <p><em class="ansible-option-versionadded">added in amazon.aws 5.5.0</em></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>The compute and memory capacity of each DB instance in the Multi-AZ DB cluster, for example <code class="docutils literal notranslate"><span class="pre">db.m6gd.xlarge</span></code>.</p>
+<td><div class="ansible-option-cell"><p>The compute and memory capacity of each DB instance in the Multi-AZ DB cluster, for example <code class="ansible-value docutils literal notranslate"><span class="pre">db.m6gd.xlarge</span></code>.</p>
 <p>Not all DB instance classes are available in all Amazon Web Services Regions, or for all database engines.</p>
 <p>For the full list of DB instance classes and availability for your engine visit <a class="reference external" href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html">https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html</a>.</p>
 <p>This setting is required to create a Multi-AZ DB cluster.</p>
@@ -393,8 +393,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <a class="ansibleOptionLink" href="#parameter-enable_cloudwatch_logs_exports" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A list of log types that need to be enabled for exporting to CloudWatch Logs.</p>
-<p>Engine aurora-mysql supports <code class="docutils literal notranslate"><span class="pre">audit</span></code>, <code class="docutils literal notranslate"><span class="pre">error</span></code>, <code class="docutils literal notranslate"><span class="pre">general</span></code> and <code class="docutils literal notranslate"><span class="pre">slowquery</span></code>.</p>
-<p>Engine aurora-postgresql supports <code class="docutils literal notranslate"><span class="pre">postgresql</span></code>.</p>
+<p>Engine aurora-mysql supports <code class="ansible-value docutils literal notranslate"><span class="pre">audit</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">error</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">general</span></code> and <code class="ansible-value docutils literal notranslate"><span class="pre">slowquery</span></code>.</p>
+<p>Engine aurora-postgresql supports <code class="ansible-value docutils literal notranslate"><span class="pre">postgresql</span></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -455,9 +455,9 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <td><div class="ansible-option-cell"><p>The name of the database engine to be used for this DB cluster. This is required to create a cluster.</p>
 <p>The combinaison of <em>engine</em> and <em>engine_mode</em> may not be supported.</p>
 <p>See AWS documentation for details: <a class="reference external" href="https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_CreateDBCluster.html">Amazon RDS Documentation</a>.</p>
-<p>When <em>engine=mysql</em>, <em>allocated_storage</em>, <em>iops</em> and <em>db_cluster_instance_class</em> must also be specified.</p>
-<p>When <em>engine=postgres</em>, <em>allocated_storage</em>, <em>iops</em> and <em>db_cluster_instance_class</em> must also be specified.</p>
-<p>Support for <code class="docutils literal notranslate"><span class="pre">postgres</span></code> and <code class="docutils literal notranslate"><span class="pre">mysql</span></code> was added in amazon.aws 5.5.0.</p>
+<p>When <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-rds-cluster-module-parameter-engine"><span class="std std-ref"><span class="pre">engine=mysql</span></span></a></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-cluster-module-parameter-allocated-storage"><span class="std std-ref"><span class="pre">allocated_storage</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-cluster-module-parameter-iops"><span class="std std-ref"><span class="pre">iops</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-cluster-module-parameter-db-cluster-instance-class"><span class="std std-ref"><span class="pre">db_cluster_instance_class</span></span></a></strong></code> must also be specified.</p>
+<p>When <em>engine=postgres</em>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-cluster-module-parameter-allocated-storage"><span class="std std-ref"><span class="pre">allocated_storage</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-cluster-module-parameter-iops"><span class="std std-ref"><span class="pre">iops</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-cluster-module-parameter-db-cluster-instance-class"><span class="std std-ref"><span class="pre">db_cluster_instance_class</span></span></a></strong></code> must also be specified.</p>
+<p>Support for <code class="ansible-value docutils literal notranslate"><span class="pre">postgres</span></code> and <code class="ansible-value docutils literal notranslate"><span class="pre">mysql</span></code> was added in amazon.aws 5.5.0.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;aurora&quot;</span></code></p></li>
@@ -473,7 +473,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <a class="ansibleOptionLink" href="#parameter-engine_mode" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 <p><em class="ansible-option-versionadded">added in amazon.aws 5.5.0</em></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>The DB engine mode of the DB cluster. The combination of <em>engine</em> and <em>engine_mode</em> may not be supported.</p>
+<td><div class="ansible-option-cell"><p>The DB engine mode of the DB cluster. The combination of <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-cluster-module-parameter-engine"><span class="std std-ref"><span class="pre">engine</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-cluster-module-parameter-engine-mode"><span class="std std-ref"><span class="pre">engine_mode</span></span></a></strong></code> may not be supported.</p>
 <p>See AWS documentation for details: <a class="reference external" href="https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_CreateDBCluster.html">Amazon RDS Documentation</a>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
@@ -490,15 +490,15 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <a class="ansibleOptionLink" href="#parameter-engine_version" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The version number of the database engine to use.</p>
-<p>For Aurora MySQL that could be <code class="docutils literal notranslate"><span class="pre">5.6.10a</span></code>, <code class="docutils literal notranslate"><span class="pre">5.7.12</span></code>.</p>
-<p>Aurora PostgreSQL example, <code class="docutils literal notranslate"><span class="pre">9.6.3</span></code>.</p>
+<p>For Aurora MySQL that could be <code class="ansible-value docutils literal notranslate"><span class="pre">5.6.10a</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">5.7.12</span></code>.</p>
+<p>Aurora PostgreSQL example, <code class="ansible-value docutils literal notranslate"><span class="pre">9.6.3</span></code>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-final_snapshot_identifier"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-final-snapshot-identifier"><strong>final_snapshot_identifier</strong></p>
 <a class="ansibleOptionLink" href="#parameter-final_snapshot_identifier" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>The DB cluster snapshot identifier of the new DB cluster snapshot created when <em>skip_final_snapshot=false</em>.</p>
+<td><div class="ansible-option-cell"><p>The DB cluster snapshot identifier of the new DB cluster snapshot created when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-rds-cluster-module-parameter-skip-final-snapshot"><span class="std std-ref"><span class="pre">skip_final_snapshot=false</span></span></a></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -517,8 +517,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <div class="ansibleOptionAnchor" id="parameter-force_update_password"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-force-update-password"><strong>force_update_password</strong></p>
 <a class="ansibleOptionLink" href="#parameter-force_update_password" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Set to <code class="docutils literal notranslate"><span class="pre">true</span></code> to update your cluster password with <em>master_user_password</em>.</p>
-<p>Since comparing passwords to determine if it needs to be updated is not possible this is set to <code class="docutils literal notranslate"><span class="pre">false</span></code> by default to allow idempotence.</p>
+<td><div class="ansible-option-cell"><p>Set to <code class="ansible-value docutils literal notranslate"><span class="pre">true</span></code> to update your cluster password with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-cluster-module-parameter-master-user-password"><span class="std std-ref"><span class="pre">master_user_password</span></span></a></strong></code>.</p>
+<p>Since comparing passwords to determine if it needs to be updated is not possible this is set to <code class="ansible-value docutils literal notranslate"><span class="pre">false</span></code> by default to allow idempotence.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -548,8 +548,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <a class="ansibleOptionLink" href="#parameter-kms_key_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The AWS KMS key identifier (the ARN, unless you are creating a cluster in the same account that owns the KMS key, in which case the KMS key alias may be used).</p>
-<p>If <em>replication_source_identifier</em> specifies an encrypted source Amazon RDS will use the key used toe encrypt the source.</p>
-<p>If <em>storage_encrypted=true</em> and and <em>replication_source_identifier</em> is not provided, the default encryption key is used.</p>
+<p>If <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-cluster-module-parameter-replication-source-identifier"><span class="std std-ref"><span class="pre">replication_source_identifier</span></span></a></strong></code> specifies an encrypted source Amazon RDS will use the key used toe encrypt the source.</p>
+<p>If <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-rds-cluster-module-parameter-storage-encrypted"><span class="std std-ref"><span class="pre">storage_encrypted=true</span></span></a></code> and and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-cluster-module-parameter-replication-source-identifier"><span class="std std-ref"><span class="pre">replication_source_identifier</span></span></a></strong></code> is not provided, the default encryption key is used.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -559,8 +559,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>An 8-41 character password for the master database user.</p>
-<p>The password can contain any printable ASCII character except <code class="docutils literal notranslate"><span class="pre">/</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;</span></code>, or <code class="docutils literal notranslate"><span class="pre">&#64;</span></code>.</p>
-<p>To modify the password use <em>force_password_update</em>. Use <em>apply immediately</em> to change the password immediately, otherwise it is updated during the next maintenance window.</p>
+<p>The password can contain any printable ASCII character except <code class="ansible-value docutils literal notranslate"><span class="pre">/</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">&quot;</span></code>, or <code class="ansible-value docutils literal notranslate"><span class="pre">&#64;</span></code>.</p>
+<p>To modify the password use <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-cluster-module-parameter-force-update-password"><span class="std std-ref"><span class="pre">force_update_password</span></span></a></strong></code>. Use <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-cluster-module-parameter-apply-immediately"><span class="std std-ref"><span class="pre">apply_immediately</span></span></a></strong></code> to change the password immediately, otherwise it is updated during the next maintenance window.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -582,7 +582,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 </div></td>
 <td><div class="ansible-option-cell"><p>The new DB cluster (lowercase) identifier for the DB cluster when renaming a DB cluster.</p>
 <p>The identifier must contain from 1 to 63 letters, numbers, or hyphens and the first character must be a letter and may not end in a hyphen or contain consecutive hyphens.</p>
-<p>Use <em>apply_immediately</em> to rename immediately, otherwise it is updated during the next maintenance window.</p>
+<p>Use <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-cluster-module-parameter-apply-immediately"><span class="std std-ref"><span class="pre">apply_immediately</span></span></a></strong></code> to rename immediately, otherwise it is updated during the next maintenance window.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -596,7 +596,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <div class="ansibleOptionAnchor" id="parameter-port"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-port"><strong>port</strong></p>
 <a class="ansibleOptionLink" href="#parameter-port" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>The port number on which the instances in the DB cluster accept connections. If not specified, Amazon RDS defaults this to <code class="docutils literal notranslate"><span class="pre">3306</span></code> if the <em>engine</em> is <code class="docutils literal notranslate"><span class="pre">aurora</span></code> and c(5432) if the <em>engine</em> is <code class="docutils literal notranslate"><span class="pre">aurora-postgresql</span></code>.</p>
+<td><div class="ansible-option-cell"><p>The port number on which the instances in the DB cluster accept connections. If not specified, Amazon RDS defaults this to <code class="ansible-value docutils literal notranslate"><span class="pre">3306</span></code> if the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-cluster-module-parameter-engine"><span class="std std-ref"><span class="pre">engine</span></span></a></strong></code> is <code class="ansible-value docutils literal notranslate"><span class="pre">aurora</span></code> and <code class="ansible-value docutils literal notranslate"><span class="pre">5432</span></code> if the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-cluster-module-parameter-engine"><span class="std std-ref"><span class="pre">engine</span></span></a></strong></code> is <code class="ansible-value docutils literal notranslate"><span class="pre">aurora-postgresql</span></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -605,7 +605,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <a class="ansibleOptionLink" href="#parameter-preferred_backup_window" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: backup_window</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>The daily time range (in UTC) of at least 30 minutes, during which automated backups are created if automated backups are enabled using <em>backup_retention_period</em>. The option must be in the format of “hh24:mi-hh24:mi” and not conflict with <em>preferred_maintenance_window</em>.</p>
+<td><div class="ansible-option-cell"><p>The daily time range (in UTC) of at least 30 minutes, during which automated backups are created if automated backups are enabled using <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-cluster-module-parameter-backup-retention-period"><span class="std std-ref"><span class="pre">backup_retention_period</span></span></a></strong></code>. The option must be in the format of “hh24:mi-hh24:mi” and not conflict with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-cluster-module-parameter-preferred-maintenance-window"><span class="std std-ref"><span class="pre">preferred_maintenance_window</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -633,7 +633,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <div class="ansibleOptionAnchor" id="parameter-promote"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-promote"><strong>promote</strong></p>
 <a class="ansibleOptionLink" href="#parameter-promote" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Set to <code class="docutils literal notranslate"><span class="pre">true</span></code> to promote a read replica cluster.</p>
+<td><div class="ansible-option-cell"><p>Set to <code class="ansible-value docutils literal notranslate"><span class="pre">true</span></code> to promote a read replica cluster.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -645,7 +645,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <div class="ansibleOptionAnchor" id="parameter-purge_cloudwatch_logs_exports"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-purge-cloudwatch-logs-exports"><strong>purge_cloudwatch_logs_exports</strong></p>
 <a class="ansibleOptionLink" href="#parameter-purge_cloudwatch_logs_exports" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Whether or not to disable Cloudwatch logs enabled for the DB cluster that are not provided in <em>enable_cloudwatch_logs_exports</em>. Set <em>enable_cloudwatch_logs_exports</em> to an empty list to disable all.</p>
+<td><div class="ansible-option-cell"><p>Whether or not to disable Cloudwatch logs enabled for the DB cluster that are not provided in <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-cluster-module-parameter-enable-cloudwatch-logs-exports"><span class="std std-ref"><span class="pre">enable_cloudwatch_logs_exports</span></span></a></strong></code>. Set <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-cluster-module-parameter-enable-cloudwatch-logs-exports"><span class="std std-ref"><span class="pre">enable_cloudwatch_logs_exports</span></span></a></strong></code> to an empty list to disable all.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
@@ -657,8 +657,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <div class="ansibleOptionAnchor" id="parameter-purge_security_groups"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-purge-security-groups"><strong>purge_security_groups</strong></p>
 <a class="ansibleOptionLink" href="#parameter-purge_security_groups" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Set to <code class="docutils literal notranslate"><span class="pre">false</span></code> to retain any enabled security groups that aren’t specified in the task and are associated with the cluster.</p>
-<p>Can be applied to <em>vpc_security_group_ids</em></p>
+<td><div class="ansible-option-cell"><p>Set to <code class="ansible-value docutils literal notranslate"><span class="pre">false</span></code> to retain any enabled security groups that aren’t specified in the task and are associated with the cluster.</p>
+<p>Can be applied to <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-cluster-module-parameter-vpc-security-group-ids"><span class="std std-ref"><span class="pre">vpc_security_group_ids</span></span></a></strong></code></p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
@@ -700,8 +700,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <a class="ansibleOptionLink" href="#parameter-remove_from_global_db" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 <p><em class="ansible-option-versionadded">added in amazon.aws 6.5.0</em></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>If set to <code class="docutils literal notranslate"><span class="pre">true</span></code>, the cluster will be removed from global DB.</p>
-<p>Parameters <em>global_cluster_identifier</em>, <em>db_cluster_identifier</em> must be specified when <em>remove_from_global_db=true</em>.</p>
+<td><div class="ansible-option-cell"><p>If set to <code class="ansible-value docutils literal notranslate"><span class="pre">true</span></code>, the cluster will be removed from global DB.</p>
+<p>Parameters <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-cluster-module-parameter-global-cluster-identifier"><span class="std std-ref"><span class="pre">global_cluster_identifier</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-cluster-module-parameter-db-cluster-identifier"><span class="std std-ref"><span class="pre">db_cluster_identifier</span></span></a></strong></code> must be specified when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-rds-cluster-module-parameter-remove-from-global-db"><span class="std std-ref"><span class="pre">remove_from_global_db=true</span></span></a></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
@@ -723,7 +723,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <a class="ansibleOptionLink" href="#parameter-restore_to_time" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The UTC date and time to restore the DB cluster to. Must be in the format “2015-03-07T23:45:00Z”.</p>
-<p>If this is not provided while restoring a cluster, <em>use_latest_restorable_time</em> must be. May not be specified if <em>restore_type</em> is copy-on-write.</p>
+<p>If this is not provided while restoring a cluster, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-cluster-module-parameter-use-latest-restorable-time"><span class="std std-ref"><span class="pre">use_latest_restorable_time</span></span></a></strong></code> must be. May not be specified if <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-cluster-module-parameter-restore-type"><span class="std std-ref"><span class="pre">restore_type</span></span></a></strong></code> is copy-on-write.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -797,8 +797,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <a class="ansibleOptionLink" href="#parameter-serverless_v2_scaling_configuration/max_capacity" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">float</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The maximum number of Aurora capacity units (ACUs) for a DB instance in an Aurora Serverless v2 cluster.</p>
-<p>ACU values can be specified in in half-step increments, such as <code class="docutils literal notranslate"><span class="pre">40</span></code>, <code class="docutils literal notranslate"><span class="pre">40.5</span></code>, <code class="docutils literal notranslate"><span class="pre">41</span></code>, and so on.</p>
-<p>The largest possible value is <code class="docutils literal notranslate"><span class="pre">128</span></code>.</p>
+<p>ACU values can be specified in in half-step increments, such as <code class="ansible-value docutils literal notranslate"><span class="pre">40</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">40.5</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">41</span></code>, and so on.</p>
+<p>The largest possible value is <code class="ansible-value docutils literal notranslate"><span class="pre">128</span></code>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -806,8 +806,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <a class="ansibleOptionLink" href="#parameter-serverless_v2_scaling_configuration/min_capacity" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">float</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The minimum number of Aurora capacity units (ACUs) for a DB instance in an Aurora Serverless v2 cluster.</p>
-<p>ACU values can be specified in in half-step increments, such as <code class="docutils literal notranslate"><span class="pre">8</span></code>, <code class="docutils literal notranslate"><span class="pre">8.5</span></code>, <code class="docutils literal notranslate"><span class="pre">9</span></code>, and so on.</p>
-<p>The smallest possible value is <code class="docutils literal notranslate"><span class="pre">0.5</span></code>.</p>
+<p>ACU values can be specified in in half-step increments, such as <code class="ansible-value docutils literal notranslate"><span class="pre">8</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">8.5</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">9</span></code>, and so on.</p>
+<p>The smallest possible value is <code class="ansible-value docutils literal notranslate"><span class="pre">0.5</span></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -833,7 +833,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <a class="ansibleOptionLink" href="#parameter-skip_final_snapshot" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Whether a final DB cluster snapshot is created before the DB cluster is deleted.</p>
-<p>If this is <code class="docutils literal notranslate"><span class="pre">false</span></code>, <em>final_snapshot_identifier</em> must be provided.</p>
+<p>If this is <code class="ansible-value docutils literal notranslate"><span class="pre">false</span></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-cluster-module-parameter-final-snapshot-identifier"><span class="std std-ref"><span class="pre">final_snapshot_identifier</span></span></a></strong></code> must be provided.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -886,8 +886,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <a class="ansibleOptionLink" href="#parameter-state" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Whether the snapshot should exist or not.</p>
-<p><code class="docutils literal notranslate"><span class="pre">started</span></code> and <code class="docutils literal notranslate"><span class="pre">stopped</span></code> can only be used with aurora clusters</p>
-<p>Support for <code class="docutils literal notranslate"><span class="pre">started</span></code> and <code class="docutils literal notranslate"><span class="pre">stopped</span></code> was added in release 6.3.0.</p>
+<p><code class="ansible-value docutils literal notranslate"><span class="pre">started</span></code> and <code class="ansible-value docutils literal notranslate"><span class="pre">stopped</span></code> can only be used with aurora clusters.</p>
+<p>Support for <code class="ansible-value docutils literal notranslate"><span class="pre">started</span></code> and <code class="ansible-value docutils literal notranslate"><span class="pre">stopped</span></code> was added in release 6.3.0.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">&quot;present&quot;</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -938,7 +938,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <div class="ansibleOptionAnchor" id="parameter-use_earliest_time_on_point_in_time_unavailable"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-use-earliest-time-on-point-in-time-unavailable"><strong>use_earliest_time_on_point_in_time_unavailable</strong></p>
 <a class="ansibleOptionLink" href="#parameter-use_earliest_time_on_point_in_time_unavailable" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>If <em>backtrack_to</em> is set to a timestamp earlier than the earliest backtrack time, this value backtracks the DB cluster to the earliest possible backtrack time. Otherwise, an error occurs.</p>
+<td><div class="ansible-option-cell"><p>If <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-cluster-module-parameter-backtrack-to"><span class="std std-ref"><span class="pre">backtrack_to</span></span></a></strong></code> is set to a timestamp earlier than the earliest backtrack time, this value backtracks the DB cluster to the earliest possible backtrack time. Otherwise, an error occurs.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
@@ -950,7 +950,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <div class="ansibleOptionAnchor" id="parameter-use_latest_restorable_time"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-cluster-module-parameter-use-latest-restorable-time"><strong>use_latest_restorable_time</strong></p>
 <a class="ansibleOptionLink" href="#parameter-use_latest_restorable_time" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Whether to restore the DB cluster to the latest restorable backup time. Only one of <em>use_latest_restorable_time</em> and <em>restore_to_time</em> may be provided.</p>
+<td><div class="ansible-option-cell"><p>Whether to restore the DB cluster to the latest restorable backup time. Only one of <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-cluster-module-parameter-use-latest-restorable-time"><span class="std std-ref"><span class="pre">use_latest_restorable_time</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-cluster-module-parameter-restore-to-time"><span class="std std-ref"><span class="pre">restore_to_time</span></span></a></strong></code> may be provided.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
@@ -1006,7 +1006,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <section id="examples">
 <h2><a class="toc-backref" href="#id5" role="doc-backlink">Examples</a><a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
 <div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># Note: These examples do not set authentication details, see the AWS Guide for details.</span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create minimal aurora cluster in default VPC and default subnet group</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create minimal Aurora cluster in default VPC and default subnet group</span>
 <span class="w">  </span><span class="nt">amazon.aws.rds_cluster</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">cluster_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">cluster_id</span> <span class="cp">}}</span><span class="s">&quot;</span>
 <span class="w">    </span><span class="nt">engine</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;aurora&quot;</span>
@@ -1038,7 +1038,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 <span class="w">    </span><span class="nt">new_cluster_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;cluster-</span><span class="cp">{{</span> <span class="nv">resource_prefix</span> <span class="cp">}}</span><span class="s">-renamed&quot;</span>
 <span class="w">    </span><span class="nt">apply_immediately</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Delete aurora cluster without creating a final snapshot</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Delete Aurora cluster without creating a final snapshot</span>
 <span class="w">  </span><span class="nt">amazon.aws.rds_cluster</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">engine</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aurora</span>
 <span class="w">    </span><span class="nt">password</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">password</span> <span class="cp">}}</span><span class="s">&quot;</span>

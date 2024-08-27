@@ -353,7 +353,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-subn
 <a class="ansibleOptionLink" href="#parameter-subnets" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>List of subnet IDs that make up the database subnet group.</p>
-<p>Required when <em>state=present</em>.</p>
+<p>Required when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-rds-subnet-group-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -387,7 +387,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-subn
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <ul class="simple">
-<li><p>Support for <em>tags</em> and <em>purge_tags</em> was added in release 3.2.0.</p></li>
+<li><p>Support for <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-subnet-group-module-parameter-tags"><span class="std std-ref"><span class="pre">tags</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-subnet-group-module-parameter-purge-tags"><span class="std std-ref"><span class="pre">purge_tags</span></span></a></strong></code> was added in release 3.2.0.</p></li>
 <li><p><strong>Caution:</strong> For modules, environment variables and configuration files are read from the Ansible ‘host’ context and not the ‘controller’ context. As such, files may need to be explicitly copied to the ‘host’. For lookup and connection plugins, environment variables and configuration files are read from the Ansible ‘controller’ context and not the ‘host’ context.</p></li>
 <li><p>The AWS SDK (boto3) that Ansible uses may also read defaults for credentials and other settings, such as the region, from its configuration files in the Ansible ‘host’ context (typically <code class="docutils literal notranslate"><span class="pre">~/.aws/credentials</span></code>). See <a class="reference external" href="https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html">https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html</a> for more information.</p></li>
 </ul>
@@ -446,16 +446,16 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-subn
 <div class="ansibleOptionAnchor" id="return-subnet_group"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-subnet-group-module-return-subnet-group"><strong>subnet_group</strong></p>
 <a class="ansibleOptionLink" href="#return-subnet_group" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Dictionary of DB subnet group values</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <em>state=present</em></p>
+<td><div class="ansible-option-cell"><p>Dictionary of DB subnet group values,</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-rds-subnet-group-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-subnet_group/db_subnet_group_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-subnet-group-module-return-subnet-group-db-subnet-group-arn"><strong>db_subnet_group_arn</strong></p>
 <a class="ansibleOptionLink" href="#return-subnet_group/db_subnet_group_arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ARN of the DB subnet group</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <em>state=present</em></p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ARN of the DB subnet group.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-rds-subnet-group-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:rds:eu-north-1:123456789012:subgrp:ansible-test-13950442&quot;</span></code></p>
 </div></td>
 </tr>
@@ -463,8 +463,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-subn
 <div class="ansibleOptionAnchor" id="return-subnet_group/db_subnet_group_description"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-subnet-group-module-return-subnet-group-db-subnet-group-description"><strong>db_subnet_group_description</strong></p>
 <a class="ansibleOptionLink" href="#return-subnet_group/db_subnet_group_description" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The description of the DB subnet group</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <em>state=present</em></p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The description of the DB subnet group.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-rds-subnet-group-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;Simple</span> <span class="pre">description.&quot;</span></code></p>
 </div></td>
 </tr>
@@ -472,8 +472,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-subn
 <div class="ansibleOptionAnchor" id="return-subnet_group/db_subnet_group_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-subnet-group-module-return-subnet-group-db-subnet-group-name"><strong>db_subnet_group_name</strong></p>
 <a class="ansibleOptionLink" href="#return-subnet_group/db_subnet_group_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The name of the DB subnet group</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <em>state=present</em></p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The name of the DB subnet group.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-rds-subnet-group-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;ansible-test-mbp-13950442&quot;</span></code></p>
 </div></td>
 </tr>
@@ -481,8 +481,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-subn
 <div class="ansibleOptionAnchor" id="return-subnet_group/description"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-subnet-group-module-return-subnet-group-description"><strong>description</strong></p>
 <a class="ansibleOptionLink" href="#return-subnet_group/description" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The description of the DB subnet group (maintained for backward compatibility)</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <em>state=present</em></p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The description of the DB subnet group (maintained for backward compatibility).</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-rds-subnet-group-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;Simple</span> <span class="pre">description.&quot;</span></code></p>
 </div></td>
 </tr>
@@ -490,8 +490,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-subn
 <div class="ansibleOptionAnchor" id="return-subnet_group/name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-subnet-group-module-return-subnet-group-name"><strong>name</strong></p>
 <a class="ansibleOptionLink" href="#return-subnet_group/name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The name of the DB subnet group (maintained for backward compatibility)</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <em>state=present</em></p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The name of the DB subnet group (maintained for backward compatibility).</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-rds-subnet-group-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;ansible-test-mbp-13950442&quot;</span></code></p>
 </div></td>
 </tr>
@@ -499,8 +499,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-subn
 <div class="ansibleOptionAnchor" id="return-subnet_group/status"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-subnet-group-module-return-subnet-group-status"><strong>status</strong></p>
 <a class="ansibleOptionLink" href="#return-subnet_group/status" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The status of the DB subnet group (maintained for backward compatibility)</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <em>state=present</em></p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The status of the DB subnet group (maintained for backward compatibility).</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-rds-subnet-group-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;Complete&quot;</span></code></p>
 </div></td>
 </tr>
@@ -508,8 +508,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-subn
 <div class="ansibleOptionAnchor" id="return-subnet_group/subnet_group_status"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-subnet-group-module-return-subnet-group-subnet-group-status"><strong>subnet_group_status</strong></p>
 <a class="ansibleOptionLink" href="#return-subnet_group/subnet_group_status" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The status of the DB subnet group</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <em>state=present</em></p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The status of the DB subnet group.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-rds-subnet-group-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;Complete&quot;</span></code></p>
 </div></td>
 </tr>
@@ -517,8 +517,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-subn
 <div class="ansibleOptionAnchor" id="return-subnet_group/subnet_ids"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-subnet-group-module-return-subnet-group-subnet-ids"><strong>subnet_ids</strong></p>
 <a class="ansibleOptionLink" href="#return-subnet_group/subnet_ids" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Contains a list of Subnet IDs</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <em>state=present</em></p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Contains a list of Subnet IDs.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-rds-subnet-group-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[&quot;subnet-08c94870f4480797e&quot;]</span></code></p>
 </div></td>
 </tr>
@@ -526,8 +526,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-subn
 <div class="ansibleOptionAnchor" id="return-subnet_group/subnets"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-subnet-group-module-return-subnet-group-subnets"><strong>subnets</strong></p>
 <a class="ansibleOptionLink" href="#return-subnet_group/subnets" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Contains a list of Subnet elements (&#64;see <a class="reference external" href="https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/rds.html#RDS.Client.describe_db_subnet_groups">https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/rds.html#RDS.Client.describe_db_subnet_groups</a>)</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <em>state=present</em></p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Contains a list of Subnet elements (&#64;see <a class="reference external" href="https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/rds.html#RDS.Client.describe_db_subnet_groups">https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/rds.html#RDS.Client.describe_db_subnet_groups</a>).</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-rds-subnet-group-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -536,7 +536,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-subn
 <p><em class="ansible-option-versionadded">added in community.aws 3.2.0</em></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Contains Availability Zone information.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <em>state=present</em></p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-rds-subnet-group-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;name&quot;:</span> <span class="pre">&quot;eu-north-1b&quot;}</span></code></p>
 </div></td>
 </tr>
@@ -546,7 +546,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-subn
 <p><em class="ansible-option-versionadded">added in community.aws 3.2.0</em></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The identifier of the subnet.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <em>state=present</em></p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-rds-subnet-group-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;subnet-08c94870f4480797e&quot;</span></code></p>
 </div></td>
 </tr>
@@ -556,7 +556,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-subn
 <p><em class="ansible-option-versionadded">added in community.aws 3.2.0</em></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>This value specifies the Outpost.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <em>state=present</em></p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-rds-subnet-group-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{}</span></code></p>
 </div></td>
 </tr>
@@ -566,7 +566,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-subn
 <p><em class="ansible-option-versionadded">added in community.aws 3.2.0</em></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The status of the subnet.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <em>state=present</em></p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-rds-subnet-group-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;Active&quot;</span></code></p>
 </div></td>
 </tr>
@@ -575,8 +575,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-subn
 <a class="ansibleOptionLink" href="#return-subnet_group/tags" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 <p><em class="ansible-option-versionadded">added in community.aws 3.2.0</em></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The tags associated with the subnet group</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <em>state=present</em></p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The tags associated with the subnet group.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-rds-subnet-group-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;tag1&quot;:</span> <span class="pre">&quot;Tag1&quot;,</span> <span class="pre">&quot;tag2&quot;:</span> <span class="pre">&quot;Tag2&quot;}</span></code></p>
 </div></td>
 </tr>
@@ -584,8 +584,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-subn
 <div class="ansibleOptionAnchor" id="return-subnet_group/vpc_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-subnet-group-module-return-subnet-group-vpc-id"><strong>vpc_id</strong></p>
 <a class="ansibleOptionLink" href="#return-subnet_group/vpc_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The VpcId of the DB subnet group</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <em>state=present</em></p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The VPC Id of the DB subnet group.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-rds-subnet-group-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;vpc-0acb0ba033ff2119c&quot;</span></code></p>
 </div></td>
 </tr>

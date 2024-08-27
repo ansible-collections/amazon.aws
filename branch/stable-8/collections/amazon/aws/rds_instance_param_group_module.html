@@ -260,7 +260,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <td><div class="ansible-option-cell"><p>The type of database for this group.</p>
 <p>Please use <a class="reference internal" href="rds_engine_versions_info_module.html#ansible-collections-amazon-aws-rds-engine-versions-info-module"><span class="std std-ref">amazon.aws.rds_engine_versions_info</span></a> to get list of all supported db engines and their respective versions.</p>
 <p>The DB parameter group family is immutable and can’t be changed when updating a DB parameter group. See <a class="reference external" href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-rds-dbparametergroup.html">https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-rds-dbparametergroup.html</a></p>
-<p>Required for <em>state=present</em>.</p>
+<p>Required for <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-rds-instance-param-group-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -452,8 +452,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <div class="ansibleOptionAnchor" id="return-db_parameter_group_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-param-group-module-return-db-parameter-group-arn"><strong>db_parameter_group_arn</strong></p>
 <a class="ansibleOptionLink" href="#return-db_parameter_group_arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>ARN of the DB parameter group</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when state is present</p>
+<td><div class="ansible-option-cell"><p>ARN of the DB parameter group.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-rds-instance-param-group-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -461,39 +461,39 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <a class="ansibleOptionLink" href="#return-db_parameter_group_family" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>DB parameter group family that this DB parameter group is compatible with.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when state is present</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-rds-instance-param-group-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-db_parameter_group_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-param-group-module-return-db-parameter-group-name"><strong>db_parameter_group_name</strong></p>
 <a class="ansibleOptionLink" href="#return-db_parameter_group_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Name of DB parameter group</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when state is present</p>
+<td><div class="ansible-option-cell"><p>Name of DB parameter group.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-rds-instance-param-group-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-description"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-param-group-module-return-description"><strong>description</strong></p>
 <a class="ansibleOptionLink" href="#return-description" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>description of the DB parameter group</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when state is present</p>
+<td><div class="ansible-option-cell"><p>description of the DB parameter group.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-rds-instance-param-group-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-errors"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-param-group-module-return-errors"><strong>errors</strong></p>
 <a class="ansibleOptionLink" href="#return-errors" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>list of errors from attempting to modify parameters that are not modifiable</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when state is present</p>
+<td><div class="ansible-option-cell"><p>List of errors from attempting to modify parameters that are not modifiable.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-rds-instance-param-group-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-param-group-module-return-tags"><strong>tags</strong></p>
 <a class="ansibleOptionLink" href="#return-tags" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>dictionary of tags</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when state is present</p>
+<td><div class="ansible-option-cell"><p>A dictionary of tags.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-rds-instance-param-group-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 </div></td>
 </tr>
 </tbody>
