@@ -334,20 +334,21 @@ EXAMPLES = r"""
 
 RETURN = r"""
 encryption:
-    description:
-        - Server-side encryption of the objects in the S3 bucket.
-    type: str
-    returned: I(state=present)
-    sample: ''
+    description: Server-side encryption of the objects in the S3 bucket.
+    type: dict
+    returned: when O(state=present)
+    sample: {
+                "SSEAlgorithm": "AES256"
+            }
 name:
-    description: Name of the S3 bucket.
+    description: Bucket name.
+    returned: when O(state=present)
     type: str
-    returned: I(state=present)
-    sample: "2d3ce10a8210d36d6b4d23b822892074complex"
+    sample: "a-testing-bucket-name"
 object_ownership:
     description: S3 bucket's ownership controls.
     type: str
-    returned: I(state=present)
+    returned: when O(state=present)
     sample: "BucketOwnerPreferred"
 object_lock_default_retention:
     description: S3 bucket's object lock retention policy.
@@ -361,7 +362,7 @@ object_lock_default_retention:
 policy:
     description: S3 bucket's policy.
     type: dict
-    returned: I(state=present)
+    returned: when O(state=present)
     sample: {
         "Statement": [
             {
@@ -375,15 +376,14 @@ policy:
         "Version": "2012-10-17"
     }
 requester_pays:
-    description:
-        - Indicates that the requester was successfully charged for the request.
-    type: str
-    returned: I(state=present)
-    sample: ''
+    description: Indicates that the requester was successfully charged for the request.
+    type: bool
+    returned: when O(state=present)
+    sample: true
 tags:
     description: S3 bucket's tags.
     type: dict
-    returned: I(state=present)
+    returned: when O(state=present)
     sample: {
         "Tag1": "tag1",
         "Tag2": "tag2"
@@ -391,16 +391,59 @@ tags:
 versioning:
     description: S3 bucket's versioning configuration.
     type: dict
-    returned: I(state=present)
+    returned: when O(state=present)
     sample: {
         "MfaDelete": "Disabled",
         "Versioning": "Enabled"
     }
+    contains:
+        MfaDelete:
+            description: Specifies whether MFA delete is enabled in the bucket versioning configuration.
+            returned: when O(state=presnet) and MfaDelete configured on bucket.
+            type: str
+        Versioning:
+            description: The versioning state of the bucket.
+            type: str
+            returned: always
 acl:
     description: S3 bucket's canned ACL.
     type: dict
-    returned: I(state=present)
-    sample: 'public-read'
+    returned: when O(state=present).
+    sample: "public-read"
+object_lock_enabled:
+    description: Whether S3 Object Lock is enabled.
+    type: bool
+    returned: when O(state=present)
+    sample: false
+public_access_block:
+    description: Bucket public access block configuration.
+    returned: when O(state=present)
+    type: dict
+    sample: {
+                "PublicAccessBlockConfiguration": {
+                    "BlockPublicAcls": true,
+                    "BlockPublicPolicy": true,
+                    "IgnorePublicAcls": true,
+                    "RestrictPublicBuckets": true
+                }
+            }
+    contains:
+        PublicAccessBlockConfiguration:
+            description: The PublicAccessBlock configuration currently in effect for this Amazon S3 bucket.
+            type: dict
+            contains:
+                BlockPublicAcls:
+                    description: Specifies whether Amazon S3 should block public access control lists (ACLs) for this bucket and objects in this bucket.
+                    type: bool
+                BlockPublicPolicy:
+                    description: Specifies whether Amazon S3 should block public bucket policies for this bucket.
+                    type: bool
+                IgnorePublicAcls:
+                    description: Specifies whether Amazon S3 should ignore public ACLs for this bucket and objects in this bucket.
+                    type: bool
+                RestrictPublicBuckets:
+                    description: Specifies whether Amazon S3 should restrict public bucket policies for this bucket.
+                    type: bool
 accelerate_enabled:
     description: S3 bucket acceleration status.
     type: bool
@@ -527,7 +570,6 @@ def handle_bucket_requester_pays(s3_client, module: AnsibleAWSModule, name: str)
                     put_bucket_request_payment(s3_client, name, payer)
                     requester_pays_status = wait_payer_is_applied(module, s3_client, name, payer, should_fail=True)
                 requester_pays_changed = True
-
     return requester_pays_changed, requester_pays
 
 
