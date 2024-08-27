@@ -489,6 +489,7 @@ def handle_bucket_versioning(s3_client, module: AnsibleAWSModule, name: str) -> 
         A tuple containing a boolean indicating whether versioning
         was changed and a dictionary containing the updated versioning status.
     """
+
     versioning = module.params.get("versioning")
     versioning_changed = False
     versioning_status = {}
@@ -501,7 +502,7 @@ def handle_bucket_versioning(s3_client, module: AnsibleAWSModule, name: str) -> 
     except is_boto3_error_code("AccessDenied") as e:
         if versioning is not None:
             module.fail_json_aws(e, msg="Failed to get bucket versioning")
-        module.debug("AccessDenied fetching bucket versioning")
+        module.warn("AccessDenied fetching bucket versioning")
     except (
         botocore.exceptions.BotoCoreError,
         botocore.exceptions.ClientError,
@@ -529,7 +530,7 @@ def handle_bucket_versioning(s3_client, module: AnsibleAWSModule, name: str) -> 
             "MfaDelete": versioning_status.get("MFADelete", "Disabled"),
         }
         # This output format is there to ensure compatibility with previous versions of the module
-        return versioning_changed, versioning_result
+    return versioning_changed, versioning_result
 
 
 def handle_bucket_requester_pays(s3_client, module: AnsibleAWSModule, name: str) -> tuple[bool, dict]:
@@ -543,9 +544,11 @@ def handle_bucket_requester_pays(s3_client, module: AnsibleAWSModule, name: str)
         A tuple containing a boolean indicating whether requester pays setting
         was changed and a dictionary containing the updated requester pays status.
     """
+
     requester_pays = module.params.get("requester_pays")
     requester_pays_changed = False
     requester_pays_status = {}
+
     try:
         requester_pays_status = get_bucket_request_payment(s3_client, name)
     except is_boto3_error_code(["NotImplemented", "XNotImplemented"]) as e:
@@ -554,7 +557,7 @@ def handle_bucket_requester_pays(s3_client, module: AnsibleAWSModule, name: str)
     except is_boto3_error_code("AccessDenied") as e:
         if requester_pays is not None:
             module.fail_json_aws(e, msg="Failed to get bucket request payment")
-        module.debug("AccessDenied fetching bucket request payment")
+        module.warn("AccessDenied fetching bucket request payment")
     except (
         botocore.exceptions.BotoCoreError,
         botocore.exceptions.ClientError,
@@ -586,12 +589,13 @@ def handle_bucket_public_access_config(s3_client, module: AnsibleAWSModule, name
         A tuple containing a boolean indicating whether public access configuration
         was changed and a dictionary containing the updated public access configuration.
     """
+
     public_access = module.params.get("public_access")
     delete_public_access = module.params.get("delete_public_access")
     public_access_changed = False
     public_access_result = {}
-
     current_public_access = {}
+
     try:
         current_public_access = get_bucket_public_access(s3_client, name)
     except is_boto3_error_code(["NotImplemented", "XNotImplemented"]) as e:
@@ -600,7 +604,7 @@ def handle_bucket_public_access_config(s3_client, module: AnsibleAWSModule, name
     except is_boto3_error_code("AccessDenied") as e:
         if public_access is not None:
             module.fail_json_aws(e, msg="Failed to get bucket public access configuration")
-        module.debug("AccessDenied fetching bucket public access settings")
+        module.warn("AccessDenied fetching bucket public access settings")
     except (
         botocore.exceptions.BotoCoreError,
         botocore.exceptions.ClientError,
@@ -642,8 +646,11 @@ def handle_bucket_policy(s3_client, module: AnsibleAWSModule, name: str) -> tupl
         A tuple containing a boolean indicating whether the bucket policy
         was changed and a dictionary containing the updated bucket policy.
     """
+
     policy = module.params.get("policy")
     policy_changed = False
+    current_policy = None
+
     try:
         current_policy = get_bucket_policy(s3_client, name)
     except is_boto3_error_code(["NotImplemented", "XNotImplemented"]) as e:
@@ -652,7 +659,7 @@ def handle_bucket_policy(s3_client, module: AnsibleAWSModule, name: str) -> tupl
     except is_boto3_error_code("AccessDenied") as e:
         if policy is not None:
             module.fail_json_aws(e, msg="Failed to get bucket policy")
-        module.debug("AccessDenied fetching bucket policy")
+        module.warn("AccessDenied fetching bucket policy")
     except (
         botocore.exceptions.BotoCoreError,
         botocore.exceptions.ClientError,
@@ -683,7 +690,7 @@ def handle_bucket_policy(s3_client, module: AnsibleAWSModule, name: str) -> tupl
                     current_policy = wait_policy_is_applied(module, s3_client, name, policy, should_fail=True)
                 policy_changed = True
 
-        return policy_changed, current_policy
+    return policy_changed, current_policy
 
 
 def handle_bucket_tags(s3_client, module: AnsibleAWSModule, name: str) -> tuple[bool, dict]:
@@ -697,9 +704,11 @@ def handle_bucket_tags(s3_client, module: AnsibleAWSModule, name: str) -> tuple[
         A tuple containing a boolean indicating whether tags were changed
         and a dictionary containing the updated tags.
     """
+
     tags = module.params.get("tags")
     purge_tags = module.params.get("purge_tags")
     bucket_tags_changed = False
+    current_tags_dict = None
 
     try:
         current_tags_dict = get_current_bucket_tags_dict(s3_client, name)
@@ -709,7 +718,7 @@ def handle_bucket_tags(s3_client, module: AnsibleAWSModule, name: str) -> tuple[
     except is_boto3_error_code("AccessDenied") as e:
         if tags is not None:
             module.fail_json_aws(e, msg="Failed to get bucket tags")
-        module.debug("AccessDenied fetching bucket tags")
+        module.warn("AccessDenied fetching bucket tags")
     except (
         botocore.exceptions.BotoCoreError,
         botocore.exceptions.ClientError,
@@ -739,7 +748,7 @@ def handle_bucket_tags(s3_client, module: AnsibleAWSModule, name: str) -> tuple[
                 current_tags_dict = wait_tags_are_applied(module, s3_client, name, tags)
                 bucket_tags_changed = True
 
-        return bucket_tags_changed, current_tags_dict
+    return bucket_tags_changed, current_tags_dict
 
 
 def handle_bucket_encryption(s3_client, module: AnsibleAWSModule, name: str) -> tuple[bool, dict]:
@@ -757,6 +766,7 @@ def handle_bucket_encryption(s3_client, module: AnsibleAWSModule, name: str) -> 
     encryption_key_id = module.params.get("encryption_key_id")
     bucket_key_enabled = module.params.get("bucket_key_enabled")
     encryption_changed = False
+    current_encryption = None
 
     try:
         current_encryption = get_bucket_encryption(s3_client, name)
@@ -766,7 +776,7 @@ def handle_bucket_encryption(s3_client, module: AnsibleAWSModule, name: str) -> 
     except is_boto3_error_code("AccessDenied") as e:
         if encryption is not None:
             module.fail_json_aws(e, msg="Failed to get bucket encryption settings")
-        module.debug("AccessDenied fetching bucket encryption settings")
+        module.warn("AccessDenied fetching bucket encryption settings")
     except (
         botocore.exceptions.BotoCoreError,
         botocore.exceptions.ClientError,
@@ -802,7 +812,7 @@ def handle_bucket_encryption(s3_client, module: AnsibleAWSModule, name: str) -> 
                     current_encryption = put_bucket_key_with_retry(module, s3_client, name, expected_encryption)
                     encryption_changed = True
 
-        return encryption_changed, current_encryption
+    return encryption_changed, current_encryption
 
 
 def handle_bucket_ownership(s3_client, module: AnsibleAWSModule, name: str) -> tuple[bool, dict]:
@@ -816,10 +826,12 @@ def handle_bucket_ownership(s3_client, module: AnsibleAWSModule, name: str) -> t
         A tuple containing a boolean indicating whether ownership settings were changed
         and a dictionary containing the updated ownership settings.
     """
+
     delete_object_ownership = module.params.get("delete_object_ownership")
     object_ownership = module.params.get("object_ownership")
     bucket_ownership_changed = False
     bucket_ownership_result = {}
+
     try:
         bucket_ownership = get_bucket_ownership_cntrl(s3_client, name)
         bucket_ownership_result = bucket_ownership
@@ -835,7 +847,7 @@ def handle_bucket_ownership(s3_client, module: AnsibleAWSModule, name: str) -> t
     except is_boto3_error_code("AccessDenied") as e:
         if delete_object_ownership or object_ownership is not None:
             module.fail_json_aws(e, msg="Failed to get bucket object ownership settings")
-        module.debug("AccessDenied fetching bucket object ownership settings")
+        module.warn("AccessDenied fetching bucket object ownership settings")
     except (
         botocore.exceptions.BotoCoreError,
         botocore.exceptions.ClientError,
@@ -868,9 +880,11 @@ def handle_bucket_acl(s3_client, module: AnsibleAWSModule, name: str) -> tuple[b
     Returns:
         A tuple containing a boolean indicating whether ACL was changed and a dictionary containing the updated ACL.
     """
+
     acl = module.params.get("acl")
     bucket_acl_changed = False
     bucket_acl_result = {}
+
     if acl:
         try:
             s3_client.put_bucket_acl(Bucket=name, ACL=acl)
@@ -904,8 +918,10 @@ def handle_bucket_object_lock(s3_client, module: AnsibleAWSModule, name: str) ->
     Returns:
         The updated object lock configuration.
     """
+
     object_lock_enabled = module.params.get("object_lock_enabled")
     object_lock_result = {}
+
     try:
         object_lock_status = get_bucket_object_lock_enabled(s3_client, name)
         object_lock_result = object_lock_status
@@ -945,9 +961,11 @@ def handle_bucket_accelerate(s3_client, module: AnsibleAWSModule, name: str) -> 
         A tuple containing a boolean indicating whether transfer accelerate setting was changed
         and a boolean indicating the transfer accelerate status.
     """
+
     accelerate_enabled = module.params.get("accelerate_enabled")
     accelerate_enabled_result = False
     accelerate_enabled_changed = False
+
     try:
         accelerate_status = get_bucket_accelerate_status(s3_client, name)
         accelerate_enabled_result = accelerate_status
@@ -994,10 +1012,12 @@ def handle_bucket_object_lock_retention(s3_client, module: AnsibleAWSModule, nam
         A tuple containing a boolean indicating whether the bucket object lock
         retention configuration was changed and a dictionary containing the change.
     """
+
     object_lock_enabled = module.params.get("object_lock_enabled")
     object_lock_default_retention = module.params.get("object_lock_default_retention")
     object_lock_default_retention_result = {}
     object_lock_default_retention_changed = False
+
     try:
         if object_lock_enabled:
             object_lock_configuration_status = get_object_lock_configuration(s3_client, name)
