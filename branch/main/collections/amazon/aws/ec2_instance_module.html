@@ -1241,6 +1241,15 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <span class="w">        </span><span class="nt">ebs</span><span class="p">:</span>
 <span class="w">          </span><span class="nt">snapshot_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">snap-1234567890</span>
 
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create EC2 instance with termination protection turned on</span>
+<span class="w">  </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;my-ec2-instance&quot;</span>
+<span class="w">    </span><span class="nt">vpc_subnet_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-5ca1ab1e</span>
+<span class="w">    </span><span class="nt">instance_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">t3.small</span>
+<span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ami-123456</span>
+<span class="w">    </span><span class="nt">termination_protection</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">yes</span>
+<span class="w">    </span><span class="nt">wait</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">yes</span>
+
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">start an instance with a cpu_options</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;public-cpuoption-instance&quot;</span>
