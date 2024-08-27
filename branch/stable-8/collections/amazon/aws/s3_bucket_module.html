@@ -839,26 +839,26 @@ pass the <em>public_access</em> parameter to enable public access ACLs.</p>
 <a class="ansibleOptionLink" href="#return-acl" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>S3 bucket’s canned ACL.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <em>state=present</em></p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucket-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code>.</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;public-read&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-encryption"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-bucket-module-return-encryption"><strong>encryption</strong></p>
-<a class="ansibleOptionLink" href="#return-encryption" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<a class="ansibleOptionLink" href="#return-encryption" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Server-side encryption of the objects in the S3 bucket.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <em>state=present</em></p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucket-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;SSEAlgorithm&quot;:</span> <span class="pre">&quot;AES256&quot;}</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-bucket-module-return-name"><strong>name</strong></p>
 <a class="ansibleOptionLink" href="#return-name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Name of the S3 bucket.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <em>state=present</em></p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2d3ce10a8210d36d6b4d23b822892074complex&quot;</span></code></p>
+<td><div class="ansible-option-cell"><p>Bucket name.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucket-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;a-testing-bucket-name&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -871,48 +871,122 @@ pass the <em>public_access</em> parameter to enable public access ACLs.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-object_lock_enabled"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-bucket-module-return-object-lock-enabled"><strong>object_lock_enabled</strong></p>
+<a class="ansibleOptionLink" href="#return-object_lock_enabled" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Whether S3 Object Lock is enabled.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucket-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">false</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-object_ownership"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-bucket-module-return-object-ownership"><strong>object_ownership</strong></p>
 <a class="ansibleOptionLink" href="#return-object_ownership" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>S3 bucket’s ownership controls.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <em>state=present</em></p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucket-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;BucketOwnerPreferred&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-policy"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-bucket-module-return-policy"><strong>policy</strong></p>
 <a class="ansibleOptionLink" href="#return-policy" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>S3 bucket’s policy.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <em>state=present</em></p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucket-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;Statement&quot;:</span> <span class="pre">[{&quot;Action&quot;:</span> <span class="pre">&quot;s3:GetObject&quot;,</span> <span class="pre">&quot;Effect&quot;:</span> <span class="pre">&quot;Allow&quot;,</span> <span class="pre">&quot;Principal&quot;:</span> <span class="pre">&quot;*&quot;,</span> <span class="pre">&quot;Resource&quot;:</span> <span class="pre">&quot;arn:aws:s3:::2d3ce10a8210d36d6b4d23b822892074complex/*&quot;,</span> <span class="pre">&quot;Sid&quot;:</span> <span class="pre">&quot;AddPerm&quot;}],</span> <span class="pre">&quot;Version&quot;:</span> <span class="pre">&quot;2012-10-17&quot;}</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-requester_pays"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-bucket-module-return-requester-pays"><strong>requester_pays</strong></p>
-<a class="ansibleOptionLink" href="#return-requester_pays" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-public_access_block"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-bucket-module-return-public-access-block"><strong>public_access_block</strong></p>
+<a class="ansibleOptionLink" href="#return-public_access_block" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Indicates that the requester was successfully charged for the request.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <em>state=present</em></p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
+<td><div class="ansible-option-cell"><p>Bucket public access block configuration.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucket-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;PublicAccessBlockConfiguration&quot;:</span> <span class="pre">{&quot;BlockPublicAcls&quot;:</span> <span class="pre">true,</span> <span class="pre">&quot;BlockPublicPolicy&quot;:</span> <span class="pre">true,</span> <span class="pre">&quot;IgnorePublicAcls&quot;:</span> <span class="pre">true,</span> <span class="pre">&quot;RestrictPublicBuckets&quot;:</span> <span class="pre">true}}</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-public_access_block/PublicAccessBlockConfiguration"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-bucket-module-return-public-access-block-publicaccessblockconfiguration"><strong>PublicAccessBlockConfiguration</strong></p>
+<a class="ansibleOptionLink" href="#return-public_access_block/PublicAccessBlockConfiguration" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The PublicAccessBlock configuration currently in effect for this Amazon S3 bucket.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-public_access_block/PublicAccessBlockConfiguration/BlockPublicAcls"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-bucket-module-return-public-access-block-publicaccessblockconfiguration-blockpublicacls"><strong>BlockPublicAcls</strong></p>
+<a class="ansibleOptionLink" href="#return-public_access_block/PublicAccessBlockConfiguration/BlockPublicAcls" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Specifies whether Amazon S3 should block public access control lists (ACLs) for this bucket and objects in this bucket.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-public_access_block/PublicAccessBlockConfiguration/BlockPublicPolicy"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-bucket-module-return-public-access-block-publicaccessblockconfiguration-blockpublicpolicy"><strong>BlockPublicPolicy</strong></p>
+<a class="ansibleOptionLink" href="#return-public_access_block/PublicAccessBlockConfiguration/BlockPublicPolicy" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Specifies whether Amazon S3 should block public bucket policies for this bucket.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-public_access_block/PublicAccessBlockConfiguration/IgnorePublicAcls"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-bucket-module-return-public-access-block-publicaccessblockconfiguration-ignorepublicacls"><strong>IgnorePublicAcls</strong></p>
+<a class="ansibleOptionLink" href="#return-public_access_block/PublicAccessBlockConfiguration/IgnorePublicAcls" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Specifies whether Amazon S3 should ignore public ACLs for this bucket and objects in this bucket.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-public_access_block/PublicAccessBlockConfiguration/RestrictPublicBuckets"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-bucket-module-return-public-access-block-publicaccessblockconfiguration-restrictpublicbuckets"><strong>RestrictPublicBuckets</strong></p>
+<a class="ansibleOptionLink" href="#return-public_access_block/PublicAccessBlockConfiguration/RestrictPublicBuckets" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Specifies whether Amazon S3 should restrict public bucket policies for this bucket.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-requester_pays"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-bucket-module-return-requester-pays"><strong>requester_pays</strong></p>
+<a class="ansibleOptionLink" href="#return-requester_pays" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Indicates that the requester was successfully charged for the request.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucket-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">true</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-bucket-module-return-tags"><strong>tags</strong></p>
 <a class="ansibleOptionLink" href="#return-tags" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>S3 bucket’s tags.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <em>state=present</em></p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucket-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;Tag1&quot;:</span> <span class="pre">&quot;tag1&quot;,</span> <span class="pre">&quot;Tag2&quot;:</span> <span class="pre">&quot;tag2&quot;}</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-versioning"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-bucket-module-return-versioning"><strong>versioning</strong></p>
 <a class="ansibleOptionLink" href="#return-versioning" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>S3 bucket’s versioning configuration.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <em>state=present</em></p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucket-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;MfaDelete&quot;:</span> <span class="pre">&quot;Disabled&quot;,</span> <span class="pre">&quot;Versioning&quot;:</span> <span class="pre">&quot;Enabled&quot;}</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-versioning/MfaDelete"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-bucket-module-return-versioning-mfadelete"><strong>MfaDelete</strong></p>
+<a class="ansibleOptionLink" href="#return-versioning/MfaDelete" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Specifies whether MFA delete is enabled in the bucket versioning configuration.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-bucket-module-parameter-state"><span class="std std-ref"><span class="pre">state=presnet</span></span></a></code> and MfaDelete configured on bucket.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-versioning/Versioning"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-bucket-module-return-versioning-versioning"><strong>Versioning</strong></p>
+<a class="ansibleOptionLink" href="#return-versioning/Versioning" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The versioning state of the bucket.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 </div></td>
 </tr>
 </tbody>
