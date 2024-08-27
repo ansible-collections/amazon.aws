@@ -416,57 +416,85 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-backup-v
 </thead>
 <tbody>
 <tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-backup_vault"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-vault-module-return-backup-vault"><strong>backup_vault</strong></p>
-<a class="ansibleOptionLink" href="#return-backup_vault" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
+<div class="ansibleOptionAnchor" id="return-exists"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-vault-module-return-exists"><strong>exists</strong></p>
+<a class="ansibleOptionLink" href="#return-exists" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>BackupVault resource details</p>
+<td><div class="ansible-option-cell"><p>Whether the Backup Vault exists.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">true</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-vault"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-vault-module-return-vault"><strong>vault</strong></p>
+<a class="ansibleOptionLink" href="#return-vault" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Backup Vault details.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;hash/dictionary</span> <span class="pre">of</span> <span class="pre">values&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-backup_vault/backup_vault_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-vault-module-return-backup-vault-backup-vault-arn"><strong>backup_vault_arn</strong></p>
-<a class="ansibleOptionLink" href="#return-backup_vault/backup_vault_arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-vault/backup_vault_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-vault-module-return-vault-backup-vault-arn"><strong>backup_vault_arn</strong></p>
+<a class="ansibleOptionLink" href="#return-vault/backup_vault_arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>An Amazon Resource Name (ARN) that uniquely identifies a backup vault.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:backup:us-east-1:123456789012:vault:aBackupVault&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-backup_vault/backup_vault_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-vault-module-return-backup-vault-backup-vault-name"><strong>backup_vault_name</strong></p>
-<a class="ansibleOptionLink" href="#return-backup_vault/backup_vault_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-vault/backup_vault_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-vault-module-return-vault-backup-vault-name"><strong>backup_vault_name</strong></p>
+<a class="ansibleOptionLink" href="#return-vault/backup_vault_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The name of a logical container where backups are stored.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;default-name&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-backup_vault/creation_date"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-vault-module-return-backup-vault-creation-date"><strong>creation_date</strong></p>
-<a class="ansibleOptionLink" href="#return-backup_vault/creation_date" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-vault/creation_date"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-vault-module-return-vault-creation-date"><strong>creation_date</strong></p>
+<a class="ansibleOptionLink" href="#return-vault/creation_date" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The date and time a backup vault is created, in Unix format and Coordinated Universal Time (UTC).</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;1516925490.087</span> <span class="pre">(represents</span> <span class="pre">Friday,</span> <span class="pre">January</span> <span class="pre">26,</span> <span class="pre">2018</span> <span class="pre">12:11:30.087</span> <span class="pre">AM).&quot;</span></code></p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2024-05-21T13:21:10.062000-07:00&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-vault/encryption_key_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-vault-module-return-vault-encryption-key-arn"><strong>encryption_key_arn</strong></p>
+<a class="ansibleOptionLink" href="#return-vault/encryption_key_arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The server-side encryption key that is used to protect your backups.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-backup_vault/tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-vault-module-return-backup-vault-tags"><strong>tags</strong></p>
-<a class="ansibleOptionLink" href="#return-backup_vault/tags" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+<div class="ansibleOptionAnchor" id="return-vault/locked"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-vault-module-return-vault-locked"><strong>locked</strong></p>
+<a class="ansibleOptionLink" href="#return-vault/locked" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>hash/dictionary of tags applied to this resource</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;Name&quot;:</span> <span class="pre">&quot;default&quot;,</span> <span class="pre">&quot;environment&quot;:</span> <span class="pre">&quot;dev&quot;}</span></code></p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A Boolean that indicates whether Backup Vault Lock is currently protecting the backup vault.</p>
+<p>True means that Vault Lock causes delete or update operations on the recovery points stored in the vault to fail.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">false</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-exists"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-vault-module-return-exists"><strong>exists</strong></p>
-<a class="ansibleOptionLink" href="#return-exists" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-vault/number_of_recovery_points"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-vault-module-return-vault-number-of-recovery-points"><strong>number_of_recovery_points</strong></p>
+<a class="ansibleOptionLink" href="#return-vault/number_of_recovery_points" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>whether the resource exists</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The number of recovery points that are stored in a backup vault.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">true</span></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">0</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-vault/tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-backup-vault-module-return-vault-tags"><strong>tags</strong></p>
+<a class="ansibleOptionLink" href="#return-vault/tags" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Tags of the backup vault.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> on create/update</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;{'TagKey1':</span> <span class="pre">'TagValue1',</span> <span class="pre">'TagKey2':</span> <span class="pre">'TagValue2'}&quot;</span></code></p>
 </div></td>
 </tr>
 </tbody>
