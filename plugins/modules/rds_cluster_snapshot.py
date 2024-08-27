@@ -102,22 +102,32 @@ availability_zone:
   description: Availability zone of the database from which the snapshot was created.
   returned: always
   type: str
-  sample: us-west-2a
+  sample: "us-west-2a"
+allocated_storage:
+  description: The allocated storage size of the DB cluster snapshot in gibibytes (GiB).
+  returned: always
+  type: int
+  sample: 0
+cluster_create_time:
+  description: The time when the DB cluster was created, in Universal Coordinated Time (UTC).
+  returned: always
+  type: str
+  sample: "2024-07-01T05:27:53.478000+00:00"
 db_cluster_snapshot_identifier:
   description: Specifies the identifier for the DB cluster snapshot.
   returned: always
   type: str
-  sample: ansible-test-16638696-test-snapshot
+  sample: "ansible-test-16638696-test-snapshot"
 db_cluster_identifier:
   description: Specifies the DB cluster identifier of the DB cluster that this DB cluster snapshot was created from.
   returned: always
   type: str
-  sample: ansible-test-16638696
+  sample: "ansible-test-16638696"
 snapshot_create_time:
   description: Provides the time when the snapshot was taken, in Universal Coordinated Time (UTC).
   returned: always
   type: str
-  sample: '2019-06-15T10:46:23.776000+00:00'
+  sample: "2019-06-15T10:46:23.776000+00:00"
 engine:
   description: Specifies the name of the database engine for this DB cluster snapshot.
   returned: always
@@ -128,11 +138,6 @@ engine_mode:
   returned: always
   type: str
   sample: "5.6.mysql_aurora.1.22.5"
-allocated_storage:
-  description: Specifies the allocated storage size in gibibytes (GiB).
-  returned: always
-  type: int
-  sample: 20
 status:
   description: Specifies the status of this DB cluster snapshot.
   returned: always
@@ -148,16 +153,11 @@ vpc_id:
   returned: always
   type: str
   sample: vpc-09ff232e222710ae0
-cluster_create_time:
-  description: Specifies the time when the DB cluster was created, in Universal Coordinated Time (UTC).
-  returned: always
-  type: str
-  sample: '2019-06-15T10:15:56.221000+00:00'
 master_username:
   description: Provides the master username for this DB cluster snapshot.
   returned: always
   type: str
-  sample: test
+  sample: "test"
 engine_version:
   description: Version of the cluster from which the snapshot was created.
   returned: always
@@ -167,12 +167,12 @@ license_model:
   description: Provides the license model information for this DB cluster snapshot.
   returned: always
   type: str
-  sample: general-public-license
+  sample: "general-public-license"
 snapshot_type:
   description: How the snapshot was created (always manual for this module!).
   returned: always
   type: str
-  sample: manual
+  sample: "manual"
 percent_progress:
   description: Specifies the percentage of the estimated data that has been transferred.
   returned: always
@@ -191,7 +191,7 @@ db_cluster_snapshot_arn:
   description: Amazon Resource Name for the snapshot.
   returned: always
   type: str
-  sample: arn:aws:rds:us-west-2:123456789012:snapshot:ansible-test-16638696-test-snapshot
+  sample: "arn:aws:rds:us-west-2:123456789012:snapshot:ansible-test-16638696-test-snapshot"
 source_db_cluster_snapshot_arn:
   description: If the DB cluster snapshot was copied from a source DB cluster snapshot, the ARN for the source DB cluster snapshot, otherwise, null.
   returned: always
@@ -206,12 +206,18 @@ tag_list:
   description: A list of tags.
   returned: always
   type: list
-  sample: []
+  sample: [
+        {
+            "key": "tag_one",
+            "value": "ansible-test-123456789012-rds-cluster-snapshot-b One"
+        }]
 tags:
   description: Tags applied to the snapshot.
   returned: always
-  type: complex
-  contains: {}
+  type: dict
+  sample: {
+        "Tag Two": "two ansible-test-123456789012-rds-cluster-snapshot-b"
+        }
 """
 
 try:

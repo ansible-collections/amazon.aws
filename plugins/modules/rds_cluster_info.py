@@ -60,7 +60,7 @@ clusters:
     activity_stream_status:
         description: The status of the database activity stream.
         type: str
-        sample: stopped
+        sample: "stopped"
     allocated_storage:
         description:
         - The allocated storage size in gigabytes. Since aurora storage size is not fixed this is
@@ -73,6 +73,11 @@ clusters:
           with the DB cluster. Each dictionary contains the role_arn and the status of the role.
         type: list
         sample: []
+    auto_minor_version_upgrade:
+        description: Specifies whether minor engine upgrades are applied automatically to the DB cluster during the maintenance window.
+        returned: always
+        type: bool
+        sample: true
     availability_zones:
         description: The list of availability zones that instances in the DB cluster can be created in.
         type: list
@@ -87,7 +92,7 @@ clusters:
     cluster_create_time:
         description: The time in UTC when the DB cluster was created.
         type: str
-        sample: '2018-06-29T14:08:58.491000+00:00'
+        sample: "2018-06-29T14:08:58.491000+00:00"
     copy_tags_to_snapshot:
         description:
         - Specifies whether tags are copied from the DB cluster to snapshots of the DB cluster.
@@ -101,11 +106,11 @@ clusters:
     db_cluster_arn:
         description: The Amazon Resource Name (ARN) for the DB cluster.
         type: str
-        sample: arn:aws:rds:us-east-1:123456789012:cluster:rds-cluster-demo
+        sample: "arn:aws:rds:us-east-1:123456789012:cluster:rds-cluster-demo"
     db_cluster_identifier:
         description: The lowercase user-supplied DB cluster identifier.
         type: str
-        sample: rds-cluster-demo
+        sample: "rds-cluster-demo"
     db_cluster_members:
         description:
         - A list of dictionaries containing information about the instances in the cluster.
@@ -116,15 +121,15 @@ clusters:
     db_cluster_parameter_group:
         description: The parameter group associated with the DB cluster.
         type: str
-        sample: default.aurora5.6
+        sample: "default.aurora5.6"
     db_cluster_resource_id:
         description: The AWS Region-unique, immutable identifier for the DB cluster.
         type: str
-        sample: cluster-D2MEQDN3BQNXDF74K6DQJTHASU
+        sample: "cluster-D2MEQDN3BQNXDF74K6DQJTHASU"
     db_subnet_group:
         description: The name of the subnet group associated with the DB Cluster.
         type: str
-        sample: default
+        sample: "default"
     deletion_protection:
         description:
         - Indicates if the DB cluster has deletion protection enabled.
@@ -139,27 +144,27 @@ clusters:
     earliest_restorable_time:
         description: The earliest time to which a database can be restored with point-in-time restore.
         type: str
-        sample: '2018-06-29T14:09:34.797000+00:00'
+        sample: "2018-06-29T14:09:34.797000+00:00"
     endpoint:
         description: The connection endpoint for the primary instance of the DB cluster.
         type: str
-        sample: rds-cluster-demo.cluster-cvlrtwiennww.us-east-1.rds.amazonaws.com
+        sample: "rds-cluster-demo.cluster-cvlrtwiennww.us-east-1.rds.amazonaws.com"
     engine:
         description: The database engine of the DB cluster.
         type: str
-        sample: aurora
+        sample: "aurora"
     engine_mode:
         description: The DB engine mode of the DB cluster.
         type: str
-        sample: provisioned
+        sample: "provisioned"
     engine_version:
         description: The database engine version.
         type: str
-        sample: 5.6.10a
+        sample: "5.6.10a"
     hosted_zone_id:
         description: The ID that Amazon Route 53 assigns when you create a hosted zone.
         type: str
-        sample: Z2R2ITUGPM61AM
+        sample: "Z2R2ITUGPM61AM"
     http_endpoint_enabled:
         description:
         - A value that indicates whether the HTTP endpoint for an Aurora Serverless DB cluster is enabled.
@@ -172,11 +177,11 @@ clusters:
     latest_restorable_time:
         description: The latest time to which a database can be restored with point-in-time restore.
         type: str
-        sample: '2018-06-29T14:09:34.797000+00:00'
+        sample: "2018-06-29T14:09:34.797000+00:00"
     master_username:
         description: The master username for the DB cluster.
         type: str
-        sample: username
+        sample: "username"
     multi_az:
         description: Whether the DB cluster has instances in multiple availability zones.
         type: bool
@@ -188,11 +193,11 @@ clusters:
     preferred_backup_window:
         description: The UTC weekly time range during which system maintenance can occur.
         type: str
-        sample: 10:18-10:48
+        sample: "10:18-10:48"
     preferred_maintenance_window:
         description: The UTC weekly time range during which system maintenance can occur.
         type: str
-        sample: tue:03:23-tue:03:53
+        sample: "tue:03:23-tue:03:53"
     read_replica_identifiers:
         description: A list of read replica ID strings associated with the DB cluster.
         type: list
@@ -200,11 +205,11 @@ clusters:
     reader_endpoint:
         description: The reader endpoint for the DB cluster.
         type: str
-        sample: rds-cluster-demo.cluster-ro-cvlrtwiennww.us-east-1.rds.amazonaws.com
+        sample: "rds-cluster-demo.cluster-ro-cvlrtwiennww.us-east-1.rds.amazonaws.com"
     status:
         description: The status of the DB cluster.
         type: str
-        sample: available
+        sample: "available"
     storage_encrypted:
         description: Whether the DB cluster is storage encrypted.
         type: bool
@@ -232,11 +237,11 @@ clusters:
             status:
                 description: Status of the security group.
                 type: str
-                sample: active
+                sample: "active"
             vpc_security_group_id:
                 description: Security group of the cluster.
                 type: str
-                sample: sg-12345678
+                sample: "sg-12345678"
 """
 
 

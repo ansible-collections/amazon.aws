@@ -57,33 +57,40 @@ global_clusters:
         description:
         - The Amazon Web Services Region-unique, immutable identifier for the global database cluster.
         type: str
-        sample: cluster-xxx
+        returned: always
+        sample: "cluster-123456789012"
     global_cluster_arn:
         description:
         - The Amazon Resource Name (ARN) for the global database cluster.
         type: str
-        sample: "arn:aws:rds::xxx:global-cluster:ansible-test-global-cluster"
+        returned: always
+        sample: "arn:aws:rds::123456789012:global-cluster:ansible-test-global-cluster"
     status:
         description: The status of the DB cluster.
         type: str
-        sample: available
+        returned: always
+        sample: "available"
     engine:
         description: The database engine of the DB cluster.
         type: str
-        sample: aurora-postgresql
+        returned: always
+        sample: "aurora-postgresql"
     engine_version:
         description: The database engine version.
         type: str
-        sample: 14.8
+        returned: always
+        sample: "14.8"
     storage_encrypted:
         description: Whether the DB cluster is storage encrypted.
         type: bool
+        returned: always
         sample: false
     deletion_protection:
         description:
         - Indicates if the DB cluster has deletion protection enabled.
           The database can't be deleted when deletion protection is enabled.
         type: bool
+        returned: always
         sample: false
     gloabl_cluster_members:
         description:
@@ -95,20 +102,24 @@ global_clusters:
             db_cluster_arn:
                 description: The Amazon Resource Name (ARN) for each Aurora DB cluster in the global cluster.
                 type: str
-                sample: arn:aws:rds:us-east-1:123456789012:cluster:ansible-test-primary
+                returned: always
+                sample: "arn:aws:rds:us-east-1:123456789012:cluster:ansible-test-primary"
             readers:
                 description: The Amazon Resource Name (ARN) for each read-only secondary cluster associated with the global cluster.
                 type: list
                 elements: str
-                sample: arn:aws:rds:us-east-2:123456789012:cluster:ansible-test-secondary
+                returned: always
+                sample: "arn:aws:rds:us-east-2:123456789012:cluster:ansible-test-secondary"
             is_writer:
                 description:
                 - Indicates whether the Aurora DB cluster is the primary cluster for the global cluster with which it is associated.
+                returned: always
                 type: bool
                 sample: false
             global_write_forwarding_status:
                 description: The status of write forwarding for a secondary cluster in the global cluster.
                 type: str
+                returned: always
                 sample: disabled
     failover_state:
         description:
@@ -121,20 +132,24 @@ global_clusters:
                 description:
                 - The current status of the global cluster.
                 type: str
+                returned: always
                 sample: "pending"
             from_db_cluster_arn:
                 description: The Amazon Resource Name (ARN) of the Aurora DB cluster that is currently being demoted, and which is associated with this state.
                 type: str
-                sample: arn:aws:rds:us-east-1:123456789012:cluster:ansible-test-primary
+                returned: always
+                sample: "arn:aws:rds:us-east-1:123456789012:cluster:ansible-test-primary"
             to_db_cluster_arn:
                 description: The Amazon Resource Name (ARN) of the Aurora DB cluster that is currently being promoted, and which is associated with this state.
                 type: str
-                sample: arn:aws:rds:us-east-2:123456789012:cluster:ansible-test-secondary
+                returned: always
+                sample: "arn:aws:rds:us-east-2:123456789012:cluster:ansible-test-secondary"
             is_data_loss_allowed:
                 description:
                 - Indicates whether the operation is a global switchover or a global failover.
                 - If data loss is allowed, then the operation is a global failover. Otherwise, it is a switchover.
                 type: bool
+                returned: always
                 sample: false
 """
 
