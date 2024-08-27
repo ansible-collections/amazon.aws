@@ -527,16 +527,77 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 </div></td>
 <td><div class="ansible-option-cell"><p>CloudWatch Event rule data.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;arn&quot;:</span> <span class="pre">&quot;arn:aws:events:us-east-1:123456789012:rule/MyCronTask&quot;,</span> <span class="pre">&quot;description&quot;:</span> <span class="pre">&quot;Run</span> <span class="pre">my</span> <span class="pre">scheduled</span> <span class="pre">task&quot;,</span> <span class="pre">&quot;name&quot;:</span> <span class="pre">&quot;MyCronTask&quot;,</span> <span class="pre">&quot;schedule_expression&quot;:</span> <span class="pre">&quot;cron(0</span> <span class="pre">20</span> <span class="pre">*</span> <span class="pre">*</span> <span class="pre">?</span> <span class="pre">*)&quot;,</span> <span class="pre">&quot;state&quot;:</span> <span class="pre">&quot;ENABLED&quot;}</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-rule/arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatchevent-rule-module-return-rule-arn"><strong>arn</strong></p>
+<a class="ansibleOptionLink" href="#return-rule/arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ARN associated with the rule.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:events:us-east-1:123456789012:rule/MyCronTask&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-rule/description"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatchevent-rule-module-return-rule-description"><strong>description</strong></p>
+<a class="ansibleOptionLink" href="#return-rule/description" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A description of the rule.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;Run</span> <span class="pre">my</span> <span class="pre">scheduled</span> <span class="pre">task&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-rule/name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatchevent-rule-module-return-rule-name"><strong>name</strong></p>
+<a class="ansibleOptionLink" href="#return-rule/name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The name of the rule you are creating, updating or deleting.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;MyCronTask&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-rule/schedule_expression"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatchevent-rule-module-return-rule-schedule-expression"><strong>schedule_expression</strong></p>
+<a class="ansibleOptionLink" href="#return-rule/schedule_expression" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A cron or rate expression that defines the schedule the rule will trigger on.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;cron(0</span> <span class="pre">20</span> <span class="pre">*</span> <span class="pre">*</span> <span class="pre">?</span> <span class="pre">*)&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-rule/state"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatchevent-rule-module-return-rule-state"><strong>state</strong></p>
+<a class="ansibleOptionLink" href="#return-rule/state" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Whether the rule is present (and enabled), disabled, or absent.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;enabled&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-targets"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatchevent-rule-module-return-targets"><strong>targets</strong></p>
-<a class="ansibleOptionLink" href="#return-targets" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+<a class="ansibleOptionLink" href="#return-targets" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>CloudWatch Event target(s) assigned to the rule.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[&quot;[{</span> <span class="pre">'arn':</span> <span class="pre">'arn:aws:lambda:us-east-1:123456789012:function:MyFunction'&quot;,</span> <span class="pre">&quot;</span> <span class="pre">'id':</span> <span class="pre">'MyTargetId'</span> <span class="pre">}]&quot;]</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-targets/arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatchevent-rule-module-return-targets-arn"><strong>arn</strong></p>
+<a class="ansibleOptionLink" href="#return-targets/arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ARN associated with the target.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:lambda:us-east-1:123456789012:function:MyFunction&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-targets/id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatchevent-rule-module-return-targets-id"><strong>id</strong></p>
+<a class="ansibleOptionLink" href="#return-targets/id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The unique target assignment ID.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;MyTargetId&quot;</span></code></p>
 </div></td>
 </tr>
 </tbody>

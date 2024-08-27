@@ -459,6 +459,38 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 </thead>
 <tbody>
 <tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatchlogs-log-group-module-return-arn"><strong>arn</strong></p>
+<a class="ansibleOptionLink" href="#return-arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The Amazon Resource Name (ARN) of the log group.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-creation_time"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatchlogs-log-group-module-return-creation-time"><strong>creation_time</strong></p>
+<a class="ansibleOptionLink" href="#return-creation_time" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The creation time of the log group.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-kms_key_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatchlogs-log-group-module-return-kms-key-id"><strong>kms_key_id</strong></p>
+<a class="ansibleOptionLink" href="#return-kms_key_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The Amazon Resource Name (ARN) of the CMK to use when encrypting log data.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-log_group_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatchlogs-log-group-module-return-log-group-name"><strong>log_group_name</strong></p>
+<a class="ansibleOptionLink" href="#return-log_group_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The name of the log group.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-log_groups"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatchlogs-log-group-module-return-log-groups"><strong>log_groups</strong></p>
 <a class="ansibleOptionLink" href="#return-log_groups" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
 <p><em class="ansible-option-versionadded">added in community.aws 4.0.0</em></p>
@@ -528,6 +560,38 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudwat
 <a class="ansibleOptionLink" href="#return-log_groups/tags" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A dictionary representing the tags on the log group.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-metric_filter_count"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatchlogs-log-group-module-return-metric-filter-count"><strong>metric_filter_count</strong></p>
+<a class="ansibleOptionLink" href="#return-metric_filter_count" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The number of metric filters.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-retention_in_days"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatchlogs-log-group-module-return-retention-in-days"><strong>retention_in_days</strong></p>
+<a class="ansibleOptionLink" href="#return-retention_in_days" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The number of days to retain the log events in the specified log group.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-stored_bytes"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatchlogs-log-group-module-return-stored-bytes"><strong>stored_bytes</strong></p>
+<a class="ansibleOptionLink" href="#return-stored_bytes" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The number of bytes stored.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudwatchlogs-log-group-module-return-tags"><strong>tags</strong></p>
+<a class="ansibleOptionLink" href="#return-tags" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>A dictionary representing the tags on the log group.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 </div></td>
 </tr>
