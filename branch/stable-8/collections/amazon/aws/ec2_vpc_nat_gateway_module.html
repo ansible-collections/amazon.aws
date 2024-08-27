@@ -588,6 +588,15 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 </thead>
 <tbody>
 <tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-connectivity_type"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-module-return-connectivity-type"><strong>connectivity_type</strong></p>
+<a class="ansibleOptionLink" href="#return-connectivity_type" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Indicates whether the NAT gateway supports public or private connectivity.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;public&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-create_time"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-module-return-create-time"><strong>create_time</strong></p>
 <a class="ansibleOptionLink" href="#return-create_time" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -596,13 +605,76 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2016-03-05T05:19:20.282000+00:00'&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-nat_gateway_addresses"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-module-return-nat-gateway-addresses"><strong>nat_gateway_addresses</strong></p>
-<a class="ansibleOptionLink" href="#return-nat_gateway_addresses" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<a class="ansibleOptionLink" href="#return-nat_gateway_addresses" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>List of dictionaries containing the public_ip, network_interface_id, private_ip, and allocation_id.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> In all cases.</p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;[{'allocation_id':</span> <span class="pre">'eipalloc-12345',</span> <span class="pre">'network_interface_id':</span> <span class="pre">'eni-12345',</span> <span class="pre">'private_ip':</span> <span class="pre">'10.0.0.100',</span> <span class="pre">'public_ip':</span> <span class="pre">'52.52.52.52'}]&quot;</span></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[{&quot;allocation_id&quot;:</span> <span class="pre">&quot;eipalloc-08ec128d03629671d&quot;,</span> <span class="pre">&quot;association_id&quot;:</span> <span class="pre">&quot;eipassoc-0d6365c7eeb7d4932&quot;,</span> <span class="pre">&quot;is_primary&quot;:</span> <span class="pre">true,</span> <span class="pre">&quot;network_interface_id&quot;:</span> <span class="pre">&quot;eni-095104e630881bad6&quot;,</span> <span class="pre">&quot;private_ip&quot;:</span> <span class="pre">&quot;10.1.0.250&quot;,</span> <span class="pre">&quot;public_ip&quot;:</span> <span class="pre">&quot;34.202.90.172&quot;,</span> <span class="pre">&quot;status&quot;:</span> <span class="pre">&quot;succeeded&quot;}]</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-nat_gateway_addresses/allocation_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-module-return-nat-gateway-addresses-allocation-id"><strong>allocation_id</strong></p>
+<a class="ansibleOptionLink" href="#return-nat_gateway_addresses/allocation_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The allocation ID of the Elastic IP address that’s associated with the NAT gateway.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;eipalloc-0853e66a40803da76&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-nat_gateway_addresses/association_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-module-return-nat-gateway-addresses-association-id"><strong>association_id</strong></p>
+<a class="ansibleOptionLink" href="#return-nat_gateway_addresses/association_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The association ID of the Elastic IP address that is associated with the NAT gateway.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;eipassoc-0d6365c7eeb7d4932&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-nat_gateway_addresses/is_primary"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-module-return-nat-gateway-addresses-is-primary"><strong>is_primary</strong></p>
+<a class="ansibleOptionLink" href="#return-nat_gateway_addresses/is_primary" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Defines if the IP address is the primary address.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">true</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-nat_gateway_addresses/network_interface_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-module-return-nat-gateway-addresses-network-interface-id"><strong>network_interface_id</strong></p>
+<a class="ansibleOptionLink" href="#return-nat_gateway_addresses/network_interface_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ID of the network interface associated with the NAT gateway.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;eni-0a37acdbe306c661c&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-nat_gateway_addresses/private_ip"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-module-return-nat-gateway-addresses-private-ip"><strong>private_ip</strong></p>
+<a class="ansibleOptionLink" href="#return-nat_gateway_addresses/private_ip" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The private IP address associated with the Elastic IP address.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;10.0.238.227&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-nat_gateway_addresses/public_ip"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-module-return-nat-gateway-addresses-public-ip"><strong>public_ip</strong></p>
+<a class="ansibleOptionLink" href="#return-nat_gateway_addresses/public_ip" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The Elastic IP address associated with the NAT gateway.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;34.204.123.52&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-nat_gateway_addresses/status"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-module-return-nat-gateway-addresses-status"><strong>status</strong></p>
+<a class="ansibleOptionLink" href="#return-nat_gateway_addresses/status" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The address status.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;succeeded&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">

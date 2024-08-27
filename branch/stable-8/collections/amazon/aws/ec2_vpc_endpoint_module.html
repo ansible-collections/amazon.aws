@@ -522,11 +522,178 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <tbody>
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-endpoints"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-endpoint-module-return-endpoints"><strong>endpoints</strong></p>
-<a class="ansibleOptionLink" href="#return-endpoints" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+<a class="ansibleOptionLink" href="#return-endpoints" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The resulting endpoints from the module call</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[{&quot;creation_timestamp&quot;:</span> <span class="pre">&quot;2017-02-20T05:04:15+00:00&quot;,</span> <span class="pre">&quot;policy_document&quot;:</span> <span class="pre">{&quot;Id&quot;:</span> <span class="pre">&quot;Policy1450910922815&quot;,</span> <span class="pre">&quot;Statement&quot;:</span> <span class="pre">[{&quot;Action&quot;:</span> <span class="pre">&quot;s3:*&quot;,</span> <span class="pre">&quot;Effect&quot;:</span> <span class="pre">&quot;Allow&quot;,</span> <span class="pre">&quot;Principal&quot;:</span> <span class="pre">&quot;*&quot;,</span> <span class="pre">&quot;Resource&quot;:</span> <span class="pre">[&quot;arn:aws:s3:::*/*&quot;,</span> <span class="pre">&quot;arn:aws:s3:::*&quot;],</span> <span class="pre">&quot;Sid&quot;:</span> <span class="pre">&quot;Stmt1450910920641&quot;}],</span> <span class="pre">&quot;Version&quot;:</span> <span class="pre">&quot;2012-10-17&quot;},</span> <span class="pre">&quot;route_table_ids&quot;:</span> <span class="pre">[&quot;rtb-abcd1234&quot;],</span> <span class="pre">&quot;service_name&quot;:</span> <span class="pre">&quot;com.amazonaws.ap-southeast-2.s3&quot;,</span> <span class="pre">&quot;vpc_endpoint_id&quot;:</span> <span class="pre">&quot;vpce-a1b2c3d4&quot;,</span> <span class="pre">&quot;vpc_id&quot;:</span> <span class="pre">&quot;vpc-abbad0d0&quot;}]</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-endpoints/creation_timestamp"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-endpoint-module-return-endpoints-creation-timestamp"><strong>creation_timestamp</strong></p>
+<a class="ansibleOptionLink" href="#return-endpoints/creation_timestamp" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The date and time that the endpoint was created.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-endpoints/dns_entries"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-endpoint-module-return-endpoints-dns-entries"><strong>dns_entries</strong></p>
+<a class="ansibleOptionLink" href="#return-endpoints/dns_entries" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>List of DNS entires for the endpoint.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-endpoints/dns_entries/dns_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-endpoint-module-return-endpoints-dns-entries-dns-name"><strong>dns_name</strong></p>
+<a class="ansibleOptionLink" href="#return-endpoints/dns_entries/dns_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The DNS name.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-endpoints/dns_entries/hosted_zone_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-endpoint-module-return-endpoints-dns-entries-hosted-zone-id"><strong>hosted_zone_id</strong></p>
+<a class="ansibleOptionLink" href="#return-endpoints/dns_entries/hosted_zone_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ID of the private hosted zone.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-endpoints/groups"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-endpoint-module-return-endpoints-groups"><strong>groups</strong></p>
+<a class="ansibleOptionLink" href="#return-endpoints/groups" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>List of security groups associated with the network interface.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-endpoints/groups/group_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-endpoint-module-return-endpoints-groups-group-id"><strong>group_id</strong></p>
+<a class="ansibleOptionLink" href="#return-endpoints/groups/group_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ID of the security group.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-endpoints/groups/group_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-endpoint-module-return-endpoints-groups-group-name"><strong>group_name</strong></p>
+<a class="ansibleOptionLink" href="#return-endpoints/groups/group_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The name of the security group.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-endpoints/ip_address_type"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-endpoint-module-return-endpoints-ip-address-type"><strong>ip_address_type</strong></p>
+<a class="ansibleOptionLink" href="#return-endpoints/ip_address_type" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The IP address type for the endpoint.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-endpoints/network_interface_ids"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-endpoint-module-return-endpoints-network-interface-ids"><strong>network_interface_ids</strong></p>
+<a class="ansibleOptionLink" href="#return-endpoints/network_interface_ids" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>List of network interfaces for the endpoint.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-endpoints/owner_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-endpoint-module-return-endpoints-owner-id"><strong>owner_id</strong></p>
+<a class="ansibleOptionLink" href="#return-endpoints/owner_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ID of the AWS account that owns the endpoint.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-endpoints/policy_document"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-endpoint-module-return-endpoints-policy-document"><strong>policy_document</strong></p>
+<a class="ansibleOptionLink" href="#return-endpoints/policy_document" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The policy document associated with the endpoint.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-endpoints/private_dns_enabled"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-endpoint-module-return-endpoints-private-dns-enabled"><strong>private_dns_enabled</strong></p>
+<a class="ansibleOptionLink" href="#return-endpoints/private_dns_enabled" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Indicates whether the VPC is associated with a private hosted zone.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-endpoints/requester_managed"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-endpoint-module-return-endpoints-requester-managed"><strong>requester_managed</strong></p>
+<a class="ansibleOptionLink" href="#return-endpoints/requester_managed" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Indicated whether the endpoint is being managed by its service.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-endpoints/route_table_ids"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-endpoint-module-return-endpoints-route-table-ids"><strong>route_table_ids</strong></p>
+<a class="ansibleOptionLink" href="#return-endpoints/route_table_ids" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>List of route table IDs associated with the endpoint.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-endpoints/service_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-endpoint-module-return-endpoints-service-name"><strong>service_name</strong></p>
+<a class="ansibleOptionLink" href="#return-endpoints/service_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The name of the service to which the endpoint is associated.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-endpoints/state"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-endpoint-module-return-endpoints-state"><strong>state</strong></p>
+<a class="ansibleOptionLink" href="#return-endpoints/state" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The state of the endpoint.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-endpoints/subnet_ids"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-endpoint-module-return-endpoints-subnet-ids"><strong>subnet_ids</strong></p>
+<a class="ansibleOptionLink" href="#return-endpoints/subnet_ids" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>List of subnets associated with the endpoint.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-endpoints/tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-endpoint-module-return-endpoints-tags"><strong>tags</strong></p>
+<a class="ansibleOptionLink" href="#return-endpoints/tags" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>List of tags associated with the endpoint.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-endpoints/vpc_endpoint_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-endpoint-module-return-endpoints-vpc-endpoint-id"><strong>vpc_endpoint_id</strong></p>
+<a class="ansibleOptionLink" href="#return-endpoints/vpc_endpoint_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ID of the endpoint.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-endpoints/vpc_endpoint_type"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-endpoint-module-return-endpoints-vpc-endpoint-type"><strong>vpc_endpoint_type</strong></p>
+<a class="ansibleOptionLink" href="#return-endpoints/vpc_endpoint_type" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The type of endpoint.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-endpoints/vpc_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-endpoint-module-return-endpoints-vpc-id"><strong>vpc_id</strong></p>
+<a class="ansibleOptionLink" href="#return-endpoints/vpc_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ID of the VPC.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 </div></td>
 </tr>
 </tbody>
