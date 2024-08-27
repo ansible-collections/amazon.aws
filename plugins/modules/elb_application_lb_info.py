@@ -103,8 +103,8 @@ load_balancers:
         access_logs_s3_enabled:
             description: Indicates whether access logs stored in Amazon S3 are enabled.
             returned: when O(include_attributes=true)
-            type: bool
-            sample: true
+            type: str
+            sample: "true"
         access_logs_s3_prefix:
             description: The prefix for the location in the S3 bucket.
             returned: when O(include_attributes=true)
@@ -113,7 +113,32 @@ load_balancers:
         availability_zones:
             description: The Availability Zones for the load balancer.
             type: list
+            elements: dict
             sample: [{ "load_balancer_addresses": [], "subnet_id": "subnet-aabbccddff", "zone_name": "ap-southeast-2a" }]
+            contains:
+                load_balancer_addresses:
+                    description: Information about static IP addresses for a load balancer.
+                    type: list
+                    elements: dict
+                    contains:
+                        ip_address:
+                            description: The static IP address.
+                            type: str
+                        allocation_id:
+                            description: The allocation ID of the Elastic IP address for an internal-facing load balancer.
+                            type: str
+                        private_ipv4_address:
+                            description: The private IPv4 address for an internal load balancer.
+                            type: str
+                        ipv6_address:
+                            description: The IPv6 address.
+                            type: str
+                subnet_id:
+                    description: The ID of the subnet.
+                    type: str
+                zone_name:
+                    description: The name of the Availability Zone.
+                    type: str
         canonical_hosted_zone_id:
             description: The ID of the Amazon Route 53 hosted zone associated with the load balancer.
             type: str
@@ -165,19 +190,86 @@ load_balancers:
                     description: List of listener rules.
                     returned: when O(include_listener_rules=true)
                     type: list
-                    sample: ""
+                    elements: dict
+                    contains:
+                        rule_arn:
+                            description: The Amazon Resource Name (ARN) of the rule.
+                            type: str
+                            sample: ""
+                        priority:
+                            description: The priority.
+                            type: str
+                            sample: "default"
+                        is_default:
+                            description: Indicates whether this is the default rule.
+                            type: bool
+                            sample: false
+                        conditions:
+                            description: The conditions.
+                            type: list
+                            sample: []
+                        actions:
+                            description: The actions.
+                            type: list
+                            elements: dict
+                            contains:
+                                type:
+                                    description: The type of action.
+                                    type: str
+                                target_group_arn:
+                                    description: The Amazon Resource Name (ARN) of the target group.
+                                    type: str
+                                forward_config:
+                                    description: Information for creating an action that distributes requests among one or more target groups.
+                                    type: dict
+                                    contains:
+                                        target_groups:
+                                            description: The target groups.
+                                            type: dict
+                                            contains:
+                                                target_group_arn:
+                                                    description: The Amazon Resource Name (ARN) of the target group.
+                                                    type: str
+                                                weight:
+                                                    description: The weight.
+                                                    type: int
+                                        target_group_stickiness_config:
+                                            description: The target group stickiness for the rule.
+                                            type: dict
+                                            contains:
+                                                enabled:
+                                                    description: Indicates whether target group stickiness is enabled.
+                                                    type: bool
+                            sample: [
+                                {
+                                    "forward_config": {
+                                        "target_group_stickiness_config": {
+                                            "enabled": false
+                                        },
+                                        "target_groups": [
+                                            {
+                                                "target_group_arn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/alb-test/09ba111f8079fb83",
+                                                "weight": 1
+                                            }
+                                        ]
+                                    },
+                                    "target_group_arn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/alb-test/09ba111f8079fb83",
+                                    "type": "forward"
+                                }
+                            ]
                 certificates:
                     description: The SSL server certificate.
-                    type: complex
+                    type: list
+                    elements: dict
                     contains:
                         certificate_arn:
                             description: The Amazon Resource Name (ARN) of the certificate.
                             type: str
-                            sample: ""
+                            sample: "arn:aws:acm:us-east-1:123456789012:certificate/28d2f3d9-cb2f-4033-a9aa-e75e704125a2"
                 ssl_policy:
                     description: The security policy that defines which ciphers and protocols are supported.
                     type: str
-                    sample: ""
+                    sample: "ELBSecurityPolicy-2016-08"
                 default_actions:
                     description: The default actions for the listener.
                     type: str
@@ -185,11 +277,47 @@ load_balancers:
                         type:
                             description: The type of action.
                             type: str
-                            sample: ""
                         target_group_arn:
                             description: The Amazon Resource Name (ARN) of the target group.
                             type: str
-                            sample: ""
+                        forward_config:
+                            description: Information for creating an action that distributes requests among one or more target groups.
+                            type: dict
+                            contains:
+                                target_groups:
+                                    description: The target groups.
+                                    type: dict
+                                    contains:
+                                        target_groups:
+                                            description: The Amazon Resource Name (ARN) of the target group.
+                                            type: str
+                                        weight:
+                                            description: The weight.
+                                            type: int
+                                target_group_stickiness_config:
+                                    description: The target group stickiness for the rule.
+                                    type: dict
+                                    contains:
+                                        enabled:
+                                            description: Indicates whether target group stickiness is enabled.
+                                            type: bool
+                    sample: [
+                        {
+                            "forward_config": {
+                                "target_group_stickiness_config": {
+                                    "enabled": false
+                                },
+                                "target_groups": [
+                                    {
+                                        "target_group_arn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/alb-test/bf43c68602c51c02",
+                                        "weight": 1
+                                    }
+                                ]
+                            },
+                            "target_group_arn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/alb-test/bf43c68602c51c02",
+                            "type": "forward"
+                        }
+                    ]
         load_balancer_arn:
             description: The Amazon Resource Name (ARN) of the load balancer.
             type: str
@@ -201,13 +329,13 @@ load_balancers:
         load_balancing_cross_zone_enabled:
             description: Indicates whether or not cross-zone load balancing is enabled.
             returned: when O(include_attributes=true)
-            type: bool
-            sample: true
+            type: str
+            sample: "true"
         routing_http2_enabled:
             description: Indicates whether HTTP/2 is enabled.
             returned: when O(include_attributes=true)
-            type: bool
-            sample: true
+            type: str
+            sample: "true"
         routing_http_desync_mitigation_mode:
             description: Determines how the load balancer handles requests that might pose a security risk to an application.
             returned: when O(include_attributes=true)
@@ -216,18 +344,18 @@ load_balancers:
         routing_http_drop_invalid_header_fields_enabled:
             description: Indicates whether HTTP headers with invalid header fields are removed by the load balancer (true) or routed to targets (false).
             returned: when O(include_attributes=true)
-            type: bool
-            sample: false
+            type: str
+            sample: "false"
         routing_http_x_amzn_tls_version_and_cipher_suite_enabled:
             description: Indicates whether the two headers are added to the client request before sending it to the target.
             returned: when O(include_attributes=true)
-            type: bool
-            sample: false
+            type: str
+            sample: "false"
         routing_http_xff_client_port_enabled:
             description: Indicates whether the X-Forwarded-For header should preserve the source port that the client used to connect to the load balancer.
             returned: when O(include_attributes=true)
-            type: bool
-            sample: false
+            type: str
+            sample: "false"
         scheme:
             description: Internet-facing or internal load balancer.
             type: str
@@ -235,16 +363,24 @@ load_balancers:
         security_groups:
             description: The IDs of the security groups for the load balancer.
             type: list
-            sample: ['sg-0011223344']
+            sample: ["sg-0011223344"]
         state:
             description: The state of the load balancer.
             type: dict
-            sample: {'code': 'active'}
+            contains:
+                code:
+                    description: The state code.
+                    type: str
+                reason:
+                    description: A description of the state.
+                    returned: when available
+                    type: str
+            sample: {"code": "active"}
         tags:
             description: The tags attached to the load balancer.
             type: dict
             sample: {
-                'Tag': 'Example'
+                "Tag": "Example"
             }
         type:
             description: The type of load balancer.
@@ -258,8 +394,8 @@ load_balancers:
             description: Indicates whether to allow a AWS WAF-enabled load balancer to route requests to targets
                 if it is unable to forward the request to AWS WAF.
             returned: when O(include_attributes=true)
-            type: bool
-            sample: false
+            type: str
+            sample: "false"
 """
 
 try:
