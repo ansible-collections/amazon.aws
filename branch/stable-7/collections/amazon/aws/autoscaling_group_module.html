@@ -2,7 +2,7 @@
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta content="2.12.0" name="antsibull-docs" />
+<meta content="2.13.1" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>amazon.aws.autoscaling_group module – Create or delete AWS AutoScaling Groups (ASGs) &mdash; Ansible collections  documentation</title>
@@ -290,8 +290,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <a class="ansibleOptionLink" href="#parameter-endpoint_url" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: ec2_url, aws_endpoint_url, s3_url</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>URL to connect to instead of the default AWS endpoints.  While this can be used to connection to other AWS-compatible services the amazon.aws and community.aws collections are only tested against AWS.</p>
-<p>The  <code class="docutils literal notranslate"><span class="pre">AWS_URL</span></code> or <code class="docutils literal notranslate"><span class="pre">EC2_URL</span></code> environment variables may also be used, in decreasing order of preference.</p>
+<td><div class="ansible-option-cell"><p>URL to connect to instead of the default AWS endpoints. While this can be used to connection to other AWS-compatible services the amazon.aws and community.aws collections are only tested against AWS.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">AWS_URL</span></code> or <code class="docutils literal notranslate"><span class="pre">EC2_URL</span></code> environment variables may also be used, in decreasing order of preference.</p>
 <p>The <em>ec2_url</em> and <em>s3_url</em> aliases have been deprecated and will be removed in a release after 2024-12-01.</p>
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_URL</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
@@ -321,7 +321,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <a class="ansibleOptionLink" href="#parameter-launch_config_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Name of the Launch configuration to use for the group. See the community.aws.autoscaling_launch_config) module for managing these.</p>
-<p>If unspecified then the current group value will be used.  One of <em>launch_config_name</em> or <em>launch_template</em> must be provided.</p>
+<p>If unspecified then the current group value will be used. One of <em>launch_config_name</em> or <em>launch_template</em> must be provided.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -601,7 +601,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <div class="ansibleOptionAnchor" id="parameter-replace_batch_size"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-module-parameter-replace-batch-size"><strong>replace_batch_size</strong></p>
 <a class="ansibleOptionLink" href="#parameter-replace_batch_size" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Number of instances you’d like to replace at a time.  Used with <em>replace_all_instances</em>.</p>
+<td><div class="ansible-option-cell"><p>Number of instances you’d like to replace at a time. Used with <em>replace_all_instances</em>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">1</span></code></p>
 </div></td>
 </tr>
@@ -725,7 +725,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <div class="ansibleOptionAnchor" id="parameter-wait_for_instances"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-module-parameter-wait-for-instances"><strong>wait_for_instances</strong></p>
 <a class="ansibleOptionLink" href="#parameter-wait_for_instances" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Wait for the ASG instances to be in a ready state before exiting.  If instances are behind an ELB, it will wait until the ELB determines all instances have a lifecycle_state of  “InService” and  a health_status of “Healthy”.</p>
+<td><div class="ansible-option-cell"><p>Wait for the ASG instances to be in a ready state before exiting. If instances are behind an ELB, it will wait until the ELB determines all instances have a lifecycle_state of “InService” and a health_status of “Healthy”.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
@@ -737,7 +737,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <div class="ansibleOptionAnchor" id="parameter-wait_timeout"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-module-parameter-wait-timeout"><strong>wait_timeout</strong></p>
 <a class="ansibleOptionLink" href="#parameter-wait_timeout" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>How long to wait for instances to become viable when replaced.  If you experience the error “Waited too long for ELB instances to be healthy”, try increasing this value.</p>
+<td><div class="ansible-option-cell"><p>How long to wait for instances to become viable when replaced. If you experience the error “Waited too long for ELB instances to be healthy”, try increasing this value.</p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">300</span></code></p>
 </div></td>
 </tr>
@@ -749,7 +749,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <ul class="simple">
-<li><p><strong>Caution:</strong> For modules, environment variables and configuration files are read from the Ansible ‘host’ context and not the ‘controller’ context. As such, files may need to be explicitly copied to the ‘host’.  For lookup and connection plugins, environment variables and configuration files are read from the Ansible ‘controller’ context and not the ‘host’ context.</p></li>
+<li><p><strong>Caution:</strong> For modules, environment variables and configuration files are read from the Ansible ‘host’ context and not the ‘controller’ context. As such, files may need to be explicitly copied to the ‘host’. For lookup and connection plugins, environment variables and configuration files are read from the Ansible ‘controller’ context and not the ‘host’ context.</p></li>
 <li><p>The AWS SDK (boto3) that Ansible uses may also read defaults for credentials and other settings, such as the region, from its configuration files in the Ansible ‘host’ context (typically <code class="docutils literal notranslate"><span class="pre">~/.aws/credentials</span></code>). See <a class="reference external" href="https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html">https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html</a> for more information.</p></li>
 </ul>
 </div>
