@@ -1,0 +1,3 @@
+---
+bugfixes:
+  - rds_cluster - Limit params sent to api call to DBClusterIdentifier when using state started or stopped (https://github.com/ansible-collections/amazon.aws/issues/2197).
