@@ -18,8 +18,8 @@ options:
   query:
     description:
       - Specifies the resource type for which to gather information.
-      - Defaults to C(all) when I(function_name) is specified.
-      - Defaults to C(config) when I(function_name) is NOT specified.
+      - Defaults to V(all) when O(function_name) is specified.
+      - Defaults to V(config) when O(function_name) is NOT specified.
     choices: [ "aliases", "all", "config", "mappings", "policy", "versions", "tags" ]
     type: str
   function_name:
@@ -29,7 +29,7 @@ options:
     type: str
   event_source_arn:
     description:
-      - When I(query=mappings), this is the Amazon Resource Name (ARN) of the Amazon Kinesis or DynamoDB stream.
+      - When O(query=mappings), this is the Amazon Resource Name (ARN) of the Amazon Kinesis or DynamoDB stream.
     type: str
 author:
   - Pierre Jodouin (@pjodouin)
@@ -70,14 +70,14 @@ RETURN = r"""
 ---
 function:
     description:
-        - lambda function list.
-        - C(function) has been deprecated in will be removed in the next major release after 2025-01-01.
+        - Lambda function list.
+        - RV(function) has been deprecated in will be removed in the next major release after 2025-01-01.
     returned: success
     type: dict
 function.TheName:
     description:
-        - lambda function information, including event, mapping, and version information.
-        - C(function) has been deprecated in will be removed in the next major release after 2025-01-01.
+        - Lambda function information, including event, mapping, and version information.
+        - RV(function) has been deprecated in will be removed in the next major release after 2025-01-01.
     returned: success
     type: dict
 functions:
@@ -90,7 +90,7 @@ functions:
     contains:
         aliases:
             description: The aliases associated with the function.
-            returned: when C(query) is I(aliases) or I(all)
+            returned: when O(query=aliases) or O(query=all)
             type: list
             elements: str
         architectures:
@@ -179,7 +179,7 @@ functions:
             sample: '2017-08-01T00:00:00.000+0000'
         mappings:
             description: List of configuration information for each event source mapping.
-            returned: when C(query) is I(all) or I(mappings)
+            returned: when O(query=all) or O(query=mappings)
             type: list
             elements: dict
             contains:
@@ -227,7 +227,7 @@ functions:
             sample: "Zip"
         policy:
             description: The policy associated with the function.
-            returned: when C(query) is I(all) or I(policy)
+            returned: when O(query=all) or O(query=policy)
             type: dict
         revision_id:
             description: The latest updated revision of the function or alias.
@@ -290,7 +290,7 @@ functions:
             sample: '1'
         versions:
             description: List of Lambda function versions.
-            returned: when C(query) is I(all) or I(versions)
+            returned: when O(query=all) or O(query=versions)
             type: list
             elements: dict
         vpc_config:

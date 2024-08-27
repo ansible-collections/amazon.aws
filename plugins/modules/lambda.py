@@ -28,14 +28,14 @@ options:
     description:
       - The runtime environment for the Lambda function you are uploading.
       - Required when creating a function. Uses parameters as described in boto3 docs.
-      - Required when I(state=present).
+      - Required when O(state=present).
       - For supported list of runtimes, see U(https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html).
     type: str
   role:
     description:
       - The Amazon Resource Name (ARN) of the IAM role that Lambda assumes when it executes your function to access any other Amazon Web Services (AWS)
         resources. You may use the bare ARN if the role belongs to the same AWS account.
-      - Required when I(state=present).
+      - Required when O(state=present).
     type: str
   handler:
     description:
@@ -44,19 +44,19 @@ options:
   zip_file:
     description:
       - A .zip file containing your deployment package
-      - If I(state=present) then either I(zip_file) or I(s3_bucket) must be present.
+      - If O(state=present) then either O(zip_file) or O(s3_bucket) must be present.
     aliases: [ 'src' ]
     type: str
   s3_bucket:
     description:
       - Amazon S3 bucket name where the .zip file containing your deployment package is stored.
-      - If I(state=present) then either I(zip_file) or I(s3_bucket) must be present.
-      - I(s3_bucket) and I(s3_key) are required together.
+      - If O(state=present) then either O(zip_file) or O(s3_bucket) must be present.
+      - O(s3_bucket) and O(s3_key) are required together.
     type: str
   s3_key:
     description:
       - The Amazon S3 object (the deployment package) key name you want to upload.
-      - I(s3_bucket) and I(s3_key) are required together.
+      - O(s3_bucket) and O(s3_key) are required together.
     type: str
   s3_object_version:
     description:
@@ -81,13 +81,13 @@ options:
     description:
       - List of subnet IDs to run Lambda function in.
       - Use this option if you need to access resources in your VPC. Leave empty if you don't want to run the function in a VPC.
-      - If set, I(vpc_security_group_ids) must also be set.
+      - If set, O(vpc_security_group_ids) must also be set.
     type: list
     elements: str
   vpc_security_group_ids:
     description:
       - List of VPC security group IDs to associate with the Lambda function.
-      - Required when I(vpc_subnet_ids) is used.
+      - Required when O(vpc_subnet_ids) is used.
     type: list
     elements: str
   environment_variables:
@@ -112,7 +112,7 @@ options:
   architecture:
     description:
       - The instruction set architecture that the function supports.
-      - Requires one of I(s3_bucket) or I(zip_file).
+      - Requires one of O(s3_bucket) or O(zip_file).
     type: str
     choices: ['x86_64', 'arm64']
     aliases: ['architectures']
@@ -125,18 +125,18 @@ options:
         layer_version_arn:
             description:
             - The ARN of the layer version.
-            - Mutually exclusive with I(layer_version_arn).
+            - Mutually exclusive with O(layers.layer_name).
             type: str
         layer_name:
             description:
             - The name or Amazon Resource Name (ARN) of the layer.
-            - Mutually exclusive with I(layer_version_arn).
+            - Mutually exclusive with O(layers.layer_version_arn).
             type: str
             aliases: ['layer_arn']
         version:
             description:
             - The version number.
-            - Required when I(layer_name) is provided, ignored if not.
+            - Required when O(layers.layer_name) is provided, ignored if not.
             type: int
             aliases: ['layer_version']
     type: list
@@ -146,7 +146,7 @@ options:
     description:
       - The Amazon ECR URI of the image to use.
       - Required (alternative to runtime zip_file and s3_bucket) when creating a function.
-      - Required when I(state=present).
+      - Required when O(state=present).
     type: str
     version_added: 7.3.0
 author:
@@ -241,7 +241,7 @@ code:
             type: str
             sample: 'S3'
 configuration:
-    description: the lambda function's configuration metadata returned by get_function in boto3
+    description: The Lambda function's configuration metadata returned by get_function in boto3.
     returned: success
     type: dict
     contains:

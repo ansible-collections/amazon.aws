@@ -6,10 +6,10 @@
 
 DOCUMENTATION = r"""
 module: route53_zone
-short_description: add or delete Route53 zones
+short_description: add or delete Route 53 zones
 version_added: 5.0.0
 description:
-    - Creates and deletes Route53 private and public zones.
+    - Creates and deletes Route 53 private and public zones.
     - This module was originally added to C(community.aws) in release 1.0.0.
 options:
     zone:
@@ -69,7 +69,7 @@ extends_documentation_fragment:
     - amazon.aws.tags
     - amazon.aws.boto3
 notes:
-    - Support for I(tags) and I(purge_tags) was added in release 2.1.0.
+    - Support for O(tags) and O(purge_tags) was added in release 2.1.0.
 author:
     - "Christopher Troup (@minichate)"
 """
@@ -126,60 +126,60 @@ EXAMPLES = r"""
 
 RETURN = r"""
 comment:
-    description: optional hosted zone comment
+    description: Optional hosted zone comment.
     returned: when hosted zone exists
     type: str
     sample: "Private zone"
 name:
-    description: hosted zone name
+    description: Hosted zone name.
     returned: when hosted zone exists
     type: str
     sample: "private.local."
 private_zone:
-    description: whether hosted zone is private or public
+    description: Whether hosted zone is private or public.
     returned: when hosted zone exists
     type: bool
     sample: true
 vpc_id:
-    description: id of the first vpc attached to private hosted zone (use vpcs for associating multiple).
+    description: Id of the first vpc attached to private hosted zone (use vpcs for associating multiple).
     returned: for private hosted zone
     type: str
     sample: "vpc-1d36c84f"
 vpc_region:
-    description: region of the first vpc attached to private hosted zone (use vpcs for assocaiting multiple).
+    description: Region of the first vpc attached to private hosted zone (use vpcs for assocaiting multiple).
     returned: for private hosted zone
     type: str
     sample: "eu-west-1"
 vpcs:
     version_added: 5.3.0
-    description: The list of VPCs attached to the private hosted zone
+    description: The list of VPCs attached to the private hosted zone.
     returned: for private hosted zone
     type: list
     elements: dict
     sample: "[{'id': 'vpc-123456', 'region': 'us-west-2'}]"
     contains:
         id:
-            description: ID of the VPC
+            description: ID of the VPC.
             returned: for private hosted zone
             type: str
             sample: "vpc-123456"
         region:
-            description: Region of the VPC
+            description: Region of the VPC.
             returned: for private hosted zone
             type: str
             sample: "eu-west-2"
 zone_id:
-    description: hosted zone id
+    description: Hosted zone id.
     returned: when hosted zone exists
     type: str
     sample: "Z6JQG9820BEFMW"
 delegation_set_id:
-    description: id of the associated reusable delegation set
+    description: Id of the associated reusable delegation set.
     returned: for public hosted zones, if they have been associated with a reusable delegation set
     type: str
     sample: "A1BCDEF2GHIJKL"
 tags:
-    description: tags associated with the zone
+    description: Tags associated with the zone.
     returned: when tags are defined
     type: dict
 """
