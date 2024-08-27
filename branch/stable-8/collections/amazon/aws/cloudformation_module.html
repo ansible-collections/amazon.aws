@@ -678,8 +678,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudfor
 <div class="ansibleOptionAnchor" id="return-change_set_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudformation-module-return-change-set-id"><strong>change_set_id</strong></p>
 <a class="ansibleOptionLink" href="#return-change_set_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>The ID of the stack change set if one was created</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code> and <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-module-parameter-create-changeset"><span class="std std-ref"><span class="pre">create_changeset=true</span></span></a></code></p>
+<td><div class="ansible-option-cell"><p>The ID of the stack change set when created.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code> and <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-module-parameter-create-changeset"><span class="std std-ref"><span class="pre">create_changeset=true</span></span></a></code>.</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:cloudformation:us-east-1:123456789012:changeSet/Ansible-StackName-f4496805bd1b2be824d1e315c6884247ede41eb0&quot;</span></code></p>
 </div></td>
 </tr>
@@ -706,16 +706,16 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudfor
 <a class="ansibleOptionLink" href="#return-stack_outputs" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A key:value dictionary of all the stack outputs currently defined. If there are no stack outputs, it is an empty dictionary.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> state == present</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> When <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;MySg&quot;:</span> <span class="pre">&quot;AnsibleModuleTestYAML-CFTestSg-C8UVS567B6NS&quot;}</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-stack_resources"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-cloudformation-module-return-stack-resources"><strong>stack_resources</strong></p>
-<a class="ansibleOptionLink" href="#return-stack_resources" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+<a class="ansibleOptionLink" href="#return-stack_resources" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>AWS stack resources and their status. List of dictionaries, one dict per resource.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> state == present</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-cloudformation-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[{&quot;last_updated_time&quot;:</span> <span class="pre">&quot;2016-10-11T19:40:14.979000+00:00&quot;,</span> <span class="pre">&quot;logical_resource_id&quot;:</span> <span class="pre">&quot;CFTestSg&quot;,</span> <span class="pre">&quot;physical_resource_id&quot;:</span> <span class="pre">&quot;cloudformation2-CFTestSg-16UQ4CYQ57O9F&quot;,</span> <span class="pre">&quot;resource_type&quot;:</span> <span class="pre">&quot;AWS::EC2::SecurityGroup&quot;,</span> <span class="pre">&quot;status&quot;:</span> <span class="pre">&quot;UPDATE_COMPLETE&quot;,</span> <span class="pre">&quot;status_reason&quot;:</span> <span class="pre">null}]</span></code></p>
 </div></td>
 </tr>
