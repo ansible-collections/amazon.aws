@@ -116,8 +116,20 @@ trail_list:
         latest_delivery_error:
             description: Displays any Amazon S3 error that CloudTrail encountered when attempting to deliver log files to the designated bucket.
             type: str
+        latest_notification_attempt_time:
+            description: Specifies the date and time that CloudTrail last attempt to deliver a notification.
+            type: str
+        latest_notification_attempt_succeeded:
+            description: Specifies the date and time that CloudTrail last successful attempt to deliver a notification.
+            type: str
         latest_notification_error:
             description: Displays any Amazon SNS error that CloudTrail encountered when attempting to send a notification.
+            type: str
+        latest_delivery_attempt_succeeded:
+            description: Specifies the date and time that CloudTrail last successful attempt to deliver log files to an account's Amazon S3 bucket.
+            type: str
+        latest_delivery_attempt_time:
+            description: Specifies the date and time that CloudTrail last attempt to deliver log files to an account's Amazon S3 bucket.
             type: str
         latest_delivery_time:
             description: Specifies the date and time that CloudTrail last delivered log files to an account's Amazon S3 bucket.
