@@ -268,7 +268,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-appl
 <a class="ansibleOptionLink" href="#parameter-deletion_protection" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Indicates whether deletion protection for the ALB is enabled.</p>
-<p>Defaults to <code class="ansible-value docutils literal notranslate"><span class="pre">False</span></code>.</p>
+<p>Defaults to <code class="ansible-value docutils literal notranslate"><span class="pre">false</span></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
@@ -323,8 +323,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-appl
 <a class="ansibleOptionLink" href="#parameter-http_drop_invalid_header_fields" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 <p><em class="ansible-option-versionadded">added in community.aws 3.2.0</em></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Indicates whether HTTP headers with invalid header fields are removed by the load balancer <code class="docutils literal notranslate"><span class="pre">True</span></code> or routed to targets <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
-<p>Defaults to <code class="ansible-value docutils literal notranslate"><span class="pre">False</span></code>.</p>
+<td><div class="ansible-option-cell"><p>Indicates whether HTTP headers with invalid header fields are removed by the load balancer <code class="ansible-value docutils literal notranslate"><span class="pre">true</span></code> or routed to targets <code class="ansible-value docutils literal notranslate"><span class="pre">false</span></code>.</p>
+<p>Defaults to <code class="ansible-value docutils literal notranslate"><span class="pre">false</span></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
@@ -338,7 +338,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-appl
 <p><em class="ansible-option-versionadded">added in community.aws 3.2.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Indicates whether the two headers are added to the client request before sending it to the target.</p>
-<p>Defaults to <code class="ansible-value docutils literal notranslate"><span class="pre">False</span></code>.</p>
+<p>Defaults to <code class="ansible-value docutils literal notranslate"><span class="pre">false</span></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
@@ -352,7 +352,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-appl
 <p><em class="ansible-option-versionadded">added in community.aws 3.2.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Indicates whether the X-Forwarded-For header should preserve the source port that the client used to connect to the load balancer.</p>
-<p>Defaults to <code class="ansible-value docutils literal notranslate"><span class="pre">False</span></code>.</p>
+<p>Defaults to <code class="ansible-value docutils literal notranslate"><span class="pre">false</span></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
@@ -660,7 +660,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-appl
 <p><em class="ansible-option-versionadded">added in community.aws 3.2.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Indicates whether to allow a AWS WAF-enabled load balancer to route requests to targets if it is unable to forward the request to AWS WAF.</p>
-<p>Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
+<p>Defaults to <code class="ansible-value docutils literal notranslate"><span class="pre">false</span></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
@@ -865,11 +865,11 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-appl
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-access_logs_s3_enabled"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-access-logs-s3-enabled"><strong>access_logs_s3_enabled</strong></p>
-<a class="ansibleOptionLink" href="#return-access_logs_s3_enabled" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+<a class="ansibleOptionLink" href="#return-access_logs_s3_enabled" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Indicates whether access logs stored in Amazon S3 are enabled.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">true</span></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;true&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -883,14 +883,70 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-appl
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-availability_zones"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-availability-zones"><strong>availability_zones</strong></p>
-<a class="ansibleOptionLink" href="#return-availability_zones" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+<a class="ansibleOptionLink" href="#return-availability_zones" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The Availability Zones for the load balancer.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[{&quot;load_balancer_addresses&quot;:</span> <span class="pre">[],</span> <span class="pre">&quot;subnet_id&quot;:</span> <span class="pre">&quot;subnet-aabbccddff&quot;,</span> <span class="pre">&quot;zone_name&quot;:</span> <span class="pre">&quot;ap-southeast-2a&quot;}]</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-availability_zones/load_balancer_addresses"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-availability-zones-load-balancer-addresses"><strong>load_balancer_addresses</strong></p>
+<a class="ansibleOptionLink" href="#return-availability_zones/load_balancer_addresses" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Information about static IP addresses for a load balancer.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-availability_zones/load_balancer_addresses/allocation_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-availability-zones-load-balancer-addresses-allocation-id"><strong>allocation_id</strong></p>
+<a class="ansibleOptionLink" href="#return-availability_zones/load_balancer_addresses/allocation_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The allocation ID of the Elastic IP address for an internal-facing load balancer.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-availability_zones/load_balancer_addresses/ip_address"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-availability-zones-load-balancer-addresses-ip-address"><strong>ip_address</strong></p>
+<a class="ansibleOptionLink" href="#return-availability_zones/load_balancer_addresses/ip_address" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The static IP address.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-availability_zones/load_balancer_addresses/ipv6_address"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-availability-zones-load-balancer-addresses-ipv6-address"><strong>ipv6_address</strong></p>
+<a class="ansibleOptionLink" href="#return-availability_zones/load_balancer_addresses/ipv6_address" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The IPv6 address.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-availability_zones/load_balancer_addresses/private_ipv4_address"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-availability-zones-load-balancer-addresses-private-ipv4-address"><strong>private_ipv4_address</strong></p>
+<a class="ansibleOptionLink" href="#return-availability_zones/load_balancer_addresses/private_ipv4_address" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The private IPv4 address for an internal load balancer.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-availability_zones/subnet_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-availability-zones-subnet-id"><strong>subnet_id</strong></p>
+<a class="ansibleOptionLink" href="#return-availability_zones/subnet_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ID of the subnet.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-availability_zones/zone_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-availability-zones-zone-name"><strong>zone_name</strong></p>
+<a class="ansibleOptionLink" href="#return-availability_zones/zone_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The name of the Availability Zone.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-canonical_hosted_zone_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-canonical-hosted-zone-id"><strong>canonical_hosted_zone_id</strong></p>
 <a class="ansibleOptionLink" href="#return-canonical_hosted_zone_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -899,7 +955,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-appl
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;ABCDEF12345678&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-changed"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-changed"><strong>changed</strong></p>
 <a class="ansibleOptionLink" href="#return-changed" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -908,7 +964,43 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-appl
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">true</span></code></p>
 </div></td>
 </tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-client_keep_alive_seconds"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-client-keep-alive-seconds"><strong>client_keep_alive_seconds</strong></p>
+<a class="ansibleOptionLink" href="#return-client_keep_alive_seconds" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The client keep alive value, in seconds.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;3600&quot;</span></code></p>
+</div></td>
+</tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-connection_logs_s3_bucket"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-connection-logs-s3-bucket"><strong>connection_logs_s3_bucket</strong></p>
+<a class="ansibleOptionLink" href="#return-connection_logs_s3_bucket" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The name of the S3 bucket for the connection logs.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-connection_logs_s3_enabled"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-connection-logs-s3-enabled"><strong>connection_logs_s3_enabled</strong></p>
+<a class="ansibleOptionLink" href="#return-connection_logs_s3_enabled" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Indicates whether connection logs are enabled.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;false&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-connection_logs_s3_prefix"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-connection-logs-s3-prefix"><strong>connection_logs_s3_prefix</strong></p>
+<a class="ansibleOptionLink" href="#return-connection_logs_s3_prefix" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The prefix for the location in the S3 bucket for the connection logs.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-created_time"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-created-time"><strong>created_time</strong></p>
 <a class="ansibleOptionLink" href="#return-created_time" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -917,16 +1009,16 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-appl
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2015-02-12T02:14:02+00:00&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-deletion_protection_enabled"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-deletion-protection-enabled"><strong>deletion_protection_enabled</strong></p>
-<a class="ansibleOptionLink" href="#return-deletion_protection_enabled" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+<a class="ansibleOptionLink" href="#return-deletion_protection_enabled" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Indicates whether deletion protection is enabled.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">true</span></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;true&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-dns_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-dns-name"><strong>dns_name</strong></p>
 <a class="ansibleOptionLink" href="#return-dns_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -935,16 +1027,16 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-appl
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;internal-my-elb-123456789.ap-southeast-2.elb.amazonaws.com&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-idle_timeout_timeout_seconds"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-idle-timeout-timeout-seconds"><strong>idle_timeout_timeout_seconds</strong></p>
-<a class="ansibleOptionLink" href="#return-idle_timeout_timeout_seconds" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+<a class="ansibleOptionLink" href="#return-idle_timeout_timeout_seconds" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The idle timeout value, in seconds.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">60</span></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;60&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-ip_address_type"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-ip-address-type"><strong>ip_address_type</strong></p>
 <a class="ansibleOptionLink" href="#return-ip_address_type" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -953,9 +1045,18 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-appl
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;ipv4&quot;</span></code></p>
 </div></td>
 </tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-ipv6_deny_all_igw_traffic"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-ipv6-deny-all-igw-traffic"><strong>ipv6_deny_all_igw_traffic</strong></p>
+<a class="ansibleOptionLink" href="#return-ipv6_deny_all_igw_traffic" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Locks internet gateway (IGW) access to the load balancer.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;false&quot;</span></code></p>
+</div></td>
+</tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-listeners"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-listeners"><strong>listeners</strong></p>
-<a class="ansibleOptionLink" href="#return-listeners" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
+<a class="ansibleOptionLink" href="#return-listeners" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Information about the listeners.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
@@ -963,7 +1064,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-appl
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-listeners/certificates"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-listeners-certificates"><strong>certificates</strong></p>
-<a class="ansibleOptionLink" href="#return-listeners/certificates" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
+<a class="ansibleOptionLink" href="#return-listeners/certificates" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The SSL server certificate.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
@@ -975,7 +1076,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-appl
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The Amazon Resource Name (ARN) of the certificate.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:acm:us-east-1:123456789012:certificate/28d2f3d9-cb2f-4033-a9aa-e75e704125a2&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -983,6 +1084,55 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-appl
 <a class="ansibleOptionLink" href="#return-listeners/default_actions" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The default actions for the listener.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;[{'forward_config':</span> <span class="pre">{'target_group_stickiness_config':</span> <span class="pre">{'enabled':</span> <span class="pre">False},</span> <span class="pre">'target_groups':</span> <span class="pre">[{'target_group_arn':</span> <span class="pre">'arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/alb-test-2-98b7f374/bf43c68602c51c02',</span> <span class="pre">'weight':</span> <span class="pre">1}]},</span> <span class="pre">'target_group_arn':</span> <span class="pre">'arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/alb-test-2-98b7f374/bf43c68602c51c02',</span> <span class="pre">'type':</span> <span class="pre">'forward'}]&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-listeners/default_actions/forward_config"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-listeners-default-actions-forward-config"><strong>forward_config</strong></p>
+<a class="ansibleOptionLink" href="#return-listeners/default_actions/forward_config" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Information for creating an action that distributes requests among one or more target groups.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-listeners/default_actions/forward_config/target_group_stickiness_config"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-listeners-default-actions-forward-config-target-group-stickiness-config"><strong>target_group_stickiness_config</strong></p>
+<a class="ansibleOptionLink" href="#return-listeners/default_actions/forward_config/target_group_stickiness_config" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The target group stickiness for the rule.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-listeners/default_actions/forward_config/target_group_stickiness_config/enabled"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-listeners-default-actions-forward-config-target-group-stickiness-config-enabled"><strong>enabled</strong></p>
+<a class="ansibleOptionLink" href="#return-listeners/default_actions/forward_config/target_group_stickiness_config/enabled" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Indicates whether target group stickiness is enabled.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-listeners/default_actions/forward_config/target_groups"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-listeners-default-actions-forward-config-target-groups"><strong>target_groups</strong></p>
+<a class="ansibleOptionLink" href="#return-listeners/default_actions/forward_config/target_groups" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The target groups.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-listeners/default_actions/forward_config/target_groups/target_group_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-listeners-default-actions-forward-config-target-groups-target-group-arn"><strong>target_group_arn</strong></p>
+<a class="ansibleOptionLink" href="#return-listeners/default_actions/forward_config/target_groups/target_group_arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The Amazon Resource Name (ARN) of the target group.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-listeners/default_actions/forward_config/target_groups/weight"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-listeners-default-actions-forward-config-target-groups-weight"><strong>weight</strong></p>
+<a class="ansibleOptionLink" href="#return-listeners/default_actions/forward_config/target_groups/weight" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The weight.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 </div></td>
 </tr>
@@ -992,7 +1142,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-appl
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The Amazon Resource Name (ARN) of the target group.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/alb-test-169eb5ba/09ba111f8079fb83&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -1001,7 +1151,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-appl
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The type of action.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;forward&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -1010,7 +1160,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-appl
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The Amazon Resource Name (ARN) of the listener.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:elasticloadbalancing:us-east-1:123456789012:listener/app/alb-test-169eb5ba/1659336d4100d496/8367c4262cc1d0cc&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -1019,7 +1169,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-appl
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The Amazon Resource Name (ARN) of the load balancer.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/app/alb-test-169eb5ba/1659336d4100d496&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -1041,12 +1191,129 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-appl
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-listeners/rules"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-listeners-rules"><strong>rules</strong></p>
+<a class="ansibleOptionLink" href="#return-listeners/rules" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>List of listener rules.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-listeners/rules/actions"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-listeners-rules-actions"><strong>actions</strong></p>
+<a class="ansibleOptionLink" href="#return-listeners/rules/actions" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The actions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[{&quot;forward_config&quot;:</span> <span class="pre">{&quot;target_group_stickiness_config&quot;:</span> <span class="pre">{&quot;enabled&quot;:</span> <span class="pre">false},</span> <span class="pre">&quot;target_groups&quot;:</span> <span class="pre">[{&quot;target_group_arn&quot;:</span> <span class="pre">&quot;arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/alb-test-169eb/09ba111f8079fb83&quot;,</span> <span class="pre">&quot;weight&quot;:</span> <span class="pre">1}]},</span> <span class="pre">&quot;target_group_arn&quot;:</span> <span class="pre">&quot;arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/alb-test-169eb/09ba111f8079fb83&quot;,</span> <span class="pre">&quot;type&quot;:</span> <span class="pre">&quot;forward&quot;}]</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-listeners/rules/actions/forward_config"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-listeners-rules-actions-forward-config"><strong>forward_config</strong></p>
+<a class="ansibleOptionLink" href="#return-listeners/rules/actions/forward_config" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Information for creating an action that distributes requests among one or more target groups.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-listeners/rules/actions/forward_config/target_group_stickiness_config"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-listeners-rules-actions-forward-config-target-group-stickiness-config"><strong>target_group_stickiness_config</strong></p>
+<a class="ansibleOptionLink" href="#return-listeners/rules/actions/forward_config/target_group_stickiness_config" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The target group stickiness for the rule.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-listeners/rules/actions/forward_config/target_group_stickiness_config/enabled"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-listeners-rules-actions-forward-config-target-group-stickiness-config-enabled"><strong>enabled</strong></p>
+<a class="ansibleOptionLink" href="#return-listeners/rules/actions/forward_config/target_group_stickiness_config/enabled" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Indicates whether target group stickiness is enabled.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-listeners/rules/actions/forward_config/target_groups"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-listeners-rules-actions-forward-config-target-groups"><strong>target_groups</strong></p>
+<a class="ansibleOptionLink" href="#return-listeners/rules/actions/forward_config/target_groups" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The target groups.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-listeners/rules/actions/forward_config/target_groups/target_group_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-listeners-rules-actions-forward-config-target-groups-target-group-arn"><strong>target_group_arn</strong></p>
+<a class="ansibleOptionLink" href="#return-listeners/rules/actions/forward_config/target_groups/target_group_arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The Amazon Resource Name (ARN) of the target group.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-listeners/rules/actions/forward_config/target_groups/weight"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-listeners-rules-actions-forward-config-target-groups-weight"><strong>weight</strong></p>
+<a class="ansibleOptionLink" href="#return-listeners/rules/actions/forward_config/target_groups/weight" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The weight.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-listeners/rules/actions/target_group_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-listeners-rules-actions-target-group-arn"><strong>target_group_arn</strong></p>
+<a class="ansibleOptionLink" href="#return-listeners/rules/actions/target_group_arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The Amazon Resource Name (ARN) of the target group.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-listeners/rules/actions/type"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-listeners-rules-actions-type"><strong>type</strong></p>
+<a class="ansibleOptionLink" href="#return-listeners/rules/actions/type" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The type of action.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-listeners/rules/conditions"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-listeners-rules-conditions"><strong>conditions</strong></p>
+<a class="ansibleOptionLink" href="#return-listeners/rules/conditions" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The conditions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[]</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-listeners/rules/is_default"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-listeners-rules-is-default"><strong>is_default</strong></p>
+<a class="ansibleOptionLink" href="#return-listeners/rules/is_default" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Indicates whether this is the default rule.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">false</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-listeners/rules/priority"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-listeners-rules-priority"><strong>priority</strong></p>
+<a class="ansibleOptionLink" href="#return-listeners/rules/priority" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The priority.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;default&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-listeners/rules/rule_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-listeners-rules-rule-arn"><strong>rule_arn</strong></p>
+<a class="ansibleOptionLink" href="#return-listeners/rules/rule_arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The Amazon Resource Name (ARN) of the rule.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-listeners/ssl_policy"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-listeners-ssl-policy"><strong>ssl_policy</strong></p>
 <a class="ansibleOptionLink" href="#return-listeners/ssl_policy" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The security policy that defines which ciphers and protocols are supported.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;ELBSecurityPolicy-2016-08&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -1068,15 +1335,24 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-appl
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-routing_http2_enabled"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-routing-http2-enabled"><strong>routing_http2_enabled</strong></p>
-<a class="ansibleOptionLink" href="#return-routing_http2_enabled" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+<div class="ansibleOptionAnchor" id="return-load_balancing_cross_zone_enabled"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-load-balancing-cross-zone-enabled"><strong>load_balancing_cross_zone_enabled</strong></p>
+<a class="ansibleOptionLink" href="#return-load_balancing_cross_zone_enabled" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Indicates whether HTTP/2 is enabled.</p>
+<td><div class="ansible-option-cell"><p>Indicates whether cross-zone load balancing is enabled.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">true</span></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;true&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-routing_http2_enabled"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-routing-http2-enabled"><strong>routing_http2_enabled</strong></p>
+<a class="ansibleOptionLink" href="#return-routing_http2_enabled" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Indicates whether HTTP/2 is enabled.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;true&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-routing_http_desync_mitigation_mode"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-routing-http-desync-mitigation-mode"><strong>routing_http_desync_mitigation_mode</strong></p>
 <a class="ansibleOptionLink" href="#return-routing_http_desync_mitigation_mode" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -1085,34 +1361,52 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-appl
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;defensive&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-routing_http_drop_invalid_header_fields_enabled"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-routing-http-drop-invalid-header-fields-enabled"><strong>routing_http_drop_invalid_header_fields_enabled</strong></p>
-<a class="ansibleOptionLink" href="#return-routing_http_drop_invalid_header_fields_enabled" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+<a class="ansibleOptionLink" href="#return-routing_http_drop_invalid_header_fields_enabled" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Indicates whether HTTP headers with invalid header fields are removed by the load balancer (true) or routed to targets (false).</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">false</span></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;false&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-routing_http_preserve_host_header_enabled"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-routing-http-preserve-host-header-enabled"><strong>routing_http_preserve_host_header_enabled</strong></p>
+<a class="ansibleOptionLink" href="#return-routing_http_preserve_host_header_enabled" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Indicates whether the Application Load Balancer should preserve the Host header in the HTTP request and send it to the target without any change.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;false&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-routing_http_x_amzn_tls_version_and_cipher_suite_enabled"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-routing-http-x-amzn-tls-version-and-cipher-suite-enabled"><strong>routing_http_x_amzn_tls_version_and_cipher_suite_enabled</strong></p>
-<a class="ansibleOptionLink" href="#return-routing_http_x_amzn_tls_version_and_cipher_suite_enabled" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+<a class="ansibleOptionLink" href="#return-routing_http_x_amzn_tls_version_and_cipher_suite_enabled" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Indicates whether the two headers are added to the client request before sending it to the target.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">false</span></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;false&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-routing_http_xff_client_port_enabled"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-routing-http-xff-client-port-enabled"><strong>routing_http_xff_client_port_enabled</strong></p>
-<a class="ansibleOptionLink" href="#return-routing_http_xff_client_port_enabled" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+<a class="ansibleOptionLink" href="#return-routing_http_xff_client_port_enabled" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Indicates whether the X-Forwarded-For header should preserve the source port that the client used to connect to the load balancer.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">false</span></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;false&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-routing_http_xff_header_processing_mode"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-routing-http-xff-header-processing-mode"><strong>routing_http_xff_header_processing_mode</strong></p>
+<a class="ansibleOptionLink" href="#return-routing_http_xff_header_processing_mode" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Enables you to modify, preserve, or remove the X-Forwarded-For header in the HTTP request before the Application Load Balancer sends the request to the target.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;append&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-scheme"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-scheme"><strong>scheme</strong></p>
 <a class="ansibleOptionLink" href="#return-scheme" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -1121,7 +1415,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-appl
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;internal&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-security_groups"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-security-groups"><strong>security_groups</strong></p>
 <a class="ansibleOptionLink" href="#return-security_groups" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
@@ -1130,7 +1424,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-appl
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[&quot;sg-0011223344&quot;]</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-state"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-state"><strong>state</strong></p>
 <a class="ansibleOptionLink" href="#return-state" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
@@ -1139,7 +1433,23 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-appl
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;code&quot;:</span> <span class="pre">&quot;active&quot;}</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-state/code"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-state-code"><strong>code</strong></p>
+<a class="ansibleOptionLink" href="#return-state/code" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The state code.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-state/reason"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-state-reason"><strong>reason</strong></p>
+<a class="ansibleOptionLink" href="#return-state/reason" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A description of the state.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when available</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-tags"><strong>tags</strong></p>
 <a class="ansibleOptionLink" href="#return-tags" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
@@ -1148,7 +1458,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-appl
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;Tag&quot;:</span> <span class="pre">&quot;Example&quot;}</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-type"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-type"><strong>type</strong></p>
 <a class="ansibleOptionLink" href="#return-type" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -1157,7 +1467,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-appl
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;application&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-vpc_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-vpc-id"><strong>vpc_id</strong></p>
 <a class="ansibleOptionLink" href="#return-vpc_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -1166,13 +1476,13 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-elb-appl
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;vpc-0011223344&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-waf_fail_open_enabled"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-elb-application-lb-module-return-waf-fail-open-enabled"><strong>waf_fail_open_enabled</strong></p>
-<a class="ansibleOptionLink" href="#return-waf_fail_open_enabled" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+<a class="ansibleOptionLink" href="#return-waf_fail_open_enabled" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Indicates whether to allow a AWS WAF-enabled load balancer to route requests to targets if it is unable to forward the request to AWS WAF.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-elb-application-lb-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">false</span></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;false&quot;</span></code></p>
 </div></td>
 </tr>
 </tbody>
