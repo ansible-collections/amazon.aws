@@ -197,6 +197,12 @@ EXAMPLES = r"""
 """
 
 RETURN = r"""
+connectivity_type:
+    description:
+      - Indicates whether the NAT gateway supports public or private connectivity.
+    returned: always
+    type: str
+    sample: public
 create_time:
   description: The ISO 8601 date time format in UTC.
   returned: In all cases.
@@ -232,14 +238,53 @@ vpc_id:
 nat_gateway_addresses:
   description: List of dictionaries containing the public_ip, network_interface_id, private_ip, and allocation_id.
   returned: In all cases.
-  type: str
+  type: complex
+  contains:
+    allocation_id:
+        description: The allocation ID of the Elastic IP address that's associated with the NAT gateway.
+        returned: always
+        type: str
+        sample: eipalloc-0853e66a40803da76
+    association_id:
+        description: The association ID of the Elastic IP address that is associated with the NAT gateway.
+        returned: always
+        type: str
+        sample: eipassoc-0d6365c7eeb7d4932
+    is_primary:
+        description: Defines if the IP address is the primary address.
+        returned: always
+        type: bool
+        sample: true
+    network_interface_id:
+        description: The ID of the network interface associated with the NAT gateway.
+        returned: always
+        type: str
+        sample: eni-0a37acdbe306c661c
+    private_ip:
+        description: The private IP address associated with the Elastic IP address.
+        returned: always
+        type: str
+        sample: 10.0.238.227
+    public_ip:
+        description: The Elastic IP address associated with the NAT gateway.
+        returned: always
+        type: str
+        sample: 34.204.123.52
+    status:
+        description: The address status.
+        returned: always
+        type: str
+        sample: succeeded
   sample: [
-      {
-        'public_ip': '52.52.52.52',
-        'network_interface_id': 'eni-12345',
-        'private_ip': '10.0.0.100',
-        'allocation_id': 'eipalloc-12345'
-      }
+       {
+            "allocation_id": "eipalloc-08ec128d03629671d",
+            "association_id": "eipassoc-0d6365c7eeb7d4932",
+            "is_primary": true,
+            "network_interface_id": "eni-095104e630881bad6",
+            "private_ip": "10.1.0.250",
+            "public_ip": "34.202.90.172",
+            "status": "succeeded"
+        }
   ]
 """
 

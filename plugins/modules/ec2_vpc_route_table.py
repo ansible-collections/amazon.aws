@@ -211,6 +211,10 @@ route_table:
       returned: always
       type: str
       sample: rtb-bf779ed7
+    owner_id:
+        description: AWS account owning resource.
+        type: str
+        sample: 123456789012
     propagating_vgws:
       description: List of Virtual Private Gateways propagating routes.
       returned: always

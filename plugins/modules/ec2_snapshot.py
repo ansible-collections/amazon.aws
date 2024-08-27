@@ -185,6 +185,62 @@ snapshot_id:
     type: str
     returned: always
     sample: snap-01234567
+snapshots:
+    description: List of snapshots.
+    returned: always
+    type: list
+    elements: dict
+    contains:
+        description:
+            description: Description specified by the CreateSnapshotRequest that has been applied to all snapshots.
+            type: str
+            returned: always
+            sample: ""
+        encrypted:
+            description: Indicates whether the snapshot is encrypted.
+            type: bool
+            returned: always
+            sample: false
+        owner_id:
+            description: Account id used when creating this snapshot.
+            type: str
+            returned: always
+            sample: 123456
+        progress:
+            description: Progress this snapshot has made towards completing.
+            type: str
+            returned: always
+            sample: ""
+        snapshot_id:
+            description: Snapshot id that can be used to describe this snapshot.
+            type: str
+            returned: always
+            sample: snap-1234
+        start_time:
+            description: Time this snapshot was started. This is the same for all snapshots initiated by the same request.
+            type: str
+            returned: always
+            sample: "2024-05-07T14:29:24.523000+00:00"
+        state:
+            description: Current state of the snapshot.
+            type: str
+            returned: always
+            sample: pending
+        tags:
+            description: Tags associated with this snapshot.
+            type: dict
+            returned: always
+            sample: "{ 'Name': 'instance-name' }"
+        volume_id:
+            description: The ID of the volume that was used to create the snapshot.
+            type: str
+            returned: always
+            sample: vol-01234567
+        volume_size:
+            description: The size of the volume, in GiB.
+            type: int
+            returned: always
+            sample: 8
 tags:
     description: Any tags assigned to the snapshot.
     type: dict
