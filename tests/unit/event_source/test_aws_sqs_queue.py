@@ -7,7 +7,7 @@ from extensions.eda.plugins.event_source.aws_sqs_queue import main as sqs_main
 
 
 @pytest.mark.asyncio
-async def test_receive_from_sqs(eda_queue):
+async def test_receive_from_sqs(eda_queue) -> None:
     session = AsyncMock()
     with patch(
         "extensions.eda.plugins.event_source.aws_sqs_queue.get_session",  # noqa: E501

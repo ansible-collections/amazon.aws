@@ -9,7 +9,7 @@ from extensions.eda.plugins.event_source.aws_cloudtrail import main as cloudtrai
 
 
 @pytest.mark.asyncio
-async def test_receive_from_cloudtrail(eda_queue):
+async def test_receive_from_cloudtrail(eda_queue) -> None:
     session = AsyncMock()
     t1 = datetime.datetime.now()
     t2 = datetime.datetime.now()
