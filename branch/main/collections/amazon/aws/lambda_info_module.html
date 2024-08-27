@@ -380,6 +380,11 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <span class="w">    </span><span class="nt">function_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">myFunction</span>
 <span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_function_details</span>
 
+<span class="c1"># Get basic information about AWS Lambda Functions in the current region</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">List Lambda Functions</span>
+<span class="w">  </span><span class="nt">amazon.aws.lambda_info</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">lambda_functions</span>
+
 <span class="c1"># List all versions of a function</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">List function versions</span>
 <span class="w">  </span><span class="nt">amazon.aws.lambda_info</span><span class="p">:</span>
