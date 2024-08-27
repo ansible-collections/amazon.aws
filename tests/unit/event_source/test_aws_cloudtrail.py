@@ -6,10 +6,11 @@ from asyncmock import AsyncMock
 from mock import MagicMock
 
 from extensions.eda.plugins.event_source.aws_cloudtrail import main as cloudtrail_main
+from tests.conftest import ListQueue
 
 
 @pytest.mark.asyncio
-async def test_receive_from_cloudtrail(eda_queue) -> None:
+async def test_receive_from_cloudtrail(eda_queue: ListQueue) -> None:
     session = AsyncMock()
     t1 = datetime.datetime.now()
     t2 = datetime.datetime.now()

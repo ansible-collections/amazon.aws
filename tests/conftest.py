@@ -8,13 +8,13 @@ class ListQueue(asyncio.Queue[Any]):
     def __init__(self) -> None:
         self.queue: list[Any] = []
 
-    async def put(self, event) -> None:
-        self.queue.append(event)
+    async def put(self, item: Any) -> None:
+        self.queue.append(item)
 
-    def put_nowait(self, event) -> None:
-        self.queue.append(event)
+    def put_nowait(self, item: Any) -> None:
+        self.queue.append(item)
 
 
 @pytest.fixture
-def eda_queue():
+def eda_queue() -> ListQueue:
     return ListQueue()

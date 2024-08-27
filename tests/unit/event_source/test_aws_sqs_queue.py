@@ -4,10 +4,11 @@ import pytest
 from asyncmock import AsyncMock
 
 from extensions.eda.plugins.event_source.aws_sqs_queue import main as sqs_main
+from tests.conftest import ListQueue
 
 
 @pytest.mark.asyncio
-async def test_receive_from_sqs(eda_queue) -> None:
+async def test_receive_from_sqs(eda_queue: ListQueue) -> None:
     session = AsyncMock()
     with patch(
         "extensions.eda.plugins.event_source.aws_sqs_queue.get_session",  # noqa: E501
