@@ -48,7 +48,7 @@ EXAMPLES = r"""
     function_name: myFunction
   register: my_function_details
 
-# Get basic information about AWS Lambda Functions in the current region 
+# Get basic information about AWS Lambda Functions in the current region
 - name: List Lambda Functions
   amazon.aws.lambda_info:
   register: lambda_functions
