@@ -8,7 +8,7 @@ DOCUMENTATION = r"""
 ---
 module: cloudtrail_info
 version_added: 5.0.0
-short_description: Gather information about trails in AWS Cloud Trail.
+short_description: Gather information about trails in AWS Cloud Trail
 description:
   - Gather information about trails in AWS CloudTrail.
 author: "Gomathi Selvi Srinivasan (@GomathiselviS)"

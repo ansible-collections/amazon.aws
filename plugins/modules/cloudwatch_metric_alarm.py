@@ -6,12 +6,12 @@
 
 DOCUMENTATION = r"""
 module: cloudwatch_metric_alarm
-short_description: "Create/update or delete AWS CloudWatch 'metric alarms'"
+short_description: Create/update or delete AWS CloudWatch 'metric alarms'
 version_added: 5.0.0
 description:
  - Can create or delete AWS CloudWatch metric alarms.
  - Metrics you wish to alarm on must already exist.
- - Prior to release 5.0.0 this module was called C(community.aws.ec2_metric_alarm).
+ - Prior to release 5.0.0 this module was called M(community.aws.ec2_metric_alarm).
    The usage did not change.
  - This module was originally added to C(community.aws) in release 1.0.0.
 author:
@@ -30,7 +30,7 @@ options:
         type: str
     metric_name:
         description:
-          - Name of the monitored metric (e.g. C(CPUUtilization)).
+          - Name of the monitored metric (e.g. V(CPUUtilization)).
           - Metric must already exist.
         required: false
         type: str
@@ -69,7 +69,7 @@ options:
                                 type: str
                                 required: True
                             dimensions:
-                                description: a name/value pair that is part of the identity of a metric.
+                                description: A name/value pair that is part of the identity of a metric.
                                 type: list
                                 elements: dict
                                 required: false
@@ -118,13 +118,13 @@ options:
                 required: false
     namespace:
         description:
-          - Name of the appropriate namespace (C(AWS/EC2), C(System/Linux), etc.), which determines the category it will appear under in CloudWatch.
+          - Name of the appropriate namespace (V(AWS/EC2), V(System/Linux), etc.), which determines the category it will appear under in CloudWatch.
         required: false
         type: str
     statistic:
         description:
           - Operation applied to the metric.
-          - Works in conjunction with I(period) and I(evaluation_periods) to determine the comparison value.
+          - Works in conjunction with O(period) and O(evaluation_periods) to determine the comparison value.
         required: false
         choices: ['SampleCount','Average','Sum','Minimum','Maximum']
         type: str
@@ -205,21 +205,21 @@ options:
         type: dict
     alarm_actions:
         description:
-          - A list of the names action(s) taken when the alarm is in the C(alarm) status, denoted as Amazon Resource Name(s).
+          - A list of the names action(s) taken when the alarm is in the V(alarm) status, denoted as Amazon Resource Name(s).
         required: false
         type: list
         elements: str
         default: []
     insufficient_data_actions:
         description:
-          - A list of the names of action(s) to take when the alarm is in the C(insufficient_data) status.
+          - A list of the names of action(s) to take when the alarm is in the V(insufficient_data) status.
         required: false
         type: list
         elements: str
         default: []
     ok_actions:
         description:
-          - A list of the names of action(s) to take when the alarm is in the C(ok) status, denoted as Amazon Resource Name(s).
+          - A list of the names of action(s) to take when the alarm is in the V(ok) status, denoted as Amazon Resource Name(s).
         required: false
         type: list
         elements: str
