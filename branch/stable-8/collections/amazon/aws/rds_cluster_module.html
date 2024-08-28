@@ -916,11 +916,15 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-clus
 </div></td>
 <td><div class="ansible-option-cell"><p>Specifies the storage type to be associated with the DB cluster.</p>
 <p>This setting is required to create a Multi-AZ DB cluster.</p>
-<p>When specified, a value for the <em>iops</em> parameter is required.</p>
-<p>Defaults to <code class="docutils literal notranslate"><span class="pre">io1</span></code>.</p>
+<p>For multi-AZ DB clusters, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-cluster-module-parameter-storage-type"><span class="std std-ref"><span class="pre">storage_type</span></span></a></strong></code> defaults to <code class="ansible-value docutils literal notranslate"><span class="pre">io1</span></code> and a value for the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-cluster-module-parameter-iops"><span class="std std-ref"><span class="pre">iops</span></span></a></strong></code> parameter is required.</p>
+<p>For Aurora DB clusters, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-cluster-module-parameter-storage-type"><span class="std std-ref"><span class="pre">storage_type</span></span></a></strong></code> defaults to <code class="ansible-value docutils literal notranslate"><span class="pre">aurora</span></code> standard.</p>
+<p>For mysql and postgres DB clusters, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-cluster-module-parameter-storage-type"><span class="std std-ref"><span class="pre">storage_type</span></span></a></strong></code> defaults to <code class="ansible-value docutils literal notranslate"><span class="pre">io1</span></code>.</p>
+<p>Support for <code class="ansible-value docutils literal notranslate"><span class="pre">aurora</span></code> and <code class="ansible-value docutils literal notranslate"><span class="pre">aurora-iopt1</span></code> was added in release 8.1.0.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;io1&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;aurora&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;aurora-iopt1&quot;</span></code></p></li>
 </ul>
 </div></td>
 </tr>
