@@ -16,6 +16,7 @@
         username: "{{ username }}"
         password: "{{ password }}"
         skip_final_snapshot: true
+        backup_retention_period: 3
       register: _result_delete_db_cluster
 
     - ansible.builtin.assert:
@@ -31,6 +32,7 @@
         engine_mode: provisioned
         username: "{{ username }}"
         password: "{{ password }}"
+        backup_retention_period: 3
       register: _result_create_source_db_cluster
 
     - ansible.builtin.assert:
