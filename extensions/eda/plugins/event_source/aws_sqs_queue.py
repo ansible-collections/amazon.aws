@@ -31,7 +31,7 @@ from aiobotocore.session import get_session
 
 
 # pylint: disable=too-many-locals
-async def main(queue: asyncio.Queue, args: dict[str, Any]) -> None:
+async def main(queue: asyncio.Queue[Any], args: dict[str, Any]) -> None:
     """Receive events via an AWS SQS queue."""
     logger = logging.getLogger()
 
@@ -117,7 +117,7 @@ if __name__ == "__main__":
     class MockQueue(asyncio.Queue[Any]):
         """A fake queue."""
 
-        async def put(self: "MockQueue", event: dict) -> None:
+        async def put(self: "MockQueue", event: dict[str, Any]) -> None:
             """Print the event."""
             print(event)  # noqa: T201
 

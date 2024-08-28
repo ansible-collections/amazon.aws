@@ -40,13 +40,15 @@ from aiobotocore.session import get_session
 from botocore.client import BaseClient
 
 
-def _cloudtrail_event_to_dict(event: dict) -> dict:
+def _cloudtrail_event_to_dict(event: dict[str, Any]) -> dict[str, Any]:
     event["EventTime"] = event["EventTime"].isoformat()
     event["CloudTrailEvent"] = json.loads(event["CloudTrailEvent"])
     return event
 
 
-def _get_events(events: list[dict], last_event_ids: list[str]) -> list:
+def _get_events(
+    events: list[dict[str, Any]], last_event_ids: list[str]
+) -> tuple[list[dict[str, Any]], Any, list[str]]:
     event_time = None
     event_ids = []
     result = []
@@ -60,13 +62,22 @@ def _get_events(events: list[dict], last_event_ids: list[str]) -> list:
         elif event_time == event["EventTime"]:
             event_ids.append(event["EventId"])
         result.append(event)
-    return [result, event_time, event_ids]
+    return result, event_time, event_ids
 
 
-async def _get_cloudtrail_events(client: BaseClient, params: dict) -> list[dict]:
+async def _get_cloudtrail_events(
+    client: BaseClient, params: dict[str, Any]
+) -> list[dict[str, Any]]:
     paginator = client.get_paginator("lookup_events")
     results = await paginator.paginate(**params).build_full_result()
-    return results.get("Events", [])
+    events = results.get("Events", [])
+    # type guards:
+    if not isinstance(events, list):
+        raise ValueError("Events is not a list")
+    for event in events:
+        if not isinstance(event, dict):
+            raise ValueError("Event is not a dictionary")
+    return events
 
 
 ARGS_MAPPING = {
@@ -75,7 +86,7 @@ ARGS_MAPPING = {
 }
 
 
-async def main(queue: asyncio.Queue, args: dict[str, Any]) -> None:
+async def main(queue: asyncio.Queue[Any], args: dict[str, Any]) -> None:
     """Receive events via AWS CloudTrail."""
     delay = int(args.get("delay_seconds", 10))
 
@@ -131,7 +142,7 @@ if __name__ == "__main__":
     class MockQueue(asyncio.Queue[Any]):
         """A fake queue."""
 
-        async def put(self: "MockQueue", event: dict) -> None:
+        async def put(self: "MockQueue", event: dict[str, Any]) -> None:
             """Print the event."""
             print(event)  # noqa: T201
 
