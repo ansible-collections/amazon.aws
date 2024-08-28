@@ -97,3 +97,9 @@
         wait: false
       ignore_errors: true
       when: instance_creation_tenancy is defined
+
+    - name: Delete placement group.
+      community.aws.ec2_placement_group:
+        name: "{{ ec2_placement_group_name }}"
+        state: absent
+      ignore_errors: true
