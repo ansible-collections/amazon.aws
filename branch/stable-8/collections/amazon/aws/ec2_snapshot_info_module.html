@@ -257,20 +257,20 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snap
 <a class="ansibleOptionLink" href="#parameter-max_results" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The maximum number of snapshot results returned in paginated output.</p>
-<p>When used only a single page along with a <code class="docutils literal notranslate"><span class="pre">next_token_id</span></code> response element will be returned.</p>
-<p>The remaining results of the initial request can be seen by sending another request with the returned <code class="docutils literal notranslate"><span class="pre">next_token_id</span></code> value.</p>
-<p>This value can be between 5 and 1000; if <em>next_token_id</em> is given a value larger than 1000, only 1000 results are returned.</p>
+<p>When used only a single page along with a <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snapshot-info-module-parameter-next-token-id"><span class="std std-ref"><span class="pre">next_token_id</span></span></a></strong></code> response element will be returned.</p>
+<p>The remaining results of the initial request can be seen by sending another request with the returned <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snapshot-info-module-parameter-next-token-id"><span class="std std-ref"><span class="pre">next_token_id</span></span></a></strong></code> value.</p>
+<p>This value can be between 5 and 1000; if <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snapshot-info-module-parameter-next-token-id"><span class="std std-ref"><span class="pre">next_token_id</span></span></a></strong></code> is given a value larger than 1000, only 1000 results are returned.</p>
 <p>If this parameter is not used, then DescribeSnapshots returns all results.</p>
-<p>This parameter is mutually exclusive with <em>snapshot_ids</em>.</p>
+<p>This parameter is mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snapshot-info-module-parameter-snapshot-ids"><span class="std std-ref"><span class="pre">snapshot_ids</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-next_token_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-snapshot-info-module-parameter-next-token-id"><strong>next_token_id</strong></p>
 <a class="ansibleOptionLink" href="#parameter-next_token_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Contains the value returned from a previous paginated request where <em>max_results</em> was used and the results exceeded the value of that parameter.</p>
-<p>Pagination continues from the end of the previous results that returned the <em>next_token_id</em> value.</p>
-<p>This parameter is mutually exclusive with <em>snapshot_ids</em></p>
+<td><div class="ansible-option-cell"><p>Contains the value returned from a previous paginated request where <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snapshot-info-module-parameter-max-results"><span class="std std-ref"><span class="pre">max_results</span></span></a></strong></code> was used and the results exceeded the value of that parameter.</p>
+<p>Pagination continues from the end of the previous results that returned the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snapshot-info-module-parameter-next-token-id"><span class="std std-ref"><span class="pre">next_token_id</span></span></a></strong></code> value.</p>
+<p>This parameter is mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snapshot-info-module-parameter-snapshot-ids"><span class="std std-ref"><span class="pre">snapshot_ids</span></span></a></strong></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -380,7 +380,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snap
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <ul class="simple">
-<li><p>By default, the module will return all snapshots, including public ones. To limit results to snapshots owned by the account use the filter ‘owner-id’.</p></li>
+<li><p>By default, the module will return all snapshots, including public ones. To limit results to snapshots owned by the account use the filter <code class="ansible-value docutils literal notranslate"><span class="pre">owner-id</span></code>.</p></li>
 <li><p><strong>Caution:</strong> For modules, environment variables and configuration files are read from the Ansible ‘host’ context and not the ‘controller’ context. As such, files may need to be explicitly copied to the ‘host’. For lookup and connection plugins, environment variables and configuration files are read from the Ansible ‘controller’ context and not the ‘host’ context.</p></li>
 <li><p>The AWS SDK (boto3) that Ansible uses may also read defaults for credentials and other settings, such as the region, from its configuration files in the Ansible ‘host’ context (typically <code class="docutils literal notranslate"><span class="pre">~/.aws/credentials</span></code>). See <a class="reference external" href="https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html">https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html</a> for more information.</p></li>
 </ul>
@@ -441,7 +441,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snap
 </div></td>
 <td><div class="ansible-option-cell"><p>Contains the value returned from a previous paginated request where <code class="docutils literal notranslate"><span class="pre">max_results</span></code> was used and the results exceeded the value of that parameter.</p>
 <p>This value is null when there are no more results to return.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when option <code class="docutils literal notranslate"><span class="pre">max_results</span></code> is set in input</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when option <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snapshot-info-module-parameter-max-results"><span class="std std-ref"><span class="pre">max_results</span></span></a></strong></code> is set in input</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">

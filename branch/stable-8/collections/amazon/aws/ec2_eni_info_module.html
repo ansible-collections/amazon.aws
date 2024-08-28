@@ -250,7 +250,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-
 <p><em class="ansible-option-versionadded">added in amazon.aws 1.3.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The ID of the ENI.</p>
-<p>This option is mutually exclusive of <em>filters</em>.</p>
+<p>This option is mutually exclusive of <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-info-module-parameter-filters"><span class="std std-ref"><span class="pre">filters</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -258,7 +258,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-
 <a class="ansibleOptionLink" href="#parameter-filters" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A dict of filters to apply. Each dict item consists of a filter key and a filter value. See <a class="reference external" href="https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeNetworkInterfaces.html">https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeNetworkInterfaces.html</a> for possible filters.</p>
-<p>This option is mutually exclusive of <em>eni_id</em>.</p>
+<p>This option is mutually exclusive of <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-info-module-parameter-eni-id"><span class="std std-ref"><span class="pre">eni_id</span></span></a></strong></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">{}</span></code></p>
 </div></td>
 </tr>
@@ -431,7 +431,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-
 <div class="ansibleOptionAnchor" id="return-network_interfaces/id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eni-info-module-return-network-interfaces-id"><strong>id</strong></p>
 <a class="ansibleOptionLink" href="#return-network_interfaces/id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The id of the ENI (alias for network_interface_id).</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The id of the ENI (alias for <code class="ansible-return-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eni-info-module-return-network-interfaces-network-interface-id"><span class="std std-ref"><span class="pre">network_interfaces.network_interface_id</span></span></a></code>).</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;eni-392fsdf&quot;</span></code></p>
 </div></td>

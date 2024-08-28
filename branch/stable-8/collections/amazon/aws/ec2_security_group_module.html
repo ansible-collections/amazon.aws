@@ -236,7 +236,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <a class="ansibleOptionLink" href="#parameter-description" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Description of the security group.</p>
-<p>Required when <em>state</em> is <code class="docutils literal notranslate"><span class="pre">present</span></code>.</p>
+<p>Required when <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-state"><span class="std std-ref"><span class="pre">state</span></span></a></strong></code> is <code class="ansible-value docutils literal notranslate"><span class="pre">present</span></code>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -258,7 +258,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <a class="ansibleOptionLink" href="#parameter-group_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Id of group to delete (works only with absent).</p>
-<p>One of and only one of <em>name</em> or <em>group_id</em> is required.</p>
+<p>One of and only one of <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-name"><span class="std std-ref"><span class="pre">name</span></span></a></strong></code> or <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-group-id"><span class="std std-ref"><span class="pre">group_id</span></span></a></strong></code> is required.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -266,8 +266,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <a class="ansibleOptionLink" href="#parameter-name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Name of the security group.</p>
-<p>One of and only one of <em>name</em> or <em>group_id</em> is required.</p>
-<p>Required if <em>state=present</em>.</p>
+<p>One of and only one of <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-name"><span class="std std-ref"><span class="pre">name</span></span></a></strong></code> or <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-group-id"><span class="std std-ref"><span class="pre">group_id</span></span></a></strong></code> is required.</p>
+<p>Required if <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -341,7 +341,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <div class="ansibleOptionAnchor" id="parameter-rules"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules"><strong>rules</strong></p>
 <a class="ansibleOptionLink" href="#parameter-rules" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>List of firewall inbound rules to enforce in this group (see example). If none are supplied, no inbound rules will be enabled. Rules list may include its own name in <em>group_name</em>. This allows idempotent loopback additions (e.g. allow group to access itself).</p>
+<td><div class="ansible-option-cell"><p>List of firewall inbound rules to enforce in this group (see example). If none are supplied, no inbound rules will be enabled. Rules list may include its own name in <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-group-name"><span class="std std-ref"><span class="pre">rules.group_name</span></span></a></strong></code>. This allows idempotent loopback additions (e.g. allow group to access itself).</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -349,8 +349,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <a class="ansibleOptionLink" href="#parameter-rules/cidr_ip" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=any</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The IPv4 CIDR range traffic is coming from.</p>
-<p>You can specify only one of <em>cidr_ip</em>, <em>cidr_ipv6</em>, <em>ip_prefix</em>, <em>group_id</em> and <em>group_name</em>.</p>
-<p>Support for passing nested lists of strings to <em>cidr_ip</em> has been deprecated and will be removed in a release after 2024-12-01.</p>
+<p>You can specify only one of <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-cidr-ip"><span class="std std-ref"><span class="pre">rules.cidr_ip</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-cidr-ipv6"><span class="std std-ref"><span class="pre">rules.cidr_ipv6</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-ip-prefix"><span class="std std-ref"><span class="pre">rules.ip_prefix</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-group-id"><span class="std std-ref"><span class="pre">rules.group_id</span></span></a></strong></code> and <em>group_name</em>.</p>
+<p>Support for passing nested lists of strings to <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-cidr-ip"><span class="std std-ref"><span class="pre">rules.cidr_ip</span></span></a></strong></code> has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -358,8 +358,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <a class="ansibleOptionLink" href="#parameter-rules/cidr_ipv6" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=any</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The IPv6 CIDR range traffic is coming from.</p>
-<p>You can specify only one of <em>cidr_ip</em>, <em>cidr_ipv6</em>, <em>ip_prefix</em>, <em>group_id</em> and <em>group_name</em>.</p>
-<p>Support for passing nested lists of strings to <em>cidr_ipv6</em> has been deprecated and will be removed in a release after 2024-12-01.</p>
+<p>You can specify only one of <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-cidr-ip"><span class="std std-ref"><span class="pre">rules.cidr_ip</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-cidr-ipv6"><span class="std std-ref"><span class="pre">rules.cidr_ipv6</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-ip-prefix"><span class="std std-ref"><span class="pre">rules.ip_prefix</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-group-id"><span class="std std-ref"><span class="pre">rules.group_id</span></span></a></strong></code> and <em>rules.group_name</em>.</p>
+<p>Support for passing nested lists of strings to <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-cidr-ipv6"><span class="std std-ref"><span class="pre">rules.cidr_ipv6</span></span></a></strong></code> has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -367,16 +367,16 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <a class="ansibleOptionLink" href="#parameter-rules/from_port" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The start of the range of ports that traffic is going to.</p>
-<p>A value can be between <code class="docutils literal notranslate"><span class="pre">0</span></code> to <code class="docutils literal notranslate"><span class="pre">65535</span></code>.</p>
-<p>When <em>proto=icmp</em> a value of <code class="docutils literal notranslate"><span class="pre">-1</span></code> indicates all ports.</p>
-<p>Mutually exclusive with <em>icmp_code</em>, <em>icmp_type</em> and <em>ports</em>.</p>
+<p>A value can be between <code class="ansible-value docutils literal notranslate"><span class="pre">0</span></code> to <code class="ansible-value docutils literal notranslate"><span class="pre">65535</span></code>.</p>
+<p>When <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-proto"><span class="std std-ref"><span class="pre">rules.proto=icmp</span></span></a></code> a value of <code class="ansible-value docutils literal notranslate"><span class="pre">-1</span></code> indicates all ports.</p>
+<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-icmp-code"><span class="std std-ref"><span class="pre">rules.icmp_code</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-icmp-type"><span class="std std-ref"><span class="pre">rules.icmp_type</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-ports"><span class="std std-ref"><span class="pre">rules.ports</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-rules/group_desc"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-group-desc"><strong>group_desc</strong></p>
 <a class="ansibleOptionLink" href="#parameter-rules/group_desc" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>If the <em>group_name</em> is set and the Security Group doesn’t exist a new Security Group will be created with <em>group_desc</em> as the description.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>If the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-group-name"><span class="std std-ref"><span class="pre">rules.group_name</span></span></a></strong></code> is set and the Security Group doesn’t exist a new Security Group will be created with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-group-desc"><span class="std std-ref"><span class="pre">rules.group_desc</span></span></a></strong></code> as the description.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -384,7 +384,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <a class="ansibleOptionLink" href="#parameter-rules/group_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ID of the Security Group that traffic is coming from.</p>
-<p>You can specify only one of <em>cidr_ip</em>, <em>cidr_ipv6</em>, <em>ip_prefix</em>, <em>group_id</em> and <em>group_name</em>.</p>
+<p>You can specify only one of <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-cidr-ip"><span class="std std-ref"><span class="pre">rules.cidr_ip</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-cidr-ipv6"><span class="std std-ref"><span class="pre">rules.cidr_ipv6</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-ip-prefix"><span class="std std-ref"><span class="pre">rules.ip_prefix</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-group-id"><span class="std std-ref"><span class="pre">rules.group_id</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-group-name"><span class="std std-ref"><span class="pre">rules.group_name</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -392,9 +392,9 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <a class="ansibleOptionLink" href="#parameter-rules/group_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Name of the Security Group that traffic is coming from.</p>
-<p>If the Security Group doesn’t exist a new Security Group will be created with <em>group_desc</em> as the description.</p>
-<p><em>group_name</em> can accept values of type str and list.</p>
-<p>You can specify only one of <em>cidr_ip</em>, <em>cidr_ipv6</em>, <em>ip_prefix</em>, <em>group_id</em> and <em>group_name</em>.</p>
+<p>If the Security Group doesn’t exist a new Security Group will be created with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-group-desc"><span class="std std-ref"><span class="pre">rules.group_desc</span></span></a></strong></code> as the description.</p>
+<p><code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-group-name"><span class="std std-ref"><span class="pre">rules.group_name</span></span></a></strong></code> can accept values of type str and list.</p>
+<p>You can specify only one of <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-cidr-ip"><span class="std std-ref"><span class="pre">rules.cidr_ip</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-cidr-ipv6"><span class="std std-ref"><span class="pre">rules.cidr_ipv6</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-ip-prefix"><span class="std std-ref"><span class="pre">rules.ip_prefix</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-group-id"><span class="std std-ref"><span class="pre">rules.group_id</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-group-name"><span class="std std-ref"><span class="pre">rules.group_name</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -403,9 +403,9 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <p><em class="ansible-option-versionadded">added in amazon.aws 3.3.0</em></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ICMP code of the packet.</p>
-<p>A value of <code class="docutils literal notranslate"><span class="pre">-1</span></code> indicates all ICMP codes.</p>
-<p>Requires <em>proto=icmp</em> or <em>proto=icmpv6</em>.</p>
-<p>Mutually exclusive with <em>ports</em>, <em>from_port</em> and <em>to_port</em>.</p>
+<p>A value of <code class="ansible-value docutils literal notranslate"><span class="pre">-1</span></code> indicates all ICMP codes.</p>
+<p>Requires <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-proto"><span class="std std-ref"><span class="pre">rules.proto=icmp</span></span></a></code> or <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-proto"><span class="std std-ref"><span class="pre">rules.proto=icmpv6</span></span></a></code>.</p>
+<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-ports"><span class="std std-ref"><span class="pre">rules.ports</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-from-port"><span class="std std-ref"><span class="pre">rules.from_port</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-to-port"><span class="std std-ref"><span class="pre">rules.to_port</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -414,9 +414,9 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <p><em class="ansible-option-versionadded">added in amazon.aws 3.3.0</em></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ICMP type of the packet.</p>
-<p>A value of <code class="docutils literal notranslate"><span class="pre">-1</span></code> indicates all ICMP types.</p>
-<p>Requires <em>proto=icmp</em> or <em>proto=icmpv6</em>.</p>
-<p>Mutually exclusive with <em>ports</em>, <em>from_port</em> and <em>to_port</em>.</p>
+<p>A value of <code class="ansible-value docutils literal notranslate"><span class="pre">-1</span></code> indicates all ICMP types.</p>
+<p>Requires <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-proto"><span class="std std-ref"><span class="pre">rules.proto=icmp</span></span></a></code> or <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-proto"><span class="std std-ref"><span class="pre">rules.proto=icmpv6</span></span></a></code>.</p>
+<p>Mutually exclusive withot <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-ports"><span class="std std-ref"><span class="pre">rules.ports</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-from-port"><span class="std std-ref"><span class="pre">rules.from_port</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-to-port"><span class="std std-ref"><span class="pre">rules.to_port</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -424,7 +424,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <a class="ansibleOptionLink" href="#parameter-rules/ip_prefix" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The IP Prefix <a class="reference external" href="https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-prefix-lists.html">https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-prefix-lists.html</a> that traffic is coming from.</p>
-<p>You can specify only one of <em>cidr_ip</em>, <em>cidr_ipv6</em>, <em>ip_prefix</em>, <em>group_id</em> and <em>group_name</em>.</p>
+<p>You can specify only one of <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-cidr-ip"><span class="std std-ref"><span class="pre">rules.cidr_ip</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-cidr-ipv6"><span class="std std-ref"><span class="pre">rules.cidr_ipv6</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-ip-prefix"><span class="std std-ref"><span class="pre">rules.ip_prefix</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-group-id"><span class="std std-ref"><span class="pre">rules.group_id</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-group-name"><span class="std std-ref"><span class="pre">rules.group_name</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -432,15 +432,15 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <a class="ansibleOptionLink" href="#parameter-rules/ports" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A list of ports that traffic is going to.</p>
-<p>Elements of the list can be a single port (for example <code class="docutils literal notranslate"><span class="pre">8080</span></code>), or a range of ports specified as <code class="docutils literal notranslate"><span class="pre">&lt;START&gt;-&lt;END&gt;</span></code>, (for example <code class="docutils literal notranslate"><span class="pre">1011-1023</span></code>).</p>
-<p>Mutually exclusive with <em>icmp_code</em>, <em>icmp_type</em>, <em>from_port</em> and <em>to_port</em>.</p>
+<p>Elements of the list can be a single port (for example <code class="ansible-value docutils literal notranslate"><span class="pre">8080</span></code>), or a range of ports specified as <code class="ansible-value docutils literal notranslate"><span class="pre">&lt;START&gt;-&lt;END&gt;</span></code>, (for example <code class="ansible-value docutils literal notranslate"><span class="pre">1011-1023</span></code>).</p>
+<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-icmp-code"><span class="std std-ref"><span class="pre">rules.icmp_code</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-icmp-type"><span class="std std-ref"><span class="pre">rules.icmp_type</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-from-port"><span class="std std-ref"><span class="pre">rules.from_port</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-to-port"><span class="std std-ref"><span class="pre">rules.to_port</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-rules/proto"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-proto"><strong>proto</strong></p>
 <a class="ansibleOptionLink" href="#parameter-rules/proto" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The IP protocol name (<code class="docutils literal notranslate"><span class="pre">tcp</span></code>, <code class="docutils literal notranslate"><span class="pre">udp</span></code>, <code class="docutils literal notranslate"><span class="pre">icmp</span></code>, <code class="docutils literal notranslate"><span class="pre">icmpv6</span></code>) or number (<a class="reference external" href="https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers">https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers</a>).</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The IP protocol name (<code class="ansible-value docutils literal notranslate"><span class="pre">tcp</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">udp</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">icmp</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">icmpv6</span></code>) or number (<a class="reference external" href="https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers">https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers</a>).</p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;tcp&quot;</span></code></p>
 </div></td>
 </tr>
@@ -456,9 +456,9 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <a class="ansibleOptionLink" href="#parameter-rules/to_port" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The end of the range of ports that traffic is going to.</p>
-<p>A value can be between <code class="docutils literal notranslate"><span class="pre">0</span></code> to <code class="docutils literal notranslate"><span class="pre">65535</span></code>.</p>
-<p>When <em>proto=icmp</em> a value of <code class="docutils literal notranslate"><span class="pre">-1</span></code> indicates all ports.</p>
-<p>Mutually exclusive with <em>icmp_code</em>, <em>icmp_type</em> and <em>ports</em>.</p>
+<p>A value can be between <code class="ansible-value docutils literal notranslate"><span class="pre">0</span></code> to <code class="ansible-value docutils literal notranslate"><span class="pre">65535</span></code>.</p>
+<p>When <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-proto"><span class="std std-ref"><span class="pre">rules.proto=icmp</span></span></a></code> a value of <code class="ansible-value docutils literal notranslate"><span class="pre">-1</span></code> indicates all ports.</p>
+<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-icmp-code"><span class="std std-ref"><span class="pre">rules.icmp_code</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-icmp-type"><span class="std std-ref"><span class="pre">rules.icmp_type</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-ports"><span class="std std-ref"><span class="pre">rules.ports</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -476,8 +476,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <a class="ansibleOptionLink" href="#parameter-rules_egress/cidr_ip" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=any</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The IPv4 CIDR range traffic is going to.</p>
-<p>You can specify only one of <em>cidr_ip</em>, <em>cidr_ipv6</em>, <em>ip_prefix</em>, <em>group_id</em> and <em>group_name</em>.</p>
-<p>Support for passing nested lists of strings to <em>cidr_ip</em> has been deprecated and will be removed in a release after 2024-12-01.</p>
+<p>You can specify only one of <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-cidr-ip"><span class="std std-ref"><span class="pre">rules_egress.cidr_ip</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-cidr-ipv6"><span class="std std-ref"><span class="pre">rules_egress.cidr_ipv6</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-ip-prefix"><span class="std std-ref"><span class="pre">rules_egress.ip_prefix</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-group-id"><span class="std std-ref"><span class="pre">rules_egress.group_id</span></span></a></strong></code> and <em>rules_egress.group_name</em>.</p>
+<p>Support for passing nested lists of strings to <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-cidr-ip"><span class="std std-ref"><span class="pre">rules_egress.cidr_ip</span></span></a></strong></code> has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -486,8 +486,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <a class="ansibleOptionLink" href="#parameter-rules_egress/cidr_ipv6" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=any</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The IPv6 CIDR range traffic is going to.</p>
-<p>You can specify only one of <em>cidr_ip</em>, <em>cidr_ipv6</em>, <em>ip_prefix</em>, <em>group_id</em> and <em>group_name</em>.</p>
-<p>Support for passing nested lists of strings to <em>cidr_ipv6</em> has been deprecated and will be removed in a release after 2024-12-01.</p>
+<p>You can specify only one of <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-cidr-ip"><span class="std std-ref"><span class="pre">rules_egress.cidr_ip</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-cidr-ipv6"><span class="std std-ref"><span class="pre">rules_egress.cidr_ipv6</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-ip-prefix"><span class="std std-ref"><span class="pre">rules_egress.ip_prefix</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-group-id"><span class="std std-ref"><span class="pre">rules_egress.group_id</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-group-name"><span class="std std-ref"><span class="pre">rules_egress.group_name</span></span></a></strong></code>.</p>
+<p>Support for passing nested lists of strings to <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-cidr-ipv6"><span class="std std-ref"><span class="pre">rules_egress.cidr_ipv6</span></span></a></strong></code> has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -496,9 +496,9 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <a class="ansibleOptionLink" href="#parameter-rules_egress/from_port" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The start of the range of ports that traffic is going to.</p>
-<p>A value can be between <code class="docutils literal notranslate"><span class="pre">0</span></code> to <code class="docutils literal notranslate"><span class="pre">65535</span></code>.</p>
-<p>When <em>proto=icmp</em> a value of <code class="docutils literal notranslate"><span class="pre">-1</span></code> indicates all ports.</p>
-<p>Mutually exclusive with <em>icmp_code</em>, <em>icmp_type</em> and <em>ports</em>.</p>
+<p>A value can be between <code class="ansible-value docutils literal notranslate"><span class="pre">0</span></code> to <code class="ansible-value docutils literal notranslate"><span class="pre">65535</span></code>.</p>
+<p>When <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-proto"><span class="std std-ref"><span class="pre">rules_egress.proto=icmp</span></span></a></code> a value of <code class="ansible-value docutils literal notranslate"><span class="pre">-1</span></code> indicates all ports.</p>
+<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-icmp-code"><span class="std std-ref"><span class="pre">rules_egress.icmp_code</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-icmp-type"><span class="std std-ref"><span class="pre">rules_egress.icmp_type</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-ports"><span class="std std-ref"><span class="pre">rules_egress.ports</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -506,7 +506,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <div class="ansibleOptionAnchor" id="parameter-egress_rules/group_desc"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-group-desc"><span id="ansible-collections-amazon-aws-ec2-security-group-module-parameter-egress-rules-group-desc"></span><strong>group_desc</strong></p>
 <a class="ansibleOptionLink" href="#parameter-rules_egress/group_desc" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>If the <em>group_name</em> is set and the Security Group doesn’t exist a new Security Group will be created with <em>group_desc</em> as the description.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>If the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-group-name"><span class="std std-ref"><span class="pre">rules_egress.group_name</span></span></a></strong></code> is set and the Security Group doesn’t exist a new Security Group will be created with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-group-desc"><span class="std std-ref"><span class="pre">rules_egress.group_desc</span></span></a></strong></code> as the description.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -515,7 +515,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <a class="ansibleOptionLink" href="#parameter-rules_egress/group_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ID of the Security Group that traffic is going to.</p>
-<p>You can specify only one of <em>cidr_ip</em>, <em>cidr_ipv6</em>, <em>ip_prefix</em>, <em>group_id</em> and <em>group_name</em>.</p>
+<p>You can specify only one of <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-cidr-ip"><span class="std std-ref"><span class="pre">rules_egress.cidr_ip</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-cidr-ipv6"><span class="std std-ref"><span class="pre">rules_egress.cidr_ipv6</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-ip-prefix"><span class="std std-ref"><span class="pre">rules_egress.ip_prefix</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-group-id"><span class="std std-ref"><span class="pre">rules_egress.group_id</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-group-name"><span class="std std-ref"><span class="pre">rules_egress.group_name</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -524,8 +524,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <a class="ansibleOptionLink" href="#parameter-rules_egress/group_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Name of the Security Group that traffic is going to.</p>
-<p>If the Security Group doesn’t exist a new Security Group will be created with <em>group_desc</em> as the description.</p>
-<p>You can specify only one of <em>cidr_ip</em>, <em>cidr_ipv6</em>, <em>ip_prefix</em>, <em>group_id</em> and <em>group_name</em>.</p>
+<p>If the Security Group doesn’t exist a new Security Group will be created with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-group-desc"><span class="std std-ref"><span class="pre">rules_egress.group_desc</span></span></a></strong></code> as the description.</p>
+<p>You can specify only one of <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-cidr-ip"><span class="std std-ref"><span class="pre">rules_egress.cidr_ip</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-cidr-ipv6"><span class="std std-ref"><span class="pre">rules_egress.cidr_ipv6</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-ip-prefix"><span class="std std-ref"><span class="pre">rules_egress.ip_prefix</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-group-id"><span class="std std-ref"><span class="pre">rules_egress.group_id</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-group-name"><span class="std std-ref"><span class="pre">rules_egress.group_name</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -535,9 +535,9 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <p><em class="ansible-option-versionadded">added in amazon.aws 3.3.0</em></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ICMP code of the packet.</p>
-<p>A value of <code class="docutils literal notranslate"><span class="pre">-1</span></code> indicates all ICMP codes.</p>
-<p>Requires <em>proto=icmp</em> or <em>proto=icmpv6</em>.</p>
-<p>Mutually exclusive with <em>ports</em>, <em>from_port</em> and <em>to_port</em>.</p>
+<p>A value of <code class="ansible-value docutils literal notranslate"><span class="pre">-1</span></code> indicates all ICMP codes.</p>
+<p>Requires <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-proto"><span class="std std-ref"><span class="pre">rules_egress.proto=icmp</span></span></a></code> or <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-proto"><span class="std std-ref"><span class="pre">rules_egress.proto=icmpv6</span></span></a></code>.</p>
+<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-ports"><span class="std std-ref"><span class="pre">rules_egress.ports</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-from-port"><span class="std std-ref"><span class="pre">rules_egress.from_port</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-to-port"><span class="std std-ref"><span class="pre">rules_egress.to_port</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -547,9 +547,9 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <p><em class="ansible-option-versionadded">added in amazon.aws 3.3.0</em></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ICMP type of the packet.</p>
-<p>A value of <code class="docutils literal notranslate"><span class="pre">-1</span></code> indicates all ICMP types.</p>
-<p>Requires <em>proto=icmp</em> or <em>proto=icmpv6</em>.</p>
-<p>Mutually exclusive with <em>ports</em>, <em>from_port</em> and <em>to_port</em>.</p>
+<p>A value of CV(-1) indicates all ICMP types.</p>
+<p>Requires <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-proto"><span class="std std-ref"><span class="pre">rules_egress.proto=icmp</span></span></a></code> or <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-proto"><span class="std std-ref"><span class="pre">rules_egress.proto=icmpv6</span></span></a></code>.</p>
+<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-ports"><span class="std std-ref"><span class="pre">rules_egress.ports</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-from-port"><span class="std std-ref"><span class="pre">rules_egress.from_port</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-to-port"><span class="std std-ref"><span class="pre">rules_egress.to_port</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -558,7 +558,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <a class="ansibleOptionLink" href="#parameter-rules_egress/ip_prefix" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The IP Prefix <a class="reference external" href="https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-prefix-lists.html">https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-prefix-lists.html</a> that traffic is going to.</p>
-<p>You can specify only one of <em>cidr_ip</em>, <em>cidr_ipv6</em>, <em>ip_prefix</em>, <em>group_id</em> and <em>group_name</em>.</p>
+<p>You can specify only one of <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-cidr-ip"><span class="std std-ref"><span class="pre">rules_egress.cidr_ip</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-cidr-ipv6"><span class="std std-ref"><span class="pre">rules_egress.cidr_ipv6</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-ip-prefix"><span class="std std-ref"><span class="pre">rules_egress.ip_prefix</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-group-id"><span class="std std-ref"><span class="pre">rules_egress.group_id</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-group-name"><span class="std std-ref"><span class="pre">rules_egress.group_name</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -567,8 +567,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <a class="ansibleOptionLink" href="#parameter-rules_egress/ports" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A list of ports that traffic is going to.</p>
-<p>Elements of the list can be a single port (for example <code class="docutils literal notranslate"><span class="pre">8080</span></code>), or a range of ports specified as <code class="docutils literal notranslate"><span class="pre">&lt;START&gt;-&lt;END&gt;</span></code>, (for example <code class="docutils literal notranslate"><span class="pre">1011-1023</span></code>).</p>
-<p>Mutually exclusive with <em>icmp_code</em>, <em>icmp_type</em>, <em>from_port</em> and <em>to_port</em>.</p>
+<p>Elements of the list can be a single port (for example <code class="ansible-value docutils literal notranslate"><span class="pre">8080</span></code>), or a range of ports specified as <code class="ansible-value docutils literal notranslate"><span class="pre">&lt;START&gt;-&lt;END&gt;</span></code>, (for example <code class="ansible-value docutils literal notranslate"><span class="pre">1011-1023</span></code>).</p>
+<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-icmp-code"><span class="std std-ref"><span class="pre">rules_egress.icmp_code</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-icmp-type"><span class="std std-ref"><span class="pre">rules_egress.icmp_type</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-from-port"><span class="std std-ref"><span class="pre">rules_egress.from_port</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-to-port"><span class="std std-ref"><span class="pre">rules_egress.to_port</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -576,7 +576,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <div class="ansibleOptionAnchor" id="parameter-egress_rules/proto"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-proto"><span id="ansible-collections-amazon-aws-ec2-security-group-module-parameter-egress-rules-proto"></span><strong>proto</strong></p>
 <a class="ansibleOptionLink" href="#parameter-rules_egress/proto" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The IP protocol name (<code class="docutils literal notranslate"><span class="pre">tcp</span></code>, <code class="docutils literal notranslate"><span class="pre">udp</span></code>, <code class="docutils literal notranslate"><span class="pre">icmp</span></code>, <code class="docutils literal notranslate"><span class="pre">icmpv6</span></code>) or number (<a class="reference external" href="https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers">https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers</a>).</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The IP protocol name (<code class="ansible-value docutils literal notranslate"><span class="pre">tcp</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">udp</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">icmp</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">icmpv6</span></code>) or number (<a class="reference external" href="https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers">https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers</a>).</p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;tcp&quot;</span></code></p>
 </div></td>
 </tr>
@@ -595,8 +595,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The end of the range of ports that traffic is going to.</p>
 <p>A value can be between <code class="docutils literal notranslate"><span class="pre">0</span></code> to <code class="docutils literal notranslate"><span class="pre">65535</span></code>.</p>
-<p>When <em>proto=icmp</em> a value of <code class="docutils literal notranslate"><span class="pre">-1</span></code> indicates all ports.</p>
-<p>Mutually exclusive with <em>icmp_code</em>, <em>icmp_type</em> and <em>ports</em>.</p>
+<p>When <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-proto"><span class="std std-ref"><span class="pre">rules_egress.proto=icmp</span></span></a></code> a value of <code class="ansible-value docutils literal notranslate"><span class="pre">-1</span></code> indicates all ports.</p>
+<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-icmp-code"><span class="std std-ref"><span class="pre">rules_egress.icmp_code</span></span></a></strong></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-icmp-type"><span class="std std-ref"><span class="pre">rules_egress.icmp_type</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-security-group-module-parameter-rules-egress-ports"><span class="std std-ref"><span class="pre">rules_egress.ports</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -685,7 +685,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <p class="admonition-title">Note</p>
 <ul class="simple">
 <li><p>If a rule declares a group_name and that group doesn’t exist, it will be automatically created. In that case, group_desc should be provided as well. The module will refuse to create a depended-on group without a description.</p></li>
-<li><p>Prior to release 5.0.0 this module was called <code class="docutils literal notranslate"><span class="pre">amazon.aws.ec2_group_info</span></code>. The usage did not change.</p></li>
+<li><p>Prior to release 5.0.0 this module was called <a class="reference internal" href="ec2_group_info_module.html#ansible-collections-amazon-aws-ec2-group-info-module"><span class="std std-ref">amazon.aws.ec2_group_info</span></a>. The usage did not change.</p></li>
 <li><p><strong>Caution:</strong> For modules, environment variables and configuration files are read from the Ansible ‘host’ context and not the ‘controller’ context. As such, files may need to be explicitly copied to the ‘host’. For lookup and connection plugins, environment variables and configuration files are read from the Ansible ‘controller’ context and not the ‘host’ context.</p></li>
 <li><p>The AWS SDK (boto3) that Ansible uses may also read defaults for credentials and other settings, such as the region, from its configuration files in the Ansible ‘host’ context (typically <code class="docutils literal notranslate"><span class="pre">~/.aws/credentials</span></code>). See <a class="reference external" href="https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html">https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html</a> for more information.</p></li>
 </ul>
@@ -835,7 +835,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <div class="ansibleOptionAnchor" id="return-description"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-security-group-module-return-description"><strong>description</strong></p>
 <a class="ansibleOptionLink" href="#return-description" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Description of security group</p>
+<td><div class="ansible-option-cell"><p>Description of security group.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> on create/update</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;My</span> <span class="pre">Security</span> <span class="pre">Group&quot;</span></code></p>
 </div></td>
@@ -844,7 +844,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <div class="ansibleOptionAnchor" id="return-group_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-security-group-module-return-group-id"><strong>group_id</strong></p>
 <a class="ansibleOptionLink" href="#return-group_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Security group id</p>
+<td><div class="ansible-option-cell"><p>Security group id.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> on create/update</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;sg-abcd1234&quot;</span></code></p>
 </div></td>
@@ -853,7 +853,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <div class="ansibleOptionAnchor" id="return-group_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-security-group-module-return-group-name"><strong>group_name</strong></p>
 <a class="ansibleOptionLink" href="#return-group_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Security group name</p>
+<td><div class="ansible-option-cell"><p>Security group name.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> on create/update</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;My</span> <span class="pre">Security</span> <span class="pre">Group&quot;</span></code></p>
 </div></td>
@@ -1056,7 +1056,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <div class="ansibleOptionAnchor" id="return-owner_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-security-group-module-return-owner-id"><strong>owner_id</strong></p>
 <a class="ansibleOptionLink" href="#return-owner_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>AWS Account ID of the security group</p>
+<td><div class="ansible-option-cell"><p>AWS Account ID of the security group.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> on create/update</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">123456789012</span></code></p>
 </div></td>
@@ -1065,7 +1065,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <div class="ansibleOptionAnchor" id="return-tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-security-group-module-return-tags"><strong>tags</strong></p>
 <a class="ansibleOptionLink" href="#return-tags" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Tags associated with the security group</p>
+<td><div class="ansible-option-cell"><p>Tags associated with the security group.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> on create/update</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;Name&quot;:</span> <span class="pre">&quot;My</span> <span class="pre">Security</span> <span class="pre">Group&quot;,</span> <span class="pre">&quot;Purpose&quot;:</span> <span class="pre">&quot;protecting</span> <span class="pre">stuff&quot;}</span></code></p>
 </div></td>
@@ -1074,7 +1074,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <div class="ansibleOptionAnchor" id="return-vpc_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-security-group-module-return-vpc-id"><strong>vpc_id</strong></p>
 <a class="ansibleOptionLink" href="#return-vpc_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>ID of VPC to which the security group belongs</p>
+<td><div class="ansible-option-cell"><p>ID of VPC to which the security group belongs.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> on create/update</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;vpc-abcd1234&quot;</span></code></p>
 </div></td>

@@ -263,7 +263,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-tag-
 <a class="ansibleOptionLink" href="#parameter-purge_tags" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Whether unspecified tags should be removed from the resource.</p>
-<p>Note that when combined with <em>state=absent</em>, specified tags with non-matching values are not purged.</p>
+<p>Note that when combined with <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-tag-module-parameter-state"><span class="std std-ref"><span class="pre">state=absent</span></span></a></code>, specified tags with non-matching values are not purged.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -333,7 +333,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-tag-
 <a class="ansibleOptionLink" href="#parameter-state" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Whether the tags should be present or absent on the resource.</p>
-<p>The use of <em>state=list</em> to interrogate the tags of an instance was deprecated in release 1.0.0 and is no longer available in release 4.0.0. The ‘list’ functionality has been moved to a dedicated module <a class="reference internal" href="ec2_tag_info_module.html#ansible-collections-amazon-aws-ec2-tag-info-module"><span class="std std-ref">amazon.aws.ec2_tag_info</span></a>.</p>
+<p>The use of <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-tag-module-parameter-state"><span class="std std-ref"><span class="pre">state=list</span></span></a></code> to interrogate the tags of an instance was deprecated in release 1.0.0 and is no longer available in release 4.0.0. The ‘list’ functionality has been moved to a dedicated module <a class="reference internal" href="ec2_tag_info_module.html#ansible-collections-amazon-aws-ec2-tag-info-module"><span class="std std-ref">amazon.aws.ec2_tag_info</span></a>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">&quot;present&quot;</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -346,7 +346,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-tag-
 <a class="ansibleOptionLink" href="#parameter-tags" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span> / <span class="ansible-option-required">required</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A dictionary of tags to add or remove from the resource.</p>
-<p>If the value provided for a key is not set and <em>state=absent</em>, the tag will be removed regardless of its current value.</p>
+<p>If the value provided for a key is not set and <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-tag-module-parameter-state"><span class="std std-ref"><span class="pre">state=absent</span></span></a></code>, the tag will be removed regardless of its current value.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -437,7 +437,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-tag-
 <div class="ansibleOptionAnchor" id="return-added_tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-tag-module-return-added-tags"><strong>added_tags</strong></p>
 <a class="ansibleOptionLink" href="#return-added_tags" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>A dict of tags that were added to the resource</p>
+<td><div class="ansible-option-cell"><p>A dict of tags that were added to the resource.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> If tags were added</p>
 </div></td>
 </tr>
@@ -445,7 +445,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-tag-
 <div class="ansibleOptionAnchor" id="return-removed_tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-tag-module-return-removed-tags"><strong>removed_tags</strong></p>
 <a class="ansibleOptionLink" href="#return-removed_tags" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>A dict of tags that were removed from the resource</p>
+<td><div class="ansible-option-cell"><p>A dict of tags that were removed from the resource.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> If tags were removed</p>
 </div></td>
 </tr>
@@ -453,7 +453,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-tag-
 <div class="ansibleOptionAnchor" id="return-tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-tag-module-return-tags"><strong>tags</strong></p>
 <a class="ansibleOptionLink" href="#return-tags" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>A dict containing the tags on the resource</p>
+<td><div class="ansible-option-cell"><p>A dict containing the tags on the resource.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 </div></td>
 </tr>
