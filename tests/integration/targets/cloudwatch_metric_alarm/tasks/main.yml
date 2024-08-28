@@ -48,9 +48,10 @@
         comparison: LessThanOrEqualToThreshold
         threshold: 5.0
         period: 300
+        datapoints_to_alarm: 2
         evaluation_periods: 3
         unit: Percent
-        description: This will alarm when an instance's cpu usage average is lower than 5% for 15 minutes
+        description: This will alarm when an instance's cpu usage average is lower than 5% for 10 of 15 minutes
       check_mode: true
       register: ec2_instance_metric_alarm_check
 
@@ -80,9 +81,10 @@
         comparison: LessThanOrEqualToThreshold
         threshold: 5.0
         period: 300
+        datapoints_to_alarm: 2
         evaluation_periods: 3
         unit: Percent
-        description: This will alarm when an instance's cpu usage average is lower than 5% for 15 minutes
+        description: This will alarm when an instance's cpu usage average is lower than 5% for 10 of 15 minutes
       register: ec2_instance_metric_alarm
 
     - name: get info on alarms
@@ -104,6 +106,7 @@
           - ec2_instance_metric_alarm.threshold == alarm_info.metric_alarms[0].threshold
           - ec2_instance_metric_alarm.period == alarm_info.metric_alarms[0].period
           - ec2_instance_metric_alarm.unit == alarm_info.metric_alarms[0].unit
+          - ec2_instance_metric_alarm.datapoints_to_alarm == alarm_info.metric_alarms[0].datapoints_to_alarm
           - ec2_instance_metric_alarm.evaluation_periods == alarm_info.metric_alarms[0].evaluation_periods
           - ec2_instance_metric_alarm.description == alarm_info.metric_alarms[0].alarm_description
           - ec2_instance_metric_alarm.treat_missing_data == alarm_info.metric_alarms[0].treat_missing_data
@@ -121,9 +124,10 @@
         comparison: LessThanOrEqualToThreshold
         threshold: 5.0
         period: 300
+        datapoints_to_alarm: 2
         evaluation_periods: 3
         unit: Percent
-        description: This will alarm when an instance's cpu usage average is lower than 5% for 15 minutes
+        description: This will alarm when an instance's cpu usage average is lower than 5% for 10 of 15 minutes
       check_mode: true
       register: ec2_instance_metric_alarm_idempotent_check
 
@@ -152,6 +156,7 @@
         - threshold
         - period
         - unit
+        - datapoints_to_alarm
         - evaluation_periods
         - alarm_description
         - treat_missing_data
@@ -169,26 +174,27 @@
         comparison: LessThanOrEqualToThreshold
         threshold: 5.0
         period: 300
+        datapoints_to_alarm: 2
         evaluation_periods: 3
         unit: Percent
-        description: This will alarm when an instance's cpu usage average is lower than 5% for 15 minutes
+        description: This will alarm when an instance's cpu usage average is lower than 5% for 10 of 15 minutes
       register: ec2_instance_metric_alarm_idempotent
 
     - name: get info on alarms
       amazon.aws.cloudwatch_metric_alarm_info:
         alarm_names:
           - "{{ alarm_full_name }}"
-      register: alarm_info_idempotent_check
+      register: alarm_info_idempotent
 
-    - name: Verify alarm does not register as changed after update in check mode
+    - name: Verify alarm does not register as changed after update in idempotent
       ansible.builtin.assert:
         that:
-          - not ec2_instance_metric_alarm_idempotent_check.changed
+          - not ec2_instance_metric_alarm_idempotent.changed
 
-    - name: Verify alarm did not change after updating in check mode
+    - name: Verify alarm did not change after updating in idempotent
       ansible.builtin.assert:
         that:
-          - alarm_info.metric_alarms[0][item] == alarm_info_idempotent_check.metric_alarms[0][item]
+          - alarm_info.metric_alarms[0][item] == alarm_info_idempotent.metric_alarms[0][item]
       with_items:
         - alarm_arn
         - statistic
@@ -199,6 +205,7 @@
         - threshold
         - period
         - unit
+        - datapoints_to_alarm
         - evaluation_periods
         - alarm_description
         - treat_missing_data
@@ -215,10 +222,11 @@
         comparison: GreaterThanOrEqualToThreshold
         threshold: 5.0
         period: 60
+        datapoints_to_alarm: 2
         evaluation_periods: 3
         evaluate_low_sample_count_percentile: "evaluate"
         unit: Percent
-        description: This will alarm when an instance's cpu usage percentage is greater than or equal to 50% for 3 minutes
+        description: This will alarm when an instance's cpu usage percentage is greater than or equal to 50% for 2 of 3 minutes
       check_mode: true
       register: ec2_instance_metric_alarm_update_check
 
@@ -241,6 +249,7 @@
           - ec2_instance_metric_alarm_update_check.comparison == alarm_info.metric_alarms[0].comparison_operator
           - ec2_instance_metric_alarm_update_check.threshold == alarm_info.metric_alarms[0].threshold
           - ec2_instance_metric_alarm_update_check.unit == alarm_info.metric_alarms[0].unit
+          - ec2_instance_metric_alarm_update_check.datapoints_to_alarm == alarm_info.metric_alarms[0].datapoints_to_alarm
           - ec2_instance_metric_alarm_update_check.evaluation_periods == alarm_info.metric_alarms[0].evaluation_periods
           - ec2_instance_metric_alarm_update_check.treat_missing_data == alarm_info.metric_alarms[0].treat_missing_data
 
@@ -256,6 +265,7 @@
         comparison: GreaterThanOrEqualToThreshold
         threshold: 5.0
         period: 60
+        datapoints_to_alarm: 2
         evaluation_periods: 3
         evaluate_low_sample_count_percentile: "evaluate"
         unit: Percent
@@ -281,6 +291,7 @@
           - ec2_instance_metric_alarm_update.comparison == 'GreaterThanOrEqualToThreshold'
           - ec2_instance_metric_alarm_update.threshold == alarm_info.metric_alarms[0].threshold
           - ec2_instance_metric_alarm_update.unit == alarm_info.metric_alarms[0].unit
+          - ec2_instance_metric_alarm_update.datapoints_to_alarm == alarm_info.metric_alarms[0].datapoints_to_alarm
           - ec2_instance_metric_alarm_update.evaluation_periods == alarm_info.metric_alarms[0].evaluation_periods
           - ec2_instance_metric_alarm_update.treat_missing_data == alarm_info.metric_alarms[0].treat_missing_data
 
@@ -342,8 +353,9 @@
         comparison: LessThanOrEqualToThreshold
         threshold: 5.0
         period: 300
+        datapoints_to_alarm: 2
         evaluation_periods: 3
-        description: This will alarm when an instance's cpu usage average is lower than 5% for 15 minutes
+        description: This will alarm when an instance's cpu usage average is lower than 5% for 10 of 15 minutes
       register: ec2_instance_metric_alarm_no_unit
 
     - name: get info on alarms
@@ -365,6 +377,7 @@
           - ec2_instance_metric_alarm_no_unit.threshold == alarm_info_no_unit.metric_alarms[0].threshold
           - ec2_instance_metric_alarm_no_unit.period == alarm_info_no_unit.metric_alarms[0].period
           - alarm_info_no_unit.metric_alarms[0].Unit is not defined
+          - ec2_instance_metric_alarm_no_unit.datapoints_to_alarm == alarm_info_no_unit.metric_alarms[0].datapoints_to_alarm
           - ec2_instance_metric_alarm_no_unit.evaluation_periods == alarm_info_no_unit.metric_alarms[0].evaluation_periods
           - ec2_instance_metric_alarm_no_unit.description == alarm_info_no_unit.metric_alarms[0].alarm_description
           - ec2_instance_metric_alarm_no_unit.treat_missing_data == alarm_info_no_unit.metric_alarms[0].treat_missing_data
@@ -398,8 +411,9 @@
         treat_missing_data: missing
         comparison: LessThanOrEqualToThreshold
         threshold: 5.0
+        datapoints_to_alarm: 2
         evaluation_periods: 3
-        description: This will alarm when an instance's cpu usage average is lower than 5% for 15 minutes
+        description: This will alarm when an instance's cpu usage average is lower than 5% for 10 of 15 minutes
         metrics:
           - id: cpu
             metric_stat:
@@ -471,8 +485,9 @@
         comparison: LessThanOrEqualToThreshold
         threshold: 5.0
         period: 300
+        datapoints_to_alarm: 2
         evaluation_periods: 3
-        description: This will alarm when an instance's cpu usage average is lower than 5% for 15 minutes
+        description: This will alarm when an instance's cpu usage average is lower than 5% for 10 of 15 minutes
         metrics:
           - id: cpu
             metric_stat:
