@@ -29,7 +29,7 @@ options:
   vpc_endpoint_subnets:
     description:
       - The list of subnets to attach to the endpoint.
-      - Requires I(vpc_endpoint_type=GatewayLoadBalancer) or I(vpc_endpoint_type=Interface).
+      - Requires O(vpc_endpoint_type=GatewayLoadBalancer) or O(vpc_endpoint_type=Interface).
     required: false
     type: list
     elements: str
@@ -37,7 +37,7 @@ options:
   vpc_endpoint_security_groups:
     description:
       - The list of security groups to attach to the endpoint.
-      - Requires I(vpc_endpoint_type=GatewayLoadBalancer) or I(vpc_endpoint_type=Interface).
+      - Requires O(vpc_endpoint_type=GatewayLoadBalancer) or O(vpc_endpoint_type=Interface).
     required: false
     type: list
     elements: str
@@ -59,15 +59,15 @@ options:
     type: json
   state:
     description:
-      - C(present) to ensure resource is created.
-      - C(absent) to remove resource.
+      - V(present) to ensure resource is created.
+      - V(absent) to remove resource.
     required: false
     default: present
     choices: [ "present", "absent" ]
     type: str
   wait:
     description:
-      - When specified, will wait for status to reach C(available) for I(state=present).
+      - When specified, will wait for status to reach available for O(state=present).
       - Unfortunately this is ignored for delete actions due to a difference in
         behaviour from AWS.
     required: false
@@ -75,7 +75,7 @@ options:
     type: bool
   wait_timeout:
     description:
-      - Used in conjunction with I(wait).
+      - Used in conjunction with O(wait).
       - Number of seconds to wait for status.
       - Unfortunately this is ignored for delete actions due to a difference in
         behaviour from AWS.
@@ -87,14 +87,14 @@ options:
       - List of one or more route table IDs to attach to the endpoint.
       - A route is added to the route table with the destination of the
         endpoint if provided.
-      - Route table IDs are only valid for C(Gateway) endpoints.
+      - Route table IDs are only valid for Gateway endpoints.
     required: false
     type: list
     elements: str
   vpc_endpoint_id:
     description:
       - One or more VPC endpoint IDs to remove from the AWS account.
-      - Required if I(state=absent).
+      - Required if O(state=absent).
     required: false
     type: str
   client_token:
@@ -105,9 +105,9 @@ options:
 author:
   - Karen Cheng (@Etherdaemon)
 notes:
-  - Support for I(tags) and I(purge_tags) was added in release 1.5.0.
-  - The C(policy_file) paramater was removed in release 6.0.0 please use the
-    I(policy) option and a file lookup instead.
+  - Support for O(tags) and I(purge_tags) was added in release 1.5.0.
+  - The I(policy_file) paramater was removed in release 6.0.0 please use the
+    O(policy) option and the P(ansible.builtin.file#lookup) lookup plugin instead.
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
@@ -150,7 +150,7 @@ EXAMPLES = r"""
 
 RETURN = r"""
 endpoints:
-  description: The resulting endpoints from the module call
+  description: The resulting endpoints from the module call.
   returned: success
   type: list
   elements: dict

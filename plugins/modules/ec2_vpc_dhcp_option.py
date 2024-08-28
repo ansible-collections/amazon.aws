@@ -68,7 +68,7 @@ options:
   inherit_existing:
     description:
       - For any DHCP options not specified in these parameters, whether to
-        inherit them from the options set already applied to I(vpc_id), or to
+        inherit them from the options set already applied to O(vpc_id), or to
         reset them to be empty.
     type: bool
     default: false
@@ -87,7 +87,7 @@ options:
     choices: [ 'absent', 'present' ]
     type: str
 notes:
-  - Support for I(purge_tags) was added in release 2.0.0.
+  - Support for O(purge_tags) was added in release 2.0.0.
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
