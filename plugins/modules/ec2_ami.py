@@ -167,8 +167,9 @@ options:
     description:
       - The boot mode of the AMI.
       - See the AWS documentation for more detail U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ami-boot.html).
+      - Support for V(uefi-preferred) was added in release 8.2.0.
     type: str
-    choices: ['legacy-bios', 'uefi']
+    choices: ['legacy-bios', 'uefi', 'uefi-preferred']
     version_added: 5.5.0
   tpm_support:
     description:
@@ -972,7 +973,7 @@ def main():
     argument_spec = dict(
         architecture={"default": "x86_64"},
         billing_products={"type": "list", "elements": "str"},
-        boot_mode={"type": "str", "choices": ["legacy-bios", "uefi"]},
+        boot_mode={"type": "str", "choices": ["legacy-bios", "uefi", "uefi-preferred"]},
         delete_snapshot={"default": False, "type": "bool"},
         description={"default": ""},
         device_mapping={"type": "list", "elements": "dict", "options": mapping_options},
