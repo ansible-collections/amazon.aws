@@ -509,6 +509,57 @@
           - ec2_instance_metric_mutually_exclusive.failed
           - '"parameters are mutually exclusive" in ec2_instance_metric_mutually_exclusive.msg'
 
+    - name: create alarm without dimensions
+      cloudwatch_metric_alarm:
+        state: present
+        name: '{{ alarm_full_name }}'
+        metric: CPUUtilization
+        namespace: AWS/EC2
+        treat_missing_data: missing
+        statistic: Average
+        comparison: LessThanOrEqualToThreshold
+        threshold: 5.0
+        period: 300
+        evaluation_periods: 3
+        unit: Percent
+        description: This will alarm when an instance's cpu usage average is lower than
+          5% for 15 minutes
+      register: ec2_instance_metric_alarm_no_dimensions
+
+    - name: get info on alarm without dimensions
+      amazon.aws.cloudwatch_metric_alarm_info:
+        alarm_names:
+          - "{{ alarm_full_name }}"
+      register: alarm_info_metrics_alarm_no_dimensions
+
+    - name: verify that an alarm was created without dimensions
+      ansible.builtin.assert:
+        that:
+          - ec2_instance_metric_alarm_no_dimensions.changed
+          - alarm_info_metrics_alarm_no_dimensions.metric_alarms[0].dimensions | length == 0
+
+    - name: create alarm without dimensions (idempotent)
+      cloudwatch_metric_alarm:
+        state: present
+        name: '{{ alarm_full_name }}'
+        metric: CPUUtilization
+        namespace: AWS/EC2
+        treat_missing_data: missing
+        statistic: Average
+        comparison: LessThanOrEqualToThreshold
+        threshold: 5.0
+        period: 300
+        evaluation_periods: 3
+        unit: Percent
+        description: This will alarm when an instance's cpu usage average is lower than
+          5% for 15 minutes
+      register: ec2_instance_metric_alarm_no_dimensions_idempotent
+
+    - name: "Verify alarm without dimensions does not register as changed after update"
+      assert:
+        that:
+          - not ec2_instance_metric_alarm_no_dimensions_idempotent.changed
+
   always:
     - name: try to delete the alarm
       amazon.aws.cloudwatch_metric_alarm:
