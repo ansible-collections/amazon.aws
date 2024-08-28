@@ -164,7 +164,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vol-
 <h2><a class="toc-backref" href="#id3" role="doc-backlink">Synopsis</a><a class="headerlink" href="#synopsis" title="Link to this heading"></a></h2>
 <ul class="simple">
 <li><p>Creates an EBS volume and optionally attaches it to an instance.</p></li>
-<li><p>If both <em>instance</em> and <em>name</em> are given and the instance has a device at the device name, then no volume is created and no attachment is made.</p></li>
+<li><p>If both <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vol-module-parameter-instance"><span class="std std-ref"><span class="pre">instance</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vol-module-parameter-name"><span class="std std-ref"><span class="pre">name</span></span></a></strong></code> are given and the instance has a device at the device name, then no volume is created and no attachment is made.</p></li>
 </ul>
 </section>
 <section id="requirements">
@@ -288,7 +288,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vol-
 <a class="ansibleOptionLink" href="#parameter-instance" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Instance ID if you wish to attach the volume.</p>
-<p>Set to <code class="docutils literal notranslate"><span class="pre">None</span></code> to detach the volume.</p>
+<p>Set to <code class="ansible-value docutils literal notranslate"><span class="pre">None</span></code> to detach the volume.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -310,7 +310,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vol-
 <a class="ansibleOptionLink" href="#parameter-modify_volume" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 <p><em class="ansible-option-versionadded">added in amazon.aws 1.4.0</em></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>The volume won’t be modified unless this key is <code class="docutils literal notranslate"><span class="pre">true</span></code>.</p>
+<td><div class="ansible-option-cell"><p>The volume won’t be modified unless this key is <code class="ansible-value docutils literal notranslate"><span class="pre">true</span></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -323,7 +323,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vol-
 <a class="ansibleOptionLink" href="#parameter-multi_attach" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 <p><em class="ansible-option-versionadded">added in amazon.aws 2.0.0</em></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>If set to <code class="docutils literal notranslate"><span class="pre">true</span></code>, Multi-Attach will be enabled when creating the volume.</p>
+<td><div class="ansible-option-cell"><p>If set to <code class="ansible-value docutils literal notranslate"><span class="pre">true</span></code>, Multi-Attach will be enabled when creating the volume.</p>
 <p>When you create a new volume, Multi-Attach is disabled by default.</p>
 <p>This parameter is supported with io1 and io2 volumes only.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
@@ -437,8 +437,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vol-
 <a class="ansibleOptionLink" href="#parameter-state" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Whether to ensure the volume is present or absent.</p>
-<p><em>state=list</em> was deprecated in release 1.1.0 and is no longer available with release 4.0.0.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">list</span></code> functionality has been moved to a dedicated module <a class="reference internal" href="ec2_vol_info_module.html#ansible-collections-amazon-aws-ec2-vol-info-module"><span class="std std-ref">amazon.aws.ec2_vol_info</span></a>.</p>
+<p><code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vol-module-parameter-state"><span class="std std-ref"><span class="pre">state=list</span></span></a></code> was deprecated in release 1.1.0 and is no longer available with release 4.0.0.</p>
+<p>The <code class="ansible-value docutils literal notranslate"><span class="pre">list</span></code> functionality has been moved to a dedicated module <a class="reference internal" href="ec2_vol_info_module.html#ansible-collections-amazon-aws-ec2-vol-info-module"><span class="std std-ref">amazon.aws.ec2_vol_info</span></a>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;absent&quot;</span></code></p></li>
@@ -490,8 +490,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vol-
 <div class="ansibleOptionAnchor" id="parameter-volume_type"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vol-module-parameter-volume-type"><strong>volume_type</strong></p>
 <a class="ansibleOptionLink" href="#parameter-volume_type" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Type of EBS volume; <code class="docutils literal notranslate"><span class="pre">standard</span></code> (magnetic), <code class="docutils literal notranslate"><span class="pre">gp2</span></code> (SSD), <code class="docutils literal notranslate"><span class="pre">gp3</span></code> (SSD), <code class="docutils literal notranslate"><span class="pre">io1</span></code> (Provisioned IOPS), <code class="docutils literal notranslate"><span class="pre">io2</span></code> (Provisioned IOPS), <code class="docutils literal notranslate"><span class="pre">st1</span></code> (Throughput Optimized HDD), <code class="docutils literal notranslate"><span class="pre">sc1</span></code> (Cold HDD).</p>
-<p><code class="docutils literal notranslate"><span class="pre">standard</span></code> is the old EBS default and continues to remain the Ansible default for backwards compatibility.</p>
+<td><div class="ansible-option-cell"><p>Type of EBS volume; <code class="ansible-value docutils literal notranslate"><span class="pre">standard</span></code> (magnetic), <code class="ansible-value docutils literal notranslate"><span class="pre">gp2</span></code> (SSD), <code class="ansible-value docutils literal notranslate"><span class="pre">gp3</span></code> (SSD), <code class="ansible-value docutils literal notranslate"><span class="pre">io1</span></code> (Provisioned IOPS), <code class="ansible-value docutils literal notranslate"><span class="pre">io2</span></code> (Provisioned IOPS), <code class="ansible-value docutils literal notranslate"><span class="pre">st1</span></code> (Throughput Optimized HDD), <code class="ansible-value docutils literal notranslate"><span class="pre">sc1</span></code> (Cold HDD).</p>
+<p><code class="ansible-value docutils literal notranslate"><span class="pre">standard</span></code> is the old EBS default and continues to remain the Ansible default for backwards compatibility.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">&quot;standard&quot;</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -523,7 +523,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vol-
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <ul class="simple">
-<li><p>Support for <em>purge_tags</em> was added in release 1.5.0.</p></li>
+<li><p>Support for <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vol-module-parameter-purge-tags"><span class="std std-ref"><span class="pre">purge_tags</span></span></a></strong></code> was added in release 1.5.0.</p></li>
 <li><p><strong>Caution:</strong> For modules, environment variables and configuration files are read from the Ansible ‘host’ context and not the ‘controller’ context. As such, files may need to be explicitly copied to the ‘host’. For lookup and connection plugins, environment variables and configuration files are read from the Ansible ‘controller’ context and not the ‘host’ context.</p></li>
 <li><p>The AWS SDK (boto3) that Ansible uses may also read defaults for credentials and other settings, such as the region, from its configuration files in the Ansible ‘host’ context (typically <code class="docutils literal notranslate"><span class="pre">~/.aws/credentials</span></code>). See <a class="reference external" href="https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html">https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html</a> for more information.</p></li>
 </ul>
@@ -633,7 +633,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vol-
 <div class="ansibleOptionAnchor" id="return-device"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vol-module-return-device"><strong>device</strong></p>
 <a class="ansibleOptionLink" href="#return-device" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>device name of attached volume</p>
+<td><div class="ansible-option-cell"><p>Device name of attached volume.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when success</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;/dev/sdf&quot;</span></code></p>
 </div></td>
@@ -642,7 +642,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vol-
 <div class="ansibleOptionAnchor" id="return-volume"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vol-module-return-volume"><strong>volume</strong></p>
 <a class="ansibleOptionLink" href="#return-volume" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>a dictionary containing detailed attributes of the volume</p>
+<td><div class="ansible-option-cell"><p>A dictionary containing detailed attributes of the volume.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when success</p>
 </div></td>
 </tr>
@@ -758,7 +758,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vol-
 <div class="ansibleOptionAnchor" id="return-volume_id"></div><p class="ansible-option-title" id="id1"><strong>volume_id</strong></p>
 <a class="ansibleOptionLink" href="#return-volume_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>the id of volume</p>
+<td><div class="ansible-option-cell"><p>The id of volume.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when success</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;vol-35b333d9&quot;</span></code></p>
 </div></td>
@@ -767,7 +767,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vol-
 <div class="ansibleOptionAnchor" id="return-volume_type"></div><p class="ansible-option-title" id="id2"><strong>volume_type</strong></p>
 <a class="ansibleOptionLink" href="#return-volume_type" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>the volume type</p>
+<td><div class="ansible-option-cell"><p>The volume type.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when success</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;standard&quot;</span></code></p>
 </div></td>

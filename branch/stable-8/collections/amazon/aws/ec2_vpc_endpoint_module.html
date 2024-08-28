@@ -308,7 +308,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 </div></td>
 <td><div class="ansible-option-cell"><p>List of one or more route table IDs to attach to the endpoint.</p>
 <p>A route is added to the route table with the destination of the endpoint if provided.</p>
-<p>Route table IDs are only valid for <code class="docutils literal notranslate"><span class="pre">Gateway</span></code> endpoints.</p>
+<p>Route table IDs are only valid for Gateway endpoints.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -358,8 +358,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <div class="ansibleOptionAnchor" id="parameter-state"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-endpoint-module-parameter-state"><strong>state</strong></p>
 <a class="ansibleOptionLink" href="#parameter-state" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p><code class="docutils literal notranslate"><span class="pre">present</span></code> to ensure resource is created.</p>
-<p><code class="docutils literal notranslate"><span class="pre">absent</span></code> to remove resource.</p>
+<td><div class="ansible-option-cell"><p><code class="ansible-value docutils literal notranslate"><span class="pre">present</span></code> to ensure resource is created.</p>
+<p><code class="ansible-value docutils literal notranslate"><span class="pre">absent</span></code> to remove resource.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">&quot;present&quot;</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -395,7 +395,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <a class="ansibleOptionLink" href="#parameter-vpc_endpoint_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>One or more VPC endpoint IDs to remove from the AWS account.</p>
-<p>Required if <em>state=absent</em>.</p>
+<p>Required if <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-endpoint-module-parameter-state"><span class="std std-ref"><span class="pre">state=absent</span></span></a></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -404,7 +404,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <p><em class="ansible-option-versionadded">added in amazon.aws 2.1.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The list of security groups to attach to the endpoint.</p>
-<p>Requires <em>vpc_endpoint_type=GatewayLoadBalancer</em> or <em>vpc_endpoint_type=Interface</em>.</p>
+<p>Requires <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-endpoint-module-parameter-vpc-endpoint-type"><span class="std std-ref"><span class="pre">vpc_endpoint_type=GatewayLoadBalancer</span></span></a></code> or <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-endpoint-module-parameter-vpc-endpoint-type"><span class="std std-ref"><span class="pre">vpc_endpoint_type=Interface</span></span></a></code>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -413,7 +413,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <p><em class="ansible-option-versionadded">added in amazon.aws 2.1.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The list of subnets to attach to the endpoint.</p>
-<p>Requires <em>vpc_endpoint_type=GatewayLoadBalancer</em> or <em>vpc_endpoint_type=Interface</em>.</p>
+<p>Requires <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-endpoint-module-parameter-vpc-endpoint-type"><span class="std std-ref"><span class="pre">vpc_endpoint_type=GatewayLoadBalancer</span></span></a></code> or <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-endpoint-module-parameter-vpc-endpoint-type"><span class="std std-ref"><span class="pre">vpc_endpoint_type=Interface</span></span></a></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -441,7 +441,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <div class="ansibleOptionAnchor" id="parameter-wait"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-endpoint-module-parameter-wait"><strong>wait</strong></p>
 <a class="ansibleOptionLink" href="#parameter-wait" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>When specified, will wait for status to reach <code class="docutils literal notranslate"><span class="pre">available</span></code> for <em>state=present</em>.</p>
+<td><div class="ansible-option-cell"><p>When specified, will wait for status to reach available for <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-endpoint-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code>.</p>
 <p>Unfortunately this is ignored for delete actions due to a difference in behaviour from AWS.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
@@ -454,7 +454,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <div class="ansibleOptionAnchor" id="parameter-wait_timeout"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-endpoint-module-parameter-wait-timeout"><strong>wait_timeout</strong></p>
 <a class="ansibleOptionLink" href="#parameter-wait_timeout" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Used in conjunction with <em>wait</em>.</p>
+<td><div class="ansible-option-cell"><p>Used in conjunction with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-endpoint-module-parameter-wait"><span class="std std-ref"><span class="pre">wait</span></span></a></strong></code>.</p>
 <p>Number of seconds to wait for status.</p>
 <p>Unfortunately this is ignored for delete actions due to a difference in behaviour from AWS.</p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">320</span></code></p>
@@ -468,8 +468,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <ul class="simple">
-<li><p>Support for <em>tags</em> and <em>purge_tags</em> was added in release 1.5.0.</p></li>
-<li><p>The <code class="docutils literal notranslate"><span class="pre">policy_file</span></code> paramater was removed in release 6.0.0 please use the <em>policy</em> option and a file lookup instead.</p></li>
+<li><p>Support for <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-endpoint-module-parameter-tags"><span class="std std-ref"><span class="pre">tags</span></span></a></strong></code> and <em>purge_tags</em> was added in release 1.5.0.</p></li>
+<li><p>The <em>policy_file</em> paramater was removed in release 6.0.0 please use the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-endpoint-module-parameter-policy"><span class="std std-ref"><span class="pre">policy</span></span></a></strong></code> option and the <a class="reference external" href="https://docs.ansible.com/ansible-core/devel/collections/ansible/builtin/file_lookup.html#ansible-collections-ansible-builtin-file-lookup" title="(in Ansible Core vdevel)"><span class="xref std std-ref">ansible.builtin.file</span></a> lookup plugin instead.</p></li>
 <li><p><strong>Caution:</strong> For modules, environment variables and configuration files are read from the Ansible ‘host’ context and not the ‘controller’ context. As such, files may need to be explicitly copied to the ‘host’. For lookup and connection plugins, environment variables and configuration files are read from the Ansible ‘controller’ context and not the ‘host’ context.</p></li>
 <li><p>The AWS SDK (boto3) that Ansible uses may also read defaults for credentials and other settings, such as the region, from its configuration files in the Ansible ‘host’ context (typically <code class="docutils literal notranslate"><span class="pre">~/.aws/credentials</span></code>). See <a class="reference external" href="https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html">https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html</a> for more information.</p></li>
 </ul>
@@ -524,7 +524,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <div class="ansibleOptionAnchor" id="return-endpoints"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-endpoint-module-return-endpoints"><strong>endpoints</strong></p>
 <a class="ansibleOptionLink" href="#return-endpoints" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>The resulting endpoints from the module call</p>
+<td><div class="ansible-option-cell"><p>The resulting endpoints from the module call.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 </div></td>
 </tr>

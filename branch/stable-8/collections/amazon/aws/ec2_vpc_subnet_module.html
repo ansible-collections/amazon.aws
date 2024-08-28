@@ -24,7 +24,7 @@
         <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="amazon.aws.ec2_vpc_subnet_info module – Gather information about ec2 VPC subnets in AWS" href="ec2_vpc_subnet_info_module.html" />
+    <link rel="next" title="amazon.aws.ec2_vpc_subnet_info module – Gather information about EC2 VPC subnets in AWS" href="ec2_vpc_subnet_info_module.html" />
     <link rel="prev" title="amazon.aws.ec2_vpc_route_table_info module – Gather information about ec2 VPC route tables in AWS" href="ec2_vpc_route_table_info_module.html" /><!-- extra head elements for Ansible beyond RTD Sphinx Theme -->
 
 
@@ -206,7 +206,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <a class="ansibleOptionLink" href="#parameter-assign_instances_ipv6" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Whether instances launched into the subnet should default to being automatically assigned an IPv6 address.</p>
-<p>If <em>assign_instances_ipv6=true</em>, <em>ipv6_cidr</em> must also be specified.</p>
+<p>If <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-subnet-module-parameter-assign-instances-ipv6"><span class="std std-ref"><span class="pre">assign_instances_ipv6=true</span></span></a></code>, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-subnet-module-parameter-ipv6-cidr"><span class="std std-ref"><span class="pre">ipv6_cidr</span></span></a></strong></code> must also be specified.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -235,14 +235,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <a class="ansibleOptionLink" href="#parameter-az" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The availability zone for the subnet.</p>
-<p>Required if <em>outpost_arn</em> is set.</p>
+<p>Required if <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-subnet-module-parameter-outpost-arn"><span class="std std-ref"><span class="pre">outpost_arn</span></span></a></strong></code> is set.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-cidr"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-subnet-module-parameter-cidr"><strong>cidr</strong></p>
 <a class="ansibleOptionLink" href="#parameter-cidr" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>The CIDR block for the subnet. E.g. <code class="docutils literal notranslate"><span class="pre">192.0.2.0/24</span></code>.</p>
+<td><div class="ansible-option-cell"><p>The CIDR block for the subnet. E.g. <code class="ansible-value docutils literal notranslate"><span class="pre">192.0.2.0/24</span></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -278,7 +278,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 </div></td>
 <td><div class="ansible-option-cell"><p>The IPv6 CIDR block for the subnet.</p>
 <p>The VPC must have a /56 block assigned and this value must be a valid IPv6 /64 that falls in the VPC range.</p>
-<p>Required if <em>assign_instances_ipv6=true</em></p>
+<p>Required if <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-subnet-module-parameter-assign-instances-ipv6"><span class="std std-ref"><span class="pre">assign_instances_ipv6=true</span></span></a></code></p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
 </div></td>
 </tr>
@@ -300,7 +300,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 </div></td>
 <td><div class="ansible-option-cell"><p>The Amazon Resource Name (ARN) of the Outpost.</p>
 <p>If set, allows to create subnet in an Outpost.</p>
-<p>If <em>outpost_arn</em> is set, <em>az</em> must also be specified.</p>
+<p>If <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-subnet-module-parameter-outpost-arn"><span class="std std-ref"><span class="pre">outpost_arn</span></span></a></strong></code> is set, <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-subnet-module-parameter-az"><span class="std std-ref"><span class="pre">az</span></span></a></strong></code> must also be specified.</p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
 </div></td>
 </tr>
@@ -439,7 +439,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <a class="ansibleOptionLink" href="#parameter-wait_timeout" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Number of seconds to wait for changes to complete</p>
-<p>Ignored unless <em>wait=True</em>.</p>
+<p>Ignored unless <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-subnet-module-parameter-wait"><span class="std std-ref"><span class="pre">wait=true</span></span></a></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">300</span></code></p>
 </div></td>
 </tr>
@@ -505,7 +505,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <div class="ansibleOptionAnchor" id="return-subnet"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-subnet-module-return-subnet"><strong>subnet</strong></p>
 <a class="ansibleOptionLink" href="#return-subnet" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Dictionary of subnet values</p>
+<td><div class="ansible-option-cell"><p>Dictionary of subnet values.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-subnet-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 </div></td>
 </tr>
@@ -513,7 +513,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <div class="ansibleOptionAnchor" id="return-subnet/assign_ipv6_address_on_creation"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-subnet-module-return-subnet-assign-ipv6-address-on-creation"><strong>assign_ipv6_address_on_creation</strong></p>
 <a class="ansibleOptionLink" href="#return-subnet/assign_ipv6_address_on_creation" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>whether IPv6 address is auto-assigned to new instances</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Whether IPv6 address is auto-assigned to new instances.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-subnet-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">false</span></code></p>
 </div></td>
@@ -522,7 +522,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <div class="ansibleOptionAnchor" id="return-subnet/availability_zone"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-subnet-module-return-subnet-availability-zone"><strong>availability_zone</strong></p>
 <a class="ansibleOptionLink" href="#return-subnet/availability_zone" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Availability zone of the Subnet</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Availability zone of the Subnet.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-subnet-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;us-east-1a&quot;</span></code></p>
 </div></td>
@@ -540,7 +540,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <div class="ansibleOptionAnchor" id="return-subnet/available_ip_address_count"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-subnet-module-return-subnet-available-ip-address-count"><strong>available_ip_address_count</strong></p>
 <a class="ansibleOptionLink" href="#return-subnet/available_ip_address_count" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>number of available IPv4 addresses</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Number of available IPv4 addresses.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-subnet-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;251&quot;</span></code></p>
 </div></td>
@@ -549,7 +549,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <div class="ansibleOptionAnchor" id="return-subnet/cidr_block"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-subnet-module-return-subnet-cidr-block"><strong>cidr_block</strong></p>
 <a class="ansibleOptionLink" href="#return-subnet/cidr_block" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The IPv4 CIDR of the Subnet</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The IPv4 CIDR of the Subnet.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-subnet-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;10.0.0.0/16&quot;</span></code></p>
 </div></td>
@@ -558,7 +558,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <div class="ansibleOptionAnchor" id="return-subnet/default_for_az"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-subnet-module-return-subnet-default-for-az"><strong>default_for_az</strong></p>
 <a class="ansibleOptionLink" href="#return-subnet/default_for_az" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>indicates whether this is the default Subnet for this Availability Zone</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Indicates whether this is the default Subnet for this Availability Zone.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-subnet-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">false</span></code></p>
 </div></td>
@@ -576,7 +576,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <div class="ansibleOptionAnchor" id="return-subnet/id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-subnet-module-return-subnet-id"><strong>id</strong></p>
 <a class="ansibleOptionLink" href="#return-subnet/id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Subnet resource id</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Subnet resource id.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-subnet-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;subnet-b883b2c4&quot;</span></code></p>
 </div></td>
@@ -585,7 +585,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <div class="ansibleOptionAnchor" id="return-subnet/ipv6_association_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-subnet-module-return-subnet-ipv6-association-id"><strong>ipv6_association_id</strong></p>
 <a class="ansibleOptionLink" href="#return-subnet/ipv6_association_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The IPv6 association ID for the currently associated CIDR</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The IPv6 association ID for the currently associated CIDR.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-subnet-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;subnet-cidr-assoc-b85c74d2&quot;</span></code></p>
 </div></td>
@@ -594,7 +594,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <div class="ansibleOptionAnchor" id="return-subnet/ipv6_cidr_block"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-subnet-module-return-subnet-ipv6-cidr-block"><strong>ipv6_cidr_block</strong></p>
 <a class="ansibleOptionLink" href="#return-subnet/ipv6_cidr_block" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The IPv6 CIDR block actively associated with the Subnet</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The IPv6 CIDR block actively associated with the Subnet.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-subnet-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2001:db8:0:102::/64&quot;</span></code></p>
 </div></td>
@@ -611,7 +611,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <div class="ansibleOptionAnchor" id="return-subnet/ipv6_cidr_block_association_set/association_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-subnet-module-return-subnet-ipv6-cidr-block-association-set-association-id"><strong>association_id</strong></p>
 <a class="ansibleOptionLink" href="#return-subnet/ipv6_cidr_block_association_set/association_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The association ID</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The association ID.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 </div></td>
 </tr>
@@ -661,7 +661,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <div class="ansibleOptionAnchor" id="return-subnet/map_public_ip_on_launch"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-subnet-module-return-subnet-map-public-ip-on-launch"><strong>map_public_ip_on_launch</strong></p>
 <a class="ansibleOptionLink" href="#return-subnet/map_public_ip_on_launch" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>whether public IP is auto-assigned to new instances</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Whether public IP is auto-assigned to new instances.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-subnet-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">false</span></code></p>
 </div></td>
@@ -689,7 +689,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <div class="ansibleOptionAnchor" id="return-subnet/state"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-subnet-module-return-subnet-state"><strong>state</strong></p>
 <a class="ansibleOptionLink" href="#return-subnet/state" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>state of the Subnet</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>State of the Subnet.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-subnet-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;available&quot;</span></code></p>
 </div></td>
@@ -707,7 +707,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <div class="ansibleOptionAnchor" id="return-subnet/tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-subnet-module-return-subnet-tags"><strong>tags</strong></p>
 <a class="ansibleOptionLink" href="#return-subnet/tags" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>tags attached to the Subnet, includes name</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Tags attached to the Subnet, includes name.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-subnet-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;Name&quot;:</span> <span class="pre">&quot;My</span> <span class="pre">Subnet&quot;,</span> <span class="pre">&quot;env&quot;:</span> <span class="pre">&quot;staging&quot;}</span></code></p>
 </div></td>
@@ -716,7 +716,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <div class="ansibleOptionAnchor" id="return-subnet/vpc_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-subnet-module-return-subnet-vpc-id"><strong>vpc_id</strong></p>
 <a class="ansibleOptionLink" href="#return-subnet/vpc_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>the id of the VPC where this Subnet exists</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The id of the VPC where this Subnet exists.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-subnet-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;vpc-67236184&quot;</span></code></p>
 </div></td>
@@ -748,7 +748,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 
 <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="ec2_vpc_route_table_info_module.html" class="btn btn-neutral float-left" title="amazon.aws.ec2_vpc_route_table_info module – Gather information about ec2 VPC route tables in AWS" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="ec2_vpc_subnet_info_module.html" class="btn btn-neutral float-right" title="amazon.aws.ec2_vpc_subnet_info module – Gather information about ec2 VPC subnets in AWS" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="ec2_vpc_subnet_info_module.html" class="btn btn-neutral float-right" title="amazon.aws.ec2_vpc_subnet_info module – Gather information about EC2 VPC subnets in AWS" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
