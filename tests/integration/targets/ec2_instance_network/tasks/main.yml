@@ -1,0 +1,258 @@
+---
+- module_defaults:
+    group/aws:
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+  block:
+    - ansible.builtin.include_tasks: failures.yml
+    - ansible.builtin.include_tasks: enis.yml
+
+    - name: Make instance with multiple private ip addresses
+      amazon.aws.ec2_instance:
+        name: "{{ ec2_instance_name }}-multiple-addresses"
+        image_id: "{{ ec2_ami_id }}"
+        instance_type: "t2.micro"
+        wait: false
+        network_interfaces:
+          - assign_public_ip: false
+            subnet_id: "{{ testing_subnet_a.subnet.id }}"
+            private_ip_addresses:
+              - private_ip_address: "{{ subnet_a_startswith }}120"
+                primary: true
+              - private_ip_address: "{{ subnet_a_startswith }}121"
+                primary: false
+      register: multiple_ips
+
+    - name: Fact presented instance
+      ec2_instance_info:
+        instance_ids: "{{ multiple_ips.instance_ids }}"
+      register: _instances
+
+    - name: Ensure instance has ENI attached with 2 Private IP addresses
+      assert:
+        that:
+          - multiple_ips is changed
+          - _instances.instances.0.network_interfaces | length == 1
+          - _instances.instances.0.network_interfaces.0.private_ip_addresses | length == 2
+          - _instances.instances.0.network_interfaces.0.private_ip_addresses | selectattr('primary', 'equalto', true) | map(attribute='private_ip_address') | list | first == subnet_a_startswith+'120'
+          - _instances.instances.0.network_interfaces.0.private_ip_addresses | selectattr('primary', 'equalto', false) | map(attribute='private_ip_address') | list | first == subnet_a_startswith+'121'
+
+
+    - name: Make instance with single private ip addresses
+      amazon.aws.ec2_instance:
+        name: "{{ ec2_instance_name }}-single-address"
+        image_id: "{{ ec2_ami_id }}"
+        instance_type: "t2.micro"
+        wait: false
+        network_interfaces:
+          - assign_public_ip: false
+            subnet_id: "{{ testing_subnet_a.subnet.id }}"
+            private_ip_address: "{{ subnet_a_startswith }}122"
+      register: single_ip
+
+    - name: Fact presented instance
+      ec2_instance_info:
+        instance_ids: "{{ single_ip.instance_ids }}"
+      register: _instances
+
+    - name: Ensure instance has one ENI attached to it
+      assert:
+        that:
+          - multiple_ips is changed
+          - _instances.instances.0.network_interfaces | length == 1
+          - _instances.instances.0.network_interfaces.0.private_ip_addresses | length == 1
+          - _instances.instances.0.network_interfaces.0.private_ip_addresses.0.private_ip_address == subnet_a_startswith+'122'
+
+    - ansible.builtin.set_fact:
+        instance_ipv6_addr: "{{ testing_vpc.vpc.ipv6_cidr_block_association_set.0.ipv6_cidr_block | replace('/56', '125') }}"
+
+    - name: Make instance with IPv6 address
+      amazon.aws.ec2_instance:
+        name: "{{ ec2_instance_name }}-ipv6"
+        image_id: "{{ ec2_ami_id }}"
+        instance_type: "t2.micro"
+        wait: false
+        network_interfaces:
+          - assign_public_ip: false
+            delete_on_termination: true
+            device_index: 0
+            subnet_id: "{{ testing_subnet_a.subnet.id }}"
+            ipv6_addresses:
+              - "{{ instance_ipv6_addr }}"
+      register: ipv6_instance
+
+    - name: Fact presented instance
+      ec2_instance_info:
+        instance_ids: "{{ ipv6_instance.instance_ids }}"
+      register: _instances
+
+    - name: Ensure instance has one ENI attached to it
+      assert:
+        that:
+          - ipv6_instance is changed
+          - _instances.instances.0.network_interfaces | length == 1
+          - _instances.instances.0.network_interfaces.0.ipv6_addresses | length == 1
+          - _instances.instances.0.network_interfaces.0.ipv6_addresses.0.ipv6_address == instance_ipv6_addr
+
+    # Testing instance security groups
+    - name: Make instance with 1 Security Group
+      amazon.aws.ec2_instance:
+        name: "{{ ec2_instance_name }}-group"
+        image_id: "{{ ec2_ami_id }}"
+        instance_type: "t2.micro"
+        wait: false
+        subnet_id: "{{ testing_subnet_a.subnet.id }}"
+        network_interfaces:
+          - assign_public_ip: false
+            groups:
+              - "{{ security_group_name_1 }}"
+      register: create_with_group
+
+    - ansible.builtin.set_fact:
+        created_instance_id: "{{ create_with_group.instance_ids }}"
+
+    - name: Fact presented instance
+      ec2_instance_info:
+        instance_ids: "{{ created_instance_id }}"
+      register: _instances
+
+    - name: Ensure instance has been created with one security group
+      assert:
+        that:
+          - create_with_group is changed
+          - _instances.instances.0.security_groups | map(attribute='group_name') | list == [security_group_name_1]
+
+    - name: Update instance Security Group from network interface (check_mode=true)
+      amazon.aws.ec2_instance:
+        name: "{{ ec2_instance_name }}-group"
+        image_id: "{{ ec2_ami_id }}"
+        instance_type: "t2.micro"
+        wait: false
+        subnet_id: "{{ testing_subnet_a.subnet.id }}"
+        network_interfaces:
+          - assign_public_ip: false
+            groups:
+              - "{{ security_group_name_1 }}"
+              - "{{ sg2.group_id }}"
+      register: add_group_checkmode
+      check_mode: true
+
+    - name: Fact presented instance
+      ec2_instance_info:
+        instance_ids: "{{ created_instance_id }}"
+      register: _instances
+
+    - name: Ensure instance has still one Security group
+      assert:
+        that:
+          - add_group_checkmode is changed
+          - _instances.instances.0.security_groups | map(attribute='group_name') | list == [security_group_name_1]
+
+    - name: Update instance Security Group from network interface
+      amazon.aws.ec2_instance:
+        name: "{{ ec2_instance_name }}-group"
+        image_id: "{{ ec2_ami_id }}"
+        instance_type: "t2.micro"
+        wait: false
+        subnet_id: "{{ testing_subnet_a.subnet.id }}"
+        network_interfaces:
+          - assign_public_ip: false
+            groups:
+              - "{{ security_group_name_1 }}"
+              - "{{ sg2.group_id }}"
+      register: add_group
+
+    - name: Fact presented instance
+      ec2_instance_info:
+        instance_ids: "{{ created_instance_id }}"
+      register: _instances
+
+    - name: Ensure instance has 1 additional Security group
+      assert:
+        that:
+          - add_group is changed
+          - _instances.instances.0.security_groups | length == 2
+          - security_group_name_1 in _instances.instances.0.security_groups | map(attribute='group_name') | list
+          - security_group_name_2 in _instances.instances.0.security_groups | map(attribute='group_name') | list
+
+    - name: Update instance Security Group from network interface (idempotency)
+      amazon.aws.ec2_instance:
+        name: "{{ ec2_instance_name }}-group"
+        image_id: "{{ ec2_ami_id }}"
+        instance_type: "t2.micro"
+        wait: false
+        subnet_id: "{{ testing_subnet_a.subnet.id }}"
+        network_interfaces:
+          - assign_public_ip: false
+            groups:
+              - "{{ security_group_name_1 }}"
+              - "{{ sg2.group_id }}"
+      register: add_group_idempotency
+
+    - name: Ensure no change was made on the instance
+      assert:
+        that:
+          - add_group_idempotency is not changed
+
+    - name: Remove one security group from the instance (check_mode=true)
+      amazon.aws.ec2_instance:
+        name: "{{ ec2_instance_name }}-group"
+        image_id: "{{ ec2_ami_id }}"
+        instance_type: "t2.micro"
+        wait: false
+        subnet_id: "{{ testing_subnet_a.subnet.id }}"
+        security_group: "{{ security_group_name_2 }}"
+      register: remove_group_checkmode
+      check_mode: true
+
+    - name: Fact presented instance
+      ec2_instance_info:
+        instance_ids: "{{ created_instance_id }}"
+      register: _instances
+
+    - name: Ensure instance has still 2 Security groups
+      assert:
+        that:
+          - remove_group_checkmode is changed
+          - _instances.instances.0.security_groups | length == 2
+          - security_group_name_1 in _instances.instances.0.security_groups | map(attribute='group_name') | list
+          - security_group_name_2 in _instances.instances.0.security_groups | map(attribute='group_name') | list
+
+    - name: Remove one security group from the instance
+      amazon.aws.ec2_instance:
+        name: "{{ ec2_instance_name }}-group"
+        image_id: "{{ ec2_ami_id }}"
+        instance_type: "t2.micro"
+        wait: false
+        subnet_id: "{{ testing_subnet_a.subnet.id }}"
+        security_group: "{{ security_group_name_2 }}"
+      register: remove_group
+
+    - name: Fact presented instance
+      ec2_instance_info:
+        instance_ids: "{{ created_instance_id }}"
+      register: _instances
+
+    - name: Ensure instance has 1 less Security group
+      assert:
+        that:
+          - remove_group is changed
+          - _instances.instances.0.security_groups | length == 1
+          - _instances.instances.0.security_groups | map(attribute='group_name') == [security_group_name_2]
+
+    - name: Remove one security group from the instance (idempotency)
+      amazon.aws.ec2_instance:
+        name: "{{ ec2_instance_name }}-group"
+        image_id: "{{ ec2_ami_id }}"
+        instance_type: "t2.micro"
+        wait: false
+        subnet_id: "{{ testing_subnet_a.subnet.id }}"
+        security_group: "{{ security_group_name_2 }}"
+      register: remove_group_idempotency
+
+    - name: Ensure module did not reported change
+      assert:
+        that:
+          - remove_group_idempotency is not changed
