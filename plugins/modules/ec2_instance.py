@@ -20,27 +20,27 @@ options:
   instance_ids:
     description:
       - If you specify one or more instance IDs, only instances that have the specified IDs are returned.
-      - Mutually exclusive with I(exact_count).
+      - Mutually exclusive with O(exact_count).
     type: list
     elements: str
     default: []
   state:
     description:
       - Goal state for the instances.
-      - "I(state=present): ensures instances exist, but does not guarantee any state (e.g. running). Newly-launched instances will be run by EC2."
-      - "I(state=running): I(state=present) + ensures the instances are running"
-      - "I(state=started): I(state=running) + waits for EC2 status checks to report OK if I(wait=true)"
-      - "I(state=stopped): ensures an existing instance is stopped."
-      - "I(state=rebooted): convenience alias for I(state=stopped) immediately followed by I(state=running)"
-      - "I(state=restarted): convenience alias for I(state=stopped) immediately followed by I(state=started)"
-      - "I(state=terminated): ensures an existing instance is terminated."
-      - "I(state=absent): alias for I(state=terminated)"
+      - "O(state=present): ensures instances exist, but does not guarantee any state (e.g. running). Newly-launched instances will be run by EC2."
+      - "O(state=running): O(state=present) + ensures the instances are running."
+      - "O(state=started): O(state=running) + waits for EC2 status checks to report OK if O(wait=true)."
+      - "O(state=stopped): ensures an existing instance is stopped."
+      - "O(state=rebooted): convenience alias for O(state=stopped) immediately followed by O(state=running)."
+      - "O(state=restarted): convenience alias for O(state=stopped) immediately followed by O(state=started)."
+      - "O(state=terminated): ensures an existing instance is terminated."
+      - "O(state=absent): alias for O(state=terminated)."
     choices: [present, terminated, running, started, stopped, restarted, rebooted, absent]
     default: present
     type: str
   wait:
     description:
-      - Whether or not to wait for the desired I(state) (use (wait_timeout) to customize this).
+      - Whether or not to wait for the desired O(state) (use O(wait_timeout) to customize this).
     default: true
     type: bool
   wait_timeout:
@@ -53,22 +53,22 @@ options:
       - Instance type to use for the instance, see
         U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html).
       - Only required when instance is not already present.
-      - At least one of I(instance_type) or I(launch_template) must be specificed when launching an
+      - At least one of O(instance_type) or O(launch_template) must be specificed when launching an
         instance.
     type: str
   count:
     description:
       - Number of instances to launch.
       - Setting this value will result in always launching new instances.
-      - Mutually exclusive with I(exact_count).
+      - Mutually exclusive with O(exact_count).
     type: int
     version_added: 2.2.0
   exact_count:
     description:
-      - An integer value which indicates how many instances that match the I(filters) parameter should be running.
+      - An integer value which indicates how many instances that match the O(filters) parameter should be running.
       - Instances are either created or terminated based on this value.
       - If termination takes place, least recently created instances will be terminated based on Launch Time.
-      - Mutually exclusive with I(count), I(instance_ids).
+      - Mutually exclusive with O(count), O(instance_ids).
     type: int
     version_added: 2.2.0
   user_data:
@@ -79,45 +79,45 @@ options:
     description:
       - Preconfigured user-data to enable an instance to perform an Ansible Automation Platform
         callback (Linux only).
-      - For Windows instances, to enable remote access via Ansible set I(windows) to C(true), and
+      - For Windows instances, to enable remote access via Ansible set O(aap_callback.windows) to V(true), and
         optionally set an admin password.
-      - If using I(windows) and I(set_password), callback ton Ansible Automation Platform will not
+      - If using O(aap_callback.windows) and O(aap_callback.set_password), callback ton Ansible Automation Platform will not
         be performed but the instance will be ready to receive winrm connections from Ansible.
-      - Mutually exclusive with I(user_data).
+      - Mutually exclusive with O(user_data).
     type: dict
     aliases: ['tower_callback']
     suboptions:
       windows:
         description:
-          - Set I(windows=True) to use powershell instead of bash for the callback script.
+          - Set O(aap_callback.windows=True) to use powershell instead of bash for the callback script.
         type: bool
         default: False
       set_password:
         description:
-          - Optional admin password to use if I(windows=True).
+          - Optional admin password to use if O(aap_callback.windows=True).
         type: str
       tower_address:
         description:
           - IP address or DNS name of Tower server. Must be accessible via this address from the
             VPC that this instance will be launched in.
-          - Required if I(windows=False).
+          - Required if O(aap_callback.windows=False).
         type: str
       job_template_id:
         description:
           - Either the integer ID of the Tower Job Template, or the name.
             Using a name for the job template is not supported by Ansible Tower prior to version
             3.2.
-          - Required if I(windows=False).
+          - Required if O(aap_callback.windows=False).
         type: str
       host_config_key:
         description:
           - Host configuration secret key generated by the Tower job template.
-          - Required if I(windows=False).
+          - Required if O(aap_callback.windows=False).
         type: str
   image:
     description:
       - An image to use for the instance. The M(amazon.aws.ec2_ami_info) module may be used to retrieve images.
-        One of I(image) or I(image_id) are required when instance is not already present.
+        One of O(image) or O(image_id) are required when instance is not already present.
     type: dict
     suboptions:
       id:
@@ -133,20 +133,20 @@ options:
         - a string AKI to override the AMI kernel.
   image_id:
     description:
-       - I(ami) ID to use for the instance. One of I(image) or I(image_id) are required when instance is not already present.
-       - This is an alias for I(image.id).
+       - I(ami) ID to use for the instance. One of O(image) or O(image_id) are required when instance is not already present.
+       - This is an alias for O(image.id).
     type: str
   security_groups:
     description:
       - A list of security group IDs or names (strings).
-      - Mutually exclusive with I(security_group).
+      - Mutually exclusive with O(security_group).
     type: list
     elements: str
     default: []
   security_group:
     description:
       - A security group ID or name.
-      - Mutually exclusive with I(security_groups).
+      - Mutually exclusive with O(security_groups).
     type: str
   name:
     description:
@@ -167,7 +167,7 @@ options:
     suboptions:
       interfaces:
         description:
-          - A list of ENI IDs (strings) or a list of objects containing the key I(id).
+          - A list of ENI IDs (strings) or a list of objects containing the key id.
         type: list
         elements: str
       assign_public_ip:
@@ -217,15 +217,15 @@ options:
   volumes:
     description:
       - A list of block device mappings, by default this will always use the AMI root device so the volumes option is primarily for adding more storage.
-      - A mapping contains the (optional) keys C(device_name), C(virtual_name), C(ebs.volume_type), C(ebs.volume_size), C(ebs.kms_key_id),
-        C(ebs.snapshot_id), C(ebs.iops), and C(ebs.delete_on_termination).
+      - A mapping contains the (optional) keys V(device_name), V(virtual_name), V(ebs.volume_type), V(ebs.volume_size), V(ebs.kms_key_id),
+        V(ebs.snapshot_id), V(ebs.iops), and V(ebs.delete_on_termination).
       - For more information about each parameter, see U(https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_BlockDeviceMapping.html).
     type: list
     elements: dict
   launch_template:
     description:
       - The EC2 launch template to base instance configuration on.
-      - At least one of I(instance_type) or I(launch_template) must be specificed when launching an
+      - At least one of O(instance_type) or O(launch_template) must be specificed when launching an
         instance.
     type: dict
     suboptions:
@@ -247,7 +247,7 @@ options:
     type: str
   availability_zone:
     description:
-      - Specify an availability zone to use the default subnet it. Useful if not specifying the I(vpc_subnet_id) parameter.
+      - Specify an availability zone to use the default subnet it. Useful if not specifying the O(vpc_subnet_id) parameter.
       - If no subnet, ENI, or availability zone is provided, the default subnet in the default VPC will be used in the first AZ (alphabetically sorted).
     type: str
   instance_initiated_shutdown_behavior:
@@ -257,8 +257,8 @@ options:
     type: str
   tenancy:
     description:
-      - What type of tenancy to allow an instance to use. Default is shared tenancy. Dedicated tenancy will incur additional charges.
-      - This field is deprecated and will be removed in a release after 2025-12-01, use I(placement) instead.
+      - What type of tenancy to allow an instance to use. Default is V(shared) tenancy. Dedicated tenancy will incur additional charges.
+      - This field is deprecated and will be removed in a release after 2025-12-01, use O(placement) instead.
     choices: ['dedicated', 'default']
     type: str
   termination_protection:
@@ -277,13 +277,13 @@ options:
   cpu_credit_specification:
     description:
       - For T series instances, choose whether to allow increased charges to buy CPU credits if the default pool is depleted.
-      - Choose C(unlimited) to enable buying additional CPU credits.
+      - Choose V(unlimited) to enable buying additional CPU credits.
     choices: ['unlimited', 'standard']
     type: str
   cpu_options:
     description:
       - Reduce the number of vCPU exposed to the instance.
-      - Those parameters can only be set at instance launch. The two suboptions threads_per_core and core_count are mandatory.
+      - Those parameters can only be set at instance launch. The two suboptions O(cpu_options.threads_per_core) and  O(cpu_options.core_count) are mandatory.
       - See U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-optimize-cpu.html) for combinations available.
     type: dict
     suboptions:
@@ -326,7 +326,7 @@ options:
   placement_group:
     description:
       - The placement group that needs to be assigned to the instance.
-      - This field is deprecated and will be removed in a release after 2025-12-01, use I(placement) instead.
+      - This field is deprecated and will be removed in a release after 2025-12-01, use O(placement) instead.
     type: str
   placement:
     description:
@@ -361,7 +361,7 @@ options:
       tenancy:
         description:
           - Type of tenancy to allow an instance to use. Default is shared tenancy. Dedicated tenancy will incur additional charges.
-          - Support for I(tenancy=host) was added in amazon.aws 7.6.0.
+          - Support for O(tenancy=host) was added in amazon.aws 7.6.0.
         type: str
         required: false
         choices: ['dedicated', 'default', 'host']
@@ -384,7 +384,7 @@ options:
     description:
       - Modify the metadata options for the instance.
       - See U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html) for more information.
-      - The two suboptions I(http_endpoint) and I(http_tokens) are supported.
+      - The two suboptions O(metadata_options.http_endpoint) and O(metadata_options.http_tokens) are supported.
     type: dict
     version_added: 2.0.0
     suboptions:
@@ -414,14 +414,14 @@ options:
         version_added: 4.0.0
         type: str
         description:
-          - Whether the instance metadata endpoint is available via IPv6 (C(enabled)) or not (C(disabled)).
+          - Whether the instance metadata endpoint is available via IPv6 (V(enabled)) or not (V(disabled)).
         choices: [enabled, disabled]
         default: 'disabled'
       instance_metadata_tags:
         version_added: 4.0.0
         type: str
         description:
-          - Whether the instance tags are availble (C(enabled)) via metadata endpoint or not (C(disabled)).
+          - Whether the instance tags are availble (V(enabled)) via metadata endpoint or not (V(disabled)).
         choices: [enabled, disabled]
         default: 'disabled'
 
@@ -606,26 +606,26 @@ EXAMPLES = r"""
 
 RETURN = r"""
 instance_ids:
-    description: a list of ec2 instance IDs matching the provided specification and filters
+    description: A list of EC2 instance IDs matching the provided specification and filters.
     returned: always
     type: list
     sample: ["i-0123456789abcdef0", "i-0123456789abcdef1"]
     version_added: 5.3.0
 changed_ids:
-    description: a list of the set of ec2 instance IDs changed by the module action
+    description: A list of the set of EC2 instance IDs changed by the module action.
     returned: when instances that must be present are launched
     type: list
     sample: ["i-0123456789abcdef0"]
     version_added: 5.3.0
 terminated_ids:
-    description: a list of the set of ec2 instance IDs terminated by the module action
+    description: A list of the set of EC2 instance IDs terminated by the module action.
     returned: when instances that must be absent are terminated
     type: list
     sample: ["i-0123456789abcdef1"]
     version_added: 5.3.0
 instances:
-    description: a list of ec2 instances
-    returned: when wait == true or when matching instances already exist
+    description: A list of EC2 instances.
+    returned: when O(wait=true) or when matching instances already exist
     type: complex
     contains:
         ami_launch_index:
@@ -634,7 +634,7 @@ instances:
             type: int
             sample: 0
         architecture:
-            description: The architecture of the image
+            description: The architecture of the image.
             returned: always
             type: str
             sample: x86_64
@@ -669,7 +669,7 @@ instances:
                             type: str
                             sample: attached
                         volume_id:
-                            description: The ID of the EBS volume
+                            description: The ID of the EBS volume.
                             returned: always
                             type: str
                             sample: vol-12345678
@@ -750,7 +750,7 @@ instances:
                     type: str
                     sample: "arn:aws:iam::123456789012:instance-profile/myprofile"
                 id:
-                    description: The ID of the instance profile
+                    description: The ID of the instance profile.
                     returned: always
                     type: str
                     sample: JFJ397FDG400FG9FD1N

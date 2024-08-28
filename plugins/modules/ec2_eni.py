@@ -11,8 +11,8 @@ version_added: 1.0.0
 short_description: Create and optionally attach an Elastic Network Interface (ENI) to an instance
 description:
   - Create and optionally attach an Elastic Network Interface (ENI) to an instance.
-  - If I(eni_id) or I(private_ip) is provided, the existing ENI (if any) will be modified.
-  - The I(attached) parameter controls the attachment status of the network interface.
+  - If O(eni_id) or O(private_ip_address) is provided, the existing ENI (if any) will be modified.
+  - The O(attached) parameter controls the attachment status of the network interface.
 author:
   - "Rob White (@wimnat)"
   - "Mike Healey (@healem)"
@@ -20,7 +20,7 @@ options:
   eni_id:
     description:
       - The ID of the ENI (to modify).
-      - If I(eni_id=None) and I(state=present), a new ENI will be created.
+      - If O(eni_id=None) and O(state=present), a new ENI will be created.
     type: str
   instance_id:
     description:
@@ -41,7 +41,7 @@ options:
   security_groups:
     description:
       - List of security groups associated with the interface.
-      - Ignored when I(state=absent).
+      - Ignored when O(state=absent).
     type: list
     elements: str
     default: []
@@ -63,8 +63,8 @@ options:
     type: bool
   force_detach:
     description:
-      - Force detachment of the interface. This applies either when explicitly detaching the interface by setting I(instance_id=None)
-        or when deleting an interface with I(state=absent).
+      - Force detachment of the interface. This applies either when explicitly detaching the interface by setting O(instance_id=None)
+        or when deleting an interface with O(state=absent).
     default: false
     type: bool
   delete_on_termination:
@@ -82,20 +82,20 @@ options:
   secondary_private_ip_addresses:
     description:
       - A list of IP addresses to assign as secondary IP addresses to the network interface.
-      - This option is mutually exclusive of I(secondary_private_ip_address_count).
+      - This option is mutually exclusive of O(secondary_private_ip_address_count).
     required: false
     type: list
     elements: str
   purge_secondary_private_ip_addresses:
     description:
-      - To be used with I(secondary_private_ip_addresses) to determine whether or not to remove any secondary IP addresses other than those specified.
-      - Set I(secondary_private_ip_addresses=[]) to purge all secondary addresses.
+      - To be used with O(secondary_private_ip_addresses) to determine whether or not to remove any secondary IP addresses other than those specified.
+      - Set O(secondary_private_ip_addresses=[]) to purge all secondary addresses.
     default: false
     type: bool
   secondary_private_ip_address_count:
     description:
       - The number of secondary IP addresses to assign to the network interface.
-      - This option is mutually exclusive of I(secondary_private_ip_addresses).
+      - This option is mutually exclusive of O(secondary_private_ip_addresses).
     required: false
     type: int
   allow_reassignment:
@@ -107,10 +107,10 @@ options:
     type: bool
   name:
     description:
-      - Name for the ENI. This will create a tag with the key C(Name) and the value assigned here.
-      - This can be used in conjunction with I(subnet_id) as another means of identifiying a network interface.
-      - AWS does not enforce unique C(Name) tags, so duplicate names are possible if you configure it that way.
-        If that is the case, you will need to provide other identifying information such as I(private_ip_address) or I(eni_id).
+      - Name for the ENI. This will create a tag with the key V(Name) and the value assigned here.
+      - This can be used in conjunction with O(subnet_id) as another means of identifiying a network interface.
+      - AWS does not enforce unique V(Name) tags, so duplicate names are possible if you configure it that way.
+        If that is the case, you will need to provide other identifying information such as O(private_ip_address) or O(eni_id).
     required: false
     type: str
 extends_documentation_fragment:
@@ -119,9 +119,9 @@ extends_documentation_fragment:
   - amazon.aws.tags
   - amazon.aws.boto3
 notes:
-  - This module identifies and ENI based on either the I(eni_id), a combination of I(private_ip_address) and I(subnet_id),
-    or a combination of I(instance_id) and I(device_id). Any of these options will let you specify a particular ENI.
-  - Support for I(tags) and I(purge_tags) was added in release 1.3.0.
+  - This module identifies and ENI based on either the O(eni_id), a combination of O(private_ip_address) and O(subnet_id),
+    or a combination of O(instance_id) and O(device_index). Any of these options will let you specify a particular ENI.
+  - Support for O(tags) and O(purge_tags) was added in release 1.3.0.
 """
 
 EXAMPLES = r"""
@@ -213,7 +213,7 @@ EXAMPLES = r"""
 
 RETURN = r"""
 interface:
-  description: Network interface attributes
+  description: Network interface attributes.
   returned: when state != absent
   type: complex
   contains:
@@ -229,56 +229,56 @@ interface:
             "status": "attached"
         }
     description:
-      description: interface description
+      description: Interface description.
       type: str
       sample: Firewall network interface
     groups:
-      description: dict of security groups
+      description: Dict of security groups.
       type: dict
       sample: { "sg-f8a8a9da": "default" }
     id:
-      description: network interface id
+      description: Network interface id.
       type: str
       sample: "eni-1d889198"
     mac_address:
-      description: interface's physical address
+      description: Interface's physical address.
       type: str
       sample: "00:00:5E:00:53:23"
     name:
-      description: The name of the ENI
+      description: The name of the ENI.
       type: str
       sample: "my-eni-20"
     owner_id:
-      description: aws account id
+      description: AWS account id.
       type: str
       sample: 812381371
     private_ip_address:
-      description: primary ip address of this interface
+      description: Primary ip address of this interface.
       type: str
       sample: 10.20.30.40
     private_ip_addresses:
-      description: list of all private ip addresses associated to this interface
+      description: List of all private ip addresses associated to this interface.
       type: list
       elements: dict
       sample: [ { "primary_address": true, "private_ip_address": "10.20.30.40" } ]
     source_dest_check:
-      description: value of source/dest check flag
+      description: Value of source/dest check flag.
       type: bool
       sample: True
     status:
-      description: network interface status
+      description: Network interface status.
       type: str
       sample: "pending"
     subnet_id:
-      description: which vpc subnet the interface is bound
+      description: Which vpc subnet the interface is bound.
       type: str
       sample: subnet-b0a0393c
     tags:
-      description: The dictionary of tags associated with the ENI
+      description: The dictionary of tags associated with the ENI.
       type: dict
       sample: { "Name": "my-eni", "group": "Finance" }
     vpc_id:
-      description: which vpc this network interface is bound
+      description: Which vpc this network interface is bound.
       type: str
       sample: vpc-9a9a9da
 """
