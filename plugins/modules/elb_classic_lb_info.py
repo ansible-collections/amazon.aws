@@ -32,7 +32,7 @@ EXAMPLES = r"""
 # Output format tries to match amazon.aws.ec2_elb_lb module input parameters
 
 # Gather information about all ELBs
-- community.aws.elb_classic_lb_info:
+- amazon.aws.elb_classic_lb_info:
   register: elb_info
 
 - ansible.builtin.debug:
@@ -40,7 +40,7 @@ EXAMPLES = r"""
   loop: "{{ elb_info.elbs }}"
 
 # Gather information about a particular ELB
-- community.aws.elb_classic_lb_info:
+- amazon.aws.elb_classic_lb_info:
     names: frontend-prod-elb
   register: elb_info
 
@@ -48,7 +48,7 @@ EXAMPLES = r"""
     msg: "{{ elb_info.elbs.0.dns_name }}"
 
 # Gather information about a set of ELBs
-- community.aws.elb_classic_lb_info:
+- amazon.aws.elb_classic_lb_info:
     names:
       - frontend-prod-elb
       - backend-prod-elb
