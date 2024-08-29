@@ -18,7 +18,7 @@
   vars:
     ami_details:
       owner: 125523088429
-      name: Fedora-Cloud-Base-37-1.2.x86_64*
+      name: Fedora-Cloud-Base-37*
       user_data: |
         #!/bin/sh
         sudo dnf install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
@@ -45,6 +45,7 @@
           amazon.aws.ec2_ami_info:
             owners: '{{ ami_details.owner | default("amazon") }}'
             filters:
+              architecture: x86_64
               name: "{{ ami_details.name }}"
           register: ec2_amis
           no_log: true

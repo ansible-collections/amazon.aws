@@ -7,7 +7,7 @@
       owner-id: "125523088429"
       virtualization-type: hvm
       root-device-type: ebs
-      name: Fedora-Cloud-Base-37-1.2.x86_64*
+      name: Fedora-Cloud-Base-37*
   register: fedora_images
 
 - name: Set image id, vpc cidr and subnet cidr
