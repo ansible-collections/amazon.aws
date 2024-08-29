@@ -675,11 +675,11 @@ class InventoryModule(AWSInventoryBase):
         # https://docs.aws.amazon.com/systems-manager/latest/APIReference/API_InventoryFilter.html
         while len(instance_ids) > 40:
             filters = [{"Key": "AWS:InstanceInformation.InstanceId", "Values": instance_ids[:40]}]
-            result.update(_get_ssm_information(connection, filters).get("Entities", []))
+            result.update(_get_ssm_information(connection, filters))
             instance_ids = instance_ids[40:]
         if instance_ids:
             filters = [{"Key": "AWS:InstanceInformation.InstanceId", "Values": instance_ids}]
-            result.update(_get_ssm_information(connection, filters).get("Entities", []))
+            result.update(_get_ssm_information(connection, filters))
         return result
 
     def _populate(
