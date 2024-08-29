@@ -160,7 +160,7 @@ options:
           - If you specify V(evaluate) or omit this parameter, alarm is evaluated and possibly changes state no matter how many data points are available.
         type: str
         choices: ['ignore', 'evaluate']
-        version_added: 9.0.0
+        version_added: 8.2.0
     datapoints_to_alarm:
         description:
           - The number of data points that must be breaching to trigger the alarm.

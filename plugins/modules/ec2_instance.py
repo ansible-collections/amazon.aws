@@ -224,7 +224,7 @@ options:
     description:
       - Controls whether source/destination checking is enabled on the interface.
     type: bool
-    version_added: 8.1.0
+    version_added: 8.2.0
   network_interfaces:
     description:
       - A list of dictionaries containing specifications for network interfaces.
@@ -232,7 +232,7 @@ options:
       - Mutually exclusive with O(network).
     type: list
     elements: dict
-    version_added: 8.1.0
+    version_added: 8.2.0
     suboptions:
       assign_public_ip:
         description:
@@ -297,7 +297,7 @@ options:
       - Mutually exclusive with O(security_groups).
     type: list
     elements: dict
-    version_added: 8.1.0
+    version_added: 8.2.0
     suboptions:
       id:
         description:
