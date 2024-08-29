@@ -190,7 +190,7 @@ options:
           - For multi-AZ DB clusters, O(storage_type) defaults to V(io1) and a value for the O(iops) parameter is required.
           - For Aurora DB clusters, O(storage_type) defaults to V(aurora) standard.
           - For mysql and postgres DB clusters, O(storage_type) defaults to V(io1).
-          - Support for V(aurora) and V(aurora-iopt1) was added in release 8.1.0.
+          - Support for V(aurora) and V(aurora-iopt1) was added in release 8.2.0.
         type: str
         choices:
           - io1
