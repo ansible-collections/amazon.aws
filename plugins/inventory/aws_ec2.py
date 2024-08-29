@@ -670,17 +670,17 @@ class InventoryModule(AWSInventoryBase):
                     break
 
     def _get_multiple_ssm_inventories(self, connection, instance_ids):
-        result = []
+        result = {}
         # SSM inventory filters Values list can contain a maximum of 40 items so we need to retrieve 40 at a time
         # https://docs.aws.amazon.com/systems-manager/latest/APIReference/API_InventoryFilter.html
         while len(instance_ids) > 40:
             filters = [{"Key": "AWS:InstanceInformation.InstanceId", "Values": instance_ids[:40]}]
-            result.extend(_get_ssm_information(connection, filters).get("Entities", []))
+            result.update(_get_ssm_information(connection, filters).get("Entities", []))
             instance_ids = instance_ids[40:]
         if instance_ids:
             filters = [{"Key": "AWS:InstanceInformation.InstanceId", "Values": instance_ids}]
-            result.extend(_get_ssm_information(connection, filters).get("Entities", []))
-        return {"Entities": result}
+            result.update(_get_ssm_information(connection, filters).get("Entities", []))
+        return result
 
     def _populate(
         self,
