@@ -972,9 +972,11 @@ def handle_bucket_accelerate(s3_client, module: AnsibleAWSModule, name: str) -> 
     except is_boto3_error_code(["NotImplemented", "XNotImplemented"]) as e:
         if accelerate_enabled is not None:
             module.fail_json_aws(e, msg="Fetching bucket transfer acceleration state is not supported")
-    except is_boto3_error_code("UnsupportedArgument") as e:  # pylint: disable=duplicate-except
-        # -- Transfer Acceleration is not available in AWS GovCloud (US).
-        # -- https://docs.aws.amazon.com/govcloud-us/latest/UserGuide/govcloud-s3.html#govcloud-S3-diffs
+    except is_boto3_error_code(["UnsupportedArgument", "MethodNotAllowed"]) as e:  # pylint: disable=duplicate-except
+        # - Transfer Acceleration is not available in AWS GovCloud (US) and throws UnsupportedArgument.
+        # https://docs.aws.amazon.com/govcloud-us/latest/UserGuide/govcloud-s3.html#govcloud-S3-diffs
+        # - Transfer Acceleration is not available in some AWS regions and throws MethodNotAllowed
+        # https://docs.aws.amazon.com/AmazonS3/latest/userguide/transfer-acceleration.html
         module.warn("Tranfer acceleration is not available in S3 bucket region.")
         accelerate_enabled_result = False
     except is_boto3_error_code("AccessDenied") as e:  # pylint: disable=duplicate-except
