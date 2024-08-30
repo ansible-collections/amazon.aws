@@ -44,15 +44,24 @@ options:
     default: false
     type: boolean
   shortnames:
-    description: Indicates whether to return the name only without path if using a parameter hierarchy.
+    description:
+        - Indicates whether to return the name only without path if using a parameter hierarchy.
+        - The O(shortnames) and O(droppath) options are mutually exclusive.
     default: false
     type: boolean
+  droppath:
+    description:
+        - Indicates whether to return the parameter name with the searched parameter heirarchy removed.
+        - The O(shortnames) and O(droppath) options are mutually exclusive.
+    default: false
+    type: boolean
+    version_added: 8.2.0
   on_missing:
     description:
         - Action to take if the SSM parameter is missing.
-        - C(error) will raise a fatal error when the SSM parameter is missing.
-        - C(skip) will silently ignore the missing SSM parameter.
-        - C(warn) will skip over the missing SSM parameter but issue a warning.
+        - V(error) will raise a fatal error when the SSM parameter is missing.
+        - V(skip) will silently ignore the missing SSM parameter.
+        - V(warn) will skip over the missing SSM parameter but issue a warning.
     default: error
     type: string
     choices: ['error', 'skip', 'warn']
@@ -112,8 +121,11 @@ EXAMPLES = r"""
 - name: return a dictionary of ssm parameters from a hierarchy path
   debug: msg="{{ lookup('amazon.aws.aws_ssm', '/PATH/to/params', region='ap-southeast-2', bypath=true, recursive=true ) }}"
 
-- name: return a dictionary of ssm parameters from a hierarchy path with shortened names (param instead of /PATH/to/param)
+- name: return a dictionary of ssm parameters from a hierarchy path with shortened names (param instead of /PATH/to/params/foo/bar/param)
   debug: msg="{{ lookup('amazon.aws.aws_ssm', '/PATH/to/params', region='ap-southeast-2', shortnames=true, bypath=true, recursive=true ) }}"
+
+- name: return a dictionary of ssm parameters from a hierarchy path with the heirarchy path dropped (foo/bar/param instead of /PATH/to/params/foo/bar/param)
+  debug: msg="{{ lookup('amazon.aws.aws_ssm', '/PATH/to/params', region='ap-southeast-2', droppath=true, bypath=true, recursive=true ) }}"
 
 - name: Iterate over a parameter hierarchy (one iteration per parameter)
   debug: msg='Key contains {{ item.key }} , with value {{ item.value }}'
@@ -173,6 +185,9 @@ class LookupModule(AWSLookupBase):
                 f'"on_denied" must be a string and one of "error", "warn" or "skip", not {on_denied}'
             )
 
+        if self.get_option("shortnames") and self.get_option("droppath"):
+            raise AnsibleLookupError("shortnames and droppath are mutually exclusive. They cannot both be set to true.")
+
         ret = []
         ssm_dict = {}
 
@@ -192,6 +207,10 @@ class LookupModule(AWSLookupBase):
                 if self.get_option("shortnames"):
                     for x in paramlist:
                         x["Name"] = x["Name"][x["Name"].rfind("/") + 1:]  # fmt: skip
+
+                if self.get_option("droppath"):
+                    for x in paramlist:
+                        x["Name"] = x["Name"].replace(ssm_dict["Path"], "")
 
                 display.vvvv(f"AWS_ssm path lookup returned: {to_native(paramlist)}")
 
