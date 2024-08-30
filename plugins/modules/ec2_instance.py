@@ -2323,16 +2323,20 @@ def handle_existing(existing_matches, state, filters):
     return result
 
 
-def enforce_count(existing_matches, desired_module_state):
+def enforce_count(existing_matches, desired_module_state, filters):
     exact_count = module.params.get("exact_count")
 
     current_count = len(existing_matches)
     if current_count == exact_count:
+        if desired_module_state != "present":
+            results = ensure_instance_state(desired_module_state, filters)
+            if results["changed"]:
+                return results
         return dict(
             changed=False,
             instances=[pretty_instance(i) for i in existing_matches],
             instance_ids=[i["InstanceId"] for i in existing_matches],
-            msg=f"{exact_count} instances already running, nothing to do.",
+            msg=f"{exact_count} instances already {desired_module_state}, nothing to do.",
         )
 
     if current_count < exact_count:
@@ -2756,7 +2760,7 @@ def main():
                     changed=False,
                 )
         elif module.params.get("exact_count"):
-            result = enforce_count(existing_matches, desired_module_state=state)
+            result = enforce_count(existing_matches, desired_module_state=state, filters=filters)
         elif existing_matches and not module.params.get("count"):
             for match in existing_matches:
                 warn_if_public_ip_assignment_changed(match)
