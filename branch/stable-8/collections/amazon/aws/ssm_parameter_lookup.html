@@ -239,6 +239,20 @@ examples: <code class="docutils literal notranslate"><span class="pre">lookup('a
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-droppath"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ssm-parameter-lookup-parameter-droppath"><strong>droppath</strong></p>
+<a class="ansibleOptionLink" href="#parameter-droppath" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 8.2.0</em></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Indicates whether to return the parameter name with the searched parameter heirarchy removed.</p>
+<p>The <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ssm-parameter-lookup-parameter-shortnames"><span class="std std-ref"><span class="pre">shortnames</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ssm-parameter-lookup-parameter-droppath"><span class="std std-ref"><span class="pre">droppath</span></span></a></strong></code> options are mutually exclusive.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-endpoint_url"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_endpoint_url"></div>
 <div class="ansibleOptionAnchor" id="parameter-endpoint"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ssm-parameter-lookup-parameter-endpoint-url"><span id="ansible-collections-amazon-aws-ssm-parameter-lookup-parameter-endpoint"></span><span id="ansible-collections-amazon-aws-ssm-parameter-lookup-parameter-aws-endpoint-url"></span><strong>endpoint_url</strong></p>
@@ -258,7 +272,7 @@ examples: <code class="docutils literal notranslate"><span class="pre">lookup('a
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-on_denied"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ssm-parameter-lookup-parameter-on-denied"><strong>on_denied</strong></p>
 <a class="ansibleOptionLink" href="#parameter-on_denied" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 <p><em class="ansible-option-versionadded">added in amazon.aws 2.0.0</em></p>
@@ -275,15 +289,15 @@ examples: <code class="docutils literal notranslate"><span class="pre">lookup('a
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-on_missing"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ssm-parameter-lookup-parameter-on-missing"><strong>on_missing</strong></p>
 <a class="ansibleOptionLink" href="#parameter-on_missing" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 <p><em class="ansible-option-versionadded">added in amazon.aws 2.0.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Action to take if the SSM parameter is missing.</p>
-<p><code class="docutils literal notranslate"><span class="pre">error</span></code> will raise a fatal error when the SSM parameter is missing.</p>
-<p><code class="docutils literal notranslate"><span class="pre">skip</span></code> will silently ignore the missing SSM parameter.</p>
-<p><code class="docutils literal notranslate"><span class="pre">warn</span></code> will skip over the missing SSM parameter but issue a warning.</p>
+<p><code class="ansible-value docutils literal notranslate"><span class="pre">error</span></code> will raise a fatal error when the SSM parameter is missing.</p>
+<p><code class="ansible-value docutils literal notranslate"><span class="pre">skip</span></code> will silently ignore the missing SSM parameter.</p>
+<p><code class="ansible-value docutils literal notranslate"><span class="pre">warn</span></code> will skip over the missing SSM parameter but issue a warning.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">&quot;error&quot;</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -292,7 +306,7 @@ examples: <code class="docutils literal notranslate"><span class="pre">lookup('a
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-profile"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_profile"></div>
 <div class="ansibleOptionAnchor" id="parameter-boto_profile"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ssm-parameter-lookup-parameter-profile"><span id="ansible-collections-amazon-aws-ssm-parameter-lookup-parameter-boto-profile"></span><span id="ansible-collections-amazon-aws-ssm-parameter-lookup-parameter-aws-profile"></span><strong>profile</strong></p>
@@ -310,7 +324,7 @@ examples: <code class="docutils literal notranslate"><span class="pre">lookup('a
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-recursive"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ssm-parameter-lookup-parameter-recursive"><strong>recursive</strong></p>
 <a class="ansibleOptionLink" href="#parameter-recursive" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -322,7 +336,7 @@ examples: <code class="docutils literal notranslate"><span class="pre">lookup('a
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-region"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_region"></div>
 <div class="ansibleOptionAnchor" id="parameter-ec2_region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ssm-parameter-lookup-parameter-region"><span id="ansible-collections-amazon-aws-ssm-parameter-lookup-parameter-ec2-region"></span><span id="ansible-collections-amazon-aws-ssm-parameter-lookup-parameter-aws-region"></span><strong>region</strong></p>
@@ -342,7 +356,7 @@ examples: <code class="docutils literal notranslate"><span class="pre">lookup('a
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-secret_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_secret_access_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_secret_key"></div>
@@ -367,7 +381,7 @@ examples: <code class="docutils literal notranslate"><span class="pre">lookup('a
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-session_token"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_session_token"></div>
 <div class="ansibleOptionAnchor" id="parameter-security_token"></div>
@@ -397,11 +411,12 @@ examples: <code class="docutils literal notranslate"><span class="pre">lookup('a
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-shortnames"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ssm-parameter-lookup-parameter-shortnames"><strong>shortnames</strong></p>
 <a class="ansibleOptionLink" href="#parameter-shortnames" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Indicates whether to return the name only without path if using a parameter hierarchy.</p>
+<p>The <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ssm-parameter-lookup-parameter-shortnames"><span class="std std-ref"><span class="pre">shortnames</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ssm-parameter-lookup-parameter-droppath"><span class="std std-ref"><span class="pre">droppath</span></span></a></strong></code> options are mutually exclusive.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -462,8 +477,11 @@ examples: <code class="docutils literal notranslate"><span class="pre">lookup('a
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">return a dictionary of ssm parameters from a hierarchy path</span>
 <span class="w">  </span><span class="nt">debug</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">msg=&quot;</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">&#39;amazon.aws.aws_ssm&#39;</span><span class="o">,</span> <span class="s1">&#39;/PATH/to/params&#39;</span><span class="o">,</span> <span class="nv">region</span><span class="o">=</span><span class="s1">&#39;ap-southeast-2&#39;</span><span class="o">,</span> <span class="nv">bypath</span><span class="o">=</span><span class="kp">true</span><span class="o">,</span> <span class="k">recursive</span><span class="o">=</span><span class="kp">true</span> <span class="o">)</span> <span class="cp">}}</span><span class="l l-Scalar l-Scalar-Plain">&quot;</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">return a dictionary of ssm parameters from a hierarchy path with shortened names (param instead of /PATH/to/param)</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">return a dictionary of ssm parameters from a hierarchy path with shortened names (param instead of /PATH/to/params/foo/bar/param)</span>
 <span class="w">  </span><span class="nt">debug</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">msg=&quot;</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">&#39;amazon.aws.aws_ssm&#39;</span><span class="o">,</span> <span class="s1">&#39;/PATH/to/params&#39;</span><span class="o">,</span> <span class="nv">region</span><span class="o">=</span><span class="s1">&#39;ap-southeast-2&#39;</span><span class="o">,</span> <span class="nv">shortnames</span><span class="o">=</span><span class="kp">true</span><span class="o">,</span> <span class="nv">bypath</span><span class="o">=</span><span class="kp">true</span><span class="o">,</span> <span class="k">recursive</span><span class="o">=</span><span class="kp">true</span> <span class="o">)</span> <span class="cp">}}</span><span class="l l-Scalar l-Scalar-Plain">&quot;</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">return a dictionary of ssm parameters from a hierarchy path with the heirarchy path dropped (foo/bar/param instead of /PATH/to/params/foo/bar/param)</span>
+<span class="w">  </span><span class="nt">debug</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">msg=&quot;</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">&#39;amazon.aws.aws_ssm&#39;</span><span class="o">,</span> <span class="s1">&#39;/PATH/to/params&#39;</span><span class="o">,</span> <span class="nv">region</span><span class="o">=</span><span class="s1">&#39;ap-southeast-2&#39;</span><span class="o">,</span> <span class="nv">droppath</span><span class="o">=</span><span class="kp">true</span><span class="o">,</span> <span class="nv">bypath</span><span class="o">=</span><span class="kp">true</span><span class="o">,</span> <span class="k">recursive</span><span class="o">=</span><span class="kp">true</span> <span class="o">)</span> <span class="cp">}}</span><span class="l l-Scalar l-Scalar-Plain">&quot;</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Iterate over a parameter hierarchy (one iteration per parameter)</span>
 <span class="w">  </span><span class="nt">debug</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">msg=&#39;Key contains </span><span class="cp">{{</span> <span class="nv">item.key</span> <span class="cp">}}</span><span class="l l-Scalar l-Scalar-Plain"> , with value </span><span class="cp">{{</span> <span class="nv">item.value</span> <span class="cp">}}</span><span class="l l-Scalar l-Scalar-Plain">&#39;</span>
