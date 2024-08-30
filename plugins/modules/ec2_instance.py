@@ -2390,9 +2390,9 @@ def enforce_count(
 
     current_count = len(existing_matches)
     if current_count == exact_count:
-        if desired_module_state != 'present':
+        if desired_module_state != "present":
             results = ensure_instance_state(desired_module_state)
-            if results['changed']:
+            if results["changed"]:
                 return results
         return dict(
             changed=False,
