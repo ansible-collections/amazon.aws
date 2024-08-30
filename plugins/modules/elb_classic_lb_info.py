@@ -8,6 +8,7 @@ DOCUMENTATION = r"""
 ---
 module: elb_classic_lb_info
 version_added: 1.0.0
+version_added_collection: community.aws
 short_description: Gather information about EC2 Elastic Load Balancers in AWS
 description:
   - Gather information about EC2 Elastic Load Balancers in AWS
