@@ -44,23 +44,24 @@ options:
     default: false
     type: boolean
   shortnames:
-    description: 
+    description:
         - Indicates whether to return the name only without path if using a parameter hierarchy.
-        - The I(shortnames) and I(droppath) options are mutually exclusive.
+        - The O(shortnames) and O(droppath) options are mutually exclusive.
     default: false
     type: boolean
   droppath:
-    description: 
+    description:
         - Indicates whether to return the parameter name with the searched parameter heirarchy removed.
-        - The I(shortnames) and I(droppath) options are mutually exclusive.
+        - The O(shortnames) and O(droppath) options are mutually exclusive.
     default: false
     type: boolean
+    version_added: 8.2.0
   on_missing:
     description:
         - Action to take if the SSM parameter is missing.
-        - C(error) will raise a fatal error when the SSM parameter is missing.
-        - C(skip) will silently ignore the missing SSM parameter.
-        - C(warn) will skip over the missing SSM parameter but issue a warning.
+        - V(error) will raise a fatal error when the SSM parameter is missing.
+        - V(skip) will silently ignore the missing SSM parameter.
+        - V(warn) will skip over the missing SSM parameter but issue a warning.
     default: error
     type: string
     choices: ['error', 'skip', 'warn']
