@@ -1,0 +1,143 @@
+---
+- module_defaults:
+    group/aws:
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+  block:
+    - ansible.builtin.set_fact:
+        local_bucket_name: "{{ bucket_name | hash('md5')}}-inventory-source"
+        local_dest_bucket_name: "{{ bucket_name | hash('md5')}}-inventory-target"
+    - name: Create a simple bucket to be inventory destination 
+      amazon.aws.s3_bucket:
+        name: "{{ local_dest_bucket_name }}"
+        state: present
+      register: output
+
+    - ansible.builtin.assert:
+        that:
+          - output.changed
+
+    - name: Create a simple bucket with minimal inventory configuration
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
+        state: present
+        inventory:
+        - id: "{{ local_dest_bucket_name }}"
+          destination:
+            bucket: "arn:aws:s3:::{{ local_dest_bucket_name }}"
+            format: "CSV"
+          optional_fields:
+            - "Size"
+          included_object_versions: "All"
+          schedule: "Weekly"
+      register: output
+
+    - ansible.builtin.assert:
+        that:
+          - output.changed
+          - output.bucket_inventory
+
+    - name: Re-configure inventory configuration
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
+        state: present
+        inventory:
+        - id: "{{ local_dest_bucket_name }}"
+          destination:
+            bucket: "arn:aws:s3:::{{ local_dest_bucket_name }}"
+            format: "CSV"
+          optional_fields:
+            - "Size"
+          schedule: "Daily"
+          included_object_versions: "All"
+      register: output
+
+    - ansible.builtin.assert:
+        that:
+          - output.changed
+          - output.bucket_inventory
+
+    - name: Re-configure inventory configuration (idempotency)
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
+        state: present
+        inventory:
+        - id: "{{ local_dest_bucket_name }}"
+          destination:
+            bucket: "arn:aws:s3:::{{ local_dest_bucket_name }}"
+            format: "CSV"
+          optional_fields:
+            - "Size"
+          schedule: "Daily"
+          included_object_versions: "All"
+      register: output
+
+    - ansible.builtin.assert:
+        that:
+          - output is not changed
+          - output.bucket_inventory
+
+
+    - name: Delete inventory configuration
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
+        state: present
+        inventory: []
+      register: output
+
+    - ansible.builtin.assert:
+        that:
+          - output is changed
+          - not output.bucket_inventory|bool
+
+    - name: Delete inventory configuration (idempotency)
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
+        state: present
+        inventory: []
+      register: output
+
+    - ansible.builtin.assert:
+        that:
+          - output is not changed
+          - not output.bucket_inventory|bool
+
+    # ============================================================
+
+    - name: Delete testing s3 bucket
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
+        state: absent
+      register: output
+
+    - ansible.builtin.assert:
+        that:
+          - output.changed
+
+
+    - name: Delete testing inventory s3 bucket
+      amazon.aws.s3_bucket:
+        name: "{{ local_dest_bucket_name }}"
+        state: absent
+      register: output
+
+    - ansible.builtin.assert:
+        that:
+          - output.changed
+
+
+  # ============================================================
+  always:
+    - name: Ensure all buckets are deleted
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
+        state: absent
+      ignore_errors: true
+
+    - name: Ensure all buckets are deleted
+      amazon.aws.s3_bucket:
+        name: "{{ local_dest_bucket_name }}"
+        state: absent
+      ignore_errors: true
