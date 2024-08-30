@@ -2384,14 +2384,18 @@ def handle_existing(
 
 
 def enforce_count(
-    client, module: AnsibleAWSModule, existing_matches: List[Dict[str, Any]], desired_module_state: str
+    client,
+    module: AnsibleAWSModule,
+    existing_matches: List[Dict[str, Any]],
+    desired_module_state: str,
+    filters: Optional[Dict[str, Any]],
 ) -> Dict[str, Any]:
     exact_count = module.params.get("exact_count")
 
     current_count = len(existing_matches)
     if current_count == exact_count:
         if desired_module_state != "present":
-            results = ensure_instance_state(desired_module_state)
+            results = ensure_instance_state(client, module, desired_module_state, filters)
             if results["changed"]:
                 return results
         return dict(
@@ -2827,7 +2831,7 @@ def main():
                     changed=False,
                 )
         elif module.params.get("exact_count"):
-            result = enforce_count(client, module, existing_matches, desired_module_state=state)
+            result = enforce_count(client, module, existing_matches, desired_module_state=state, filters=filters)
         elif existing_matches and not module.params.get("count"):
             for match in existing_matches:
                 warn_if_public_ip_assignment_changed(module, match)
