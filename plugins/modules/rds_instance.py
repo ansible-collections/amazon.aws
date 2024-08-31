@@ -1714,9 +1714,7 @@ def main():
             "1.29.44", reason="to use 'ca_certificate_identifier' while creating/updating rds instance"
         )
     if module.params["multi_tenant"]:
-        module.require_botocore_at_least(
-            "1.28.80", reason="to use 'multi_tenant' while creating rds instance"
-        )
+        module.require_botocore_at_least("1.28.80", reason="to use 'multi_tenant' while creating rds instance")
 
     # Sanitize instance identifiers
     module.params["db_instance_identifier"] = module.params["db_instance_identifier"].lower()
