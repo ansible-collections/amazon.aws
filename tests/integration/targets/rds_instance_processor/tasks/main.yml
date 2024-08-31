@@ -25,24 +25,29 @@
       amazon.aws.rds_instance:
         id: "{{ instance_id }}"
         state: present
-        engine: oracle-ee
+        engine: oracle-ee-cdb
         username: "{{ username }}"
         password: "{{ password }}"
         db_instance_class: "{{ oracle_ee_db_instance_class }}"
         allocated_storage: "{{ allocated_storage }}"
         storage_encrypted: true
         processor_features: {}
+        multi_tenant: true
       register: result
+      vars:
+        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
 
     - ansible.builtin.assert:
         that:
           - result.changed
+          - result.multi_tenant
+          - result.engine == "oracle-ee-cdb"
 
     - name: Modify the processor features - check_mode
       amazon.aws.rds_instance:
         id: "{{ instance_id }}"
         state: present
-        engine: oracle-ee
+        engine: oracle-ee-cdb
         username: "{{ username }}"
         password: "{{ password }}"
         db_instance_class: "{{ oracle_ee_db_instance_class }}"
@@ -50,6 +55,7 @@
         storage_encrypted: true
         processor_features: "{{ modified_processor_features }}"
         apply_immediately: true
+        multi_tenant: true
       register: result
       check_mode: true
 
@@ -61,7 +67,7 @@
       amazon.aws.rds_instance:
         id: "{{ instance_id }}"
         state: present
-        engine: oracle-ee
+        engine: oracle-ee-cdb
         username: "{{ username }}"
         password: "{{ password }}"
         db_instance_class: "{{ oracle_ee_db_instance_class }}"
@@ -69,6 +75,7 @@
         storage_encrypted: true
         processor_features: "{{ modified_processor_features }}"
         apply_immediately: true
+        multi_tenant: true
       register: result
 
     - ansible.builtin.assert:
@@ -81,7 +88,7 @@
       amazon.aws.rds_instance:
         id: "{{ instance_id }}"
         state: present
-        engine: oracle-ee
+        engine: oracle-ee-cdb
         username: "{{ username }}"
         password: "{{ password }}"
         db_instance_class: "{{ oracle_ee_db_instance_class }}"
@@ -89,6 +96,7 @@
         storage_encrypted: true
         processor_features: "{{ modified_processor_features }}"
         apply_immediately: true
+        multi_tenant: true
       register: result
       check_mode: true
 
@@ -100,7 +108,7 @@
       amazon.aws.rds_instance:
         id: "{{ instance_id }}"
         state: present
-        engine: oracle-ee
+        engine: oracle-ee-cdb
         username: "{{ username }}"
         password: "{{ password }}"
         db_instance_class: "{{ oracle_ee_db_instance_class }}"
@@ -108,6 +116,7 @@
         storage_encrypted: true
         processor_features: "{{ modified_processor_features }}"
         apply_immediately: true
+        multi_tenant: true
       register: result
 
     # Check if processor features either are pending or already changed

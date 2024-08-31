@@ -280,6 +280,15 @@ options:
         description:
           - Specifies if the DB instance is a Multi-AZ deployment. Mutually exclusive with O(availability_zone).
         type: bool
+    multi_tenant:
+        description:
+          - Specifies whether to use the multi-tenant configuration or the single-tenant configuration (default).
+          - This parameter only applies to RDS for Oracle container database (CDB) engines.
+          - The DB engine that you specify in the request must support the multi-tenant configuration.
+          - If the multi-tenant configuration is enabled during creation of the DB instance, it cannot be modified later.
+        type: bool
+        default: false
+        version_added: 9.1.0
     new_db_instance_identifier:
         description:
           - The new DB instance (lowercase) identifier for the DB instance when renaming a DB instance. The identifier must contain
@@ -789,6 +798,12 @@ multi_az:
   description: Whether the DB instance is a Multi-AZ deployment.
   returned: always
   type: bool
+  sample: false
+multi_tenant:
+  description: Specifies whether to use the multi-tenant configuration or the single-tenant configuration (default). 
+  returned: for Oracle container database (CDB) engines.
+  type: bool
+  version_added: 9.1.0
   sample: false
 option_group_memberships:
   description: The list of option group memberships for this DB instance.
@@ -1631,6 +1646,7 @@ def main():
         monitoring_interval=dict(type="int"),
         monitoring_role_arn=dict(),
         multi_az=dict(type="bool"),
+        multi_tenant=dict(type="bool", default=False),
         new_db_instance_identifier=dict(aliases=["new_instance_id", "new_id"]),
         option_group_name=dict(),
         performance_insights_kms_key_id=dict(),
@@ -1696,6 +1712,10 @@ def main():
     if module.params["ca_certificate_identifier"]:
         module.require_botocore_at_least(
             "1.29.44", reason="to use 'ca_certificate_identifier' while creating/updating rds instance"
+        )
+    if module.params["multi_tenant"]:
+        module.require_botocore_at_least(
+            "1.28.80", reason="to use 'multi_tenant' while creating rds instance"
         )
 
     # Sanitize instance identifiers
