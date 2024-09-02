@@ -277,6 +277,57 @@
           - '"terminated_ids" not in terminate_multiple_instances'
           - '"ec2:TerminateInstances" not in terminate_multiple_instances.resource_actions'
 
+    - name: Trigger restart of instances with exact_count (check_mode)
+      amazon.aws.ec2_instance:
+        state: restarted
+        instance_type: "{{ ec2_instance_type }}"
+        exact_count: 3
+        region: "{{ aws_region }}"
+        image_id: "{{ ec2_ami_id }}"
+        name: "{{ resource_prefix }}-test-enf_cnt"
+        tags:
+          TestId: "{{ ec2_instance_tag_TestId }}"
+      register: restart_multiple_instances
+      check_mode: true
+
+    - ansible.builtin.assert:
+        that:
+          - restart_multiple_instances is not failed
+          - restart_multiple_instances.changed
+          - '"instances" in restart_multiple_instances'
+          - restart_multiple_instances.instances | length == 3
+          - '"reboot_success" in restart_multiple_instances'
+          - '"reboot_failed" in restart_multiple_instances'
+          - '"ec2:StopInstances" not in restart_multiple_instances.resource_actions'
+          - '"ec2:StartInstances" not in restart_multiple_instances.resource_actions'
+
+
+    - name: Trigger restart of instances with exact_count
+      amazon.aws.ec2_instance:
+        state: restarted
+        instance_type: "{{ ec2_instance_type }}"
+        exact_count: 3
+        region: "{{ aws_region }}"
+        image_id: "{{ ec2_ami_id }}"
+        name: "{{ resource_prefix }}-test-enf_cnt"
+        tags:
+          TestId: "{{ ec2_instance_tag_TestId }}"
+        wait: true
+      register: restart_multiple_instances
+
+    - ansible.builtin.assert:
+        that:
+          - restart_multiple_instances is not failed
+          - restart_multiple_instances.changed
+          - '"instances" in restart_multiple_instances'
+          - restart_multiple_instances.instances | length == 3
+          - '"reboot_success" in restart_multiple_instances'
+          - restart_multiple_instances.reboot_success | length == 3
+          - '"reboot_failed" in restart_multiple_instances'
+          - restart_multiple_instances.reboot_failed | length == 0
+          - '"ec2:StopInstances" in restart_multiple_instances.resource_actions'
+          - '"ec2:StartInstances" in restart_multiple_instances.resource_actions'
+
     - name: Enforce instance count to 6 - Launch 3 more instances (check_mode)
       amazon.aws.ec2_instance:
         instance_type: "{{ ec2_instance_type }}"
