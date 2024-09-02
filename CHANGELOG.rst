@@ -15,7 +15,7 @@ The amazon.aws 8.2.0 release includes a number of bugfixes, some new features an
 Minor Changes
 -------------
 
-- cloudwatch_metric_alarm - add  support for `evaluate_low_sample_count_percentile` parameter.
+- cloudwatch_metric_alarm - add  support for ``evaluate_low_sample_count_percentile`` parameter.
 - cloudwatch_metric_alarm - support DatapointsToAlarm config (https://github.com/ansible-collections/amazon.aws/pull/2196).
 - ec2_ami - Add support for uefi-preferred boot mode (https://github.com/ansible-collections/amazon.aws/pull/2253).
 - ec2_instance - Add support for ``network_interfaces`` and ``network_interfaces_ids`` options replacing deprecated option ``network`` (https://github.com/ansible-collections/amazon.aws/pull/2123).
