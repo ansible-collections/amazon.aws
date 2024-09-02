@@ -3148,4 +3148,4 @@ releases:
     - update_return_block_rds.yml
     - update_return_block_route53_health_check.yml
     - use_t3a_micro_in_tests.yml
-    release_date: '2024-09-02'
+    release_date: '2024-09-03'
