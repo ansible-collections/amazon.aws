@@ -1,3 +1,0 @@
----
-bugfixes:
-  - cloudwatch_metric_alarm - Fix idempotency when creating cloudwatch metric alarm without dimensions (https://github.com/ansible-collections/amazon.aws/pull/1865).

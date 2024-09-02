@@ -1,2 +1,0 @@
-bugfixes:
-  - route53 - modify the return value to return diff only when ``module._diff`` is set to true (https://github.com/ansible-collections/amazon.aws/pull/2136).

@@ -1,3 +1,0 @@
----
-minor_changes:
-  - cloudwatch_metric_alarm - support DatapointsToAlarm config (https://github.com/ansible-collections/amazon.aws/pull/2196).

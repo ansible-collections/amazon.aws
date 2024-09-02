@@ -1,3 +1,0 @@
----
-trivial:
-  - Update return block in the module documentation for ec2_snapshot ec2_snapshot_info ec2_spot_instance  ec2_vol ec2_vpc_endpoint ec2_vpc_endpoint_info ec2_vpc_endpoint_service_info ec2_vpc_nat_gateway ec2_vpc_nat_gateway_info ec2_vpc_route_table ec2_vpc_subnet ec2_vpc_subnet_info

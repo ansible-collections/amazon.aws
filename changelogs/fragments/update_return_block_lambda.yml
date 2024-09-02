@@ -1,3 +1,0 @@
----
-trivial:
-  - Update return block in the module documentation for lambda_event, lambda_info, lambda_layer, lambda_policy

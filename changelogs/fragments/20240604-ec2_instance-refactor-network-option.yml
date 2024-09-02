@@ -1,5 +1,0 @@
----
-minor_changes:
-  - ec2_instance - Add support for ``network_interfaces`` and ``network_interfaces_ids`` options replacing deprecated option ``network`` (https://github.com/ansible-collections/amazon.aws/pull/2123).
-  - ec2_instance - ``network.source_dest_check`` option has been deprecated and replaced by new option ``source_dest_check`` (https://github.com/ansible-collections/amazon.aws/pull/2123).
-  - ec2_instance - add the possibility to create instance with multiple network interfaces (https://github.com/ansible-collections/amazon.aws/pull/2123).

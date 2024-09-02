@@ -1,3 +1,0 @@
----
-minor_changes:
-  - s3_bucket - Add support for bucket inventories (https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage-inventory.html)

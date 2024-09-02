@@ -1,3 +1,0 @@
----
-trivial:
-  - Make the ami pattern generic to avoid searching for deprecated amis.
