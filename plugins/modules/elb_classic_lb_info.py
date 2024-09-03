@@ -32,30 +32,33 @@ EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 # Output format tries to match amazon.aws.ec2_elb_lb module input parameters
 
-# Gather information about all ELBs
-- amazon.aws.elb_classic_lb_info:
+- name: Gather information about all ELBs
+  amazon.aws.elb_classic_lb_info:
   register: elb_info
 
-- ansible.builtin.debug:
+- name: Print dns names from above task result
+  ansible.builtin.debug:
     msg: "{{ item.dns_name }}"
   loop: "{{ elb_info.elbs }}"
 
-# Gather information about a particular ELB
-- amazon.aws.elb_classic_lb_info:
+- name: Gather information about a particular ELB
+  amazon.aws.elb_classic_lb_info:
     names: frontend-prod-elb
   register: elb_info
 
-- ansible.builtin.debug:
+- name: Prnt dns name from above task result
+  ansible.builtin.debug:
     msg: "{{ elb_info.elbs.0.dns_name }}"
 
-# Gather information about a set of ELBs
-- amazon.aws.elb_classic_lb_info:
+- name: Gather information about a set of ELBs
+  amazon.aws.elb_classic_lb_info:
     names:
       - frontend-prod-elb
       - backend-prod-elb
   register: elb_info
 
-- ansible.builtin.debug:
+- name: Print dns names from above task result
+  ansible.builtin.debug:
     msg: "{{ item.dns_name }}"
   loop: "{{ elb_info.elbs }}"
 """
@@ -126,6 +129,12 @@ elbs:
         vpc_id: vpc-c248fda4
 """
 
+from typing import Any
+from typing import List
+from typing import Dict
+from typing import Tuple
+from typing import Union
+
 try:
     import botocore
 except ImportError:
@@ -139,11 +148,19 @@ from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_ta
 
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 
-MAX_AWS_RETRIES = 5
-MAX_AWS_DELAY = 5
 
+def list_elbs(connection: Any, load_balancer_names: List[str]) -> List[Dict]:
+    """
+    List Elastic Load Balancers (ELBs) and their detailed information.
 
-def list_elbs(connection, load_balancer_names):
+    Parameters:
+      connection (boto3.client): The Boto3 ELB client object.
+      load_balancer_names (List[str]): List of ELB names to gather information about.
+
+    Returns:
+      A list of dictionaries where each dictionary contains informtion about one ELB.
+    """
+
     results = []
 
     if not load_balancer_names:
@@ -158,7 +175,17 @@ def list_elbs(connection, load_balancer_names):
     return results
 
 
-def describe_elb(connection, lb):
+def describe_elb(connection: Any, lb: Dict) -> Dict:
+    """
+    Describes an Elastic Load Balancer (ELB).
+
+    Parameters:
+      connection (boto3.client): The Boto3 ELB client object.
+      lb (Dict): Dictionary containing ELB .
+
+    Returns:
+      A dictionary with detailed information of the ELB.
+    """
     description = camel_dict_to_snake_dict(lb)
     name = lb["LoadBalancerName"]
     instances = lb.get("Instances", [])
@@ -178,11 +205,30 @@ def describe_elb(connection, lb):
 
 @AWSRetry.jittered_backoff()
 def get_all_lb(connection):
+    """
+    Get paginated result for information of all Elastic Load Balancers.
+
+    Parameters:
+        connection (boto3.client): The Boto3 ELB client object.
+
+    Returns:
+        A list of dictionaries containing descriptions of all ELBs.
+    """
     paginator = connection.get_paginator("describe_load_balancers")
     return paginator.paginate().build_full_result()["LoadBalancerDescriptions"]
 
 
-def get_lb(connection, load_balancer_name):
+def get_lb(connection: Any, load_balancer_name: str) -> Union[Dict, List]:
+    """
+    Describes a specific Elastic Load Balancer (ELB) by name.
+
+    Parameters:
+      connection (boto3.client): The Boto3 ELB client object.
+      load_balancer_name (str): Name of the ELB to gather information about.
+
+    Returns:
+      A dictionary with detailed information of the specified ELB.
+    """
     try:
         return connection.describe_load_balancers(aws_retry=True, LoadBalancerNames=[load_balancer_name])[
             "LoadBalancerDescriptions"
@@ -191,21 +237,53 @@ def get_lb(connection, load_balancer_name):
         return []
 
 
-def get_lb_attributes(connection, load_balancer_name):
+def get_lb_attributes(connection: Any, load_balancer_name: str) -> Dict:
+    """
+    Retrieves attributes of specific Elastic Load Balancer (ELB) by name.
+
+    Parameters:
+      connection (boto3.client): The Boto3 ELB client object.
+      load_balancer_name (str): Name of the ELB to gather information about.
+
+    Returns:
+      A dictionary with detailed information of the attributes of specified ELB.
+    """
     attributes = connection.describe_load_balancer_attributes(aws_retry=True, LoadBalancerName=load_balancer_name).get(
         "LoadBalancerAttributes", {}
     )
     return camel_dict_to_snake_dict(attributes)
 
 
-def get_tags(connection, load_balancer_name):
+def get_tags(connection: Any, load_balancer_name: str) -> Dict:
+    """
+    Retrieves tags of specific Elastic Load Balancer (ELB) by name.
+
+    Parameters:
+      connection (boto3.client): The Boto3 ELB client object.
+      load_balancer_name (str): Name of the ELB to gather information about.
+
+    Returns:
+      A dictionary of tags associated with the specified ELB.
+    """
     tags = connection.describe_tags(aws_retry=True, LoadBalancerNames=[load_balancer_name])["TagDescriptions"]
     if not tags:
         return {}
     return boto3_tag_list_to_ansible_dict(tags[0]["Tags"])
 
 
-def lb_instance_health(connection, load_balancer_name, instances, state):
+def lb_instance_health(connection: Any, load_balancer_name: str, instances: List[Dict], state: str) -> Tuple[List, int]:
+    """
+    Describes the health status of instances associated with a specific Elastic Load Balancer (ELB).
+
+    Parameters:
+        connection (Any): The Boto3 client object for ELB.
+        load_balancer_name (str): The name of the ELB.
+        instances (List[Dict]): List of dictionaries containing instances associated with the ELB.
+        state (str): The health state to filter by (e.g., "InService", "OutOfService", "Unknown").
+
+    Returns:
+        Tuple[List, int]: A tuple containing a list of instance IDs matching state and the count of matching instances.
+    """
     instance_states = connection.describe_instance_health(LoadBalancerName=load_balancer_name, Instances=instances).get(
         "InstanceStates", []
     )
@@ -223,7 +301,7 @@ def main():
     )
 
     connection = module.client(
-        "elb", retry_decorator=AWSRetry.jittered_backoff(retries=MAX_AWS_RETRIES, delay=MAX_AWS_DELAY)
+        "elb", retry_decorator=AWSRetry.jittered_backoff(retries=5, delay=5)
     )
 
     try:
