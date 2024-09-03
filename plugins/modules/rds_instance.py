@@ -799,7 +799,7 @@ multi_az:
   type: bool
   sample: false
 multi_tenant:
-  description: Specifies whether to use the multi-tenant configuration or the single-tenant configuration (default). 
+  description: Specifies whether to use the multi-tenant configuration or the single-tenant configuration (default).
   returned: for Oracle container database (CDB) engines
   type: bool
   version_added: 9.0.0
