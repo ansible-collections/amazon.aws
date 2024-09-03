@@ -1,3 +1,0 @@
----
-deprecated_features:
-- iam_role - support for creating and deleting IAM instance profiles using the ``create_instance_profile`` and ``delete_instance_profile`` options has been deprecated and will be removed in a release after 2026-05-01.  To manage IAM instance profiles the ``amazon.aws.iam_instance_profile`` module can be used instead (https://github.com/ansible-collections/amazon.aws/pull/2221).

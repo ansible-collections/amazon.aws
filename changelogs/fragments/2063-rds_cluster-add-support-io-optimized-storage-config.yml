@@ -1,3 +1,0 @@
----
-minor_changes:
-  - rds_cluster - Add support for I/O-Optimized storage configuration for aurora clusters (https://github.com/ansible-collections/amazon.aws/pull/2063).
