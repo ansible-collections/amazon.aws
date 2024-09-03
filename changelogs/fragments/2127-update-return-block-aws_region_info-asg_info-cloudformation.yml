@@ -1,3 +1,0 @@
----
-trivial:
-  - Update return block in the module documentation for aws_region_info, autoscaling_group_info, cloudformation modules (https://github.com/ansible-collections/amazon.aws/pull/2127).

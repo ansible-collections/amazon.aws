@@ -1,3 +1,0 @@
----
-minor_changes:
-  - ec2_ami - Add support for uefi-preferred boot mode (https://github.com/ansible-collections/amazon.aws/pull/2253).

@@ -1,3 +1,0 @@
----
-minor_changes:
-  - ssm parameter lookup - add new option ``droppath`` to drop the hierarchical search path from ssm parameter lookup results (https://github.com/ansible-collections/amazon.aws/pull/1756).

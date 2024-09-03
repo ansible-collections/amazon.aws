@@ -1,3 +1,0 @@
----
-minor_changes:
-  - ec2_metadata_facts - Add parameter ``metadata_token_ttl_seconds`` (https://github.com/ansible-collections/amazon.aws/pull/2209).

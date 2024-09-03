@@ -1,2 +1,0 @@
-bugfixes:
-- s3_bucket - change the default behaviour of the new ``accelerate_enabled`` option to only update the configuration if explicitly passed (https://github.com/ansible-collections/amazon.aws/issues/2220).

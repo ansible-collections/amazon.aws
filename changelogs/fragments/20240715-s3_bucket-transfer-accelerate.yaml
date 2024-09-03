@@ -1,3 +1,0 @@
----
-bugfixes:
-  - s3_bucket - catch ``UnsupportedArgument`` when calling API ``GetBucketAccelerationConfig`` on region where it is not supported (https://github.com/ansible-collections/amazon.aws/issues/2180).

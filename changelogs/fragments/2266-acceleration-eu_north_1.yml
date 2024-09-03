@@ -1,3 +1,0 @@
----
-bugfixes:
- - s3_bucket - fixes ``MethodNotAllowed`` exceptions caused by fetching transfer acceleration state in regions that don't support it (https://github.com/ansible-collections/amazon.aws/issues/2266).

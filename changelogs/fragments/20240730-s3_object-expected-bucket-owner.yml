@@ -1,2 +1,0 @@
-minor_changes:
-  - s3_object - Add support for ``expected_bucket_owner`` option (https://github.com/ansible-collections/amazon.aws/issues/2114).

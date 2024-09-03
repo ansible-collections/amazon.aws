@@ -1,3 +1,0 @@
----
-trivial:
-  - Update return block in the module documentation for backup_plan, backup_plan_info, backup_vault, backup_selection (https://github.com/ansible-collections/amazon.aws/pull/2106).
