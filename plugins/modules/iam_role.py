@@ -80,15 +80,17 @@ options:
     type: str
   create_instance_profile:
     description:
-      - Creates an IAM instance profile along with the role.
+      - If no IAM instance profile with the same O(name) exists, setting O(create_instance_profile=True)
+        will create an IAM instance profile along with the role.
       - This option has been deprecated and will be removed in a release after 2026-05-01.  The
         M(amazon.aws.iam_instance_profile) module can be used to manage instance profiles.
       - Defaults to V(True)
     type: bool
   delete_instance_profile:
     description:
-      - When O(delete_instance_profile=true) and O(state=absent) deleting a role will also delete the instance
-        profile created with the same O(name) as the role.
+      - When O(delete_instance_profile=true) and O(state=absent) deleting a role will also delete an
+        instance profile with the same O(name) as the role, but only if the instance profile is
+        associated with the role.
       - Only applies when O(state=absent).
       - This option has been deprecated and will be removed in a release after 2026-05-01.  The
         M(amazon.aws.iam_instance_profile) module can be used to manage instance profiles.
@@ -292,6 +294,10 @@ from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
+
+
+class AnsibleIAMAlreadyExistsError(AnsibleIAMError):
+    pass
 
 
 @IAMErrorHandler.common_error_handler("wait for role creation")
@@ -535,8 +541,11 @@ def create_or_update_role(module, client, role_name, create_instance_profile):
         wait_iam_exists(client, check_mode, role_name, wait, wait_timeout)
 
     if create_instance_profile:
-        changed |= create_instance_profiles(client, check_mode, role_name, path)
-        wait_iam_exists(client, check_mode, role_name, wait, wait_timeout)
+        try:
+            changed |= create_instance_profiles(client, check_mode, role_name, path)
+            wait_iam_exists(client, check_mode, role_name, wait, wait_timeout)
+        except AnsibleIAMAlreadyExistsError as e:
+            module.warn(f"profile {role_name} already exists and will not be updated")
 
     changed |= update_managed_policies(client, module.check_mode, role_name, managed_policies, purge_policies)
     wait_iam_exists(client, check_mode, role_name, wait, wait_timeout)
@@ -551,11 +560,14 @@ def create_or_update_role(module, client, role_name, create_instance_profile):
 
 def create_instance_profiles(client, check_mode, role_name, path):
     # Fetch existing Profiles
-    instance_profiles = list_iam_instance_profiles(client, role=role_name)
-
+    role_profiles = list_iam_instance_profiles(client, role=role_name)
     # Profile already exists
-    if any(p["InstanceProfileName"] == role_name for p in instance_profiles):
+    if any(p["InstanceProfileName"] == role_name for p in role_profiles):
         return False
+
+    named_profile = list_iam_instance_profiles(client, name=role_name)
+    if named_profile:
+        raise AnsibleIAMAlreadyExistsError(f"profile {role_name} already exists")
 
     if check_mode:
         return True
@@ -730,7 +742,8 @@ def main():
     state = module.params.get("state")
     role_name = module.params.get("name")
 
-    create_profile = module.params.get("create_instance_profile") or True
+    create_profile = module.params.get("create_instance_profile")
+    create_profile = True if create_profile is None else create_profile
     delete_profile = module.params.get("delete_instance_profile") or False
 
     try:

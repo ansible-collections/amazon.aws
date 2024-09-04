@@ -45,7 +45,7 @@
           - create_managed_policy is succeeded
 
     # ===================================================================
-    # Rapid Role Creation and deletion
+    - ansible.builtin.include_tasks: instance_profile.yml
     - ansible.builtin.include_tasks: creation_deletion.yml
     - ansible.builtin.include_tasks: max_session_update.yml
     - ansible.builtin.include_tasks: description_update.yml
