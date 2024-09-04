@@ -1102,7 +1102,6 @@ def get_options_with_changing_values(client, module: AnsibleAWSModule, parameter
         parameters.pop("Iops", None)
 
     instance = get_instance(client, module, instance_id)
-
     # Determine which parameters need to be modified
     updated_parameters = get_changing_options_with_inconsistent_keys(
         parameters, instance, purge_cloudwatch_logs, purge_security_groups
@@ -1112,7 +1111,7 @@ def get_options_with_changing_values(client, module: AnsibleAWSModule, parameter
 
     # Validate multi_tenant option
     # Once set to True, it cannot be modified to False
-    if multi_tenant is not None and multi_tenant is False:  # noqa: E712
+    if multi_tenant is False:  # noqa: E712
         if instance.get("MultiTenant"):
             module.fail_json(
                 msg="A DB which is configured to be a multi tenant cannot be modified to use single tenant configuration."
@@ -1349,7 +1348,6 @@ def get_changing_options_with_inconsistent_keys(
                 changing_params[option] = list(set(current_option) | set(desired_option))
         else:
             changing_params[option] = desired_option
-
     return changing_params
 
 
@@ -1367,7 +1365,6 @@ def get_changing_options_with_consistent_keys(
             changing_params (dict): Parameters to be modified
     """
     changing_params: Dict[str, Any] = {}
-
     for param in modify_params:
         current_option = instance.get("PendingModifiedValues", {}).get(param, None)
         if current_option is None:
