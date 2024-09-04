@@ -800,7 +800,7 @@ multi_az:
   sample: false
 multi_tenant:
   description: Specifies whether to use the multi-tenant configuration or the single-tenant configuration (default).
-  returned: for Oracle container database (CDB) engines
+  returned: for Oracle container database (CDB) engines and boto3_version == "1.28.80"
   type: bool
   version_added: 9.0.0
   sample: false
