@@ -3162,3 +3162,18 @@ releases:
     - update_return_block_route53_health_check.yml
     - use_t3a_micro_in_tests.yml
     release_date: '2024-09-03'
+  8.2.1:
+    changes:
+      bugfixes:
+      - iam_role - fixes ``EntityAlreadyExists`` exception when ``create_instance_profile``
+        was set to ``false`` and the instance profile already existed (https://github.com/ansible-collections/amazon.aws/issues/2102).
+      - iam_role - fixes issue where IAM instance profiles were created when ``create_instance_profile``
+        was set to ``false`` (https://github.com/ansible-collections/amazon.aws/issues/2281).
+      release_summary: This is a bugfix release for the ``iam_role`` module that resolves
+        the issue where IAM instance profiles were being created when ``create_instance_profile``
+        was set to ``false`` and addresses the ``EntityAlreadyExists`` exception when
+        the instance profile already existed.
+    fragments:
+    - 2281-iam_role-support-not-creating.yml
+    - release_summary.yml
+    release_date: '2024-09-05'

@@ -4,6 +4,20 @@ amazon.aws Release Notes
 
 .. contents:: Topics
 
+v8.2.1
+======
+
+Release Summary
+---------------
+
+This is a bugfix release for the ``iam_role`` module that resolves the issue where IAM instance profiles were being created when ``create_instance_profile`` was set to ``false`` and addresses the ``EntityAlreadyExists`` exception when the instance profile already existed.
+
+Bugfixes
+--------
+
+- iam_role - fixes ``EntityAlreadyExists`` exception when ``create_instance_profile`` was set to ``false`` and the instance profile already existed (https://github.com/ansible-collections/amazon.aws/issues/2102).
+- iam_role - fixes issue where IAM instance profiles were created when ``create_instance_profile`` was set to ``false`` (https://github.com/ansible-collections/amazon.aws/issues/2281).
+
 v8.2.0
 ======
 
@@ -15,7 +29,7 @@ The amazon.aws 8.2.0 release includes a number of bugfixes, some new features an
 Minor Changes
 -------------
 
-- cloudwatch_metric_alarm - add  support for ``evaluate_low_sample_count_percentile`` parameter.
+- cloudwatch_metric_alarm - add  support for ``evaluate_low_sample_count_percentile``` parameter.
 - cloudwatch_metric_alarm - support DatapointsToAlarm config (https://github.com/ansible-collections/amazon.aws/pull/2196).
 - ec2_ami - Add support for uefi-preferred boot mode (https://github.com/ansible-collections/amazon.aws/pull/2253).
 - ec2_instance - Add support for ``network_interfaces`` and ``network_interfaces_ids`` options replacing deprecated option ``network`` (https://github.com/ansible-collections/amazon.aws/pull/2123).
