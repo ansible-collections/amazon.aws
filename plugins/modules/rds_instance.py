@@ -1088,6 +1088,7 @@ def get_options_with_changing_values(client, module: AnsibleAWSModule, parameter
     cloudwatch_logs_enabled = module.params["enable_cloudwatch_logs_exports"]
     purge_security_groups = module.params["purge_security_groups"]
     ca_certificate_identifier = module.params["ca_certificate_identifier"]
+    multi_tenant = module.params.get("multi_tenant")
 
     if ca_certificate_identifier:
         parameters["CACertificateIdentifier"] = ca_certificate_identifier
@@ -1108,6 +1109,14 @@ def get_options_with_changing_values(client, module: AnsibleAWSModule, parameter
     )
     updated_parameters.update(get_changing_options_with_consistent_keys(parameters, instance))
     parameters = updated_parameters
+
+    # Validate multi_tenant option
+    # Once set to True, it cannot be modified to False
+    if multi_tenant is not None and multi_tenant == False:  # noqa: E712
+        if instance.get("MultiTenant"):
+            module.fail_json(
+                msg="A DB which is configured to be a multi tenant cannot be modified to use single tenant configuration."
+            )
 
     # Validate changes to storage type options
     if instance.get("StorageType") == "io1":
@@ -1390,6 +1399,7 @@ def validate_options(client, module: AnsibleAWSModule, instance: Dict[str, Any])
     read_replica = module.params["read_replica"]
     creation_source = module.params["creation_source"]
     source_instance = module.params["source_db_instance_identifier"]
+    multi_tenant = module.params["multi_tenant"]
 
     if modified_id:
         modified_instance = get_instance(client, module, modified_id)
@@ -1415,6 +1425,12 @@ def validate_options(client, module: AnsibleAWSModule, instance: Dict[str, Any])
             msg=(
                 "read_replica is true and the instance does not exist yet but all of the following are missing:"
                 " source_db_instance_identifier"
+            )
+        )
+    if multi_tenant is not None and engine not in ["oracle-se2-cdb", "oracle-ee-cdb"]:
+        module.fail_json(
+            msg=(
+                f"Multi Tenant parameter only applies to RDS for Oracle container database (CDB) engines and not to {engine}."
             )
         )
 

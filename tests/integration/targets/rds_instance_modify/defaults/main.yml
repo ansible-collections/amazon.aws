@@ -1,9 +1,11 @@
 ---
 instance_id: ansible-test-{{ tiny_prefix }}
 modified_instance_id: "{{ instance_id }}-updated"
+oracle_instance_id: ansible-test-oracle-{{ tiny_prefix }}
 username: test
 password: test12345678
 db_instance_class: db.t3.micro
+oracle_ee_db_instance_class: db.r5.2xlarge
 allocated_storage: 20
 
 # For mariadb tests
