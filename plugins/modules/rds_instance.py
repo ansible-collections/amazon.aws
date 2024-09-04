@@ -1112,7 +1112,7 @@ def get_options_with_changing_values(client, module: AnsibleAWSModule, parameter
 
     # Validate multi_tenant option
     # Once set to True, it cannot be modified to False
-    if multi_tenant is not None and multi_tenant == False:  # noqa: E712
+    if multi_tenant is not None and multi_tenant is False:  # noqa: E712
         if instance.get("MultiTenant"):
             module.fail_json(
                 msg="A DB which is configured to be a multi tenant cannot be modified to use single tenant configuration."
