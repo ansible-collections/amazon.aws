@@ -407,12 +407,12 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import AnsibleELBv2Error
-from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import describe_listeners
-from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import describe_load_balancer_attributes
-from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import describe_load_balancers
-from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import describe_rules
-from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import describe_tags
+from ansible_collections.amazon.aws.plugins.module_utils.elbv2_utils import AnsibleELBv2Error
+from ansible_collections.amazon.aws.plugins.module_utils.elbv2_utils import describe_listeners
+from ansible_collections.amazon.aws.plugins.module_utils.elbv2_utils import describe_load_balancer_attributes
+from ansible_collections.amazon.aws.plugins.module_utils.elbv2_utils import describe_load_balancers
+from ansible_collections.amazon.aws.plugins.module_utils.elbv2_utils import describe_rules
+from ansible_collections.amazon.aws.plugins.module_utils.elbv2_utils import describe_tags
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 

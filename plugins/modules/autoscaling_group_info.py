@@ -354,8 +354,8 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import AnsibleELBv2Error
-from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import describe_target_groups
+from ansible_collections.amazon.aws.plugins.module_utils.elbv2_utils import AnsibleELBv2Error
+from ansible_collections.amazon.aws.plugins.module_utils.elbv2_utils import describe_target_groups
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 
 
