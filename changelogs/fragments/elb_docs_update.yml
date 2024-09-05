@@ -1,2 +1,0 @@
-trivial:
-  - "elb_* modules RETURN block update."

@@ -1,2 +1,0 @@
-trivial:
-  - "Part #6 - Ensures the modules documentation follows the correct formats (see also https://docs.ansible.com/ansible/latest/dev_guide/developing_modules_documenting.html#semantic-markup-within-module-documentation)."

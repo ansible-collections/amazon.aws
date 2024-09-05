@@ -4,6 +4,61 @@ amazon.aws Release Notes
 
 .. contents:: Topics
 
+v8.2.1
+======
+
+Release Summary
+---------------
+
+This is a bugfix release for the ``iam_role`` module that resolves the issue where IAM instance profiles were being created when ``create_instance_profile`` was set to ``false`` and addresses the ``EntityAlreadyExists`` exception when the instance profile already existed.
+
+Bugfixes
+--------
+
+- iam_role - fixes ``EntityAlreadyExists`` exception when ``create_instance_profile`` was set to ``false`` and the instance profile already existed (https://github.com/ansible-collections/amazon.aws/issues/2102).
+- iam_role - fixes issue where IAM instance profiles were created when ``create_instance_profile`` was set to ``false`` (https://github.com/ansible-collections/amazon.aws/issues/2281).
+
+v8.2.0
+======
+
+Release Summary
+---------------
+
+The amazon.aws 8.2.0 release includes a number of bugfixes, some new features and improvements. This releases also introduces a deprecation for the ``amazon.aws.iam_role`` module, where support for creating and deleting IAM instance profiles using the ``create_instance_profile`` and ``delete_instance_profile`` options has been deprecated and will be removed in a release after 2026-05-01.
+
+Minor Changes
+-------------
+
+- cloudwatch_metric_alarm - add  support for ``evaluate_low_sample_count_percentile``` parameter.
+- cloudwatch_metric_alarm - support DatapointsToAlarm config (https://github.com/ansible-collections/amazon.aws/pull/2196).
+- ec2_ami - Add support for uefi-preferred boot mode (https://github.com/ansible-collections/amazon.aws/pull/2253).
+- ec2_instance - Add support for ``network_interfaces`` and ``network_interfaces_ids`` options replacing deprecated option ``network`` (https://github.com/ansible-collections/amazon.aws/pull/2123).
+- ec2_instance - ``network.source_dest_check`` option has been deprecated and replaced by new option ``source_dest_check`` (https://github.com/ansible-collections/amazon.aws/pull/2123).
+- ec2_instance - add the possibility to create instance with multiple network interfaces (https://github.com/ansible-collections/amazon.aws/pull/2123).
+- ec2_metadata_facts - Add parameter ``metadata_token_ttl_seconds`` (https://github.com/ansible-collections/amazon.aws/pull/2209).
+- rds_cluster - Add support for I/O-Optimized storage configuration for aurora clusters (https://github.com/ansible-collections/amazon.aws/pull/2063).
+- rds_instance - snake case for parameter ``performance_insights_kms_key_id`` was incorrect according to boto documentation (https://github.com/ansible-collections/amazon.aws/pull/2163).
+- s3_bucket - Add support for bucket inventories (https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage-inventory.html)
+- s3_object - Add support for ``expected_bucket_owner`` option (https://github.com/ansible-collections/amazon.aws/issues/2114).
+- ssm parameter lookup - add new option ``droppath`` to drop the hierarchical search path from ssm parameter lookup results (https://github.com/ansible-collections/amazon.aws/pull/1756).
+
+Deprecated Features
+-------------------
+
+- iam_role - support for creating and deleting IAM instance profiles using the ``create_instance_profile`` and ``delete_instance_profile`` options has been deprecated and will be removed in a release after 2026-05-01.  To manage IAM instance profiles the ``amazon.aws.iam_instance_profile`` module can be used instead (https://github.com/ansible-collections/amazon.aws/pull/2221).
+
+Bugfixes
+--------
+
+- cloudwatch_metric_alarm - Fix idempotency when creating cloudwatch metric alarm without dimensions (https://github.com/ansible-collections/amazon.aws/pull/1865).
+- ec2_instance - fix state processing when exact_count is used (https://github.com/ansible-collections/amazon.aws/pull/1659).
+- rds_cluster - Limit params sent to api call to DBClusterIdentifier when using state started or stopped (https://github.com/ansible-collections/amazon.aws/issues/2197).
+- route53 - modify the return value to return diff only when ``module._diff`` is set to true (https://github.com/ansible-collections/amazon.aws/pull/2136).
+- s3_bucket - catch ``UnsupportedArgument`` when calling API ``GetBucketAccelerationConfig`` on region where it is not supported (https://github.com/ansible-collections/amazon.aws/issues/2180).
+- s3_bucket - change the default behaviour of the new ``accelerate_enabled`` option to only update the configuration if explicitly passed (https://github.com/ansible-collections/amazon.aws/issues/2220).
+- s3_bucket - fixes ``MethodNotAllowed`` exceptions caused by fetching transfer acceleration state in regions that don't support it (https://github.com/ansible-collections/amazon.aws/issues/2266).
+- s3_bucket - fixes ``TypeError: cannot unpack non-iterable NoneType object`` errors related to bucket versioning, policies, tags or encryption (https://github.com/ansible-collections/amazon.aws/pull/2228).
+
 v8.1.0
 ======
 

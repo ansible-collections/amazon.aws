@@ -1,3 +1,0 @@
----
-trivial:
-  - Update return block in the module documentation for cloudtrail, cloudtrail_info, cloudwatchevent_rule, cloudwatchlogs_log_group modules.

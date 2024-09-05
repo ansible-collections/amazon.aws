@@ -1,3 +1,0 @@
----
-trivial:
-  - Delete EC2 instances created in default VPC for integration tests targets ec2_instance_info and ec2_instance_metadata_options. 

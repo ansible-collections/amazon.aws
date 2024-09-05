@@ -3071,3 +3071,109 @@ releases:
     - s3_bucket-accelerate_option.yml
     - s3_bucket-object-retention.yml
     release_date: '2024-07-02'
+  8.2.0:
+    changes:
+      bugfixes:
+      - cloudwatch_metric_alarm - Fix idempotency when creating cloudwatch metric
+        alarm without dimensions (https://github.com/ansible-collections/amazon.aws/pull/1865).
+      - ec2_instance - fix state processing when exact_count is used (https://github.com/ansible-collections/amazon.aws/pull/1659).
+      - rds_cluster - Limit params sent to api call to DBClusterIdentifier when using
+        state started or stopped (https://github.com/ansible-collections/amazon.aws/issues/2197).
+      - route53 - modify the return value to return diff only when ``module._diff``
+        is set to true (https://github.com/ansible-collections/amazon.aws/pull/2136).
+      - s3_bucket - catch ``UnsupportedArgument`` when calling API ``GetBucketAccelerationConfig``
+        on region where it is not supported (https://github.com/ansible-collections/amazon.aws/issues/2180).
+      - s3_bucket - change the default behaviour of the new ``accelerate_enabled``
+        option to only update the configuration if explicitly passed (https://github.com/ansible-collections/amazon.aws/issues/2220).
+      - s3_bucket - fixes ``MethodNotAllowed`` exceptions caused by fetching transfer
+        acceleration state in regions that don't support it (https://github.com/ansible-collections/amazon.aws/issues/2266).
+      - 's3_bucket - fixes ``TypeError: cannot unpack non-iterable NoneType object``
+        errors related to bucket versioning, policies, tags or encryption (https://github.com/ansible-collections/amazon.aws/pull/2228).'
+      deprecated_features:
+      - iam_role - support for creating and deleting IAM instance profiles using the
+        ``create_instance_profile`` and ``delete_instance_profile`` options has been
+        deprecated and will be removed in a release after 2026-05-01.  To manage IAM
+        instance profiles the ``amazon.aws.iam_instance_profile`` module can be used
+        instead (https://github.com/ansible-collections/amazon.aws/pull/2221).
+      minor_changes:
+      - cloudwatch_metric_alarm - add  support for ``evaluate_low_sample_count_percentile```
+        parameter.
+      - cloudwatch_metric_alarm - support DatapointsToAlarm config (https://github.com/ansible-collections/amazon.aws/pull/2196).
+      - ec2_ami - Add support for uefi-preferred boot mode (https://github.com/ansible-collections/amazon.aws/pull/2253).
+      - ec2_instance - Add support for ``network_interfaces`` and ``network_interfaces_ids``
+        options replacing deprecated option ``network`` (https://github.com/ansible-collections/amazon.aws/pull/2123).
+      - ec2_instance - ``network.source_dest_check`` option has been deprecated and
+        replaced by new option ``source_dest_check`` (https://github.com/ansible-collections/amazon.aws/pull/2123).
+      - ec2_instance - add the possibility to create instance with multiple network
+        interfaces (https://github.com/ansible-collections/amazon.aws/pull/2123).
+      - ec2_metadata_facts - Add parameter ``metadata_token_ttl_seconds`` (https://github.com/ansible-collections/amazon.aws/pull/2209).
+      - rds_cluster - Add support for I/O-Optimized storage configuration for aurora
+        clusters (https://github.com/ansible-collections/amazon.aws/pull/2063).
+      - rds_instance - snake case for parameter ``performance_insights_kms_key_id``
+        was incorrect according to boto documentation (https://github.com/ansible-collections/amazon.aws/pull/2163).
+      - s3_bucket - Add support for bucket inventories (https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage-inventory.html)
+      - s3_object - Add support for ``expected_bucket_owner`` option (https://github.com/ansible-collections/amazon.aws/issues/2114).
+      - ssm parameter lookup - add new option ``droppath`` to drop the hierarchical
+        search path from ssm parameter lookup results (https://github.com/ansible-collections/amazon.aws/pull/1756).
+      release_summary: The amazon.aws 8.2.0 release includes a number of bugfixes,
+        some new features and improvements. This releases also introduces a deprecation
+        for the ``amazon.aws.iam_role`` module, where support for creating and deleting
+        IAM instance profiles using the ``create_instance_profile`` and ``delete_instance_profile``
+        options has been deprecated and will be removed in a release after 2026-05-01.
+    fragments:
+    - 1659-ec2_instance-ensure-state-exact_count.yml
+    - 20240216-cloudwatch-metric-alarm-idempotency.yml
+    - 20240604-ec2_instance-refactor-network-option.yml
+    - 20240703-integration-tests-delete-instances.yml
+    - 20240715-s3_bucket-transfer-accelerate.yaml
+    - 20240730-s3_object-expected-bucket-owner.yml
+    - 20240810-rds_instance-performance_insights_kms_key_id.yml
+    - 20240820-iam_role-profiles.yml
+    - 20240824-s3_bucket-unpack.yml
+    - 2063-rds_cluster-add-support-io-optimized-storage-config.yml
+    - 2074-s3_bucket-inventory-feature.yml
+    - 2127-update-return-block-aws_region_info-asg_info-cloudformation.yml
+    - 2135-update-retrun-block-s3_bucket-s3_bucket_info-s3_object.yml
+    - 2144-update-retrun-block-kms_key-kms_key_info.yml
+    - 2195-update-return-block-iam-modules.yml
+    - 2196-cloudwatch_metric_alarm_support-DatapointsToAlarm-config.yml
+    - 2209-ec2_metadata_facts-add-configurable-ttl-parameter.yml
+    - 2214-rds_cluster-limit-params-sent-to-api-for-states.yml
+    - 2220-accelerate_enabled-unsupported.yml
+    - 2253-ec2_ami-add-support-uefi-preferred-boot-mode.yml
+    - 2266-acceleration-eu_north_1.yml
+    - add-droppath-option-to-ssm-lookup.yml
+    - add_evaluate_low_sample_count_percentile.yml
+    - documentation_update.yml
+    - documentation_update_2.yml
+    - documentation_update_3.yml
+    - documentation_update_4.yml
+    - documentation_update_5.yml
+    - documentation_update_6.yml
+    - elb_docs_update.yml
+    - fix_deperecated_ami.yml
+    - fix_module_diff_route53.yml
+    - release_summary.yml
+    - update_return_block_backup_modules.yml
+    - update_return_block_cloud_modules.yml
+    - update_return_block_ec2_2.yml
+    - update_return_block_lambda.yml
+    - update_return_block_rds.yml
+    - update_return_block_route53_health_check.yml
+    - use_t3a_micro_in_tests.yml
+    release_date: '2024-09-03'
+  8.2.1:
+    changes:
+      bugfixes:
+      - iam_role - fixes ``EntityAlreadyExists`` exception when ``create_instance_profile``
+        was set to ``false`` and the instance profile already existed (https://github.com/ansible-collections/amazon.aws/issues/2102).
+      - iam_role - fixes issue where IAM instance profiles were created when ``create_instance_profile``
+        was set to ``false`` (https://github.com/ansible-collections/amazon.aws/issues/2281).
+      release_summary: This is a bugfix release for the ``iam_role`` module that resolves
+        the issue where IAM instance profiles were being created when ``create_instance_profile``
+        was set to ``false`` and addresses the ``EntityAlreadyExists`` exception when
+        the instance profile already existed.
+    fragments:
+    - 2281-iam_role-support-not-creating.yml
+    - release_summary.yml
+    release_date: '2024-09-05'

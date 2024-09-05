@@ -1,3 +1,0 @@
----
-trivial:
-  - Update return block in the module documentation for iam_* modules (https://github.com/ansible-collections/amazon.aws/pull/2195).
