@@ -296,7 +296,3 @@ documentation for a full list with examples.
        An introduction to playbooks
    :ref:`playbooks_delegation`
        Delegation, useful for working with loud balancers, clouds, and locally executed steps.
-   `User Mailing List <https://groups.google.com/group/ansible-devel>`_
-       Have a question?  Stop by the google group!
-   `irc.libera.chat <https://libera.chat/>`_
-       #ansible IRC chat channel
