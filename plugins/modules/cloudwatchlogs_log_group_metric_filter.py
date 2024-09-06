@@ -121,8 +121,9 @@ metric_filters:
             "metric_namespace": "made_with_ansible",
             "metric_value": "$.value",
             "unit": "Bytes",
-            "dimensions":
+            "dimensions": {
               "hostname": "$.hostname"
+            }
         }
     ]
 """
