@@ -119,7 +119,10 @@ metric_filters:
             "default_value": 3.1415,
             "metric_name": "box_free_space",
             "metric_namespace": "made_with_ansible",
-            "metric_value": "$.value"
+            "metric_value": "$.value",
+            "unit": "Bytes",
+            "dimensions":
+              "hostname": "$.hostname"
         }
     ]
 """
