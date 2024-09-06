@@ -216,7 +216,10 @@ def main():
 
     elif state == "present":
 
-        if metric_transformation.get('default_value') is not None and metric_transformation.get('dimensions') is not None:
+        if (
+            metric_transformation.get('default_value') is not None
+            and metric_transformation.get('dimensions') is not None
+        ):
             module.fail_json(msg="default_value and dimensions are mutually exclusive.")
 
         metricTransformation, change = metricTransformationHandler(
