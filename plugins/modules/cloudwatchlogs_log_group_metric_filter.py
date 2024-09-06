@@ -60,7 +60,8 @@ options:
           type: float
         unit:
           description:
-            - The unit of the value. The various options are available `here <https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_MetricDatum.html>`.
+            - The unit of the value.
+            - The various options are available `here <https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_MetricDatum.html>`.
           type: str
         dimensions:
           description:
@@ -139,22 +140,22 @@ def metricTransformationHandler(metricTransformations, originMetricTransformatio
         change = True
 
     retval = [
-            {
-                "metricName": metricTransformations.get("metric_name"),
-                "metricNamespace": metricTransformations.get("metric_namespace"),
-                "metricValue": metricTransformations.get("metric_value"),
-            }
-        ]
+        {
+            "metricName": metricTransformations.get("metric_name"),
+            "metricNamespace": metricTransformations.get("metric_namespace"),
+            "metricValue": metricTransformations.get("metric_value"),
+        }
+    ]
 
     # Add optional values
     defaultValue = metricTransformations.get("default_value")
     if defaultValue is not None:
         retval[0]["defaultValue"] = defaultValue
-    
+
     dimensions = metricTransformations.get("dimensions")
     if dimensions is not None:
         retval[0]["dimensions"] = dimensions
-    
+
     unit = metricTransformations.get("unit")
     if unit is not None:
         retval[0]["unit"] = unit
