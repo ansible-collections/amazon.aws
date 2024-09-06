@@ -215,10 +215,9 @@ def main():
         metricTransformation = [camel_dict_to_snake_dict(item) for item in [originMetricTransformations]]
 
     elif state == "present":
-
         if (
-            metric_transformation.get('default_value') is not None
-            and metric_transformation.get('dimensions') is not None
+            metric_transformation.get("default_value") is not None
+            and metric_transformation.get("dimensions") is not None
         ):
             module.fail_json(msg="default_value and dimensions are mutually exclusive.")
 
