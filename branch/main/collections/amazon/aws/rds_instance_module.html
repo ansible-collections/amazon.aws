@@ -637,6 +637,22 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-multi_tenant"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-multi-tenant"><strong>multi_tenant</strong></p>
+<a class="ansibleOptionLink" href="#parameter-multi_tenant" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 9.0.0</em></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Specifies whether to use the multi-tenant configuration or the single-tenant configuration (default).</p>
+<p>This parameter only applies to RDS for Oracle container database (CDB) engines.</p>
+<p>The DB engine that you specify in the request must support the multi-tenant configuration.</p>
+<p>If the multi-tenant configuration is enabled during creation of the DB instance, it cannot be modified later.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-new_db_instance_identifier"></div>
 <div class="ansibleOptionAnchor" id="parameter-new_instance_id"></div>
 <div class="ansibleOptionAnchor" id="parameter-new_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-new-instance-id"><span id="ansible-collections-amazon-aws-rds-instance-module-parameter-new-id"></span><span id="ansible-collections-amazon-aws-rds-instance-module-parameter-new-db-instance-identifier"></span><strong>new_db_instance_identifier</strong></p>
@@ -646,35 +662,35 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <td><div class="ansible-option-cell"><p>The new DB instance (lowercase) identifier for the DB instance when renaming a DB instance. The identifier must contain from 1 to 63 letters, numbers, or hyphens and the first character must be a letter and may not end in a hyphen or contain consecutive hyphens. Use <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-instance-module-parameter-apply-immediately"><span class="std std-ref"><span class="pre">apply_immediately</span></span></a></strong></code> to rename immediately, otherwise it is updated during the next maintenance window.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-option_group_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-option-group-name"><strong>option_group_name</strong></p>
 <a class="ansibleOptionLink" href="#parameter-option_group_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The option group to associate with the DB instance.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-performance_insights_kms_key_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-performance-insights-kms-key-id"><strong>performance_insights_kms_key_id</strong></p>
 <a class="ansibleOptionLink" href="#parameter-performance_insights_kms_key_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The AWS KMS key identifier (ARN, name, or alias) for encryption of Performance Insights data.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-performance_insights_retention_period"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-performance-insights-retention-period"><strong>performance_insights_retention_period</strong></p>
 <a class="ansibleOptionLink" href="#parameter-performance_insights_retention_period" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The amount of time, in days, to retain Performance Insights data. Valid values are 7 or 731.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-port"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-port"><strong>port</strong></p>
 <a class="ansibleOptionLink" href="#parameter-port" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The port number on which the instances accept connections.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-preferred_backup_window"></div>
 <div class="ansibleOptionAnchor" id="parameter-backup_window"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-preferred-backup-window"><span id="ansible-collections-amazon-aws-rds-instance-module-parameter-backup-window"></span><strong>preferred_backup_window</strong></p>
 <a class="ansibleOptionLink" href="#parameter-preferred_backup_window" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: backup_window</span></p>
@@ -683,7 +699,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <td><div class="ansible-option-cell"><p>The daily time range (in UTC) of at least 30 minutes, during which automated backups are created if automated backups are enabled using <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-instance-module-parameter-backup-retention-period"><span class="std std-ref"><span class="pre">backup_retention_period</span></span></a></strong></code>. The option must be in the format of “hh24:mi-hh24:mi” and not conflict with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-instance-module-parameter-preferred-maintenance-window"><span class="std std-ref"><span class="pre">preferred_maintenance_window</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-preferred_maintenance_window"></div>
 <div class="ansibleOptionAnchor" id="parameter-maintenance_window"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-preferred-maintenance-window"><span id="ansible-collections-amazon-aws-rds-instance-module-parameter-maintenance-window"></span><strong>preferred_maintenance_window</strong></p>
 <a class="ansibleOptionLink" href="#parameter-preferred_maintenance_window" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: maintenance_window</span></p>
@@ -692,28 +708,28 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <td><div class="ansible-option-cell"><p>The weekly time range (in UTC) of at least 30 minutes, during which system maintenance can occur. The option must be in the format “ddd:hh24:mi-ddd:hh24:mi” where ddd is one of Mon, Tue, Wed, Thu, Fri, Sat, Sun.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-processor_features"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-processor-features"><strong>processor_features</strong></p>
 <a class="ansibleOptionLink" href="#parameter-processor_features" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A dictionary of Name, Value pairs to indicate the number of CPU cores and the number of threads per core for the DB instance class of the DB instance. Names are threadsPerCore and coreCount. Set this option to an empty dictionary to use the default processor features.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-processor_features/coreCount"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-processor-features-corecount"><strong>coreCount</strong></p>
 <a class="ansibleOptionLink" href="#parameter-processor_features/coreCount" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The number of CPU cores</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-processor_features/threadsPerCore"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-processor-features-threadspercore"><strong>threadsPerCore</strong></p>
 <a class="ansibleOptionLink" href="#parameter-processor_features/threadsPerCore" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The number of threads per core</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-profile"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_profile"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-profile"><span id="ansible-collections-amazon-aws-rds-instance-module-parameter-aws-profile"></span><strong>profile</strong></p>
 <a class="ansibleOptionLink" href="#parameter-profile" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_profile</span></p>
@@ -725,14 +741,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <p>The <em>profile</em> option is mutually exclusive with the <em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> options.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-promotion_tier"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-promotion-tier"><strong>promotion_tier</strong></p>
 <a class="ansibleOptionLink" href="#parameter-promotion_tier" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>An integer that specifies the order in which an Aurora Replica is promoted to the primary instance after a failure of the existing primary instance.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-publicly_accessible"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-publicly-accessible"><strong>publicly_accessible</strong></p>
 <a class="ansibleOptionLink" href="#parameter-publicly_accessible" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -744,7 +760,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-purge_cloudwatch_logs_exports"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-purge-cloudwatch-logs-exports"><strong>purge_cloudwatch_logs_exports</strong></p>
 <a class="ansibleOptionLink" href="#parameter-purge_cloudwatch_logs_exports" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -757,7 +773,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-purge_iam_roles"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-purge-iam-roles"><strong>purge_iam_roles</strong></p>
 <a class="ansibleOptionLink" href="#parameter-purge_iam_roles" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 <p><em class="ansible-option-versionadded">added in community.aws 3.3.0</em></p>
@@ -770,7 +786,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-purge_security_groups"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-purge-security-groups"><strong>purge_security_groups</strong></p>
 <a class="ansibleOptionLink" href="#parameter-purge_security_groups" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 <p><em class="ansible-option-versionadded">added in community.aws 1.5.0</em></p>
@@ -784,7 +800,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-purge_tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-purge-tags"><strong>purge_tags</strong></p>
 <a class="ansibleOptionLink" href="#parameter-purge_tags" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -798,7 +814,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-read_replica"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-read-replica"><strong>read_replica</strong></p>
 <a class="ansibleOptionLink" href="#parameter-read_replica" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -810,7 +826,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-region"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_region"></div>
 <div class="ansibleOptionAnchor" id="parameter-ec2_region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-region"><span id="ansible-collections-amazon-aws-rds-instance-module-parameter-ec2-region"></span><span id="ansible-collections-amazon-aws-rds-instance-module-parameter-aws-region"></span><strong>region</strong></p>
@@ -825,7 +841,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_REGION</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-restore_time"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-restore-time"><strong>restore_time</strong></p>
 <a class="ansibleOptionLink" href="#parameter-restore_time" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -834,28 +850,28 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <p>Only one of <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-instance-module-parameter-use-latest-restorable-time"><span class="std std-ref"><span class="pre">use_latest_restorable_time</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-instance-module-parameter-restore-time"><span class="std std-ref"><span class="pre">restore_time</span></span></a></strong></code> may be provided.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-s3_bucket_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-s3-bucket-name"><strong>s3_bucket_name</strong></p>
 <a class="ansibleOptionLink" href="#parameter-s3_bucket_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The name of the Amazon S3 bucket that contains the data used to create the Amazon DB instance.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-s3_ingestion_role_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-s3-ingestion-role-arn"><strong>s3_ingestion_role_arn</strong></p>
 <a class="ansibleOptionLink" href="#parameter-s3_ingestion_role_arn" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The Amazon Resource Name (ARN) of the AWS Identity and Access Management (IAM) role that authorizes Amazon RDS to access the Amazon S3 bucket on your behalf.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-s3_prefix"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-s3-prefix"><strong>s3_prefix</strong></p>
 <a class="ansibleOptionLink" href="#parameter-s3_prefix" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The prefix for all of the file names that contain the data used to create the Amazon DB instance. If you do not specify a SourceS3Prefix value, then the Amazon DB instance is created by using all of the files in the Amazon S3 bucket.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-secret_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_secret_access_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_secret_key"></div>
@@ -872,7 +888,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_SECRET_KEY</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-session_token"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_session_token"></div>
 <div class="ansibleOptionAnchor" id="parameter-security_token"></div>
@@ -890,7 +906,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_SECRET_KEY</span></code> and <code class="docutils literal notranslate"><span class="pre">AWS_SECURITY_TOKEN</span></code> environment variables has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-skip_final_snapshot"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-skip-final-snapshot"><strong>skip_final_snapshot</strong></p>
 <a class="ansibleOptionLink" href="#parameter-skip_final_snapshot" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -902,14 +918,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-source_db_instance_identifier"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-source-db-instance-identifier"><strong>source_db_instance_identifier</strong></p>
 <a class="ansibleOptionLink" href="#parameter-source_db_instance_identifier" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The identifier or ARN of the source DB instance from which to restore when creating a read replica or spinning up a point-in-time DB instance using <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-rds-instance-module-parameter-creation-source"><span class="std std-ref"><span class="pre">creation_source=instance</span></span></a></code>. If the source DB is not in the same region this should be an ARN.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-source_engine"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-source-engine"><strong>source_engine</strong></p>
 <a class="ansibleOptionLink" href="#parameter-source_engine" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -920,21 +936,21 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-source_engine_version"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-source-engine-version"><strong>source_engine_version</strong></p>
 <a class="ansibleOptionLink" href="#parameter-source_engine_version" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The version of the database that the backup files were created from.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-source_region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-source-region"><strong>source_region</strong></p>
 <a class="ansibleOptionLink" href="#parameter-source_region" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The region of the DB instance from which the replica is created.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-state"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-state"><strong>state</strong></p>
 <a class="ansibleOptionLink" href="#parameter-state" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -954,7 +970,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-storage_encrypted"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-storage-encrypted"><strong>storage_encrypted</strong></p>
 <a class="ansibleOptionLink" href="#parameter-storage_encrypted" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -966,7 +982,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-storage_throughput"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-storage-throughput"><strong>storage_throughput</strong></p>
 <a class="ansibleOptionLink" href="#parameter-storage_throughput" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 <p><em class="ansible-option-versionadded">added in amazon.aws 5.2.0</em></p>
@@ -977,7 +993,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <p>Requires botocore &gt;= 1.29.0.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-storage_type"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-storage-type"><strong>storage_type</strong></p>
 <a class="ansibleOptionLink" href="#parameter-storage_type" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -991,7 +1007,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-tags"></div>
 <div class="ansibleOptionAnchor" id="parameter-resource_tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-tags"><span id="ansible-collections-amazon-aws-rds-instance-module-parameter-resource-tags"></span><strong>tags</strong></p>
 <a class="ansibleOptionLink" href="#parameter-tags" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: resource_tags</span></p>
@@ -1001,7 +1017,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <p>If the <em>tags</em> parameter is not set then tags will not be modified.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-tde_credential_arn"></div>
 <div class="ansibleOptionAnchor" id="parameter-transparent_data_encryption_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-transparent-data-encryption-arn"><span id="ansible-collections-amazon-aws-rds-instance-module-parameter-tde-credential-arn"></span><strong>tde_credential_arn</strong></p>
 <a class="ansibleOptionLink" href="#parameter-tde_credential_arn" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: transparent_data_encryption_arn</span></p>
@@ -1010,7 +1026,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <td><div class="ansible-option-cell"><p>The ARN from the key store with which to associate the instance for Transparent Data Encryption. This is supported by Oracle or SQL Server DB instances and may be used in conjunction with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-instance-module-parameter-storage-encrypted"><span class="std std-ref"><span class="pre">storage_encrypted</span></span></a></strong></code> though it might slightly affect the performance of your database.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-tde_credential_password"></div>
 <div class="ansibleOptionAnchor" id="parameter-transparent_data_encryption_password"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-transparent-data-encryption-password"><span id="ansible-collections-amazon-aws-rds-instance-module-parameter-tde-credential-password"></span><strong>tde_credential_password</strong></p>
 <a class="ansibleOptionLink" href="#parameter-tde_credential_password" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: transparent_data_encryption_password</span></p>
@@ -1019,14 +1035,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <td><div class="ansible-option-cell"><p>The password for the given ARN from the key store in order to access the device.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-timezone"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-timezone"><strong>timezone</strong></p>
 <a class="ansibleOptionLink" href="#parameter-timezone" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The time zone of the DB instance.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-use_latest_restorable_time"></div>
 <div class="ansibleOptionAnchor" id="parameter-restore_from_latest"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-use-latest-restorable-time"><span id="ansible-collections-amazon-aws-rds-instance-module-parameter-restore-from-latest"></span><strong>use_latest_restorable_time</strong></p>
 <a class="ansibleOptionLink" href="#parameter-use_latest_restorable_time" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: restore_from_latest</span></p>
@@ -1041,7 +1057,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-validate_certs"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-validate-certs"><strong>validate_certs</strong></p>
 <a class="ansibleOptionLink" href="#parameter-validate_certs" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -1054,14 +1070,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-vpc_security_group_ids"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-vpc-security-group-ids"><strong>vpc_security_group_ids</strong></p>
 <a class="ansibleOptionLink" href="#parameter-vpc_security_group_ids" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A list of EC2 VPC security groups to associate with the DB instance.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-wait"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-wait"><strong>wait</strong></p>
 <a class="ansibleOptionLink" href="#parameter-wait" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -1598,6 +1614,16 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-multi_tenant"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-return-multi-tenant"><strong>multi_tenant</strong></p>
+<a class="ansibleOptionLink" href="#return-multi_tenant" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 9.0.0</em></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Specifies whether to use the multi-tenant configuration or the single-tenant configuration (default).</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> for Oracle container database (CDB) engines and boto3_version == “1.28.80”</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">false</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-option_group_memberships"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-return-option-group-memberships"><strong>option_group_memberships</strong></p>
 <a class="ansibleOptionLink" href="#return-option_group_memberships" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
 </div></td>
@@ -1605,7 +1631,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-option_group_memberships/option_group_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-return-option-group-memberships-option-group-name"><strong>option_group_name</strong></p>
 <a class="ansibleOptionLink" href="#return-option_group_memberships/option_group_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -1614,7 +1640,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;default:mariadb-10-0&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-option_group_memberships/status"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-return-option-group-memberships-status"><strong>status</strong></p>
 <a class="ansibleOptionLink" href="#return-option_group_memberships/status" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -1623,7 +1649,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;in-sync&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-pending_modified_values"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-return-pending-modified-values"><strong>pending_modified_values</strong></p>
 <a class="ansibleOptionLink" href="#return-pending_modified_values" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
 </div></td>
@@ -1631,7 +1657,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-performance_insights_enabled"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-return-performance-insights-enabled"><strong>performance_insights_enabled</strong></p>
 <a class="ansibleOptionLink" href="#return-performance_insights_enabled" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -1640,7 +1666,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">false</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-preferred_backup_window"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-return-preferred-backup-window"><strong>preferred_backup_window</strong></p>
 <a class="ansibleOptionLink" href="#return-preferred_backup_window" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -1649,7 +1675,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;07:01-07:31&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-preferred_maintenance_window"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-return-preferred-maintenance-window"><strong>preferred_maintenance_window</strong></p>
 <a class="ansibleOptionLink" href="#return-preferred_maintenance_window" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -1658,7 +1684,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;sun:09:31-sun:10:01&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-publicly_accessible"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-return-publicly-accessible"><strong>publicly_accessible</strong></p>
 <a class="ansibleOptionLink" href="#return-publicly_accessible" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -1667,7 +1693,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">true</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-read_replica_db_instance_identifiers"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-return-read-replica-db-instance-identifiers"><strong>read_replica_db_instance_identifiers</strong></p>
 <a class="ansibleOptionLink" href="#return-read_replica_db_instance_identifiers" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
@@ -1676,7 +1702,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[]</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-storage_encrypted"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-return-storage-encrypted"><strong>storage_encrypted</strong></p>
 <a class="ansibleOptionLink" href="#return-storage_encrypted" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -1685,7 +1711,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">false</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-storage_type"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-return-storage-type"><strong>storage_type</strong></p>
 <a class="ansibleOptionLink" href="#return-storage_type" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -1694,7 +1720,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;standard&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-return-tags"><strong>tags</strong></p>
 <a class="ansibleOptionLink" href="#return-tags" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
 </div></td>
@@ -1702,7 +1728,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-vpc_security_groups"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-return-vpc-security-groups"><strong>vpc_security_groups</strong></p>
 <a class="ansibleOptionLink" href="#return-vpc_security_groups" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
 </div></td>
@@ -1710,7 +1736,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-vpc_security_groups/status"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-return-vpc-security-groups-status"><strong>status</strong></p>
 <a class="ansibleOptionLink" href="#return-vpc_security_groups/status" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -1719,7 +1745,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;active&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-vpc_security_groups/vpc_security_group_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-return-vpc-security-groups-vpc-security-group-id"><strong>vpc_security_group_id</strong></p>
 <a class="ansibleOptionLink" href="#return-vpc_security_groups/vpc_security_group_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
