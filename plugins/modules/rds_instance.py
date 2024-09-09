@@ -280,6 +280,14 @@ options:
         description:
           - Specifies if the DB instance is a Multi-AZ deployment. Mutually exclusive with O(availability_zone).
         type: bool
+    multi_tenant:
+        description:
+          - Specifies whether to use the multi-tenant configuration or the single-tenant configuration (default).
+          - This parameter only applies to RDS for Oracle container database (CDB) engines.
+          - The DB engine that you specify in the request must support the multi-tenant configuration.
+          - If the multi-tenant configuration is enabled during creation of the DB instance, it cannot be modified later.
+        type: bool
+        version_added: 9.0.0
     new_db_instance_identifier:
         description:
           - The new DB instance (lowercase) identifier for the DB instance when renaming a DB instance. The identifier must contain
@@ -790,6 +798,12 @@ multi_az:
   returned: always
   type: bool
   sample: false
+multi_tenant:
+  description: Specifies whether to use the multi-tenant configuration or the single-tenant configuration (default).
+  returned: for Oracle container database (CDB) engines and boto3_version == "1.28.80"
+  type: bool
+  version_added: 9.0.0
+  sample: false
 option_group_memberships:
   description: The list of option group memberships for this DB instance.
   returned: always
@@ -1074,6 +1088,7 @@ def get_options_with_changing_values(client, module: AnsibleAWSModule, parameter
     cloudwatch_logs_enabled = module.params["enable_cloudwatch_logs_exports"]
     purge_security_groups = module.params["purge_security_groups"]
     ca_certificate_identifier = module.params["ca_certificate_identifier"]
+    multi_tenant = module.params.get("multi_tenant")
 
     if ca_certificate_identifier:
         parameters["CACertificateIdentifier"] = ca_certificate_identifier
@@ -1087,13 +1102,20 @@ def get_options_with_changing_values(client, module: AnsibleAWSModule, parameter
         parameters.pop("Iops", None)
 
     instance = get_instance(client, module, instance_id)
-
     # Determine which parameters need to be modified
     updated_parameters = get_changing_options_with_inconsistent_keys(
         parameters, instance, purge_cloudwatch_logs, purge_security_groups
     )
     updated_parameters.update(get_changing_options_with_consistent_keys(parameters, instance))
     parameters = updated_parameters
+
+    # Validate multi_tenant option
+    # Once set to True, it cannot be modified to False
+    if multi_tenant is False:  # noqa: E712
+        if instance.get("MultiTenant"):
+            module.fail_json(
+                msg="A DB which is configured to be a multi tenant cannot be modified to use single tenant configuration."
+            )
 
     # Validate changes to storage type options
     if instance.get("StorageType") == "io1":
@@ -1326,7 +1348,6 @@ def get_changing_options_with_inconsistent_keys(
                 changing_params[option] = list(set(current_option) | set(desired_option))
         else:
             changing_params[option] = desired_option
-
     return changing_params
 
 
@@ -1344,7 +1365,6 @@ def get_changing_options_with_consistent_keys(
             changing_params (dict): Parameters to be modified
     """
     changing_params: Dict[str, Any] = {}
-
     for param in modify_params:
         current_option = instance.get("PendingModifiedValues", {}).get(param, None)
         if current_option is None:
@@ -1376,6 +1396,7 @@ def validate_options(client, module: AnsibleAWSModule, instance: Dict[str, Any])
     read_replica = module.params["read_replica"]
     creation_source = module.params["creation_source"]
     source_instance = module.params["source_db_instance_identifier"]
+    multi_tenant = module.params["multi_tenant"]
 
     if modified_id:
         modified_instance = get_instance(client, module, modified_id)
@@ -1401,6 +1422,12 @@ def validate_options(client, module: AnsibleAWSModule, instance: Dict[str, Any])
             msg=(
                 "read_replica is true and the instance does not exist yet but all of the following are missing:"
                 " source_db_instance_identifier"
+            )
+        )
+    if multi_tenant is not None and engine not in ["oracle-se2-cdb", "oracle-ee-cdb"]:
+        module.fail_json(
+            msg=(
+                f"Multi Tenant parameter only applies to RDS for Oracle container database (CDB) engines and not to {engine}."
             )
         )
 
@@ -1631,6 +1658,7 @@ def main():
         monitoring_interval=dict(type="int"),
         monitoring_role_arn=dict(),
         multi_az=dict(type="bool"),
+        multi_tenant=dict(type="bool"),
         new_db_instance_identifier=dict(aliases=["new_instance_id", "new_id"]),
         option_group_name=dict(),
         performance_insights_kms_key_id=dict(),
@@ -1697,6 +1725,8 @@ def main():
         module.require_botocore_at_least(
             "1.29.44", reason="to use 'ca_certificate_identifier' while creating/updating rds instance"
         )
+    if module.params["multi_tenant"]:
+        module.require_botocore_at_least("1.28.80", reason="to use 'multi_tenant' while creating rds instance")
 
     # Sanitize instance identifiers
     module.params["db_instance_identifier"] = module.params["db_instance_identifier"].lower()
