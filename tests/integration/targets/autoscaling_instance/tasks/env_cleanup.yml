@@ -1,0 +1,57 @@
+---
+- name: kill asg
+  amazon.aws.autoscaling_group:
+    name: "{{ default_resource_name }}"
+    state: absent
+  register: removed
+  until: removed is not failed
+  ignore_errors: true
+  retries: 10
+
+# If we failed while an instance was detached we need to manually clean up
+- name: Trigger termination of all instances
+  amazon.aws.ec2_instance:
+    state: absent
+    instance_ids: "{{ all_instances }}"
+    wait: True
+  register: removed
+  until: removed is not failed
+  ignore_errors: true
+  retries: 10
+
+- name: remove target group
+  community.aws.elb_target_group:
+    name: "{{ item }}"
+    state: absent
+  register: removed
+  until: removed is not failed
+  ignore_errors: true
+  retries: 10
+  loop:
+    - "{{ default_tiny_name }}-1"
+    - "{{ default_tiny_name }}-2"
+
+- name: remove launch templates
+  community.aws.ec2_launch_template:
+    name: "{{ item }}"
+    state: absent
+  register: removed
+  until: removed is not failed
+  ignore_errors: true
+  retries: 10
+  loop:
+    - "{{ default_resource_name }}-1"
+    - "{{ default_resource_name }}-2"
+
+- name: delete launch template
+  community.aws.ec2_launch_template:
+    name: "{{ default_resource_name }}"
+    state: absent
+  register: del_lt
+  retries: 10
+  until: del_lt is not failed
+  ignore_errors: true
+
+- ansible.builtin.include_role:
+    name: setup_ec2_vpc
+    tasks_from: cleanup.yml
