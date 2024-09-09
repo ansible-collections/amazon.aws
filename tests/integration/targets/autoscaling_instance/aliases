@@ -1,0 +1,4 @@
+time=30m
+cloud/aws
+
+autoscaling_instance_info

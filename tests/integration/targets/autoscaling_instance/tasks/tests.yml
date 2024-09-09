@@ -1,0 +1,3 @@
+---
+- ansible.builtin.include_tasks: describe.yml
+- ansible.builtin.include_tasks: attach_detach.yml

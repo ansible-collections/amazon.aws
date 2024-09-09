@@ -1,6 +1,6 @@
 ---
 # ============================================================
-- name: Run all tests
+- name: Cleanup after all tests
   module_defaults:
     group/aws:
       access_key: "{{ aws_access_key }}"
@@ -88,7 +88,7 @@
       loop: "{{ remaining_subnets.subnets }}"
       until: subnets_removed is not failed
       when:
-        - item.name != 'default'
+        - (item.name | default("")) != 'default'
       ignore_errors: true
       retries: 10
 
@@ -106,7 +106,7 @@
 
     # ============================================================
 
-    - name: (VPC Cleanup) Delete remaining route tables
+    - name: (VPC Cleanup) Delete route tables (excluding main table)
       amazon.aws.ec2_vpc_route_table:
         state: absent
         vpc_id: "{{ vpc_id }}"
@@ -114,7 +114,11 @@
         lookup: id
       register: rtbs_removed
       loop: "{{ remaining_rtbs.route_tables }}"
+      when:
+        - True not in main_associations
       ignore_errors: true
+      vars:
+        main_associations: "{{ item.associations | default([]) | map(attribute='main') | list}}"
 
     # ============================================================
 
@@ -126,3 +130,15 @@
       until: vpc_removed is not failed
       ignore_errors: true
       retries: 10
+
+    # ============================================================
+
+    - name: (VPC Cleanup) (retry) Delete remaining route tables (including main table)
+      amazon.aws.ec2_vpc_route_table:
+        state: absent
+        vpc_id: "{{ vpc_id }}"
+        route_table_id: "{{ item.id }}"
+        lookup: id
+      register: rtbs_removed
+      loop: "{{ remaining_rtbs.route_tables }}"
+      ignore_errors: true
