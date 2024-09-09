@@ -568,7 +568,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 
 
-def handle_bucket_versioning(s3_client, module: AnsibleAWSModule, name: str) -> tuple[bool, dict]:
+def handle_bucket_versioning(s3_client, module: AnsibleAWSModule, name: str) -> Tuple[bool, dict]:
     """
     Manage versioning for an S3 bucket.
     Parameters:
@@ -623,7 +623,7 @@ def handle_bucket_versioning(s3_client, module: AnsibleAWSModule, name: str) -> 
     return versioning_changed, versioning_result
 
 
-def handle_bucket_requester_pays(s3_client, module: AnsibleAWSModule, name: str) -> tuple[bool, dict]:
+def handle_bucket_requester_pays(s3_client, module: AnsibleAWSModule, name: str) -> Tuple[bool, dict]:
     """
     Manage requester pays setting for an S3 bucket.
     Parameters:
@@ -668,7 +668,7 @@ def handle_bucket_requester_pays(s3_client, module: AnsibleAWSModule, name: str)
     return requester_pays_changed, requester_pays
 
 
-def handle_bucket_public_access_config(s3_client, module: AnsibleAWSModule, name: str) -> tuple[bool, dict]:
+def handle_bucket_public_access_config(s3_client, module: AnsibleAWSModule, name: str) -> Tuple[bool, dict]:
     """
     Manage public access configuration for an S3 bucket.
     Parameters:
@@ -725,7 +725,7 @@ def handle_bucket_public_access_config(s3_client, module: AnsibleAWSModule, name
     return public_access_changed, public_access_result
 
 
-def handle_bucket_policy(s3_client, module: AnsibleAWSModule, name: str) -> tuple[bool, dict]:
+def handle_bucket_policy(s3_client, module: AnsibleAWSModule, name: str) -> Tuple[bool, dict]:
     """
     Manage bucket policy for an S3 bucket.
     Parameters:
@@ -783,7 +783,7 @@ def handle_bucket_policy(s3_client, module: AnsibleAWSModule, name: str) -> tupl
     return policy_changed, current_policy
 
 
-def handle_bucket_tags(s3_client, module: AnsibleAWSModule, name: str) -> tuple[bool, dict]:
+def handle_bucket_tags(s3_client, module: AnsibleAWSModule, name: str) -> Tuple[bool, dict]:
     """
     Manage tags for an S3 bucket.
     Parameters:
@@ -841,7 +841,7 @@ def handle_bucket_tags(s3_client, module: AnsibleAWSModule, name: str) -> tuple[
     return bucket_tags_changed, current_tags_dict
 
 
-def handle_bucket_encryption(s3_client, module: AnsibleAWSModule, name: str) -> tuple[bool, dict]:
+def handle_bucket_encryption(s3_client, module: AnsibleAWSModule, name: str) -> Tuple[bool, dict]:
     """
     Manage encryption settings for an S3 bucket.
     Parameters:
@@ -905,7 +905,7 @@ def handle_bucket_encryption(s3_client, module: AnsibleAWSModule, name: str) -> 
     return encryption_changed, current_encryption
 
 
-def handle_bucket_ownership(s3_client, module: AnsibleAWSModule, name: str) -> tuple[bool, dict]:
+def handle_bucket_ownership(s3_client, module: AnsibleAWSModule, name: str) -> Tuple[bool, dict]:
     """
     Manage ownership settings for an S3 bucket.
     Parameters:
@@ -960,7 +960,7 @@ def handle_bucket_ownership(s3_client, module: AnsibleAWSModule, name: str) -> t
     return bucket_ownership_changed, bucket_ownership_result
 
 
-def handle_bucket_acl(s3_client, module: AnsibleAWSModule, name: str) -> tuple[bool, dict]:
+def handle_bucket_acl(s3_client, module: AnsibleAWSModule, name: str) -> Tuple[bool, dict]:
     """
     Manage Access Control List (ACL) for an S3 bucket.
     Parameters:
@@ -1040,7 +1040,7 @@ def handle_bucket_object_lock(s3_client, module: AnsibleAWSModule, name: str) ->
     return object_lock_result
 
 
-def handle_bucket_accelerate(s3_client, module: AnsibleAWSModule, name: str) -> tuple[bool, bool]:
+def handle_bucket_accelerate(s3_client, module: AnsibleAWSModule, name: str) -> Tuple[bool, bool]:
     """
     Manage transfer accelerate for an S3 bucket.
     Parameters:
@@ -1093,7 +1093,7 @@ def handle_bucket_accelerate(s3_client, module: AnsibleAWSModule, name: str) -> 
     return accelerate_enabled_changed, accelerate_enabled_result
 
 
-def handle_bucket_object_lock_retention(s3_client, module: AnsibleAWSModule, name: str) -> tuple[bool, dict]:
+def handle_bucket_object_lock_retention(s3_client, module: AnsibleAWSModule, name: str) -> Tuple[bool, dict]:
     """
     Manage object lock retention configuration for an S3 bucket.
     Parameters:
@@ -1145,7 +1145,7 @@ def handle_bucket_object_lock_retention(s3_client, module: AnsibleAWSModule, nam
     return object_lock_default_retention_changed, object_lock_default_retention_result
 
 
-def handle_bucket_inventory(s3_client, module: AnsibleAWSModule, name: str) -> tuple[bool, dict]:
+def handle_bucket_inventory(s3_client, module: AnsibleAWSModule, name: str) -> Tuple[bool, dict]:
     """
     Manage inventory configuration for an S3 bucket.
     Parameters:
