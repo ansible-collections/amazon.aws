@@ -222,7 +222,7 @@ EXAMPLES = r"""
 
 - name: Modify reverse DNS record of EIP
   amazon.aws.ec2_eip:
-    update_reverse_dns: true
+    update_reverse_dns_record: true
     allocation_id: eipalloc-00a61ec1234567890
     domain_name: example.com
 """
