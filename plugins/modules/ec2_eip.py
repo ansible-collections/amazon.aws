@@ -238,6 +238,46 @@ public_ip:
   returned: on success
   type: str
   sample: 52.88.159.209
+update_reverse_dns_record_result:
+  description: Information about result of update reverse dns record operation.
+  returned: When O(update_reverse_dns_record=true).
+  type: dict
+  contains:
+    address:
+      description: Information about the Elastic IP address.
+      returned: always
+      type: dict
+      contains:
+        allocation_id:
+          description: The allocation ID.
+          returned: always
+          type: str
+          sample: "eipalloc-00a11aa111aaa1a11"
+        ptr_record:
+          description: The pointer (PTR) record for the IP address.
+          returned: always
+          type: str
+          sample: "ec2-11-22-33-44.us-east-2.compute.amazonaws.com."
+        ptr_record_update:
+          description: The updated PTR record for the IP address.
+          returned: always
+          type: dict
+          contains:
+            status:
+              description: The status of the PTR record update.
+              returned: always
+              type: str
+              sample: "PENDING"
+            value:
+              description: The value for the PTR record update.
+              returned: always
+              type: str
+              sample: "example.com"
+        public_ip:
+          description: The public IP address.
+          returned: always
+          type: str
+          sample: "11.22.33.44"
 """
 
 from typing import Any
@@ -491,14 +531,16 @@ def ensure_present(
     return result
 
 
-def  update_reverse_dns_record_of_eip(client, module: AnsibleAWSModule):
+def update_reverse_dns_record_of_eip(client, module: AnsibleAWSModule):
     changed = False
     allocation_id = module.params.get("allocation_id")
     domain_name = module.params.get("domain_name")
     dry_run = module.params.get("dry_run")
 
     try:
-        update_reverse_dns_record_result = client.modify_address_attribute(AllocationId=allocation_id, DomainName=domain_name, DryRun=dry_run)
+        update_reverse_dns_record_result = client.modify_address_attribute(
+            AllocationId=allocation_id, DomainName=domain_name, DryRun=dry_run
+        )
         changed = True
     except AnsibleEC2Error as e:
         module.fail_json_aws_error(e)
@@ -506,7 +548,10 @@ def  update_reverse_dns_record_of_eip(client, module: AnsibleAWSModule):
     if "ResponseMetadata" in update_reverse_dns_record_result:
         del update_reverse_dns_record_result["ResponseMetadata"]
 
-    return {"changed": changed, "update_reverse_dns_record_result": camel_dict_to_snake_dict(update_reverse_dns_record_result)}
+    return {
+        "changed": changed,
+        "update_reverse_dns_record_result": camel_dict_to_snake_dict(update_reverse_dns_record_result),
+    }
 
 
 def main():
@@ -514,7 +559,7 @@ def main():
         allocation_id=dict(required=False, type="str"),
         device_id=dict(required=False),
         domain_name=dict(required=False, type="str"),
-        dry_run=dict(default=False, type="bool"),
+        dry_run=dict(required=False, type="bool"),
         public_ip=dict(required=False, aliases=["ip"]),
         state=dict(required=False, default="present", choices=["present", "absent"]),
         in_vpc=dict(required=False, type="bool", default=False),
@@ -538,7 +583,7 @@ def main():
             "tag_value": ["tag_name"],
         },
         required_if=[
-          ('update_reverse_dns_record', True, ('allocation_id', 'domain_name')),
+            ("update_reverse_dns_record", True, ("allocation_id", "domain_name")),
         ],
     )
 
@@ -550,19 +595,19 @@ def main():
 
     is_instance = check_is_instance(module)
 
-    if module.params.get("update_reverse_dns_record") == True:
+    if module.params.get("update_reverse_dns_record") is True:
         result = update_reverse_dns_record_of_eip(ec2, module)
     else:
-      try:
-          # Find existing address
-          address = find_address(ec2, public_ip, device_id, is_instance)
-          if state == "present":
-              result = ensure_present(ec2, module, address, is_instance)
-          else:
-              result = ensure_absent(ec2, module, address, is_instance)
+        try:
+            # Find existing address
+            address = find_address(ec2, public_ip, device_id, is_instance)
+            if state == "present":
+                result = ensure_present(ec2, module, address, is_instance)
+            else:
+                result = ensure_absent(ec2, module, address, is_instance)
 
-      except AnsibleEC2Error as e:
-          module.fail_json_aws_error(e)
+        except AnsibleEC2Error as e:
+            module.fail_json_aws_error(e)
 
     module.exit_json(**result)
 
