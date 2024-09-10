@@ -654,7 +654,7 @@
         that:
           - Destroy_table.changed
 
-    - name: CHECK MODE - reDestroy public route table
+    - name: CHECK MODE - redestroy public route table
       amazon.aws.ec2_vpc_route_table:
         route_table_id: "{{ create_public_table.route_table.id }}"
         lookup: id
@@ -666,16 +666,17 @@
         that:
           - not check_mode_results.changed
 
-    - name: reDestroy public route table
+    - name: redestroy public route table
       amazon.aws.ec2_vpc_route_table:
         route_table_id: "{{ create_public_table.route_table.id }}"
         lookup: id
         state: absent
-      register: reDestroy_table
-    - name: Assert reDestroy table worked
+      register: redestroy_table
+
+    - name: Assert redestroy table worked
       ansible.builtin.assert:
         that:
-          - not reDestroy_table.changed
+          - not redestroy_table.changed
 
     - name: Destroy NAT GW
       amazon.aws.ec2_vpc_nat_gateway:
