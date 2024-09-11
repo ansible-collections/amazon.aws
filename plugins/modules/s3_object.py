@@ -448,7 +448,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.s3 import s3_extra_para
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import validate_bucket_name
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
-from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
 
 IGNORE_S3_DROP_IN_EXCEPTIONS = ["XNotImplemented", "NotImplemented"]
 
