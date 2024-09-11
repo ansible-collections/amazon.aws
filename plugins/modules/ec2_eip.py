@@ -80,20 +80,10 @@ options:
     description: Whether to update the reverse DNS record of ec2 Elastic IP Address (eip)
     required: false
     type: bool
-  allocation_id:
-    description: The allocation ID of ec2 EIP.
-    required: false
-    type: str
   domain_name:
     description: The domain name to modify for the IP address.
     required: false
     type: str
-  dry_run:
-    description:
-      - Checks whether you have the required permissions for the action, without actually making the request, and provides an error response.
-      - If you have the required permissions, the error response is DryRunOperation. Otherwise, it is UnauthorizedOperation.
-    required: false
-    type: bool
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
@@ -223,7 +213,7 @@ EXAMPLES = r"""
 - name: Modify reverse DNS record of EIP
   amazon.aws.ec2_eip:
     update_reverse_dns_record: true
-    allocation_id: eipalloc-00a61ec1234567890
+    public_ip: 11.22.33.44
     domain_name: example.com
 """
 
@@ -531,15 +521,12 @@ def ensure_present(
     return result
 
 
-def update_reverse_dns_record_of_eip(client, module: AnsibleAWSModule):
+def update_reverse_dns_record_of_eip(client, module: AnsibleAWSModule, allocation_id, domain_name):
     changed = False
-    allocation_id = module.params.get("allocation_id")
-    domain_name = module.params.get("domain_name")
-    dry_run = module.params.get("dry_run")
 
     try:
         update_reverse_dns_record_result = client.modify_address_attribute(
-            AllocationId=allocation_id, DomainName=domain_name, DryRun=dry_run
+            AllocationId=allocation_id, DomainName=domain_name
         )
         changed = True
     except AnsibleEC2Error as e:
@@ -556,10 +543,8 @@ def update_reverse_dns_record_of_eip(client, module: AnsibleAWSModule):
 
 def main():
     argument_spec = dict(
-        allocation_id=dict(required=False, type="str"),
         device_id=dict(required=False),
         domain_name=dict(required=False, type="str"),
-        dry_run=dict(required=False, type="bool"),
         public_ip=dict(required=False, aliases=["ip"]),
         state=dict(required=False, default="present", choices=["present", "absent"]),
         in_vpc=dict(required=False, type="bool", default=False),
@@ -583,7 +568,7 @@ def main():
             "tag_value": ["tag_name"],
         },
         required_if=[
-            ("update_reverse_dns_record", True, ("allocation_id", "domain_name")),
+            ("update_reverse_dns_record", True, ("public_ip", "domain_name")),
         ],
     )
 
@@ -596,7 +581,9 @@ def main():
     is_instance = check_is_instance(module)
 
     if module.params.get("update_reverse_dns_record") is True:
-        result = update_reverse_dns_record_of_eip(ec2, module)
+        allocation_id = ec2.describe_addresses(PublicIps=[public_ip])["Addresses"][0]["AllocationId"]
+        domain_name = module.params.get("domain_name")
+        result = update_reverse_dns_record_of_eip(ec2, module, allocation_id, domain_name)
     else:
         try:
             # Find existing address
