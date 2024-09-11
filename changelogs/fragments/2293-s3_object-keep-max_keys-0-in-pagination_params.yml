@@ -1,3 +1,0 @@
----
-bugfixes:
-- s3_object - fix removal of max_keys=0 from params for list_keys operation (https://github.com/ansible-collections/amazon.aws/pull/2293).
