@@ -1,3 +1,2 @@
 minor_changes:
   - module_utils/elb_utils.py - Rename ``module_utils/elb_utils.py`` to ``module_utils/elbv2_utils.py``, since it only includes utilities for the elbv2 client (https://github.com/ansible-collections/amazon.aws/pull/2285).
-
