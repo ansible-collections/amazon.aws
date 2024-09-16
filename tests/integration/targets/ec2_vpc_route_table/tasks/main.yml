@@ -7,17 +7,19 @@
       session_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
   block:
-    - name: create VPC
+    - name: Create VPC
       amazon.aws.ec2_vpc_net:
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ resource_prefix }}_vpc"
         state: present
       register: vpc
-    - name: assert that VPC has an id
+
+    - name: Assert that VPC has an id
       ansible.builtin.assert:
         that:
           - vpc.vpc.id is defined
           - vpc.changed
+
     - name: Assign IPv6 CIDR block to existing VPC, check mode
       amazon.aws.ec2_vpc_net:
         cidr_block: "{{ vpc_cidr }}"
@@ -25,39 +27,46 @@
         ipv6_cidr: true
       check_mode: true
       register: vpc_update
-    - name: assert that VPC would changed
+
+    - name: Assert that VPC would changed
       ansible.builtin.assert:
         that:
           - vpc_update.changed
+
     - name: Assign Amazon-provided IPv6 CIDR block to existing VPC
       amazon.aws.ec2_vpc_net:
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ resource_prefix }}_vpc"
         ipv6_cidr: true
       register: vpc_update
-    - name: assert that VPC was changed, IPv6 CIDR is configured
+
+    - name: Assert that VPC was changed, IPv6 CIDR is configured
       ansible.builtin.assert:
         that:
           - vpc_update.vpc.id == vpc.vpc.id
           - vpc_update.changed
           - vpc_update.vpc.ipv6_cidr_block_association_set | length == 1
+
     - name: Fetch existing VPC info
       amazon.aws.ec2_vpc_net_info:
         filters:
           tag:Name: "{{ resource_prefix }}_vpc"
       register: vpc_info
-    - name: assert vpc net info after configuring IPv6 CIDR
+
+    - name: Assert vpc net info after configuring IPv6 CIDR
       ansible.builtin.assert:
         that:
           - vpc_info.vpcs | length == 1
           - vpc_info.vpcs[0].id == vpc.vpc.id
           - vpc_info.vpcs[0].ipv6_cidr_block_association_set | length == 1
           - vpc_info.vpcs[0].ipv6_cidr_block_association_set[0].ipv6_cidr_block_state.state == "associated"
-    - name: get Amazon-provided IPv6 CIDR associated with the VPC
+
+    - name: Get Amazon-provided IPv6 CIDR associated with the VPC
       ansible.builtin.set_fact:
       # Example value: 2600:1f1c:1b3:8f00::/56
         vpc_ipv6_cidr_block: "{{ vpc_info.vpcs[0].ipv6_cidr_block_association_set[0].ipv6_cidr_block }}"
-    - name: create subnets
+
+    - name: Create subnets
       amazon.aws.ec2_vpc_subnet:
         cidr: "{{ item.cidr }}"
         az: "{{ item.zone }}"
@@ -94,36 +103,65 @@
           public: "False"
           assign_instances_ipv6: true
           # Carve first /64 subnet of the Amazon-provided CIDR for the VPC.
-          ipv6_cidr: "{{ vpc_ipv6_cidr_block | ansible.netcommon.ipsubnet(64, 1) }}"
+          ipv6_cidr: "{{ vpc_ipv6_cidr_block | ansible.utils.ipsubnet(64, 1) }}"
         - cidr: 10.228.229.0/24
           zone: "{{ availability_zone_a }}"
           public: "True"
           assign_instances_ipv6: true
-          ipv6_cidr: "{{ vpc_ipv6_cidr_block | ansible.netcommon.ipsubnet(64, 2) }}"
+          ipv6_cidr: "{{ vpc_ipv6_cidr_block | ansible.utils.ipsubnet(64, 2) }}"
         - cidr: 10.228.230.0/24
           zone: "{{ availability_zone_b }}"
           public: "False"
           assign_instances_ipv6: true
-          ipv6_cidr: "{{ vpc_ipv6_cidr_block | ansible.netcommon.ipsubnet(64, 3) }}"
+          ipv6_cidr: "{{ vpc_ipv6_cidr_block | ansible.utils.ipsubnet(64, 3) }}"
       register: subnets
-    - amazon.aws.ec2_vpc_subnet_info:
+
+    - name: Get subnet info
+      amazon.aws.ec2_vpc_subnet_info:
         filters:
           vpc-id: "{{ vpc.vpc.id }}"
       register: vpc_subnets
-    - ansible.builtin.set_fact:
+
+    - name: Set subnet facts
+      ansible.builtin.set_fact:
         public_subnets: "{{ (vpc_subnets.subnets | selectattr('tags.Public', 'equalto', 'True') | map(attribute='id') | list) }}"
         public_cidrs: "{{ (vpc_subnets.subnets | selectattr('tags.Public', 'equalto', 'True') | map(attribute='cidr_block') | list) }}"
         private_subnets: "{{ (vpc_subnets.subnets | selectattr('tags.Public', 'equalto', 'False') | map(attribute='id') | list) }}"
-    - name: create IGW
+
+    - name: Create IGW
       amazon.aws.ec2_vpc_igw:
         vpc_id: "{{ vpc.vpc.id }}"
       register: vpc_igw
-    - name: create NAT GW
+
+    - name: Create NAT GW
       amazon.aws.ec2_vpc_nat_gateway:
         if_exist_do_not_create: true
         wait: true
         subnet_id: "{{ subnets.results[0].subnet.id }}"
       register: nat_gateway
+
+    - name: Create  transit gateway
+      community.aws.ec2_transit_gateway:
+        state: present
+        description: "Ansible TGW"
+        asn: 4200000000
+        wait: true
+        tags:
+            "team": "cloud"
+      register: transit_gateway
+
+    - name: Create VPC attachment
+      community.aws.ec2_transit_gateway_vpc_attachment:
+        state: present
+        name: "{{ resource_prefix }}_vpc_attachment"
+        transit_gateway: "{{ transit_gateway.transit_gateway.transit_gateway_id }}"
+        subnets: "{{ public_subnets[0] }}"
+        tags:
+          "team": "cloud"
+        wait: true
+        purge_subnets: False
+      register: vpc_attachment
+
     - name: CHECK MODE - route table should be created
       amazon.aws.ec2_vpc_route_table:
         vpc_id: "{{ vpc.vpc.id }}"
@@ -132,19 +170,21 @@
           Name: Public route table
       check_mode: true
       register: check_mode_results
-    - name: assert that the public route table would be created
+
+    - name: Assert that the public route table would be created
       ansible.builtin.assert:
         that:
           - check_mode_results.changed
 
-    - name: create public route table
+    - name: Create public route table
       amazon.aws.ec2_vpc_route_table:
         vpc_id: "{{ vpc.vpc.id }}"
         tags:
           Public: "true"
           Name: Public route table
       register: create_public_table
-    - name: assert that public route table has an id
+
+    - name: Assert that public route table has an id
       ansible.builtin.assert:
         that:
           - create_public_table.changed
@@ -167,19 +207,21 @@
           Name: Public route table
       check_mode: true
       register: check_mode_results
-    - name: assert the table already exists
+
+    - name: Assert the table already exists
       ansible.builtin.assert:
         that:
           - not check_mode_results.changed
 
-    - name: recreate public route table
+    - name: Recreate public route table
       amazon.aws.ec2_vpc_route_table:
         vpc_id: "{{ vpc.vpc.id }}"
         tags:
           Public: "true"
           Name: Public route table
       register: recreate_public_route_table
-    - name: assert that public route table did not change
+
+    - name: Assert that public route table did not change
       ansible.builtin.assert:
         that:
           - not recreate_public_route_table.changed
@@ -202,14 +244,17 @@
             gateway_id: igw
           - dest: ::/0
             gateway_id: igw
+          - dest: "0.0.0.0/8"
+            gateway_id: "{{ transit_gateway.transit_gateway.transit_gateway_id }}"
       check_mode: true
       register: check_mode_results
-    - name: assert a route would be added
+
+    - name: Assert a route would be added
       ansible.builtin.assert:
         that:
           - check_mode_results.changed
 
-    - name: add a route to public route table
+    - name: Add a route to public route table
       amazon.aws.ec2_vpc_route_table:
         vpc_id: "{{ vpc.vpc.id }}"
         tags:
@@ -220,8 +265,11 @@
             gateway_id: igw
           - dest: ::/0
             gateway_id: igw
+          - dest: "0.0.0.0/8"
+            gateway_id: "{{ transit_gateway.transit_gateway.transit_gateway_id }}"
       register: add_routes
-    - name: assert route table contains new route
+
+    - name: Assert route table contains new route
       ansible.builtin.assert:
         that:
           - add_routes.changed
@@ -232,7 +280,7 @@
           # 0.0.0.0/0
           # ::/0
           # Amazon-provide IPv6 block
-          - add_routes.route_table.routes | length == 4
+          - add_routes.route_table.routes | length == 5
           - add_routes.route_table.associations | length == 0
           - add_routes.route_table.vpc_id == vpc.vpc.id
           - add_routes.route_table.propagating_vgws | length == 0
@@ -243,31 +291,35 @@
         tags:
           Public: "true"
           Name: Public route table
+        purge_routes: false
         routes:
           - dest: "0.0.0.0/0"
             gateway_id: igw
       check_mode: true
       register: check_mode_results
-    - name: assert a route would not be added
+
+    - name: Assert a route would not be added
       ansible.builtin.assert:
         that:
           - check_mode_results is not changed
 
-    - name: re-add a route to public route table
+    - name: Re-add a route to public route table
       amazon.aws.ec2_vpc_route_table:
         vpc_id: "{{ vpc.vpc.id }}"
         tags:
           Public: "true"
           Name: Public route table
+        purge_routes: false
         routes:
           - dest: "0.0.0.0/0"
             gateway_id: igw
       register: add_routes
-    - name: assert route table contains route
+
+    - name: Assert route table contains route
       ansible.builtin.assert:
         that:
           - add_routes is not changed
-          - add_routes.route_table.routes | length == 4
+          - add_routes.route_table.routes | length == 5
 
     - name: CHECK MODE - add subnets to public route table
       amazon.aws.ec2_vpc_route_table:
@@ -281,12 +333,13 @@
         subnets: "{{ public_subnets }}"
       check_mode: true
       register: check_mode_results
-    - name: assert the subnets would be added to the route table
+
+    - name: Assert the subnets would be added to the route table
       ansible.builtin.assert:
         that:
           - check_mode_results.changed
 
-    - name: add subnets to public route table
+    - name: Add subnets to public route table
       amazon.aws.ec2_vpc_route_table:
         vpc_id: "{{ vpc.vpc.id }}"
         tags:
@@ -297,7 +350,8 @@
             gateway_id: igw
         subnets: "{{ public_subnets }}"
       register: add_subnets
-    - name: assert route table contains subnets
+
+    - name: Assert route table contains subnets
       ansible.builtin.assert:
         that:
           - add_subnets.changed
@@ -313,7 +367,8 @@
         subnets: "{{ public_subnets }}"
       check_mode: true
       register: check_mode_results
-    - name: assert no routes would be removed
+
+    - name: Assert no routes would be removed
       ansible.builtin.assert:
         that:
           - not check_mode_results.changed
@@ -327,7 +382,8 @@
         purge_routes: false
         subnets: "{{ public_subnets }}"
       register: no_purge_routes
-    - name: assert route table still has routes
+
+    - name: Assert route table still has routes
       ansible.builtin.assert:
         that:
           - not no_purge_routes.changed
@@ -345,7 +401,8 @@
           - dest: "0.0.0.0/0"
             gateway_id: igw
       register: no_purge_subnets
-    - name: assert route table still has subnets
+
+    - name: Assert route table still has subnets
       ansible.builtin.assert:
         that:
           - not no_purge_subnets.changed
@@ -362,7 +419,7 @@
         route_table_id: "{{ create_public_table.route_table.id }}"
         subnets: "{{ public_subnets }}"
       register: no_purge_tags
-    - name: assert route table still has tags
+    - name: Assert route table still has tags
       ansible.builtin.assert:
         that:
           - not no_purge_tags.changed
@@ -381,12 +438,12 @@
           Name: Public route table
       check_mode: true
       register: check_mode_results
-    - name: assert subnets would be removed
+    - name: Assert subnets would be removed
       ansible.builtin.assert:
         that:
           - check_mode_results.changed
 
-    - name: purge subnets
+    - name: Purge subnets
       amazon.aws.ec2_vpc_route_table:
         vpc_id: "{{ vpc.vpc.id }}"
         routes:
@@ -397,7 +454,7 @@
           Public: "true"
           Name: Public route table
       register: purge_subnets
-    - name: assert purge subnets worked
+    - name: Assert purge subnets worked
       ansible.builtin.assert:
         that:
           - purge_subnets.changed
@@ -413,7 +470,7 @@
         routes: []
       check_mode: true
       register: check_mode_results
-    - name: assert routes would be removed
+    - name: Assert routes would be removed
       ansible.builtin.assert:
         that:
           - check_mode_results.changed
@@ -428,13 +485,13 @@
         lookup: id
         route_table_id: "{{ create_public_table.route_table.id }}"
       register: add_subnets_cidr
-    - name: assert route table contains subnets added by cidr
+    - name: Assert route table contains subnets added by cidr
       ansible.builtin.assert:
         that:
           - add_subnets_cidr.changed
           - add_subnets_cidr.route_table.associations | length == 3
 
-    - name: purge subnets added by cidr
+    - name: Purge subnets added by cidr
       amazon.aws.ec2_vpc_route_table:
         vpc_id: "{{ vpc.vpc.id }}"
         routes:
@@ -444,7 +501,7 @@
         lookup: id
         route_table_id: "{{ create_public_table.route_table.id }}"
       register: purge_subnets_cidr
-    - name: assert purge subnets added by cidr worked
+    - name: Assert purge subnets added by cidr worked
       ansible.builtin.assert:
         that:
           - purge_subnets_cidr.changed
@@ -460,13 +517,13 @@
         lookup: id
         route_table_id: "{{ create_public_table.route_table.id }}"
       register: add_subnets_name
-    - name: assert route table contains subnets added by name
+    - name: Assert route table contains subnets added by name
       ansible.builtin.assert:
         that:
           - add_subnets_name.changed
           - add_subnets_name.route_table.associations | length == 3
 
-    - name: purge subnets added by name
+    - name: Purge subnets added by name
       amazon.aws.ec2_vpc_route_table:
         vpc_id: "{{ vpc.vpc.id }}"
         routes:
@@ -476,13 +533,13 @@
         lookup: id
         route_table_id: "{{ create_public_table.route_table.id }}"
       register: purge_subnets_name
-    - name: assert purge subnets added by name worked
+    - name: Assert purge subnets added by name worked
       ansible.builtin.assert:
         that:
           - purge_subnets_name.changed
           - purge_subnets_name.route_table.associations | length == 0
 
-    - name: purge routes
+    - name: Purge routes
       amazon.aws.ec2_vpc_route_table:
         vpc_id: "{{ vpc.vpc.id }}"
         tags:
@@ -490,7 +547,7 @@
           Name: Public route table
         routes: []
       register: purge_routes
-    - name: assert purge routes worked
+    - name: Assert purge routes worked
       ansible.builtin.assert:
         that:
           - purge_routes.changed
@@ -508,7 +565,7 @@
           Updated: new_tag
       check_mode: true
       register: check_mode_results
-    - name: assert tags would be changed
+    - name: Assert tags would be changed
       ansible.builtin.assert:
         that:
           - check_mode_results.changed
@@ -523,7 +580,7 @@
           Name: Public route table
           Updated: new_tag
       register: update_tags
-    - name: assert update tags worked
+    - name: Assert update tags worked
       ansible.builtin.assert:
         that:
           - update_tags.changed
@@ -531,7 +588,7 @@
           - update_tags.route_table.tags['Updated'] == 'new_tag'
           - "'Public' not in update_tags.route_table.tags"
 
-    - name: create NAT GW
+    - name: Create NAT GW
       amazon.aws.ec2_vpc_nat_gateway:
         if_exist_do_not_create: true
         wait: true
@@ -549,12 +606,12 @@
         subnets: "{{ private_subnets }}"
       check_mode: true
       register: check_mode_results
-    - name: assert the route table would be created
+    - name: Assert the route table would be created
       ansible.builtin.assert:
         that:
           - check_mode_results.changed
 
-    - name: create private route table
+    - name: Create private route table
       amazon.aws.ec2_vpc_route_table:
         vpc_id: "{{ vpc.vpc.id }}"
         tags:
@@ -565,14 +622,14 @@
             dest: "0.0.0.0/0"
         subnets: "{{ private_subnets }}"
       register: create_private_table
-    - name: assert creating private route table worked
+    - name: Assert creating private route table worked
       ansible.builtin.assert:
         that:
           - create_private_table.changed
           - create_private_table.route_table.id != create_public_table.route_table.id
           - "'Public' in create_private_table.route_table.tags"
 
-    - name: CHECK MODE - destroy public route table by tags
+    - name: CHECK MODE - Destroy public route table by tags
       amazon.aws.ec2_vpc_route_table:
         vpc_id: "{{ vpc.vpc.id }}"
         state: absent
@@ -581,21 +638,21 @@
           Name: Public route table
       check_mode: true
       register: check_mode_results
-    - name: assert the route table would be deleted
+    - name: Assert the route table would be deleted
       ansible.builtin.assert:
         that: check_mode_results.changed
-    - name: destroy public route table by tags
+    - name: Destroy public route table by tags
       amazon.aws.ec2_vpc_route_table:
         vpc_id: "{{ vpc.vpc.id }}"
         state: absent
         tags:
           Updated: new_tag
           Name: Public route table
-      register: destroy_table
-    - name: assert destroy table worked
+      register: Destroy_table
+    - name: Assert Destroy table worked
       ansible.builtin.assert:
         that:
-          - destroy_table.changed
+          - Destroy_table.changed
 
     - name: CHECK MODE - redestroy public route table
       amazon.aws.ec2_vpc_route_table:
@@ -604,7 +661,7 @@
         state: absent
       check_mode: true
       register: check_mode_results
-    - name: assert the public route table does not exist
+    - name: Assert the public route table does not exist
       ansible.builtin.assert:
         that:
           - not check_mode_results.changed
@@ -615,12 +672,13 @@
         lookup: id
         state: absent
       register: redestroy_table
-    - name: assert redestroy table worked
+
+    - name: Assert redestroy table worked
       ansible.builtin.assert:
         that:
           - not redestroy_table.changed
 
-    - name: destroy NAT GW
+    - name: Destroy NAT GW
       amazon.aws.ec2_vpc_nat_gateway:
         state: absent
         wait: true
@@ -633,7 +691,7 @@
         filters:
           route-table-id: "{{ create_private_table.route_table.id }}"
       register: route_table_info
-    - name: assert route_table_info has correct attributes
+    - name: Assert route_table_info has correct attributes
       ansible.builtin.assert:
         that:
           - '"route_tables" in route_table_info'
@@ -653,7 +711,7 @@
           tag:Name: Private route table
           vpc-id: "{{ vpc.vpc.id }}"
       register: route_table_info
-    - name: assert route_table_info has correct tags
+    - name: Assert route_table_info has correct tags
       ansible.builtin.assert:
         that:
           - route_table_info.route_tables | length == 1
@@ -663,17 +721,19 @@
           - '"Name" in route_table_info.route_tables[0].tags'
           - route_table_info.route_tables[0].tags["Name"] == "Private route table"
 
-    - name: create NAT GW
+    - name: Create NAT GW
       amazon.aws.ec2_vpc_nat_gateway:
         if_exist_do_not_create: true
         wait: true
         subnet_id: "{{ subnets.results[0].subnet.id }}"
       register: nat_gateway
-    - name: show route table info
+
+    - name: Show route table info
       amazon.aws.ec2_vpc_route_table_info:
         filters:
           route-table-id: "{{ create_private_table.route_table.id }}"
-    - name: recreate private route table with new NAT GW
+
+    - name: Rereate private route table with new NAT GW
       amazon.aws.ec2_vpc_route_table:
         vpc_id: "{{ vpc.vpc.id }}"
         tags:
@@ -684,13 +744,14 @@
             dest: "0.0.0.0/0"
         subnets: "{{ private_subnets }}"
       register: recreate_private_table
-    - name: assert creating private route table worked
+
+    - name: Assert creating private route table worked
       ansible.builtin.assert:
         that:
           - recreate_private_table.changed
           - recreate_private_table.route_table.id != create_public_table.route_table.id
 
-    - name: create a VPC endpoint to test ec2_vpc_route_table ignores it
+    - name: Create a VPC endpoint to test ec2_vpc_route_table ignores it
       amazon.aws.ec2_vpc_endpoint:
         state: present
         vpc_id: "{{ vpc.vpc.id }}"
@@ -699,7 +760,8 @@
           - "{{ recreate_private_table.route_table.route_table_id }}"
         wait: true
       register: vpc_endpoint
-    - name: purge routes
+
+    - name: Purge routes
       amazon.aws.ec2_vpc_route_table:
         vpc_id: "{{ vpc.vpc.id }}"
         tags:
@@ -711,12 +773,14 @@
         subnets: "{{ private_subnets }}"
         purge_routes: true
       register: result
+
     - name: Get endpoint infos to verify that it wasn't purged from the route table
       amazon.aws.ec2_vpc_endpoint_info:
         vpc_endpoint_ids:
           - "{{ vpc_endpoint.result.vpc_endpoint_id }}"
       register: endpoint_details
-    - name: assert the route table is associated with the VPC endpoint
+
+    - name: Assert the route table is associated with the VPC endpoint
       ansible.builtin.assert:
         that:
           - endpoint_details.vpc_endpoints[0].route_table_ids[0] == recreate_private_table.route_table.route_table_id
@@ -733,7 +797,8 @@
       register: create_gateway_table
       check_mode: true
 
-    - ansible.builtin.assert:
+    - name: Assert that there is change
+      ansible.builtin.assert:
         that:
           - create_gateway_table is changed
 
@@ -746,7 +811,8 @@
         gateway_id: "{{ vpc_igw.gateway_id }}"
       register: create_gateway_table
 
-    - ansible.builtin.assert:
+    - name: Assert that the gateway route table is created
+      ansible.builtin.assert:
         that:
           - create_gateway_table is changed
           - create_gateway_table.route_table.id.startswith('rtb-')
@@ -767,7 +833,8 @@
       register: create_gateway_table
       check_mode: true
 
-    - ansible.builtin.assert:
+    - name: Assert that there is no change
+      ansible.builtin.assert:
         that:
           - create_gateway_table is not changed
 
@@ -780,7 +847,8 @@
         gateway_id: "{{ vpc_igw.gateway_id }}"
       register: create_gateway_table
 
-    - ansible.builtin.assert:
+    - name: Assert that there is no change
+      ansible.builtin.assert:
         that:
           - create_gateway_table is not changed
           - create_gateway_table.route_table.id.startswith('rtb-')
@@ -812,7 +880,8 @@
       register: create_gateway_table
       check_mode: true
 
-    - ansible.builtin.assert:
+    - name: Assert that there is change
+      ansible.builtin.assert:
         that:
           - create_gateway_table is changed
 
@@ -829,7 +898,8 @@
         purge_routes: false
       register: create_gateway_table
 
-    - ansible.builtin.assert:
+    - name: Assert that the the route is replaced
+      ansible.builtin.assert:
         that:
           - create_gateway_table is changed
           - create_gateway_table.route_table.id.startswith('rtb-')
@@ -856,7 +926,8 @@
       register: create_gateway_table
       check_mode: true
 
-    - ansible.builtin.assert:
+    - name: Assert that there is no change
+      ansible.builtin.assert:
         that:
           - create_gateway_table is not changed
 
@@ -873,7 +944,8 @@
         purge_routes: false
       register: create_gateway_table
 
-    - ansible.builtin.assert:
+    - name: Assert that there is no change
+      ansible.builtin.assert:
         that:
           - create_gateway_table is not changed
           - create_gateway_table.route_table.id.startswith('rtb-')
@@ -902,7 +974,8 @@
       register: create_gateway_table
       check_mode: true
 
-    - ansible.builtin.assert:
+    - name: Assert that there is change
+      ansible.builtin.assert:
         that:
           - create_gateway_table is changed
 
@@ -919,7 +992,8 @@
         purge_routes: false
       register: create_gateway_table
 
-    - ansible.builtin.assert:
+    - name: Assert that the route is added
+      ansible.builtin.assert:
         that:
           - create_gateway_table is changed
           - create_gateway_table.route_table.id.startswith('rtb-')
@@ -944,7 +1018,8 @@
       register: create_gateway_table
       check_mode: true
 
-    - ansible.builtin.assert:
+    - name: Assert that there is no change
+      ansible.builtin.assert:
         that:
           - create_gateway_table is not changed
 
@@ -961,7 +1036,8 @@
         purge_routes: false
       register: create_gateway_table
 
-    - ansible.builtin.assert:
+    - name: Assert that there is no change
+      ansible.builtin.assert:
         that:
           - create_gateway_table is not changed
           - create_gateway_table.route_table.id.startswith('rtb-')
@@ -987,7 +1063,8 @@
       register: create_gateway_table
       check_mode: true
 
-    - ansible.builtin.assert:
+    - name: Assert that there is no change
+      ansible.builtin.assert:
         that:
           - create_gateway_table is not changed
 
@@ -1003,7 +1080,8 @@
         purge_routes: false
       register: create_gateway_table
 
-    - ansible.builtin.assert:
+    - name: Assert that there is no change
+      ansible.builtin.assert:
         that:
           - create_gateway_table is not changed
           - create_gateway_table.route_table.id.startswith('rtb-')
@@ -1030,7 +1108,8 @@
       register: create_gateway_table
       check_mode: true
 
-    - ansible.builtin.assert:
+    - name: Assert that there is change
+      ansible.builtin.assert:
         that:
           - create_gateway_table is changed
 
@@ -1047,7 +1126,8 @@
         purge_routes: false
       register: create_gateway_table
 
-    - ansible.builtin.assert:
+    - name: Assert that the the disassociation is successful
+      ansible.builtin.assert:
         that:
           - create_gateway_table is changed
           - create_gateway_table.route_table.id.startswith('rtb-')
@@ -1072,7 +1152,8 @@
       register: create_gateway_table
       check_mode: true
 
-    - ansible.builtin.assert:
+    - name: Assert that there is no change
+      ansible.builtin.assert:
         that:
           - create_gateway_table is not changed
 
@@ -1089,7 +1170,8 @@
         purge_routes: false
       register: create_gateway_table
 
-    - ansible.builtin.assert:
+    - name: Assert that there is no change
+      ansible.builtin.assert:
         that:
           - create_gateway_table is not changed
           - create_gateway_table.route_table.id.startswith('rtb-')
@@ -1113,7 +1195,8 @@
       register: create_gateway_table
       check_mode: true
 
-    - ansible.builtin.assert:
+    - name: Assert that there is change
+      ansible.builtin.assert:
         that:
           - create_gateway_table is changed
 
@@ -1127,7 +1210,8 @@
         purge_routes: false
       register: create_gateway_table
 
-    - ansible.builtin.assert:
+    - name: Assert that the association is successful
+      ansible.builtin.assert:
         that:
           - create_gateway_table is changed
           - create_gateway_table.route_table.id.startswith('rtb-')
@@ -1150,7 +1234,8 @@
       register: create_gateway_table
       check_mode: true
 
-    - ansible.builtin.assert:
+    - name: Assert that there is no change
+      ansible.builtin.assert:
         that:
           - create_gateway_table is not changed
 
@@ -1164,7 +1249,8 @@
         purge_routes: false
       register: create_gateway_table
 
-    - ansible.builtin.assert:
+    - name: Assert that there is no change
+      ansible.builtin.assert:
         that:
           - create_gateway_table is not changed
           - create_gateway_table.route_table.id.startswith('rtb-')
@@ -1192,7 +1278,8 @@
       register: create_gateway_table
       check_mode: true
 
-    - ansible.builtin.assert:
+    - name: Assert that there is change
+      ansible.builtin.assert:
         that:
           - create_gateway_table is changed
 
@@ -1209,7 +1296,8 @@
         purge_routes: false
       register: create_gateway_table
 
-    - ansible.builtin.assert:
+    - name: Assert that the disassociation is successful
+      ansible.builtin.assert:
         that:
           - create_gateway_table is changed
           - create_gateway_table.route_table.id.startswith('rtb-')
@@ -1234,7 +1322,8 @@
       register: create_gateway_table
       check_mode: true
 
-    - ansible.builtin.assert:
+    - name: Assert that there is no change
+      ansible.builtin.assert:
         that:
           - create_gateway_table is not changed
 
@@ -1251,7 +1340,8 @@
         purge_routes: false
       register: create_gateway_table
 
-    - ansible.builtin.assert:
+    - name: Assert that there is no change
+      ansible.builtin.assert:
         that:
           - create_gateway_table is not changed
           - create_gateway_table.route_table.id.startswith('rtb-')
@@ -1283,7 +1373,8 @@
       register: create_gateway_table
       check_mode: true
 
-    - ansible.builtin.assert:
+    - name: Assert that there is change
+      ansible.builtin.assert:
         that:
           - create_gateway_table is changed
 
@@ -1297,7 +1388,8 @@
         purge_routes: false
       register: create_gateway_table
 
-    - ansible.builtin.assert:
+    - name: Assert that the association is successful
+      ansible.builtin.assert:
         that:
           - create_gateway_table is changed
           - create_gateway_table.route_table.id.startswith('rtb-')
@@ -1320,7 +1412,8 @@
       register: create_gateway_table
       check_mode: true
 
-    - ansible.builtin.assert:
+    - name: Assert that there is no change
+      ansible.builtin.assert:
         that:
           - create_gateway_table is not changed
 
@@ -1333,8 +1426,9 @@
         gateway_id: "{{ vgw.vgw.id }}"
         purge_routes: false
       register: create_gateway_table
-
-    - ansible.builtin.assert:
+ 
+    - name: Assert that there is no change
+      ansible.builtin.assert:
         that:
           - create_gateway_table is not changed
           - create_gateway_table.route_table.id.startswith('rtb-')
@@ -1369,7 +1463,8 @@
       register: delete_gateway_table
       check_mode: true
 
-    - ansible.builtin.assert:
+    - name: Assert that there is change
+      ansible.builtin.assert:
         that:
           - delete_gateway_table is changed
 
@@ -1404,7 +1499,8 @@
       register: delete_gateway_table
       check_mode: true
 
-    - ansible.builtin.assert:
+    - name: Assert that there is no change
+      ansible.builtin.assert:
         that:
           - delete_gateway_table is not changed
 
@@ -1433,13 +1529,13 @@
   #############################################################################
   # TEAR DOWN STARTS HERE
   #############################################################################
-    - name: remove the VPC endpoint
+    - name: Remove the VPC endpoint
       amazon.aws.ec2_vpc_endpoint:
         state: absent
         vpc_endpoint_id: "{{ vpc_endpoint.result.vpc_endpoint_id }}"
       when: vpc_endpoint is defined
       ignore_errors: true
-    - name: destroy route tables
+    - name: Destroy route tables
       amazon.aws.ec2_vpc_route_table:
         route_table_id: "{{ item.route_table.id }}"
         lookup: id
@@ -1450,7 +1546,7 @@
         - "{{ create_gateway_table | default() }}"
       when: item and not item.failed
       ignore_errors: true
-    - name: destroy NAT GW
+    - name: Destroy NAT GW
       amazon.aws.ec2_vpc_nat_gateway:
         state: absent
         wait: true
@@ -1458,24 +1554,36 @@
         subnet_id: "{{ subnets.results[0].subnet.id }}"
         nat_gateway_id: "{{ nat_gateway.nat_gateway_id }}"
       ignore_errors: true
-    - name: destroy IGW
+    - name: Destroy IGW
       amazon.aws.ec2_vpc_igw:
         vpc_id: "{{ vpc.vpc.id }}"
         state: absent
       ignore_errors: true
-    - name: destroy VGW
+    - name: Destroy VGW
       community.aws.ec2_vpc_vgw:
         state: absent
         type: ipsec.1
         name: "{{ resource_prefix }}_vpc"
         vpc_id: "{{ vpc.vpc.id }}"
       ignore_errors: true
-    - name: destroy ENI
+    - name: Delete VPC attachment
+      community.aws.ec2_transit_gateway_vpc_attachment:
+        state: absent
+        id: "{{ vpc_attachment.attachments[0].transit_gateway_attachment_id }}"
+        wait: true
+      ignore_errors: true
+    - name: Delete transit gateway
+      community.aws.ec2_transit_gateway:
+        state: absent
+        transit_gateway_id: '{{ transit_gateway.transit_gateway.transit_gateway_id }}'
+        wait: true
+      ignore_errors: true
+    - name: Destroy ENI
       amazon.aws.ec2_eni:
         state: absent
         eni_id: "{{ eni.interface.id }}"
       ignore_errors: true
-    - name: destroy subnets
+    - name: Destroy subnets
       amazon.aws.ec2_vpc_subnet:
         cidr: "{{ item.cidr }}"
         vpc_id: "{{ vpc.vpc.id }}"
@@ -1489,7 +1597,7 @@
         - cidr: 10.228.229.0/24
         - cidr: 10.228.230.0/24
       ignore_errors: true
-    - name: destroy VPC
+    - name: Destroy VPC
       amazon.aws.ec2_vpc_net:
         cidr_block: 10.228.224.0/21
         name: "{{ resource_prefix }}_vpc"
