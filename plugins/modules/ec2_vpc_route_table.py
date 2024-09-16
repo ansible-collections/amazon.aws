@@ -57,7 +57,7 @@ options:
     description:
       - List of routes in the route table.
       - Routes are specified as dicts containing the keys V(dest) and one of V(gateway_id),
-        V(instance_id), V(network_interface_id), or V(vpc_peering_connection_id).
+        V(instance_id), V(network_interface_id), V(transit_gateway_id), or V(vpc_peering_connection_id).
       - The value of V(dest) is used for the destination match. It may be a IPv4 CIDR block
         or a IPv6 CIDR block.
       - If V(gateway_id) is specified, you can refer to the VPC's IGW by using the value V(igw).
@@ -108,6 +108,8 @@ EXAMPLES = r"""
         gateway_id: "{{ igw.gateway_id }}"
       - dest: ::/0
         gateway_id: "{{ igw.gateway_id }}"
+      - dest: 0.0.0.0/0
+        gateway_id: "{{ transit_gateway_id }}"
   register: public_route_table
 
 - name: Create VPC gateway
@@ -266,6 +268,12 @@ route_table:
           type: str
           sample: local
           version_added: 6.0.0
+        transit_gateway_id:
+          description: ID of the Transit gateway.
+          returned: when the route is via a Transit gateway
+          type: str
+          sample: tgw-123456789012
+          version_added: 8.3.0
         origin:
           description: mechanism through which the route is in the table.
           returned: always
@@ -744,6 +752,8 @@ def create_route_spec(connection, module, vpc_id):
             rename_key(route_spec, "gateway_id", "nat_gateway_id")
         if route_spec.get("gateway_id") and route_spec["gateway_id"].startswith("cagw-"):
             rename_key(route_spec, "gateway_id", "carrier_gateway_id")
+        if route_spec.get("gateway_id") and route_spec["gateway_id"].startswith("tgw-"):
+            rename_key(route_spec, "gateway_id", "transit_gateway_id")
 
     return snake_dict_to_camel_dict(routes, capitalize_first=True)
 
@@ -841,7 +851,6 @@ def ensure_route_table_present(connection, module):
         )
     else:
         gateway_changed = False
-
     changed = changed or gateway_changed
 
     if changed:
