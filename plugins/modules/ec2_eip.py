@@ -76,10 +76,6 @@ options:
       - Allocates the new Elastic IP from the provided public IPv4 pool (BYOIP)
         only applies to newly allocated Elastic IPs, isn't validated when O(reuse_existing_ip_allowed=true).
     type: str
-  update_reverse_dns_record:
-    description: Whether to update the reverse DNS record of ec2 Elastic IP Address (eip)
-    required: false
-    type: bool
   domain_name:
     description: The domain name to modify for the IP address.
     required: false
@@ -210,11 +206,16 @@ EXAMPLES = r"""
     tag_value: "{{ inventory_hostname }}"
     public_ipv4_pool: ipv4pool-ec2-0588c9b75a25d1a02
 
-- name: Modify reverse DNS record of EIP
+- name: create new IP and modify it's reverse DNS record
   amazon.aws.ec2_eip:
-    update_reverse_dns_record: true
-    public_ip: 11.22.33.44
-    domain_name: example.com
+    state: present
+    domain_name: test-domain.xyz
+
+- name: Modify reverse DNS record of an existing EIP
+  amazon.aws.ec2_eip:
+    public_ip: 44.224.84.105
+    domain_name: test-domain.xyz
+    state: present
 """
 
 RETURN = r"""
@@ -230,7 +231,7 @@ public_ip:
   sample: 52.88.159.209
 update_reverse_dns_record_result:
   description: Information about result of update reverse dns record operation.
-  returned: When O(update_reverse_dns_record=true).
+  returned: When O(domain_name) is specified.
   type: dict
   contains:
     address:
@@ -465,6 +466,7 @@ def ensure_present(
     public_ipv4_pool = module.params.get("public_ipv4_pool")
     tags = module.params.get("tags")
     purge_tags = module.params.get("purge_tags")
+    domain_name = module.params.get("domain_name")
 
     # Tags for *searching* for an EIP.
     search_tags = generate_tag_dict(module)
@@ -476,6 +478,10 @@ def ensure_present(
         address, changed = allocate_address(
             client, module.check_mode, search_tags, domain, reuse_existing_ip_allowed, tags, public_ipv4_pool
         )
+
+    if domain_name:
+        changed, update_reverse_dns_record_result = update_reverse_dns_record_of_eip(client, module, address["AllocationId"], domain_name)
+        result.update({"update_reverse_dns_record_result": update_reverse_dns_record_result})
 
     # Associate address to instance
     if device_id:
@@ -517,6 +523,7 @@ def ensure_present(
             client, module, address["AllocationId"], resource_type="elastic-ip", tags=tags, purge_tags=purge_tags
         )
         result.update({"public_ip": address["PublicIp"], "allocation_id": address["AllocationId"]})
+
     result["changed"] = changed
     return result
 
@@ -535,10 +542,7 @@ def update_reverse_dns_record_of_eip(client, module: AnsibleAWSModule, allocatio
     if "ResponseMetadata" in update_reverse_dns_record_result:
         del update_reverse_dns_record_result["ResponseMetadata"]
 
-    return {
-        "changed": changed,
-        "update_reverse_dns_record_result": camel_dict_to_snake_dict(update_reverse_dns_record_result),
-    }
+    return changed, camel_dict_to_snake_dict(update_reverse_dns_record_result)
 
 
 def main():
@@ -556,7 +560,6 @@ def main():
         purge_tags=dict(required=False, type="bool", default=True),
         tag_name=dict(),
         tag_value=dict(),
-        update_reverse_dns_record=dict(required=False, type="bool"),
         public_ipv4_pool=dict(),
     )
 
@@ -567,9 +570,6 @@ def main():
             "private_ip_address": ["device_id"],
             "tag_value": ["tag_name"],
         },
-        required_if=[
-            ("update_reverse_dns_record", True, ("public_ip", "domain_name")),
-        ],
     )
 
     ec2 = module.client("ec2")
@@ -580,21 +580,16 @@ def main():
 
     is_instance = check_is_instance(module)
 
-    if module.params.get("update_reverse_dns_record") is True:
-        allocation_id = ec2.describe_addresses(PublicIps=[public_ip])["Addresses"][0]["AllocationId"]
-        domain_name = module.params.get("domain_name")
-        result = update_reverse_dns_record_of_eip(ec2, module, allocation_id, domain_name)
-    else:
-        try:
-            # Find existing address
-            address = find_address(ec2, public_ip, device_id, is_instance)
-            if state == "present":
-                result = ensure_present(ec2, module, address, is_instance)
-            else:
-                result = ensure_absent(ec2, module, address, is_instance)
+    try:
+        # Find existing address
+        address = find_address(ec2, public_ip, device_id, is_instance)
+        if state == "present":
+            result = ensure_present(ec2, module, address, is_instance)
+        else:
+            result = ensure_absent(ec2, module, address, is_instance)
 
-        except AnsibleEC2Error as e:
-            module.fail_json_aws_error(e)
+    except AnsibleEC2Error as e:
+        module.fail_json_aws_error(e)
 
     module.exit_json(**result)
 
