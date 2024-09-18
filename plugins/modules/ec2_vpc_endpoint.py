@@ -419,6 +419,7 @@ def create_vpc_endpoint(client, module):
 
 def setup_removal(client, module):
     params = dict()
+    result = {}
     changed = False
 
     if module.check_mode:

@@ -1,0 +1,2 @@
+trivial:
+  - "Fix sanity errors occurring with the devel branch of ansible."
