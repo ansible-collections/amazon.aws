@@ -763,6 +763,7 @@ def ensure_route_table_present(connection, module):
 
     changed = False
     tags_valid = False
+    route_table = None
 
     if lookup == "tag":
         if tags is not None:
