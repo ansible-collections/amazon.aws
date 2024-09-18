@@ -52,9 +52,10 @@ options:
     description:
       - Instance type to use for the instance, see
         U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html).
-      - Only required when instance is not already present.
       - At least one of O(instance_type) or O(launch_template) must be specificed when launching an
         instance.
+      - When the instance is present and the O(instance_type) specified value is different from the current value,
+        the instance will be stopped and the instance type will be updated.
     type: str
   count:
     description:
@@ -1881,6 +1882,7 @@ def diff_instance_and_params(
     param_mappings = [
         ParamMapper("ebs_optimized", "EbsOptimized", "ebsOptimized", value_wrapper),
         ParamMapper("termination_protection", "DisableApiTermination", "disableApiTermination", value_wrapper),
+        ParamMapper("instance_type", "InstanceType", "instanceType", value_wrapper),
         # user data is an immutable property
         # ParamMapper('user_data', 'UserData', 'userData', value_wrapper),
     ]
@@ -2327,6 +2329,43 @@ def determine_iam_role(module: AnsibleAWSModule, name_or_arn: Optional[str]) -> 
         )
 
 
+def modify_instance_type(
+    client,
+    module: AnsibleAWSModule,
+    state: str,
+    instance_id: str,
+    changes: Dict[str, Dict[str, str]],
+) -> None:
+    filters = {
+        "instance-id": [instance_id],
+    }
+    # Ensure that the instance is stopped before changing the instance type
+    ensure_instance_state(client, module, "stopped", filters)
+
+    # force wait for the instance to be stopped
+    await_instances(client, module, ids=[instance_id], desired_module_state="stopped", force_wait=True)
+
+    # Modify instance type
+    modify_instance_attribute(client, instance_id=instance_id, **changes)
+
+    # Ensure instance state
+    desired_module_state = "running" if state == "present" else state
+    ensure_instance_state(client, module, desired_module_state, filters)
+
+
+def modify_ec2_instance_attribute(client, module: AnsibleAWSModule, state: str, changes: List[Dict[str, Any]]) -> None:
+    if not module.check_mode:
+        for c in changes:
+            instance_id = c.pop("InstanceId")
+            try:
+                if "InstanceType" in c:
+                    modify_instance_type(client, module, state, instance_id, c)
+                else:
+                    modify_instance_attribute(client, instance_id=instance_id, **c)
+            except AnsibleEC2Error as e:
+                module.fail_json_aws(e, msg=f"Could not apply change {str(c)} to existing instance.")
+
+
 def handle_existing(
     client,
     module: AnsibleAWSModule,
@@ -2356,13 +2395,9 @@ def handle_existing(
         changed |= change_instance_metadata_options(client, module, instance)
 
         changes = diff_instance_and_params(client, module, instance)
-        for c in changes:
-            if not module.check_mode:
-                try:
-                    instance_id = c.pop("InstanceId")
-                    modify_instance_attribute(client, instance_id=instance_id, **c)
-                except AnsibleEC2Error as e:
-                    module.fail_json_aws(e, msg=f"Could not apply change {str(c)} to existing instance.")
+        # modify instance attributes
+        modify_ec2_instance_attribute(client, module, state, changes)
+
         all_changes.extend(changes)
         changed |= bool(changes)
         changed |= add_or_update_instance_profile(client, module, instance, module.params.get("iam_instance_profile"))
@@ -2394,10 +2429,12 @@ def enforce_count(
 
     current_count = len(existing_matches)
     if current_count == exact_count:
-        if desired_module_state != "present":
+        if desired_module_state not in ("absent", "terminated"):
+            results = handle_existing(client, module, existing_matches, desired_module_state, filters)
+        else:
             results = ensure_instance_state(client, module, desired_module_state, filters)
-            if results["changed"]:
-                return results
+        if results["changed"]:
+            return results
         return dict(
             changed=False,
             instances=[pretty_instance(i) for i in existing_matches],
@@ -2407,43 +2444,52 @@ def enforce_count(
 
     if current_count < exact_count:
         # launch instances
-        return ensure_present(
+        results = ensure_present(
             client,
             module,
             existing_matches=existing_matches,
             desired_module_state=desired_module_state,
             current_count=current_count,
         )
+    else:
+        # terminate instances
+        to_terminate = current_count - exact_count
+        # sort the instances from least recent to most recent based on launch time
+        existing_matches = sorted(existing_matches, key=lambda inst: inst["LaunchTime"])
+        # get the instance ids of instances with the count tag on them
+        all_instance_ids = [x["InstanceId"] for x in existing_matches]
+        terminate_ids = all_instance_ids[0:to_terminate]
+        if module.check_mode:
+            return dict(
+                changed=True,
+                terminated_ids=terminate_ids,
+                instance_ids=all_instance_ids,
+                msg=f"Would have terminated following instances if not in check mode {terminate_ids}",
+            )
+        # terminate instances
+        try:
+            terminate_instances(client, terminate_ids)
+        except AnsibleAWSError as e:
+            module.fail_json(e, msg="Unable to terminate instances")
+        await_instances(client, module, terminate_ids, desired_module_state="terminated", force_wait=True)
 
-    to_terminate = current_count - exact_count
-    # sort the instances from least recent to most recent based on launch time
-    existing_matches = sorted(existing_matches, key=lambda inst: inst["LaunchTime"])
-    # get the instance ids of instances with the count tag on them
-    all_instance_ids = [x["InstanceId"] for x in existing_matches]
-    terminate_ids = all_instance_ids[0:to_terminate]
-    if module.check_mode:
-        return dict(
+        # include data for all matched instances in addition to the list of terminations
+        # allowing for recovery of metadata from the destructive operation
+        results = dict(
             changed=True,
+            msg="Successfully terminated instances.",
             terminated_ids=terminate_ids,
             instance_ids=all_instance_ids,
-            msg=f"Would have terminated following instances if not in check mode {terminate_ids}",
+            instances=existing_matches,
         )
-    # terminate instances
-    try:
-        terminate_instances(client, terminate_ids)
-    except AnsibleAWSError as e:
-        module.fail_json(e, msg="Unable to terminate instances")
-    await_instances(client, module, terminate_ids, desired_module_state="terminated", force_wait=True)
 
-    # include data for all matched instances in addition to the list of terminations
-    # allowing for recovery of metadata from the destructive operation
-    return dict(
-        changed=True,
-        msg="Successfully terminated instances.",
-        terminated_ids=terminate_ids,
-        instance_ids=all_instance_ids,
-        instances=existing_matches,
-    )
+    # Find instances
+    existing_matches = find_instances(client, module, filters=filters)
+    # Update instance attributes
+    updated_results = handle_existing(client, module, existing_matches, desired_module_state, filters)
+    if updated_results["changed"]:
+        results = updated_results
+    return results
 
 
 def ensure_present(
@@ -2495,12 +2541,9 @@ def ensure_present(
         except AnsibleEC2Error as e:
             module.fail_json_aws(e, msg="Failed to fetch status of new EC2 instance")
         changes = diff_instance_and_params(client, module, ins, skip=["UserData", "EbsOptimized"])
-        for c in changes:
-            try:
-                instance_id = c.pop("InstanceId")
-                modify_instance_attribute(client, instance_id=instance_id, **c)
-            except AnsibleEC2Error as e:
-                module.fail_json_aws(e, msg=f"Could not apply change {str(c)} to new instance.")
+        # modify instance attributes
+        modify_ec2_instance_attribute(client, module, desired_module_state, changes)
+
     if existing_matches:
         # If we came from enforce_count, create a second list to distinguish
         # between existing and new instances when returning the entire cohort
