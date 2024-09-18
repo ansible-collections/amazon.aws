@@ -1,0 +1,4 @@
+---
+ec2_instance_type_initial: t2.micro
+ec2_instance_type_updated: t3.nano
+ec2_instance_name: "{{ resource_prefix }}-test-instance-type"
