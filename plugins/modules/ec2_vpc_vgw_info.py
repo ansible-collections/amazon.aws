@@ -35,13 +35,13 @@ EXAMPLES = r"""
 # # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Gather information about all virtual gateways for an account or profile
-  community.aws.ec2_vpc_vgw_info:
+  amazon.aws.ec2_vpc_vgw_info:
     region: ap-southeast-2
     profile: production
   register: vgw_info
 
 - name: Gather information about a filtered list of Virtual Gateways
-  community.aws.ec2_vpc_vgw_info:
+  amazon.aws.ec2_vpc_vgw_info:
     region: ap-southeast-2
     profile: production
     filters:
@@ -49,7 +49,7 @@ EXAMPLES = r"""
   register: vgw_info
 
 - name: Gather information about a specific virtual gateway by VpnGatewayIds
-  community.aws.ec2_vpc_vgw_info:
+  amazon.aws.ec2_vpc_vgw_info:
     region: ap-southeast-2
     profile: production
     vpn_gateway_ids: vgw-c432f6a7
@@ -131,7 +131,7 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 
 
 def get_virtual_gateway_info(virtual_gateway):

@@ -61,7 +61,7 @@ extends_documentation_fragment:
 
 EXAMPLES = r"""
 - name: Create a new VGW attached to a specific VPC
-  community.aws.ec2_vpc_vgw:
+  amazon.aws.ec2_vpc_vgw:
     state: present
     region: ap-southeast-2
     profile: personal
@@ -71,7 +71,7 @@ EXAMPLES = r"""
   register: created_vgw
 
 - name: Create a new unattached VGW
-  community.aws.ec2_vpc_vgw:
+  amazon.aws.ec2_vpc_vgw:
     state: present
     region: ap-southeast-2
     profile: personal
@@ -83,7 +83,7 @@ EXAMPLES = r"""
   register: created_vgw
 
 - name: Remove a new VGW using the name
-  community.aws.ec2_vpc_vgw:
+  amazon.aws.ec2_vpc_vgw:
     state: absent
     region: ap-southeast-2
     profile: personal
@@ -92,7 +92,7 @@ EXAMPLES = r"""
   register: deleted_vgw
 
 - name: Remove a new VGW using the vpn_gateway_id
-  community.aws.ec2_vpc_vgw:
+  amazon.aws.ec2_vpc_vgw:
     state: absent
     region: ap-southeast-2
     profile: personal
@@ -147,7 +147,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_ta
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
 from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
 
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 
 
 # AWS uses VpnGatewayLimitExceeded for both 'Too many VGWs' and 'Too many concurrent changes'
