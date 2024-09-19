@@ -142,12 +142,11 @@ except ImportError:
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
 from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
-
-from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 
 
 # AWS uses VpnGatewayLimitExceeded for both 'Too many VGWs' and 'Too many concurrent changes'
@@ -425,6 +424,7 @@ def ensure_vgw_absent(client, module):
     params["Type"] = module.params.get("type")
     params["Tags"] = module.params.get("tags")
     params["VpnGatewayIds"] = module.params.get("vpn_gateway_id")
+    deleted_vgw = None
 
     # check if a gateway matching our module args already exists
     if params["VpnGatewayIds"]:
