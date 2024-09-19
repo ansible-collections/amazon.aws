@@ -2459,36 +2459,37 @@ def enforce_count(
         # get the instance ids of instances with the count tag on them
         all_instance_ids = [x["InstanceId"] for x in existing_matches]
         terminate_ids = all_instance_ids[0:to_terminate]
-        if module.check_mode:
-            return dict(
-                changed=True,
-                terminated_ids=terminate_ids,
-                instance_ids=all_instance_ids,
-                msg=f"Would have terminated following instances if not in check mode {terminate_ids}",
-            )
-        # terminate instances
-        try:
-            terminate_instances(client, terminate_ids)
-        except AnsibleAWSError as e:
-            module.fail_json(e, msg="Unable to terminate instances")
-        await_instances(client, module, terminate_ids, desired_module_state="terminated", force_wait=True)
-
-        # include data for all matched instances in addition to the list of terminations
-        # allowing for recovery of metadata from the destructive operation
         results = dict(
             changed=True,
-            msg="Successfully terminated instances.",
             terminated_ids=terminate_ids,
             instance_ids=all_instance_ids,
-            instances=existing_matches,
+            msg=f"Would have terminated following instances if not in check mode {terminate_ids}",
         )
+        if not module.check_mode:
+            # terminate instances
+            try:
+                terminate_instances(client, terminate_ids)
+            except AnsibleAWSError as e:
+                module.fail_json(e, msg="Unable to terminate instances")
+            await_instances(client, module, terminate_ids, desired_module_state="terminated", force_wait=True)
 
-    # Find instances
-    existing_matches = find_instances(client, module, filters=filters)
-    # Update instance attributes
-    updated_results = handle_existing(client, module, existing_matches, desired_module_state, filters)
-    if updated_results["changed"]:
-        results = updated_results
+            # include data for all matched instances in addition to the list of terminations
+            # allowing for recovery of metadata from the destructive operation
+            results = dict(
+                changed=True,
+                msg="Successfully terminated instances.",
+                terminated_ids=terminate_ids,
+                instance_ids=all_instance_ids,
+                instances=existing_matches,
+            )
+
+    if not module.check_mode:
+        # Find instances
+        existing_matches = find_instances(client, module, filters=filters)
+        # Update instance attributes
+        updated_results = handle_existing(client, module, existing_matches, desired_module_state, filters)
+        if updated_results["changed"]:
+            results = updated_results
     return results
 
 
