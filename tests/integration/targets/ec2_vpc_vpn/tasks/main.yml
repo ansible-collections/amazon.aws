@@ -1,7 +1,4 @@
----
-- name: 'ec2_vpc_vpn_info integration tests'
-  collections:
-    - amazon.aws
+- name: ec2_vpc_vpn_info integration tests
   module_defaults:
     group/aws:
       access_key: '{{ aws_access_key }}'
@@ -13,19 +10,19 @@
   # ============================================================
   - name: create a VPC
     ec2_vpc_net:
-      name: "{{ resource_prefix }}-vpc"
+      name: '{{ resource_prefix }}-vpc'
       state: present
-      cidr_block: "10.0.0.0/26"
+      cidr_block: 10.0.0.0/26
       tags:
-        Name: "{{ resource_prefix }}-vpc"
-        Description: "Created by ansible-test"
+        Name: '{{ resource_prefix }}-vpc'
+        Description: Created by ansible-test
     register: vpc_result
 
   - name: create vpn gateway and attach it to vpc
     ec2_vpc_vgw:
       state: present
       vpc_id: '{{ vpc_result.vpc.id }}'
-      name: "{{ resource_prefix }}-vgw"
+      name: '{{ resource_prefix }}-vgw'
     register: vgw
 
   - name: create customer gateway
@@ -37,7 +34,7 @@
 
   - name: create transit gateway
     ec2_transit_gateway:
-      description: "Transit Gateway for vpn attachment"
+      description: Transit Gateway for vpn attachment
     register: tgw
 
   - name: create vpn connection, with customer gateway, vpn_gateway_id and transit_gateway
@@ -52,8 +49,8 @@
   - name: assert creation of vpn failed
     assert:
       that:
-        - result is failed
-        - result.msg == "parameters are mutually exclusive: vpn_gateway_id|transit_gateway_id"
+      - result is failed
+      - result.msg == "parameters are mutually exclusive: vpn_gateway_id|transit_gateway_id"
 
 
   - name: create vpn connection, with customer gateway and transit_gateway
@@ -75,8 +72,8 @@
   - name: assert success with no parameters
     assert:
       that:
-        - 'result.changed == false'
-        - 'result.vpn_connections != []'
+      - result.changed == false
+      - result.vpn_connections != []
   # ============================================================
 
   - name: Delete vpn created with transit gateway
@@ -111,25 +108,26 @@
   - name: assert success with no parameters
     assert:
       that:
-        - 'result.changed == false'
-        - 'result.vpn_connections != []'
+      - result.changed == false
+      - result.vpn_connections != []
 
   - name: test success with customer gateway id as a filter
     ec2_vpc_vpn_info:
       filters:
-        customer-gateway-id: '{{ cgw.gateway.customer_gateway.customer_gateway_id }}'
+        customer-gateway-id: '{{ cgw.gateway.customer_gateway.customer_gateway_id
+          }}'
         vpn-connection-id: '{{ vpn.vpn_connection_id }}'
     register: result
 
   - name: assert success with customer gateway id as filter
     assert:
       that:
-        - 'result.changed == false'
-        - 'result.vpn_connections != []'
+      - result.changed == false
+      - result.vpn_connections != []
 
   # ============================================================
 
-  - include_tasks: 'tags.yml'
+  - include_tasks: tags.yml
 
   # ============================================================
 
@@ -138,11 +136,11 @@
       state: absent
       vpn_connection_id: '{{ vpn_id }}'
     register: result
-    check_mode: True
+    check_mode: true
 
   - assert:
       that:
-        - result is changed
+      - result is changed
 
   - name: delete vpn connection
     ec2_vpc_vpn:
@@ -152,18 +150,18 @@
 
   - assert:
       that:
-        - result is changed
+      - result is changed
 
   - name: delete vpn connection - idempotency (check)
     ec2_vpc_vpn:
       state: absent
       vpn_connection_id: '{{ vpn_id }}'
     register: result
-    check_mode: True
+    check_mode: true
 
   - assert:
       that:
-        - result is not changed
+      - result is not changed
 
   - name: delete vpn connection - idempotency
     ec2_vpc_vpn:
@@ -173,7 +171,7 @@
 
   - assert:
       that:
-        - result is not changed
+      - result is not changed
 
   # ============================================================
   always:
@@ -212,9 +210,9 @@
 
   - name: delete vpc
     ec2_vpc_net:
-      name: "{{ resource_prefix }}-vpc"
+      name: '{{ resource_prefix }}-vpc'
       state: absent
-      cidr_block: "10.0.0.0/26"
+      cidr_block: 10.0.0.0/26
     register: result
     retries: 10
     delay: 3

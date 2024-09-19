@@ -146,19 +146,19 @@ EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: create a VPN connection with vpn_gateway_id
-  community.aws.ec2_vpc_vpn:
+  amazon.aws.ec2_vpc_vpn:
     state: present
     vpn_gateway_id: vgw-XXXXXXXX
     customer_gateway_id: cgw-XXXXXXXX
 
 - name: Attach a vpn connection to transit gateway
-  community.aws.ec2_vpc_vpn:
+  amazon.aws.ec2_vpc_vpn:
     state: present
     transit_gateway_id: tgw-XXXXXXXX
     customer_gateway_id: cgw-XXXXXXXX
 
 - name: modify VPN connection tags
-  community.aws.ec2_vpc_vpn:
+  amazon.aws.ec2_vpc_vpn:
     state: present
     vpn_connection_id: vpn-XXXXXXXX
     tags:
@@ -166,12 +166,12 @@ EXAMPLES = r"""
       Other: ansible-tag-2
 
 - name: delete a connection
-  community.aws.ec2_vpc_vpn:
+  amazon.aws.ec2_vpc_vpn:
     vpn_connection_id: vpn-XXXXXXXX
     state: absent
 
 - name: modify VPN tags (identifying VPN by filters)
-  community.aws.ec2_vpc_vpn:
+  amazon.aws.ec2_vpc_vpn:
     state: present
     filters:
       cidr: 194.168.1.0/24
@@ -184,7 +184,7 @@ EXAMPLES = r"""
     static_only: true
 
 - name: set up VPN with tunnel options utilizing 'TunnelInsideCidr' only
-  community.aws.ec2_vpc_vpn:
+  amazon.aws.ec2_vpc_vpn:
     state: present
     filters:
       vpn: vpn-XXXXXXXX
@@ -196,7 +196,7 @@ EXAMPLES = r"""
         TunnelInsideCidr: '169.254.100.5/30'
 
 - name: add routes and remove any preexisting ones
-  community.aws.ec2_vpc_vpn:
+  amazon.aws.ec2_vpc_vpn:
     state: present
     filters:
       vpn: vpn-XXXXXXXX
@@ -206,14 +206,14 @@ EXAMPLES = r"""
     purge_routes: true
 
 - name: remove all routes
-  community.aws.ec2_vpc_vpn:
+  amazon.aws.ec2_vpc_vpn:
     state: present
     vpn_connection_id: vpn-XXXXXXXX
     routes: []
     purge_routes: true
 
 - name: delete a VPN identified by filters
-  community.aws.ec2_vpc_vpn:
+  amazon.aws.ec2_vpc_vpn:
     state: absent
     filters:
       tags:
@@ -324,7 +324,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
 
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 
 
 class VPNConnectionException(Exception):

@@ -25,7 +25,7 @@ from ansible_collections.amazon.aws.tests.unit.utils.amazon_placebo_fixtures imp
 # pylint: enable=unused-import
 # isort: on
 
-from ansible_collections.community.aws.plugins.modules import ec2_vpc_vpn
+from ansible_collections.amazon.aws.plugins.modules import ec2_vpc_vpn
 
 
 class FailException(Exception):
