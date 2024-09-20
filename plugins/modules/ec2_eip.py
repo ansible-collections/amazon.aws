@@ -77,9 +77,10 @@ options:
         only applies to newly allocated Elastic IPs, isn't validated when O(reuse_existing_ip_allowed=true).
     type: str
   domain_name:
-    description: The domain name to modify for the IP address.
+    description: The domain name to attach to the IP address.
     required: false
     type: str
+    version_added: 9.0.0
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
