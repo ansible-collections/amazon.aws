@@ -481,7 +481,7 @@ def ensure_present(
         )
 
     if domain_name:
-        changed, update_reverse_dns_record_result = update_reverse_dns_record_of_eip(client, module, address["AllocationId"], domain_name)
+        changed, update_reverse_dns_record_result = update_reverse_dns_record_of_eip(client, module, address, domain_name)
         result.update({"update_reverse_dns_record_result": update_reverse_dns_record_result})
 
     # Associate address to instance
@@ -529,21 +529,24 @@ def ensure_present(
     return result
 
 
-def update_reverse_dns_record_of_eip(client, module: AnsibleAWSModule, allocation_id, domain_name):
+def update_reverse_dns_record_of_eip(client, module: AnsibleAWSModule, address, domain_name):
     changed = False
 
-    try:
-        update_reverse_dns_record_result = client.modify_address_attribute(
-            AllocationId=allocation_id, DomainName=domain_name
-        )
-        changed = True
-    except AnsibleEC2Error as e:
-        module.fail_json_aws_error(e)
+    if module.check_mode:
+        return True, {}
+    else:
+      try:
+          update_reverse_dns_record_result = client.modify_address_attribute(
+              AllocationId=address["AllocationId"], DomainName=domain_name
+          )
+          changed = True
+      except AnsibleEC2Error as e:
+          module.fail_json_aws_error(e)
 
-    if "ResponseMetadata" in update_reverse_dns_record_result:
-        del update_reverse_dns_record_result["ResponseMetadata"]
+      if "ResponseMetadata" in update_reverse_dns_record_result:
+          del update_reverse_dns_record_result["ResponseMetadata"]
 
-    return changed, camel_dict_to_snake_dict(update_reverse_dns_record_result)
+      return changed, camel_dict_to_snake_dict(update_reverse_dns_record_result)
 
 
 def main():
