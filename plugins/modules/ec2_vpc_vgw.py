@@ -420,6 +420,7 @@ def ensure_vgw_absent(client, module):
     changed = False
     params = dict()
     result = dict()
+    deleted_vgw = None
     params["Name"] = module.params.get("name")
     params["VpcId"] = module.params.get("vpc_id")
     params["Type"] = module.params.get("type")
