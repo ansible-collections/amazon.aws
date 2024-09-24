@@ -318,6 +318,53 @@ def disassociate_vpc_cidr_block(client, association_id: str) -> Dict[str, Any]:
     return client.disassociate_vpc_cidr_block(AssociationId=association_id)
 
 
+# EC2 VPC Peering Connection
+class EC2VpcPeeringErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleEC2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code("InvalidVpcPeeringConnectionID.NotFound", "InvalidVpcPeeringConnectionId.Malformed")
+
+
+@EC2VpcPeeringErrorHandler.list_error_handler("describe vpc peering", [])
+@AWSRetry.jittered_backoff()
+def describe_vpc_peering_connections(client, **params: Dict[str, Any]) -> List[Dict[str, Any]]:
+    result = client.describe_vpc_peering_connections(
+        **params,
+    )
+    return result
+
+
+@EC2VpcSubnetErrorHandler.common_error_handler("create vpc peering")
+@AWSRetry.jittered_backoff()
+def create_vpc_peering_connection(
+    client, **params: Dict[str, Union[str, bool, int, EC2TagSpecifications]]
+) -> Dict[str, Any]:
+    return client.create_vpc_peering_connection(**params)["VpcPeeringConnection"]
+
+
+@EC2VpcSubnetErrorHandler.deletion_error_handler("delete vpc peering")
+@AWSRetry.jittered_backoff()
+def delete_vpc_peering_connection(client, peering_id: str) -> bool:
+    client.delete_vpc_peering_connection(VpcPeeringConnectionId=peering_id)
+    return True
+
+
+@EC2VpcSubnetErrorHandler.deletion_error_handler("accept vpc peering")
+@AWSRetry.jittered_backoff()
+def accept_vpc_peering_connection(client, peering_id: str) -> bool:
+    client.accept_vpc_peering_connection(VpcPeeringConnectionId=peering_id)
+    return True
+
+
+@EC2VpcSubnetErrorHandler.deletion_error_handler("reject vpc peering")
+@AWSRetry.jittered_backoff()
+def reject_vpc_peering_connection(client, peering_id: str) -> bool:
+    client.reject_vpc_peering_connection(VpcPeeringConnectionId=peering_id)
+    return True
+
+
 # EC2 Internet Gateway
 class EC2InternetGatewayErrorHandler(AWSErrorHandler):
     _CUSTOM_EXCEPTION = AnsibleEC2Error
