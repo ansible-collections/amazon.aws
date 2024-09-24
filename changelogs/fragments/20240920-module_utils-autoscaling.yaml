@@ -1,0 +1,3 @@
+---
+minor_changes:
+  - module_utils/autoscaling - create utils to handle AWS call for the ``autoscaling`` client (https://github.com/ansible-collections/amazon.aws/pull/2301).
