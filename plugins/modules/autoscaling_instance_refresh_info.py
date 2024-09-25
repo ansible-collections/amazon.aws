@@ -11,8 +11,8 @@ version_added: 3.2.0
 short_description: Gather information about EC2 Auto Scaling Group (ASG) Instance Refreshes in AWS
 description:
   - Describes one or more instance refreshes.
-  - You can determine the status of a request by looking at the I(status) parameter.
-  - Prior to release 5.0.0 this module was called C(community.aws.ec2_asg_instance_refresh_info).
+  - You can determine the status of a request by looking at the RV(instance_refreshes.status) return value.
+  - Prior to release 5.0.0 this module was called M(community.aws.ec2_asg_instance_refresh_info).
     The usage did not change.
 author:
   - "Dan Khersonsky (@danquixote)"
@@ -34,7 +34,7 @@ options:
     type: str
   max_records:
     description:
-      - The maximum number of items to return with this call. The default value is 50 and the maximum value is 100.
+      - The maximum number of items to return with this call. The default value is V(50) and the maximum value is V(100).
     type: int
     required: false
 extends_documentation_fragment:
@@ -70,131 +70,137 @@ EXAMPLES = r"""
 """
 
 RETURN = r"""
----
-instance_refresh_id:
-    description: instance refresh id
-    returned: success
-    type: str
-    sample: "08b91cf7-8fa6-48af-b6a6-d227f40f1b9b"
-auto_scaling_group_name:
-    description: Name of autoscaling group
-    returned: success
-    type: str
-    sample: "public-webapp-production-1"
-status:
-    description:
-      - The current state of the group when DeleteAutoScalingGroup is in progress.
-      - The following are the possible statuses
-      - C(Pending) - The request was created, but the operation has not started.
-      - C(InProgress) - The operation is in progress.
-      - C(Successful) - The operation completed successfully.
-      - C(Failed) - The operation failed to complete.
-        You can troubleshoot using the status reason and the scaling activities.
-      - C(Cancelling) - An ongoing operation is being cancelled.
-        Cancellation does not roll back any replacements that have already been
-        completed, but it prevents new replacements from being started.
-      - C(Cancelled) - The operation is cancelled.'
-    returned: success
-    type: str
-    sample: "Pending"
-start_time:
-    description: The date and time this ASG was created, in ISO 8601 format.
-    returned: success
-    type: str
-    sample: "2015-11-25T00:05:36.309Z"
-end_time:
-    description: The date and time this ASG was created, in ISO 8601 format.
-    returned: success
-    type: str
-    sample: "2015-11-25T00:05:36.309Z"
-percentage_complete:
-    description: the % of completeness
-    returned: success
-    type: int
-    sample: 100
-instances_to_update:
-    description: num. of instance to update
-    returned: success
-    type: int
-    sample: 5
+next_token:
+  description: A string that indicates that the response contains more items than can be returned in a single response.
+  returned: always
+  type: str
+instance_refreshes:
+    description: A list of instance refreshes.
+    returned: always
+    type: complex
+    contains:
+        instance_refresh_id:
+            description: instance refresh id.
+            returned: success
+            type: str
+            sample: "08b91cf7-8fa6-48af-b6a6-d227f40f1b9b"
+        auto_scaling_group_name:
+            description: Name of autoscaling group.
+            returned: success
+            type: str
+            sample: "public-webapp-production-1"
+        status:
+            description:
+              - The current state of the group when DeleteAutoScalingGroup is in progress.
+              - The following are the possible statuses
+              - Pending - The request was created, but the operation has not started.
+              - InProgress - The operation is in progress.
+              - Successful - The operation completed successfully.
+              - Failed - The operation failed to complete.
+                You can troubleshoot using the status reason and the scaling activities.
+              - Cancelling - An ongoing operation is being cancelled.
+                Cancellation does not roll back any replacements that have already been
+                completed, but it prevents new replacements from being started.
+              - Cancelled - The operation is cancelled.
+            returned: success
+            type: str
+            sample: "Pending"
+        preferences:
+            description: The preferences for an instance refresh.
+            returned: always
+            type: dict
+            sample: {
+                'AlarmSpecification': {
+                    'Alarms': [
+                        'my-alarm',
+                    ],
+                },
+                'AutoRollback': True,
+                'InstanceWarmup': 200,
+                'MinHealthyPercentage': 90,
+                'ScaleInProtectedInstances': 'Ignore',
+                'SkipMatching': False,
+                'StandbyInstances': 'Ignore',
+            }
+        start_time:
+            description: The date and time this ASG was created, in ISO 8601 format.
+            returned: success
+            type: str
+            sample: "2015-11-25T00:05:36.309Z"
+        end_time:
+            description: The date and time this ASG was created, in ISO 8601 format.
+            returned: success
+            type: str
+            sample: "2015-11-25T00:05:36.309Z"
+        percentage_complete:
+            description: the % of completeness
+            returned: success
+            type: int
+            sample: 100
+        instances_to_update:
+            description: number of instances to update.
+            returned: success
+            type: int
+            sample: 5
 """
 
-try:
-    from botocore.exceptions import BotoCoreError
-    from botocore.exceptions import ClientError
-except ImportError:
-    pass  # caught by AnsibleAWSModule
+from typing import Any
+from typing import Dict
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.autoscaling import AnsibleAutoScalingError
+from ansible_collections.amazon.aws.plugins.module_utils.autoscaling import describe_instance_refreshes
 
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
 
-def find_asg_instance_refreshes(conn, module):
+def format_response(response: Dict[str, Any]) -> Dict[str, Any]:
+    result = {}
+    if "InstanceRefreshes" in response:
+        instance_refreshes_dict = {
+            "instance_refreshes": response["InstanceRefreshes"],
+            "next_token": response.get("NextToken", ""),
+        }
+        result = camel_dict_to_snake_dict(instance_refreshes_dict)
+    return result
+
+
+def find_asg_instance_refreshes(client, module: AnsibleAWSModule) -> None:
     """
     Args:
-        conn (boto3.AutoScaling.Client): Valid Boto3 ASG client.
+        client (boto3.AutoScaling.Client): Valid Boto3 ASG client.
         module: AnsibleAWSModule object
-
-    Returns:
-        {
-            "instance_refreshes": [
-                    {
-                        'auto_scaling_group_name': 'ansible-test-hermes-63642726-asg',
-                        'instance_refresh_id': '6507a3e5-4950-4503-8978-e9f2636efc09',
-                        'instances_to_update': 1,
-                        'percentage_complete': 0,
-                        "preferences": {
-                            "instance_warmup": 60,
-                            "min_healthy_percentage": 90,
-                            "skip_matching": false
-                        },
-                        'start_time': '2021-02-04T03:39:40+00:00',
-                        'status': 'Cancelled',
-                        'status_reason': 'Cancelled due to user request.',
-                    }
-            ],
-            'next_token': 'string'
-        }
     """
 
-    asg_name = module.params.get("name")
-    asg_ids = module.params.get("ids")
-    asg_next_token = module.params.get("next_token")
-    asg_max_records = module.params.get("max_records")
-
-    args = {}
-    args["AutoScalingGroupName"] = asg_name
-    if asg_ids:
-        args["InstanceRefreshIds"] = asg_ids
-    if asg_next_token:
-        args["NextToken"] = asg_next_token
-    if asg_max_records:
-        args["MaxRecords"] = asg_max_records
-
     try:
-        instance_refreshes_result = {}
-        response = conn.describe_instance_refreshes(**args)
-        if "InstanceRefreshes" in response:
-            instance_refreshes_dict = dict(
-                instance_refreshes=response["InstanceRefreshes"], next_token=response.get("next_token", "")
-            )
-            instance_refreshes_result = camel_dict_to_snake_dict(instance_refreshes_dict)
+        max_records = module.params.get("max_records")
+        response = describe_instance_refreshes(
+            client,
+            auto_scaling_group_name=module.params.get("name"),
+            instance_refresh_ids=module.params.get("ids"),
+            next_token=module.params.get("next_token"),
+            max_records=max_records,
+        )
+        instance_refreshes_result = format_response(response)
 
-        while "NextToken" in response:
-            args["NextToken"] = response["NextToken"]
-            response = conn.describe_instance_refreshes(**args)
-            if "InstanceRefreshes" in response:
-                instance_refreshes_dict = camel_dict_to_snake_dict(
-                    dict(instance_refreshes=response["InstanceRefreshes"], next_token=response.get("next_token", ""))
+        if max_records is None:
+            while "NextToken" in response:
+                response = describe_instance_refreshes(
+                    client,
+                    auto_scaling_group_name=module.params.get("name"),
+                    instance_refresh_ids=module.params.get("ids"),
+                    next_token=response["NextToken"],
+                    max_records=max_records,
                 )
-                instance_refreshes_result.update(instance_refreshes_dict)
+                f_response = format_response(response)
+                if "instance_refreshes" in f_response:
+                    instance_refreshes_result["instance_refreshes"].extend(f_response["instance_refreshes"])
+                    instance_refreshes_result["next_token"] = f_response["next_token"]
 
-        return module.exit_json(**instance_refreshes_result)
-    except (BotoCoreError, ClientError) as e:
-        module.fail_json_aws(e, msg="Failed to describe InstanceRefreshes")
+        module.exit_json(changed=False, **instance_refreshes_result)
+    except AnsibleAutoScalingError as e:
+        module.fail_json_aws(e, msg=f"Failed to describe InstanceRefreshes: {e}")
 
 
 def main():
@@ -210,7 +216,7 @@ def main():
         supports_check_mode=True,
     )
 
-    autoscaling = module.client("autoscaling", retry_decorator=AWSRetry.jittered_backoff(retries=10))
+    autoscaling = module.client("autoscaling")
     find_asg_instance_refreshes(autoscaling, module)
 
 
