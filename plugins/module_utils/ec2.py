@@ -1151,7 +1151,7 @@ class EC2NetworkAclErrorHandler(AWSErrorHandler):
 
     @classmethod
     def _is_missing(cls):
-        return is_boto3_error_code("InvalidNetworkAclID.NotFound")
+        return is_boto3_error_code("")
 
 
 @EC2NetworkAclErrorHandler.list_error_handler("describe network acls", [])
