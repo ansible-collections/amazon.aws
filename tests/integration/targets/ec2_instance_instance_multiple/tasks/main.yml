@@ -232,7 +232,7 @@
         purge_tags: false
         tags:
           TestId: "{{ ec2_instance_tag_TestId }}"
-        wait: false
+        wait: true
       register: terminate_multiple_instances
 
     - ansible.builtin.assert:
