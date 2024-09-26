@@ -217,6 +217,12 @@ EXAMPLES = r"""
     public_ip: 44.224.84.105
     domain_name: test-domain.xyz
     state: present
+
+- name: Remove reverse DNS record of an existing EIP
+  amazon.aws.ec2_eip:
+    public_ip: 44.224.84.105
+    domain_name: ""
+    state: present
 """
 
 RETURN = r"""
@@ -480,8 +486,10 @@ def ensure_present(
             client, module.check_mode, search_tags, domain, reuse_existing_ip_allowed, tags, public_ipv4_pool
         )
 
-    if domain_name:
-        changed, update_reverse_dns_record_result = update_reverse_dns_record_of_eip(client, module, address, domain_name)
+    if domain_name is not None:
+        changed, update_reverse_dns_record_result = update_reverse_dns_record_of_eip(
+            client, module, address, domain_name
+        )
         result.update({"update_reverse_dns_record_result": update_reverse_dns_record_result})
 
     # Associate address to instance
@@ -530,23 +538,43 @@ def ensure_present(
 
 
 def update_reverse_dns_record_of_eip(client, module: AnsibleAWSModule, address, domain_name):
-    changed = False
-
     if module.check_mode:
         return True, {}
+
+    current_ptr_record_domain = client.describe_addresses_attribute(
+        AllocationIds=[address["AllocationId"]], Attribute="domain-name"
+    )
+
+    if (
+        current_ptr_record_domain["Addresses"]
+        and current_ptr_record_domain["Addresses"][0]["PtrRecord"] == domain_name + "."
+    ):
+        return False, {"ptr_record": domain_name + "."}
+
+    if len(domain_name) == 0:
+        try:
+            update_reverse_dns_record_result = client.reset_address_attribute(
+                AllocationId=address["AllocationId"], Attribute="domain-name"
+            )
+            changed = True
+        except AnsibleEC2Error as e:
+            module.fail_json_aws_error(e)
+
+        if "ResponseMetadata" in update_reverse_dns_record_result:
+            del update_reverse_dns_record_result["ResponseMetadata"]
     else:
-      try:
-          update_reverse_dns_record_result = client.modify_address_attribute(
-              AllocationId=address["AllocationId"], DomainName=domain_name
-          )
-          changed = True
-      except AnsibleEC2Error as e:
-          module.fail_json_aws_error(e)
+        try:
+            update_reverse_dns_record_result = client.modify_address_attribute(
+                AllocationId=address["AllocationId"], DomainName=domain_name
+            )
+            changed = True
+        except AnsibleEC2Error as e:
+            module.fail_json_aws_error(e)
 
-      if "ResponseMetadata" in update_reverse_dns_record_result:
-          del update_reverse_dns_record_result["ResponseMetadata"]
+        if "ResponseMetadata" in update_reverse_dns_record_result:
+            del update_reverse_dns_record_result["ResponseMetadata"]
 
-      return changed, camel_dict_to_snake_dict(update_reverse_dns_record_result)
+    return changed, camel_dict_to_snake_dict(update_reverse_dns_record_result)
 
 
 def main():
