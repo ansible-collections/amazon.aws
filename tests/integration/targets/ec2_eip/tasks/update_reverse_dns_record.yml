@@ -34,7 +34,7 @@
     - name: Add EIP IP address an A record
       amazon.aws.route53:
         state: present
-        zone: "ansiblecloud.xyz"
+        zone: "{{ test_hosted_zone }}"
         record: "{{ test_domain }}"
         type: A
         ttl: 7200
@@ -103,7 +103,7 @@
     - name: Delete EIP IP address an A record
       amazon.aws.route53:
         state: present
-        zone: "ansiblecloud.xyz"
+        zone: "{{ test_hosted_zone }}"
         record: "{{ test_domain }}"
         type: A
         ttl: 7200

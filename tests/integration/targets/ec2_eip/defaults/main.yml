@@ -9,3 +9,4 @@ eip_test_tags:
 eip_info_filters:
   tag:AnsibleEIPTestPrefix: "{{ resource_prefix }}"
 test_domain: "{{ resource_prefix }}.example.xyz"
+test_hosted_zone: "{{ resource_prefix }}.example.xyz"
