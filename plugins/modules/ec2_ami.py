@@ -193,6 +193,7 @@ options:
       - U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-IMDS-new-instances.html#configure-IMDS-new-instances-ami-configuration).
     type: bool
     default: false
+    version_added: 9.0.0
 author:
   - "Evan Duffield (@scicoin-project) <eduffield@iacquire.com>"
   - "Constantin Bugneac (@Constantin07) <constantin.bugneac@endava.com>"
