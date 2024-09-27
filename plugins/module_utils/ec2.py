@@ -363,6 +363,48 @@ def reject_vpc_peering_connection(client, peering_id: str) -> bool:
     return True
 
 
+# EC2 VPC VPN
+class EC2VpnErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleEC2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code("InvalidVpnConnectionID.NotFound")
+
+
+@EC2VpcErrorHandler.list_error_handler("describe vpn connections", [])
+@AWSRetry.jittered_backoff()
+def describe_vpn_connections(client, **params: Dict[str, Any]) -> List[Dict[str, Any]]:
+    # The paginator does not exist for `describe_vpn_connections`
+    return client.describe_vpn_connections(**params)
+
+
+@EC2VpcErrorHandler.common_error_handler("create vpn connection route")
+@AWSRetry.jittered_backoff()
+def create_vpn_connection_route(client, vpn_connection_id: str, route: Dict[str, Any]) -> bool:
+    client.create_vpn_connection_route(VpnConnectionId=vpn_connection_id, DestinationCidrBlock=route)
+    return True
+
+
+@EC2VpcErrorHandler.common_error_handler("delete vpn connection route")
+@AWSRetry.jittered_backoff()
+def delete_vpn_connection_route(client, vpn_connection_id: str, route: Dict[str, Any]) -> bool:
+    client.delete_vpn_connection_route(VpnConnectionId=vpn_connection_id, DestinationCidrBlock=route)
+    return True
+
+
+@EC2VpcErrorHandler.common_error_handler("create vpn connection")
+@AWSRetry.jittered_backoff()
+def create_vpn_connection(client, **params: Dict[str, Any]) -> Dict[str, Any]:
+    return client.create_vpn_connection(**params)
+
+
+@EC2VpcErrorHandler.common_error_handler("delete vpn connection")
+@AWSRetry.jittered_backoff()
+def delete_vpn_connection(client, vpn_connection_id: str) -> Dict[str, Any]:
+    return client.delete_vpn_connection(VpnConnectionId=vpn_connection_id)
+
+
 # EC2 Internet Gateway
 class EC2InternetGatewayErrorHandler(AWSErrorHandler):
     _CUSTOM_EXCEPTION = AnsibleEC2Error
