@@ -255,6 +255,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-domain_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eip-module-parameter-domain-name"><strong>domain_name</strong></p>
+<a class="ansibleOptionLink" href="#parameter-domain_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 8.3.0</em></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The domain name to attach to the IP address.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-endpoint_url"></div>
 <div class="ansibleOptionAnchor" id="parameter-ec2_url"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_endpoint_url"></div>
@@ -268,7 +276,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_URL</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-in_vpc"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eip-module-parameter-in-vpc"><strong>in_vpc</strong></p>
 <a class="ansibleOptionLink" href="#parameter-in_vpc" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -281,14 +289,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-private_ip_address"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eip-module-parameter-private-ip-address"><strong>private_ip_address</strong></p>
 <a class="ansibleOptionLink" href="#parameter-private_ip_address" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The primary or secondary private IP address to associate with the Elastic IP address.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-profile"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_profile"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eip-module-parameter-profile"><span id="ansible-collections-amazon-aws-ec2-eip-module-parameter-aws-profile"></span><strong>profile</strong></p>
 <a class="ansibleOptionLink" href="#parameter-profile" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_profile</span></p>
@@ -300,7 +308,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-
 <p>The <em>profile</em> option is mutually exclusive with the <em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> options.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-public_ip"></div>
 <div class="ansibleOptionAnchor" id="parameter-ip"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eip-module-parameter-public-ip"><span id="ansible-collections-amazon-aws-ec2-eip-module-parameter-ip"></span><strong>public_ip</strong></p>
 <a class="ansibleOptionLink" href="#parameter-public_ip" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: ip</span></p>
@@ -311,14 +319,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-
 <p>When <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-module-parameter-state"><span class="std std-ref"><span class="pre">state=absent</span></span></a></code> and device is specified, the EIP is disassociated from the device.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-public_ipv4_pool"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eip-module-parameter-public-ipv4-pool"><strong>public_ipv4_pool</strong></p>
 <a class="ansibleOptionLink" href="#parameter-public_ipv4_pool" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Allocates the new Elastic IP from the provided public IPv4 pool (BYOIP) only applies to newly allocated Elastic IPs, isn’t validated when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-module-parameter-reuse-existing-ip-allowed"><span class="std std-ref"><span class="pre">reuse_existing_ip_allowed=true</span></span></a></code>.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-purge_tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eip-module-parameter-purge-tags"><strong>purge_tags</strong></p>
 <a class="ansibleOptionLink" href="#parameter-purge_tags" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -332,7 +340,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-region"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_region"></div>
 <div class="ansibleOptionAnchor" id="parameter-ec2_region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eip-module-parameter-region"><span id="ansible-collections-amazon-aws-ec2-eip-module-parameter-ec2-region"></span><span id="ansible-collections-amazon-aws-ec2-eip-module-parameter-aws-region"></span><strong>region</strong></p>
@@ -347,7 +355,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_REGION</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-release_on_disassociation"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eip-module-parameter-release-on-disassociation"><strong>release_on_disassociation</strong></p>
 <a class="ansibleOptionLink" href="#parameter-release_on_disassociation" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -359,7 +367,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-reuse_existing_ip_allowed"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eip-module-parameter-reuse-existing-ip-allowed"><strong>reuse_existing_ip_allowed</strong></p>
 <a class="ansibleOptionLink" href="#parameter-reuse_existing_ip_allowed" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -371,7 +379,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-secret_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_secret_access_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_secret_key"></div>
@@ -388,7 +396,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_SECRET_KEY</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-session_token"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_session_token"></div>
 <div class="ansibleOptionAnchor" id="parameter-security_token"></div>
@@ -406,7 +414,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_SECRET_KEY</span></code> and <code class="docutils literal notranslate"><span class="pre">AWS_SECURITY_TOKEN</span></code> environment variables has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-state"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eip-module-parameter-state"><strong>state</strong></p>
 <a class="ansibleOptionLink" href="#parameter-state" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -419,21 +427,21 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-tag_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eip-module-parameter-tag-name"><strong>tag_name</strong></p>
 <a class="ansibleOptionLink" href="#parameter-tag_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>When <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-module-parameter-reuse-existing-ip-allowed"><span class="std std-ref"><span class="pre">reuse_existing_ip_allowed=true</span></span></a></code>, supplement with this option to only reuse an Elastic IP if it is tagged with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-module-parameter-tag-name"><span class="std std-ref"><span class="pre">tag_name</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-tag_value"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eip-module-parameter-tag-value"><strong>tag_value</strong></p>
 <a class="ansibleOptionLink" href="#parameter-tag_value" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Supplements <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-module-parameter-tag-name"><span class="std std-ref"><span class="pre">tag_name</span></span></a></strong></code> but also checks that the value of the tag provided in <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-module-parameter-tag-name"><span class="std std-ref"><span class="pre">tag_name</span></span></a></strong></code> matches <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-module-parameter-tag-value"><span class="std std-ref"><span class="pre">tag_value</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-tags"></div>
 <div class="ansibleOptionAnchor" id="parameter-resource_tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eip-module-parameter-tags"><span id="ansible-collections-amazon-aws-ec2-eip-module-parameter-resource-tags"></span><strong>tags</strong></p>
 <a class="ansibleOptionLink" href="#parameter-tags" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: resource_tags</span></p>
@@ -443,7 +451,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-
 <p>If the <em>tags</em> parameter is not set then tags will not be modified.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-validate_certs"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eip-module-parameter-validate-certs"><strong>validate_certs</strong></p>
 <a class="ansibleOptionLink" href="#parameter-validate_certs" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -579,6 +587,23 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-
 <span class="w">    </span><span class="nt">tag_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">reserved_for</span>
 <span class="w">    </span><span class="nt">tag_value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">inventory_hostname</span> <span class="cp">}}</span><span class="s">&quot;</span>
 <span class="w">    </span><span class="nt">public_ipv4_pool</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ipv4pool-ec2-0588c9b75a25d1a02</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">create new IP and modify it&#39;s reverse DNS record</span>
+<span class="w">  </span><span class="nt">amazon.aws.ec2_eip</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
+<span class="w">    </span><span class="nt">domain_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test-domain.xyz</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Modify reverse DNS record of an existing EIP</span>
+<span class="w">  </span><span class="nt">amazon.aws.ec2_eip</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">public_ip</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">44.224.84.105</span>
+<span class="w">    </span><span class="nt">domain_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test-domain.xyz</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Remove reverse DNS record of an existing EIP</span>
+<span class="w">  </span><span class="nt">amazon.aws.ec2_eip</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">public_ip</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">44.224.84.105</span>
+<span class="w">    </span><span class="nt">domain_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
 </pre></div>
 </div>
 </section>
@@ -608,6 +633,75 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-
 <td><div class="ansible-option-cell"><p>An elastic ip address.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> on success</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;52.88.159.209&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-update_reverse_dns_record_result"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eip-module-return-update-reverse-dns-record-result"><strong>update_reverse_dns_record_result</strong></p>
+<a class="ansibleOptionLink" href="#return-update_reverse_dns_record_result" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Information about result of update reverse dns record operation.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> When <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-module-parameter-domain-name"><span class="std std-ref"><span class="pre">domain_name</span></span></a></strong></code> is specified.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-update_reverse_dns_record_result/address"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eip-module-return-update-reverse-dns-record-result-address"><strong>address</strong></p>
+<a class="ansibleOptionLink" href="#return-update_reverse_dns_record_result/address" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Information about the Elastic IP address.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-update_reverse_dns_record_result/address/allocation_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eip-module-return-update-reverse-dns-record-result-address-allocation-id"><strong>allocation_id</strong></p>
+<a class="ansibleOptionLink" href="#return-update_reverse_dns_record_result/address/allocation_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The allocation ID.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;eipalloc-00a11aa111aaa1a11&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-update_reverse_dns_record_result/address/ptr_record"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eip-module-return-update-reverse-dns-record-result-address-ptr-record"><strong>ptr_record</strong></p>
+<a class="ansibleOptionLink" href="#return-update_reverse_dns_record_result/address/ptr_record" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The pointer (PTR) record for the IP address.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;ec2-11-22-33-44.us-east-2.compute.amazonaws.com.&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-update_reverse_dns_record_result/address/ptr_record_update"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eip-module-return-update-reverse-dns-record-result-address-ptr-record-update"><strong>ptr_record_update</strong></p>
+<a class="ansibleOptionLink" href="#return-update_reverse_dns_record_result/address/ptr_record_update" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The updated PTR record for the IP address.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-update_reverse_dns_record_result/address/ptr_record_update/status"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eip-module-return-update-reverse-dns-record-result-address-ptr-record-update-status"><strong>status</strong></p>
+<a class="ansibleOptionLink" href="#return-update_reverse_dns_record_result/address/ptr_record_update/status" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The status of the PTR record update.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;PENDING&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-update_reverse_dns_record_result/address/ptr_record_update/value"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eip-module-return-update-reverse-dns-record-result-address-ptr-record-update-value"><strong>value</strong></p>
+<a class="ansibleOptionLink" href="#return-update_reverse_dns_record_result/address/ptr_record_update/value" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The value for the PTR record update.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;example.com&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-update_reverse_dns_record_result/address/public_ip"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-eip-module-return-update-reverse-dns-record-result-address-public-ip"><strong>public_ip</strong></p>
+<a class="ansibleOptionLink" href="#return-update_reverse_dns_record_result/address/public_ip" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The public IP address.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;11.22.33.44&quot;</span></code></p>
 </div></td>
 </tr>
 </tbody>
