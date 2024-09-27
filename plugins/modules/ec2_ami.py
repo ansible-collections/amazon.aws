@@ -186,6 +186,12 @@ options:
       - See the AWS documentation for more detail U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/uefi-secure-boot.html).
     type: str
     version_added: 5.5.0
+  imdsv2_enable:
+    description:
+      - Force IMDS v2 on the AMI
+      - See the AWS documentation for more detail U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-IMDS-new-instances.html#configure-IMDS-new-instances-ami-configuration).
+    type: bool
+    default: false
 author:
   - "Evan Duffield (@scicoin-project) <eduffield@iacquire.com>"
   - "Constantin Bugneac (@Constantin07) <constantin.bugneac@endava.com>"
@@ -768,6 +774,21 @@ class UpdateImage:
         except AnsibleEC2Error as e:
             raise Ec2AmiFailure(f"Error setting description for image {image['ImageId']}", e)
 
+    @staticmethod
+    def set_imdsv2(connection, image, imdsv2_enable):
+        if not imdsv2_enable and image["ImdsSupport"] != "v2.0":
+            return False
+
+        if image["ImdsSupport"] == "v2.0":
+            return False
+
+        imds_params = {"Attribute": "ImdsSupport", "ImdsSupport": "v2.0"}
+        try:
+            modify_image_attribute(connection, image_id=image["imageId"], **imds_params)
+            return True
+        except AnsibleEC2Error as e:
+            raise Ec2AmiFailure(f"Error setting IMDS Support to v2 for image {image['imageId']}", e)
+
     @classmethod
     def do(cls, module, connection, image_id):
         """Entry point to update an image"""
@@ -784,6 +805,7 @@ class UpdateImage:
         changed |= cls.set_launch_permission(connection, image, launch_permissions, module.check_mode)
         changed |= cls.set_tags(connection, module, image_id, module.params["tags"], module.params["purge_tags"])
         changed |= cls.set_description(connection, module, image, module.params["description"])
+        changed |= cls.set_imdsv2(connection, image, module.params["imdsv2_enable"])
 
         if changed and module.check_mode:
             module.exit_json(changed=True, msg="Would have updated AMI if not in check mode.")
@@ -845,6 +867,14 @@ class CreateImage:
                 modify_image_attribute(connection, image_id=image_id, **params)
         except AnsibleEC2Error as e:
             raise Ec2AmiFailure(f"Error setting launch permissions for image {image_id}", e)
+
+    @staticmethod
+    def set_imdsv2(connection, image_id):
+        imds_params = {"Attribute": "ImdsSupport", "ImdsSupport": "v2.0"}
+        try:
+            modify_image_attribute(connection, image_id=image_id, **imds_params)
+        except AnsibleEC2Error as e:
+            raise Ec2AmiFailure(f"Error setting IMDS Support to v2 for image {image_id}", e)
 
     @staticmethod
     def create_or_register(create_image_parameters):
@@ -954,6 +984,8 @@ class CreateImage:
             CreateImage.set_tags(connection, module, module.params.get("tags"), image_id)
 
         cls.set_launch_permissions(connection, module.params.get("launch_permissions"), image_id)
+        if module.params.get("imdsv2_enable"):
+            cls.set_imdsv2(connection, image_id)
 
         module.exit_json(
             msg="AMI creation operation complete.", changed=True, **get_ami_info(get_image_by_id(connection, image_id))
@@ -1004,6 +1036,7 @@ def main():
         tpm_support={"type": "str"},
         uefi_data={"type": "str"},
         virtualization_type={"default": "hvm"},
+        imdsv2_enable={"type": "bool", "default": False},
         wait={"type": "bool", "default": False},
         wait_timeout={"default": 1200, "type": "int"},
     )
