@@ -55,6 +55,7 @@ action_groups:
     - ec2_vol_info
     - ec2_vpc_dhcp_option
     - ec2_vpc_dhcp_option_info
+    - ec2_vpc_egress_igw_info
     - ec2_vpc_endpoint
     - ec2_vpc_endpoint_info
     - ec2_vpc_endpoint_service_info
