@@ -553,12 +553,15 @@ def get_image_by_id(connection, image_id):
 
     result = images[0]
     try:
-        image_attribue = describe_image_attribute(connection, attribute="launchPermission", image_id=image_id)
-        if image_attribue:
-            result["LaunchPermissions"] = image_attribue["LaunchPermissions"]
-        image_attribue = describe_image_attribute(connection, attribute="productCodes", image_id=image_id)
-        if image_attribue:
-            result["ProductCodes"] = image_attribue["ProductCodes"]
+        image_attribute = describe_image_attribute(connection, attribute="launchPermission", image_id=image_id)
+        if image_attribute:
+            result["LaunchPermissions"] = image_attribute["LaunchPermissions"]
+        image_attribute = describe_image_attribute(connection, attribute="productCodes", image_id=image_id)
+        if image_attribute:
+            result["ProductCodes"] = image_attribute["ProductCodes"]
+        image_attribute = describe_image_attribute(connection, attribute="imdsSupport", image_id=image_id)
+        if image_attribute:
+            result["ImdsSupport"] = image_attribute["Value"]
     except AnsibleEC2Error as e:
         raise Ec2AmiFailure(f"Error retrieving image attributes for image {image_id}", e)
     return result
