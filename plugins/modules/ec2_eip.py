@@ -76,6 +76,11 @@ options:
       - Allocates the new Elastic IP from the provided public IPv4 pool (BYOIP)
         only applies to newly allocated Elastic IPs, isn't validated when O(reuse_existing_ip_allowed=true).
     type: str
+  domain_name:
+    description: The domain name to attach to the IP address.
+    required: false
+    type: str
+    version_added: 8.3.0
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
@@ -201,6 +206,23 @@ EXAMPLES = r"""
     tag_name: reserved_for
     tag_value: "{{ inventory_hostname }}"
     public_ipv4_pool: ipv4pool-ec2-0588c9b75a25d1a02
+
+- name: create new IP and modify it's reverse DNS record
+  amazon.aws.ec2_eip:
+    state: present
+    domain_name: test-domain.xyz
+
+- name: Modify reverse DNS record of an existing EIP
+  amazon.aws.ec2_eip:
+    public_ip: 44.224.84.105
+    domain_name: test-domain.xyz
+    state: present
+
+- name: Remove reverse DNS record of an existing EIP
+  amazon.aws.ec2_eip:
+    public_ip: 44.224.84.105
+    domain_name: ""
+    state: present
 """
 
 RETURN = r"""
@@ -214,6 +236,46 @@ public_ip:
   returned: on success
   type: str
   sample: 52.88.159.209
+update_reverse_dns_record_result:
+  description: Information about result of update reverse dns record operation.
+  returned: When O(domain_name) is specified.
+  type: dict
+  contains:
+    address:
+      description: Information about the Elastic IP address.
+      returned: always
+      type: dict
+      contains:
+        allocation_id:
+          description: The allocation ID.
+          returned: always
+          type: str
+          sample: "eipalloc-00a11aa111aaa1a11"
+        ptr_record:
+          description: The pointer (PTR) record for the IP address.
+          returned: always
+          type: str
+          sample: "ec2-11-22-33-44.us-east-2.compute.amazonaws.com."
+        ptr_record_update:
+          description: The updated PTR record for the IP address.
+          returned: always
+          type: dict
+          contains:
+            status:
+              description: The status of the PTR record update.
+              returned: always
+              type: str
+              sample: "PENDING"
+            value:
+              description: The value for the PTR record update.
+              returned: always
+              type: str
+              sample: "example.com"
+        public_ip:
+          description: The public IP address.
+          returned: always
+          type: str
+          sample: "11.22.33.44"
 """
 
 from typing import Any
@@ -222,6 +284,8 @@ from typing import List
 from typing import Optional
 from typing import Tuple
 from typing import Union
+
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleEC2Error
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import allocate_address as allocate_ip_address
@@ -410,6 +474,7 @@ def ensure_present(
     public_ipv4_pool = module.params.get("public_ipv4_pool")
     tags = module.params.get("tags")
     purge_tags = module.params.get("purge_tags")
+    domain_name = module.params.get("domain_name")
 
     # Tags for *searching* for an EIP.
     search_tags = generate_tag_dict(module)
@@ -421,6 +486,12 @@ def ensure_present(
         address, changed = allocate_address(
             client, module.check_mode, search_tags, domain, reuse_existing_ip_allowed, tags, public_ipv4_pool
         )
+
+    if domain_name is not None:
+        changed, update_reverse_dns_record_result = update_reverse_dns_record_of_eip(
+            client, module, address, domain_name
+        )
+        result.update({"update_reverse_dns_record_result": update_reverse_dns_record_result})
 
     # Associate address to instance
     if device_id:
@@ -462,13 +533,55 @@ def ensure_present(
             client, module, address["AllocationId"], resource_type="elastic-ip", tags=tags, purge_tags=purge_tags
         )
         result.update({"public_ip": address["PublicIp"], "allocation_id": address["AllocationId"]})
+
     result["changed"] = changed
     return result
+
+
+def update_reverse_dns_record_of_eip(client, module: AnsibleAWSModule, address, domain_name):
+    if module.check_mode:
+        return True, {}
+
+    current_ptr_record_domain = client.describe_addresses_attribute(
+        AllocationIds=[address["AllocationId"]], Attribute="domain-name"
+    )
+
+    if (
+        current_ptr_record_domain["Addresses"]
+        and current_ptr_record_domain["Addresses"][0]["PtrRecord"] == domain_name + "."
+    ):
+        return False, {"ptr_record": domain_name + "."}
+
+    if len(domain_name) == 0:
+        try:
+            update_reverse_dns_record_result = client.reset_address_attribute(
+                AllocationId=address["AllocationId"], Attribute="domain-name"
+            )
+            changed = True
+        except AnsibleEC2Error as e:
+            module.fail_json_aws_error(e)
+
+        if "ResponseMetadata" in update_reverse_dns_record_result:
+            del update_reverse_dns_record_result["ResponseMetadata"]
+    else:
+        try:
+            update_reverse_dns_record_result = client.modify_address_attribute(
+                AllocationId=address["AllocationId"], DomainName=domain_name
+            )
+            changed = True
+        except AnsibleEC2Error as e:
+            module.fail_json_aws_error(e)
+
+        if "ResponseMetadata" in update_reverse_dns_record_result:
+            del update_reverse_dns_record_result["ResponseMetadata"]
+
+    return changed, camel_dict_to_snake_dict(update_reverse_dns_record_result)
 
 
 def main():
     argument_spec = dict(
         device_id=dict(required=False),
+        domain_name=dict(required=False, type="str"),
         public_ip=dict(required=False, aliases=["ip"]),
         state=dict(required=False, default="present", choices=["present", "absent"]),
         in_vpc=dict(required=False, type="bool", default=False),

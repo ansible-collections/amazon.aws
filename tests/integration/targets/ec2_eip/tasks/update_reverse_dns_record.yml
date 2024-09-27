@@ -1,0 +1,117 @@
+- name: Test EIP allocation and reverse DNS record operations
+  block:
+    # ------------------------------------------------------------------------------------------
+    # Allocate EIP with reverse DNS record - check mode
+    # ------------------------------------------------------------------------------------------
+    - name: Allocate a new EIP and modify it's reverse DNS record - check_mode
+      amazon.aws.ec2_eip:
+        state: present
+        domain_name: "{{ test_domain }}"
+        tags: "{{ eip_test_tags }}"
+      register: eip
+      check_mode: true
+
+    - name: Assert that task result was as expected
+      ansible.builtin.assert:
+        that:
+          - eip is changed
+
+    - name: Ensure no new EIP was created
+      ansible.builtin.include_tasks: tasks/common.yml
+      vars:
+        has_no_new_eip: true
+
+    # ------------------------------------------------------------------------------------------
+    # Allocate EIP with reverse DNS record
+    # ------------------------------------------------------------------------------------------
+    - name: Allocate a new EIP and modify it's reverse DNS record
+      amazon.aws.ec2_eip:
+        state: present
+        domain_name: "{{ test_domain }}"
+        tags: "{{ eip_test_tags }}"
+      register: eip
+
+    - name: Add EIP IP address an A record
+      amazon.aws.route53:
+        state: present
+        zone: "{{ test_hosted_zone }}"
+        record: "{{ test_domain }}"
+        type: A
+        ttl: 7200
+        value: "{{ eip.public_ip}}"
+        identifier: "{{ resource_prefix }}"
+        wait: true
+
+    - name: Wait for reverse DNS record update to complete
+      pause:
+        minutes: 3
+
+    - name: Assert that task result was as expected
+      ansible.builtin.assert:
+        that:
+          - eip is changed
+          - eip.public_ip is defined and ( eip.public_ip | ansible.utils.ipaddr )
+          - eip.allocation_id is defined and eip.allocation_id.startswith("eipalloc-")
+          - eip.update_reverse_dns_record_result is defined
+          - eip.update_reverse_dns_record_result.address.ptr_record_update is defined
+          - eip.update_reverse_dns_record_result.address.ptr_record_update.value == "{{ test_domain }}."
+
+    # ------------------------------------------------------------------------------------------
+    # Allocate EIP with reverse DNS record - idempotence
+    # ------------------------------------------------------------------------------------------
+    - name: Try modifying reverse DNS record of EIP to same domain as current - Idempotent
+      amazon.aws.ec2_eip:
+        state: present
+        public_ip: "{{ eip.public_ip }}"
+        domain_name: "{{ test_domain }}"
+        tags: "{{ eip_test_tags }}"
+      register: eip
+
+    - name: Assert that task result was as expected
+      ansible.builtin.assert:
+        that:
+          - eip is not changed
+          - eip.public_ip is defined and ( eip.public_ip | ansible.utils.ipaddr )
+          - eip.allocation_id is defined and eip.allocation_id.startswith("eipalloc-")
+          - eip.update_reverse_dns_record_result is defined
+          - eip.update_reverse_dns_record_result.ptr_record == "{{ test_domain }}."
+
+    # ------------------------------------------------------------------------------------------
+    # Update reverse DNS record of existing EIP - remove reverse DNS record
+    # ------------------------------------------------------------------------------------------
+    - name: Try modifying reverse DNS record of EIP to different domain than current
+      amazon.aws.ec2_eip:
+        state: present
+        public_ip: "{{ eip.public_ip }}"
+        domain_name: ""
+        tags: "{{ eip_test_tags }}"
+      register: eip
+
+    - name: Assert that changes were applied
+      ansible.builtin.assert:
+        that:
+          - eip is changed
+          - eip.public_ip is defined and ( eip.public_ip | ansible.utils.ipaddr )
+          - eip.allocation_id is defined and eip.allocation_id.startswith("eipalloc-")
+
+    - name: Wait for reverse DNS record update to complete
+      pause:
+        minutes: 3
+
+  always:
+
+    - name: Delete EIP IP address an A record
+      amazon.aws.route53:
+        state: present
+        zone: "{{ test_hosted_zone }}"
+        record: "{{ test_domain }}"
+        type: A
+        ttl: 7200
+        value: "{{ eip.public_ip}}"
+        identifier: "{{ resource_prefix }}"
+        wait: true
+
+    - name: Delete EIP
+      ansible.builtin.include_tasks: tasks/common.yml
+      vars:
+        delete_eips: true
