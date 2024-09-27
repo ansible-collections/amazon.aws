@@ -42,7 +42,7 @@
         purge_tags: false
         filters:
           tag:TestId: "{{ ec2_instance_tag_TestId }}"
-        wait: false
+        wait: true
       register: create_multiple_instances
 
     - ansible.builtin.assert:
@@ -146,7 +146,7 @@
         purge_tags: false
         tags:
           TestId: "{{ ec2_instance_tag_TestId }}"
-        wait: false
+        wait: true
       register: create_multiple_instances
 
     - ansible.builtin.assert:
@@ -324,7 +324,7 @@
         purge_tags: false
         tags:
           TestId: "{{ ec2_instance_tag_TestId }}"
-        wait: false
+        wait: true
       register: restart_multiple_instances
 
     - ansible.builtin.assert:
@@ -374,7 +374,7 @@
         purge_tags: false
         tags:
           TestId: "{{ ec2_instance_tag_TestId }}"
-        wait: false
+        wait: true
       register: create_multiple_instances
 
     - name: debug is here
