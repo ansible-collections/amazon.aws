@@ -189,7 +189,8 @@ options:
   imdsv2_enable:
     description:
       - Force IMDS v2 on the AMI
-      - See the AWS documentation for more detail U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-IMDS-new-instances.html#configure-IMDS-new-instances-ami-configuration).
+      - See the AWS documentation for more detail
+      - U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-IMDS-new-instances.html#configure-IMDS-new-instances-ami-configuration).
     type: bool
     default: false
 author:
