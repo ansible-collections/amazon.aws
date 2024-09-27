@@ -160,10 +160,14 @@ def test_list_ec2_images(m_get_images, m_describe_image_attribute, ec2_client):
     assert m_get_images.call_count == 1
     m_get_images.assert_called_with(ec2_client, request_args)
 
-    assert m_describe_image_attribute.call_count == 2
+    assert m_describe_image_attribute.call_count == 4
     m_describe_image_attribute.assert_has_calls(
         [call(ec2_client, attribute="launchPermission", image_id=images[0]["image_id"])],
         [call(ec2_client, attribute="launchPermission", image_id=images[1]["image_id"])],
+    )
+    m_describe_image_attribute.assert_has_calls(
+        [call(ec2_client, attribute="ImdsSupport", image_id=images[0]["image_id"])],
+        [call(ec2_client, attribute="ImdsSupport", image_id=images[1]["image_id"])],
     )
 
     assert len(list_ec2_images_result) == 2
