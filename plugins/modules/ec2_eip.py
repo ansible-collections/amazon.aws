@@ -80,7 +80,7 @@ options:
     description: The domain name to attach to the IP address.
     required: false
     type: str
-    version_added: 9.0.0
+    version_added: 8.3.0
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
@@ -285,10 +285,11 @@ from typing import Optional
 from typing import Tuple
 from typing import Union
 
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleEC2Error
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import allocate_address as allocate_ip_address
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import associate_address
-from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_addresses
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_instances
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_network_interfaces
