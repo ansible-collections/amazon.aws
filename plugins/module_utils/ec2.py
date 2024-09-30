@@ -324,16 +324,14 @@ class EC2VpcPeeringErrorHandler(AWSErrorHandler):
 
     @classmethod
     def _is_missing(cls):
-        return is_boto3_error_code("InvalidVpcPeeringConnectionID.NotFound", "InvalidVpcPeeringConnectionId.Malformed")
+        return is_boto3_error_code("InvalidVpcPeeringConnectionID.NotFound")
 
 
 @EC2VpcPeeringErrorHandler.list_error_handler("describe vpc peering", [])
 @AWSRetry.jittered_backoff()
 def describe_vpc_peering_connections(client, **params: Dict[str, Any]) -> List[Dict[str, Any]]:
-    result = client.describe_vpc_peering_connections(
-        **params,
-    )
-    return result
+    paginator = client.get_paginator("describe_vpc_peering_connections")
+    return paginator.paginate(**params).build_full_result()["VpcPeeringConnections"]
 
 
 @EC2VpcSubnetErrorHandler.common_error_handler("create vpc peering")
