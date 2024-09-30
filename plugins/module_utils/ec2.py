@@ -1416,6 +1416,56 @@ def get_ec2_security_group_ids_from_names(sec_group_list, ec2_connection, vpc_id
     return sec_group_id_list
 
 
+# EC2 Transit Gateway VPC Attachment Error handler
+class EC2TransitGatewayVPCAttachmentErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleEC2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code("InvalidGatewayID.NotFound")
+
+@EC2TransitGatewayVPCAttachmentErrorHandler.common_error_handler("describe transit gateway attachments")
+@AWSRetry.jittered_backoff()
+def paginated_describe_transit_gateway_vpc_attachments(
+    client, **params: Dict[str, Union[List[str], bool, List[Dict[str, Union[str, List[str]]]]]]
+) -> Dict[str, Any]:
+    paginator = client.get_paginator("describe_transit_gateway_vpc_attachments")
+    return paginator.paginate(**params).build_full_result()
+
+@EC2TransitGatewayVPCAttachmentErrorHandler.common_error_handler("describe transit gateway attachments")
+@AWSRetry.jittered_backoff()
+def describe_vpc_attachments(client, **params: Dict[str, Union[List[str], bool, List[Dict[str, Union[str, List[str]]]]]]) -> Optional[List[Dict[str, Any]]]:
+    result = client._paginated_describe_transit_gateway_vpc_attachments(**params)
+    return result.get("TransitGatewayVpcAttachments", None)
+
+@EC2TransitGatewayVPCAttachmentErrorHandler.common_error_handler("create transit gateway vpc attachment")
+@AWSRetry.jittered_backoff()
+def create_vpc_attachment(client, **params: Dict[str, Union[List[str], bool, List[Dict[str, Union[str, List[str]]]]]]) -> Optional[Dict[str, Any]]:
+    result = client.create_transit_gateway_vpc_attachment(**params)
+    return result.get("TransitGatewayVpcAttachment", None)
+
+@EC2TransitGatewayVPCAttachmentErrorHandler.common_error_handler("modify transit gateway vpc attachment")
+@AWSRetry.jittered_backoff()
+def modify_vpc_attachment(client, **params: Dict[str, Union[List[str], bool, List[Dict[str, Union[str, List[str]]]]]]) -> Optional[Dict[str, Any]]:
+  result = client.modify_transit_gateway_vpc_attachment(**params)
+  return result.get("TransitGatewayVpcAttachment", None)
+
+@EC2TransitGatewayVPCAttachmentErrorHandler.common_error_handler("delete transit gateway vpc attachment")
+@AWSRetry.jittered_backoff()
+def delete_vpc_attachment(client, **params: Dict[str, Union[List[str], bool, List[Dict[str, Union[str, List[str]]]]]]) -> Optional[Dict[str, Any]]:
+  result = self.client.delete_transit_gateway_vpc_attachment(**params)
+  return result.get("TransitGatewayVpcAttachment", None)
+
+def get_tgw_vpc_attachment(client, **params: Any) -> Optional[Dict[str, Any]]:
+    # Only for use with a single attachment, use describe_vpc_attachments for
+    # multiple tables.
+    attachments = client.describe_vpc_attachments(**params)
+    if not attachments:
+        return None
+
+    attachment = attachments[0]
+    return attachment
+
 def add_ec2_tags(client, module, resource_id, tags_to_set, retry_codes=None):
     """
     Sets Tags on an EC2 resource.
