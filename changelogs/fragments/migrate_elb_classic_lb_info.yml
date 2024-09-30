@@ -1,0 +1,5 @@
+---
+major_changes:
+  - elb_classic_lb_info - The module has been migrated from the ``community.aws``
+    collection. Playbooks using the Fully Qualified Collection Name for this module
+    should be updated to use ``amazon.aws.elb_classic_lb_info``.
