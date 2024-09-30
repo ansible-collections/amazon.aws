@@ -27,7 +27,7 @@
     # create test elb with listeners, certificate, and health check
 
   - name: Create ELB
-    elb_classic_lb:
+    amazon.aws.elb_classic_lb:
       name: '{{ elb_name }}'
       state: present
       zones:
@@ -113,7 +113,7 @@
     # Change AZ's
 
   - name: Change AZ's
-    elb_classic_lb:
+    amazon.aws.elb_classic_lb:
       name: '{{ elb_name }}'
       state: present
       zones:
@@ -155,7 +155,7 @@
     # Update AZ's
 
   - name: Update AZ's
-    elb_classic_lb:
+    amazon.aws.elb_classic_lb:
       name: '{{ elb_name }}'
       state: present
       zones:
@@ -195,7 +195,7 @@
     # Purge Listeners
 
   - name: Purge Listeners
-    elb_classic_lb:
+    amazon.aws.elb_classic_lb:
       name: '{{ elb_name }}'
       state: present
       zones:
@@ -234,7 +234,7 @@
     # add Listeners
 
   - name: Add Listeners
-    elb_classic_lb:
+    amazon.aws.elb_classic_lb:
       name: '{{ elb_name }}'
       state: present
       zones:
@@ -310,7 +310,7 @@
 
     # ============================================================
   - name: remove the test load balancer completely
-    elb_classic_lb:
+    amazon.aws.elb_classic_lb:
       name: '{{ elb_name }}'
       state: absent
     register: result
