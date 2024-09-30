@@ -502,8 +502,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <a class="ansibleOptionLink" href="#parameter-instance_type" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Instance type to use for the instance, see <a class="reference external" href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html">https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html</a>.</p>
-<p>Only required when instance is not already present.</p>
 <p>At least one of <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-instance-module-parameter-instance-type"><span class="std std-ref"><span class="pre">instance_type</span></span></a></strong></code> or <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-instance-module-parameter-launch-template"><span class="std std-ref"><span class="pre">launch_template</span></span></a></strong></code> must be specificed when launching an instance.</p>
+<p>When the instance is present and the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-instance-module-parameter-instance-type"><span class="std std-ref"><span class="pre">instance_type</span></span></a></strong></code> specified value is different from the current value, the instance will be stopped and the instance type will be updated.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
