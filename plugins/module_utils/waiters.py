@@ -86,7 +86,7 @@ ec2_data = {
                     "expected": "success",
                     "matcher": "pathAll",
                     "state": True,
-                    "argument": ""length(TransitGatewayAttachments[]) == `0`",
+                    "argument": "length(TransitGatewayAttachments[]) == `0`",
                 },
                 {"matcher": "success", "expected": "InvalidRouteTableID.NotFound", "state": "retry"},
             ],
