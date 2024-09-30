@@ -1,0 +1,77 @@
+---
+- name: Gather current ec2 instances info
+  amazon.aws.ec2_instance_info:
+    filters:
+      "tag:Name": "{{ ec2_instance_name }}"
+      instance-state-name: [pending, running]
+  register: _current_instances_info
+
+# Test update using check_mode
+- name: Update instance type using check mode
+  amazon.aws.ec2_instance:
+    state: present
+    name: "{{ ec2_instance_name }}"
+    image_id: "{{ ec2_ami_id }}"
+    subnet_id: "{{ testing_subnet_a.subnet.id }}"
+    instance_type: "{{ item.new_instance_type }}"
+    wait: false
+    exact_count: "{{ item.new_instance_count }}"
+  register: run_check_mode
+  check_mode: true
+
+- name: Gather ec2 instances info
+  amazon.aws.ec2_instance_info:
+    filters:
+      "tag:Name": "{{ ec2_instance_name }}"
+      instance-state-name: [pending, running]
+  register: _instances_info
+
+- name: Ensure module reported change while the instance type was not updated (check_mode=true)
+  ansible.builtin.assert:
+    that:
+      - run_check_mode is changed
+      - _instances_info.instances | length == _current_instances_info.instances | length
+      - _instances_info.instances | map(attribute='instance_type') | list == _current_instances_info.instances | map(attribute='instance_type') | list
+
+# Run update
+- name: Update instance type
+  amazon.aws.ec2_instance:
+    state: present
+    name: "{{ ec2_instance_name }}"
+    image_id: "{{ ec2_ami_id }}"
+    subnet_id: "{{ testing_subnet_a.subnet.id }}"
+    instance_type: "{{ item.new_instance_type }}"
+    wait: false
+    exact_count: "{{ item.new_instance_count }}"
+  register: _run_update
+
+- name: Gather ec2 instances info
+  amazon.aws.ec2_instance_info:
+    filters:
+      "tag:Name": "{{ ec2_instance_name }}"
+      instance-state-name: [pending, running]
+  register: _instances_info
+
+- name: Ensure module reported change and the instance type changed
+  ansible.builtin.assert:
+    that:
+      - _run_update is changed
+      - _instances_info.instances | length == item.new_instance_count
+      - _instances_info.instances | map(attribute='instance_type') | unique | list == [item.new_instance_type]
+
+# Test idempotency
+- name: Update instance type once again (idempotency)
+  amazon.aws.ec2_instance:
+    state: present
+    name: "{{ ec2_instance_name }}"
+    image_id: "{{ ec2_ami_id }}"
+    subnet_id: "{{ testing_subnet_a.subnet.id }}"
+    instance_type: "{{ item.new_instance_type }}"
+    wait: false
+    exact_count: "{{ item.new_instance_count }}"
+  register: _run_idempotency
+
+- name: Validate idempotency
+  ansible.builtin.assert:
+    that:
+      - _run_idempotency is not changed

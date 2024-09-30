@@ -15,6 +15,7 @@
         region: "{{ aws_region }}"
         image_id: "{{ ec2_ami_id }}"
         state: present
+        purge_tags: false
         tags:
           TestId: "{{ ec2_instance_tag_TestId }}"
         filters:
@@ -38,6 +39,7 @@
         state: present
         tags:
           TestId: "{{ ec2_instance_tag_TestId }}"
+        purge_tags: false
         filters:
           tag:TestId: "{{ ec2_instance_tag_TestId }}"
         wait: true
@@ -121,6 +123,7 @@
         region: "{{ aws_region }}"
         name: "{{ resource_prefix }}-test-enf_cnt"
         image_id: "{{ ec2_ami_id }}"
+        purge_tags: false
         tags:
           TestId: "{{ ec2_instance_tag_TestId }}"
       register: create_multiple_instances
@@ -140,6 +143,7 @@
         region: "{{ aws_region }}"
         image_id: "{{ ec2_ami_id }}"
         name: "{{ resource_prefix }}-test-enf_cnt"
+        purge_tags: false
         tags:
           TestId: "{{ ec2_instance_tag_TestId }}"
         wait: true
@@ -160,6 +164,7 @@
         region: "{{ aws_region }}"
         image_id: "{{ ec2_ami_id }}"
         name: "{{ resource_prefix }}-test-enf_cnt"
+        purge_tags: false
         tags:
           TestId: "{{ ec2_instance_tag_TestId }}"
       register: create_multiple_instances
@@ -180,6 +185,7 @@
         region: "{{ aws_region }}"
         image_id: "{{ ec2_ami_id }}"
         name: "{{ resource_prefix }}-test-enf_cnt"
+        purge_tags: false
         tags:
           TestId: "{{ ec2_instance_tag_TestId }}"
         wait: true
@@ -200,6 +206,7 @@
         region: "{{ aws_region }}"
         image_id: "{{ ec2_ami_id }}"
         name: "{{ resource_prefix }}-test-enf_cnt"
+        purge_tags: false
         tags:
           TestId: "{{ ec2_instance_tag_TestId }}"
       register: terminate_multiple_instances
@@ -222,6 +229,7 @@
         region: "{{ aws_region }}"
         image_id: "{{ ec2_ami_id }}"
         name: "{{ resource_prefix }}-test-enf_cnt"
+        purge_tags: false
         tags:
           TestId: "{{ ec2_instance_tag_TestId }}"
         wait: true
@@ -243,6 +251,7 @@
         region: "{{ aws_region }}"
         image_id: "{{ ec2_ami_id }}"
         name: "{{ resource_prefix }}-test-enf_cnt"
+        purge_tags: false
         tags:
           TestId: "{{ ec2_instance_tag_TestId }}"
       register: terminate_multiple_instances
@@ -264,6 +273,7 @@
         region: "{{ aws_region }}"
         image_id: "{{ ec2_ami_id }}"
         name: "{{ resource_prefix }}-test-enf_cnt"
+        purge_tags: false
         tags:
           TestId: "{{ ec2_instance_tag_TestId }}"
       register: terminate_multiple_instances
@@ -285,6 +295,7 @@
         region: "{{ aws_region }}"
         image_id: "{{ ec2_ami_id }}"
         name: "{{ resource_prefix }}-test-enf_cnt"
+        purge_tags: false
         tags:
           TestId: "{{ ec2_instance_tag_TestId }}"
       register: restart_multiple_instances
@@ -310,6 +321,7 @@
         region: "{{ aws_region }}"
         image_id: "{{ ec2_ami_id }}"
         name: "{{ resource_prefix }}-test-enf_cnt"
+        purge_tags: false
         tags:
           TestId: "{{ ec2_instance_tag_TestId }}"
         wait: true
@@ -335,6 +347,7 @@
         region: "{{ aws_region }}"
         image_id: "{{ ec2_ami_id }}"
         name: "{{ resource_prefix }}-test-enf_cnt"
+        purge_tags: false
         tags:
           TestId: "{{ ec2_instance_tag_TestId }}"
         wait: true
@@ -358,6 +371,7 @@
         region: "{{ aws_region }}"
         image_id: "{{ ec2_ami_id }}"
         name: "{{ resource_prefix }}-test-enf_cnt"
+        purge_tags: false
         tags:
           TestId: "{{ ec2_instance_tag_TestId }}"
         wait: true
@@ -381,6 +395,7 @@
         region: "{{ aws_region }}"
         image_id: "{{ ec2_ami_id }}"
         name: "{{ resource_prefix }}-test-enf_cnt"
+        purge_tags: false
         tags:
           TestId: "{{ ec2_instance_tag_TestId }}"
         wait: true
@@ -403,6 +418,7 @@
         region: "{{ aws_region }}"
         image_id: "{{ ec2_ami_id }}"
         name: "{{ resource_prefix }}-test-enf_cnt"
+        purge_tags: false
         tags:
           TestId: "{{ ec2_instance_tag_TestId }}"
         wait: true

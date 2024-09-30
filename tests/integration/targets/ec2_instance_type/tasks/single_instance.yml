@@ -1,0 +1,77 @@
+---
+- name: Test upgrade instance type from a single created instance
+  block:
+    - name: Create ec2 instance
+      amazon.aws.ec2_instance:
+        state: present
+        name: "{{ ec2_instance_name }}"
+        image_id: "{{ ec2_ami_id }}"
+        subnet_id: "{{ testing_subnet_a.subnet.id }}"
+        instance_type: "{{ ec2_instance_type_initial }}"
+        wait: false
+      register: _instances
+
+    - name: Define instance ids
+      ansible.builtin.set_fact:
+        ec2_instance_ids: "{{ _instances.instance_ids }}"
+
+    - name: Update instance type (check mode)
+      amazon.aws.ec2_instance:
+        state: present
+        instance_ids: "{{ ec2_instance_ids }}"
+        instance_type: "{{ ec2_instance_type_updated }}"
+        wait: false
+      register: update_check_mode
+      check_mode: true
+
+    - name: Gather ec2 instances info
+      amazon.aws.ec2_instance_info:
+        instance_ids: "{{ ec2_instance_ids }}"
+      register: _instances_info
+
+    - name: Ensure module reported change while the instance type was not changed (check_mode)
+      ansible.builtin.assert:
+        that:
+          - update_check_mode is changed
+          - _instances_info.instances | map(attribute='instance_type') | unique | list == [ec2_instance_type_initial]
+
+    - name: Update instance type
+      amazon.aws.ec2_instance:
+        state: present
+        instance_ids: "{{ ec2_instance_ids }}"
+        instance_type: "{{ ec2_instance_type_updated }}"
+        wait: false
+      register: _update_instance_type
+
+    - name: Gather ec2 instances info
+      amazon.aws.ec2_instance_info:
+        instance_ids: "{{ ec2_instance_ids }}"
+      register: _instances_info
+
+    - name: Ensure module reported change and the instance type was updated
+      ansible.builtin.assert:
+        that:
+          - _update_instance_type is changed
+          - _instances_info.instances | map(attribute='instance_type') | unique | list == [ec2_instance_type_updated]
+
+    - name: Update instance type (idempotency)
+      amazon.aws.ec2_instance:
+        state: present
+        instance_ids: "{{ ec2_instance_ids }}"
+        instance_type: "{{ ec2_instance_type_updated }}"
+        wait: false
+      register: _update_idempotency
+
+    - name: Validate idempotency did not report change
+      ansible.builtin.assert:
+        that:
+          - _update_idempotency is not changed
+
+  always:
+    - name: Delete instance created for tests
+      amazon.aws.ec2_instance:
+        state: absent
+        instance_ids: "{{ ec2_instance_ids }}"
+        wait: false
+      ignore_errors: true
+      when: ec2_instance_ids is defined

@@ -1,0 +1,43 @@
+---
+- module_defaults:
+    group/aws:
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+  block:
+    - include_tasks: single_instance.yml
+      vars:
+        ec2_instance_name: "{{ resource_prefix }}-test-instance-type-single"
+
+    - name: "Test update instance type using exact_count"
+      vars:
+        ec2_instance_name: "{{ resource_prefix }}-test-instance-type-multiple"
+      block:
+        - name: Create multiple ec2 instances
+          amazon.aws.ec2_instance:
+            state: present
+            name: "{{ ec2_instance_name }}"
+            image_id: "{{ ec2_ami_id }}"
+            subnet_id: "{{ testing_subnet_a.subnet.id }}"
+            instance_type: "{{ ec2_instance_type_initial }}"
+            wait: false
+            exact_count: 2
+
+        - name: Test upgrade instance type with various number of instances
+          include_tasks: update_instance_type.yml
+          with_items:
+            - new_instance_type: "{{ ec2_instance_type_updated }}"
+              new_instance_count: 2
+            - new_instance_type: "{{ ec2_instance_type_initial }}"
+              new_instance_count: 3
+            - new_instance_type: "{{ ec2_instance_type_updated }}"
+              new_instance_count: 2
+
+      always:
+        - name: Delete ec2 instances
+          amazon.aws.ec2_instance:
+            state: absent
+            instance_ids: "{{ _instances_info.instances | map(attribute='instance_id') | list }}"
+            wait: false
+          when: _instances_info is defined
