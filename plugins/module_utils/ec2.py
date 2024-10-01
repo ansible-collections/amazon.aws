@@ -1427,20 +1427,11 @@ class EC2TransitGatewayVPCAttachmentErrorHandler(AWSErrorHandler):
 
 @EC2TransitGatewayVPCAttachmentErrorHandler.common_error_handler("describe transit gateway attachments")
 @AWSRetry.jittered_backoff()
-def paginated_describe_transit_gateway_vpc_attachments(
-    client, **params: Dict[str, Union[List[str], bool, List[Dict[str, Union[str, List[str]]]]]]
-) -> Dict[str, Any]:
-    paginator = client.get_paginator("describe_transit_gateway_vpc_attachments")
-    return paginator.paginate(**params).build_full_result()
-
-
-@EC2TransitGatewayVPCAttachmentErrorHandler.common_error_handler("describe transit gateway attachments")
-@AWSRetry.jittered_backoff()
 def describe_vpc_attachments(
     client, **params: Dict[str, Union[List[str], bool, List[Dict[str, Union[str, List[str]]]]]]
-) -> Optional[List[Dict[str, Any]]]:
-    result = client._paginated_describe_transit_gateway_vpc_attachments(**params)
-    return result.get("TransitGatewayVpcAttachments", None)
+) -> List:
+    paginator = client.get_paginator("describe_transit_gateway_vpc_attachments")
+    return paginator.paginate(**params).build_full_result()["TransitGatewayVpcAttachments"]
 
 
 @EC2TransitGatewayVPCAttachmentErrorHandler.common_error_handler("create transit gateway vpc attachment")
@@ -1468,17 +1459,6 @@ def delete_vpc_attachment(
 ) -> Optional[Dict[str, Any]]:
     result = client.delete_transit_gateway_vpc_attachment(**params)
     return result.get("TransitGatewayVpcAttachment", None)
-
-
-def get_tgw_vpc_attachment(client, **params: Any) -> Optional[Dict[str, Any]]:
-    # Only for use with a single attachment, use describe_vpc_attachments for
-    # multiple tables.
-    attachments = client.describe_vpc_attachments(**params)
-    if not attachments:
-        return None
-
-    attachment = attachments[0]
-    return attachment
 
 
 def add_ec2_tags(client, module, resource_id, tags_to_set, retry_codes=None):
