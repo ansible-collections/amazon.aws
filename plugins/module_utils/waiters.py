@@ -817,12 +817,12 @@ waiters_by_name = {
     ("EC2", "transit_gateway_vpc_attachment_available"): lambda ec2: core_waiter.Waiter(
         "transit_gateway_vpc_attachment_available",
         ec2_model("TGWVpcAttachmentAvailable"),
-        core_waiter.NormalizedOperationMethod(ec2.describe_vpc_attachments),
+        core_waiter.NormalizedOperationMethod(ec2.describe_transit_gateway_vpc_attachments),
     ),
     ("EC2", "transit_gateway_vpc_attachment_deleted"): lambda ec2: core_waiter.Waiter(
         "transit_gateway_vpc_attachment_deleted",
         ec2_model("TGWVpcAttachmentDeleted"),
-        core_waiter.NormalizedOperationMethod(ec2.describe_vpc_attachments),
+        core_waiter.NormalizedOperationMethod(ec2.describe_transit_gateway_vpc_attachments),
     ),
     ("EC2", "network_interface_attached"): lambda ec2: core_waiter.Waiter(
         "network_interface_attached",
