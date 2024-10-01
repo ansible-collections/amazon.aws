@@ -1108,6 +1108,139 @@ def authorize_security_group_egress(client, **params: Dict[str, Any]) -> bool:
     return client.authorize_security_group_egress(**params)["Return"]
 
 
+# EC2 Egress only internet Gateway
+class EC2EgressOnlyInternetGatewayErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleEC2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code("InvalidGatewayID.NotFound")
+
+
+@EC2EgressOnlyInternetGatewayErrorHandler.list_error_handler("describe egress only internet gateways", [])
+@AWSRetry.jittered_backoff()
+def describe_egress_only_internet_gateways(
+    client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
+    paginator = client.get_paginator("describe_egress_only_internet_gateways")
+    return paginator.paginate(**params).build_full_result()["EgressOnlyInternetGateways"]
+
+
+@EC2EgressOnlyInternetGatewayErrorHandler.deletion_error_handler("delete egress only internet gateway")
+@AWSRetry.jittered_backoff()
+def delete_egress_only_internet_gateway(client, egress_only_internet_gateway_id: str) -> bool:
+    return client.delete_egress_only_internet_gateway(EgressOnlyInternetGatewayId=egress_only_internet_gateway_id)[
+        "ReturnCode"
+    ]
+
+
+@EC2EgressOnlyInternetGatewayErrorHandler.common_error_handler("create egress only internet gateway")
+@AWSRetry.jittered_backoff()
+def create_egress_only_internet_gateway(
+    client, vpc_id: str, tags: Optional[EC2TagSpecifications] = None
+) -> Dict[str, Any]:
+    params = {"VpcId": vpc_id}
+    if tags:
+        params["TagSpecifications"] = boto3_tag_specifications(tags, types="egress-only-internet-gateway")
+    return client.create_egress_only_internet_gateway(**params)
+
+
+# EC2 Network ACL
+class EC2NetworkAclErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleEC2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code("")
+
+
+@EC2NetworkAclErrorHandler.list_error_handler("describe network acls", [])
+@AWSRetry.jittered_backoff()
+def describe_network_acls(
+    client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
+    paginator = client.get_paginator("describe_network_acls")
+    return paginator.paginate(**params).build_full_result()["NetworkAcls"]
+
+
+@EC2NetworkAclErrorHandler.common_error_handler("create network acl")
+@AWSRetry.jittered_backoff()
+def create_network_acl(client, vpc_id: str, tags: Optional[EC2TagSpecifications] = None) -> Dict[str, Any]:
+    params = {"VpcId": vpc_id}
+    if tags:
+        params["TagSpecifications"] = boto3_tag_specifications(tags, types="network-acl")
+    return client.create_network_acl(**params)["NetworkAcl"]
+
+
+@EC2NetworkAclErrorHandler.common_error_handler("create network acl entry")
+@AWSRetry.jittered_backoff()
+def create_network_acl_entry(
+    client,
+    network_acl_id: str,
+    protocol: str,
+    egress: bool,
+    rule_action: str,
+    rule_number: int,
+    **params: Dict[str, Any],
+) -> bool:
+    args = {
+        "Egress": egress,
+        "NetworkAclId": network_acl_id,
+        "Protocol": protocol,
+        "RuleAction": rule_action,
+        "RuleNumber": rule_number,
+    }
+    if params:
+        args.update(params)
+    client.create_network_acl_entry(**args)
+    return True
+
+
+@EC2NetworkAclErrorHandler.deletion_error_handler("delete network acl")
+@AWSRetry.jittered_backoff()
+def delete_network_acl(client, network_acl_id: str) -> bool:
+    client.delete_network_acl(NetworkAclId=network_acl_id)
+    return True
+
+
+@EC2NetworkAclErrorHandler.deletion_error_handler("delete network acl entry")
+@AWSRetry.jittered_backoff()
+def delete_network_acl_entry(client, network_acl_id: str, rule_number: int, egress: bool) -> bool:
+    client.delete_network_acl_entry(NetworkAclId=network_acl_id, Egress=egress, RuleNumber=rule_number)
+    return True
+
+
+@EC2NetworkAclErrorHandler.common_error_handler("replace network acl entry")
+@AWSRetry.jittered_backoff()
+def replace_network_acl_entry(
+    client,
+    network_acl_id: str,
+    protocol: str,
+    egress: bool,
+    rule_action: str,
+    rule_number: int,
+    **params: Dict[str, Any],
+) -> Dict[str, Any]:
+    args = {
+        "Egress": egress,
+        "NetworkAclId": network_acl_id,
+        "Protocol": protocol,
+        "RuleAction": rule_action,
+        "RuleNumber": rule_number,
+    }
+    if params:
+        args.update(params)
+    return client.replace_network_acl_entry(**args)
+
+
+@EC2NetworkAclErrorHandler.common_error_handler("replace network acl association")
+@AWSRetry.jittered_backoff()
+def replace_network_acl_association(client, network_acl_id: str, association_id: str) -> str:
+    return client.replace_network_acl_association(NetworkAclId=network_acl_id, AssociationId=association_id)[
+        "NewAssociationId"
+    ]
+
+
 def get_ec2_security_group_ids_from_names(sec_group_list, ec2_connection, vpc_id=None, boto3=None):
     """Return list of security group IDs from security group names. Note that security group names are not unique
     across VPCs.  If a name exists across multiple VPCs and no VPC ID is supplied, all matching IDs will be returned. This
