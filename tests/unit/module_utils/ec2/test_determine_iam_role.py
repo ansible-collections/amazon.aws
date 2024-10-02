@@ -10,7 +10,7 @@ from unittest.mock import sentinel
 import pytest
 
 import ansible_collections.amazon.aws.plugins.module_utils.arn as utils_arn
-import ansible_collections.amazon.aws.plugins.modules.ec2_instance as ec2_instance_module
+import ansible_collections.amazon.aws.plugins.module_utils.ec2 as ec2_utils
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOTO3
 
 try:
@@ -40,8 +40,8 @@ class FailJsonException(Exception):
 
 @pytest.fixture
 def ec2_instance(monkeypatch):
-    monkeypatch.setattr(ec2_instance_module, "validate_aws_arn", lambda arn, service, resource_type: None)
-    return ec2_instance_module
+    monkeypatch.setattr(ec2_utils, "validate_aws_arn", lambda arn, service, resource_type: None)
+    return ec2_utils
 
 
 @pytest.fixture
@@ -57,7 +57,7 @@ def test_determine_iam_role_arn(ec2_instance, ansible_module, monkeypatch):
     monkeypatch.setattr(ec2_instance, "validate_aws_arn", utils_arn.validate_aws_arn)
 
     # Simplest example, someone passes a valid instance profile ARN
-    arn = ec2_instance.determine_iam_role(ansible_module, "arn:aws:iam::123456789012:instance-profile/myprofile")
+    arn = ec2_instance.determine_iam_arn_from_name(ansible_module, "arn:aws:iam::123456789012:instance-profile/myprofile")
     assert arn == "arn:aws:iam::123456789012:instance-profile/myprofile"
 
 
@@ -66,7 +66,7 @@ def test_determine_iam_role_name(ec2_instance, ansible_module):
     iam_client = MagicMock(**{"get_instance_profile.return_value": profile_description})
     ansible_module.client.return_value = iam_client
 
-    arn = ec2_instance.determine_iam_role(ansible_module, sentinel.IAM_PROFILE_NAME)
+    arn = ec2_instance.determine_iam_arn_from_name(ansible_module, sentinel.IAM_PROFILE_NAME)
     assert arn == sentinel.IAM_PROFILE_ARN
 
 
@@ -76,7 +76,7 @@ def test_determine_iam_role_missing(ec2_instance, ansible_module):
     ansible_module.client.return_value = iam_client
 
     with pytest.raises(FailJsonException):
-        ec2_instance.determine_iam_role(ansible_module, sentinel.IAM_PROFILE_NAME)
+        ec2_instance.determine_iam_arn_from_name(ansible_module, sentinel.IAM_PROFILE_NAME)
 
     assert ansible_module.fail_json_aws.call_count == 1
     assert ansible_module.fail_json_aws.call_args.args[0] is missing_exception
@@ -90,7 +90,7 @@ def test_determine_iam_role_missing(ec2_instance, ansible_module):
     ansible_module.client.return_value = iam_client
 
     with pytest.raises(FailJsonException):
-        ec2_instance.determine_iam_role(ansible_module, sentinel.IAM_PROFILE_NAME)
+        ec2_instance.determine_iam_arn_from_name(ansible_module, sentinel.IAM_PROFILE_NAME)
 
     assert ansible_module.fail_json_aws.call_count == 1
     assert ansible_module.fail_json_aws.call_args.args[0] is missing_exception
