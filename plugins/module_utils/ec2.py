@@ -1156,6 +1156,7 @@ def authorize_security_group_egress(client, **params: Dict[str, Any]) -> bool:
 
 # EC2 Egress only internet Gateway
 class EC2EgressOnlyInternetGatewayErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleEC2Error
 
     @classmethod
     def _is_missing(cls):
