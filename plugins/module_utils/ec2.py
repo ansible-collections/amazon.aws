@@ -58,6 +58,7 @@ from ansible.module_utils.six import string_types
 
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.arn
 from .arn import is_outpost_arn as is_outposts_arn  # pylint: disable=unused-import
+from .arn import validate_aws_arn
 
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.botocore
 from .botocore import HAS_BOTO3  # pylint: disable=unused-import
@@ -1155,7 +1156,6 @@ def authorize_security_group_egress(client, **params: Dict[str, Any]) -> bool:
 
 # EC2 Egress only internet Gateway
 class EC2EgressOnlyInternetGatewayErrorHandler(AWSErrorHandler):
-    _CUSTOM_EXCEPTION = AnsibleEC2Error
 
     @classmethod
     def _is_missing(cls):
@@ -1284,6 +1284,99 @@ def replace_network_acl_association(client, network_acl_id: str, association_id:
     return client.replace_network_acl_association(NetworkAclId=network_acl_id, AssociationId=association_id)[
         "NewAssociationId"
     ]
+
+
+# EC2 Launch template
+class EC2LaunchTemplateErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleEC2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code(["InvalidLaunchTemplateName.NotFoundException", "InvalidLaunchTemplateId.NotFound"])
+
+
+@EC2LaunchTemplateErrorHandler.list_error_handler("describe launch templates", [])
+@AWSRetry.jittered_backoff()
+def describe_launch_templates(
+    client,
+    launch_template_ids: Optional[List[str]] = None,
+    launch_template_names: Optional[List[str]] = None,
+    filters: Optional[List[Dict[str, List[str]]]] = None,
+) -> List[Dict[str, Any]]:
+    params = {}
+    if launch_template_ids:
+        params["LaunchTemplateIds"] = launch_template_ids
+    if launch_template_names:
+        params["LaunchTemplateNames"] = launch_template_names
+    if filters:
+        params["Filters"] = filters
+    paginator = client.get_paginator("describe_launch_templates")
+    return paginator.paginate(**params).build_full_result()["LaunchTemplates"]
+
+
+@EC2LaunchTemplateErrorHandler.common_error_handler("describe launch template versions")
+@AWSRetry.jittered_backoff()
+def describe_launch_template_versions(client, **params: Dict[str, Any]) -> List[Dict[str, Any]]:
+    paginator = client.get_paginator("describe_launch_template_versions")
+    return paginator.paginate(**params).build_full_result()["LaunchTemplateVersions"]
+
+
+@EC2LaunchTemplateErrorHandler.common_error_handler("delete launch template versions")
+@AWSRetry.jittered_backoff()
+def delete_launch_template_versions(
+    client, versions: List[str], launch_template_id: Optional[str] = None, launch_template_name: Optional[str] = None
+) -> Dict[str, Any]:
+    params = {"Versions": versions}
+    if launch_template_id:
+        params["LaunchTemplateId"] = launch_template_id
+    if launch_template_name:
+        params["LaunchTemplateName"] = launch_template_name
+    return client.delete_launch_template_versions(**params)
+
+
+@EC2LaunchTemplateErrorHandler.common_error_handler("delete launch template")
+@AWSRetry.jittered_backoff()
+def delete_launch_template(
+    client, launch_template_id: Optional[str] = None, launch_template_name: Optional[str] = None
+) -> Dict[str, Any]:
+    params = {}
+    if launch_template_id:
+        params["LaunchTemplateId"] = launch_template_id
+    if launch_template_name:
+        params["LaunchTemplateName"] = launch_template_name
+    return client.delete_launch_template(**params)["LaunchTemplate"]
+
+
+@EC2LaunchTemplateErrorHandler.common_error_handler("create launch template")
+@AWSRetry.jittered_backoff()
+def create_launch_template(
+    client,
+    launch_template_name: str,
+    launch_template_data: Dict[str, Any],
+    tags: Optional[EC2TagSpecifications] = None,
+    **kwargs: Dict[str, Any],
+) -> Dict[str, Any]:
+    params = {"LaunchTemplateName": launch_template_name, "LaunchTemplateData": launch_template_data}
+    if tags:
+        params["TagSpecifications"] = boto3_tag_specifications(tags, types="launch-template")
+    params.update(kwargs)
+    return client.create_launch_template(**params)["LaunchTemplate"]
+
+
+@EC2LaunchTemplateErrorHandler.common_error_handler("create launch template version")
+@AWSRetry.jittered_backoff()
+def create_launch_template_version(
+    client, launch_template_data: Dict[str, Any], **params: Dict[str, Any]
+) -> Dict[str, Any]:
+    return client.create_launch_template_version(LaunchTemplateData=launch_template_data, **params)[
+        "LaunchTemplateVersion"
+    ]
+
+
+@EC2LaunchTemplateErrorHandler.common_error_handler("modify launch template")
+@AWSRetry.jittered_backoff()
+def modify_launch_template(client, **params: Dict[str, Any]) -> Dict[str, Any]:
+    return client.modify_launch_template(**params)["LaunchTemplate"]
 
 
 def get_ec2_security_group_ids_from_names(sec_group_list, ec2_connection, vpc_id=None, boto3=None):
@@ -1507,3 +1600,21 @@ def normalize_ec2_vpc_dhcp_config(option_config: List[Dict[str, Any]]) -> Dict[s
                 config_data[option] = [val["Value"] for val in config_item["Values"]]
 
     return config_data
+
+
+def determine_iam_arn_from_name(module, name_or_arn: str) -> str:
+    if validate_aws_arn(name_or_arn, service="iam", resource_type="instance-profile"):
+        return name_or_arn
+    iam = module.client("iam", retry_decorator=AWSRetry.jittered_backoff())
+    try:
+        return iam.get_instance_profile(InstanceProfileName=name_or_arn, aws_retry=True)["InstanceProfile"]["Arn"]
+    except is_boto3_error_code("NoSuchEntity") as e:
+        module.fail_json_aws(e, msg=f"Could not find IAM instance profile {name_or_arn}")
+    except (
+        botocore.exceptions.ClientError,
+        botocore.exceptions.BotoCoreError,
+    ) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(
+            e,
+            msg=f"An error occurred while searching for IAM instance profile {name_or_arn}. Please try supplying the full ARN.",
+        )
