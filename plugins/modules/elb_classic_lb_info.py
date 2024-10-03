@@ -8,6 +8,7 @@ DOCUMENTATION = r"""
 ---
 module: elb_classic_lb_info
 version_added: 1.0.0
+version_added_collection: community.aws
 short_description: Gather information about EC2 Classic Elastic Load Balancers in AWS
 description:
   - Gather information about EC2 Classic Elastic Load Balancers in AWS.
@@ -35,17 +36,10 @@ EXAMPLES = r"""
   amazon.aws.elb_classic_lb_info:
   register: elb_info
 
-- ansible.builtin.debug:
-    msg: "{{ item.dns_name }}"
-  loop: "{{ elb_info.elbs }}"
-
 - name: Gather information about a particular ELB
   amazon.aws.elb_classic_lb_info:
     names: frontend-prod-elb
   register: elb_info
-
-- ansible.builtin.debug:
-    msg: "{{ elb_info.elbs.0.dns_name }}"
 
 - name: Gather information about a set of ELBs
   amazon.aws.elb_classic_lb_info:
@@ -53,10 +47,6 @@ EXAMPLES = r"""
       - frontend-prod-elb
       - backend-prod-elb
   register: elb_info
-
-- ansible.builtin.debug:
-    msg: "{{ item.dns_name }}"
-  loop: "{{ elb_info.elbs }}"
 """
 
 RETURN = r"""
