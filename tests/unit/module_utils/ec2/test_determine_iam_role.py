@@ -57,7 +57,9 @@ def test_determine_iam_role_arn(ec2_instance, ansible_module, monkeypatch):
     monkeypatch.setattr(ec2_instance, "validate_aws_arn", utils_arn.validate_aws_arn)
 
     # Simplest example, someone passes a valid instance profile ARN
-    arn = ec2_instance.determine_iam_arn_from_name(ansible_module, "arn:aws:iam::123456789012:instance-profile/myprofile")
+    arn = ec2_instance.determine_iam_arn_from_name(
+        ansible_module, "arn:aws:iam::123456789012:instance-profile/myprofile"
+    )
     assert arn == "arn:aws:iam::123456789012:instance-profile/myprofile"
 
 
