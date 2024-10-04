@@ -1,0 +1,134 @@
+---
+### Simple _info tests
+
+- name: List all instances
+  amazon.aws.autoscaling_instance_info:
+  register: instance_info
+
+- ansible.builtin.assert:
+    that:
+    - "'auto_scaling_instances' in instance_info"
+    - instance_info.auto_scaling_instances | length >= 2
+    - initial_instances[0] in listed_instance_ids
+    - initial_instances[1] in listed_instance_ids
+    - "'auto_scaling_group_name' in specific_instance_info"
+    - specific_instance_info.auto_scaling_group_name == default_resource_name
+    - "'availability_zone' in specific_instance_info"
+    - "'health_status' in specific_instance_info"
+    - specific_instance_info.health_status == "HEALTHY"
+    - "'instance_id' in specific_instance_info"
+    - specific_instance_info.instance_id == initial_instances[0]
+    - "'instance_type' in specific_instance_info"
+    - specific_instance_info.instance_type == "t3.micro"
+    - "'launch_template' in specific_instance_info"
+    - specific_instance_info.launch_template.launch_template_name.startswith(default_resource_name)
+    - "'lifecycle_state' in specific_instance_info"
+    - specific_instance_info.lifecycle_state == "InService"
+    - "'protected_from_scale_in' in specific_instance_info"
+    - specific_instance_info.protected_from_scale_in == False
+  vars:
+    listed_instance_ids: "{{ instance_info.auto_scaling_instances | map(attribute='instance_id') | list }}"
+    specific_instance_info: "{{ instance_info.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[0]) | first }}"
+
+- name: List all instances attached to a specific ASG
+  amazon.aws.autoscaling_instance_info:
+    group_name: "{{ default_resource_name }}"
+  register: instance_info
+
+- ansible.builtin.assert:
+    that:
+    - "'auto_scaling_instances' in instance_info"
+    - instance_info.auto_scaling_instances | length == 2
+    - initial_instances[0] in listed_instance_ids
+    - initial_instances[1] in listed_instance_ids
+    - "'auto_scaling_group_name' in instance_info.auto_scaling_instances[0]"
+    - "'availability_zone' in instance_info.auto_scaling_instances[0]"
+    - "'health_status' in instance_info.auto_scaling_instances[0]"
+    - "'instance_id' in instance_info.auto_scaling_instances[0]"
+    - "'instance_type' in instance_info.auto_scaling_instances[0]"
+    - "'launch_template' in instance_info.auto_scaling_instances[0]"
+    - "'lifecycle_state' in instance_info.auto_scaling_instances[0]"
+    - "'protected_from_scale_in' in instance_info.auto_scaling_instances[0]"
+    - "'auto_scaling_group_name' in instance_info.auto_scaling_instances[1]"
+    - "'availability_zone' in instance_info.auto_scaling_instances[1]"
+    - "'health_status' in instance_info.auto_scaling_instances[1]"
+    - "'instance_id' in instance_info.auto_scaling_instances[1]"
+    - "'instance_type' in instance_info.auto_scaling_instances[1]"
+    - "'launch_template' in instance_info.auto_scaling_instances[1]"
+    - "'lifecycle_state' in instance_info.auto_scaling_instances[1]"
+    - "'protected_from_scale_in' in instance_info.auto_scaling_instances[1]"
+    - specific_instance_info.auto_scaling_group_name == default_resource_name
+    - specific_instance_info.health_status == "HEALTHY"
+    - specific_instance_info.instance_id == initial_instances[0]
+    - specific_instance_info.instance_type == "t3.micro"
+    - specific_instance_info.launch_template.launch_template_name.startswith(default_resource_name)
+    - specific_instance_info.lifecycle_state == "InService"
+    - specific_instance_info.protected_from_scale_in == False
+  vars:
+    listed_instance_ids: "{{ instance_info.auto_scaling_instances | map(attribute='instance_id') | list }}"
+    specific_instance_info: "{{ instance_info.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[0]) | first }}"
+
+- amazon.aws.autoscaling_instance_info:
+    instance_ids: "{{ instance_info.auto_scaling_instances | map(attribute='instance_id') | list }}"
+  register: instance_info
+
+- ansible.builtin.assert:
+    that:
+    - "'auto_scaling_instances' in instance_info"
+    - instance_info.auto_scaling_instances | length == 2
+    - initial_instances[0] in listed_instance_ids
+    - initial_instances[1] in listed_instance_ids
+    - "'auto_scaling_group_name' in instance_info.auto_scaling_instances[0]"
+    - "'availability_zone' in instance_info.auto_scaling_instances[0]"
+    - "'health_status' in instance_info.auto_scaling_instances[0]"
+    - "'instance_id' in instance_info.auto_scaling_instances[0]"
+    - "'instance_type' in instance_info.auto_scaling_instances[0]"
+    - "'launch_template' in instance_info.auto_scaling_instances[0]"
+    - "'lifecycle_state' in instance_info.auto_scaling_instances[0]"
+    - "'protected_from_scale_in' in instance_info.auto_scaling_instances[0]"
+    - "'auto_scaling_group_name' in instance_info.auto_scaling_instances[1]"
+    - "'availability_zone' in instance_info.auto_scaling_instances[1]"
+    - "'health_status' in instance_info.auto_scaling_instances[1]"
+    - "'instance_id' in instance_info.auto_scaling_instances[1]"
+    - "'instance_type' in instance_info.auto_scaling_instances[1]"
+    - "'launch_template' in instance_info.auto_scaling_instances[1]"
+    - "'lifecycle_state' in instance_info.auto_scaling_instances[1]"
+    - "'protected_from_scale_in' in instance_info.auto_scaling_instances[1]"
+    - specific_instance_info.auto_scaling_group_name == default_resource_name
+    - specific_instance_info.health_status == "HEALTHY"
+    - specific_instance_info.instance_id == initial_instances[0]
+    - specific_instance_info.instance_type == "t3.micro"
+    - specific_instance_info.launch_template.launch_template_name.startswith(default_resource_name)
+    - specific_instance_info.lifecycle_state == "InService"
+    - specific_instance_info.protected_from_scale_in == False
+  vars:
+    listed_instance_ids: "{{ instance_info.auto_scaling_instances | map(attribute='instance_id') | list }}"
+    specific_instance_info: "{{ instance_info.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[0]) | first }}"
+
+- amazon.aws.autoscaling_instance_info:
+    instance_ids: "{{ initial_instances[0] }}"
+  register: instance_info
+
+- ansible.builtin.assert:
+    that:
+    - "'auto_scaling_instances' in instance_info"
+    - instance_info.auto_scaling_instances | length == 1
+    - initial_instances[0] in listed_instance_ids
+    - "'auto_scaling_group_name' in specific_instance_info"
+    - specific_instance_info.auto_scaling_group_name == default_resource_name
+    - "'availability_zone' in specific_instance_info"
+    - "'health_status' in specific_instance_info"
+    - specific_instance_info.health_status == "HEALTHY"
+    - "'instance_id' in specific_instance_info"
+    - specific_instance_info.instance_id == initial_instances[0]
+    - "'instance_type' in specific_instance_info"
+    - specific_instance_info.instance_type == "t3.micro"
+    - "'launch_template' in specific_instance_info"
+    - specific_instance_info.launch_template.launch_template_name.startswith(default_resource_name)
+    - "'lifecycle_state' in specific_instance_info"
+    - specific_instance_info.lifecycle_state == "InService"
+    - "'protected_from_scale_in' in specific_instance_info"
+    - specific_instance_info.protected_from_scale_in == False
+  vars:
+    listed_instance_ids: "{{ instance_info.auto_scaling_instances | map(attribute='instance_id') | list }}"
+    specific_instance_info: "{{ instance_info.auto_scaling_instances[0] }}"
