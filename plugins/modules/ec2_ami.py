@@ -784,7 +784,7 @@ class UpdateImage:
         if image["ImdsSupport"] == "v2.0":
             return False
 
-        imds_params = {"Attribute": "ImdsSupport", "ImdsSupport": "v2.0"}
+        imds_params = {"Attribute": "ImdsSupport", "ImdsSupport": {"Value": "v2.0"}}
         try:
             modify_image_attribute(connection, image_id=image["imageId"], **imds_params)
             return True
@@ -872,7 +872,7 @@ class CreateImage:
 
     @staticmethod
     def set_imdsv2(connection, image_id):
-        imds_params = {"Attribute": "ImdsSupport", "ImdsSupport": "v2.0"}
+        imds_params = {"Attribute": "ImdsSupport", "ImdsSupport": {"Value": "v2.0"}}
         try:
             modify_image_attribute(connection, image_id=image_id, **imds_params)
         except AnsibleEC2Error as e:
