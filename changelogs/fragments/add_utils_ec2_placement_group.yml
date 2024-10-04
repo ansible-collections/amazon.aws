@@ -1,0 +1,2 @@
+minor_changes:
+  - module_utils/ec2 - add utils for the ec2_placement_group* modules.
