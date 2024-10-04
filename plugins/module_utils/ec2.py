@@ -1294,10 +1294,13 @@ class EC2PlacementGroupErrorHandler(AWSErrorHandler):
     def _is_missing(cls):
         return is_boto3_error_code("InvalidPlacementGroup.Unknown")
 
+    @classmethod
+    def _is_dry_run(cls):
+        return is_boto3_error_code("DryRunOperation")
 
 @EC2PlacementGroupErrorHandler.list_error_handler("describe placement group", [])
 @AWSRetry.jittered_backoff()
-def describe_placement_groups(
+def describe_ec2_placement_groups(
     client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
 ) -> List[Dict[str, Any]]:
     return client.describe_placement_groups(**params)["PlacementGroups"]
@@ -1305,18 +1308,15 @@ def describe_placement_groups(
 
 @EC2PlacementGroupErrorHandler.deletion_error_handler("delete placement group")
 @AWSRetry.jittered_backoff()
-def delete_placement_group(client, group_name: Optional[str] = None) -> bool:
-    params = {}
-    if group_name:
-        params["GroupName"] = group_name
-    client.delete_placement_group(**params)
+def delete_ec2_placement_group(client, group_name: Optional[str] = None, dry_run: Optional[bool] = False) -> bool:
+    client.delete_placement_group(GroupName=group_name, DryRun=dry_run)
     return True
 
 
 @EC2PlacementGroupErrorHandler.common_error_handler("create placement group")
 @AWSRetry.jittered_backoff()
-def create_placement_group(client, **params: Dict[str, Union[str, EC2TagSpecifications]]) -> Dict[str, Any]:
-    return client.create_placement_group(**params)["PlacementGroups"]
+def create_ec2_placement_group(client, **params: Dict[str, Union[str, EC2TagSpecifications]]) -> Dict[str, Any]:
+    return client.create_placement_group(**params)["PlacementGroup"]
 
 
 def get_ec2_security_group_ids_from_names(sec_group_list, ec2_connection, vpc_id=None, boto3=None):
