@@ -1292,7 +1292,7 @@ class EC2PlacementGroupErrorHandler(AWSErrorHandler):
 
     @classmethod
     def _is_missing(cls):
-        return is_boto3_error_code("InvalidGroup.NotFound")
+        return is_boto3_error_code("InvalidPlacementGroup.Unknown")
 
 
 @EC2PlacementGroupErrorHandler.list_error_handler("describe placement group", [])
@@ -1316,7 +1316,7 @@ def delete_placement_group(client, group_name: Optional[str] = None) -> bool:
 @EC2PlacementGroupErrorHandler.common_error_handler("create placement group")
 @AWSRetry.jittered_backoff()
 def create_placement_group(client, **params: Dict[str, Union[str, EC2TagSpecifications]]) -> Dict[str, Any]:
-    return client.create_placement_group(**params)
+    return client.create_placement_group(**params)["PlacementGroups"]
 
 
 def get_ec2_security_group_ids_from_names(sec_group_list, ec2_connection, vpc_id=None, boto3=None):
