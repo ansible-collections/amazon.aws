@@ -1308,7 +1308,7 @@ def describe_ec2_placement_groups(
 
 @EC2PlacementGroupErrorHandler.deletion_error_handler("delete placement group")
 @AWSRetry.jittered_backoff()
-def delete_ec2_placement_group(client, group_name: Optional[str] = None, dry_run: Optional[bool] = False) -> bool:
+def delete_ec2_placement_group(client, group_name: str, dry_run: Optional[bool] = False) -> bool:
     client.delete_placement_group(GroupName=group_name, DryRun=dry_run)
     return True
 
