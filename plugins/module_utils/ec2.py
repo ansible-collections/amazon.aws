@@ -369,14 +369,14 @@ class EC2VpnErrorHandler(AWSErrorHandler):
 
     @classmethod
     def _is_missing(cls):
-        return is_boto3_error_code("InvalidVpnConnectionID.NotFound")
+        return is_boto3_error_code(["InvalidVpnConnectionID.NotFound", "InvalidRoute.NotFound"])
 
 
 @EC2VpcErrorHandler.list_error_handler("describe vpn connections", [])
 @AWSRetry.jittered_backoff()
 def describe_vpn_connections(client, **params: Dict[str, Any]) -> List[Dict[str, Any]]:
     # The paginator does not exist for `describe_vpn_connections`
-    return client.describe_vpn_connections(**params)
+    return client.describe_vpn_connections(**params)["VpnConnections"]
 
 
 @EC2VpcErrorHandler.common_error_handler("create vpn connection route")
@@ -386,7 +386,7 @@ def create_vpn_connection_route(client, vpn_connection_id: str, route: Dict[str,
     return True
 
 
-@EC2VpcErrorHandler.common_error_handler("delete vpn connection route")
+@EC2VpcErrorHandler.deletion_error_handler("delete vpn connection route")
 @AWSRetry.jittered_backoff()
 def delete_vpn_connection_route(client, vpn_connection_id: str, route: Dict[str, Any]) -> bool:
     client.delete_vpn_connection_route(VpnConnectionId=vpn_connection_id, DestinationCidrBlock=route)
@@ -396,13 +396,14 @@ def delete_vpn_connection_route(client, vpn_connection_id: str, route: Dict[str,
 @EC2VpcErrorHandler.common_error_handler("create vpn connection")
 @AWSRetry.jittered_backoff()
 def create_vpn_connection(client, **params: Dict[str, Any]) -> Dict[str, Any]:
-    return client.create_vpn_connection(**params)
+    return client.create_vpn_connection(**params)["VpnConnection"]
 
 
-@EC2VpcErrorHandler.common_error_handler("delete vpn connection")
+@EC2VpcErrorHandler.deletion_error_handler("delete vpn connection")
 @AWSRetry.jittered_backoff()
 def delete_vpn_connection(client, vpn_connection_id: str) -> Dict[str, Any]:
-    return client.delete_vpn_connection(VpnConnectionId=vpn_connection_id)
+    client.delete_vpn_connection(VpnConnectionId=vpn_connection_id)
+    return True
 
 
 # EC2 Internet Gateway
