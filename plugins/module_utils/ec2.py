@@ -1327,12 +1327,21 @@ def describe_launch_template_versions(client, **params: Dict[str, Any]) -> List[
 def delete_launch_template_versions(
     client, versions: List[str], launch_template_id: Optional[str] = None, launch_template_name: Optional[str] = None
 ) -> Dict[str, Any]:
-    params = {"Versions": versions}
+    params = {}
     if launch_template_id:
         params["LaunchTemplateId"] = launch_template_id
     if launch_template_name:
         params["LaunchTemplateName"] = launch_template_name
-    return client.delete_launch_template_versions(**params)
+    response = {
+        "UnsuccessfullyDeletedLaunchTemplateVersions": [],
+        "SuccessfullyDeletedLaunchTemplateVersions": [],
+    }
+    # Using this API, You can specify up to 200 launch template version numbers.
+    for i in range(0, len(versions), 200):
+        result = client.delete_launch_template_versions(Versions=list(versions[i : i + 200]), **params)
+        for x in ("SuccessfullyDeletedLaunchTemplateVersions", "UnsuccessfullyDeletedLaunchTemplateVersions"):
+            response[x] += result.get(x, [])
+    return response
 
 
 @EC2LaunchTemplateErrorHandler.common_error_handler("delete launch template")
