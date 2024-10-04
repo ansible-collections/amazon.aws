@@ -1452,7 +1452,7 @@ def modify_vpc_attachment(
     return result.get("TransitGatewayVpcAttachment", None)
 
 
-@EC2TransitGatewayVPCAttachmentErrorHandler.common_error_handler("delete transit gateway vpc attachment")
+@EC2TransitGatewayVPCAttachmentErrorHandler.deletion_error_handler("delete transit gateway vpc attachment")
 @AWSRetry.jittered_backoff()
 def delete_vpc_attachment(
     client, **params: Dict[str, Union[List[str], bool, List[Dict[str, Union[str, List[str]]]]]]
