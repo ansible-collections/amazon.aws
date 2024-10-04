@@ -93,13 +93,6 @@ options:
     elements: dict
     default: []
     version_added: 1.5.0
-  include_extra_api_calls:
-    description:
-      - Add two additional API calls for every instance to include 'persistent' and 'events' host variables.
-      - Spot instances may be persistent and instances may have associated events.
-      - The I(include_extra_api_calls) option had been deprecated and will be removed in release 6.0.0.
-    type: bool
-    default: False
   strict_permissions:
     description:
       - By default if a 403 (Forbidden) error code is encountered this plugin will fail.
@@ -802,13 +795,6 @@ class InventoryModule(AWSInventoryBase):
 
         if not all(isinstance(element, (dict, str)) for element in hostnames):
             self.fail_aws("Hostnames should be a list of dict and str.")
-
-        if self.get_option("include_extra_api_calls"):
-            self.display.deprecate(
-                "The include_extra_api_calls option has been deprecated and will be removed in release 9.0.0.",
-                version="9.0.0",
-                collection_name="amazon.aws",
-            )
 
         result_was_cached, results = self.get_cached_result(path, cache)
 

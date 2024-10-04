@@ -107,12 +107,6 @@ role_name:
     returned: When I(iam_type=role)
     type: str
     sample: "ExampleRole001"
-policies:
-    description: A list of names of the inline policies embedded in the specified IAM resource (user, group, or role).
-    returned: always
-    type: list
-    elements: str
-    sample: ["READ-ONLY"]
 policy_names:
     description: A list of names of the inline policies embedded in the specified IAM resource (user, group, or role).
     returned: always
@@ -293,7 +287,6 @@ class Policy:
         return {
             "changed": self.changed,
             self._iam_type() + "_name": self.name,
-            "policies": self.list(),
             "policy_names": self.list(),
             "diff": dict(
                 before=self.original_policies,
@@ -395,15 +388,6 @@ def main():
             policy = RolePolicy(**args)
         elif iam_type == "group":
             policy = GroupPolicy(**args)
-
-        module.deprecate(
-            (
-                "The 'policies' return key is deprecated and will be replaced by 'policy_names'. Both values are"
-                " returned for now."
-            ),
-            version="9.0.0",
-            collection_name="amazon.aws",
-        )
 
         module.exit_json(**(policy.run()))
     except (BotoCoreError, ClientError) as e:
