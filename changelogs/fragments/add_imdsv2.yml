@@ -1,4 +1,4 @@
 ---
 minor_changes:
-  - ec2_ami - adds ``imdsv2_enable`` parameter to enable IMDSv2 when creating/updating an image.
-  - ec2_ami_info - add ``imdsv2_enable`` return when ``describe_image_attributes`` is set.
+  - ec2_ami - adds ``imdsv2_enable`` parameter to enable IMDSv2 when creating/updating an image (https://github.com/ansible-collections/amazon.aws/pull/2310).
+  - ec2_ami_info - add ``imdsv2_enable`` return when ``describe_image_attributes`` is set (https://github.com/ansible-collections/amazon.aws/pull/2310).
