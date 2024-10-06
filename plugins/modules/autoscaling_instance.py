@@ -70,6 +70,7 @@ options:
       - Ignored unless O(health) is set.
       - AWS defaults to respecting the grace period when modifying the health state of an instance.
     type: bool
+    default: True
   protection:
     description:
       - Sets the scale-in protection attribute.
@@ -172,6 +173,7 @@ if typing.TYPE_CHECKING:
     from typing import Any
     from typing import Dict
     from typing import List
+    from typing import Optional
     from typing import Set
     from typing import Tuple
 
@@ -179,21 +181,36 @@ if typing.TYPE_CHECKING:
     from ansible_collections.amazon.aws.plugins.module_utils.transformations import AnsibleAWSResourceList
 
 
+# There's also a number of "Warmed" states that we could support with relatively minimal effort, but
+# we can't test them
 STATE_MAP = {
-    "terminating": ["Terminating", "Terminating:Wait", "Terminating:Proceed"],
-    "terminating+": ["Terminating", "Terminating:Wait", "Terminating:Proceed", "Terminated"],
-    "detaching": ["Detaching"],
-    "detaching+": ["Detaching", "Detached"],
     "pending": ["Pending", "Pending:Proceed", "Pending:Wait"],
+    "stable": ["InService", "Standby"],
     "entering": ["EnteringStandby"],
     "entering+": ["EnteringStandby", "Standby"],
-    "stable": ["InService", "Standby"],
+    "detaching": ["Detaching"],
+    "detaching+": ["Detaching", "Detached"],
+    "terminating": ["Terminating", "Terminating:Wait", "Terminating:Proceed"],
+    "terminating+": ["Terminating", "Terminating:Wait", "Terminating:Proceed", "Terminated"],
 }
+
+
+def _all_instance_ids(instances: List) -> Set[str]:
+    return {i.get("instance_id") for i in instances}
 
 
 def _instance_ids_in_states(instances: List, states: List[str]) -> Set[str]:
     states = [s.lower() for s in states]
     return {i.get("instance_id") for i in instances if i.get("lifecycle_state", "").lower() in states}
+
+
+def _token_instance(instance_id, group_name):
+    # Returns the minimum information we need for a new instance when adding a new node in check mode
+    return dict(
+        instance_id=instance_id,
+        auto_scaling_group_name=group_name,
+        health_status="Healthy",
+    )
 
 
 @AutoScalingErrorHandler.common_error_handler("detach auto scaling instances from group")
@@ -250,15 +267,6 @@ def _leave_standby(client: RetryingBotoClientWrapper, instance_ids: Set[str], gr
     )
 
 
-def _token_instance(instance_id, group_name):
-    # Returns the minimum information we need for a new instance when adding a new node in check mode
-    return dict(
-        instance_id=instance_id,
-        auto_scaling_group_name=group_name,
-        health_status="Healthy",
-    )
-
-
 def wait_instance_state(
     client: RetryingBotoClientWrapper,
     state: str,
@@ -302,10 +310,11 @@ def _inject_instances(instances, group_name, missing_ids):
     return instances
 
 
-def _changed_instances(instances, group_name, final_state, changed_ids):
+def _change_instances(instances, group_name, change_ids, state=None, health=None, protection=None):
     for instance in instances:
-        if instance.get("instance_id") in changed_ids:
-            instance["lifecycle_state"] = final_state
+        if instance.get("instance_id") in change_ids:
+            if state:
+                instance["lifecycle_state"] = state
     return instances
 
 
@@ -333,21 +342,21 @@ def ensure_instance_terminated(
 
     if check_mode:
         change_ids = detaching_ids | pending_ids | entering_ids | ready_ids | terminating_ids
-        instances_changed = _changed_instances(deepcopy(instances_start), group_name, "Terminated", change_ids)
+        instances_changed = _change_instances(deepcopy(instances_start), group_name, change_ids, state="Terminated")
         return bool(change_ids - terminating_ids), instances_changed
 
-    # We have to wait for instances to transition to their stable states
+    # We have to wait for instances to transition to their stable states before changing them
     if entering_ids:
-        wait_instance_state(client, "Standby", check_mode, group_name, entering_ids, True, wait_timeout)
+        wait_instance_state(client, "Standby", check_mode, group_name, entering_ids, wait, wait_timeout)
     if pending_ids:
-        wait_instance_state(client, "InService", check_mode, group_name, pending_ids, True, wait_timeout)
+        wait_instance_state(client, "InService", check_mode, group_name, pending_ids, wait, wait_timeout)
     ready_ids |= entering_ids | pending_ids
 
     if ready_ids:
         _terminate_instances(client, ready_ids, group_name, decrement_desired_capacity)
 
     terminating_ids |= ready_ids
-    wait_instance_state(client, "Terminated", check_mode, group_name, terminating_ids, True, wait_timeout)
+    wait_instance_state(client, "Terminated", check_mode, group_name, terminating_ids, wait, wait_timeout)
 
     instances_complete = get_autoscaling_instances(client, group_name=group_name)
     return bool(ready_ids), instances_complete
@@ -380,14 +389,14 @@ def ensure_instance_absent(
 
     if check_mode:
         change_ids = pending_ids | entering_ids | ready_ids | detaching_ids
-        instances_changed = _changed_instances(deepcopy(instances_start), group_name, "Detached", change_ids)
+        instances_changed = _change_instances(deepcopy(instances_start), group_name, change_ids, state="Detached")
         return bool(change_ids - detaching_ids), instances_changed
 
-    # We have to wait for instances to transition to their stable state
+    # We have to wait for instances to transition to their stable state before changing them
     if entering_ids:
-        wait_instance_state(client, "Standby", check_mode, group_name, entering_ids, True, wait_timeout)
+        wait_instance_state(client, "Standby", check_mode, group_name, entering_ids, wait, wait_timeout)
     if pending_ids:
-        wait_instance_state(client, "InService", check_mode, group_name, pending_ids, True, wait_timeout)
+        wait_instance_state(client, "InService", check_mode, group_name, pending_ids, wait, wait_timeout)
 
     ready_ids |= entering_ids | pending_ids
     if ready_ids:
@@ -395,9 +404,9 @@ def ensure_instance_absent(
     detaching_ids |= ready_ids
 
     if terminating_ids:
-        wait_instance_state(client, "Terminated", check_mode, group_name, terminating_ids, True, wait_timeout)
+        wait_instance_state(client, "Terminated", check_mode, group_name, terminating_ids, wait, wait_timeout)
     if detaching_ids:
-        wait_instance_state(client, "Detached", check_mode, group_name, detaching_ids, True, wait_timeout)
+        wait_instance_state(client, "Detached", check_mode, group_name, detaching_ids, wait, wait_timeout)
 
     instances_complete = get_autoscaling_instances(client, group_name=group_name)
     return bool(ready_ids), instances_complete
@@ -415,12 +424,12 @@ def ensure_instance_attached(
     wait_timeout: int,
 ) -> Tuple[bool, AnsibleAWSResourceList]:
     instance_ids = set(instance_ids)
-    all_ids = {i.get("instance_id") for i in instances_start}
+    all_ids = _all_instance_ids(instances_start)
 
     # These instances need to be attached
     missing_ids = instance_ids - all_ids
     missing_ids |= _instance_ids_in_states(instances_start, ["Detached"]) & instance_ids
-    detaching_ids = _instance_ids_in_states(instances_start, ["Detaching"]) & instance_ids
+    detaching_ids = _instance_ids_in_states(instances_start, STATE_MAP["detaching"]) & instance_ids
     pending_ids = _instance_ids_in_states(instances_start, STATE_MAP["pending"]) & instance_ids
     terminating_ids = _instance_ids_in_states(instances_start, STATE_MAP["terminating+"]) & instance_ids
     # Ids that need to be removed
@@ -429,13 +438,13 @@ def ensure_instance_attached(
     if check_mode:
         instances_changed = _inject_instances(deepcopy(instances_start), group_name, missing_ids)
         missing_ids |= detaching_ids
-        instances_changed = _changed_instances(instances_changed, group_name, "InService", missing_ids)
-        instances_changed = _changed_instances(instances_changed, group_name, "Terminated", purge_ids)
+        instances_changed = _change_instances(instances_changed, group_name, missing_ids, state="InService")
+        instances_changed = _change_instances(instances_changed, group_name, purge_ids, state="Terminated")
         return bool(missing_ids | purge_ids), instances_changed
 
     if detaching_ids:
         # We have to wait for instances to transition to Detached before we can re-attach them
-        wait_instance_state(client, "Detached", check_mode, group_name, detaching_ids, True, wait_timeout)
+        wait_instance_state(client, "Detached", check_mode, group_name, detaching_ids, wait, wait_timeout)
     missing_ids |= detaching_ids
 
     if missing_ids:
@@ -443,7 +452,7 @@ def ensure_instance_attached(
     pending_ids |= missing_ids
 
     # This includes potentially waiting for instances which were Pending when we started
-    wait_instance_state(client, "InService", check_mode, group_name, pending_ids, True, wait_timeout)
+    wait_instance_state(client, "InService", check_mode, group_name, pending_ids, wait, wait_timeout)
 
     # While, in theory, we could make the ordering of Add/Remove configurable, the logic becomes
     # difficult to test.  As such we're going to hard code the order of operations.
@@ -452,7 +461,7 @@ def ensure_instance_attached(
     if purge_ids:
         _terminate_instances(client, purge_ids, group_name, decrement_desired_capacity)
         terminating_ids |= purge_ids
-        wait_instance_state(client, "Terminated", check_mode, group_name, terminating_ids, True, wait_timeout)
+        wait_instance_state(client, "Terminated", check_mode, group_name, terminating_ids, wait, wait_timeout)
 
     instances_complete = get_autoscaling_instances(client, group_name=group_name)
     return bool(purge_ids | missing_ids), instances_complete
@@ -470,13 +479,13 @@ def ensure_instance_present(
     wait_timeout: int,
 ) -> Tuple[bool, AnsibleAWSResourceList]:
     instance_ids = set(instance_ids)
-    all_ids = {i.get("instance_id") for i in instances_start}
+    all_ids = _all_instance_ids(instances_start)
 
     # We just need to wait for these
     pending_ids = _instance_ids_in_states(instances_start, STATE_MAP["pending"]) & instance_ids
     # We need to wait for these before we can attach/re-activate them
     detaching_ids = _instance_ids_in_states(instances_start, STATE_MAP["detaching+"]) & instance_ids
-    entering_ids = _instance_ids_in_states(instances_start, ["EnteringStandby"]) & instance_ids
+    entering_ids = _instance_ids_in_states(instances_start, STATE_MAP["entering"]) & instance_ids
     # These instances need to be brought out of standby
     standby_ids = _instance_ids_in_states(instances_start, ["Standby"]) & instance_ids
     # These instances need to be attached
@@ -488,13 +497,14 @@ def ensure_instance_present(
     if check_mode:
         change_ids = detaching_ids | entering_ids | standby_ids | missing_ids
         instances_changed = _inject_instances(deepcopy(instances_start), group_name, missing_ids)
-        instances_changed = _changed_instances(instances_changed, group_name, "InService", change_ids | pending_ids)
-        instances_changed = _changed_instances(instances_changed, group_name, "Terminated", purge_ids)
+        instances_changed = _change_instances(
+            instances_changed, group_name, change_ids | pending_ids, state="InService"
+        )
+        instances_changed = _change_instances(instances_changed, group_name, purge_ids, state="Terminated")
         return bool(change_ids | purge_ids), instances_changed
 
     if detaching_ids:
-        # We have to wait for instances to transition to Detached before we can re-attach them
-        wait_instance_state(client, "Detached", check_mode, group_name, detaching_ids, True, wait_timeout)
+        wait_instance_state(client, "Detached", check_mode, group_name, detaching_ids, wait, wait_timeout)
     missing_ids |= detaching_ids - purge_ids
     # They've left the ASG of their own accord, we'll leave them be...
     purge_ids = purge_ids - detaching_ids
@@ -503,15 +513,14 @@ def ensure_instance_present(
         _attach_instances(client, missing_ids, group_name)
 
     if entering_ids:
-        # We have to wait for instances to transition to Standby before we can tell them to leave standby
-        wait_instance_state(client, "Standby", check_mode, group_name, entering_ids, True, wait_timeout)
+        wait_instance_state(client, "Standby", check_mode, group_name, entering_ids, wait, wait_timeout)
     standby_ids |= entering_ids - purge_ids
 
     if standby_ids:
         _leave_standby(client, standby_ids, group_name)
 
     # This includes potentially waiting for instances which were Pending when we started
-    wait_instance_state(client, "InService", check_mode, group_name, instance_ids, True, wait_timeout)
+    wait_instance_state(client, "InService", check_mode, group_name, instance_ids, wait, wait_timeout)
 
     # While, in theory, we could make the ordering of Add/Remove configurable, the logic becomes
     # difficult to test.  As such we're going to hard code the order of operations.
@@ -519,7 +528,7 @@ def ensure_instance_present(
     # instances, so we do any termination after ensuring instances are InService.
     if purge_ids:
         _terminate_instances(client, purge_ids, group_name, decrement_desired_capacity)
-        wait_instance_state(client, "Terminated", check_mode, group_name, detaching_ids, True, wait_timeout)
+        wait_instance_state(client, "Terminated", check_mode, group_name, detaching_ids, wait, wait_timeout)
 
     instances_complete = get_autoscaling_instances(client, group_name=group_name)
     return bool(purge_ids | standby_ids | missing_ids), instances_complete
@@ -542,16 +551,16 @@ def ensure_instance_standby(
     # These instances are ready to move to Standby
     ready_ids = _instance_ids_in_states(instances_start, ["InService"]) & instance_ids
     # These instances are moving into Standby
-    entering_ids = _instance_ids_in_states(instances_start, ["EnteringStandby"]) & instance_ids
+    entering_ids = _instance_ids_in_states(instances_start, STATE_MAP["entering"]) & instance_ids
 
     if check_mode:
         change_ids = pending_ids | ready_ids
-        instances_changed = _changed_instances(deepcopy(instances_start), group_name, "Standby", change_ids)
+        instances_changed = _change_instances(deepcopy(instances_start), group_name, change_ids, state="Standby")
         return bool(ready_ids), instances_changed
 
     if pending_ids:
         # We have to wait for instances to transition to InService
-        wait_instance_state(client, "InService", check_mode, group_name, pending_ids, True, wait_timeout)
+        wait_instance_state(client, "InService", check_mode, group_name, pending_ids, wait, wait_timeout)
     ready_ids |= pending_ids
 
     if ready_ids:
@@ -559,10 +568,42 @@ def ensure_instance_standby(
     entering_ids |= ready_ids
 
     # This includes potentially waiting for instances which were "Entering" Standby when we started
-    wait_instance_state(client, "Standby", check_mode, group_name, entering_ids, True, wait_timeout)
+    wait_instance_state(client, "Standby", check_mode, group_name, entering_ids, wait, wait_timeout)
 
     instances_complete = get_autoscaling_instances(client, group_name=group_name)
     return bool(ready_ids), instances_complete
+
+
+def ensure_instance_health(
+    client: RetryingBotoClientWrapper,
+    check_mode: bool,
+    instances_start: AnsibleAWSResourceList,
+    group_name: str,
+    health: Optional[str],
+    instance_ids: List[str],
+    respect_grace_period: bool,
+    wait: bool,
+    wait_timeout: int,
+) -> Tuple[bool, AnsibleAWSResourceList]:
+    return False, instances_start
+
+
+def ensure_instance_protection(
+    client: RetryingBotoClientWrapper,
+    check_mode: bool,
+    instances_start: AnsibleAWSResourceList,
+    group_name: str,
+    protection: Optional[bool],
+    instance_ids: List[str],
+    wait: bool,
+    wait_timeout: int,
+) -> Tuple[bool, AnsibleAWSResourceList]:
+    if protection is None:
+        return False, instances_start
+    if instance_ids is None:
+        instance_ids = _all_instance_ids(instances_start)
+
+    return False, instances_start
 
 
 def ensure_instance_pool(
@@ -574,7 +615,6 @@ def ensure_instance_pool(
     instance_ids: List[str],
     purge_instances: bool,
     decrement_desired_capacity: bool,
-    respect_grace_period: bool,
     wait: bool,
     wait_timeout: int,
 ) -> Tuple[bool, AnsibleAWSResourceList]:
@@ -603,7 +643,7 @@ def ensure_instance_pool(
 
     # Not valid for standby/terminated/detached
     if instance_ids is None:
-        instance_ids = [i.get("instance_id") for i in instances_start]
+        instance_ids = _all_instance_ids(instances_start)
 
     if state == "attached":
         return ensure_instance_attached(
@@ -635,7 +675,7 @@ def ensure_instance_pool(
 
 def _validate_standby_conditions(params: Dict[str, Any], instances: AnsibleAWSResourceList) -> None:
     instance_ids = set(params.get("instance_ids"))
-    all_ids = {i.get("instance_id") for i in instances}
+    all_ids = _all_instance_ids(instances)
 
     missing_ids = instance_ids - all_ids
     if missing_ids:
@@ -644,9 +684,9 @@ def _validate_standby_conditions(params: Dict[str, Any], instances: AnsibleAWSRe
         )
 
     # We don't need to change these instances, we may need to wait for them
-    standby_ids = _instance_ids_in_states(instances, ["Standby", "EnteringStandby"])
+    standby_ids = _instance_ids_in_states(instances, STATE_MAP["entering+"])
     # We need to wait for these instances to enter "InService" before we can do anything with them
-    pending_ids = _instance_ids_in_states(instances, ["Pending", "Pending:Proceed", "Pending:Wait"])
+    pending_ids = _instance_ids_in_states(instances, STATE_MAP["pending"])
     # These instances are ready to move to Standby
     ready_ids = _instance_ids_in_states(instances, ["InService"])
 
@@ -683,13 +723,13 @@ def _validate_remove_conditions(params: Dict[str, Any], instances: AnsibleAWSRes
 
 def _validate_attach_conditions(params: Dict[str, Any], instances: AnsibleAWSResourceList) -> None:
     instance_ids = set(params.get("instance_ids"))
-    all_ids = {i.get("instance_id") for i in instances}
+    all_ids = _all_instance_ids(instances)
 
     # These instances are terminating, we can't do anything with them.
-    terminating_ids = _instance_ids_in_states(instances, ["Terminated", "Terminating"]) & instance_ids
+    terminating_ids = _instance_ids_in_states(instances, STATE_MAP["terminating+"]) & instance_ids
     # We need to wait for these instances to enter "InService" or "Standby" before we can do anything with them
-    pending_ids = _instance_ids_in_states(instances, ["EnteringStandby"]) & instance_ids
-    detaching_ids = _instance_ids_in_states(instances, ["Detaching"]) & instance_ids
+    pending_ids = _instance_ids_in_states(instances, STATE_MAP["entering"]) & instance_ids
+    detaching_ids = _instance_ids_in_states(instances, STATE_MAP["detaching"]) & instance_ids
 
     if terminating_ids:
         raise AnsibleAutoScalingError(
@@ -724,31 +764,45 @@ def do(module):
     instances_start = get_autoscaling_instances(client, group_name=module.params["group_name"])
     validate_params(module.params, instances_start)
 
-    changed, instances = ensure_instance_pool(
+    instances = deepcopy(instances_start)
+
+    changed_pool, instances = ensure_instance_pool(
         client,
         check_mode=module.check_mode,
-        instances_start=deepcopy(instances_start),
+        instances_start=instances,
         group_name=module.params["group_name"],
         state=module.params["state"],
         instance_ids=module.params["instance_ids"],
         purge_instances=module.params["purge_instances"],
         decrement_desired_capacity=module.params["decrement_desired_capacity"],
+        wait=module.params["wait"],
+        wait_timeout=module.params["wait_timeout"],
+    )
+
+    changed_protection, instances = ensure_instance_protection(
+        client,
+        check_mode=module.check_mode,
+        instances_start=instances,
+        group_name=module.params["group_name"],
+        protection=module.params["protection"],
+        instance_ids=module.params["instance_ids"],
+        wait=module.params["wait"],
+        wait_timeout=module.params["wait_timeout"],
+    )
+
+    changed_health, instances = ensure_instance_health(
+        client,
+        check_mode=module.check_mode,
+        instances_start=instances,
+        group_name=module.params["group_name"],
+        health=module.params["health"],
+        instance_ids=module.params["instance_ids"],
         respect_grace_period=module.params["respect_grace_period"],
         wait=module.params["wait"],
         wait_timeout=module.params["wait_timeout"],
     )
 
-    # changed, instances = ensure_instance_health(
-    #     client,
-    #     check_mode=module.check_mode,
-    #     instances_start=deepcopy(instances),
-    #     group_name=module.params["group_name"],
-    #     instance_ids=module.params["instance_ids"],
-    #     decrement_desired_capacity=module.params["decrement_desired_capacity"],
-    #     respect_grace_period=module.params["respect_grace_period"],
-    #     wait=module.params["wait"],
-    #     wait_timeout=module.params["wait_timeout"],
-    # )
+    changed = changed_pool or changed_protection or changed_health
 
     result = {"changed": changed, "auto_scaling_instances": instances}
 
@@ -764,12 +818,12 @@ def do(module):
 def main():
     argument_spec = dict(
         group_name=dict(type="str", required=True),
-        state=dict(choices=["present", "attached", "terminated", "detached", "standby"], default="present", type="str"),
+        state=dict(type="str", choices=["present", "attached", "terminated", "detached", "standby"], default="present"),
         instance_ids=dict(type="list", elements="str"),
-        purge_instances=dict(default=False, type="bool"),
-        decrement_desired_capacity=dict(default=False, type="bool"),
+        purge_instances=dict(type="bool", default=False),
+        decrement_desired_capacity=dict(type="bool", default=False),
         health=dict(type="str", choices=["Healthy", "Unhealthy"]),
-        respect_grace_period=dict(type="bool"),
+        respect_grace_period=dict(type="bool", default=True),
         protection=dict(type="bool"),
         wait=dict(type="bool", default=True),
         wait_timeout=dict(type="int", default=120),
