@@ -55,6 +55,8 @@
         cidr_ip: "0.0.0.0/0"
   register: sg
 
+# Note: main autoscaling tests use ASG "Launch Configs", these are being phased out in favour of EC2
+# Launch Templates
 - name: ensure launch templates exist
   community.aws.ec2_launch_template:
     name: "{{ item }}"
@@ -78,6 +80,8 @@
     launch_template:
       launch_template_name: "{{ default_resource_name }}-1"
     desired_capacity: 2
+    health_check_period: 10
+    default_cooldown: 10
     min_size: 0
     max_size: 4
     vpc_zone_identifier: "{{ testing_subnet.subnet.id }}"
@@ -89,6 +93,14 @@
       - create_asg.viable_instances == 2
       - create_asg.instances | length == 2
 
+- ansible.builtin.assert:
+    that:
+      - create_asg.viable_instances == 2
+      - create_asg.instances | length == 2
+
 - ansible.builtin.set_fact:
     initial_instances: "{{ create_asg.instances }}"
     all_instances: "{{ create_asg.instances }}"
+
+- amazon.aws.autoscaling_group_info:
+    name: "{{ default_resource_name }}"
