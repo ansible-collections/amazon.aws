@@ -52,6 +52,9 @@ As such support for Python less than 3.8 will be removed in a release after 2024
 | 3.11 | April 2028 | *After April 2029* |
 --->
 
+Starting with version 2.16, ``ansible-core`` has dropped support for Python 3.8 on the controller node. Please ensure your controller node is using Python 3.9 or newer to avoid compatibility issues. For more details, see [the Ansible release and maintenance documentation](https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html).
+
+
 ### AWS SDK version compatibility
 
 Starting with the 2.0.0 releases of amazon.aws and community.aws, it is generally the collection's policy to support the versions of `botocore` and `boto3` that were released 12 months prior to the most recent major collection release, following semantic versioning (for example, 2.0.0, 3.0.0).
