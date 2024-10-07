@@ -11,12 +11,12 @@ from __future__ import annotations
 
 import typing
 
+# Not intended for general re-use / re-import
+from ._autoscaling import common as _common
 from ._autoscaling import groups as _groups
 from ._autoscaling import instances as _instances
 from ._autoscaling import transformations as _transformations
 from ._autoscaling import waiters as _waiters
-from ._autoscaling.common import AnsibleAutoScalingError  # pylint: disable=unused-import
-from ._autoscaling.common import AutoScalingErrorHandler  # pylint: disable=unused-import
 from .retries import AWSRetry
 
 if typing.TYPE_CHECKING:
@@ -28,6 +28,11 @@ if typing.TYPE_CHECKING:
     from .retries import RetryingBotoClientWrapper
     from .transformation import AnsibleAWSResourceList
     from .transformation import BotoResourceList
+
+# Intended for general use / re-import
+AnsibleAutoScalingError = _common.AnsibleAutoScalingError
+AutoScalingErrorHandler = _common.AutoScalingErrorHandler
+WAITER_MAP = _waiters.WAITER_MAP
 
 
 def get_autoscaling_groups(
