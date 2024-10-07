@@ -34,7 +34,7 @@ options:
       - B(Note:) When adding instances to an AutoScaling Group or returning instances to service
         from standby, the desired capacity is B(always) incremented.  If the total number of
         instances would exceed the maximum size of the group then the operation will fail.
-    choices: ['present', 'attached', 'terminate', 'detached', 'standby']
+    choices: ['present', 'attached', 'terminated', 'detached', 'standby']
     default: present
     type: str
   instance_ids:
@@ -160,6 +160,7 @@ auto_scaling_instances:
 import typing
 from copy import deepcopy
 
+from ansible_collections.amazon.aws.plugins.module_utils.autoscaling import WAITER_MAP
 from ansible_collections.amazon.aws.plugins.module_utils.autoscaling import AnsibleAutoScalingError
 from ansible_collections.amazon.aws.plugins.module_utils.autoscaling import AutoScalingErrorHandler
 from ansible_collections.amazon.aws.plugins.module_utils.autoscaling import get_autoscaling_instances
@@ -182,7 +183,7 @@ if typing.TYPE_CHECKING:
 
 
 # There's also a number of "Warmed" states that we could support with relatively minimal effort, but
-# we can't test them
+# we can't test them (currently)
 STATE_MAP = {
     "pending": ["Pending", "Pending:Proceed", "Pending:Wait"],
     "stable": ["InService", "Standby"],
@@ -199,6 +200,15 @@ def _all_instance_ids(instances: List) -> Set[str]:
     return {i.get("instance_id") for i in instances}
 
 
+def _instance_ids_with_health(instances: List, health: str) -> Set[str]:
+    health = health.lower()
+    return {i.get("instance_id") for i in instances if i.get("health_status", "").lower() == health}
+
+
+def _instance_ids_with_protection(instances: List, protection: bool) -> Set[str]:
+    return {i.get("instance_id") for i in instances if i.get("protected_from_scale_in", False) == protection}
+
+
 def _instance_ids_in_states(instances: List, states: List[str]) -> Set[str]:
     states = [s.lower() for s in states]
     return {i.get("instance_id") for i in instances if i.get("lifecycle_state", "").lower() in states}
@@ -210,6 +220,28 @@ def _token_instance(instance_id, group_name):
         instance_id=instance_id,
         auto_scaling_group_name=group_name,
         health_status="Healthy",
+    )
+
+
+@AutoScalingErrorHandler.common_error_handler("set instance health")
+@AWSRetry.jittered_backoff()
+def _set_instance_health(client: RetryingBotoClientWrapper, instance_id: str, health: str, respect_grace: bool):
+    return client.set_instance_health(
+        InstanceId=instance_id,
+        HealthStatus=health,
+        ShouldRespectGracePeriod=respect_grace,
+    )
+
+
+@AutoScalingErrorHandler.common_error_handler("set instance protection")
+@AWSRetry.jittered_backoff()
+def _set_instance_protection(
+    client: RetryingBotoClientWrapper, instance_ids: Set[str], group_name: str, protected: bool
+):
+    return client.set_instance_protection(
+        InstanceIds=list(instance_ids),
+        AutoScalingGroupName=group_name,
+        ProtectedFromScaleIn=protected,
     )
 
 
@@ -283,16 +315,9 @@ def wait_instance_state(
     if not instance_ids:
         return
 
-    waiter_map = {
-        "Standby": "instances_in_standby",
-        "Terminated": "instances_terminated",
-        "Detached": "instances_detached",
-        "InService": "instances_in_service",
-    }
-
     waiter_config = custom_waiter_config(timeout=wait_timeout, default_pause=10)
 
-    waiter = get_autoscaling_waiter(client, waiter_map[state])
+    waiter = get_autoscaling_waiter(client, WAITER_MAP[state])
     AutoScalingErrorHandler.common_error_handler(f"wait for instances to reach {state}")(waiter.wait)(
         InstanceIds=list(instance_ids),
         WaiterConfig=waiter_config,
@@ -313,8 +338,12 @@ def _inject_instances(instances, group_name, missing_ids):
 def _change_instances(instances, group_name, change_ids, state=None, health=None, protection=None):
     for instance in instances:
         if instance.get("instance_id") in change_ids:
-            if state:
+            if state is not None:
                 instance["lifecycle_state"] = state
+            if health is not None:
+                instance["health_status"] = health
+            if protection is not None:
+                instance["protected_from_scale_in"] = protection
     return instances
 
 
@@ -585,7 +614,33 @@ def ensure_instance_health(
     wait: bool,
     wait_timeout: int,
 ) -> Tuple[bool, AnsibleAWSResourceList]:
-    return False, instances_start
+    # nb. With Health the API documentation's inconsistent:
+    # it appears to want Capitalized for set(), but spits out UPPERCASE for get()
+    if health is None:
+        return False, instances_start
+    if instance_ids is None:
+        instance_ids = _all_instance_ids(instances_start)
+    else:
+        instance_ids = set(instance_ids)
+
+    ready_ids = _instance_ids_with_health(instances_start, health) & instance_ids
+    changed_ids = instance_ids - ready_ids
+
+    if not changed_ids:
+        return False, instances_start
+
+    if check_mode:
+        health = health.upper()
+        changed_instances = _change_instances(deepcopy(instances_start), group_name, changed_ids, health=health)
+        return True, changed_instances
+
+    for instance_id in changed_ids:
+        _set_instance_health(client, instance_id, health, respect_grace_period)
+    health = health.upper()
+    wait_instance_state(client, health.upper(), check_mode, group_name, changed_ids, wait, wait_timeout)
+
+    instances_complete = get_autoscaling_instances(client, group_name=group_name)
+    return True, instances_complete
 
 
 def ensure_instance_protection(
@@ -602,8 +657,27 @@ def ensure_instance_protection(
         return False, instances_start
     if instance_ids is None:
         instance_ids = _all_instance_ids(instances_start)
+    else:
+        instance_ids = set(instance_ids)
 
-    return False, instances_start
+    ready_ids = _instance_ids_with_protection(instances_start, protection) & instance_ids
+    changed_ids = instance_ids - ready_ids
+
+    if not changed_ids:
+        return False, instances_start
+
+    if check_mode:
+        changed_instances = _change_instances(deepcopy(instances_start), group_name, changed_ids, protection=protection)
+        return True, changed_instances
+
+    _set_instance_protection(client, changed_ids, group_name, protection)
+
+    state = "Protected" if protection else "NotProtected"
+
+    wait_instance_state(client, state, check_mode, group_name, changed_ids, wait, wait_timeout)
+
+    instances_complete = get_autoscaling_instances(client, group_name=group_name)
+    return True, instances_complete
 
 
 def ensure_instance_pool(
@@ -722,8 +796,8 @@ def _validate_remove_conditions(params: Dict[str, Any], instances: AnsibleAWSRes
 
 
 def _validate_attach_conditions(params: Dict[str, Any], instances: AnsibleAWSResourceList) -> None:
-    instance_ids = set(params.get("instance_ids"))
     all_ids = _all_instance_ids(instances)
+    instance_ids = set(params.get("instance_ids") or [])
 
     # These instances are terminating, we can't do anything with them.
     terminating_ids = _instance_ids_in_states(instances, STATE_MAP["terminating+"]) & instance_ids
@@ -811,6 +885,10 @@ def do(module):
             before=dict(auto_scaling_instances=instances_start),
             after=dict(auto_scaling_instances=instances),
         )
+
+    result["changed_pool"] = changed_pool
+    result["changed_protection"] = changed_protection
+    result["changed_health"] = changed_health
 
     module.exit_json(**result)
 
