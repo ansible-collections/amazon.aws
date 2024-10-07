@@ -62,7 +62,6 @@ def inventory():
         "strict_permissions": False,
         "allow_duplicated_hosts": False,
         "cache": False,
-        "include_extra_api_calls": False,
         "use_contrib_script_compatible_sanitization": False,
     }
     inventory.inventory = MagicMock()
