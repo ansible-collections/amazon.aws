@@ -1783,3 +1783,36 @@ def determine_iam_arn_from_name(iam_client, name_or_arn: str) -> str:
     if not iam_instance_profiles:
         raise AnsibleEC2Error(message=f"Could not find IAM instance profile {name_or_arn}")
     return iam_instance_profiles[0]["Arn"]
+
+# EC2 Transit Gateway
+class EC2TransitGatewayErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleEC2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code("InvalidTransitGatewayID.NotFound")
+
+
+@EC2TransitGatewayErrorHandler.list_error_handler("describe transit gateway", [])
+@AWSRetry.jittered_backoff()
+def describe_ec2_transit_gateways(
+    client, **params: Dict[str, Union[List[str], List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
+    paginator = client.get_paginator("describe_transit_gateways")
+    return paginator.paginate(**params).build_full_result()
+
+
+@EC2TransitGatewayErrorHandler.common_error_handler("create transit gateway")
+@AWSRetry.jittered_backoff()
+def create_ec2_transit_gateway(
+    client, **params: Dict[str, Union[List[str], List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
+    return client.create_transit_gateway(**params)
+
+
+@EC2TransitGatewayErrorHandler.deletion_error_handler("delete transit gateway")
+@AWSRetry.jittered_backoff()
+def delete_ec2_transit_gateway(
+    client, **params: Dict[str, Union[List[str], List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
+    return client.delete_transit_gateway(**params)
