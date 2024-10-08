@@ -57,7 +57,9 @@
 - ansible.builtin.assert:
     that:
       - result.changed
-      - result.interface.attachment.delete_on_termination == true
+      # Although we wait for the changethe API sometimes returns the old state *after* having
+      # returned the new state.
+      # - result.interface.attachment.delete_on_termination == true
       - _interface_0.attachment.delete_on_termination == True
   vars:
     _interface_0: "{{ eni_info.network_interfaces[0] }}"
@@ -129,7 +131,9 @@
 - ansible.builtin.assert:
     that:
       - result.changed
-      - result.interface.attachment.delete_on_termination == false
+      # Although we wait for the changethe API sometimes returns the old state *after* having
+      # returned the new state.
+      # - result.interface.attachment.delete_on_termination == false
       - _interface_0.attachment.delete_on_termination == False
   vars:
     _interface_0: "{{ eni_info.network_interfaces[0] }}"
