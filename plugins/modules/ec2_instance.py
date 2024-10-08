@@ -1390,12 +1390,14 @@ def add_or_update_instance_profile(
     client, module: AnsibleAWSModule, instance: Dict[str, Any], desired_profile_name: str
 ) -> bool:
     instance_profile_setting = instance.get("IamInstanceProfile")
+    iam_client = None
     if instance_profile_setting and desired_profile_name:
         if desired_profile_name in (instance_profile_setting.get("Name"), instance_profile_setting.get("Arn")):
             # great, the profile we asked for is what's there
             return False
         else:
-            desired_arn = determine_iam_arn_from_name(module, desired_profile_name)
+            iam_client = module.client("iam")
+            desired_arn = determine_iam_arn_from_name(iam_client, desired_profile_name)
             if instance_profile_setting.get("Arn") == desired_arn:
                 return False
 
@@ -1408,10 +1410,11 @@ def add_or_update_instance_profile(
             # check for InvalidAssociationID.NotFound
             module.fail_json_aws(e, "Could not find instance profile association")
         try:
+            iam_client = iam_client or module.client("iam")
             replace_iam_instance_profile_association(
                 client,
                 association_id=association[0]["AssociationId"],
-                iam_instance_profile={"Arn": determine_iam_arn_from_name(module, desired_profile_name)},
+                iam_instance_profile={"Arn": determine_iam_arn_from_name(iam_client, desired_profile_name)},
             )
             return True
         except AnsibleEC2Error as e:
@@ -1420,9 +1423,10 @@ def add_or_update_instance_profile(
     if not instance_profile_setting and desired_profile_name:
         # create association
         try:
+            iam_client = iam_client or module.client("iam")
             associate_iam_instance_profile(
                 client,
-                iam_instance_profile={"Arn": determine_iam_arn_from_name(module, desired_profile_name)},
+                iam_instance_profile={"Arn": determine_iam_arn_from_name(iam_client, desired_profile_name)},
                 instance_id=instance["InstanceId"],
             )
             return True
@@ -1805,7 +1809,9 @@ def build_run_instance_spec(client, module: AnsibleAWSModule, current_count: int
 
     # IAM profile
     if params.get("iam_instance_profile"):
-        spec["IamInstanceProfile"] = dict(Arn=determine_iam_arn_from_name(module, params.get("iam_instance_profile")))
+        spec["IamInstanceProfile"] = dict(
+            Arn=determine_iam_arn_from_name(module.client("iam"), params.get("iam_instance_profile"))
+        )
 
     if params.get("instance_type"):
         spec["InstanceType"] = params["instance_type"]

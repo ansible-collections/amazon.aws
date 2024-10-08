@@ -73,6 +73,7 @@ from .errors import AWSErrorHandler
 
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.exceptions
 from .exceptions import AnsibleAWSError  # pylint: disable=unused-import
+from .iam import list_iam_instance_profiles
 
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.modules
 # The names have been changed in .modules to better reflect their applicability.
@@ -1612,19 +1613,11 @@ def normalize_ec2_vpc_dhcp_config(option_config: List[Dict[str, Any]]) -> Dict[s
     return config_data
 
 
-def determine_iam_arn_from_name(module, name_or_arn: str) -> str:
+def determine_iam_arn_from_name(iam_client, name_or_arn: str) -> str:
     if validate_aws_arn(name_or_arn, service="iam", resource_type="instance-profile"):
         return name_or_arn
-    iam = module.client("iam", retry_decorator=AWSRetry.jittered_backoff())
-    try:
-        return iam.get_instance_profile(InstanceProfileName=name_or_arn, aws_retry=True)["InstanceProfile"]["Arn"]
-    except is_boto3_error_code("NoSuchEntity") as e:
-        module.fail_json_aws(e, msg=f"Could not find IAM instance profile {name_or_arn}")
-    except (
-        botocore.exceptions.ClientError,
-        botocore.exceptions.BotoCoreError,
-    ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(
-            e,
-            msg=f"An error occurred while searching for IAM instance profile {name_or_arn}. Please try supplying the full ARN.",
-        )
+
+    iam_instance_profiles = list_iam_instance_profiles(iam_client, name=name_or_arn)
+    if not iam_instance_profiles:
+        raise AnsibleEC2Error(message=f"Could not find IAM instance profile {name_or_arn}")
+    return iam_instance_profiles[0]["Arn"]
