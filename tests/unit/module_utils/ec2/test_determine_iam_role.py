@@ -3,7 +3,6 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-import sys
 from unittest.mock import MagicMock
 from unittest.mock import sentinel
 
@@ -39,62 +38,38 @@ class FailJsonException(Exception):
 
 
 @pytest.fixture
-def ec2_instance(monkeypatch):
+def ec2_utils_fixture(monkeypatch):
     monkeypatch.setattr(ec2_utils, "validate_aws_arn", lambda arn, service, resource_type: None)
     return ec2_utils
 
 
 @pytest.fixture
-def ansible_module():
-    module = MagicMock()
-    module.fail_json.side_effect = FailJsonException()
-    module.fail_json_aws.side_effect = FailJsonException()
-    return module
+def iam_client():
+    client = MagicMock()
+    return client
 
 
-def test_determine_iam_role_arn(ec2_instance, ansible_module, monkeypatch):
+def test_determine_iam_role_arn(ec2_utils_fixture, iam_client, monkeypatch):
     # Revert the default monkey patch to make it simple to try passing a valid ARNs
-    monkeypatch.setattr(ec2_instance, "validate_aws_arn", utils_arn.validate_aws_arn)
+    monkeypatch.setattr(ec2_utils_fixture, "validate_aws_arn", utils_arn.validate_aws_arn)
 
     # Simplest example, someone passes a valid instance profile ARN
-    arn = ec2_instance.determine_iam_arn_from_name(
-        ansible_module, "arn:aws:iam::123456789012:instance-profile/myprofile"
+    arn = ec2_utils_fixture.determine_iam_arn_from_name(
+        iam_client, "arn:aws:iam::123456789012:instance-profile/myprofile"
     )
     assert arn == "arn:aws:iam::123456789012:instance-profile/myprofile"
 
 
-def test_determine_iam_role_name(ec2_instance, ansible_module):
-    profile_description = {"InstanceProfile": {"Arn": sentinel.IAM_PROFILE_ARN}}
-    iam_client = MagicMock(**{"get_instance_profile.return_value": profile_description})
-    ansible_module.client.return_value = iam_client
-
-    arn = ec2_instance.determine_iam_arn_from_name(ansible_module, sentinel.IAM_PROFILE_NAME)
+def test_determine_iam_role_name(ec2_utils_fixture, iam_client, monkeypatch):
+    monkeypatch.setattr(
+        ec2_utils_fixture, "list_iam_instance_profiles", lambda arn, **kwargs: [{"Arn": sentinel.IAM_PROFILE_ARN}]
+    )
+    arn = ec2_utils_fixture.determine_iam_arn_from_name(iam_client, sentinel.IAM_PROFILE_NAME)
     assert arn == sentinel.IAM_PROFILE_ARN
 
 
-def test_determine_iam_role_missing(ec2_instance, ansible_module):
-    missing_exception = _client_error("NoSuchEntity")
-    iam_client = MagicMock(**{"get_instance_profile.side_effect": missing_exception})
-    ansible_module.client.return_value = iam_client
-
-    with pytest.raises(FailJsonException):
-        ec2_instance.determine_iam_arn_from_name(ansible_module, sentinel.IAM_PROFILE_NAME)
-
-    assert ansible_module.fail_json_aws.call_count == 1
-    assert ansible_module.fail_json_aws.call_args.args[0] is missing_exception
-    assert "Could not find" in ansible_module.fail_json_aws.call_args.kwargs["msg"]
-
-
-@pytest.mark.skipif(sys.version_info < (3, 8), reason="call_args behaviour changed in Python 3.8")
-def test_determine_iam_role_missing(ec2_instance, ansible_module):
-    missing_exception = _client_error()
-    iam_client = MagicMock(**{"get_instance_profile.side_effect": missing_exception})
-    ansible_module.client.return_value = iam_client
-
-    with pytest.raises(FailJsonException):
-        ec2_instance.determine_iam_arn_from_name(ansible_module, sentinel.IAM_PROFILE_NAME)
-
-    assert ansible_module.fail_json_aws.call_count == 1
-    assert ansible_module.fail_json_aws.call_args.args[0] is missing_exception
-    assert "An error occurred while searching" in ansible_module.fail_json_aws.call_args.kwargs["msg"]
-    assert "Please try supplying the full ARN" in ansible_module.fail_json_aws.call_args.kwargs["msg"]
+def test_determine_iam_role_missing(ec2_utils_fixture, iam_client, monkeypatch):
+    monkeypatch.setattr(ec2_utils_fixture, "list_iam_instance_profiles", lambda arn, **kwargs: [])
+    with pytest.raises(ec2_utils.AnsibleEC2Error) as excinfo:
+        ec2_utils_fixture.determine_iam_arn_from_name(iam_client, sentinel.IAM_PROFILE_NAME)
+    assert "Could not find IAM instance profile" in str(excinfo.value)
