@@ -1298,6 +1298,7 @@ class EC2PlacementGroupErrorHandler(AWSErrorHandler):
     def _is_dry_run(cls):
         return is_boto3_error_code("DryRunOperation")
 
+
 @EC2PlacementGroupErrorHandler.list_error_handler("describe placement group", [])
 @AWSRetry.jittered_backoff()
 def describe_ec2_placement_groups(
