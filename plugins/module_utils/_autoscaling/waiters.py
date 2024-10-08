@@ -32,7 +32,9 @@ def _success_on_instance_health(health):
 
 
 def _success_on_instance_protection(state):
-    return dict(state="success", matcher="pathAll", expected=state, argument="AutoScalingInstances[].ProtectedFromScaleIn")
+    return dict(
+        state="success", matcher="pathAll", expected=state, argument="AutoScalingInstances[].ProtectedFromScaleIn"
+    )
 
 
 def _no_instances(result):
