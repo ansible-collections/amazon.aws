@@ -15,26 +15,6 @@ module_name = "ansible_collections.amazon.aws.plugins.modules.s3_object"
 utils = "ansible_collections.amazon.aws.plugins.module_utils.ec2"
 
 
-@patch(module_name + ".paginated_list")
-def test_list_keys_success(m_paginated_list):
-    s3 = MagicMock()
-
-    m_paginated_list.return_value = ["delete.txt"]
-
-    assert ["delete.txt"] == s3_object.list_keys(s3, "a987e6b6026ab04e4717", "", "", 1000)
-    m_paginated_list.assert_called_once()
-
-
-@patch(module_name + ".paginated_list")
-def test_list_keys_failure(m_paginated_list):
-    s3 = MagicMock()
-
-    m_paginated_list.side_effect = botocore.exceptions.BotoCoreError
-
-    with pytest.raises(s3_object.S3ObjectFailure):
-        s3_object.list_keys(s3, "a987e6b6026ab04e4717", "", "", 1000)
-
-
 @patch(module_name + ".delete_key")
 def test_s3_object_do_delobj_success(m_delete_key):
     module = MagicMock()
@@ -67,27 +47,6 @@ def test_s3_object_do_delobj_failure_noobj(m_delete_key):
     s3_object.s3_object_do_delobj(module, s3, s3, var_dict)
     assert m_delete_key.call_count == 0
     module.fail_json.assert_called_with(msg="object parameter is required")
-
-
-@patch(module_name + ".paginated_list")
-@patch(module_name + ".list_keys")
-def test_s3_object_do_list_success(m_paginated_list, m_list_keys):
-    module = MagicMock()
-    s3 = MagicMock()
-
-    m_paginated_list.return_value = ["delete.txt"]
-    var_dict = {
-        "bucket": "a987e6b6026ab04e4717",
-        "prefix": "",
-        "marker": "",
-        "max_keys": 1000,
-        "bucketrtn": True,
-    }
-
-    s3_object.s3_object_do_list(module, s3, s3, var_dict)
-    assert m_paginated_list.call_count == 1
-    # assert m_list_keys.call_count == 1
-    # module.exit_json.assert_called_with(msg="LIST operation complete", s3_keys=['delete.txt'])
 
 
 @patch(utils + ".get_aws_connection_info")
