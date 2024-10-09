@@ -691,7 +691,7 @@ def main():
         dualstack=dict(default=False, type="bool"),
         ceph=dict(default=False, type="bool", aliases=["rgw"]),
         marker=dict(),
-        max_keys=dict(type=int, no_log=False),
+        max_keys=dict(type="int", no_log=False),
     )
 
     required_if = [
