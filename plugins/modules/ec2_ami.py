@@ -569,7 +569,7 @@ def get_image_by_id(connection, image_id):
             result["ProductCodes"] = image_attribute["ProductCodes"]
         image_attribute = describe_image_attribute(connection, attribute="imdsSupport", image_id=image_id)
         if image_attribute:
-            result["ImdsSupport"] = image_attribute["Value"]
+            result["ImdsSupport"] = image_attribute["ImdsSupport"]["Value"]
     except AnsibleEC2Error as e:
         raise Ec2AmiFailure(f"Error retrieving image attributes for image {image_id}", e)
     return result
