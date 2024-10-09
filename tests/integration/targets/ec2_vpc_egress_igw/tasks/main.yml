@@ -10,7 +10,7 @@
 
   # ============================================================
   - name: Test failure with no parameters
-    community.aws.ec2_vpc_egress_igw:
+    amazon.aws.ec2_vpc_egress_igw:
     register: result
     ignore_errors: true
 
@@ -22,7 +22,7 @@
 
   # ============================================================
   - name: Test failure with non-existent VPC ID
-    community.aws.ec2_vpc_egress_igw:
+    amazon.aws.ec2_vpc_egress_igw:
       state: present
       vpc_id: vpc-02394e50abc1807e8
     register: result
@@ -49,7 +49,7 @@
 
   # ============================================================
   - name: Create egress-only internet gateway using check_mode=true
-    community.aws.ec2_vpc_egress_igw:
+    amazon.aws.ec2_vpc_egress_igw:
       state: present
       vpc_id: "{{ vpc_result.vpc.id }}"
     register: vpc_eigw_create_check_mode
@@ -62,7 +62,7 @@
 
   # # ============================================================
   - name: Create egress-only internet gateway (expected changed=true)
-    community.aws.ec2_vpc_egress_igw:
+    amazon.aws.ec2_vpc_egress_igw:
       state: present
       vpc_id: "{{ vpc_result.vpc.id }}"
     register: vpc_eigw_create
@@ -74,7 +74,7 @@
 
   # # ============================================================
   - name: Create egress-only internet gateway once again (idempotency)
-    community.aws.ec2_vpc_egress_igw:
+    amazon.aws.ec2_vpc_egress_igw:
       state: present
       vpc_id: "{{ vpc_result.vpc.id }}"
     register: vpc_eigw_create_idempotency
@@ -101,7 +101,7 @@
 
   # # ============================================================
   - name: Delete egress-only internet gateway once again (idempotency)
-    community.aws.ec2_vpc_egress_igw:
+    amazon.aws.ec2_vpc_egress_igw:
       state: absent
       vpc_id: "{{ vpc_result.vpc.id }}"
     register: vpc_eigw_delete
@@ -127,7 +127,7 @@
   ## ============================================================
   ## Tagging
   - name: Create Egress only internet gateway with tags
-    community.aws.ec2_vpc_egress_igw:
+    amazon.aws.ec2_vpc_egress_igw:
       vpc_id: "{{ vpc_result.vpc.id }}"
       tags:
         ResourcePrefix: "{{ resource_prefix }}"
@@ -140,7 +140,7 @@
         - create_with_tags is changed
 
   - name: Trying to update tags (no change)
-    community.aws.ec2_vpc_egress_igw:
+    amazon.aws.ec2_vpc_egress_igw:
       vpc_id: "{{ vpc_result.vpc.id }}"
       tags:
         ResourcePrefix: "{{ resource_prefix }}"
@@ -153,7 +153,7 @@
         - update_tags is not changed
 
   - name: Add tag to existing tags
-    community.aws.ec2_vpc_egress_igw:
+    amazon.aws.ec2_vpc_egress_igw:
       vpc_id: "{{ vpc_result.vpc.id }}"
       tags:
         Phase: integration
@@ -168,7 +168,7 @@
   always:
     # ============================================================
     - name: Tidy up EIGW
-      community.aws.ec2_vpc_egress_igw:
+      amazon.aws.ec2_vpc_egress_igw:
         state: absent
         vpc_id: "{{ vpc_result.vpc.id }}"
       ignore_errors: true

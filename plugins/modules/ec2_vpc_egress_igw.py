@@ -8,6 +8,7 @@ DOCUMENTATION = r"""
 ---
 module: ec2_vpc_egress_igw
 version_added: 1.0.0
+version_added_collection: community.aws
 short_description: Manage an AWS VPC Egress Only Internet gateway
 description:
   - Manage an AWS VPC Egress Only Internet gateway
@@ -40,12 +41,12 @@ EXAMPLES = r"""
 # Ensure that the VPC has an Internet Gateway.
 # The Internet Gateway ID is can be accessed via {{eigw.gateway_id}} for use in setting up NATs etc.
 - name: Create Egress internet only gateway
-  community.aws.ec2_vpc_egress_igw:
+  amazon.aws.ec2_vpc_egress_igw:
     vpc_id: vpc-abcdefgh
     state: present
 
 - name: Delete Egress internet only gateway
-  community.aws.ec2_vpc_egress_igw:
+  amazon.aws.ec2_vpc_egress_igw:
     vpc_id: vpc-abcdefgh
     state: absent
 """
@@ -81,7 +82,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_egr
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 
 
 def delete_eigw(module: AnsibleAWSModule, connection, eigw_id: str) -> Dict[str, Union[str, bool]]:
