@@ -40,8 +40,6 @@ class AWSErrorHandler:
             def handler(*args, **kwargs):
                 try:
                     return func(*args, **kwargs)
-                except cls._is_dry_run():
-                    return {"boto3_error_code": "DryRunOperation"}
                 except botocore.exceptions.WaiterError as e:
                     raise cls._CUSTOM_EXCEPTION(message=f"Timeout trying to {description}", exception=e) from e
                 except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
