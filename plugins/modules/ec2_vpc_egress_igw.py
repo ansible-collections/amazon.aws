@@ -80,9 +80,8 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import create_egres
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import delete_egress_only_internet_gateway
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_egress_only_internet_gateways
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
-
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 
 
 def delete_eigw(module: AnsibleAWSModule, connection, eigw_id: str) -> Dict[str, Union[str, bool]]:
