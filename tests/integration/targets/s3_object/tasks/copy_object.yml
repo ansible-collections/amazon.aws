@@ -262,6 +262,27 @@
           - copy_with_metadata is changed
           - obj_info.object_info.0.object_data.metadata == another_metadata
 
+    - name: Get objects info - multiple items
+      amazon.aws.s3_object_info:
+        bucket_name: "{{ bucket_name }}"
+      register: obj_info
+
+    - name: Validate multiple objects returned
+      ansible.builtin.assert:
+        that:
+          - (obj_info.s3_keys | length) > 1
+
+    - name: Get objects info - 1 item
+      amazon.aws.s3_object_info:
+        bucket_name: "{{ bucket_name }}"
+        max_keys: 1
+      register: obj_info
+
+    - name: Validate just 1 object returned
+      ansible.builtin.assert:
+        that:
+          - (obj_info.s3_keys | length) == 1
+
   always:
     - ansible.builtin.include_tasks: delete_bucket.yml
       with_items:
