@@ -1,0 +1,6 @@
+deprecated_features:
+- s3_object - Support for ``mode=list`` has been deprecated.  ``amazon.aws.s3_object_info`` should be used instead (https://github.com/ansible-collections/amazon.aws/pull/2328).
+bugfixes:
+- s3_object - Fixed an issue where ``max_keys`` was not respected (https://github.com/ansible-collections/amazon.aws/pull/2328).
+minor_changes:
+- s3_object_info - Added support for ``max_keys`` and ``marker`` parameter (https://github.com/ansible-collections/amazon.aws/pull/2328).

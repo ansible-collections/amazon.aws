@@ -86,6 +86,20 @@
           - '"file2.txt" in _objects.s3_keys'
           - '"file3.txt" in _objects.s3_keys'
 
+    - name: test list to get just 1 object from the bucket
+      amazon.aws.s3_object:
+        bucket: "{{ bucket_dst }}"
+        mode: list
+        max_keys: 1
+      retries: 3
+      delay: 3
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - "(result.s3_keys | length) == 1"
+          - result.msg == "LIST operation complete"
+
     # Test: Copy all objects from source bucket
     - name: copy all objects from source bucket
       amazon.aws.s3_object:

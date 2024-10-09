@@ -59,13 +59,11 @@ options:
       - Specifies the key to start with when using list mode. Object keys are returned in
         alphabetical order, starting with key after the marker in order.
     type: str
-    default: ''
   max_keys:
     description:
-      - Max number of results to return when O(mode=list), set this if you want to retrieve fewer
-        than the default 1000 keys.
+      - Max number of results to return when O(mode=list)
+      - When not set, B(all) keys will be returned.
       - Ignored when O(mode) is not V(list).
-    default: 1000
     type: int
   metadata:
     description:
@@ -84,6 +82,8 @@ options:
       - 'V(copy): copy object that is already stored in another bucket'
       - Support for creating and deleting buckets was removed in release 6.0.0.
         To create and manage the bucket itself please use the M(amazon.aws.s3_bucket) module.
+      - Support for V(list) has been deprecated and will be removed in a release after 2026-11-01.
+        The M(amazon.aws.s3_object_info) module should be used instead of V(list).
     required: true
     choices: ['get', 'put', 'create', 'geturl', 'getstr', 'delobj', 'list', 'copy']
     type: str
@@ -444,6 +444,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import HAS_MD5
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import calculate_etag
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import calculate_etag_content
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import list_bucket_object_keys
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import s3_extra_params
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import validate_bucket_name
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
@@ -579,25 +580,9 @@ def bucket_check(module, s3, bucket, validate=True):
         )
 
 
-@AWSRetry.jittered_backoff()
-def paginated_list(s3, **pagination_params):
-    pg = s3.get_paginator("list_objects_v2")
-    for page in pg.paginate(**pagination_params):
-        for data in page.get("Contents", []):
-            yield data["Key"]
-
-
 def list_keys(s3, bucket, prefix=None, marker=None, max_keys=None):
-    pagination_params = {
-        "Bucket": bucket,
-        "Prefix": prefix,
-        "StartAfter": marker,
-        "MaxKeys": max_keys,
-    }
-    pagination_params = {k: v for k, v in pagination_params.items() if v}
-
     try:
-        return list(paginated_list(s3, **pagination_params))
+        return list_bucket_object_keys(s3, bucket, prefix=prefix, start_after=marker, max_keys=max_keys)
     except (
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
@@ -1487,8 +1472,8 @@ def main():
         encryption_mode=dict(choices=["AES256", "aws:kms"], default="AES256"),
         expiry=dict(default=600, type="int", aliases=["expiration"]),
         headers=dict(type="dict"),
-        marker=dict(default=""),
-        max_keys=dict(default=1000, type="int", no_log=False),
+        marker=dict(),
+        max_keys=dict(type="int", no_log=False),
         metadata=dict(type="dict"),
         mode=dict(choices=valid_modes, required=True),
         sig_v4=dict(default=True, type="bool"),
@@ -1537,6 +1522,16 @@ def main():
         required_if=required_if,
         mutually_exclusive=[["content", "content_base64", "src"]],
     )
+
+    if module.params.get("mode") == "list":
+        module.deprecate(
+            (
+                "Support for 'list' mode has been deprecated and will be removed in a release after "
+                "2024-11-01.  Please use the amazon.aws.s3_object_info module instead."
+            ),
+            date="2026-11-01",
+            collection_name="amazon.aws",
+        )
 
     endpoint_url = module.params.get("endpoint_url")
     dualstack = module.params.get("dualstack")
