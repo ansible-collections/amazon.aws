@@ -648,6 +648,51 @@ def create_dhcp_options(
     return client.create_dhcp_options(**params)["DhcpOptions"]
 
 
+# EC2 VPC VPN Gateways
+class EC2VpcVpnGatewaysErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleEC2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code(["InvalidVpnGatewayID.NotFound", "InvalidVpnGatewayState"])
+
+
+@EC2VpcVpnGatewaysErrorHandler.list_error_handler("describe vpc vpn gateways", [])
+@AWSRetry.jittered_backoff()
+def describe_vpc_vpn_gateways(
+    client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
+    return client.describe_vpn_gateways(**params)
+
+@EC2VpcVpnGatewaysErrorHandler.list_error_handler("create vpc vpn gateway", [])
+@AWSRetry.jittered_backoff()
+def create_vpc_vpn_gateway(
+    client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
+    return client.create_vpn_gateway(**params)
+
+@EC2VpcVpnGatewaysErrorHandler.list_error_handler("delete vpc vpn gateway", [])
+@AWSRetry.jittered_backoff()
+def delete_vpc_vpn_gateway(
+    client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
+    return client.delete_vpn_gateway(**params)
+
+@EC2VpcVpnGatewaysErrorHandler.list_error_handler("attach vpc vpn gateway", [])
+@AWSRetry.jittered_backoff()
+def attach_vpc_vpn_gateway(
+    client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
+    return client.attach_vpn_gateway(**params)
+
+@EC2VpcVpnGatewaysErrorHandler.list_error_handler("detach vpc vpn gateway", [])
+@AWSRetry.jittered_backoff()
+def detach_vpc_vpn_gateway(
+    client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
+    return client.detach_vpn_gateway(**params)
+
+
 # EC2 Volumes
 class EC2VolumeErrorHandler(AWSErrorHandler):
     _CUSTOM_EXCEPTION = AnsibleEC2Error
