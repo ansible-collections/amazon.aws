@@ -78,6 +78,10 @@ ansible-playbook playbooks/test_inventory_cache.yml "$@"
 ansible-playbook playbooks/create_inventory_config.yml -e "template='inventory_with_ssm.yml.j2'" "$@"
 ansible-playbook playbooks/test_inventory_ssm.yml "$@"
 
+# generate inventory config with az id information
+ansible-playbook playbooks/create_inventory_config.yml -e "template='inventory_with_az_id.yml.j2'" "$@"
+ansible-playbook playbooks/test_az_id.yml "$@"
+
 # remove inventory cache
 rm -r aws_ec2_cache_dir/
 
