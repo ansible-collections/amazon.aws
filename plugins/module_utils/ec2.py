@@ -1286,6 +1286,36 @@ def replace_network_acl_association(client, network_acl_id: str, association_id:
     ]
 
 
+# EC2 Placement Group
+class EC2PlacementGroupErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleEC2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code("InvalidPlacementGroup.Unknown")
+
+
+@EC2PlacementGroupErrorHandler.list_error_handler("describe placement group", [])
+@AWSRetry.jittered_backoff()
+def describe_ec2_placement_groups(
+    client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
+    return client.describe_placement_groups(**params)["PlacementGroups"]
+
+
+@EC2PlacementGroupErrorHandler.deletion_error_handler("delete placement group")
+@AWSRetry.jittered_backoff()
+def delete_ec2_placement_group(client, group_name: str) -> bool:
+    client.delete_placement_group(GroupName=group_name)
+    return True
+
+
+@EC2PlacementGroupErrorHandler.common_error_handler("create placement group")
+@AWSRetry.jittered_backoff()
+def create_ec2_placement_group(client, **params: Dict[str, Union[str, EC2TagSpecifications]]) -> Dict[str, Any]:
+    return client.create_placement_group(**params)["PlacementGroup"]
+
+
 def get_ec2_security_group_ids_from_names(sec_group_list, ec2_connection, vpc_id=None, boto3=None):
     """Return list of security group IDs from security group names. Note that security group names are not unique
     across VPCs.  If a name exists across multiple VPCs and no VPC ID is supplied, all matching IDs will be returned. This
