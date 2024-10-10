@@ -6,7 +6,7 @@
 
 DOCUMENTATION = r"""
 module: ec2_vpc_peering_info
-short_description: Retrieves AWS VPC Peering details using AWS methods.
+short_description: Retrieves AWS VPC Peering details using AWS methods
 version_added: 1.0.0
 description:
   - Gets various details related to AWS VPC Peers
@@ -25,6 +25,7 @@ options:
     default: {}
 author:
   - Karen Cheng (@Etherdaemon)
+  - Alina Buzachis (@alinabuzachis)
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
@@ -32,8 +33,7 @@ extends_documentation_fragment:
 """
 
 EXAMPLES = r"""
-# Simple example of listing all VPC Peers
-- name: List all vpc peers
+- name: List all EC2 VPC Peering Connections
   community.aws.ec2_vpc_peering_info:
     region: ap-southeast-2
   register: all_vpc_peers
@@ -42,19 +42,19 @@ EXAMPLES = r"""
   ansible.builtin.debug:
     msg: "{{ all_vpc_peers.result }}"
 
-- name: Get details on specific VPC peer
+- name: Get details on specific EC2 VPC Peering Connection
   community.aws.ec2_vpc_peering_info:
     peer_connection_ids:
-      - pcx-12345678
-      - pcx-87654321
-    region: ap-southeast-2
+      - "pcx-12345678"
+      - "pcx-87654321"
+    region: "ap-southeast-2"
   register: all_vpc_peers
 
-- name: Get all vpc peers with specific filters
+- name: Get all EC2 VPC Peering Connections with specific filters
   community.aws.ec2_vpc_peering_info:
-    region: ap-southeast-2
+    region: "ap-southeast-2"
     filters:
-      status-code: ['pending-acceptance']
+      status-code: ["pending-acceptance"]
   register: pending_vpc_peers
 """
 
@@ -63,32 +63,34 @@ vpc_peering_connections:
   description: Details of the matching VPC peering connections.
   returned: success
   type: list
+  elements: dict
   contains:
     accepter_vpc_info:
       description: Information about the VPC which accepted the connection.
       returned: success
-      type: complex
+      type: dict
       contains:
         cidr_block:
           description: The primary CIDR for the VPC.
           returned: when connection is in the accepted state.
           type: str
-          example: '10.10.10.0/23'
+          sample: "10.10.10.0/23"
         cidr_block_set:
           description: A list of all CIDRs for the VPC.
           returned: when connection is in the accepted state.
-          type: complex
+          type: list
+          elements: dict
           contains:
             cidr_block:
               description: A CIDR block used by the VPC.
               returned: success
               type: str
-              example: '10.10.10.0/23'
+              sample: "10.10.10.0/23"
         owner_id:
           description: The AWS account that owns the VPC.
           returned: success
           type: str
-          example: 123456789012
+          sample: "123456789012"
         peering_options:
           description: Additional peering configuration.
           returned: when connection is in the accepted state.
@@ -110,37 +112,38 @@ vpc_peering_connections:
           description: The AWS region that the VPC is in.
           returned: success
           type: str
-          example: us-east-1
+          sample: "us-east-1"
         vpc_id:
           description: The ID of the VPC
           returned: success
           type: str
-          example: vpc-0123456789abcdef0
+          sample: "vpc-0123456789abcdef0"
     requester_vpc_info:
       description: Information about the VPC which requested the connection.
       returned: success
-      type: complex
+      type: dict
       contains:
         cidr_block:
           description: The primary CIDR for the VPC.
           returned: when connection is not in the deleted state.
           type: str
-          example: '10.10.10.0/23'
+          sample: "10.10.10.0/23"
         cidr_block_set:
           description: A list of all CIDRs for the VPC.
           returned: when connection is not in the deleted state.
-          type: complex
+          type: list
+          elements: dict
           contains:
             cidr_block:
               description: A CIDR block used by the VPC
               returned: success
               type: str
-              example: '10.10.10.0/23'
+              sample: "10.10.10.0/23"
         owner_id:
           description: The AWS account that owns the VPC.
           returned: success
           type: str
-          example: 123456789012
+          sample: "123456789012"
         peering_options:
           description: Additional peering configuration.
           returned: when connection is not in the deleted state.
@@ -162,27 +165,27 @@ vpc_peering_connections:
           description: The AWS region that the VPC is in.
           returned: success
           type: str
-          example: us-east-1
+          sample: "us-east-1"
         vpc_id:
           description: The ID of the VPC
           returned: success
           type: str
-          example: vpc-0123456789abcdef0
+          sample: "vpc-0123456789abcdef0"
     status:
       description: Details of the current status of the connection.
       returned: success
-      type: complex
+      type: dict
       contains:
         code:
           description: A short code describing the status of the connection.
           returned: success
           type: str
-          example: active
+          sample: "active"
         message:
           description: Additional information about the status of the connection.
           returned: success
           type: str
-          example: Pending Acceptance by 123456789012
+          sample: "Pending Acceptance by 123456789012"
     tags:
       description: Tags applied to the connection.
       returned: success
@@ -191,41 +194,171 @@ vpc_peering_connections:
       description: The ID of the VPC peering connection.
       returned: success
       type: str
-      example: "pcx-0123456789abcdef0"
+      sample: "pcx-0123456789abcdef0"
 
 result:
   description: The result of the describe.
   returned: success
   type: list
+  elements: dict
+  contains:
+    accepter_vpc_info:
+      description: Information about the VPC which accepted the connection.
+      returned: success
+      type: dict
+      contains:
+        cidr_block:
+          description: The primary CIDR for the VPC.
+          returned: when connection is in the accepted state.
+          type: str
+          sample: "10.10.10.0/23"
+        cidr_block_set:
+          description: A list of all CIDRs for the VPC.
+          returned: when connection is in the accepted state.
+          type: list
+          elements: dict
+          contains:
+            cidr_block:
+              description: A CIDR block used by the VPC.
+              returned: success
+              type: str
+              sample: "10.10.10.0/23"
+        owner_id:
+          description: The AWS account that owns the VPC.
+          returned: success
+          type: str
+          sample: "123456789012"
+        peering_options:
+          description: Additional peering configuration.
+          returned: when connection is in the accepted state.
+          type: dict
+          contains:
+            allow_dns_resolution_from_remote_vpc:
+              description: Indicates whether a VPC can resolve public DNS hostnames to private IP addresses when queried from instances in a peer VPC.
+              returned: success
+              type: bool
+            allow_egress_from_local_classic_link_to_remote_vpc:
+              description: Indicates whether a local ClassicLink connection can communicate with the peer VPC over the VPC peering connection.
+              returned: success
+              type: bool
+            allow_egress_from_local_vpc_to_remote_classic_link:
+              description: Indicates whether a local VPC can communicate with a ClassicLink connection in the peer VPC over the VPC peering connection.
+              returned: success
+              type: bool
+        region:
+          description: The AWS region that the VPC is in.
+          returned: success
+          type: str
+          sample: "us-east-1"
+        vpc_id:
+          description: The ID of the VPC
+          returned: success
+          type: str
+          sample: "vpc-0123456789abcdef0"
+    requester_vpc_info:
+      description: Information about the VPC which requested the connection.
+      returned: success
+      type: dict
+      contains:
+        cidr_block:
+          description: The primary CIDR for the VPC.
+          returned: when connection is not in the deleted state.
+          type: str
+          sample: "10.10.10.0/23"
+        cidr_block_set:
+          description: A list of all CIDRs for the VPC.
+          returned: when connection is not in the deleted state.
+          type: list
+          elements: dict
+          contains:
+            cidr_block:
+              description: A CIDR block used by the VPC
+              returned: success
+              type: str
+              sample: "10.10.10.0/23"
+        owner_id:
+          description: The AWS account that owns the VPC.
+          returned: success
+          type: str
+          sample: "123456789012"
+        peering_options:
+          description: Additional peering configuration.
+          returned: when connection is not in the deleted state.
+          type: dict
+          contains:
+            allow_dns_resolution_from_remote_vpc:
+              description: Indicates whether a VPC can resolve public DNS hostnames to private IP addresses when queried from instances in a peer VPC.
+              returned: success
+              type: bool
+            allow_egress_from_local_classic_link_to_remote_vpc:
+              description: Indicates whether a local ClassicLink connection can communicate with the peer VPC over the VPC peering connection.
+              returned: success
+              type: bool
+            allow_egress_from_local_vpc_to_remote_classic_link:
+              description: Indicates whether a local VPC can communicate with a ClassicLink connection in the peer VPC over the VPC peering connection.
+              returned: success
+              type: bool
+        region:
+          description: The AWS region that the VPC is in.
+          returned: success
+          type: str
+          sample: "us-east-1"
+        vpc_id:
+          description: The ID of the VPC
+          returned: success
+          type: str
+          sample: "vpc-0123456789abcdef0"
+    status:
+      description: Details of the current status of the connection.
+      returned: success
+      type: dict
+      contains:
+        code:
+          description: A short code describing the status of the connection.
+          returned: success
+          type: str
+          sample: "active"
+        message:
+          description: Additional information about the status of the connection.
+          returned: success
+          type: str
+          sample: "Pending Acceptance by 123456789012"
+    tags:
+      description: Tags applied to the connection.
+      returned: success
+      type: dict
+    vpc_peering_connection_id:
+      description: The ID of the VPC peering connection.
+      returned: success
+      type: str
+      sample: "pcx-0123456789abcdef0"
 """
 
-try:
-    import botocore
-except ImportError:
-    pass  # Handled by AnsibleAWSModule
+
+from typing import Any
+from typing import Dict
+from typing import List
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import normalize_boto3_result
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_vpc_peering_connections
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
 
-def get_vpc_peers(client, module):
-    params = dict()
+def get_vpc_peers(client, module: AnsibleAWSModule) -> List[Dict[str, Any]]:
+    params: Dict = {}
     params["Filters"] = ansible_dict_to_boto3_filter_list(module.params.get("filters"))
+
     if module.params.get("peer_connection_ids"):
         params["VpcPeeringConnectionIds"] = module.params.get("peer_connection_ids")
-    try:
-        result = client.describe_vpc_peering_connections(aws_retry=True, **params)
-        result = normalize_boto3_result(result)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to describe peering connections")
 
-    return result["VpcPeeringConnections"]
+    result = describe_vpc_peering_connections(client, **params)
+
+    return normalize_boto3_result(result)
 
 
 def main():
@@ -239,13 +372,10 @@ def main():
         supports_check_mode=True,
     )
 
-    try:
-        ec2 = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff())
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to connect to AWS")
+    client = module.client("ec2")
 
     # Turn the boto3 result in to ansible friendly_snaked_names
-    results = [camel_dict_to_snake_dict(peer) for peer in get_vpc_peers(ec2, module)]
+    results = [camel_dict_to_snake_dict(peer) for peer in get_vpc_peers(client, module)]
 
     # Turn the boto3 result in to ansible friendly tag dictionary
     for peer in results:
