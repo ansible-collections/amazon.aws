@@ -6,7 +6,6 @@
 from unittest.mock import MagicMock
 from unittest.mock import patch
 
-
 from ansible_collections.amazon.aws.plugins.modules import s3_object
 
 module_name = "ansible_collections.amazon.aws.plugins.modules.s3_object"
