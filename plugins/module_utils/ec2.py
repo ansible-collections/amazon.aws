@@ -860,7 +860,7 @@ def deregister_image(client, image_id: str) -> bool:
 
 
 @EC2ImageErrorHandler.common_error_handler("modify image attribute")
-@AWSRetry.jittered_backoff()
+@AWSRetry.jittered_backoff(catch_extra_error_codes=["InvalidAMIID.Unavailable"])
 def modify_image_attribute(client, image_id: str, **params: Dict[str, Any]) -> bool:
     client.modify_image_attribute(ImageId=image_id, **params)
     return True
