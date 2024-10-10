@@ -4,7 +4,7 @@
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta content="2.14.0" name="antsibull-docs" />
+<meta content="2.15.0" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>amazon.aws.aws_ec2 inventory – EC2 inventory source &mdash; Ansible collections  documentation</title>
@@ -243,8 +243,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
 <ul>
 <li><p>INI entry:</p>
-<div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">[</span><span class="nv">inventory</span><span class="p p-Indicator">]</span>
-<span class="l l-Scalar l-Scalar-Plain">cache = false</span>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[inventory]</span>
+<span class="na">cache</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">false</span>
 </pre></div>
 </div>
 </li>
@@ -260,12 +260,12 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
 <ul>
 <li><p>INI entries:</p>
-<div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">[</span><span class="nv">defaults</span><span class="p p-Indicator">]</span>
-<span class="l l-Scalar l-Scalar-Plain">fact_caching_connection = VALUE</span>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[defaults]</span>
+<span class="na">fact_caching_connection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">VALUE</span>
 </pre></div>
 </div>
-<div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">[</span><span class="nv">inventory</span><span class="p p-Indicator">]</span>
-<span class="l l-Scalar l-Scalar-Plain">cache_connection = VALUE</span>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[inventory]</span>
+<span class="na">cache_connection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">VALUE</span>
 </pre></div>
 </div>
 </li>
@@ -283,12 +283,12 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
 <ul>
 <li><p>INI entries:</p>
-<div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">[</span><span class="nv">defaults</span><span class="p p-Indicator">]</span>
-<span class="l l-Scalar l-Scalar-Plain">fact_caching = memory</span>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[defaults]</span>
+<span class="na">fact_caching</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">memory</span>
 </pre></div>
 </div>
-<div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">[</span><span class="nv">inventory</span><span class="p p-Indicator">]</span>
-<span class="l l-Scalar l-Scalar-Plain">cache_plugin = memory</span>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[inventory]</span>
+<span class="na">cache_plugin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">memory</span>
 </pre></div>
 </div>
 </li>
@@ -306,12 +306,12 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
 <ul>
 <li><p>INI entries:</p>
-<div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">[</span><span class="nv">defaults</span><span class="p p-Indicator">]</span>
-<span class="l l-Scalar l-Scalar-Plain">fact_caching_prefix = ansible_inventory_</span>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[defaults]</span>
+<span class="na">fact_caching_prefix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ansible_inventory_</span>
 </pre></div>
 </div>
-<div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">[</span><span class="nv">inventory</span><span class="p p-Indicator">]</span>
-<span class="l l-Scalar l-Scalar-Plain">cache_prefix = ansible_inventory_</span>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[inventory]</span>
+<span class="na">cache_prefix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ansible_inventory_</span>
 </pre></div>
 </div>
 </li>
@@ -329,12 +329,12 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
 <ul>
 <li><p>INI entries:</p>
-<div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">[</span><span class="nv">defaults</span><span class="p p-Indicator">]</span>
-<span class="l l-Scalar l-Scalar-Plain">fact_caching_timeout = 3600</span>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[defaults]</span>
+<span class="na">fact_caching_timeout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">3600</span>
 </pre></div>
 </div>
-<div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">[</span><span class="nv">inventory</span><span class="p p-Indicator">]</span>
-<span class="l l-Scalar l-Scalar-Plain">cache_timeout = 3600</span>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[inventory]</span>
+<span class="na">cache_timeout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">3600</span>
 </pre></div>
 </div>
 </li>
@@ -712,8 +712,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
 <ul>
 <li><p>INI entry:</p>
-<div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">[</span><span class="nv">inventory_plugins</span><span class="p p-Indicator">]</span>
-<span class="l l-Scalar l-Scalar-Plain">use_extra_vars = false</span>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[inventory_plugins]</span>
+<span class="na">use_extra_vars</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">false</span>
 </pre></div>
 </div>
 </li>
