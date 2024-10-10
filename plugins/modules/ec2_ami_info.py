@@ -283,8 +283,10 @@ def list_ec2_images(ec2_client, module, request_args):
                 image["launch_permissions"] = [camel_dict_to_snake_dict(perm) for perm in launch_permissions]
                 imdsv2_enabled = describe_image_attribute(
                     ec2_client, attribute="imdsSupport", image_id=image["image_id"]
-                ).get("ImdsSupport", "")
-                image["imdsv2_enabled"] = True if imdsv2_enabled["Value"] == "v2.0" else False
+                ).get("ImdsSupport", {})
+                image["imdsv2_enabled"] = (
+                    True if "Value" in imdsv2_enabled and imdsv2_enabled["Value"] == "v2.0" else False
+                )
         except is_ansible_aws_error_code("AuthFailure"):
             # describing launch permissions of images owned by others is not permitted, but shouldn't cause failures
             pass
