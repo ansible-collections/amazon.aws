@@ -97,6 +97,17 @@ options:
         type: list
         elements: str
         choices: ['ETag', 'Checksum', 'ObjectParts', 'StorageClass', 'ObjectSize']
+  marker:
+    description:
+      - Specifies the Object key to start with.  Object keys are returned in alphabetical order, starting with key
+        after the marker in order.
+    type: str
+    version_added: 9.0.0
+  max_keys:
+    description:
+      - Max number of results to return.  Set this if you want to retrieve only partial results.
+    type: int
+    version_added: 9.0.0
 notes:
   - Support for the E(S3_URL) environment variable has been
     deprecated and will be removed in a release after 2024-12-01, please use the O(endpoint_url) parameter
@@ -441,6 +452,7 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import list_bucket_object_keys
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import s3_extra_params
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 
@@ -622,30 +634,17 @@ def get_object(connection, bucket_name, object_name):
     return result
 
 
-@AWSRetry.jittered_backoff(retries=10)
-def _list_bucket_objects(connection, **params):
-    paginator = connection.get_paginator("list_objects")
-    return paginator.paginate(**params).build_full_result()
-
-
 def list_bucket_objects(connection, module, bucket_name):
-    params = {}
-    params["Bucket"] = bucket_name
-
-    result = []
-    list_objects_response = {}
-
     try:
-        list_objects_response = _list_bucket_objects(connection, **params)
+        keys = list_bucket_object_keys(
+            connection,
+            bucket=bucket_name,
+            max_keys=module.params["max_keys"],
+            start_after=module.params["marker"],
+        )
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to list bucket objects.")
-
-    if len(list_objects_response) != 0:
-        # convert to snake_case
-        for response_list_item in list_objects_response.get("Contents", []):
-            result.append(response_list_item["Key"])
-
-    return result
+    return keys
 
 
 def bucket_check(
@@ -691,6 +690,8 @@ def main():
         object_name=dict(type="str"),
         dualstack=dict(default=False, type="bool"),
         ceph=dict(default=False, type="bool", aliases=["rgw"]),
+        marker=dict(),
+        max_keys=dict(type="int", no_log=False),
     )
 
     required_if = [
