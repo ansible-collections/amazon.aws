@@ -435,16 +435,15 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <a class="ansibleOptionLink" href="#parameter-marker" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Specifies the key to start with when using list mode. Object keys are returned in alphabetical order, starting with key after the marker in order.</p>
-<p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-max_keys"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-s3-object-module-parameter-max-keys"><strong>max_keys</strong></p>
 <a class="ansibleOptionLink" href="#parameter-max_keys" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Max number of results to return when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-mode"><span class="std std-ref"><span class="pre">mode=list</span></span></a></code>, set this if you want to retrieve fewer than the default 1000 keys.</p>
+<td><div class="ansible-option-cell"><p>Max number of results to return when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-mode"><span class="std std-ref"><span class="pre">mode=list</span></span></a></code></p>
+<p>When not set, <strong>all</strong> keys will be returned.</p>
 <p>Ignored when <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-mode"><span class="std std-ref"><span class="pre">mode</span></span></a></strong></code> is not <code class="ansible-value docutils literal notranslate"><span class="pre">list</span></code>.</p>
-<p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">1000</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -468,6 +467,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <p><code class="ansible-value docutils literal notranslate"><span class="pre">delobj</span></code>: delete object</p>
 <p><code class="ansible-value docutils literal notranslate"><span class="pre">copy</span></code>: copy object that is already stored in another bucket</p>
 <p>Support for creating and deleting buckets was removed in release 6.0.0. To create and manage the bucket itself please use the <a class="reference internal" href="s3_bucket_module.html#ansible-collections-amazon-aws-s3-bucket-module"><span class="std std-ref">amazon.aws.s3_bucket</span></a> module.</p>
+<p>Support for <code class="ansible-value docutils literal notranslate"><span class="pre">list</span></code> has been deprecated and will be removed in a release after 2026-11-01. The <a class="reference internal" href="s3_object_info_module.html#ansible-collections-amazon-aws-s3-object-info-module"><span class="std std-ref">amazon.aws.s3_object_info</span></a> module should be used instead of <code class="ansible-value docutils literal notranslate"><span class="pre">list</span></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;get&quot;</span></code></p></li>
