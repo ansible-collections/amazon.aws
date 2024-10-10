@@ -353,6 +353,7 @@
         instance_id: "{{ ec2_instance_id }}"
         name: "{{ ec2_ami_name }}_imdsv2"
         imdsv2_enable: true
+        wait: true
         tags:
           Name: "{{ ec2_ami_name }}_imdsv2"
       register: imdsv2_image
