@@ -1,7 +1,13 @@
 # Amazon AWS Collection
 The Ansible Amazon AWS collection includes a variety of Ansible content to help automate the management of AWS services. This collection is maintained by the Ansible cloud team.
 
+## Description
+
+The primary purpose of this collection is to simplify and streamline the management of AWS resources through automation. By leveraging this collection, organizations can reduce manual intervention, minimize errors, and ensure consistent and repeatable deployments. This leads to increased efficiency, faster deployments, and a more agile IT infrastructure.
+
 AWS related modules and plugins supported by the Ansible community are in the [community.aws](https://github.com/ansible-collections/community.aws/) collection.
+
+Being Red Hat Ansible Certified Content, this collection is eligible for support through the [Ansible Automation Platform](https://www.redhat.com/en/technologies/management/ansible).
 
 ## Ansible version compatibility
 
