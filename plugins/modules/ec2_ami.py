@@ -785,9 +785,7 @@ class UpdateImage:
             return False
 
         try:
-            modify_image_attribute(
-                connection, image_id=image["imageId"], Attribute="imdsSupport", ImdsSupport={"Value": "v2.0"}
-            )
+            modify_image_attribute(connection, image_id=image["imageId"], Attribute="imdsSupport", Value="v2.0")
             return True
         except AnsibleEC2Error as e:
             raise Ec2AmiFailure(f"Error setting IMDS Support to v2 for image {image['imageId']}", e)
@@ -874,9 +872,7 @@ class CreateImage:
     @staticmethod
     def set_imdsv2(connection, image_id):
         try:
-            modify_image_attribute(
-                connection, image_id=image_id, Attribute="imdsSupport", ImdsSupport={"Value": "v2.0"}
-            )
+            modify_image_attribute(connection, image_id=image_id, Attribute="imdsSupport", Value="v2.0")
         except AnsibleEC2Error as e:
             raise Ec2AmiFailure(f"Error setting IMDS Support to v2 for image {image_id}", e)
 
