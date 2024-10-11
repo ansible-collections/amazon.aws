@@ -664,12 +664,14 @@ def describe_vpc_vpn_gateways(
 ) -> List[Dict[str, Any]]:
     return client.describe_vpn_gateways(**params)
 
+
 @EC2VpcVpnGatewaysErrorHandler.list_error_handler("create vpc vpn gateway", [])
 @AWSRetry.jittered_backoff()
 def create_vpc_vpn_gateway(
     client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
 ) -> List[Dict[str, Any]]:
     return client.create_vpn_gateway(**params)
+
 
 @EC2VpcVpnGatewaysErrorHandler.list_error_handler("delete vpc vpn gateway", [])
 @AWSRetry.jittered_backoff()
@@ -678,12 +680,14 @@ def delete_vpc_vpn_gateway(
 ) -> List[Dict[str, Any]]:
     return client.delete_vpn_gateway(**params)
 
+
 @EC2VpcVpnGatewaysErrorHandler.list_error_handler("attach vpc vpn gateway", [])
 @AWSRetry.jittered_backoff()
 def attach_vpc_vpn_gateway(
     client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
 ) -> List[Dict[str, Any]]:
     return client.attach_vpn_gateway(**params)
+
 
 @EC2VpcVpnGatewaysErrorHandler.list_error_handler("detach vpc vpn gateway", [])
 @AWSRetry.jittered_backoff()
