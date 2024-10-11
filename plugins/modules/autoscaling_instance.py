@@ -9,7 +9,7 @@ from __future__ import annotations
 DOCUMENTATION = r"""
 ---
 module: autoscaling_instance
-version_added: 8.4.0
+version_added: 9.0.0
 short_description: manage instances associated with AWS AutoScaling Groups (ASGs)
 description:
   - Manage instances associated with AWS AutoScaling Groups (ASGs).
