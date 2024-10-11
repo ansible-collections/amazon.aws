@@ -1,6 +1,8 @@
 time=10m
 
 cloud/aws
+# This test will be replaced by the target in community.aws after migration
+disabled
 
 ec2_instance_info
 ec2_instance
