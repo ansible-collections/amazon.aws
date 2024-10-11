@@ -1799,7 +1799,7 @@ def describe_ec2_transit_gateways(
     client, **params: Dict[str, Union[List[str], List[Dict[str, Union[str, List[str]]]]]]
 ) -> List[Dict[str, Any]]:
     paginator = client.get_paginator("describe_transit_gateways")
-    return paginator.paginate(**params).build_full_result()
+    return paginator.paginate(**params).build_full_result()["TransitGateways"]
 
 
 @EC2TransitGatewayErrorHandler.common_error_handler("create transit gateway")
