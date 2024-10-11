@@ -170,8 +170,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <p>The below requirements are needed on the host that executes this module.</p>
 <ul class="simple">
 <li><p>python &gt;= 3.6</p></li>
-<li><p>boto3 &gt;= 1.26.0</p></li>
-<li><p>botocore &gt;= 1.29.0</p></li>
+<li><p>boto3 &gt;= 1.28.0</p></li>
+<li><p>botocore &gt;= 1.31.0</p></li>
 </ul>
 </section>
 <section id="parameters">
@@ -988,7 +988,6 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <td><div class="ansible-option-cell"><p>The storage throughput when the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-rds-instance-module-parameter-storage-type"><span class="std std-ref"><span class="pre">storage_type</span></span></a></strong></code> is <code class="ansible-value docutils literal notranslate"><span class="pre">gp3</span></code>.</p>
 <p>When the allocated storage is below 400 GB, the storage throughput will always be 125 mb/s.</p>
 <p>When the allocated storage is large than or equal 400 GB, the througput starts at 500 mb/s.</p>
-<p>Requires botocore &gt;= 1.29.0.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -1268,7 +1267,6 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 <a class="ansibleOptionLink" href="#return-ca_certificate_identifier" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The identifier of the CA certificate for the DB instance.</p>
-<p>Requires minimum botocore version 1.29.44.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;rds-ca-2015&quot;</span></code></p>
 </div></td>
