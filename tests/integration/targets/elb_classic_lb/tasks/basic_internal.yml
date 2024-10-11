@@ -75,7 +75,7 @@
             that:
               - info.network_interfaces | length > 0
 
-        - amazon.aws.elb_classic_lb_info:
+        - community.aws.elb_classic_lb_info:
             names: ["{{ elb_name }}"]
           register: info
 
