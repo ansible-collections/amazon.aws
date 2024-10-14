@@ -1425,7 +1425,7 @@ class EC2TransitGatewayVPCAttachmentErrorHandler(AWSErrorHandler):
         return is_boto3_error_code("InvalidGatewayID.NotFound")
 
 
-@EC2TransitGatewayVPCAttachmentErrorHandler.common_error_handler("describe transit gateway attachments")
+@EC2TransitGatewayVPCAttachmentErrorHandler.common_error_handler("describe transit gateway vpc attachments")
 @AWSRetry.jittered_backoff()
 def describe_transit_gateway_vpc_attachments(
     client, **params: Dict[str, Union[List[str], bool, List[Dict[str, Union[str, List[str]]]]]]
