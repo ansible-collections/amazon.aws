@@ -1,9 +1,10 @@
-- block:
+- name: Test using IPv6
+  block:
 
     # ============================================================
 
-    - name: create ingress and egress rules using subnet names
-      ec2_vpc_nacl:
+    - name: Create ingress and egress rules using subnet names
+      community.aws.ec2_vpc_nacl:
         vpc_id: "{{ vpc_ipv6_id }}"
         name: "{{ nacl_name }}"
         subnets:
@@ -18,15 +19,18 @@
           - [100, 'all', 'allow', '0.0.0.0/0', null, null, null, null]
         state: 'present'
       register: nacl
-    - assert:
+
+    - name: Assert that module returned the Network ACL id
+      ansible.builtin.assert:
         that:
           - nacl.nacl_id
 
-    - set_fact:
+    - name: Set fact for Network ACL ID
+      ansible.builtin.set_fact:
         nacl_id: "{{ nacl.nacl_id }}"
 
-    - name: add ipv6 entries
-      ec2_vpc_nacl:
+    - name: Add ipv6 entries
+      community.aws.ec2_vpc_nacl:
         vpc_id: "{{ vpc_ipv6_id }}"
         name: "{{ nacl_name }}"
         subnets:
@@ -45,26 +49,27 @@
         state: 'present'
       register: nacl
 
-    - assert:
+    - name: Assert that module reported change while the Network ACL remained unchanged
+      ansible.builtin.assert:
        that:
          - nacl.changed
          - nacl.nacl_id == nacl_id
 
-    - name: get network ACL facts (test that it works with ipv6 entries)
-      ec2_vpc_nacl_info:
+    - name: Get network ACL facts (test that it works with ipv6 entries)
+      community.aws.ec2_vpc_nacl_info:
         nacl_ids:
           - "{{ nacl_id }}"
       register: nacl_facts
 
-    - name: assert the nacl has the correct attributes
-      assert:
+    - name: Assert the nacl has the correct attributes
+      ansible.builtin.assert:
         that:
           - nacl_facts.nacls | length == 1
           - nacl_facts.nacls[0].ingress | length == 5
           - nacl_facts.nacls[0].egress | length == 2
 
-    - name: purge ingress entries
-      ec2_vpc_nacl:
+    - name: Purge ingress entries
+      community.aws.ec2_vpc_nacl:
         vpc_id: "{{ vpc_ipv6_id }}"
         name: "{{ nacl_name }}"
         subnets:
@@ -78,13 +83,14 @@
         state: 'present'
       register: nacl
 
-    - assert:
+    - name: Assert that module reported change while the Network ACL remained unchanged
+      ansible.builtin.assert:
        that:
          - nacl.changed
          - nacl.nacl_id == nacl_id
 
-    - name: purge egress entries
-      ec2_vpc_nacl:
+    - name: Purge egress entries
+      community.aws.ec2_vpc_nacl:
         vpc_id: "{{ vpc_ipv6_id }}"
         name: "{{ nacl_name }}"
         subnets:
@@ -96,18 +102,19 @@
         state: 'present'
       register: nacl
 
-    - assert:
+    - name: Assert that module reported change
+      ansible.builtin.assert:
         that:
           - nacl.changed
 
-    - name: get network ACL facts (test that removed entries are gone)
-      ec2_vpc_nacl_info:
+    - name: Get network ACL facts (test that removed entries are gone)
+      community.aws.ec2_vpc_nacl_info:
         nacl_ids:
           - "{{ nacl_id }}"
       register: nacl_facts
 
-    - name: assert the nacl has the correct attributes
-      assert:
+    - name: Assert the nacl has the correct attributes
+      ansible.builtin.assert:
         that:
           - nacl_facts.nacls | length == 1
           - nacl_facts.nacls[0].ingress | length == 0
@@ -115,10 +122,10 @@
 
   always:
 
-    - name: remove network ACL
-      ec2_vpc_nacl:
+    - name: Remove network ACL
+      community.aws.ec2_vpc_nacl:
         vpc_id: "{{ vpc_ipv6_id }}"
         name: "{{ nacl_name }}"
         state: absent
       register: removed_acl
-      ignore_errors: yes
+      ignore_errors: true

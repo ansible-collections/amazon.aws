@@ -102,15 +102,15 @@ nacls:
             sample: [[100, 'all', 'allow', '0.0.0.0/0', null, null, null, null]]
 """
 
-try:
-    import botocore
-except ImportError:
-    pass  # caught by AnsibleAWSModule
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Union
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleEC2Error
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_network_acls
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 
@@ -121,55 +121,60 @@ from ansible_collections.community.aws.plugins.module_utils.modules import Ansib
 PROTOCOL_NAMES = {"-1": "all", "1": "icmp", "6": "tcp", "17": "udp"}
 
 
-def list_ec2_vpc_nacls(connection, module):
-    nacl_ids = module.params.get("nacl_ids")
-    filters = ansible_dict_to_boto3_filter_list(module.params.get("filters"))
+def format_nacl(nacl: Dict[str, Any]) -> Dict[str, Any]:
+    # Turn the boto3 result into ansible friendly snake cases
+    nacl = camel_dict_to_snake_dict(nacl)
 
-    if nacl_ids is None:
-        nacl_ids = []
+    # convert boto3 tags list into ansible dict
+    if "tags" in nacl:
+        nacl["tags"] = boto3_tag_list_to_ansible_dict(nacl["tags"], "key", "value")
+
+    # Convert NACL entries
+    if "entries" in nacl:
+        nacl["egress"] = [
+            nacl_entry_to_list(entry) for entry in nacl["entries"] if entry["rule_number"] < 32767 and entry["egress"]
+        ]
+        nacl["ingress"] = [
+            nacl_entry_to_list(entry)
+            for entry in nacl["entries"]
+            if entry["rule_number"] < 32767 and not entry["egress"]
+        ]
+        del nacl["entries"]
+
+    # Read subnets from NACL Associations
+    if "associations" in nacl:
+        nacl["subnets"] = [a["subnet_id"] for a in nacl["associations"]]
+        del nacl["associations"]
+
+    # Read Network ACL id
+    if "network_acl_id" in nacl:
+        nacl["nacl_id"] = nacl["network_acl_id"]
+        del nacl["network_acl_id"]
+
+    return nacl
+
+
+def list_ec2_vpc_nacls(connection, module: AnsibleAWSModule) -> None:
+    nacl_ids = module.params.get("nacl_ids")
+    filters = module.params.get("filters")
+
+    params = {}
+    if filters:
+        params["Filters"] = ansible_dict_to_boto3_filter_list(filters)
+    if nacl_ids:
+        params["NetworkAclIds"] = nacl_ids
 
     try:
-        nacls = connection.describe_network_acls(aws_retry=True, NetworkAclIds=nacl_ids, Filters=filters)
-    except is_boto3_error_code("InvalidNetworkAclID.NotFound"):
-        module.fail_json(msg="Unable to describe ACL.  NetworkAcl does not exist")
-    except (
-        botocore.exceptions.ClientError,
-        botocore.exceptions.BotoCoreError,
-    ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg=f"Unable to describe network ACLs {nacl_ids}")
+        network_acls = describe_network_acls(connection, **params)
+        if not network_acls:
+            module.fail_json(msg="Unable to describe ACL. NetworkAcl does not exist")
+    except AnsibleEC2Error as e:
+        module.fail_json_aws_error(e)
 
-    # Turn the boto3 result in to ansible_friendly_snaked_names
-    snaked_nacls = []
-    for nacl in nacls["NetworkAcls"]:
-        snaked_nacls.append(camel_dict_to_snake_dict(nacl))
-
-    # Turn the boto3 result in to ansible friendly tag dictionary
-    for nacl in snaked_nacls:
-        if "tags" in nacl:
-            nacl["tags"] = boto3_tag_list_to_ansible_dict(nacl["tags"], "key", "value")
-        if "entries" in nacl:
-            nacl["egress"] = [
-                nacl_entry_to_list(entry)
-                for entry in nacl["entries"]
-                if entry["rule_number"] < 32767 and entry["egress"]
-            ]
-            nacl["ingress"] = [
-                nacl_entry_to_list(entry)
-                for entry in nacl["entries"]
-                if entry["rule_number"] < 32767 and not entry["egress"]
-            ]
-            del nacl["entries"]
-        if "associations" in nacl:
-            nacl["subnets"] = [a["subnet_id"] for a in nacl["associations"]]
-            del nacl["associations"]
-        if "network_acl_id" in nacl:
-            nacl["nacl_id"] = nacl["network_acl_id"]
-            del nacl["network_acl_id"]
-
-    module.exit_json(nacls=snaked_nacls)
+    module.exit_json(nacls=[format_nacl(nacl) for nacl in network_acls])
 
 
-def nacl_entry_to_list(entry):
+def nacl_entry_to_list(entry: Dict[str, Any]) -> List[Union[str, int, None]]:
     # entry list format
     # [ rule_num, protocol name or number, allow or deny, ipv4/6 cidr, icmp type, icmp code, port from, port to]
     elist = []
@@ -217,7 +222,7 @@ def main():
         supports_check_mode=True,
     )
 
-    connection = module.client("ec2", retry_decorator=AWSRetry.jittered_backoff())
+    connection = module.client("ec2")
 
     list_ec2_vpc_nacls(connection, module)
 
