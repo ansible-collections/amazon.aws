@@ -1427,7 +1427,7 @@ class EC2TransitGatewayVPCAttachmentErrorHandler(AWSErrorHandler):
 
 @EC2TransitGatewayVPCAttachmentErrorHandler.common_error_handler("describe transit gateway attachments")
 @AWSRetry.jittered_backoff()
-def describe_vpc_attachments(
+def describe_transit_gateway_vpc_attachments(
     client, **params: Dict[str, Union[List[str], bool, List[Dict[str, Union[str, List[str]]]]]]
 ) -> List:
     paginator = client.get_paginator("describe_transit_gateway_vpc_attachments")
@@ -1436,29 +1436,27 @@ def describe_vpc_attachments(
 
 @EC2TransitGatewayVPCAttachmentErrorHandler.common_error_handler("create transit gateway vpc attachment")
 @AWSRetry.jittered_backoff()
-def create_vpc_attachment(
+def create_transit_gateway_vpc_attachment(
     client, **params: Dict[str, Union[List[str], bool, List[Dict[str, Union[str, List[str]]]]]]
-) -> Optional[Dict[str, Any]]:
-    result = client.create_transit_gateway_vpc_attachment(**params)
-    return result.get("TransitGatewayVpcAttachment", None)
+) -> Dict[str, Any]:
+    return client.create_transit_gateway_vpc_attachment(**params)["TransitGatewayVpcAttachment"]
 
 
 @EC2TransitGatewayVPCAttachmentErrorHandler.common_error_handler("modify transit gateway vpc attachment")
 @AWSRetry.jittered_backoff()
-def modify_vpc_attachment(
+def modify_transit_gateway_vpc_attachment(
     client, **params: Dict[str, Union[List[str], bool, List[Dict[str, Union[str, List[str]]]]]]
-) -> Optional[Dict[str, Any]]:
-    result = client.modify_transit_gateway_vpc_attachment(**params)
-    return result.get("TransitGatewayVpcAttachment", None)
+) -> Dict[str, Any]:
+    return client.modify_transit_gateway_vpc_attachment(**params)["TransitGatewayVpcAttachment"]
 
 
 @EC2TransitGatewayVPCAttachmentErrorHandler.deletion_error_handler("delete transit gateway vpc attachment")
 @AWSRetry.jittered_backoff()
-def delete_vpc_attachment(
-    client, **params: Dict[str, Union[List[str], bool, List[Dict[str, Union[str, List[str]]]]]]
-) -> Optional[Dict[str, Any]]:
-    result = client.delete_transit_gateway_vpc_attachment(**params)
-    return result.get("TransitGatewayVpcAttachment", None)
+def delete_transit_gateway_vpc_attachment(client, transit_gateway_attachment_id: str) -> bool:
+    client.delete_transit_gateway_vpc_attachment(TransitGatewayAttachmentId=transit_gateway_attachment_id)[
+        "TransitGatewayVpcAttachment"
+    ]
+    return True
 
 
 def add_ec2_tags(client, module, resource_id, tags_to_set, retry_codes=None):
