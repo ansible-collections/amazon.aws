@@ -10,15 +10,15 @@ module: ec2_vpc_vpn
 version_added: 1.0.0
 short_description: Create, modify, and delete EC2 VPN connections
 description:
-  - This module creates, modifies, and deletes VPN connections. Idempotence is achieved by using the filters
-    option or specifying the VPN connection identifier.
+  - This module creates, modifies, and deletes VPN connections.
+  - Idempotence is achieved by using the O(filters) option or specifying the VPN connection identifier.
 author:
-  - "Sloane Hertel (@s-hertel)"
+  - Sloane Hertel (@s-hertel)
 options:
   state:
     description:
       - The desired state of the VPN connection.
-    choices: ['present', 'absent']
+    choices: ["present", "absent"]
     default: present
     required: false
     type: str
@@ -29,13 +29,13 @@ options:
   connection_type:
     description:
       - The type of VPN connection.
-      - At this time only C(ipsec.1) is supported.
-    default: ipsec.1
+      - At this time only V(ipsec.1) is supported.
+    default: "ipsec.1"
     type: str
   vpn_gateway_id:
     description:
       - The ID of the virtual private gateway.
-      - Mutually exclusive with I(transit_gateway_id).
+      - Mutually exclusive with O(transit_gateway_id).
     type: str
   vpn_connection_id:
     description:
@@ -44,20 +44,27 @@ options:
   static_only:
     description:
       - Indicates whether the VPN connection uses static routes only. Static routes must be used for devices that don't support BGP.
-    default: False
+    default: false
     type: bool
     required: false
   transit_gateway_id:
     description:
       - The ID of the transit gateway.
-      - Mutually exclusive with I(vpn_gateway_id).
+      - Mutually exclusive with O(vpn_gateway_id).
     type: str
     version_added: 6.2.0
+  local_ipv4_network_cidr:
+    description:
+      - The IPv4 CIDR on the customer gateway (on-premises) side of the VPN connection.
+    required: false
+    type: str
+    default: "0.0.0.0/0"
+    version_added: 9.0.0
   tunnel_options:
     description:
-      - An optional list object containing no more than two dict members, each of which may contain I(TunnelInsideCidr)
-        and/or I(PreSharedKey) keys with appropriate string values.  AWS defaults will apply in absence of either of
-        the aforementioned keys.
+      - An optional list object containing no more than two dict members, each of which may contain O(tunnel_options.TunnelInsideCidr)
+        and/or O(tunnel_options.PreSharedKey) keys with appropriate string values.
+        AWS defaults will apply in absence of either of the aforementioned keys.
     required: false
     type: list
     elements: dict
@@ -65,26 +72,34 @@ options:
     suboptions:
         TunnelInsideCidr:
             type: str
-            description: The range of inside IP addresses for the tunnel.
+            description:
+              - The range of inside IPv4 addresses for the tunnel.
+        TunnelInsideIpv6Cidr:
+            type: str
+            description:
+              - The range of inside IPv6 addresses for the tunnel.
+            version_added: 9.0.0
         PreSharedKey:
             type: str
-            description: The pre-shared key (PSK) to establish initial authentication between the virtual private gateway and customer gateway.
+            description:
+              - The pre-shared key (PSK) to establish initial authentication between the virtual private gateway and customer gateway.
   filters:
     description:
-      - An alternative to using I(vpn_connection_id). If multiple matches are found, vpn_connection_id is required.
+      - An alternative to using O(vpn_connection_id). If multiple matches are found, O(vpn_connection_id) is required.
         If one of the following suboptions is a list of items to filter by, only one item needs to match to find the VPN
-        that correlates. e.g. if the filter I(cidr) is C(['194.168.2.0/24', '192.168.2.0/24']) and the VPN route only has the
-        destination cidr block of C(192.168.2.0/24) it will be found with this filter (assuming there are not multiple
-        VPNs that are matched). Another example, if the filter I(vpn) is equal to C(['vpn-ccf7e7ad', 'vpn-cb0ae2a2']) and one
+        that correlates. e.g. if the filter O(filters.cidr) is V(["194.168.2.0/24", "192.168.2.0/24"]) and the VPN route only has the
+        destination cidr block of V(192.168.2.0/24) it will be found with this filter (assuming there are not multiple
+        VPNs that are matched). Another example, if the filter O(filters.vpn) is equal to V(["vpn-ccf7e7ad", "vpn-cb0ae2a2"]) and one
         of of the VPNs has the state deleted (exists but is unmodifiable) and the other exists and is not deleted,
-        it will be found via this filter. See examples.
+        it will be found via this filter.
     suboptions:
       cgw-config:
         description:
           - The customer gateway configuration of the VPN as a string (in the format of the return value) or a list of those strings.
       static-routes-only:
         description:
-          - The type of routing; C(true) or C(false).
+          - The type of routing; V(true) or V(false).
+        type: bool
       cidr:
         description:
           - The destination cidr of the VPN's route as a string or a list of those strings.
@@ -107,6 +122,7 @@ options:
       tags:
         description:
           - A dict of key value pairs.
+        type: dict
       cgw:
         description:
           - The customer gateway id as a string or a list of those strings.
@@ -145,79 +161,77 @@ extends_documentation_fragment:
 EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
-- name: create a VPN connection with vpn_gateway_id
+- name: Create a VPN connection with vpn_gateway_id
   community.aws.ec2_vpc_vpn:
-    state: present
-    vpn_gateway_id: vgw-XXXXXXXX
-    customer_gateway_id: cgw-XXXXXXXX
+    state: "present"
+    vpn_gateway_id: "vgw-XXXXXXXX"
+    customer_gateway_id: "cgw-XXXXXXXX"
 
 - name: Attach a vpn connection to transit gateway
   community.aws.ec2_vpc_vpn:
-    state: present
-    transit_gateway_id: tgw-XXXXXXXX
-    customer_gateway_id: cgw-XXXXXXXX
+    state: "present"
+    transit_gateway_id: "tgw-XXXXXXXX"
+    customer_gateway_id: "cgw-XXXXXXXX"
 
-- name: modify VPN connection tags
+- name: Modify VPN connection tags
   community.aws.ec2_vpc_vpn:
-    state: present
-    vpn_connection_id: vpn-XXXXXXXX
+    state: "present"
+    vpn_connection_id: "vpn-XXXXXXXX"
     tags:
-      Name: ansible-tag-1
-      Other: ansible-tag-2
+      Name: "ansible-tag-1"
+      Other: "ansible-tag-2"
 
-- name: delete a connection
+- name: Delete a connection
   community.aws.ec2_vpc_vpn:
-    vpn_connection_id: vpn-XXXXXXXX
-    state: absent
+    vpn_connection_id: "vpn-XXXXXXXX"
+    state: "absent"
 
-- name: modify VPN tags (identifying VPN by filters)
+- name: Modify VPN tags (identifying VPN by filters)
   community.aws.ec2_vpc_vpn:
-    state: present
+    state: "present"
     filters:
-      cidr: 194.168.1.0/24
+      cidr: "194.168.1.0/24"
       tag-keys:
-        - Ansible
-        - Other
+        - "Ansible"
+        - "Other"
     tags:
-      New: Tag
+      New: "Tag"
     purge_tags: true
     static_only: true
 
-- name: set up VPN with tunnel options utilizing 'TunnelInsideCidr' only
+- name: Set up VPN with tunnel options utilizing 'TunnelInsideCidr' only
   community.aws.ec2_vpc_vpn:
-    state: present
+    state: "present"
     filters:
-      vpn: vpn-XXXXXXXX
+      vpn: "vpn-XXXXXXXX"
     static_only: true
     tunnel_options:
-      -
-        TunnelInsideCidr: '169.254.100.1/30'
-      -
-        TunnelInsideCidr: '169.254.100.5/30'
+      - TunnelInsideCidr: "169.254.100.1/30"
+      - TunnelInsideCidr: "169.254.100.5/30"
 
-- name: add routes and remove any preexisting ones
+- name: Add routes and remove any preexisting ones
   community.aws.ec2_vpc_vpn:
-    state: present
+    state: "present"
     filters:
-      vpn: vpn-XXXXXXXX
+      vpn: "vpn-XXXXXXXX"
     routes:
-      - 195.168.2.0/24
-      - 196.168.2.0/24
+      - "195.168.2.0/24"
+      - "196.168.2.0/24"
     purge_routes: true
 
-- name: remove all routes
+- name: Remove all routes
   community.aws.ec2_vpc_vpn:
-    state: present
-    vpn_connection_id: vpn-XXXXXXXX
+    state: "present"
+    vpn_connection_id: "vpn-XXXXXXXX"
     routes: []
     purge_routes: true
 
-- name: delete a VPN identified by filters
+- name: Delete a VPN identified by filters
   community.aws.ec2_vpc_vpn:
-    state: absent
+    state: "absent"
     filters:
       tags:
-        Ansible: Tag
+        Ansible: "Tag"
 """
 
 RETURN = r"""
@@ -225,203 +239,281 @@ changed:
   description: If the VPN connection has changed.
   type: bool
   returned: always
-  sample:
-    changed: true
+  sample: true
 customer_gateway_configuration:
   description: The configuration of the VPN connection.
-  returned: I(state=present)
+  returned: O(state=present)
   type: str
 customer_gateway_id:
   description: The customer gateway connected via the connection.
   type: str
-  returned: I(state=present)
-  sample:
-    customer_gateway_id: cgw-1220c87b
+  returned: O(state=present)
+  sample: "cgw-1220c87b"
+gateway_association_state:
+  description: The current state of the gateway association.
+  type: str
+  returned: O(state=present)
+  sample: "associated"
 vpn_gateway_id:
   description: The virtual private gateway connected via the connection.
   type: str
-  returned: I(state=present)
-  sample:
-    vpn_gateway_id: vgw-cb0ae2a2
+  returned: O(state=present)
+  sample: "vgw-cb0ae2a2"
 transit_gateway_id:
   description: The transit gateway id to which the vpn connection can be attached.
   type: str
-  returned: I(state=present)
-  sample:
-    transit_gateway_id: tgw-cb0ae2a2
+  returned: O(state=present)
+  sample: "tgw-cb0ae2a2"
 options:
-  description: The VPN connection options (currently only containing static_routes_only).
-  type: complex
-  returned: I(state=present)
+  description: The VPN connection options.
+  type: list
+  elements: dict
+  returned: O(state=present)
   contains:
     static_routes_only:
       description: If the VPN connection only allows static routes.
-      returned: I(state=present)
+      returned: O(state=present)
+      type: bool
+      sample: true
+    enable_acceleration:
+      description: Indicates whether acceleration is enabled for the VPN connection.
+      returned: O(state=present)
+      type: bool
+      sample: false
+    local_ipv4_network_cidr:
+      description: The IPv4 CIDR on the customer gateway (on-premises) side of the VPN connection.
+      returned: O(state=present)
       type: str
-      sample:
-        static_routes_only: true
+      sample: "0.0.0.0/0"
+    outside_ip_address_type:
+      description: The external IP address of the VPN tunnel.
+      returned: O(state=present)
+      type: str
+      sample: "PublicIpv4"
+    remote_ipv4_network_cidr:
+      description: The IPv4 CIDR on the Amazon Web Services side of the VPN connection.
+      returned: O(state=present)
+      type: str
+      sample: "0.0.0.0/0"
+    tunnel_inside_ip_version:
+      description: Indicates whether the VPN tunnels process IPv4 or IPv6 traffic.
+      returned: O(state=present)
+      type: str
+      sample: "ipv4"
+    tunnel_options:
+      description: Indicates the VPN tunnel options.
+      returned: O(state=present)
+      type: list
+      elements: dict
+      sample: [{
+                "log_options": {
+                    "cloud_watch_log_options": {
+                        "log_enabled": false
+                    }
+                },
+                "outside_ip_address": "34.225.101.10",
+                "pre_shared_key": "8n7hnjNE8zhIt4VpMOIfcrw6XnUTHLW9",
+                "tunnel_inside_cidr": "169.254.31.8/30"
+            }]
+      contains:
+        log_options:
+          description: Options for logging VPN tunnel activity.
+          returned: O(state=present)
+          type: dict
+          contains:
+            cloud_watch_log_options:
+              description: Options for sending VPN tunnel logs to CloudWatch.
+              type: dict
+              returned: O(state=present)
+        outside_ip_address:
+          description: The external IP address of the VPN tunnel.
+          type: str
+          returned: O(state=present)
+        pre_shared_key:
+          description:
+            - The pre-shared key (PSK) to establish initial authentication between the
+              virtual private gateway and the customer gateway.
+          type: str
+          returned: O(state=present)
+        tunnel_inside_cidr:
+          description: The range of inside IPv4 addresses for the tunnel.
+          type: str
+          returned: O(state=present)
 routes:
   description: The routes of the VPN connection.
   type: list
-  returned: I(state=present)
-  sample:
-    routes: [{
-              'destination_cidr_block': '192.168.1.0/24',
-              'state': 'available'
+  returned: O(state=present)
+  sample: [{
+              "destination_cidr_block": "192.168.1.0/24",
+              "state": "available"
             }]
+  contains:
+    destination_cidr_block:
+      description:
+        - The CIDR block associated with the local subnet of the customer data center.
+      type: str
+      returned: O(state=present)
+    source:
+      description: Indicates how the routes were provided.
+      type: str
+      returned: O(state=present)
+    state:
+      description: The current state of the static route.
+      type: str
+      returned: O(state=present)
 state:
   description: The status of the VPN connection.
   type: str
-  returned: I(state=present)
-  sample:
-    state: available
+  returned: O(state=present)
+  sample: "available"
 tags:
   description: The tags associated with the connection.
   type: dict
-  returned: I(state=present)
-  sample:
-    tags:
-      name: ansible-test
-      other: tag
+  returned: O(state=present)
+  sample: {
+      "name": "ansible-test",
+      "other": "tag"
+    }
 type:
   description: The type of VPN connection (currently only ipsec.1 is available).
   type: str
-  returned: I(state=present)
-  sample:
-    type: "ipsec.1"
+  returned: O(state=present)
+  sample: "ipsec.1"
 vgw_telemetry:
   type: list
-  returned: I(state=present)
+  returned: O(state=present)
   description: The telemetry for the VPN tunnel.
-  sample:
-    vgw_telemetry: [{
-                     'outside_ip_address': 'string',
-                     'status': 'up',
-                     'last_status_change': 'datetime(2015, 1, 1)',
-                     'status_message': 'string',
-                     'accepted_route_count': 123
-                    }]
+  sample: [{
+            "accepted_route_count": 0,
+            "last_status_change": "2024-09-30T13:12:33+00:00",
+            "outside_ip_address": "34.225.101.10",
+            "status": "DOWN",
+            "status_message": "IPSEC IS DOWN"
+        }]
+  contains:
+    accepted_route_count:
+      type: int
+      returned: O(state=present)
+      description: The number of accepted routes.
+    last_status_change:
+      type: str
+      returned: O(state=present)
+      description: The date and time of the last change in status.
+    outside_ip_address:
+      type: str
+      returned: O(state=present)
+      description:
+        - The Internet-routable IP address of the virtual private gateway's outside interface.
+    status:
+      type: str
+      returned: O(state=present)
+      description: The status of the VPN tunnel.
+    status_message:
+      type: str
+      returned: O(state=present)
+      description: If an error occurs, a description of the error.
+    certificate_arn:
+      description: The Amazon Resource Name of the virtual private gateway tunnel endpoint certificate.
+      returned: when a private certificate is used for authentication
+      type: str
+      sample: "arn:aws:acm:us-east-1:123456789012:certificate/c544d8ce-20b8-4fff-98b0-example"
 vpn_connection_id:
   description: The identifier for the VPN connection.
   type: str
-  returned: I(state=present)
-  sample:
-    vpn_connection_id: vpn-781e0e19
+  returned: O(state=present)
+  sample: "vpn-781e0e19"
 """
 
 try:
-    from botocore.exceptions import BotoCoreError
-    from botocore.exceptions import ClientError
     from botocore.exceptions import WaiterError
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import NoReturn
+from typing import Optional
+from typing import Tuple
+from typing import Union
+
 from ansible.module_utils._text import to_text
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleEC2Error
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import create_vpn_connection
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import create_vpn_connection_route
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import delete_vpn_connection
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import delete_vpn_connection_route
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_vpn_connections
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
 
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
 
-class VPNConnectionException(Exception):
-    def __init__(self, msg, exception=None):
-        super(VPNConnectionException, self).__init__(msg)
-        self.msg = msg
-        self.exception = exception
-
-
-# AWS uses VpnGatewayLimitExceeded for both 'Too many VGWs' and 'Too many concurrent changes'
-# we need to look at the mesage to tell the difference.
-class VPNRetry(AWSRetry):
-    @staticmethod
-    def status_code_from_exception(error):
-        return (
-            error.response["Error"]["Code"],
-            error.response["Error"]["Message"],
-        )
-
-    @staticmethod
-    def found(response_code, catch_extra_error_codes=None):
-        retry_on = ["The maximum number of mutating objects has been reached."]
-
-        if catch_extra_error_codes:
-            retry_on.extend(catch_extra_error_codes)
-        if not isinstance(response_code, tuple):
-            response_code = (response_code,)
-
-        for code in response_code:
-            if super().found(response_code, catch_extra_error_codes):
-                return True
-
-        return False
-
-
-def find_connection(connection, module_params, vpn_connection_id=None):
+def find_vpn_connection(
+    client, module: AnsibleAWSModule, vpn_connection_id: Optional[str] = None
+) -> Union[None, Dict[str, Any]]:
     """Looks for a unique VPN connection. Uses find_connection_response() to return the connection found, None,
     or raise an error if there were multiple viable connections."""
 
-    filters = module_params.get("filters")
+    filters = module.params.get("filters")
+    params: Dict[str, Any] = {}
 
     # vpn_connection_id may be provided via module option; takes precedence over any filter values
-    if not vpn_connection_id and module_params.get("vpn_connection_id"):
-        vpn_connection_id = module_params.get("vpn_connection_id")
+    if not vpn_connection_id and module.params.get("vpn_connection_id"):
+        vpn_connection_id = module.params["vpn_connection_id"]
 
     if not isinstance(vpn_connection_id, list) and vpn_connection_id:
         vpn_connection_id = [to_text(vpn_connection_id)]
     elif isinstance(vpn_connection_id, list):
         vpn_connection_id = [to_text(connection) for connection in vpn_connection_id]
 
-    formatted_filter = []
+    formatted_filter: List = []
     # if vpn_connection_id is provided it will take precedence over any filters since it is a unique identifier
     if not vpn_connection_id:
-        formatted_filter = create_filter(module_params, provided_filters=filters)
+        formatted_filter = create_filter(module, filters)
+
+    if vpn_connection_id:
+        params["VpnConnectionIds"] = vpn_connection_id
+    params["Filters"] = formatted_filter
 
     # see if there is a unique matching connection
     try:
-        if vpn_connection_id:
-            existing_conn = connection.describe_vpn_connections(
-                aws_retry=True, VpnConnectionIds=vpn_connection_id, Filters=formatted_filter
-            )
-        else:
-            existing_conn = connection.describe_vpn_connections(aws_retry=True, Filters=formatted_filter)
-    except (BotoCoreError, ClientError) as e:
-        raise VPNConnectionException(msg="Failed while describing VPN connection.", exception=e)
+        existing_conn = describe_vpn_connections(client, **params)
+    except AnsibleEC2Error as e:
+        module.fail_json_aws(e, msg="Failed while describing VPN connection.")
 
-    return find_connection_response(connections=existing_conn)
+    return find_connection_response(module, connections=existing_conn)
 
 
-def add_routes(connection, vpn_connection_id, routes_to_add):
+def add_routes(client, module: AnsibleAWSModule, vpn_connection_id: str, routes_to_add: List[Dict[str, Any]]) -> bool:
+    changed: bool = False
     for route in routes_to_add:
         try:
-            connection.create_vpn_connection_route(
-                aws_retry=True, VpnConnectionId=vpn_connection_id, DestinationCidrBlock=route
-            )
-        except (BotoCoreError, ClientError) as e:
-            raise VPNConnectionException(
-                msg=f"Failed while adding route {route} to the VPN connection {vpn_connection_id}.",
-                exception=e,
-            )
+            changed |= create_vpn_connection_route(client, vpn_connection_id, route)
+        except AnsibleEC2Error as e:
+            module.fail_json_aws(e, msg=f"Failed while adding route {route} to the VPN connection {vpn_connection_id}.")
+    return changed
 
 
-def remove_routes(connection, vpn_connection_id, routes_to_remove):
+def remove_routes(
+    client, module: AnsibleAWSModule, vpn_connection_id: str, routes_to_remove: List[Dict[str, Any]]
+) -> bool:
+    changed: bool = False
     for route in routes_to_remove:
         try:
-            connection.delete_vpn_connection_route(
-                aws_retry=True, VpnConnectionId=vpn_connection_id, DestinationCidrBlock=route
-            )
-        except (BotoCoreError, ClientError) as e:
-            raise VPNConnectionException(
-                msg=f"Failed to remove route {route} from the VPN connection {vpn_connection_id}.",
-                exception=e,
-            )
+            changed |= delete_vpn_connection_route(client, vpn_connection_id, route)
+        except AnsibleEC2Error as e:
+            module.fail_json_aws(e, msg=f"Failed to remove route {route} from the VPN connection {vpn_connection_id}.")
+    return changed
 
 
-def create_filter(module_params, provided_filters):
+def create_filter(module, provided_filters: Dict[str, Any]) -> List[Dict[str, Any]]:
     """Creates a filter using the user-specified parameters and unmodifiable options that may have been specified in the task"""
+
     boto3ify_filter = {
         "cgw-config": "customer-gateway-configuration",
         "static-routes-only": "option.static-routes-only",
@@ -444,7 +536,7 @@ def create_filter(module_params, provided_filters):
     }
 
     flat_filter_dict = {}
-    formatted_filter = []
+    formatted_filter: List = []
 
     for raw_param in dict(provided_filters):
         # fix filter names to be recognized by boto3
@@ -454,7 +546,7 @@ def create_filter(module_params, provided_filters):
         elif raw_param in list(boto3ify_filter.items()):
             param = raw_param
         else:
-            raise VPNConnectionException(msg=f"{raw_param} is not a valid filter.")
+            module.fail_json(msg=f"{raw_param} is not a valid filter.")
 
         # reformat filters with special formats
         if param == "tag":
@@ -474,8 +566,8 @@ def create_filter(module_params, provided_filters):
 
     # if customer_gateway, vpn_gateway, or vpn_connection was specified in the task but not the filter, add it
     for param in param_to_filter:
-        if param_to_filter[param] not in flat_filter_dict and module_params.get(param):
-            flat_filter_dict[param_to_filter[param]] = [module_params.get(param)]
+        if param_to_filter[param] not in flat_filter_dict and module.params.get(param):
+            flat_filter_dict[param_to_filter[param]] = [module.params.get(param)]
 
     # change the flat dict into something boto3 will understand
     formatted_filter = [{"Name": key, "Values": value} for key, value in flat_filter_dict.items()]
@@ -483,18 +575,18 @@ def create_filter(module_params, provided_filters):
     return formatted_filter
 
 
-def find_connection_response(connections=None):
+def find_connection_response(module, connections: Optional[List[Dict[str, Any]]] = None) -> Optional[Dict[str, Any]]:
     """Determine if there is a viable unique match in the connections described. Returns the unique VPN connection if one is found,
     returns None if the connection does not exist, raise an error if multiple matches are found."""
 
     # Found no connections
-    if not connections or "VpnConnections" not in connections:
+    if not connections:
         return None
 
     # Too many results
-    elif connections and len(connections["VpnConnections"]) > 1:
+    elif connections and len(connections) > 1:
         viable = []
-        for each in connections["VpnConnections"]:
+        for each in connections:
             # deleted connections are not modifiable
             if each["State"] not in ("deleted", "deleting"):
                 viable.append(each)
@@ -505,7 +597,7 @@ def find_connection_response(connections=None):
             # Found a result but it was deleted already; since there was only one viable result create a new one
             return None
         else:
-            raise VPNConnectionException(
+            module.fail_json(
                 msg=(
                     "More than one matching VPN connection was found. "
                     "To modify or delete a VPN please specify vpn_connection_id or add filters."
@@ -513,26 +605,29 @@ def find_connection_response(connections=None):
             )
 
     # Found unique match
-    elif connections and len(connections["VpnConnections"]) == 1:
+    elif connections and len(connections) == 1:
         # deleted connections are not modifiable
-        if connections["VpnConnections"][0]["State"] not in ("deleted", "deleting"):
-            return connections["VpnConnections"][0]
+        if connections[0]["State"] not in ("deleted", "deleting"):
+            return connections[0]
 
 
 def create_connection(
-    connection,
-    customer_gateway_id,
-    static_only,
-    vpn_gateway_id,
-    transit_gateway_id,
-    connection_type,
-    max_attempts,
-    delay,
-    tunnel_options=None,
-):
+    client,
+    module: AnsibleAWSModule,
+    customer_gateway_id: Optional[str],
+    static_only: Optional[bool],
+    vpn_gateway_id: str,
+    transit_gateway_id: str,
+    connection_type: Optional[str],
+    max_attempts: Optional[int],
+    delay: Optional[int],
+    local_ipv4_network_cidr: Optional[str],
+    tunnel_options: Optional[List[Dict[str, Any]]] = None,
+) -> Dict[str, Any]:
     """Creates a VPN connection"""
 
-    options = {"StaticRoutesOnly": static_only}
+    options = {"StaticRoutesOnly": static_only, "LocalIpv4NetworkCidr": local_ipv4_network_cidr}
+
     if tunnel_options and len(tunnel_options) <= 2:
         t_opt = []
         for m in tunnel_options:
@@ -545,87 +640,67 @@ def create_connection(
             options["TunnelOptions"] = t_opt
 
     if not (customer_gateway_id and (vpn_gateway_id or transit_gateway_id)):
-        raise VPNConnectionException(
+        module.fail_json(
             msg=(
                 "No matching connection was found. To create a new connection you must provide "
                 "customer_gateway_id and one of either transit_gateway_id or vpn_gateway_id."
             )
         )
-    vpn_connection_params = {"Type": connection_type, "CustomerGatewayId": customer_gateway_id, "Options": options}
+    vpn_connection_params: Dict[str, Any] = {
+        "Type": connection_type,
+        "CustomerGatewayId": customer_gateway_id,
+        "Options": options,
+    }
+
     if vpn_gateway_id:
         vpn_connection_params["VpnGatewayId"] = vpn_gateway_id
     if transit_gateway_id:
         vpn_connection_params["TransitGatewayId"] = transit_gateway_id
 
     try:
-        vpn = connection.create_vpn_connection(**vpn_connection_params)
-        connection.get_waiter("vpn_connection_available").wait(
-            VpnConnectionIds=[vpn["VpnConnection"]["VpnConnectionId"]],
+        vpn = create_vpn_connection(client, **vpn_connection_params)
+        client.get_waiter("vpn_connection_available").wait(
+            VpnConnectionIds=[vpn["VpnConnectionId"]],
             WaiterConfig={"Delay": delay, "MaxAttempts": max_attempts},
         )
     except WaiterError as e:
-        raise VPNConnectionException(
-            msg=f"Failed to wait for VPN connection {vpn['VpnConnection']['VpnConnectionId']} to be available",
-            exception=e,
+        module.fail_json_aws(
+            e, msg=f"Failed to wait for VPN connection {vpn['VpnConnection']['VpnConnectionId']} to be available"
         )
-    except (BotoCoreError, ClientError) as e:
-        raise VPNConnectionException(msg="Failed to create VPN connection", exception=e)
+    except AnsibleEC2Error as e:
+        module.fail_json_aws(e, msg="Failed to create VPN connection")
 
-    return vpn["VpnConnection"]
+    return vpn
 
 
-def delete_connection(connection, vpn_connection_id, delay, max_attempts):
+def delete_connection(client, module: AnsibleAWSModule, vpn_connection_id: str) -> NoReturn:
     """Deletes a VPN connection"""
+
+    delay = module.params.get("delay")
+    max_attempts = module.params.get("wait_timeout") // delay
+
     try:
-        connection.delete_vpn_connection(aws_retry=True, VpnConnectionId=vpn_connection_id)
-        connection.get_waiter("vpn_connection_deleted").wait(
+        delete_vpn_connection(client, vpn_connection_id)
+        client.get_waiter("vpn_connection_deleted").wait(
             VpnConnectionIds=[vpn_connection_id], WaiterConfig={"Delay": delay, "MaxAttempts": max_attempts}
         )
     except WaiterError as e:
-        raise VPNConnectionException(
-            msg=f"Failed to wait for VPN connection {vpn_connection_id} to be removed", exception=e
-        )
-    except (BotoCoreError, ClientError) as e:
-        raise VPNConnectionException(msg=f"Failed to delete the VPN connection: {vpn_connection_id}", exception=e)
+        module.fail_json_aws(e, msg=f"Failed to wait for VPN connection {vpn_connection_id} to be removed")
+    except AnsibleEC2Error as e:
+        module.fail_json_aws(e, msg=f"Failed to delete the VPN connection: {vpn_connection_id}")
 
 
-def add_tags(connection, vpn_connection_id, add):
-    try:
-        connection.create_tags(aws_retry=True, Resources=[vpn_connection_id], Tags=add)
-    except (BotoCoreError, ClientError) as e:
-        raise VPNConnectionException(msg=f"Failed to add the tags: {add}.", exception=e)
+def check_for_routes_update(client, module: AnsibleAWSModule, vpn_connection_id: str) -> Dict[str, Any]:
+    """Determines if there are any routes that need to be updated. Ensures non-modifiable attributes aren't expected to change."""
+    routes = module.params.get("routes")
+    purge_routes = module.params.get("purge_routes")
 
-
-def remove_tags(connection, vpn_connection_id, remove):
-    # format tags since they are a list in the format ['tag1', 'tag2', 'tag3']
-    key_dict_list = [{"Key": tag} for tag in remove]
-    try:
-        connection.delete_tags(aws_retry=True, Resources=[vpn_connection_id], Tags=key_dict_list)
-    except (BotoCoreError, ClientError) as e:
-        raise VPNConnectionException(msg=f"Failed to remove the tags: {remove}.", exception=e)
-
-
-def check_for_update(connection, module_params, vpn_connection_id):
-    """Determines if there are any tags or routes that need to be updated. Ensures non-modifiable attributes aren't expected to change."""
-    tags = module_params.get("tags")
-    routes = module_params.get("routes")
-    purge_tags = module_params.get("purge_tags")
-    purge_routes = module_params.get("purge_routes")
-
-    vpn_connection = find_connection(connection, module_params, vpn_connection_id=vpn_connection_id)
+    vpn_connection = find_vpn_connection(client, module, vpn_connection_id)
     current_attrs = camel_dict_to_snake_dict(vpn_connection)
 
     # Initialize changes dict
-    changes = {"tags_to_add": [], "tags_to_remove": [], "routes_to_add": [], "routes_to_remove": []}
+    changes: Dict[str, Any] = {"routes_to_add": [], "routes_to_remove": []}
 
-    # Get changes to tags
-    current_tags = boto3_tag_list_to_ansible_dict(current_attrs.get("tags", []), "key", "value")
-    if tags is None:
-        changes["tags_to_remove"] = []
-        changes["tags_to_add"] = []
-    else:
-        tags_to_add, changes["tags_to_remove"] = compare_aws_tags(current_tags, tags, purge_tags)
-        changes["tags_to_add"] = ansible_dict_to_boto3_tag_list(tags_to_add)
     # Get changes to routes
     if "Routes" in vpn_connection:
         current_routes = [route["DestinationCidrBlock"] for route in vpn_connection["Routes"]]
@@ -638,18 +713,18 @@ def check_for_update(connection, module_params, vpn_connection_id):
         if attribute in ("tags", "routes", "state"):
             continue
         elif attribute == "options":
-            will_be = module_params.get("static_only", None)
+            will_be = module.params.get("static_only")
             is_now = bool(current_attrs[attribute]["static_routes_only"])
             attribute = "static_only"
         elif attribute == "type":
-            will_be = module_params.get("connection_type", None)
+            will_be = module.params.get("connection_type")
             is_now = current_attrs[attribute]
         else:
             is_now = current_attrs[attribute]
-            will_be = module_params.get(attribute, None)
+            will_be = module.params.get(attribute)
 
         if will_be is not None and to_text(will_be) != to_text(is_now):
-            raise VPNConnectionException(
+            module.fail_json(
                 msg=(
                     f"You cannot modify {attribute}, the current value of which is {is_now}. Modifiable VPN connection"
                     f" attributes are tags and routes. The value you tried to change it to is {will_be}."
@@ -659,42 +734,37 @@ def check_for_update(connection, module_params, vpn_connection_id):
     return changes
 
 
-def make_changes(connection, vpn_connection_id, changes):
-    """changes is a dict with the keys 'tags_to_add', 'tags_to_remove', 'routes_to_add', 'routes_to_remove',
-    the values of which are lists (generated by check_for_update()).
+def make_changes(client, module: AnsibleAWSModule, vpn_connection_id: str, changes: Dict[str, Any]) -> bool:
+    """changes is a dict with the keys 'routes_to_add', 'routes_to_remove',
+    the values of which are lists (generated by check_for_routes_update()).
     """
-    changed = False
+    changed: bool = False
 
-    if changes["tags_to_add"]:
-        changed = True
-        add_tags(connection, vpn_connection_id, changes["tags_to_add"])
-
-    if changes["tags_to_remove"]:
-        changed = True
-        remove_tags(connection, vpn_connection_id, changes["tags_to_remove"])
+    if module.params.get("tags") is not None:
+        changed |= ensure_ec2_tags(
+            client,
+            module,
+            vpn_connection_id,
+            resource_type="vpn-connection",
+            tags=module.params.get("tags"),
+            purge_tags=module.params.get("purge_tags"),
+        )
 
     if changes["routes_to_add"]:
-        changed = True
-        add_routes(connection, vpn_connection_id, changes["routes_to_add"])
+        changed |= add_routes(client, module, vpn_connection_id, changes["routes_to_add"])
 
     if changes["routes_to_remove"]:
-        changed = True
-        remove_routes(connection, vpn_connection_id, changes["routes_to_remove"])
+        changed |= remove_routes(client, module, vpn_connection_id, changes["routes_to_remove"])
 
     return changed
 
 
-def get_check_mode_results(connection, module_params, vpn_connection_id=None, current_state=None):
+def get_check_mode_results(
+    module_params: Dict[str, Any], vpn_connection_id: Optional[str] = None, current_state: Optional[str] = None
+) -> Tuple[bool, Dict[str, Any]]:
     """Returns the changes that would be made to a VPN Connection"""
-    state = module_params.get("state")
-    if state == "absent":
-        if vpn_connection_id:
-            return True, {}
-        else:
-            return False, {}
-
-    changed = False
-    results = {
+    changed: bool = False
+    results: Dict[str, Any] = {
         "customer_gateway_configuration": "",
         "customer_gateway_id": module_params.get("customer_gateway_id"),
         "vpn_gateway_id": module_params.get("vpn_gateway_id"),
@@ -703,8 +773,8 @@ def get_check_mode_results(connection, module_params, vpn_connection_id=None, cu
         "routes": [module_params.get("routes")],
     }
 
-    # get combined current tags and tags to set
     present_tags = module_params.get("tags")
+    # get combined current tags and tags to set
     if present_tags is None:
         pass
     elif current_state and "Tags" in current_state:
@@ -717,6 +787,7 @@ def get_check_mode_results(connection, module_params, vpn_connection_id=None, cu
         results["tags"] = current_tags
     elif module_params.get("tags"):
         changed = True
+
     if present_tags:
         results["tags"] = present_tags
 
@@ -745,75 +816,75 @@ def get_check_mode_results(connection, module_params, vpn_connection_id=None, cu
     return changed, results
 
 
-def ensure_present(connection, module_params, check_mode=False):
+def ensure_present(
+    client, module: AnsibleAWSModule, vpn_connection: Optional[Dict[str, Any]]
+) -> Tuple[bool, Dict[str, Any]]:
     """Creates and adds tags to a VPN connection. If the connection already exists update tags."""
-    vpn_connection = find_connection(connection, module_params)
-    changed = False
-    delay = module_params.get("delay")
-    max_attempts = module_params.get("wait_timeout") // delay
+    changed: bool = False
+    delay = module.params.get("delay")
+    max_attempts = module.params.get("wait_timeout") // delay
 
     # No match but vpn_connection_id was specified.
-    if not vpn_connection and module_params.get("vpn_connection_id"):
-        raise VPNConnectionException(
-            msg="There is no VPN connection available or pending with that id. Did you delete it?"
-        )
+    if not vpn_connection and module.params.get("vpn_connection_id"):
+        module.fail_json(msg="There is no VPN connection available or pending with that id. Did you delete it?")
 
     # Unique match was found. Check if attributes provided differ.
     elif vpn_connection:
         vpn_connection_id = vpn_connection["VpnConnectionId"]
-        # check_for_update returns a dict with the keys tags_to_add, tags_to_remove, routes_to_add, routes_to_remove
-        changes = check_for_update(connection, module_params, vpn_connection_id)
-        if check_mode:
-            return get_check_mode_results(connection, module_params, vpn_connection_id, current_state=vpn_connection)
-        changed = make_changes(connection, vpn_connection_id, changes)
+        # check_for_update returns a dict with the keys routes_to_add, routes_to_remove
+        changes = check_for_routes_update(client, module, vpn_connection_id)
+
+        if module.check_mode:
+            return get_check_mode_results(module.params, vpn_connection_id, current_state=vpn_connection)
+
+        changed |= make_changes(client, module, vpn_connection_id, changes)
 
     # No match was found. Create and tag a connection and add routes.
     else:
         changed = True
-        if check_mode:
-            return get_check_mode_results(connection, module_params)
+
+        if module.check_mode:
+            return get_check_mode_results(module.params)
+
         vpn_connection = create_connection(
-            connection,
-            customer_gateway_id=module_params.get("customer_gateway_id"),
-            static_only=module_params.get("static_only"),
-            vpn_gateway_id=module_params.get("vpn_gateway_id"),
-            transit_gateway_id=module_params.get("transit_gateway_id"),
-            connection_type=module_params.get("connection_type"),
-            tunnel_options=module_params.get("tunnel_options"),
+            client,
+            module,
+            customer_gateway_id=module.params.get("customer_gateway_id"),
+            static_only=module.params.get("static_only"),
+            vpn_gateway_id=module.params.get("vpn_gateway_id"),
+            transit_gateway_id=module.params.get("transit_gateway_id"),
+            connection_type=module.params.get("connection_type"),
+            local_ipv4_network_cidr=module.params.get("local_ipv4_network_cidr"),
+            tunnel_options=module.params.get("tunnel_options"),
             max_attempts=max_attempts,
             delay=delay,
         )
-        changes = check_for_update(connection, module_params, vpn_connection["VpnConnectionId"])
-        make_changes(connection, vpn_connection["VpnConnectionId"], changes)
+
+        changes = check_for_routes_update(client, module, vpn_connection["VpnConnectionId"])
+        make_changes(client, module, vpn_connection["VpnConnectionId"], changes)
 
     # get latest version if a change has been made and make tags output nice before returning it
     if vpn_connection:
-        vpn_connection = find_connection(connection, module_params, vpn_connection["VpnConnectionId"])
+        vpn_connection = find_vpn_connection(client, module, vpn_connection["VpnConnectionId"])
         if "Tags" in vpn_connection:
             vpn_connection["Tags"] = boto3_tag_list_to_ansible_dict(vpn_connection["Tags"])
 
-    return changed, vpn_connection
+    return (changed, vpn_connection)
 
 
-def ensure_absent(connection, module_params, check_mode=False):
+def ensure_absent(client, module: AnsibleAWSModule, vpn_connection: Dict[str, Any]) -> bool:
     """Deletes a VPN connection if it exists."""
-    vpn_connection = find_connection(connection, module_params)
-
-    if check_mode:
-        return get_check_mode_results(
-            connection, module_params, vpn_connection["VpnConnectionId"] if vpn_connection else None
-        )
-
-    delay = module_params.get("delay")
-    max_attempts = module_params.get("wait_timeout") // delay
+    changed: bool = False
 
     if vpn_connection:
-        delete_connection(connection, vpn_connection["VpnConnectionId"], delay=delay, max_attempts=max_attempts)
         changed = True
-    else:
-        changed = False
 
-    return changed, {}
+        if module.check_mode:
+            return changed
+
+        delete_connection(client, module, vpn_connection["VpnConnectionId"])
+
+    return changed
 
 
 def main():
@@ -824,7 +895,18 @@ def main():
         tags=dict(type="dict", aliases=["resource_tags"]),
         connection_type=dict(default="ipsec.1", type="str"),
         transit_gateway_id=dict(type="str"),
-        tunnel_options=dict(no_log=True, type="list", default=[], elements="dict"),
+        local_ipv4_network_cidr=dict(type="str", default="0.0.0.0/0"),
+        tunnel_options=dict(
+            no_log=True,
+            type="list",
+            default=[],
+            elements="dict",
+            options=dict(
+                TunnelInsideCidr=dict(type="str"),
+                TunnelInsideIpv6Cidr=dict(type="str"),
+                PreSharedKey=dict(type="str", no_log=True),
+            ),
+        ),
         static_only=dict(default=False, type="bool"),
         customer_gateway_id=dict(type="str"),
         vpn_connection_id=dict(type="str"),
@@ -843,21 +925,17 @@ def main():
         supports_check_mode=True,
         mutually_exclusive=mutually_exclusive,
     )
-    connection = module.client("ec2", retry_decorator=VPNRetry.jittered_backoff(retries=10))
+    client = module.client("ec2")
 
+    response: Dict[str, Any] = {}
     state = module.params.get("state")
-    parameters = dict(module.params)
 
-    try:
-        if state == "present":
-            changed, response = ensure_present(connection, parameters, module.check_mode)
-        elif state == "absent":
-            changed, response = ensure_absent(connection, parameters, module.check_mode)
-    except VPNConnectionException as e:
-        if e.exception:
-            module.fail_json_aws(e.exception, msg=e.msg)
-        else:
-            module.fail_json(msg=e.msg)
+    vpn_connection = find_vpn_connection(client, module)
+
+    if state == "present":
+        changed, response = ensure_present(client, module, vpn_connection)
+    elif state == "absent":
+        changed = ensure_absent(client, module, vpn_connection)
 
     module.exit_json(changed=changed, **camel_dict_to_snake_dict(response))
 

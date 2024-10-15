@@ -34,61 +34,62 @@
 
   # ============================================================
 
-  - name: (check) add tags
-    ec2_vpc_vpn:
+  - name: Add tags (check_mode)
+    community.aws.ec2_vpc_vpn:
       tags: '{{ first_tags }}'
       state: 'present'
     register: tag_vpn
-    check_mode: True
+    check_mode: true
 
-  - name: assert would change
-    assert:
+  - name: Assert would change
+    ansible.builtin.assert:
       that:
         - tag_vpn is changed
         - tag_vpn.vpn_connection_id == vpn_id
 
-  - name: add tags
-    ec2_vpc_vpn:
+  - name: Add tags
+    community.aws.ec2_vpc_vpn:
       tags: '{{ first_tags }}'
       state: 'present'
     register: tag_vpn
 
-  - name: get VPC VPN facts
-    ec2_vpc_vpn_info: {}
+  - name: Get EC2 VPC VPN facts
+    community.aws.ec2_vpc_vpn_info: {}
     register: tag_vpn_info
 
-  - name: verify the tags were added
-    assert:
+  - name: Verify the tags were added
+    ansible.builtin.assert:
       that:
         - tag_vpn is changed
         - tag_vpn.vpn_connection_id == vpn_id
         - tag_vpn_info.vpn_connections[0].vpn_connection_id == vpn_id
         - tag_vpn_info.vpn_connections[0].tags == first_tags
 
-  - name: (check) add tags - IDEMPOTENCY
-    ec2_vpc_vpn:
+  - name: Add tags - IDEMPOTENCY (check_mode)
+    community.aws.ec2_vpc_vpn:
       tags: '{{ first_tags }}'
       state: 'present'
     register: tag_vpn
-    check_mode: True
+    check_mode: true
 
-  - name: assert would not change
-    assert:
+  - name: Assert would not change
+    ansible.builtin.assert:
       that:
         - tag_vpn is not changed
         - tag_vpn.vpn_connection_id == vpn_id
 
-  - name: add tags - IDEMPOTENCY
-    ec2_vpc_vpn:
+  - name: Add tags - IDEMPOTENCY
+    community.aws.ec2_vpc_vpn:
       tags: '{{ first_tags }}'
       state: 'present'
     register: tag_vpn
-  - name: get VPC VPN facts
-    ec2_vpc_vpn_info: {}
+
+  - name: Get EC2 VPC VPN facts
+    community.aws.ec2_vpc_vpn_info: {}
     register: tag_vpn_info
 
-  - name: verify no change
-    assert:
+  - name: Verify no change
+    ansible.builtin.assert:
       that:
         - tag_vpn is not changed
         - tag_vpn.vpn_connection_id == vpn_id
@@ -97,80 +98,66 @@
 
   # ============================================================
 
-#  - name: get VPC VPN facts by filter
-#    ec2_vpc_vpn_info:
-#      filters:
-#        'tag:Name': '{{ vgw_name }}'
-#      vpn_connection_ids: '{{ omit }}'
-#    register: tag_vpn_info
-#
-#  - name: assert the facts are the same as before
-#    assert:
-#      that:
-#        - tag_vpn_info.vpn_connections | length == 1
-#        - tag_vpn.vpn_connection_id == vpn_id
-#        - tag_vpn_info.vpn_connections[0].vpn_connection_id == vpn_id
-
-  # ============================================================
-
-  - name: (check) modify tags with purge
-    ec2_vpc_vpn:
+  - name: Modify tags with purge (check_mode)
+    community.aws.ec2_vpc_vpn:
       tags: '{{ second_tags }}'
       state: 'present'
       purge_tags: true
     register: tag_vpn
-    check_mode: True
+    check_mode: true
 
-  - name: assert would change
-    assert:
+  - name: Assert would change
+    ansible.builtin.assert:
       that:
         - tag_vpn is changed
         - tag_vpn.vpn_connection_id == vpn_id
 
-  - name: modify tags with purge
-    ec2_vpc_vpn:
+  - name: Modify tags with purge
+    community.aws.ec2_vpc_vpn:
       tags: '{{ second_tags }}'
       state: 'present'
       purge_tags: true
     register: tag_vpn
-  - name: get VPC VPN facts
-    ec2_vpc_vpn_info:
+
+  - name: Get EC2 VPC VPN facts
+    community.aws.ec2_vpc_vpn_info:
     register: tag_vpn_info
 
-  - name: verify the tags were added
-    assert:
+  - name: Verify the tags were added
+    ansible.builtin.assert:
       that:
         - tag_vpn is changed
         - tag_vpn.vpn_connection_id == vpn_id
         - tag_vpn_info.vpn_connections[0].vpn_connection_id == vpn_id
         - tag_vpn_info.vpn_connections[0].tags == second_tags
 
-  - name: (check) modify tags with purge - IDEMPOTENCY
-    ec2_vpc_vpn:
+  - name: Modify tags with purge - IDEMPOTENCY (check_mode)
+    community.aws.ec2_vpc_vpn:
       tags: '{{ second_tags }}'
       state: 'present'
       purge_tags: true
     register: tag_vpn
     check_mode: True
 
-  - name: assert would not change
-    assert:
+  - name: Assert would not change
+    ansible.builtin.assert:
       that:
         - tag_vpn is not changed
         - tag_vpn.vpn_connection_id == vpn_id
 
-  - name: modify tags with purge - IDEMPOTENCY
-    ec2_vpc_vpn:
+  - name: Modify tags with purge - IDEMPOTENCY
+    community.aws.ec2_vpc_vpn:
       tags: '{{ second_tags }}'
       state: 'present'
       purge_tags: true
     register: tag_vpn
-  - name: get VPC VPN facts
-    ec2_vpc_vpn_info:
+
+  - name: Get EC2 VPC VPN facts
+    community.aws.ec2_vpc_vpn_info:
     register: tag_vpn_info
 
-  - name: verify no change
-    assert:
+  - name: Verify no change
+    ansible.builtin.assert:
       that:
         - tag_vpn is not changed
         - tag_vpn.vpn_connection_id == vpn_id
@@ -179,64 +166,66 @@
 
   # ============================================================
 
-  - name: (check) modify tags without purge
-    ec2_vpc_vpn:
+  - name: Modify tags without purge (check_mode)
+    community.aws.ec2_vpc_vpn:
       tags: '{{ third_tags }}'
       state: 'present'
       purge_tags: False
     register: tag_vpn
     check_mode: True
 
-  - name: assert would change
-    assert:
+  - name: Assert would change
+    ansible.builtin.assert:
       that:
         - tag_vpn is changed
         - tag_vpn.vpn_connection_id == vpn_id
 
-  - name: modify tags without purge
-    ec2_vpc_vpn:
+  - name: Modify tags without purge
+    community.aws.ec2_vpc_vpn:
       tags: '{{ third_tags }}'
       state: 'present'
       purge_tags: False
     register: tag_vpn
-  - name: get VPC VPN facts
-    ec2_vpc_vpn_info:
+
+  - name: Get EC2 VPC VPN facts
+    community.aws.ec2_vpc_vpn_info:
     register: tag_vpn_info
 
   - name: verify the tags were added
-    assert:
+    ansible.builtin.assert:
       that:
         - tag_vpn is changed
         - tag_vpn.vpn_connection_id == vpn_id
         - tag_vpn_info.vpn_connections[0].vpn_connection_id == vpn_id
         - tag_vpn_info.vpn_connections[0].tags == final_tags
 
-  - name: (check) modify tags without purge - IDEMPOTENCY
-    ec2_vpc_vpn:
+  - name: Modify tags without purge - IDEMPOTENCY (check_mode)
+    community.aws.ec2_vpc_vpn:
       tags: '{{ third_tags }}'
       state: 'present'
-      purge_tags: False
+      purge_tags: false
     register: tag_vpn
-    check_mode: True
+    check_mode: true
 
-  - name: assert would not change
-    assert:
+  - name: Assert would not change
+    ansible.builtin.assert:
       that:
         - tag_vpn is not changed
         - tag_vpn.vpn_connection_id == vpn_id
 
-  - name: modify tags without purge - IDEMPOTENCY
-    ec2_vpc_vpn:
+  - name: Modify tags without purge - IDEMPOTENCY
+    community.aws.ec2_vpc_vpn:
       tags: '{{ third_tags }}'
       state: 'present'
-      purge_tags: False
+      purge_tags: false
     register: tag_vpn
-  - name: get VPC VPN facts
-    ec2_vpc_vpn_info:
+
+  - name: Get EC2 VPC VPN facts
+    community.aws.ec2_vpc_vpn_info:
     register: tag_vpn_info
 
-  - name: verify no change
-    assert:
+  - name: Verify no change
+    ansible.builtin.assert:
       that:
         - tag_vpn is not changed
         - tag_vpn.vpn_connection_id == vpn_id
@@ -245,28 +234,29 @@
 
   # ============================================================
 
-  - name: (check) No change to tags without setting tags
-    ec2_vpc_vpn:
+  - name: No change to tags without setting tag (check_mode)
+    community.aws.ec2_vpc_vpn:
       state: 'present'
     register: tag_vpn
-    check_mode: True
+    check_mode: true
 
-  - name: assert would change
-    assert:
+  - name: Assert would change
+    ansible.builtin.assert:
       that:
         - tag_vpn is not changed
         - tag_vpn.vpn_connection_id == vpn_id
 
   - name: No change to tags without setting tags
-    ec2_vpc_vpn:
+    community.aws.ec2_vpc_vpn:
       state: 'present'
     register: tag_vpn
-  - name: get VPC VPN facts
-    ec2_vpc_vpn_info:
+
+  - name: Get CE2 VPC VPN facts
+    community.aws.ec2_vpc_vpn_info:
     register: tag_vpn_info
 
-  - name: verify no tags were added
-    assert:
+  - name: Verify no tags were added
+    ansible.builtin.assert:
       that:
         - tag_vpn is not changed
         - tag_vpn.vpn_connection_id == vpn_id
@@ -275,63 +265,65 @@
 
   # ============================================================
 
-  - name: (check) remove tags
-    ec2_vpc_vpn:
+  - name: Remove tags (check_mode)
+    community.aws.ec2_vpc_vpn:
       tags: {}
       state: 'present'
-      purge_tags: True
+      purge_tags: true
     register: tag_vpn
-    check_mode: True
+    check_mode: true
 
-  - name: assert would change
-    assert:
+  - name: Assert would change
+    ansible.builtin.assert:
       that:
         - tag_vpn is changed
         - tag_vpn.vpn_connection_id == vpn_id
 
-  - name: remove tags
-    ec2_vpc_vpn:
+  - name: Remove tags
+    community.aws.ec2_vpc_vpn:
       tags: {}
-      state: 'present'
-      purge_tags: True
+      state: present
+      purge_tags: true
     register: tag_vpn
-  - name: get VPC VPN facts
-    ec2_vpc_vpn_info:
+
+  - name: Get EC2 VPC VPN facts
+    community.aws.ec2_vpc_vpn_info:
     register: tag_vpn_info
 
-  - name: verify the tags were removed
-    assert:
+  - name: Verify the tags were removed
+    ansible.builtin.assert:
       that:
         - tag_vpn is changed
         - tag_vpn.vpn_connection_id == vpn_id
         - tag_vpn_info.vpn_connections[0].vpn_connection_id == vpn_id
 
-  - name: (check) remove tags - IDEMPOTENCY
-    ec2_vpc_vpn:
+  - name: Remove tags - IDEMPOTENCY (check_mode)
+    community.aws.ec2_vpc_vpn:
       tags: {}
       state: 'present'
-      purge_tags: True
+      purge_tags: true
     register: tag_vpn
-    check_mode: True
+    check_mode: true
 
-  - name: assert would not change
-    assert:
+  - name: Assert would not change
+    ansible.builtin.assert:
       that:
         - tag_vpn is not changed
         - tag_vpn.vpn_connection_id == vpn_id
 
-  - name: remove tags - IDEMPOTENCY
-    ec2_vpc_vpn:
+  - name: Remove tags - IDEMPOTENCY
+    community.aws.ec2_vpc_vpn:
       tags: {}
       state: 'present'
-      purge_tags: True
+      purge_tags: true
     register: tag_vpn
-  - name: get VPC VPN facts
-    ec2_vpc_vpn_info:
+
+  - name: Get VPC VPN facts
+    community.aws.ec2_vpc_vpn_info:
     register: tag_vpn_info
 
-  - name: verify no change
-    assert:
+  - name: Verify no change
+    ansible.builtin.assert:
       that:
         - tag_vpn is not changed
         - tag_vpn.vpn_connection_id == vpn_id
