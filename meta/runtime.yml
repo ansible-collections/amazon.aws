@@ -4,6 +4,8 @@ action_groups:
   aws:
     - autoscaling_group
     - autoscaling_group_info
+    - autoscaling_instance_refresh
+    - autoscaling_instance_refresh_info
     - aws_az_info
     - aws_caller_info
     - aws_region_info
@@ -144,6 +146,12 @@ plugin_routing:
     ec2_asg_info:
       # Deprecation for this alias should not *start* prior to 2024-09-01
       redirect: amazon.aws.autoscaling_group_info
+    ec2_asg_instance_refresh:
+      # Deprecation for this alias should not *start* prior to 2024-09-01
+      redirect: amazon.aws.autoscaling_instance_refresh
+    ec2_asg_instance_refresh_info:
+      # Deprecation for this alias should not *start* prior to 2024-09-01
+      redirect: amazon.aws.autoscaling_instance_refresh_info
     ec2_elb_lb:
       # Deprecation for this alias should not *start* prior to 2024-09-01
       redirect: amazon.aws.elb_classic_lb
@@ -162,10 +170,10 @@ plugin_routing:
     rds_param_group:
       redirect: amazon.aws.rds_instance_param_group
       deprecation:
-         removal_version: 10.0.0
-         warning_text: >-
-           rds_param_group has been renamed to rds_instance_param_group.
-           Please update your tasks.
+        removal_version: 10.0.0
+        warning_text: >-
+          rds_param_group has been renamed to rds_instance_param_group.
+          Please update your tasks.
   lookup:
     aws_ssm:
       # Deprecation for this alias should not *start* prior to 2024-09-01
