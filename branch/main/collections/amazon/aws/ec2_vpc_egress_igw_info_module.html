@@ -7,7 +7,7 @@
 <meta content="2.15.0" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>amazon.aws.ec2_vpc_dhcp_option_info module – Gather information about DHCP options sets in AWS &mdash; Ansible collections  documentation</title>
+  <title>amazon.aws.ec2_vpc_egress_igw_info module – Gather information about AWS VPC Egress Only Internet gateway &mdash; Ansible collections  documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=5707b69d" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/ansible.css?v=c5b67dd2" />
       <link rel="stylesheet" type="text/css" href="../../../_static/antsibull-minimal.css" />
@@ -22,8 +22,8 @@
       <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="amazon.aws.ec2_vpc_egress_igw_info module – Gather information about AWS VPC Egress Only Internet gateway" href="ec2_vpc_egress_igw_info_module.html" />
-    <link rel="prev" title="amazon.aws.ec2_vpc_dhcp_option module – Manages DHCP Options, and can ensure the DHCP options for the given VPC match what’s requested" href="ec2_vpc_dhcp_option_module.html" /><!-- extra head elements for Ansible beyond RTD Sphinx Theme -->
+    <link rel="next" title="amazon.aws.ec2_vpc_endpoint module – Create and delete AWS VPC endpoints" href="ec2_vpc_endpoint_module.html" />
+    <link rel="prev" title="amazon.aws.ec2_vpc_dhcp_option_info module – Gather information about DHCP options sets in AWS" href="ec2_vpc_dhcp_option_info_module.html" /><!-- extra head elements for Ansible beyond RTD Sphinx Theme -->
 
 
 
@@ -122,10 +122,10 @@
           <li class="breadcrumb-item"><a href="../../index.html">Collection Index</a></li>
           <li class="breadcrumb-item"><a href="../index.html">Collections in the Amazon Namespace</a></li>
           <li class="breadcrumb-item"><a href="index.html">Amazon.Aws</a></li>
-      <li class="breadcrumb-item active">amazon.aws.ec2_vpc_dhcp_option_info module – Gather information about DHCP options sets in AWS</li>
+      <li class="breadcrumb-item active">amazon.aws.ec2_vpc_egress_igw_info module – Gather information about AWS VPC Egress Only Internet gateway</li>
       <li class="wy-breadcrumbs-aside">
               <!-- User defined GitHub URL -->
-              <a href="https://github.com/ansible-collections/amazon.aws/edit/main/plugins/modules/ec2_vpc_dhcp_option_info.py?description=%23%23%23%23%23%20SUMMARY%0A%3C!—%20Your%20description%20here%20–%3E%0A%0A%0A%23%23%23%23%23%20ISSUE%20TYPE%0A-%20Docs%20Pull%20Request%0A%0A%2Blabel:%20docsite_pr" class="fa fa-github"> Edit on GitHub</a>
+              <a href="https://github.com/ansible-collections/amazon.aws/edit/main/plugins/modules/ec2_vpc_egress_igw_info.py?description=%23%23%23%23%23%20SUMMARY%0A%3C!—%20Your%20description%20here%20–%3E%0A%0A%0A%23%23%23%23%23%20ISSUE%20TYPE%0A-%20Docs%20Pull%20Request%0A%0A%2Blabel:%20docsite_pr" class="fa fa-github"> Edit on GitHub</a>
       </li>
   </ul>
   <hr/>
@@ -135,8 +135,8 @@
   
            <div itemprop="articleBody">
              
-  <span class="target" id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module"></span><section id="amazon-aws-ec2-vpc-dhcp-option-info-module-gather-information-about-dhcp-options-sets-in-aws">
-<h1>amazon.aws.ec2_vpc_dhcp_option_info module – Gather information about DHCP options sets in AWS<a class="headerlink" href="#amazon-aws-ec2-vpc-dhcp-option-info-module-gather-information-about-dhcp-options-sets-in-aws" title="Link to this heading"></a></h1>
+  <span class="target" id="ansible-collections-amazon-aws-ec2-vpc-egress-igw-info-module"></span><section id="amazon-aws-ec2-vpc-egress-igw-info-module-gather-information-about-aws-vpc-egress-only-internet-gateway">
+<h1>amazon.aws.ec2_vpc_egress_igw_info module – Gather information about AWS VPC Egress Only Internet gateway<a class="headerlink" href="#amazon-aws-ec2-vpc-egress-igw-info-module-gather-information-about-aws-vpc-egress-only-internet-gateway" title="Link to this heading"></a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This module is part of the <a class="reference external" href="https://galaxy.ansible.com/ui/repo/published/amazon/aws/">amazon.aws collection</a> (version 9.0.0-dev0).</p>
@@ -144,10 +144,10 @@
 To check whether it is installed, run <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">list</span></code>.</p>
 <p>To install it, use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">amazon.aws</span></code>.
 You need further requirements to be able to use this module,
-see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-requirements"><span class="std std-ref">Requirements</span></a> for details.</p>
-<p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">amazon.aws.ec2_vpc_dhcp_option_info</span></code>.</p>
+see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-egress-igw-info-module-requirements"><span class="std std-ref">Requirements</span></a> for details.</p>
+<p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">amazon.aws.ec2_vpc_egress_igw_info</span></code>.</p>
 </div>
-<p class="ansible-version-added">New in amazon.aws 1.0.0</p>
+<p class="ansible-version-added">New in amazon.aws 9.0.0</p>
 <nav class="contents local" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></p></li>
@@ -161,11 +161,11 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <section id="synopsis">
 <h2><a class="toc-backref" href="#id1" role="doc-backlink">Synopsis</a><a class="headerlink" href="#synopsis" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p>Gather information about DHCP options sets in AWS.</p></li>
+<li><p>Gather information about AWS VPC Egress Only Internet gateway.</p></li>
 </ul>
 </section>
 <section id="requirements">
-<span id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-requirements"></span><h2><a class="toc-backref" href="#id2" role="doc-backlink">Requirements</a><a class="headerlink" href="#requirements" title="Link to this heading"></a></h2>
+<span id="ansible-collections-amazon-aws-ec2-vpc-egress-igw-info-module-requirements"></span><h2><a class="toc-backref" href="#id2" role="doc-backlink">Requirements</a><a class="headerlink" href="#requirements" title="Link to this heading"></a></h2>
 <p>The below requirements are needed on the host that executes this module.</p>
 <ul class="simple">
 <li><p>python &gt;= 3.6</p></li>
@@ -186,7 +186,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <div class="ansibleOptionAnchor" id="parameter-access_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_access_key_id"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_access_key"></div>
-<div class="ansibleOptionAnchor" id="parameter-ec2_access_key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-parameter-ec2-access-key"><span id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-parameter-aws-access-key-id"></span><span id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-parameter-aws-access-key"></span><span id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-parameter-access-key"></span><strong>access_key</strong></p>
+<div class="ansibleOptionAnchor" id="parameter-ec2_access_key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-egress-igw-info-module-parameter-ec2-access-key"><span id="ansible-collections-amazon-aws-ec2-vpc-egress-igw-info-module-parameter-aws-access-key-id"></span><span id="ansible-collections-amazon-aws-ec2-vpc-egress-igw-info-module-parameter-aws-access-key"></span><span id="ansible-collections-amazon-aws-ec2-vpc-egress-igw-info-module-parameter-access-key"></span><strong>access_key</strong></p>
 <a class="ansibleOptionLink" href="#parameter-access_key" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_access_key_id, aws_access_key, ec2_access_key</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -200,7 +200,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-aws_ca_bundle"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-parameter-aws-ca-bundle"><strong>aws_ca_bundle</strong></p>
+<div class="ansibleOptionAnchor" id="parameter-aws_ca_bundle"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-egress-igw-info-module-parameter-aws-ca-bundle"><strong>aws_ca_bundle</strong></p>
 <a class="ansibleOptionLink" href="#parameter-aws_ca_bundle" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">path</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The location of a CA Bundle to use when validating SSL certificates.</p>
@@ -208,7 +208,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-aws_config"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-parameter-aws-config"><strong>aws_config</strong></p>
+<div class="ansibleOptionAnchor" id="parameter-aws_config"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-egress-igw-info-module-parameter-aws-config"><strong>aws_config</strong></p>
 <a class="ansibleOptionLink" href="#parameter-aws_config" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A dictionary to modify the botocore configuration.</p>
@@ -216,7 +216,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-debug_botocore_endpoint_logs"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-parameter-debug-botocore-endpoint-logs"><strong>debug_botocore_endpoint_logs</strong></p>
+<div class="ansibleOptionAnchor" id="parameter-debug_botocore_endpoint_logs"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-egress-igw-info-module-parameter-debug-botocore-endpoint-logs"><strong>debug_botocore_endpoint_logs</strong></p>
 <a class="ansibleOptionLink" href="#parameter-debug_botocore_endpoint_logs" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Use a <code class="docutils literal notranslate"><span class="pre">botocore.endpoint</span></code> logger to parse the unique (rather than total) <code class="docutils literal notranslate"><span class="pre">&quot;resource:action&quot;</span></code> API calls made during a task, outputing the set to the resource_actions key in the task results. Use the <code class="docutils literal notranslate"><span class="pre">aws_resource_action</span></code> callback to output to total list made during a playbook.</p>
@@ -229,29 +229,17 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-dhcp_options_ids"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-parameter-dhcp-options-ids"><strong>dhcp_options_ids</strong></p>
-<a class="ansibleOptionLink" href="#parameter-dhcp_options_ids" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+<div class="ansibleOptionAnchor" id="parameter-egress_only_internet_gateway_ids"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-egress-igw-info-module-parameter-egress-only-internet-gateway-ids"><strong>egress_only_internet_gateway_ids</strong></p>
+<a class="ansibleOptionLink" href="#parameter-egress_only_internet_gateway_ids" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Get details of specific DHCP option IDs.</p>
+<td><div class="ansible-option-cell"><p>Get details of specific VPC Egress Internet Gateway ID.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-dry_run"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-parameter-dry-run"><strong>dry_run</strong></p>
-<a class="ansibleOptionLink" href="#parameter-dry_run" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
-</div></td>
-<td><div class="ansible-option-cell"><p>Checks whether you have the required permissions to view the DHCP options.</p>
-<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
-<ul class="simple">
-<li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
-<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
-</ul>
-</div></td>
-</tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-endpoint_url"></div>
 <div class="ansibleOptionAnchor" id="parameter-ec2_url"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_endpoint_url"></div>
-<div class="ansibleOptionAnchor" id="parameter-s3_url"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-parameter-s3-url"><span id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-parameter-endpoint-url"></span><span id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-parameter-ec2-url"></span><span id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-parameter-aws-endpoint-url"></span><strong>endpoint_url</strong></p>
+<div class="ansibleOptionAnchor" id="parameter-s3_url"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-egress-igw-info-module-parameter-s3-url"><span id="ansible-collections-amazon-aws-ec2-vpc-egress-igw-info-module-parameter-endpoint-url"></span><span id="ansible-collections-amazon-aws-ec2-vpc-egress-igw-info-module-parameter-ec2-url"></span><span id="ansible-collections-amazon-aws-ec2-vpc-egress-igw-info-module-parameter-aws-endpoint-url"></span><strong>endpoint_url</strong></p>
 <a class="ansibleOptionLink" href="#parameter-endpoint_url" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: ec2_url, aws_endpoint_url, s3_url</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -261,17 +249,17 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_URL</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-filters"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-parameter-filters"><strong>filters</strong></p>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-filters"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-egress-igw-info-module-parameter-filters"><strong>filters</strong></p>
 <a class="ansibleOptionLink" href="#parameter-filters" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>A dict of filters to apply. Each dict item consists of a filter key and a filter value. See <a class="reference external" href="https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeDhcpOptions.html">https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeDhcpOptions.html</a> for possible filters.</p>
+<td><div class="ansible-option-cell"><p>A dict of filters to apply. Each dict item consists of a filter key and a filter value. See <a class="reference external" href="https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeEgressOnlyInternetGateways.html">https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeEgressOnlyInternetGateways.html</a> for possible filters.</p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">{}</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-profile"></div>
-<div class="ansibleOptionAnchor" id="parameter-aws_profile"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-parameter-profile"><span id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-parameter-aws-profile"></span><strong>profile</strong></p>
+<div class="ansibleOptionAnchor" id="parameter-aws_profile"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-egress-igw-info-module-parameter-profile"><span id="ansible-collections-amazon-aws-ec2-vpc-egress-igw-info-module-parameter-aws-profile"></span><strong>profile</strong></p>
 <a class="ansibleOptionLink" href="#parameter-profile" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_profile</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -281,10 +269,10 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <p>The <em>profile</em> option is mutually exclusive with the <em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> options.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-region"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_region"></div>
-<div class="ansibleOptionAnchor" id="parameter-ec2_region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-parameter-region"><span id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-parameter-ec2-region"></span><span id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-parameter-aws-region"></span><strong>region</strong></p>
+<div class="ansibleOptionAnchor" id="parameter-ec2_region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-egress-igw-info-module-parameter-region"><span id="ansible-collections-amazon-aws-ec2-vpc-egress-igw-info-module-parameter-ec2-region"></span><span id="ansible-collections-amazon-aws-ec2-vpc-egress-igw-info-module-parameter-aws-region"></span><strong>region</strong></p>
 <a class="ansibleOptionLink" href="#parameter-region" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_region, ec2_region</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -296,11 +284,11 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_REGION</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-secret_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_secret_access_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_secret_key"></div>
-<div class="ansibleOptionAnchor" id="parameter-ec2_secret_key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-parameter-secret-key"><span id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-parameter-ec2-secret-key"></span><span id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-parameter-aws-secret-key"></span><span id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-parameter-aws-secret-access-key"></span><strong>secret_key</strong></p>
+<div class="ansibleOptionAnchor" id="parameter-ec2_secret_key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-egress-igw-info-module-parameter-secret-key"><span id="ansible-collections-amazon-aws-ec2-vpc-egress-igw-info-module-parameter-ec2-secret-key"></span><span id="ansible-collections-amazon-aws-ec2-vpc-egress-igw-info-module-parameter-aws-secret-key"></span><span id="ansible-collections-amazon-aws-ec2-vpc-egress-igw-info-module-parameter-aws-secret-access-key"></span><strong>secret_key</strong></p>
 <a class="ansibleOptionLink" href="#parameter-secret_key" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_secret_access_key, aws_secret_key, ec2_secret_key</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -313,12 +301,12 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_SECRET_KEY</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-session_token"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_session_token"></div>
 <div class="ansibleOptionAnchor" id="parameter-security_token"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_security_token"></div>
-<div class="ansibleOptionAnchor" id="parameter-access_token"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-parameter-session-token"><span id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-parameter-security-token"></span><span id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-parameter-aws-session-token"></span><span id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-parameter-aws-security-token"></span><span id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-parameter-access-token"></span><strong>session_token</strong></p>
+<div class="ansibleOptionAnchor" id="parameter-access_token"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-egress-igw-info-module-parameter-session-token"><span id="ansible-collections-amazon-aws-ec2-vpc-egress-igw-info-module-parameter-security-token"></span><span id="ansible-collections-amazon-aws-ec2-vpc-egress-igw-info-module-parameter-aws-session-token"></span><span id="ansible-collections-amazon-aws-ec2-vpc-egress-igw-info-module-parameter-aws-security-token"></span><span id="ansible-collections-amazon-aws-ec2-vpc-egress-igw-info-module-parameter-access-token"></span><strong>session_token</strong></p>
 <a class="ansibleOptionLink" href="#parameter-session_token" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_session_token, security_token, aws_security_token, access_token</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -331,8 +319,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_SECRET_KEY</span></code> and <code class="docutils literal notranslate"><span class="pre">AWS_SECURITY_TOKEN</span></code> environment variables has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-validate_certs"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-parameter-validate-certs"><strong>validate_certs</strong></p>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-validate_certs"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-egress-igw-info-module-parameter-validate-certs"><strong>validate_certs</strong></p>
 <a class="ansibleOptionLink" href="#parameter-validate_certs" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>When set to <code class="docutils literal notranslate"><span class="pre">false</span></code>, SSL certificates will not be validated for communication with the AWS APIs.</p>
@@ -361,26 +349,23 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <h2><a class="toc-backref" href="#id5" role="doc-backlink">Examples</a><a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
 <div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># # Note: These examples do not set authentication details, see the AWS Guide for details.</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Gather information about all DHCP Option sets for an account or profile</span>
-<span class="w">  </span><span class="nt">amazon.aws.ec2_vpc_dhcp_option_info</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Gather information about all VPC Egress only Internet Gateways for an account or profile</span>
+<span class="w">  </span><span class="nt">amazon.aws.ec2_vpc_igw_info</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ap-southeast-2</span>
 <span class="w">    </span><span class="nt">profile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">production</span>
-<span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dhcp_info</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Gather information about a filtered list of DHCP Option sets</span>
-<span class="w">  </span><span class="nt">amazon.aws.ec2_vpc_dhcp_option_info</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Gather information about a filtered list of VPC Egress only Internet Gateways</span>
+<span class="w">  </span><span class="nt">amazon.aws.ec2_vpc_igw_info</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ap-southeast-2</span>
 <span class="w">    </span><span class="nt">profile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">production</span>
 <span class="w">    </span><span class="nt">filters</span><span class="p">:</span>
-<span class="w">      </span><span class="s">&quot;tag:Name&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;abc-123&quot;</span>
-<span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dhcp_info</span>
+<span class="w">      </span><span class="s">&quot;tag:Name&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;igw-123&quot;</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Gather information about a specific DHCP Option set by DhcpOptionId</span>
-<span class="w">  </span><span class="nt">amazon.aws.ec2_vpc_dhcp_option_info</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Gather information about a specific VPC egress only internet gateway by EgressOnlyInternetGatewayId</span>
+<span class="w">  </span><span class="nt">amazon.aws.ec2_vpc_igw_info</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ap-southeast-2</span>
 <span class="w">    </span><span class="nt">profile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">production</span>
-<span class="w">    </span><span class="nt">dhcp_options_ids</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dopt-123fece2</span>
-<span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dhcp_info</span>
+<span class="w">    </span><span class="nt">egress_only_internet_gateway_ids</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">igw-c1231234</span>
 </pre></div>
 </div>
 </section>
@@ -395,132 +380,54 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 </thead>
 <tbody>
 <tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-changed"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-return-changed"><strong>changed</strong></p>
-<a class="ansibleOptionLink" href="#return-changed" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+<div class="ansibleOptionAnchor" id="return-egress_only_internet_gateways"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-egress-igw-info-module-return-egress-only-internet-gateways"><strong>egress_only_internet_gateways</strong></p>
+<a class="ansibleOptionLink" href="#return-egress_only_internet_gateways" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>True if listing the dhcp options succeeds.</p>
+<td><div class="ansible-option-cell"><p>The AWS Egress only internet gateways.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
-</div></td>
-</tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-dhcp_config"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-return-dhcp-config"><strong>dhcp_config</strong></p>
-<a class="ansibleOptionLink" href="#return-dhcp_config" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
-</div></td>
-<td><div class="ansible-option-cell"><p>The boto2-style DHCP options created, associated or found. Provided for consistency with ec2_vpc_dhcp_option’s <code class="docutils literal notranslate"><span class="pre">dhcp_config</span></code>.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
-</div></td>
-</tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-dhcp_config/domain-name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-return-dhcp-config-domain-name"><strong>domain-name</strong></p>
-<a class="ansibleOptionLink" href="#return-dhcp_config/domain-name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
-</div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The domain name for hosts in the DHCP option sets.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when available</p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[&quot;my.example.com&quot;]</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-dhcp_config/domain-name-servers"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-return-dhcp-config-domain-name-servers"><strong>domain-name-servers</strong></p>
-<a class="ansibleOptionLink" href="#return-dhcp_config/domain-name-servers" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+<div class="ansibleOptionAnchor" id="return-egress_only_internet_gateways/attachments"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-egress-igw-info-module-return-egress-only-internet-gateways-attachments"><strong>attachments</strong></p>
+<a class="ansibleOptionLink" href="#return-egress_only_internet_gateways/attachments" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The IP addresses of up to four domain name servers, or AmazonProvidedDNS.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when available</p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[&quot;10.0.0.1&quot;,</span> <span class="pre">&quot;10.0.1.1&quot;]</span></code></p>
-</div></td>
-</tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-dhcp_config/netbios-name-servers"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-return-dhcp-config-netbios-name-servers"><strong>netbios-name-servers</strong></p>
-<a class="ansibleOptionLink" href="#return-dhcp_config/netbios-name-servers" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
-</div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The IP addresses of up to four NetBIOS name servers.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when available</p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[&quot;10.0.0.1&quot;,</span> <span class="pre">&quot;10.0.1.1&quot;]</span></code></p>
-</div></td>
-</tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-dhcp_config/netbios-node-type"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-return-dhcp-config-netbios-node-type"><strong>netbios-node-type</strong></p>
-<a class="ansibleOptionLink" href="#return-dhcp_config/netbios-node-type" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-</div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The NetBIOS node type (1, 2, 4, or 8).</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when available</p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2&quot;</span></code></p>
-</div></td>
-</tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-dhcp_config/ntp-servers"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-return-dhcp-config-ntp-servers"><strong>ntp-servers</strong></p>
-<a class="ansibleOptionLink" href="#return-dhcp_config/ntp-servers" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
-</div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The IP addresses of up to four Network Time Protocol (NTP) servers.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when available</p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[&quot;10.0.0.1&quot;,</span> <span class="pre">&quot;10.0.1.1&quot;]</span></code></p>
-</div></td>
-</tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-dhcp_options"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-return-dhcp-options"><strong>dhcp_options</strong></p>
-<a class="ansibleOptionLink" href="#return-dhcp_options" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
-</div></td>
-<td><div class="ansible-option-cell"><p>The DHCP options created, associated or found.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
-</div></td>
-</tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-dhcp_options/dhcp_configurations"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-return-dhcp-options-dhcp-configurations"><strong>dhcp_configurations</strong></p>
-<a class="ansibleOptionLink" href="#return-dhcp_options/dhcp_configurations" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
-</div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The DHCP configuration for the option set.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[{&quot;key&quot;:</span> <span class="pre">&quot;ntp-servers&quot;,</span> <span class="pre">&quot;values&quot;:</span> <span class="pre">[{&quot;value&quot;:</span> <span class="pre">&quot;10.0.1.2&quot;}]},</span> <span class="pre">&quot;{\&quot;key\&quot;:</span> <span class="pre">\&quot;netbios-name-servers\&quot;,</span> <span class="pre">\&quot;values\&quot;:</span> <span class="pre">[{value\&quot;:</span> <span class="pre">\&quot;10.0.0.1\&quot;},</span> <span class="pre">{\&quot;value\&quot;:</span> <span class="pre">\&quot;10.0.1.1\&quot;</span> <span class="pre">}]}&quot;]</span></code></p>
-</div></td>
-</tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-dhcp_options/dhcp_configurations/key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-return-dhcp-options-dhcp-configurations-key"><strong>key</strong></p>
-<a class="ansibleOptionLink" href="#return-dhcp_options/dhcp_configurations/key" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-</div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The name of a DHCP option.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Information about the attachment of the egress-only internet gateway.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-dhcp_options/dhcp_configurations/values"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-return-dhcp-options-dhcp-configurations-values"><strong>values</strong></p>
-<a class="ansibleOptionLink" href="#return-dhcp_options/dhcp_configurations/values" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
+<div class="ansibleOptionAnchor" id="return-egress_only_internet_gateways/attachments/state"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-egress-igw-info-module-return-egress-only-internet-gateways-attachments-state"><strong>state</strong></p>
+<a class="ansibleOptionLink" href="#return-egress_only_internet_gateways/attachments/state" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>List of values for the DHCP option.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The current state of the attachment.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;available&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-dhcp_options/dhcp_configurations/values/value"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-return-dhcp-options-dhcp-configurations-values-value"><strong>value</strong></p>
-<a class="ansibleOptionLink" href="#return-dhcp_options/dhcp_configurations/values/value" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-egress_only_internet_gateways/attachments/vpc_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-egress-igw-info-module-return-egress-only-internet-gateways-attachments-vpc-id"><strong>vpc_id</strong></p>
+<a class="ansibleOptionLink" href="#return-egress_only_internet_gateways/attachments/vpc_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The attribute value. This value is case-sensitive.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ID of the VPC.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;vpc-02123b67&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-dhcp_options/dhcp_options_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-return-dhcp-options-dhcp-options-id"><strong>dhcp_options_id</strong></p>
-<a class="ansibleOptionLink" href="#return-dhcp_options/dhcp_options_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<div class="ansibleOptionAnchor" id="return-egress_only_internet_gateways/egress_only_internet_gateway_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-egress-igw-info-module-return-egress-only-internet-gateways-egress-only-internet-gateway-id"><strong>egress_only_internet_gateway_id</strong></p>
+<a class="ansibleOptionLink" href="#return-egress_only_internet_gateways/egress_only_internet_gateway_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The aws resource id of the primary DHCP options set created or found.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;dopt-0955331de6a20dd07&quot;</span></code></p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ID of the egress-only internet gateway.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;eigw-0123456789abcdef&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-dhcp_options/owner_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-return-dhcp-options-owner-id"><strong>owner_id</strong></p>
-<a class="ansibleOptionLink" href="#return-dhcp_options/owner_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<div class="ansibleOptionAnchor" id="return-egress_only_internet_gateways/tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-egress-igw-info-module-return-egress-only-internet-gateways-tags"><strong>tags</strong></p>
+<a class="ansibleOptionLink" href="#return-egress_only_internet_gateways/tags" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ID of the AWS account that owns the DHCP options set.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;012345678912&quot;</span></code></p>
-</div></td>
-</tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-dhcp_options/tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-return-dhcp-options-tags"><strong>tags</strong></p>
-<a class="ansibleOptionLink" href="#return-dhcp_options/tags" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
-</div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The tags to be applied to a DHCP options set.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[{&quot;Key&quot;:</span> <span class="pre">&quot;CreatedBy&quot;,</span> <span class="pre">&quot;Value&quot;:</span> <span class="pre">&quot;ansible-test&quot;},</span> <span class="pre">{&quot;Key&quot;:</span> <span class="pre">&quot;Collection&quot;,</span> <span class="pre">&quot;Value&quot;:</span> <span class="pre">&quot;amazon.aws&quot;}]</span></code></p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Any tags assigned to the egress-only internet gateway.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 </div></td>
 </tr>
 </tbody>
@@ -528,7 +435,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <section id="authors">
 <h3>Authors<a class="headerlink" href="#authors" title="Link to this heading"></a></h3>
 <ul class="simple">
-<li><p>Nick Aslanidis (&#64;naslanidis)</p></li>
+<li><p>Aubin Bikouo (&#64;abikouo)</p></li>
 </ul>
 </section>
 <section id="collection-links">
@@ -548,8 +455,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
           
 
 <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="ec2_vpc_dhcp_option_module.html" class="btn btn-neutral float-left" title="amazon.aws.ec2_vpc_dhcp_option module – Manages DHCP Options, and can ensure the DHCP options for the given VPC match what’s requested" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="ec2_vpc_egress_igw_info_module.html" class="btn btn-neutral float-right" title="amazon.aws.ec2_vpc_egress_igw_info module – Gather information about AWS VPC Egress Only Internet gateway" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="ec2_vpc_dhcp_option_info_module.html" class="btn btn-neutral float-left" title="amazon.aws.ec2_vpc_dhcp_option_info module – Gather information about DHCP options sets in AWS" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ec2_vpc_endpoint_module.html" class="btn btn-neutral float-right" title="amazon.aws.ec2_vpc_endpoint module – Create and delete AWS VPC endpoints" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
