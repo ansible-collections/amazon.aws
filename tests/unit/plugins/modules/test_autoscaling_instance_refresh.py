@@ -3,7 +3,7 @@
 
 import pytest
 
-from ansible_collections.community.aws.plugins.modules.autoscaling_instance_refresh import validate_healthy_percentage
+from ansible_collections.amazon.aws.plugins.modules.autoscaling_instance_refresh import validate_healthy_percentage
 
 
 @pytest.mark.parametrize(

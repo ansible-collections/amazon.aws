@@ -8,6 +8,7 @@ DOCUMENTATION = r"""
 ---
 module: autoscaling_instance_refresh_info
 version_added: 3.2.0
+version_added_collection: community.aws
 short_description: Gather information about EC2 Auto Scaling Group (ASG) Instance Refreshes in AWS
 description:
   - Describes one or more instance refreshes.
@@ -47,23 +48,23 @@ EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Find an refresh by ASG name
-  community.aws.autoscaling_instance_refresh_info:
+  amazon.aws.autoscaling_instance_refresh_info:
     name: somename-asg
 
 - name: Find an refresh by ASG name and one or more refresh-IDs
-  community.aws.autoscaling_instance_refresh_info:
+  amazon.aws.autoscaling_instance_refresh_info:
     name: somename-asg
     ids: ['some-id-123']
   register: asgs
 
 - name: Find an refresh by ASG name and set max_records
-  community.aws.autoscaling_instance_refresh_info:
+  amazon.aws.autoscaling_instance_refresh_info:
     name: somename-asg
     max_records: 4
   register: asgs
 
 - name: Find an refresh by ASG name and NextToken, if received from a previous call
-  community.aws.autoscaling_instance_refresh_info:
+  amazon.aws.autoscaling_instance_refresh_info:
     name: somename-asg
     next_token: 'some-token-123'
   register: asgs
@@ -152,7 +153,7 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 from ansible_collections.amazon.aws.plugins.module_utils.autoscaling import AnsibleAutoScalingError
 from ansible_collections.amazon.aws.plugins.module_utils.autoscaling import describe_instance_refreshes
 
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 
 
 def format_response(response: Dict[str, Any]) -> Dict[str, Any]:
