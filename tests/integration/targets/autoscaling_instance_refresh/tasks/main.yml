@@ -7,26 +7,23 @@
       session_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
 
-  collections:
-    - amazon.aws
-
   block:
     # Set up the testing dependencies: VPC, subnet, security group, and two launch configurations
     - name: Create VPC for use in testing
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         name: "{{ vpc_name }}"
         cidr_block: '{{ subnet_a_cidr }}'
         tenancy: default
       register: testing_vpc
 
     - name: Create internet gateway for use in testing
-      ec2_vpc_igw:
+      amazon.aws.ec2_vpc_igw:
         vpc_id: "{{ testing_vpc.vpc.id }}"
         state: present
       register: igw
 
     - name: Create subnet for use in testing
-      ec2_vpc_subnet:
+      amazon.aws.ec2_vpc_subnet:
         state: present
         vpc_id: "{{ testing_vpc.vpc.id }}"
         cidr: '{{ subnet_a_cidr }}'
@@ -36,7 +33,7 @@
       register: testing_subnet
 
     - name: Create routing rules
-      ec2_vpc_route_table:
+      amazon.aws.ec2_vpc_route_table:
         vpc_id: "{{ testing_vpc.vpc.id }}"
         tags:
           created: "{{ route_name }}"
@@ -47,7 +44,7 @@
           - "{{ testing_subnet.subnet.id }}"
 
     - name: Create a security group with the vpc created in the ec2_setup
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ sg_name }}"
         description: a security group for ansible tests
         vpc_id: "{{ testing_vpc.vpc.id }}"
@@ -63,7 +60,7 @@
       register: sg
 
     - name: Ensure launch configs exist
-      autoscaling_launch_config:
+      community.aws.autoscaling_launch_config:
         name: "{{ item }}"
         assign_public_ip: true
         image_id: "{{ ec2_ami_id }}"
@@ -81,7 +78,7 @@
         - "{{ lc_name_2 }}"
 
     - name: Launch asg and do not wait for instances to be deemed healthy (no ELB)
-      autoscaling_group:
+      amazon.aws.autoscaling_group:
         name: "{{ asg_name }}"
         launch_config_name: "{{ lc_name_1 }}"
         desired_capacity: 1
@@ -93,27 +90,27 @@
       register: output
 
     - name: Assert that there is no viable instance
-      assert:
+      ansible.builtin.assert:
         that:
         - "output.viable_instances == 0"
 
   # ============================================================
     - name: Run test with start_cancel_instance_refresh.yml
-      include_tasks: start_cancel_instance_refresh.yml
+      ansible.builtin.include_tasks: start_cancel_instance_refresh.yml
     
   # ============================================================
 
     - name: Run test with refresh_and_cancel_three_times.yml
-      include_tasks: refresh_and_cancel_three_times.yml
+      ansible.builtin.include_tasks: refresh_and_cancel_three_times.yml
       loop: "{{ query('sequence', 'start=1 end=3') }}"
 
     - name: Run test with instance_refresh_info.yml
-      include_tasks: instance_refresh_info.yml
+      ansible.builtin.include_tasks: instance_refresh_info.yml
 
   always:
 
     - name: Kill asg
-      autoscaling_group:
+      amazon.aws.autoscaling_group:
         name: "{{ asg_name }}"
         state: absent
       register: removed
@@ -123,7 +120,7 @@
     # Remove the testing dependencies
 
     - name: Remove the load balancer
-      elb_classic_lb:
+      amazon.aws.elb_classic_lb:
         name: "{{ load_balancer_name }}"
         state: absent
         security_group_ids:
@@ -149,7 +146,7 @@
       retries: 10
 
     - name: Remove launch configs
-      autoscaling_launch_config:
+      community.aws.autoscaling_launch_config:
         name: "{{ item }}"
         state: absent
       register: removed
@@ -161,7 +158,7 @@
         - "{{ lc_name_2 }}"
 
     - name: Delete launch template
-      ec2_launch_template:
+      community.aws.ec2_launch_template:
         name: "{{ resource_prefix }}-lt"
         state: absent
       register: del_lt
@@ -170,7 +167,7 @@
       ignore_errors: true
 
     - name: Remove the security group
-      ec2_security_group:
+      amazon.aws.ec2_security_group:
         name: "{{ sg_name }}"
         description: a security group for ansible tests
         vpc_id: "{{ testing_vpc.vpc.id }}"
@@ -181,7 +178,7 @@
       retries: 10
 
     - name: Remove routing rules
-      ec2_vpc_route_table:
+      amazon.aws.ec2_vpc_route_table:
         state: absent
         vpc_id: "{{ testing_vpc.vpc.id }}"
         tags:
@@ -197,7 +194,7 @@
       retries: 10
 
     - name: Remove internet gateway
-      ec2_vpc_igw:
+      amazon.aws.ec2_vpc_igw:
         vpc_id: "{{ testing_vpc.vpc.id }}"
         state: absent
       register: removed
@@ -206,7 +203,7 @@
       retries: 10
 
     - name: Remove the subnet
-      ec2_vpc_subnet:
+      amazon.aws.ec2_vpc_subnet:
         state: absent
         vpc_id: "{{ testing_vpc.vpc.id }}"
         cidr: '{{ subnet_a_cidr }}'
@@ -216,7 +213,7 @@
       retries: 10
 
     - name: Remove the VPC
-      ec2_vpc_net:
+      amazon.aws.ec2_vpc_net:
         name: "{{ vpc_name }}"
         cidr_block: '{{ subnet_a_cidr }}'
         state: absent
