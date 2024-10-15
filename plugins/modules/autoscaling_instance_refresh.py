@@ -8,10 +8,11 @@ DOCUMENTATION = r"""
 ---
 module: autoscaling_instance_refresh
 version_added: 3.2.0
+version_added_collection: community.aws
 short_description: Start or cancel an EC2 Auto Scaling Group (ASG) instance refresh in AWS
 description:
   - Start or cancel an EC2 Auto Scaling Group instance refresh in AWS.
-  - Can be used with M(community.aws.autoscaling_instance_refresh_info) to track the subsequent progress.
+  - Can be used with M(amazon.aws.autoscaling_instance_refresh_info) to track the subsequent progress.
   - Prior to release 5.0.0 this module was called M(community.aws.ec2_asg_instance_refresh).
     The usage did not change.
 author:
@@ -84,17 +85,17 @@ EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Start a refresh
-  community.aws.autoscaling_instance_refresh:
+  amazon.aws.autoscaling_instance_refresh:
     name: some-asg
     state: started
 
 - name: Cancel a refresh
-  community.aws.autoscaling_instance_refresh:
+  amazon.aws.autoscaling_instance_refresh:
     name: some-asg
     state: cancelled
 
 - name: Start a refresh and pass preferences
-  community.aws.autoscaling_instance_refresh:
+  amazon.aws.autoscaling_instance_refresh:
     name: some-asg
     state: started
     preferences:
@@ -187,7 +188,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.autoscaling import desc
 from ansible_collections.amazon.aws.plugins.module_utils.autoscaling import start_instance_refresh
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
 
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 
 
 def validate_healthy_percentage(preferences: Dict[str, Union[bool, int]]) -> Optional[str]:
