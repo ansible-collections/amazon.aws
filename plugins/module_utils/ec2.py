@@ -662,7 +662,7 @@ class EC2VpcVpnGatewaysErrorHandler(AWSErrorHandler):
 def describe_vpc_vpn_gateways(
     client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
 ) -> List[Dict[str, Any]]:
-    return client.describe_vpn_gateways(**params)
+    return client.describe_vpn_gateways(**params)["VpnGateways"]
 
 
 @EC2VpcVpnGatewaysErrorHandler.list_error_handler("create vpc vpn gateway", [])
@@ -678,7 +678,7 @@ def create_vpc_vpn_gateway(
 def delete_vpc_vpn_gateway(
     client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
 ) -> List[Dict[str, Any]]:
-    return client.delete_vpn_gateway(**params)
+    client.delete_vpn_gateway(**params)
 
 
 @EC2VpcVpnGatewaysErrorHandler.list_error_handler("attach vpc vpn gateway", [])
@@ -686,7 +686,8 @@ def delete_vpc_vpn_gateway(
 def attach_vpc_vpn_gateway(
     client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
 ) -> List[Dict[str, Any]]:
-    return client.attach_vpn_gateway(**params)
+    client.attach_vpn_gateway(**params)
+    return True
 
 
 @EC2VpcVpnGatewaysErrorHandler.list_error_handler("detach vpc vpn gateway", [])
@@ -694,7 +695,8 @@ def attach_vpc_vpn_gateway(
 def detach_vpc_vpn_gateway(
     client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
 ) -> List[Dict[str, Any]]:
-    return client.detach_vpn_gateway(**params)
+    client.detach_vpn_gateway(**params)
+    return True
 
 
 # EC2 Volumes
