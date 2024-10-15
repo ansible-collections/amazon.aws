@@ -8,6 +8,7 @@ DOCUMENTATION = r"""
 module: ec2_vpc_nacl
 short_description: create and delete Network ACLs
 version_added: 1.0.0
+version_added_collection: community.aws
 description:
   - Read the AWS documentation for Network ACLS
     U(https://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_ACLs.html)
@@ -88,7 +89,7 @@ EXAMPLES = r"""
 # Complete example to create and delete a network ACL
 # that allows SSH, HTTP and ICMP in, and all traffic out.
 - name: "Create and associate production DMZ network ACL with DMZ subnets"
-  community.aws.ec2_vpc_nacl:
+  amazon.aws.ec2_vpc_nacl:
     vpc_id: vpc-12345678
     name: prod-dmz-nacl
     region: ap-southeast-2
@@ -111,7 +112,7 @@ EXAMPLES = r"""
     state: 'present'
 
 - name: "Remove the ingress and egress rules - defaults to deny all"
-  community.aws.ec2_vpc_nacl:
+  amazon.aws.ec2_vpc_nacl:
     vpc_id: vpc-12345678
     name: prod-dmz-nacl
     region: ap-southeast-2
@@ -125,20 +126,20 @@ EXAMPLES = r"""
     state: present
 
 - name: "Remove the NACL subnet associations and tags"
-  community.aws.ec2_vpc_nacl:
+  amazon.aws.ec2_vpc_nacl:
     vpc_id: 'vpc-12345678'
     name: prod-dmz-nacl
     region: ap-southeast-2
     state: present
 
 - name: "Delete nacl and subnet associations"
-  community.aws.ec2_vpc_nacl:
+  amazon.aws.ec2_vpc_nacl:
     vpc_id: vpc-12345678
     name: prod-dmz-nacl
     state: absent
 
 - name: "Delete nacl by its id"
-  community.aws.ec2_vpc_nacl:
+  amazon.aws.ec2_vpc_nacl:
     nacl_id: acl-33b4ee5b
     state: absent
 """
@@ -166,7 +167,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_sub
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import replace_network_acl_association
 
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 
 # VPC-supported IANA protocol numbers
 # http://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml

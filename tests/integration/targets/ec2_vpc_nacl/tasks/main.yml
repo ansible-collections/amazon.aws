@@ -11,7 +11,7 @@
     # ============================================================
 
     - name: Test without any parameters
-      community.aws.ec2_vpc_nacl:
+      amazon.aws.ec2_vpc_nacl:
       register: result
       ignore_errors: true
 
@@ -22,7 +22,7 @@
           - "result.msg == 'one of the following is required: name, nacl_id'"
 
     - name: Get network ACL info without any parameters
-      community.aws.ec2_vpc_nacl_info:
+      amazon.aws.ec2_vpc_nacl_info:
       register: nacl_facts
 
     - name: Assert we don't error
@@ -31,7 +31,7 @@
           - nacl_facts is succeeded
 
     - name: Get network ACL info with invalid ID
-      community.aws.ec2_vpc_nacl_info:
+      amazon.aws.ec2_vpc_nacl_info:
         nacl_ids:
         - 'acl-000000000000'
       register: nacl_facts
@@ -139,7 +139,7 @@
   always:
 
     - name: Remove network ACL
-      community.aws.ec2_vpc_nacl:
+      amazon.aws.ec2_vpc_nacl:
         vpc_id: "{{ vpc_id }}"
         name: "{{ nacl_name }}"
         state: absent

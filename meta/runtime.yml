@@ -62,6 +62,8 @@ action_groups:
     - ec2_vpc_endpoint_service_info
     - ec2_vpc_igw
     - ec2_vpc_igw_info
+    - ec2_vpc_nacl
+    - ec2_vpc_nacl_info
     - ec2_vpc_nat_gateway
     - ec2_vpc_nat_gateway_info
     - ec2_vpc_net
@@ -164,10 +166,10 @@ plugin_routing:
     rds_param_group:
       redirect: amazon.aws.rds_instance_param_group
       deprecation:
-         removal_version: 10.0.0
-         warning_text: >-
-           rds_param_group has been renamed to rds_instance_param_group.
-           Please update your tasks.
+        removal_version: 10.0.0
+        warning_text: >-
+          rds_param_group has been renamed to rds_instance_param_group.
+          Please update your tasks.
   lookup:
     aws_ssm:
       # Deprecation for this alias should not *start* prior to 2024-09-01

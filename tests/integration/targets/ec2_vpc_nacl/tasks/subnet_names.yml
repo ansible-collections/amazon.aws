@@ -1,7 +1,7 @@
 # ============================================================
 
 - name: Create ingress and egress rules using subnet names
-  community.aws.ec2_vpc_nacl:
+  amazon.aws.ec2_vpc_nacl:
     vpc_id: "{{ vpc_id }}"
     name: "{{ nacl_name }}"
     subnets: "{{ subnet_names }}"
@@ -27,7 +27,7 @@
       - nacl.nacl_id.startswith('acl-')
 
 - name: Get network ACL facts
-  community.aws.ec2_vpc_nacl_info:
+  amazon.aws.ec2_vpc_nacl_info:
     nacl_ids:
       - "{{ nacl_id }}"
   register: nacl_facts
@@ -45,7 +45,7 @@
 # ============================================================
 
 - name: Test idempotence
-  community.aws.ec2_vpc_nacl:
+  amazon.aws.ec2_vpc_nacl:
     vpc_id: "{{ vpc_id }}"
     name: "{{ nacl_name }}"
     subnets: "{{ subnet_names }}"
@@ -68,7 +68,7 @@
       - nacl.nacl_id.startswith('acl-')
 
 - name: Get network ACL facts
-  community.aws.ec2_vpc_nacl_info:
+  amazon.aws.ec2_vpc_nacl_info:
     nacl_ids:
       - "{{ nacl.nacl_id }}"
   register: nacl_facts_idem
@@ -81,7 +81,7 @@
 # ============================================================
 
 - name: Remove a subnet from the network ACL
-  community.aws.ec2_vpc_nacl:
+  amazon.aws.ec2_vpc_nacl:
     vpc_id: "{{ vpc_id }}"
     name: "{{ nacl_name }}"
     subnets:
@@ -107,7 +107,7 @@
       - nacl.nacl_id.startswith('acl-')
 
 - name: Get network ACL facts
-  community.aws.ec2_vpc_nacl_info:
+  amazon.aws.ec2_vpc_nacl_info:
     nacl_ids:
       - "{{ nacl.nacl_id }}"
   register: nacl_facts
@@ -125,7 +125,7 @@
 # ============================================================
 
 - name: Remove the network ACL
-  community.aws.ec2_vpc_nacl:
+  amazon.aws.ec2_vpc_nacl:
     vpc_id: "{{ vpc_id }}"
     name: "{{ nacl_name }}"
     state: absent

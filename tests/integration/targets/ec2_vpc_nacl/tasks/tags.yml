@@ -32,7 +32,7 @@
   # ============================================================
 
   - name: Create a network ACL using subnet IDs
-    community.aws.ec2_vpc_nacl:
+    amazon.aws.ec2_vpc_nacl:
       vpc_id: "{{ vpc_id }}"
       name: "{{ nacl_name }}"
       subnets: "{{ subnet_ids }}"
@@ -50,7 +50,7 @@
       nacl_id: '{{ nacl.nacl_id }}'
 
   - name: Get network ACL facts
-    community.aws.ec2_vpc_nacl_info:
+    amazon.aws.ec2_vpc_nacl_info:
       nacl_ids:
         - "{{ nacl_id }}"
     register: nacl_info
@@ -64,7 +64,7 @@
   # ============================================================
 
   - name: Add tags (check mode)
-    community.aws.ec2_vpc_nacl:
+    amazon.aws.ec2_vpc_nacl:
       vpc_id: "{{ vpc_id }}"
       name: "{{ nacl_name }}"
       subnets: "{{ subnet_ids }}"
@@ -80,7 +80,7 @@
         - nacl.nacl_id == nacl_id
 
   - name: Add tags
-    community.aws.ec2_vpc_nacl:
+    amazon.aws.ec2_vpc_nacl:
       vpc_id: "{{ vpc_id }}"
       name: "{{ nacl_name }}"
       subnets: "{{ subnet_ids }}"
@@ -89,7 +89,7 @@
     register: nacl
 
   - name: Get network ACL facts
-    community.aws.ec2_vpc_nacl_info:
+    amazon.aws.ec2_vpc_nacl_info:
       nacl_ids:
         - "{{ nacl.nacl_id }}"
     register: nacl_info
@@ -103,7 +103,7 @@
         - nacl_info.nacls[0].tags == ( first_tags | combine(name_tags) )
 
   - name: Add tags - IDEMPOTENCY (check mode)
-    community.aws.ec2_vpc_nacl:
+    amazon.aws.ec2_vpc_nacl:
       vpc_id: "{{ vpc_id }}"
       name: "{{ nacl_name }}"
       subnets: "{{ subnet_ids }}"
@@ -119,7 +119,7 @@
         - nacl.nacl_id == nacl_id
 
   - name: Add tags - IDEMPOTENCY
-    community.aws.ec2_vpc_nacl:
+    amazon.aws.ec2_vpc_nacl:
       vpc_id: "{{ vpc_id }}"
       name: "{{ nacl_name }}"
       subnets: "{{ subnet_ids }}"
@@ -128,7 +128,7 @@
     register: nacl
 
   - name: Get network ACL facts
-    community.aws.ec2_vpc_nacl_info:
+    amazon.aws.ec2_vpc_nacl_info:
       nacl_ids:
         - "{{ nacl.nacl_id }}"
     register: nacl_info
@@ -144,7 +144,7 @@
   # ============================================================
 
   - name: Get network ACL facts by filter
-    community.aws.ec2_vpc_nacl_info:
+    amazon.aws.ec2_vpc_nacl_info:
       filters:
         "tag:Name": "{{ nacl_name }}"
     register: nacl_info
@@ -159,7 +159,7 @@
   # ============================================================
 
   - name: Modify tags with purge (check mode)
-    community.aws.ec2_vpc_nacl:
+    amazon.aws.ec2_vpc_nacl:
       vpc_id: "{{ vpc_id }}"
       name: "{{ nacl_name }}"
       subnets: "{{ subnet_ids }}"
@@ -175,7 +175,7 @@
         - nacl.nacl_id == nacl_id
 
   - name: Modify tags with purge
-    community.aws.ec2_vpc_nacl:
+    amazon.aws.ec2_vpc_nacl:
       vpc_id: "{{ vpc_id }}"
       name: "{{ nacl_name }}"
       subnets: "{{ subnet_ids }}"
@@ -184,7 +184,7 @@
     register: nacl
 
   - name: Get network ACL facts
-    community.aws.ec2_vpc_nacl_info:
+    amazon.aws.ec2_vpc_nacl_info:
       nacl_ids:
         - "{{ nacl.nacl_id }}"
     register: nacl_info
@@ -198,7 +198,7 @@
         - nacl_info.nacls[0].tags == ( second_tags | combine(name_tags) )
 
   - name: Modify tags with purge - IDEMPOTENCY (check mode)
-    community.aws.ec2_vpc_nacl:
+    amazon.aws.ec2_vpc_nacl:
       vpc_id: "{{ vpc_id }}"
       name: "{{ nacl_name }}"
       subnets: "{{ subnet_ids }}"
@@ -214,7 +214,7 @@
         - nacl.nacl_id == nacl_id
 
   - name: Modify tags with purge - IDEMPOTENCY
-    community.aws.ec2_vpc_nacl:
+    amazon.aws.ec2_vpc_nacl:
       vpc_id: "{{ vpc_id }}"
       name: "{{ nacl_name }}"
       subnets: "{{ subnet_ids }}"
@@ -223,7 +223,7 @@
     register: nacl
 
   - name: Get network ACL facts
-    community.aws.ec2_vpc_nacl_info:
+    amazon.aws.ec2_vpc_nacl_info:
       nacl_ids:
         - "{{ nacl.nacl_id }}"
     register: nacl_info
@@ -239,7 +239,7 @@
   # ============================================================
 
   - name: Modify tags without purge (check mode)
-    community.aws.ec2_vpc_nacl:
+    amazon.aws.ec2_vpc_nacl:
       vpc_id: "{{ vpc_id }}"
       name: "{{ nacl_name }}"
       subnets: "{{ subnet_ids }}"
@@ -256,7 +256,7 @@
         - nacl.nacl_id == nacl_id
 
   - name: Modify tags without purge
-    community.aws.ec2_vpc_nacl:
+    amazon.aws.ec2_vpc_nacl:
       vpc_id: "{{ vpc_id }}"
       name: "{{ nacl_name }}"
       subnets: "{{ subnet_ids }}"
@@ -266,7 +266,7 @@
     register: nacl
 
   - name: Get network ACL facts
-    community.aws.ec2_vpc_nacl_info:
+    amazon.aws.ec2_vpc_nacl_info:
       nacl_ids:
         - "{{ nacl.nacl_id }}"
     register: nacl_info
@@ -280,7 +280,7 @@
         - nacl_info.nacls[0].tags == ( final_tags | combine(name_tags) )
 
   - name: Modify tags without purge - IDEMPOTENCY (check mode)
-    community.aws.ec2_vpc_nacl:
+    amazon.aws.ec2_vpc_nacl:
       vpc_id: "{{ vpc_id }}"
       name: "{{ nacl_name }}"
       subnets: "{{ subnet_ids }}"
@@ -297,7 +297,7 @@
         - nacl.nacl_id == nacl_id
 
   - name: Modify tags without purge - IDEMPOTENCY
-    community.aws.ec2_vpc_nacl:
+    amazon.aws.ec2_vpc_nacl:
       vpc_id: "{{ vpc_id }}"
       name: "{{ nacl_name }}"
       subnets: "{{ subnet_ids }}"
@@ -307,7 +307,7 @@
     register: nacl
 
   - name: Get network ACL facts
-    community.aws.ec2_vpc_nacl_info:
+    amazon.aws.ec2_vpc_nacl_info:
       nacl_ids:
         - "{{ nacl.nacl_id }}"
     register: nacl_info
@@ -323,7 +323,7 @@
   # ============================================================
 
   - name: No change to tags without setting tags (check mode)
-    community.aws.ec2_vpc_nacl:
+    amazon.aws.ec2_vpc_nacl:
       vpc_id: "{{ vpc_id }}"
       name: "{{ nacl_name }}"
       subnets: "{{ subnet_ids }}"
@@ -338,7 +338,7 @@
         - nacl.nacl_id == nacl_id
 
   - name: No change to tags without setting tags
-    community.aws.ec2_vpc_nacl:
+    amazon.aws.ec2_vpc_nacl:
       vpc_id: "{{ vpc_id }}"
       name: "{{ nacl_name }}"
       subnets: "{{ subnet_ids }}"
@@ -346,7 +346,7 @@
     register: nacl
 
   - name: Get network ACL facts
-    community.aws.ec2_vpc_nacl_info:
+    amazon.aws.ec2_vpc_nacl_info:
       nacl_ids:
         - "{{ nacl.nacl_id }}"
     register: nacl_info
@@ -362,7 +362,7 @@
   # ============================================================
 
   - name: Remove non name tags (check mode)
-    community.aws.ec2_vpc_nacl:
+    amazon.aws.ec2_vpc_nacl:
       vpc_id: "{{ vpc_id }}"
       name: "{{ nacl_name }}"
       subnets: "{{ subnet_ids }}"
@@ -378,7 +378,7 @@
         - nacl.nacl_id == nacl_id
 
   - name: Remove non name tags
-    community.aws.ec2_vpc_nacl:
+    amazon.aws.ec2_vpc_nacl:
       vpc_id: "{{ vpc_id }}"
       name: "{{ nacl_name }}"
       subnets: "{{ subnet_ids }}"
@@ -387,7 +387,7 @@
     register: nacl
 
   - name: Get network ACL facts
-    community.aws.ec2_vpc_nacl_info:
+    amazon.aws.ec2_vpc_nacl_info:
       nacl_ids:
         - "{{ nacl.nacl_id }}"
     register: nacl_info
@@ -401,7 +401,7 @@
         - nacl_info.nacls[0].tags == name_tags
 
   - name: Remove non name tags - IDEMPOTENCY (check mode)
-    community.aws.ec2_vpc_nacl:
+    amazon.aws.ec2_vpc_nacl:
       vpc_id: "{{ vpc_id }}"
       name: "{{ nacl_name }}"
       subnets: "{{ subnet_ids }}"
@@ -417,7 +417,7 @@
         - nacl.nacl_id == nacl_id
 
   - name: Remove non name tags - IDEMPOTENCY
-    community.aws.ec2_vpc_nacl:
+    amazon.aws.ec2_vpc_nacl:
       vpc_id: "{{ vpc_id }}"
       name: "{{ nacl_name }}"
       subnets: "{{ subnet_ids }}"
@@ -426,7 +426,7 @@
     register: nacl
 
   - name: Get network ACL facts
-    community.aws.ec2_vpc_nacl_info:
+    amazon.aws.ec2_vpc_nacl_info:
       nacl_ids:
         - "{{ nacl.nacl_id }}"
     register: nacl_info
@@ -443,7 +443,7 @@
 
   always:
   - name: Remove the network ACL
-    community.aws.ec2_vpc_nacl:
+    amazon.aws.ec2_vpc_nacl:
       vpc_id: "{{ vpc_id }}"
       name: "{{ nacl_name }}"
       state: absent

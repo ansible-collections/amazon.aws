@@ -2,7 +2,7 @@
 - name: Test Ingress and Egress rules
   block:
   - name: Create ingress and egress rules using subnet IDs
-    community.aws.ec2_vpc_nacl:
+    amazon.aws.ec2_vpc_nacl:
       vpc_id: "{{ vpc_id }}"
       name: "{{ nacl_name }}"
       subnets: "{{ subnet_ids }}"
@@ -24,7 +24,7 @@
         - nacl.nacl_id.startswith('acl-')
 
   - name: Get network ACL facts
-    community.aws.ec2_vpc_nacl_info:
+    amazon.aws.ec2_vpc_nacl_info:
       nacl_ids:
         - "{{ nacl.nacl_id }}"
     register: nacl_facts
@@ -39,7 +39,7 @@
   # ============================================================
 
   - name: Remove an ingress rule
-    community.aws.ec2_vpc_nacl:
+    amazon.aws.ec2_vpc_nacl:
       vpc_id: "{{ vpc_id }}"
       name: "{{ nacl_name }}"
       subnets: "{{ subnet_ids }}"
@@ -60,7 +60,7 @@
         - nacl.nacl_id.startswith('acl-')
 
   - name: Get network ACL facts
-    community.aws.ec2_vpc_nacl_info:
+    amazon.aws.ec2_vpc_nacl_info:
       nacl_ids:
         - "{{ nacl.nacl_id }}"
     register: nacl_facts
@@ -75,7 +75,7 @@
   # ============================================================
 
   - name: Remove the egress rule
-    community.aws.ec2_vpc_nacl:
+    amazon.aws.ec2_vpc_nacl:
       vpc_id: "{{ vpc_id }}"
       name: "{{ nacl_name }}"
       subnets: "{{ subnet_ids }}"
@@ -95,7 +95,7 @@
         - nacl.nacl_id.startswith('acl-')
 
   - name: Get network ACL facts
-    community.aws.ec2_vpc_nacl_info:
+    amazon.aws.ec2_vpc_nacl_info:
       nacl_ids:
         - "{{ nacl.nacl_id }}"
     register: nacl_facts
@@ -110,7 +110,7 @@
   # ============================================================
 
   - name: Add egress rules
-    community.aws.ec2_vpc_nacl:
+    amazon.aws.ec2_vpc_nacl:
       vpc_id: "{{ vpc_id }}"
       name: "{{ nacl_name }}"
       subnets: "{{ subnet_ids }}"
@@ -132,7 +132,7 @@
         - nacl.nacl_id.startswith('acl-')
 
   - name: Get network ACL facts
-    community.aws.ec2_vpc_nacl_info:
+    amazon.aws.ec2_vpc_nacl_info:
       nacl_ids:
         - "{{ nacl.nacl_id }}"
     register: nacl_facts
@@ -147,7 +147,7 @@
   # ============================================================
 
   - name: Remove the network ACL
-    community.aws.ec2_vpc_nacl:
+    amazon.aws.ec2_vpc_nacl:
       vpc_id: "{{ vpc_id }}"
       name: "{{ nacl_name }}"
       state: absent

@@ -8,6 +8,7 @@ DOCUMENTATION = r"""
 ---
 module: ec2_vpc_nacl_info
 version_added: 1.0.0
+version_added_collection: community.aws
 short_description: Gather information about Network ACLs in an AWS VPC
 description:
   - Gather information about Network ACLs in an AWS VPC
@@ -44,13 +45,13 @@ EXAMPLES = r"""
 
 # Gather information about all Network ACLs:
 - name: Get All NACLs
-  community.aws.ec2_vpc_nacl_info:
+  amazon.aws.ec2_vpc_nacl_info:
     region: us-west-2
   register: all_nacls
 
 # Retrieve default Network ACLs:
 - name: Get Default NACLs
-  community.aws.ec2_vpc_nacl_info:
+  amazon.aws.ec2_vpc_nacl_info:
     region: us-west-2
     filters:
       'default': 'true'
@@ -114,7 +115,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_net
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 
 # VPC-supported IANA protocol numbers
 # http://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml
