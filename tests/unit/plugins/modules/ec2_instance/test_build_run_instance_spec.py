@@ -35,7 +35,9 @@ def ec2_instance(monkeypatch):
     monkeypatch.setattr(ec2_instance_module, "build_network_spec", lambda client, params: sentinel.NETWORK_SPEC)
     monkeypatch.setattr(ec2_instance_module, "build_volume_spec", lambda params: sentinel.VOlUME_SPEC)
     monkeypatch.setattr(ec2_instance_module, "build_instance_tags", lambda params: sentinel.TAG_SPEC)
-    monkeypatch.setattr(ec2_instance_module, "determine_iam_role", lambda module, name_or_arn: sentinel.IAM_PROFILE_ARN)
+    monkeypatch.setattr(
+        ec2_instance_module, "determine_iam_arn_from_name", lambda module, name_or_arn: sentinel.IAM_PROFILE_ARN
+    )
     return ec2_instance_module
 
 

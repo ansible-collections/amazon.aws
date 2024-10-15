@@ -1338,8 +1338,6 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 from ansible.module_utils.six import string_types
 
-from ansible_collections.amazon.aws.plugins.module_utils.arn import validate_aws_arn
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleEC2Error
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import associate_iam_instance_profile
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import attach_network_interface
@@ -1349,6 +1347,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_ins
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_instances
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_subnets
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_vpcs
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import determine_iam_arn_from_name
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_ec2_security_group_ids_from_names
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import modify_instance_attribute
@@ -1391,12 +1390,14 @@ def add_or_update_instance_profile(
     client, module: AnsibleAWSModule, instance: Dict[str, Any], desired_profile_name: str
 ) -> bool:
     instance_profile_setting = instance.get("IamInstanceProfile")
+    iam_client = None
     if instance_profile_setting and desired_profile_name:
         if desired_profile_name in (instance_profile_setting.get("Name"), instance_profile_setting.get("Arn")):
             # great, the profile we asked for is what's there
             return False
         else:
-            desired_arn = determine_iam_role(module, desired_profile_name)
+            iam_client = module.client("iam")
+            desired_arn = determine_iam_arn_from_name(iam_client, desired_profile_name)
             if instance_profile_setting.get("Arn") == desired_arn:
                 return False
 
@@ -1409,10 +1410,11 @@ def add_or_update_instance_profile(
             # check for InvalidAssociationID.NotFound
             module.fail_json_aws(e, "Could not find instance profile association")
         try:
+            iam_client = iam_client or module.client("iam")
             replace_iam_instance_profile_association(
                 client,
                 association_id=association[0]["AssociationId"],
-                iam_instance_profile={"Arn": determine_iam_role(module, desired_profile_name)},
+                iam_instance_profile={"Arn": determine_iam_arn_from_name(iam_client, desired_profile_name)},
             )
             return True
         except AnsibleEC2Error as e:
@@ -1421,9 +1423,10 @@ def add_or_update_instance_profile(
     if not instance_profile_setting and desired_profile_name:
         # create association
         try:
+            iam_client = iam_client or module.client("iam")
             associate_iam_instance_profile(
                 client,
-                iam_instance_profile={"Arn": determine_iam_role(module, desired_profile_name)},
+                iam_instance_profile={"Arn": determine_iam_arn_from_name(iam_client, desired_profile_name)},
                 instance_id=instance["InstanceId"],
             )
             return True
@@ -1806,7 +1809,9 @@ def build_run_instance_spec(client, module: AnsibleAWSModule, current_count: int
 
     # IAM profile
     if params.get("iam_instance_profile"):
-        spec["IamInstanceProfile"] = dict(Arn=determine_iam_role(module, params.get("iam_instance_profile")))
+        spec["IamInstanceProfile"] = dict(
+            Arn=determine_iam_arn_from_name(module.client("iam"), params.get("iam_instance_profile"))
+        )
 
     if params.get("instance_type"):
         spec["InstanceType"] = params["instance_type"]
@@ -2308,25 +2313,6 @@ def pretty_instance(i):
     instance = camel_dict_to_snake_dict(i, ignore_list=["Tags"])
     instance["tags"] = boto3_tag_list_to_ansible_dict(i.get("Tags", {}))
     return instance
-
-
-def determine_iam_role(module: AnsibleAWSModule, name_or_arn: Optional[str]) -> str:
-    if validate_aws_arn(name_or_arn, service="iam", resource_type="instance-profile"):
-        return name_or_arn
-    iam = module.client("iam", retry_decorator=AWSRetry.jittered_backoff())
-    try:
-        role = iam.get_instance_profile(InstanceProfileName=name_or_arn, aws_retry=True)
-        return role["InstanceProfile"]["Arn"]
-    except is_boto3_error_code("NoSuchEntity") as e:
-        module.fail_json_aws(e, msg=f"Could not find iam_instance_profile {name_or_arn}")
-    except (
-        botocore.exceptions.ClientError,
-        botocore.exceptions.BotoCoreError,
-    ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(
-            e,
-            msg=f"An error occurred while searching for iam_instance_profile {name_or_arn}. Please try supplying the full ARN.",
-        )
 
 
 def modify_instance_type(
