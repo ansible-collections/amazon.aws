@@ -81,7 +81,7 @@ options:
         callback (Linux only).
       - For Windows instances, to enable remote access via Ansible set O(aap_callback.windows) to V(true), and
         optionally set an admin password.
-      - If using O(aap_callback.windows) and O(aap_callback.set_password), callback ton Ansible Automation Platform will not
+      - If using O(aap_callback.windows) and O(aap_callback.set_password), callback to Ansible Automation Platform will not
         be performed but the instance will be ready to receive winrm connections from Ansible.
       - Mutually exclusive with O(user_data).
     type: dict
