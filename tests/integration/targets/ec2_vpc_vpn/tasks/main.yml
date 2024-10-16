@@ -1,7 +1,4 @@
----
 - name: EC2 VPN Connection integration tests
-  collections:
-    - amazon.aws
   module_defaults:
     group/aws:
       access_key: '{{ aws_access_key }}'
@@ -13,19 +10,19 @@
   # ============================================================
   - name: Create a VPC
     amazon.aws.ec2_vpc_net:
-      name: "{{ resource_prefix }}-vpc"
+      name: '{{ resource_prefix }}-vpc'
       state: present
-      cidr_block: "10.0.0.0/26"
+      cidr_block: 10.0.0.0/26
       tags:
-        Name: "{{ resource_prefix }}-vpc"
-        Description: "Created by ansible-test"
+        Name: '{{ resource_prefix }}-vpc'
+        Description: Created by ansible-test
     register: vpc_result
 
   - name: Create an EC2 VPC gateway and attach it to VPC
     community.aws.ec2_vpc_vgw:
       state: present
       vpc_id: '{{ vpc_result.vpc.id }}'
-      name: "{{ resource_prefix }}-vgw"
+      name: '{{ resource_prefix }}-vgw'
     register: vgw
 
   - name: Create customer gateway
@@ -37,10 +34,11 @@
 
   - name: Create transit gateway
     community.aws.ec2_transit_gateway:
-      description: "Transit Gateway for vpn attachment"
+      description: Transit Gateway for vpn attachment
     register: tgw
 
-  - name: Create an EC2 VPN Connection, with customer gateway, vpn_gateway_id and transit_gateway
+  - name: Create an EC2 VPN Connection, with customer gateway, vpn_gateway_id and
+      transit_gateway
     community.aws.ec2_vpc_vpn:
       customer_gateway_id: '{{ cgw.gateway.customer_gateway.customer_gateway_id }}'
       vpn_gateway_id: '{{ vgw.vgw.id }}'
@@ -52,8 +50,8 @@
   - name: Assert creation of vpn failed
     ansible.builtin.assert:
       that:
-        - result is failed
-        - result.msg == "parameters are mutually exclusive: vpn_gateway_id|transit_gateway_id"
+      - result is failed
+      - result.msg == "parameters are mutually exclusive: vpn_gateway_id|transit_gateway_id"
 
   - name: Create EC2 VPN Connection, with customer gateway and transit_gateway
     community.aws.ec2_vpc_vpn:
@@ -75,8 +73,8 @@
   - name: Assert success with no parameters
     ansible.builtin.assert:
       that:
-        - 'result.changed == false'
-        - 'result.vpn_connections != []'
+      - result.changed == false
+      - result.vpn_connections != []
   # ============================================================
 
   - name: Delete EC2 VPN Connection created with transit gateway
@@ -111,25 +109,26 @@
   - name: Assert success with no parameters
     ansible.builtin.assert:
       that:
-        - 'result.changed == false'
-        - 'result.vpn_connections != []'
+      - result.changed == false
+      - result.vpn_connections != []
 
   - name: Test success with customer gateway id as a filter
     community.aws.ec2_vpc_vpn_info:
       filters:
-        customer-gateway-id: '{{ cgw.gateway.customer_gateway.customer_gateway_id }}'
+        customer-gateway-id: '{{ cgw.gateway.customer_gateway.customer_gateway_id
+          }}'
         vpn-connection-id: '{{ vpn.vpn_connection_id }}'
     register: result
 
   - name: Assert success with customer gateway id as filter
     ansible.builtin.assert:
       that:
-        - 'result.changed == false'
-        - 'result.vpn_connections != []'
+      - result.changed == false
+      - result.vpn_connections != []
 
   # ============================================================
 
-  - include_tasks: 'tags.yml'
+  - include_tasks: tags.yml
 
   # ============================================================
 
@@ -143,7 +142,7 @@
   - name: Assert EC2 VPN Connection is deleted (check_mode)
     ansible.builtin.assert:
       that:
-        - result is changed
+      - result is changed
 
   - name: Delete EC2 VPN Connection
     community.aws.ec2_vpc_vpn:
@@ -154,7 +153,7 @@
   - name: Assert EC2 VPN Connection is deleted
     ansible.builtin.assert:
       that:
-        - result is changed
+      - result is changed
 
   - name: Delete EC2 VPN Connection - idempotency (check)
     community.aws.ec2_vpc_vpn:
@@ -166,7 +165,7 @@
   - name: Assert result has not changed (idempotency check_mode)
     ansible.builtin.assert:
       that:
-        - result is not changed
+      - result is not changed
 
   - name: Delete EC2 VPN Connection - idempotency
     community.aws.ec2_vpc_vpn:
@@ -177,7 +176,7 @@
   - name: Assert result has not changed (idempotency)
     ansible.builtin.assert:
       that:
-        - result is not changed
+      - result is not changed
 
   # ============================================================
   always:
@@ -216,9 +215,9 @@
 
   - name: Delete VPC
     amazon.aws.ec2_vpc_net:
-      name: "{{ resource_prefix }}-vpc"
+      name: '{{ resource_prefix }}-vpc'
       state: absent
-      cidr_block: "10.0.0.0/26"
+      cidr_block: 10.0.0.0/26
     register: result
     retries: 10
     delay: 3
