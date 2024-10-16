@@ -320,7 +320,20 @@ ec2_data = {
                 {
                     "matcher": "path",
                     "expected": True,
-                    "argument": "VpnGateways[0].State == 'available'",
+                    "argument": "VpnGateways[0].VpcAttachments[0].State == 'detached'",
+                    "state": "success",
+                },
+            ],
+        },
+        "VpnGatewayAttached": {
+            "delay": 5,
+            "maxAttempts": 40,
+            "operation": "DescribeVpnGateways",
+            "acceptors": [
+                {
+                    "matcher": "path",
+                    "expected": True,
+                    "argument": "VpnGateways[0].VpcAttachments[0].State == 'attached'",
                     "state": "success",
                 },
             ],
@@ -918,6 +931,11 @@ waiters_by_name = {
     ("EC2", "vpn_gateway_detached"): lambda ec2: core_waiter.Waiter(
         "vpn_gateway_detached",
         ec2_model("VpnGatewayDetached"),
+        core_waiter.NormalizedOperationMethod(ec2.describe_vpn_gateways),
+    ),
+    ("EC2", "vpn_gateway_attached"): lambda ec2: core_waiter.Waiter(
+        "vpn_gateway_attached",
+        ec2_model("VpnGatewayAttached"),
         core_waiter.NormalizedOperationMethod(ec2.describe_vpn_gateways),
     ),
     ("EC2", "nat_gateway_deleted"): lambda ec2: core_waiter.Waiter(
