@@ -39,7 +39,7 @@
 
   - name: Create an EC2 VPN Connection, with customer gateway, vpn_gateway_id and
       transit_gateway
-    community.aws.ec2_vpc_vpn:
+    amazon.aws.ec2_vpc_vpn:
       customer_gateway_id: '{{ cgw.gateway.customer_gateway.customer_gateway_id }}'
       vpn_gateway_id: '{{ vgw.vgw.id }}'
       transit_gateway_id: '{{ tgw.transit_gateway.transit_gateway_id }}'
@@ -54,7 +54,7 @@
       - result.msg == "parameters are mutually exclusive: vpn_gateway_id|transit_gateway_id"
 
   - name: Create EC2 VPN Connection, with customer gateway and transit_gateway
-    community.aws.ec2_vpc_vpn:
+    amazon.aws.ec2_vpc_vpn:
       customer_gateway_id: '{{ cgw.gateway.customer_gateway.customer_gateway_id }}'
       transit_gateway_id: '{{ tgw.transit_gateway.transit_gateway_id }}'
       state: present
@@ -67,7 +67,7 @@
 
   # ============================================================
   - name: Test success with no parameters
-    community.aws.ec2_vpc_vpn_info:
+    amazon.aws.ec2_vpc_vpn_info:
     register: result
 
   - name: Assert success with no parameters
@@ -78,7 +78,7 @@
   # ============================================================
 
   - name: Delete EC2 VPN Connection created with transit gateway
-    community.aws.ec2_vpc_vpn:
+    amazon.aws.ec2_vpc_vpn:
       state: absent
       vpn_connection_id: '{{ vpn_id }}'
     register: result
@@ -90,7 +90,7 @@
   # ============================================================
 
   - name: Create EC2 VPN Connection, with customer gateway and vpn gateway
-    community.aws.ec2_vpc_vpn:
+    amazon.aws.ec2_vpc_vpn:
       customer_gateway_id: '{{ cgw.gateway.customer_gateway.customer_gateway_id }}'
       vpn_gateway_id: '{{ vgw.vgw.id }}'
       state: present
@@ -103,7 +103,7 @@
   # ============================================================
 
   - name: Test success with no parameters
-    community.aws.ec2_vpc_vpn_info:
+    amazon.aws.ec2_vpc_vpn_info:
     register: result
 
   - name: Assert success with no parameters
@@ -113,7 +113,7 @@
       - result.vpn_connections != []
 
   - name: Test success with customer gateway id as a filter
-    community.aws.ec2_vpc_vpn_info:
+    amazon.aws.ec2_vpc_vpn_info:
       filters:
         customer-gateway-id: '{{ cgw.gateway.customer_gateway.customer_gateway_id
           }}'
@@ -133,7 +133,7 @@
   # ============================================================
 
   - name: Delete EC2 VPN Connection (check_mode)
-    community.aws.ec2_vpc_vpn:
+    amazon.aws.ec2_vpc_vpn:
       state: absent
       vpn_connection_id: '{{ vpn_id }}'
     register: result
@@ -145,7 +145,7 @@
       - result is changed
 
   - name: Delete EC2 VPN Connection
-    community.aws.ec2_vpc_vpn:
+    amazon.aws.ec2_vpc_vpn:
       state: absent
       vpn_connection_id: '{{ vpn_id }}'
     register: result
@@ -156,7 +156,7 @@
       - result is changed
 
   - name: Delete EC2 VPN Connection - idempotency (check)
-    community.aws.ec2_vpc_vpn:
+    amazon.aws.ec2_vpc_vpn:
       state: absent
       vpn_connection_id: '{{ vpn_id }}'
     register: result
@@ -168,7 +168,7 @@
       - result is not changed
 
   - name: Delete EC2 VPN Connection - idempotency
-    community.aws.ec2_vpc_vpn:
+    amazon.aws.ec2_vpc_vpn:
       state: absent
       vpn_connection_id: '{{ vpn_id }}'
     register: result
@@ -182,7 +182,7 @@
   always:
 
   - name: Delete EC2 VPN Connection
-    community.aws.ec2_vpc_vpn:
+    amazon.aws.ec2_vpc_vpn:
       state: absent
       vpn_connection_id: '{{ vpn.vpn_connection_id }}'
     register: result

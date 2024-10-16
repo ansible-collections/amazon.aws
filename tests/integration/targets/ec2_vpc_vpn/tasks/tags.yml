@@ -35,7 +35,7 @@
   # ============================================================
 
   - name: Add tags (check_mode)
-    community.aws.ec2_vpc_vpn:
+    amazon.aws.ec2_vpc_vpn:
       tags: '{{ first_tags }}'
       state: present
     register: tag_vpn
@@ -48,13 +48,13 @@
       - tag_vpn.vpn_connection_id == vpn_id
 
   - name: Add tags
-    community.aws.ec2_vpc_vpn:
+    amazon.aws.ec2_vpc_vpn:
       tags: '{{ first_tags }}'
       state: present
     register: tag_vpn
 
   - name: Get EC2 VPC VPN facts
-    community.aws.ec2_vpc_vpn_info: {}
+    amazon.aws.ec2_vpc_vpn_info: {}
     register: tag_vpn_info
 
   - name: Verify the tags were added
@@ -66,7 +66,7 @@
       - tag_vpn_info.vpn_connections[0].tags == first_tags
 
   - name: Add tags - IDEMPOTENCY (check_mode)
-    community.aws.ec2_vpc_vpn:
+    amazon.aws.ec2_vpc_vpn:
       tags: '{{ first_tags }}'
       state: present
     register: tag_vpn
@@ -79,13 +79,13 @@
       - tag_vpn.vpn_connection_id == vpn_id
 
   - name: Add tags - IDEMPOTENCY
-    community.aws.ec2_vpc_vpn:
+    amazon.aws.ec2_vpc_vpn:
       tags: '{{ first_tags }}'
       state: present
     register: tag_vpn
 
   - name: Get EC2 VPC VPN facts
-    community.aws.ec2_vpc_vpn_info: {}
+    amazon.aws.ec2_vpc_vpn_info: {}
     register: tag_vpn_info
 
   - name: Verify no change
@@ -99,7 +99,7 @@
   # ============================================================
 
   - name: Modify tags with purge (check_mode)
-    community.aws.ec2_vpc_vpn:
+    amazon.aws.ec2_vpc_vpn:
       tags: '{{ second_tags }}'
       state: present
       purge_tags: true
@@ -113,14 +113,14 @@
       - tag_vpn.vpn_connection_id == vpn_id
 
   - name: Modify tags with purge
-    community.aws.ec2_vpc_vpn:
+    amazon.aws.ec2_vpc_vpn:
       tags: '{{ second_tags }}'
       state: present
       purge_tags: true
     register: tag_vpn
 
   - name: Get EC2 VPC VPN facts
-    community.aws.ec2_vpc_vpn_info:
+    amazon.aws.ec2_vpc_vpn_info:
     register: tag_vpn_info
 
   - name: Verify the tags were added
@@ -132,7 +132,7 @@
       - tag_vpn_info.vpn_connections[0].tags == second_tags
 
   - name: Modify tags with purge - IDEMPOTENCY (check_mode)
-    community.aws.ec2_vpc_vpn:
+    amazon.aws.ec2_vpc_vpn:
       tags: '{{ second_tags }}'
       state: present
       purge_tags: true
@@ -146,14 +146,14 @@
       - tag_vpn.vpn_connection_id == vpn_id
 
   - name: Modify tags with purge - IDEMPOTENCY
-    community.aws.ec2_vpc_vpn:
+    amazon.aws.ec2_vpc_vpn:
       tags: '{{ second_tags }}'
       state: present
       purge_tags: true
     register: tag_vpn
 
   - name: Get EC2 VPC VPN facts
-    community.aws.ec2_vpc_vpn_info:
+    amazon.aws.ec2_vpc_vpn_info:
     register: tag_vpn_info
 
   - name: Verify no change
@@ -167,7 +167,7 @@
   # ============================================================
 
   - name: Modify tags without purge (check_mode)
-    community.aws.ec2_vpc_vpn:
+    amazon.aws.ec2_vpc_vpn:
       tags: '{{ third_tags }}'
       state: present
       purge_tags: false
@@ -181,14 +181,14 @@
       - tag_vpn.vpn_connection_id == vpn_id
 
   - name: Modify tags without purge
-    community.aws.ec2_vpc_vpn:
+    amazon.aws.ec2_vpc_vpn:
       tags: '{{ third_tags }}'
       state: present
       purge_tags: false
     register: tag_vpn
 
   - name: Get EC2 VPC VPN facts
-    community.aws.ec2_vpc_vpn_info:
+    amazon.aws.ec2_vpc_vpn_info:
     register: tag_vpn_info
 
   - name: verify the tags were added
@@ -200,7 +200,7 @@
       - tag_vpn_info.vpn_connections[0].tags == final_tags
 
   - name: Modify tags without purge - IDEMPOTENCY (check_mode)
-    community.aws.ec2_vpc_vpn:
+    amazon.aws.ec2_vpc_vpn:
       tags: '{{ third_tags }}'
       state: present
       purge_tags: false
@@ -214,14 +214,14 @@
       - tag_vpn.vpn_connection_id == vpn_id
 
   - name: Modify tags without purge - IDEMPOTENCY
-    community.aws.ec2_vpc_vpn:
+    amazon.aws.ec2_vpc_vpn:
       tags: '{{ third_tags }}'
       state: present
       purge_tags: false
     register: tag_vpn
 
   - name: Get EC2 VPC VPN facts
-    community.aws.ec2_vpc_vpn_info:
+    amazon.aws.ec2_vpc_vpn_info:
     register: tag_vpn_info
 
   - name: Verify no change
@@ -235,7 +235,7 @@
   # ============================================================
 
   - name: No change to tags without setting tag (check_mode)
-    community.aws.ec2_vpc_vpn:
+    amazon.aws.ec2_vpc_vpn:
       state: present
     register: tag_vpn
     check_mode: true
@@ -247,12 +247,12 @@
       - tag_vpn.vpn_connection_id == vpn_id
 
   - name: No change to tags without setting tags
-    community.aws.ec2_vpc_vpn:
+    amazon.aws.ec2_vpc_vpn:
       state: present
     register: tag_vpn
 
   - name: Get CE2 VPC VPN facts
-    community.aws.ec2_vpc_vpn_info:
+    amazon.aws.ec2_vpc_vpn_info:
     register: tag_vpn_info
 
   - name: Verify no tags were added
@@ -266,7 +266,7 @@
   # ============================================================
 
   - name: Remove tags (check_mode)
-    community.aws.ec2_vpc_vpn:
+    amazon.aws.ec2_vpc_vpn:
       tags: {}
       state: present
       purge_tags: true
@@ -280,14 +280,14 @@
       - tag_vpn.vpn_connection_id == vpn_id
 
   - name: Remove tags
-    community.aws.ec2_vpc_vpn:
+    amazon.aws.ec2_vpc_vpn:
       tags: {}
       state: present
       purge_tags: true
     register: tag_vpn
 
   - name: Get EC2 VPC VPN facts
-    community.aws.ec2_vpc_vpn_info:
+    amazon.aws.ec2_vpc_vpn_info:
     register: tag_vpn_info
 
   - name: Verify the tags were removed
@@ -298,7 +298,7 @@
       - tag_vpn_info.vpn_connections[0].vpn_connection_id == vpn_id
 
   - name: Remove tags - IDEMPOTENCY (check_mode)
-    community.aws.ec2_vpc_vpn:
+    amazon.aws.ec2_vpc_vpn:
       tags: {}
       state: present
       purge_tags: true
@@ -312,14 +312,14 @@
       - tag_vpn.vpn_connection_id == vpn_id
 
   - name: Remove tags - IDEMPOTENCY
-    community.aws.ec2_vpc_vpn:
+    amazon.aws.ec2_vpc_vpn:
       tags: {}
       state: present
       purge_tags: true
     register: tag_vpn
 
   - name: Get VPC VPN facts
-    community.aws.ec2_vpc_vpn_info:
+    amazon.aws.ec2_vpc_vpn_info:
     register: tag_vpn_info
 
   - name: Verify no change
