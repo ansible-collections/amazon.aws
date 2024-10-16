@@ -11,7 +11,7 @@ version_added: 1.0.0
 version_added_collection: community.aws
 description:
   - Read the AWS documentation for Network ACLS
-    U(https://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_ACLs.html)
+    U(https://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_ACLs.html).
 options:
   name:
     description:
@@ -68,8 +68,8 @@ options:
     elements: list
   state:
     description:
-      - Creates or modifies an existing NACL
-      - Deletes a NACL and reassociates subnets to the default NACL
+      - Creates or modifies an existing NACL.
+      - Deletes a NACL and reassociates subnets to the default NACL.
     required: false
     type: str
     choices: ['present', 'absent']
@@ -166,7 +166,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_net
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_subnets
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import replace_network_acl_association
-
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 
 # VPC-supported IANA protocol numbers

@@ -11,7 +11,7 @@ version_added: 1.0.0
 version_added_collection: community.aws
 short_description: Gather information about Network ACLs in an AWS VPC
 description:
-  - Gather information about Network ACLs in an AWS VPC
+  - Gather information about Network ACLs in an AWS VPC.
 author:
   - "Brad Davidson (@brandond)"
 options:
@@ -87,16 +87,16 @@ nacls:
             elements: str
         ingress:
             description:
-              - A list of NACL ingress rules with the following format.
-              - "C([rule no, protocol, allow/deny, v4 or v6 cidr, icmp_type, icmp_code, port from, port to])"
+              - A list of NACL ingress rules.
+              - The rule format is C([rule no, protocol, allow/deny, v4 or v6 cidr, icmp_type, icmp_code, port from, port to]).
             returned: always
             type: list
             elements: list
             sample: [[100, 'tcp', 'allow', '0.0.0.0/0', null, null, 22, 22]]
         egress:
             description:
-              - A list of NACL egress rules with the following format.
-              - "C([rule no, protocol, allow/deny, v4 or v6 cidr, icmp_type, icmp_code, port from, port to])"
+              - A list of NACL egress rules.
+              - The rule format is C([rule no, protocol, allow/deny, v4 or v6 cidr, icmp_type, icmp_code, port from, port to]).
             returned: always
             type: list
             elements: list
@@ -112,10 +112,9 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleEC2Error
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_network_acls
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
-
-from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 
 # VPC-supported IANA protocol numbers
 # http://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml
