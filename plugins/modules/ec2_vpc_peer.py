@@ -65,7 +65,7 @@ extends_documentation_fragment:
 EXAMPLES = r"""
 # Complete example to create and accept a local peering connection.
 - name: Create local account EC2 VPC Peering Connection
-  community.aws.ec2_vpc_peer:
+  amazon.aws.ec2_vpc_peer:
     region: "ap-southeast-2"
     vpc_id: "vpc-12345678"
     peer_vpc_id: "vpc-87654321"
@@ -77,7 +77,7 @@ EXAMPLES = r"""
   register: vpc_peer
 
 - name: Accept local EC2 VPC Peering request
-  community.aws.ec2_vpc_peer:
+  amazon.aws.ec2_vpc_peer:
     region: "ap-southeast-2"
     peering_id: "{{ vpc_peer.peering_id }}"
     state: "accept"
@@ -85,7 +85,7 @@ EXAMPLES = r"""
 
 # Complete example to delete a local peering connection.
 - name: Create local account EC2 VPC Peering Connection
-  community.aws.ec2_vpc_peer:
+  amazon.aws.ec2_vpc_peer:
     region: "ap-southeast-2"
     vpc_id: "vpc-12345678"
     peer_vpc_id: "vpc-87654321"
@@ -97,7 +97,7 @@ EXAMPLES = r"""
   register: vpc_peer
 
 - name: Delete a local EC2 VPC Peering Connection
-  community.aws.ec2_vpc_peer:
+  amazon.aws.ec2_vpc_peer:
     region: "ap-southeast-2"
     peering_id: "{{ vpc_peer.peering_id }}"
     state: "absent"
@@ -105,7 +105,7 @@ EXAMPLES = r"""
 
   # Complete example to create and accept a cross account peering connection.
 - name: Create cross account EC2 VPC Peering Connection
-  community.aws.ec2_vpc_peer:
+  amazon.aws.ec2_vpc_peer:
     region: "ap-southeast-2"
     vpc_id: "vpc-12345678"
     peer_vpc_id: "vpc-12345678"
@@ -118,7 +118,7 @@ EXAMPLES = r"""
   register: vpc_peer
 
 - name: Accept EC2 VPC Peering Connection from remote account
-  community.aws.ec2_vpc_peer:
+  amazon.aws.ec2_vpc_peer:
     region: "ap-southeast-2"
     peering_id: "{{ vpc_peer.peering_id }}"
     profile: "bot03_profile_for_cross_account"
@@ -127,7 +127,7 @@ EXAMPLES = r"""
 
 # Complete example to create and accept an intra-region peering connection.
 - name: Create intra-region EC2 VPC Peering Connection
-  community.aws.ec2_vpc_peer:
+  amazon.aws.ec2_vpc_peer:
     region: "us-east-1"
     vpc_id: "vpc-12345678"
     peer_vpc_id: "vpc-87654321"
@@ -140,7 +140,7 @@ EXAMPLES = r"""
   register: vpc_peer
 
 - name: Accept EC2 VPC Peering Connection from peer region
-  community.aws.ec2_vpc_peer:
+  amazon.aws.ec2_vpc_peer:
     region: "us-west-2"
     peering_id: "{{ vpc_peer.peering_id }}"
     state: "accept"
@@ -148,7 +148,7 @@ EXAMPLES = r"""
 
 # Complete example to create and reject a local peering connection.
 - name: Create local account EC2 VPC Peering Connection
-  community.aws.ec2_vpc_peer:
+  amazon.aws.ec2_vpc_peer:
     region: "ap-southeast-2"
     vpc_id: "vpc-12345678"
     peer_vpc_id: "vpc-87654321"
@@ -160,14 +160,14 @@ EXAMPLES = r"""
   register: vpc_peer
 
 - name: Reject a local EC2 VPC Peering Connection
-  community.aws.ec2_vpc_peer:
+  amazon.aws.ec2_vpc_peer:
     region: "ap-southeast-2"
     peering_id: "{{ vpc_peer.peering_id }}"
     state: "reject"
 
 # Complete example to create and accept a cross account peering connection.
 - name: Create cross account EC2 VPC Peering Connection
-  community.aws.ec2_vpc_peer:
+  amazon.aws.ec2_vpc_peer:
     region: "ap-southeast-2"
     vpc_id: "vpc-12345678"
     peer_vpc_id: "vpc-12345678"
@@ -180,7 +180,7 @@ EXAMPLES = r"""
   register: vpc_peer
 
 - name: Accept a cross account EC2 VPC Peering Connection request
-  community.aws.ec2_vpc_peer:
+  amazon.aws.ec2_vpc_peer:
     region: "ap-southeast-2"
     peering_id: "{{ vpc_peer.peering_id }}"
     profile: "bot03_profile_for_cross_account"
@@ -192,7 +192,7 @@ EXAMPLES = r"""
 
 # Complete example to create and reject a cross account peering connection.
 - name: Create cross account EC2 VPC Peering Connection
-  community.aws.ec2_vpc_peer:
+  amazon.aws.ec2_vpc_peer:
     region: "ap-southeast-2"
     vpc_id: "vpc-12345678"
     peer_vpc_id: "vpc-12345678"
@@ -205,7 +205,7 @@ EXAMPLES = r"""
   register: vpc_peer
 
 - name: Reject a cross account EC2 VPC Peering Connection
-  community.aws.ec2_vpc_peer:
+  amazon.aws.ec2_vpc_peer:
     region: "ap-southeast-2"
     peering_id: "{{ vpc_peer.peering_id }}"
     profile: "bot03_profile_for_cross_account"
