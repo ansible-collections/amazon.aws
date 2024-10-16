@@ -58,7 +58,7 @@ placement_groups:
     name:
       description: PG name
       type: str
-      sample: my-cluster
+      sample: "my-cluster"
     state:
       description: PG state
       type: str
@@ -77,36 +77,28 @@ placement_groups:
           other: value2
 """
 
-try:
-    from botocore.exceptions import BotoCoreError
-    from botocore.exceptions import ClientError
-except ImportError:
-    pass  # caught by AnsibleAWSModule
+from typing import Any
+from typing import Dict
+from typing import List
 
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_ec2_placement_groups
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
-
-def get_placement_groups_details(connection, module):
-    names = module.params.get("names")
-    try:
-        if len(names) > 0:
-            response = connection.describe_placement_groups(
-                Filters=[
-                    {
-                        "Name": "group-name",
-                        "Values": names,
-                    }
-                ]
-            )
-        else:
-            response = connection.describe_placement_groups()
-    except (BotoCoreError, ClientError) as e:
-        module.fail_json_aws(e, msg=f"Couldn't find placement groups named [{names}]")
+def get_placement_groups_details(connection, names: List) -> Dict[str, Any]:
+    params = {}
+    if len(names) > 0:
+        params["Filters"] = [
+            {
+                "Name": "group-name",
+                "Values": names,
+            }
+        ]
+    response = describe_ec2_placement_groups(connection, **params)
 
     results = []
-    for placement_group in response["PlacementGroups"]:
+    for placement_group in response:
         results.append(
             {
                 "name": placement_group["GroupName"],
@@ -129,8 +121,9 @@ def main():
     )
 
     connection = module.client("ec2")
+    names = module.params.get("names")
 
-    placement_groups = get_placement_groups_details(connection, module)
+    placement_groups = get_placement_groups_details(connection, names)
     module.exit_json(changed=False, placement_groups=placement_groups)
 
 

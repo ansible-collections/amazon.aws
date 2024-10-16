@@ -1,5 +1,5 @@
 - name: Create VPC for use in testing
-  ec2_vpc_net:
+  amazon.aws.ec2_vpc_net:
     name: "{{ resource_prefix }}-vpc"
     cidr_block: 10.22.32.0/23
     tags:
@@ -8,7 +8,7 @@
   register: testing_vpc
 
 - name: Create internet gateway for use in testing
-  ec2_vpc_igw:
+  amazon.aws.ec2_vpc_igw:
     vpc_id: "{{ testing_vpc.vpc.id }}"
     state: present
     tags:
@@ -16,7 +16,7 @@
   register: igw
 
 - name: Create default subnet in zone A
-  ec2_vpc_subnet:
+  amazon.aws.ec2_vpc_subnet:
     state: present
     vpc_id: "{{ testing_vpc.vpc.id }}"
     cidr: 10.22.32.0/24
@@ -26,7 +26,7 @@
   register: testing_subnet_a
 
 - name: Create secondary subnet in zone B
-  ec2_vpc_subnet:
+  amazon.aws.ec2_vpc_subnet:
     state: present
     vpc_id: "{{ testing_vpc.vpc.id }}"
     cidr: 10.22.33.0/24
@@ -35,8 +35,8 @@
       Name: "{{ resource_prefix }}-subnet-b"
   register: testing_subnet_b
 
-- name: create routing rules
-  ec2_vpc_route_table:
+- name: Create routing rules
+  amazon.aws.ec2_vpc_route_table:
     vpc_id: "{{ testing_vpc.vpc.id }}"
     tags:
       created: "{{ resource_prefix }}-route"
@@ -47,8 +47,8 @@
       - "{{ testing_subnet_a.subnet.id }}"
       - "{{ testing_subnet_b.subnet.id }}"
 
-- name: create a security group with the vpc
-  ec2_security_group:
+- name: Create a security group with the vpc
+  amazon.aws.ec2_security_group:
     name: "{{ resource_prefix }}-sg"
     description: a security group for ansible tests
     vpc_id: "{{ testing_vpc.vpc.id }}"
