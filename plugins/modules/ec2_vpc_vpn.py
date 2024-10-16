@@ -8,6 +8,7 @@ DOCUMENTATION = r"""
 ---
 module: ec2_vpc_vpn
 version_added: 1.0.0
+version_added_collection: community.aws
 short_description: Create, modify, and delete EC2 VPN connections
 description:
   - This module creates, modifies, and deletes VPN connections. Idempotence is achieved by using the filters
