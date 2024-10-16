@@ -1,0 +1,223 @@
+---
+- name: setup credentials and region
+  module_defaults:
+    group/aws:
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+
+  block:
+    # Set up the testing dependencies: VPC, subnet, security group, and two launch configurations
+    - name: Create VPC for use in testing
+      amazon.aws.ec2_vpc_net:
+        name: "{{ vpc_name }}"
+        cidr_block: '{{ subnet_a_cidr }}'
+        tenancy: default
+      register: testing_vpc
+
+    - name: Create internet gateway for use in testing
+      amazon.aws.ec2_vpc_igw:
+        vpc_id: "{{ testing_vpc.vpc.id }}"
+        state: present
+      register: igw
+
+    - name: Create subnet for use in testing
+      amazon.aws.ec2_vpc_subnet:
+        state: present
+        vpc_id: "{{ testing_vpc.vpc.id }}"
+        cidr: '{{ subnet_a_cidr }}'
+        az: "{{ aws_region }}a"
+        resource_tags:
+          Name: "{{ subnet_name }}"
+      register: testing_subnet
+
+    - name: Create routing rules
+      amazon.aws.ec2_vpc_route_table:
+        vpc_id: "{{ testing_vpc.vpc.id }}"
+        tags:
+          created: "{{ route_name }}"
+        routes:
+          - dest: 0.0.0.0/0
+            gateway_id: "{{ igw.gateway_id }}"
+        subnets:
+          - "{{ testing_subnet.subnet.id }}"
+
+    - name: Create a security group with the vpc created in the ec2_setup
+      amazon.aws.ec2_security_group:
+        name: "{{ sg_name }}"
+        description: a security group for ansible tests
+        vpc_id: "{{ testing_vpc.vpc.id }}"
+        rules:
+          - proto: tcp
+            from_port: 22
+            to_port: 22
+            cidr_ip: 0.0.0.0/0
+          - proto: tcp
+            from_port: 80
+            to_port: 80
+            cidr_ip: 0.0.0.0/0
+      register: sg
+
+    - name: Ensure launch configs exist
+      community.aws.autoscaling_launch_config:
+        name: "{{ item }}"
+        assign_public_ip: true
+        image_id: "{{ ec2_ami_id }}"
+        user_data: |
+          package_upgrade: true
+          package_update: true
+          packages:
+            - httpd
+          runcmd:
+            - "service httpd start"
+        security_groups: "{{ sg.group_id }}"
+        instance_type: t3.micro
+      loop:
+        - "{{ lc_name_1 }}"
+        - "{{ lc_name_2 }}"
+
+    - name: Launch asg and do not wait for instances to be deemed healthy (no ELB)
+      amazon.aws.autoscaling_group:
+        name: "{{ asg_name }}"
+        launch_config_name: "{{ lc_name_1 }}"
+        desired_capacity: 1
+        min_size: 1
+        max_size: 1
+        vpc_zone_identifier: "{{ testing_subnet.subnet.id }}"
+        wait_for_instances: no
+        state: present
+      register: output
+
+    - name: Assert that there is no viable instance
+      ansible.builtin.assert:
+        that:
+        - "output.viable_instances == 0"
+
+  # ============================================================
+    - name: Run test with start_cancel_instance_refresh.yml
+      ansible.builtin.include_tasks: start_cancel_instance_refresh.yml
+    
+  # ============================================================
+
+    - name: Run test with refresh_and_cancel_three_times.yml
+      ansible.builtin.include_tasks: refresh_and_cancel_three_times.yml
+      loop: "{{ query('sequence', 'start=1 end=3') }}"
+
+    - name: Run test with instance_refresh_info.yml
+      ansible.builtin.include_tasks: instance_refresh_info.yml
+
+  always:
+
+    - name: Kill asg
+      amazon.aws.autoscaling_group:
+        name: "{{ asg_name }}"
+        state: absent
+      register: removed
+      until: removed is not failed
+      ignore_errors: true
+      retries: 10
+    # Remove the testing dependencies
+
+    - name: Remove the load balancer
+      amazon.aws.elb_classic_lb:
+        name: "{{ load_balancer_name }}"
+        state: absent
+        security_group_ids:
+          - "{{ sg.group_id }}"
+        subnets: "{{ testing_subnet.subnet.id }}"
+        wait: true
+        connection_draining_timeout: 60
+        listeners:
+          - protocol: http
+            load_balancer_port: 80
+            instance_port: 80
+        health_check:
+            ping_protocol: tcp
+            ping_port: 80
+            ping_path: "/"
+            response_timeout: 5
+            interval: 10
+            unhealthy_threshold: 4
+            healthy_threshold: 2
+      register: removed
+      until: removed is not failed
+      ignore_errors: true
+      retries: 10
+
+    - name: Remove launch configs
+      community.aws.autoscaling_launch_config:
+        name: "{{ item }}"
+        state: absent
+      register: removed
+      until: removed is not failed
+      ignore_errors: true
+      retries: 10
+      loop:
+        - "{{ lc_name_1 }}"
+        - "{{ lc_name_2 }}"
+
+    - name: Delete launch template
+      community.aws.ec2_launch_template:
+        name: "{{ resource_prefix }}-lt"
+        state: absent
+      register: del_lt
+      retries: 10
+      until: del_lt is not failed
+      ignore_errors: true
+
+    - name: Remove the security group
+      amazon.aws.ec2_security_group:
+        name: "{{ sg_name }}"
+        description: a security group for ansible tests
+        vpc_id: "{{ testing_vpc.vpc.id }}"
+        state: absent
+      register: removed
+      until: removed is not failed
+      ignore_errors: true
+      retries: 10
+
+    - name: Remove routing rules
+      amazon.aws.ec2_vpc_route_table:
+        state: absent
+        vpc_id: "{{ testing_vpc.vpc.id }}"
+        tags:
+          created: "{{ route_name }}"
+        routes:
+          - dest: 0.0.0.0/0
+            gateway_id: "{{ igw.gateway_id }}"
+        subnets:
+          - "{{ testing_subnet.subnet.id }}"
+      register: removed
+      until: removed is not failed
+      ignore_errors: true
+      retries: 10
+
+    - name: Remove internet gateway
+      amazon.aws.ec2_vpc_igw:
+        vpc_id: "{{ testing_vpc.vpc.id }}"
+        state: absent
+      register: removed
+      until: removed is not failed
+      ignore_errors: true
+      retries: 10
+
+    - name: Remove the subnet
+      amazon.aws.ec2_vpc_subnet:
+        state: absent
+        vpc_id: "{{ testing_vpc.vpc.id }}"
+        cidr: '{{ subnet_a_cidr }}'
+      register: removed
+      until: removed is not failed
+      ignore_errors: true
+      retries: 10
+
+    - name: Remove the VPC
+      amazon.aws.ec2_vpc_net:
+        name: "{{ vpc_name }}"
+        cidr_block: '{{ subnet_a_cidr }}'
+        state: absent
+      register: removed
+      until: removed is not failed
+      ignore_errors: true
+      retries: 10
