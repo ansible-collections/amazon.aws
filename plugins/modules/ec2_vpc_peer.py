@@ -378,11 +378,10 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import delete_vpc_p
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_vpc_peering_connections
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import reject_vpc_peering_connection
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
-
-from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 
 
 def wait_for_state(client, module: AnsibleAWSModule, state: str, peering_id: str) -> NoReturn:
