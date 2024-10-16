@@ -34,7 +34,7 @@ extends_documentation_fragment:
 
 EXAMPLES = r"""
 - name: List all EC2 VPC Peering Connections
-  community.aws.ec2_vpc_peering_info:
+  amazon.aws.ec2_vpc_peering_info:
     region: ap-southeast-2
   register: all_vpc_peers
 
@@ -43,7 +43,7 @@ EXAMPLES = r"""
     msg: "{{ all_vpc_peers.result }}"
 
 - name: Get details on specific EC2 VPC Peering Connection
-  community.aws.ec2_vpc_peering_info:
+  amazon.aws.ec2_vpc_peering_info:
     peer_connection_ids:
       - "pcx-12345678"
       - "pcx-87654321"
@@ -51,7 +51,7 @@ EXAMPLES = r"""
   register: all_vpc_peers
 
 - name: Get all EC2 VPC Peering Connections with specific filters
-  community.aws.ec2_vpc_peering_info:
+  amazon.aws.ec2_vpc_peering_info:
     region: "ap-southeast-2"
     filters:
       status-code: ["pending-acceptance"]
