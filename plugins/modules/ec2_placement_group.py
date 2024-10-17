@@ -8,6 +8,7 @@ DOCUMENTATION = r"""
 ---
 module: ec2_placement_group
 version_added: 1.0.0
+version_added_collection: community.aws
 short_description: Create or delete an EC2 Placement Group
 description:
   - Create an EC2 Placement Group; if the placement group already exists,
@@ -137,10 +138,9 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import create_ec2_placement_group
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import delete_ec2_placement_group
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_ec2_placement_groups
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
-
-from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 
 
 def search_placement_group(connection, name: str) -> Dict[str, Any]:
