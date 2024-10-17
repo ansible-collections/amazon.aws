@@ -665,7 +665,7 @@ def describe_vpn_gateways(
     return client.describe_vpn_gateways(**params)["VpnGateways"]
 
 
-@EC2VpnGatewaysErrorHandler.list_error_handler("create vpn gateway", [])
+@EC2VpnGatewaysErrorHandler.common_error_handler("create vpn gateway")
 @AWSRetry.jittered_backoff()
 def create_vpn_gateway(
     client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
@@ -673,7 +673,7 @@ def create_vpn_gateway(
     return client.create_vpn_gateway(**params)["VpnGateway"]
 
 
-@EC2VpnGatewaysErrorHandler.list_error_handler("delete vpn gateway", [])
+@EC2VpnGatewaysErrorHandler.deletion_error_handler("delete vpn gateway")
 @AWSRetry.jittered_backoff()
 def delete_vpn_gateway(
     client, vpn_gateway_id: str
@@ -682,20 +682,20 @@ def delete_vpn_gateway(
     return True
 
 
-@EC2VpnGatewaysErrorHandler.list_error_handler("attach vpn gateway", [])
+@EC2VpnGatewaysErrorHandler.common_error_handler("attach vpn gateway")
 @AWSRetry.jittered_backoff()
 def attach_vpn_gateway(
     client, vpc_id: str, vpn_gateway_id: str
-) -> List[Dict[str, Any]]:
+) -> bool:
     client.attach_vpn_gateway(VpcId=vpc_id, VpnGatewayId=vpn_gateway_id)
     return True
 
 
-@EC2VpnGatewaysErrorHandler.list_error_handler("detach vpn gateway", [])
+@EC2VpnGatewaysErrorHandler.common_error_handler("detach vpn gateway")
 @AWSRetry.jittered_backoff()
 def detach_vpn_gateway(
     client, vpc_id: str, vpn_gateway_id: str
-) -> List[Dict[str, Any]]:
+) -> bool:
     client.detach_vpn_gateway(VpcId=vpc_id, VpnGatewayId=vpn_gateway_id)
     return True
 
