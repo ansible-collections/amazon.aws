@@ -59,25 +59,25 @@ EXAMPLES = r"""
 # for details.
 
 - name: Create a placement group.
-  community.aws.ec2_placement_group:
+  amazon.aws.ec2_placement_group:
     name: my-cluster
     state: present
 
 - name: Create a Spread placement group.
-  community.aws.ec2_placement_group:
+  amazon.aws.ec2_placement_group:
     name: my-cluster
     state: present
     strategy: spread
 
 - name: Create a Partition strategy placement group.
-  community.aws.ec2_placement_group:
+  amazon.aws.ec2_placement_group:
     name: my-cluster
     state: present
     strategy: partition
     partition_count: 3
 
 - name: Delete a placement group.
-  community.aws.ec2_placement_group:
+  amazon.aws.ec2_placement_group:
     name: my-cluster
     state: absent
 """
