@@ -14,7 +14,7 @@
     include_tasks: env_setup.yml
 
   - name: Create a placement group 1 - check_mode
-    community.aws.ec2_placement_group:
+    amazon.aws.ec2_placement_group:
       name: '{{ resource_prefix }}-pg1'
       state: present
     check_mode: true
@@ -27,7 +27,7 @@
       - pg_1_create_check_mode.placement_group.name == resource_prefix ~ '-pg1'
 
   - name: Create a placement group 1
-    community.aws.ec2_placement_group:
+    amazon.aws.ec2_placement_group:
       name: '{{ resource_prefix }}-pg1'
       state: present
     register: pg_1_create
@@ -45,7 +45,7 @@
       - '"ec2:CreatePlacementGroup" in pg_1_create.resource_actions'
 
   - name: Gather information about placement group 1
-    community.aws.ec2_placement_group_info:
+    amazon.aws.ec2_placement_group_info:
       names:
       - '{{ resource_prefix }}-pg1'
     register: pg_1_info_result
@@ -60,7 +60,7 @@
       - '"ec2:DescribePlacementGroups" in pg_1_info_result.resource_actions'
 
   - name: Create a placement group 1 - Idempotency
-    community.aws.ec2_placement_group:
+    amazon.aws.ec2_placement_group:
       name: '{{ resource_prefix }}-pg1'
       state: present
     register: pg_1_create
@@ -74,7 +74,7 @@
       - '"ec2:CreatePlacementGroup" not in pg_1_create.resource_actions'
 
   - name: Create a placement group 1 - check_mode Idempotency
-    community.aws.ec2_placement_group:
+    amazon.aws.ec2_placement_group:
       name: '{{ resource_prefix }}-pg1'
       state: present
     check_mode: true
@@ -88,7 +88,7 @@
       - pg_1_create_check_mode_idem.placement_group.state == "available"
 
   - name: Create a placement group 2 - check_mode
-    community.aws.ec2_placement_group:
+    amazon.aws.ec2_placement_group:
       name: '{{ resource_prefix }}-pg2'
       state: present
       strategy: spread
@@ -102,7 +102,7 @@
       - pg_2_create_check_mode.placement_group.name == resource_prefix ~ '-pg2'
 
   - name: Create a placement group 2 with spread strategy
-    community.aws.ec2_placement_group:
+    amazon.aws.ec2_placement_group:
       name: '{{ resource_prefix }}-pg2'
       state: present
       strategy: spread
@@ -121,7 +121,7 @@
         }}'
 
   - name: Gather information about placement group 2
-    community.aws.ec2_placement_group_info:
+    amazon.aws.ec2_placement_group_info:
       names:
       - '{{ resource_prefix }}-pg2'
     register: pg_2_info_result
@@ -136,7 +136,7 @@
       - '"ec2:DescribePlacementGroups" in pg_2_info_result.resource_actions'
 
   - name: Create a placement group 2 with spread strategy - Idempotency
-    community.aws.ec2_placement_group:
+    amazon.aws.ec2_placement_group:
       name: '{{ resource_prefix }}-pg2'
       state: present
       strategy: spread
@@ -151,7 +151,7 @@
       - '"ec2:CreatePlacementGroup" not in pg_2_create.resource_actions'
 
   - name: Create a placement group 2 - check_mode Idempotency
-    community.aws.ec2_placement_group:
+    amazon.aws.ec2_placement_group:
       name: '{{ resource_prefix }}-pg2'
       state: present
       strategy: spread
@@ -166,7 +166,7 @@
       - pg_2_create_check_mode_idem.placement_group.state == "available"
 
   - name: Create a placement group 3 - check_mode
-    community.aws.ec2_placement_group:
+    amazon.aws.ec2_placement_group:
       name: '{{ resource_prefix }}-pg3'
       state: present
       strategy: partition
@@ -181,7 +181,7 @@
       - pg_3_create_check_mode.placement_group.name == resource_prefix ~ '-pg3'
 
   - name: Create a placement group 3 with Partition strategy
-    community.aws.ec2_placement_group:
+    amazon.aws.ec2_placement_group:
       name: '{{ resource_prefix }}-pg3'
       state: present
       strategy: partition
@@ -202,7 +202,7 @@
 
 
   - name: Gather information about placement group 3
-    community.aws.ec2_placement_group_info:
+    amazon.aws.ec2_placement_group_info:
       names:
       - '{{ resource_prefix }}-pg3'
     register: pg_3_info_result
@@ -217,7 +217,7 @@
       - '"ec2:DescribePlacementGroups" in pg_3_info_result.resource_actions'
 
   - name: Create a placement group 3 with Partition strategy - Idempotency
-    community.aws.ec2_placement_group:
+    amazon.aws.ec2_placement_group:
       name: '{{ resource_prefix }}-pg3'
       state: present
       strategy: partition
@@ -233,7 +233,7 @@
       - '"ec2:CreatePlacementGroup" not in pg_3_create.resource_actions'
 
   - name: Create a placement group 3 - check_mode Idempotency
-    community.aws.ec2_placement_group:
+    amazon.aws.ec2_placement_group:
       name: '{{ resource_prefix }}-pg3'
       state: present
       strategy: partition
@@ -249,7 +249,7 @@
       - pg_3_create_check_mode_idem.placement_group.state == "available"
 
   - name: Create a placement group 4 with tags - check_mode
-    community.aws.ec2_placement_group:
+    amazon.aws.ec2_placement_group:
       name: '{{ resource_prefix }}-pg4'
       state: present
       strategy: cluster
@@ -268,7 +268,7 @@
       - pg_4_create_check_mode.placement_group.tags.bar == "test2"
 
   - name: Create a placement group 4 with tags
-    community.aws.ec2_placement_group:
+    amazon.aws.ec2_placement_group:
       name: '{{ resource_prefix }}-pg4'
       state: present
       strategy: cluster
@@ -292,7 +292,7 @@
         }}'
 
   - name: Gather information about placement group 4
-    community.aws.ec2_placement_group_info:
+    amazon.aws.ec2_placement_group_info:
       names:
       - '{{ resource_prefix }}-pg4'
     register: pg_4_info_result
@@ -309,7 +309,7 @@
       - '"ec2:DescribePlacementGroups" in pg_4_info_result.resource_actions'
 
   - name: Create a placement group 4 with tags - Idempotency
-    community.aws.ec2_placement_group:
+    amazon.aws.ec2_placement_group:
       name: '{{ resource_prefix }}-pg4'
       state: present
       strategy: cluster
@@ -330,7 +330,7 @@
       - '"ec2:CreatePlacementGroup" not in pg_4_create.resource_actions'
 
   - name: Create a placement group 4 with tags - check_mode Idempotency
-    community.aws.ec2_placement_group:
+    amazon.aws.ec2_placement_group:
       name: '{{ resource_prefix }}-pg4'
       state: present
       strategy: cluster
@@ -351,13 +351,13 @@
       - pg_4_create_check_mode_idem.placement_group.tags.bar == "test2"
 
   - name: List all placement groups.
-    community.aws.ec2_placement_group_info:
+    amazon.aws.ec2_placement_group_info:
     register: all_ec2_placement_groups
 
 # Delete Placement Group ==========================================
 
   - name: Delete a placement group 1 - check_mode
-    community.aws.ec2_placement_group:
+    amazon.aws.ec2_placement_group:
       name: '{{ resource_prefix }}-pg1'
       state: absent
     check_mode: true
@@ -370,7 +370,7 @@
       - pg_1_delete_check_mode is changed
 
   - name: Delete a placement group 1
-    community.aws.ec2_placement_group:
+    amazon.aws.ec2_placement_group:
       name: '{{ resource_prefix }}-pg1'
       state: absent
     register: pg_1_delete
@@ -382,7 +382,7 @@
       - '"ec2:DeletePlacementGroup" in pg_1_delete.resource_actions'
 
   - name: Delete a placement group 1 - Idempotency
-    community.aws.ec2_placement_group:
+    amazon.aws.ec2_placement_group:
       name: '{{ resource_prefix }}-pg1'
       state: absent
     register: pg_1_delete
@@ -394,7 +394,7 @@
       - '"ec2:DeletePlacementGroup" not in pg_1_delete.resource_actions'
 
   - name: Delete a placement group 1 - check_mode Idempotency
-    community.aws.ec2_placement_group:
+    amazon.aws.ec2_placement_group:
       name: '{{ resource_prefix }}-pg1'
       state: absent
     check_mode: true
@@ -407,7 +407,7 @@
       - pg_1_delete_check_mode_idem is not changed
 
   - name: Delete a placement group 2 - check_mode
-    community.aws.ec2_placement_group:
+    amazon.aws.ec2_placement_group:
       name: '{{ resource_prefix }}-pg2'
       state: absent
     check_mode: true
@@ -420,7 +420,7 @@
       - pg_2_delete_check_mode is changed
 
   - name: Delete a placement group 2
-    community.aws.ec2_placement_group:
+    amazon.aws.ec2_placement_group:
       name: '{{ resource_prefix }}-pg2'
       state: absent
     register: pg_2_delete
@@ -432,7 +432,7 @@
       - '"ec2:DeletePlacementGroup" in pg_2_delete.resource_actions'
 
   - name: Delete a placement group 2 - Idempotency
-    community.aws.ec2_placement_group:
+    amazon.aws.ec2_placement_group:
       name: '{{ resource_prefix }}-pg2'
       state: absent
     register: pg_2_delete
@@ -444,7 +444,7 @@
       - '"ec2:DeletePlacementGroup" not in pg_2_delete.resource_actions'
 
   - name: Delete a placement group 2 - check_mode Idempotency
-    community.aws.ec2_placement_group:
+    amazon.aws.ec2_placement_group:
       name: '{{ resource_prefix }}-pg2'
       state: absent
     check_mode: true
@@ -457,7 +457,7 @@
       - pg_2_delete_check_mode_idem is not changed
 
   - name: Delete a placement group 3 - check_mode
-    community.aws.ec2_placement_group:
+    amazon.aws.ec2_placement_group:
       name: '{{ resource_prefix }}-pg3'
       state: absent
     check_mode: true
@@ -470,7 +470,7 @@
       - pg_3_delete_check_mode is changed
 
   - name: Delete a placement group 3
-    community.aws.ec2_placement_group:
+    amazon.aws.ec2_placement_group:
       name: '{{ resource_prefix }}-pg3'
       state: absent
     register: pg_3_delete
@@ -482,7 +482,7 @@
       - '"ec2:DeletePlacementGroup" in pg_3_delete.resource_actions'
 
   - name: Delete a placement group 3 - Idempotency
-    community.aws.ec2_placement_group:
+    amazon.aws.ec2_placement_group:
       name: '{{ resource_prefix }}-pg3'
       state: absent
     register: pg_3_delete
@@ -494,7 +494,7 @@
       - '"ec2:DeletePlacementGroup" not in pg_3_delete.resource_actions'
 
   - name: Delete a placement group 3 - check_mode Idempotency
-    community.aws.ec2_placement_group:
+    amazon.aws.ec2_placement_group:
       name: '{{ resource_prefix }}-pg3'
       state: absent
     check_mode: true
@@ -507,7 +507,7 @@
       - pg_3_delete_check_mode_idem is not changed
 
   - name: Delete a placement group 4 - check_mode
-    community.aws.ec2_placement_group:
+    amazon.aws.ec2_placement_group:
       name: '{{ resource_prefix }}-pg4'
       state: absent
     check_mode: true
@@ -521,7 +521,7 @@
 
 
   - name: Delete a placement group 4
-    community.aws.ec2_placement_group:
+    amazon.aws.ec2_placement_group:
       name: '{{ resource_prefix }}-pg4'
       state: absent
     register: pg_4_delete
@@ -533,7 +533,7 @@
       - '"ec2:DeletePlacementGroup" in pg_4_delete.resource_actions'
 
   - name: Delete a placement group 4 - Idempotency
-    community.aws.ec2_placement_group:
+    amazon.aws.ec2_placement_group:
       name: '{{ resource_prefix }}-pg4'
       state: absent
     register: pg_4_delete
@@ -545,7 +545,7 @@
       - '"ec2:DeletePlacementGroup" not in pg_4_delete.resource_actions'
 
   - name: Delete a placement group 4 - check_mode Idempotency
-    community.aws.ec2_placement_group:
+    amazon.aws.ec2_placement_group:
       name: '{{ resource_prefix }}-pg4'
       state: absent
     check_mode: true
@@ -560,7 +560,7 @@
   always:
 
   - name: Make sure placement groups created during test are deleted
-    community.aws.ec2_placement_group:
+    amazon.aws.ec2_placement_group:
       name: '{{ item }}'
       state: absent
     with_items: '{{ placement_group_names }}'

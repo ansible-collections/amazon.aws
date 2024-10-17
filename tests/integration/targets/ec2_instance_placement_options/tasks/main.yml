@@ -7,7 +7,7 @@
       region: "{{ aws_region }}"
   block:
     - name: New placement group
-      community.aws.ec2_placement_group:
+      amazon.aws.ec2_placement_group:
         name: "{{ ec2_placement_group_name }}"
         strategy: partition
         partition_count: 1
@@ -99,7 +99,7 @@
       when: instance_creation_tenancy is defined
 
     - name: Delete placement group.
-      community.aws.ec2_placement_group:
+      amazon.aws.ec2_placement_group:
         name: "{{ ec2_placement_group_name }}"
         state: absent
       ignore_errors: true
