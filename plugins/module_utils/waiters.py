@@ -51,6 +51,52 @@ ec2_data = {
                 {"matcher": "error", "expected": "InvalidInternetGatewayID.NotFound", "state": "retry"},
             ],
         },
+        "TGWVpcAttachmentAvailable": {
+            "operation": "DescribeTransitGatewayVpcAttachments",
+            "delay": 5,
+            "maxAttempts": 120,
+            "acceptors": [
+                {
+                    "expected": "available",
+                    "matcher": "pathAll",
+                    "state": "success",
+                    "argument": "TransitGatewayVpcAttachments[].State",
+                },
+                {
+                    "state": "retry",
+                    "matcher": "pathAny",
+                    "argument": "TransitGatewayVpcAttachments[].State",
+                    "expected": "pending",
+                },
+                {"matcher": "error", "expected": "InvalidRouteTableID.NotFound", "state": "retry"},
+            ],
+        },
+        "TGWVpcAttachmentDeleted": {
+            "operation": "DescribeTransitGatewayVpcAttachments",
+            "delay": 5,
+            "maxAttempts": 120,
+            "acceptors": [
+                {
+                    "state": "retry",
+                    "matcher": "pathAll",
+                    "argument": "TransitGatewayVpcAttachments[].State",
+                    "expected": "deleting",
+                },
+                {
+                    "state": "success",
+                    "expected": "deleted",
+                    "matcher": "pathAll",
+                    "argument": "TransitGatewayVpcAttachments[].State",
+                },
+                {
+                    "expected": True,
+                    "matcher": "path",
+                    "state": "success",
+                    "argument": "length(TransitGatewayVpcAttachments[]) == `0`",
+                },
+                {"matcher": "error", "expected": "InvalidRouteTableID.NotFound", "state": "retry"},
+            ],
+        },
         "NetworkInterfaceAttached": {
             "operation": "DescribeNetworkInterfaces",
             "delay": 5,
@@ -773,6 +819,16 @@ waiters_by_name = {
         "internet_gateway_attached",
         ec2_model("InternetGatewayAttached"),
         core_waiter.NormalizedOperationMethod(ec2.describe_internet_gateways),
+    ),
+    ("EC2", "transit_gateway_vpc_attachment_available"): lambda ec2: core_waiter.Waiter(
+        "transit_gateway_vpc_attachment_available",
+        ec2_model("TGWVpcAttachmentAvailable"),
+        core_waiter.NormalizedOperationMethod(ec2.describe_transit_gateway_vpc_attachments),
+    ),
+    ("EC2", "transit_gateway_vpc_attachment_deleted"): lambda ec2: core_waiter.Waiter(
+        "transit_gateway_vpc_attachment_deleted",
+        ec2_model("TGWVpcAttachmentDeleted"),
+        core_waiter.NormalizedOperationMethod(ec2.describe_transit_gateway_vpc_attachments),
     ),
     ("EC2", "network_interface_attached"): lambda ec2: core_waiter.Waiter(
         "network_interface_attached",
