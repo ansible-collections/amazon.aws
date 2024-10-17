@@ -1,0 +1,2 @@
+minor_changes:
+  - module_utils/ec2 - add utils for the ec2_transit_gateway_* modules (https://github.com/ansible-collections/amazon.aws/pull/2325).
