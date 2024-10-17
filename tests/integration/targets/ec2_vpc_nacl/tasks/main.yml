@@ -1,0 +1,174 @@
+---
+- module_defaults:
+    group/aws:
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+
+  block:
+
+    # ============================================================
+
+    - name: Test without any parameters
+      amazon.aws.ec2_vpc_nacl:
+      register: result
+      ignore_errors: true
+
+    - name: Assert required parameters
+      ansible.builtin.assert:
+        that:
+          - result.failed
+          - "result.msg == 'one of the following is required: name, nacl_id'"
+
+    - name: Get network ACL info without any parameters
+      amazon.aws.ec2_vpc_nacl_info:
+      register: nacl_facts
+
+    - name: Assert we don't error
+      assert:
+        that:
+          - nacl_facts is succeeded
+
+    - name: Get network ACL info with invalid ID
+      amazon.aws.ec2_vpc_nacl_info:
+        nacl_ids:
+        - 'acl-000000000000'
+      register: nacl_facts
+      ignore_errors: true
+
+    - name: Assert message mentions missing ACLs
+      assert:
+        that:
+          - nacl_facts is failed
+          - '"does not exist" in nacl_facts.msg'
+
+    # ============================================================
+
+    - name: Fetch AZ availability
+      amazon.aws.aws_az_info:
+      register: az_info
+
+    - name: Assert that we have multiple AZs available to us
+      ansible.builtin.assert:
+        that: az_info.availability_zones | length >= 2
+
+    - name: Pick AZs
+      ansible.builtin.set_fact:
+        az_one: '{{ az_info.availability_zones[0].zone_name }}'
+        az_two: '{{ az_info.availability_zones[1].zone_name }}'
+
+    # ============================================================
+
+    - name: Create a VPC
+      amazon.aws.ec2_vpc_net:
+        cidr_block: "{{ vpc_cidr }}"
+        name: "{{ vpc_name }}"
+        state: present
+      register: vpc
+
+    - name: Save VPC ID for later
+      ansible.builtin.set_fact:
+        vpc_id: "{{ vpc.vpc.id }}"
+
+    - name: Create subnets
+      amazon.aws.ec2_vpc_subnet:
+        cidr: "{{ item.cidr }}"
+        az: "{{ item.az }}"
+        vpc_id: "{{ vpc_id }}"
+        state: present
+        tags:
+          Name: "{{ item.name }}"
+      with_items:
+        - cidr: "{{ subnet_1 }}"
+          az: "{{ az_one }}"
+          name: "{{ subnet_name }}-1"
+        - cidr: "{{ subnet_2 }}"
+          az: "{{ az_two }}"
+          name: "{{ subnet_name }}-2"
+        - cidr: "{{ subnet_3 }}"
+          az: "{{ az_one }}"
+          name: "{{ subnet_name }}-3"
+        - cidr: "{{ subnet_4 }}"
+          az: "{{ az_two }}"
+          name: "{{ subnet_name }}-4"
+      register: subnets
+
+    - name: Set helpful facts about subnets
+      ansible.builtin.set_fact:
+        subnet_ids: "{{ subnets | community.general.json_query('results[*].subnet.id') }}"
+        subnet_names: "{{ subnets | community.general.json_query('results[*].subnet.tags.Name') }}"
+
+    - name: Create VPC for IPv6 tests
+      amazon.aws.ec2_vpc_net:
+        cidr_block: "{{ vpc_ipv6_cidr }}"
+        name: "{{ vpc_ipv6_name }}"
+        state: present
+        ipv6_cidr: true
+      register: vpc_result
+
+    - name: Set helpful IPv6 facts
+      ansible.builtin.set_fact:
+        vpc_ipv6_id: "{{ vpc_result.vpc.id }}"
+        vpc_ipv6_cidr_v6: "{{ _ipv6_cidr }}"
+        subnet_ipv6: "{{ _ipv6_cidr | regex_replace('::/56', '::/64') }}"
+      vars:
+        _ipv6_cidr: "{{ vpc_result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block }}"
+
+    - name: Create subnet with IPv6
+      amazon.aws.ec2_vpc_subnet:
+        cidr: "{{ vpc_ipv6_cidr }}"
+        vpc_id: "{{ vpc_ipv6_id }}"
+        ipv6_cidr: "{{ subnet_ipv6 }}"
+        state: present
+        tags:
+          Name: "{{ subnet_name }}-ipv6"
+
+    # ============================================================
+    - name: Run individual tasks
+      ansible.builtin.include_tasks: "tasks/{{ item }}.yml"
+      with_items:
+        - subnet_ids
+        - subnet_names
+        - tags
+        - ingress_and_egress
+        - ipv6
+
+    # ============================================================
+
+  always:
+
+    - name: Remove network ACL
+      amazon.aws.ec2_vpc_nacl:
+        vpc_id: "{{ vpc_id }}"
+        name: "{{ nacl_name }}"
+        state: absent
+      register: removed_acl
+      ignore_errors: true
+
+    - name: Remove subnets
+      amazon.aws.ec2_vpc_subnet:
+        cidr: "{{ item.cidr }}"
+        vpc_id: "{{ item.vpc_id | default(vpc_id) }}"
+        state: absent
+      with_items:
+        - cidr: "{{ subnet_1 }}"
+        - cidr: "{{ subnet_2 }}"
+        - cidr: "{{ subnet_3 }}"
+        - cidr: "{{ subnet_4 }}"
+        - cidr: "{{ vpc_ipv6_cidr }}"
+          vpc_id: "{{ vpc_ipv6_id }}"
+      ignore_errors: true
+      register: removed_subnets
+
+    - name: Remove the VPCs
+      amazon.aws.ec2_vpc_net:
+        vpc_id: "{{ item }}"
+        state: absent
+      ignore_errors: true
+      register: removed_vpc
+      with_items:
+        - '{{ vpc_id }}'
+        - '{{ vpc_ipv6_id }}'
+
+    # ============================================================

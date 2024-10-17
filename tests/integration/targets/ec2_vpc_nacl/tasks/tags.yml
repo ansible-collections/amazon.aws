@@ -1,0 +1,455 @@
+- name: Run test from tags.yml
+  vars:
+    first_tags:
+      'Key with Spaces': Value with spaces
+      CamelCaseKey: CamelCaseValue
+      pascalCaseKey: pascalCaseValue
+      snake_case_key: snake_case_value
+    second_tags:
+      'New Key with Spaces': Value with spaces
+      NewCamelCaseKey: CamelCaseValue
+      newPascalCaseKey: pascalCaseValue
+      new_snake_case_key: snake_case_value
+    third_tags:
+      'Key with Spaces': Value with spaces
+      CamelCaseKey: CamelCaseValue
+      pascalCaseKey: pascalCaseValue
+      snake_case_key: snake_case_value
+      'New Key with Spaces': Updated Value with spaces
+    final_tags:
+      'Key with Spaces': Value with spaces
+      CamelCaseKey: CamelCaseValue
+      pascalCaseKey: pascalCaseValue
+      snake_case_key: snake_case_value
+      'New Key with Spaces': Updated Value with spaces
+      NewCamelCaseKey: CamelCaseValue
+      newPascalCaseKey: pascalCaseValue
+      new_snake_case_key: snake_case_value
+    name_tags:
+      Name: '{{ nacl_name }}'
+  block:
+
+  # ============================================================
+
+  - name: Create a network ACL using subnet IDs
+    amazon.aws.ec2_vpc_nacl:
+      vpc_id: "{{ vpc_id }}"
+      name: "{{ nacl_name }}"
+      subnets: "{{ subnet_ids }}"
+      state: 'present'
+    register: nacl
+
+  - name: Assert the network acl was created
+    ansible.builtin.assert:
+      that:
+        - nacl.changed
+        - nacl.nacl_id.startswith('acl-')
+
+  - name: Store NACL ID
+    ansible.builtin.set_fact:
+      nacl_id: '{{ nacl.nacl_id }}'
+
+  - name: Get network ACL facts
+    amazon.aws.ec2_vpc_nacl_info:
+      nacl_ids:
+        - "{{ nacl_id }}"
+    register: nacl_info
+
+  - name: Assert the nacl has the correct attributes
+    ansible.builtin.assert:
+      that:
+        - nacl_info.nacls[0].nacl_id == nacl_id
+        - nacl_info.nacls[0].tags == name_tags
+
+  # ============================================================
+
+  - name: Add tags (check mode)
+    amazon.aws.ec2_vpc_nacl:
+      vpc_id: "{{ vpc_id }}"
+      name: "{{ nacl_name }}"
+      subnets: "{{ subnet_ids }}"
+      tags: "{{ first_tags }}"
+      state: 'present'
+    register: nacl
+    check_mode: True
+
+  - name: Assert would change
+    ansible.builtin.assert:
+      that:
+        - nacl is changed
+        - nacl.nacl_id == nacl_id
+
+  - name: Add tags
+    amazon.aws.ec2_vpc_nacl:
+      vpc_id: "{{ vpc_id }}"
+      name: "{{ nacl_name }}"
+      subnets: "{{ subnet_ids }}"
+      tags: "{{ first_tags }}"
+      state: 'present'
+    register: nacl
+
+  - name: Get network ACL facts
+    amazon.aws.ec2_vpc_nacl_info:
+      nacl_ids:
+        - "{{ nacl.nacl_id }}"
+    register: nacl_info
+
+  - name: Verify the tags were added
+    ansible.builtin.assert:
+      that:
+        - nacl is changed
+        - nacl.nacl_id == nacl_id
+        - nacl_info.nacls[0].nacl_id == nacl_id
+        - nacl_info.nacls[0].tags == ( first_tags | combine(name_tags) )
+
+  - name: Add tags - IDEMPOTENCY (check mode)
+    amazon.aws.ec2_vpc_nacl:
+      vpc_id: "{{ vpc_id }}"
+      name: "{{ nacl_name }}"
+      subnets: "{{ subnet_ids }}"
+      tags: "{{ first_tags }}"
+      state: 'present'
+    register: nacl
+    check_mode: True
+
+  - name: Assert would not change
+    ansible.builtin.assert:
+      that:
+        - nacl is not changed
+        - nacl.nacl_id == nacl_id
+
+  - name: Add tags - IDEMPOTENCY
+    amazon.aws.ec2_vpc_nacl:
+      vpc_id: "{{ vpc_id }}"
+      name: "{{ nacl_name }}"
+      subnets: "{{ subnet_ids }}"
+      tags: "{{ first_tags }}"
+      state: 'present'
+    register: nacl
+
+  - name: Get network ACL facts
+    amazon.aws.ec2_vpc_nacl_info:
+      nacl_ids:
+        - "{{ nacl.nacl_id }}"
+    register: nacl_info
+
+  - name: Verify no change
+    ansible.builtin.assert:
+      that:
+        - nacl is not changed
+        - nacl.nacl_id == nacl_id
+        - nacl_info.nacls[0].nacl_id == nacl_id
+        - nacl_info.nacls[0].tags == ( first_tags | combine(name_tags) )
+
+  # ============================================================
+
+  - name: Get network ACL facts by filter
+    amazon.aws.ec2_vpc_nacl_info:
+      filters:
+        "tag:Name": "{{ nacl_name }}"
+    register: nacl_info
+
+  - name: Assert the facts are the same as before
+    ansible.builtin.assert:
+      that:
+        - nacl_info.nacls | length == 1
+        - nacl.nacl_id == nacl_id
+        - nacl_info.nacls[0].nacl_id == nacl_id
+
+  # ============================================================
+
+  - name: Modify tags with purge (check mode)
+    amazon.aws.ec2_vpc_nacl:
+      vpc_id: "{{ vpc_id }}"
+      name: "{{ nacl_name }}"
+      subnets: "{{ subnet_ids }}"
+      tags: "{{ second_tags }}"
+      state: 'present'
+    register: nacl
+    check_mode: True
+
+  - name: Assert would change
+    ansible.builtin.assert:
+      that:
+        - nacl is changed
+        - nacl.nacl_id == nacl_id
+
+  - name: Modify tags with purge
+    amazon.aws.ec2_vpc_nacl:
+      vpc_id: "{{ vpc_id }}"
+      name: "{{ nacl_name }}"
+      subnets: "{{ subnet_ids }}"
+      tags: "{{ second_tags }}"
+      state: 'present'
+    register: nacl
+
+  - name: Get network ACL facts
+    amazon.aws.ec2_vpc_nacl_info:
+      nacl_ids:
+        - "{{ nacl.nacl_id }}"
+    register: nacl_info
+
+  - name: Verify the tags were added
+    ansible.builtin.assert:
+      that:
+        - nacl is changed
+        - nacl.nacl_id == nacl_id
+        - nacl_info.nacls[0].nacl_id == nacl_id
+        - nacl_info.nacls[0].tags == ( second_tags | combine(name_tags) )
+
+  - name: Modify tags with purge - IDEMPOTENCY (check mode)
+    amazon.aws.ec2_vpc_nacl:
+      vpc_id: "{{ vpc_id }}"
+      name: "{{ nacl_name }}"
+      subnets: "{{ subnet_ids }}"
+      tags: "{{ second_tags }}"
+      state: 'present'
+    register: nacl
+    check_mode: True
+
+  - name: Assert would not change
+    ansible.builtin.assert:
+      that:
+        - nacl is not changed
+        - nacl.nacl_id == nacl_id
+
+  - name: Modify tags with purge - IDEMPOTENCY
+    amazon.aws.ec2_vpc_nacl:
+      vpc_id: "{{ vpc_id }}"
+      name: "{{ nacl_name }}"
+      subnets: "{{ subnet_ids }}"
+      tags: "{{ second_tags }}"
+      state: 'present'
+    register: nacl
+
+  - name: Get network ACL facts
+    amazon.aws.ec2_vpc_nacl_info:
+      nacl_ids:
+        - "{{ nacl.nacl_id }}"
+    register: nacl_info
+
+  - name: Verify no change
+    ansible.builtin.assert:
+      that:
+        - nacl is not changed
+        - nacl.nacl_id == nacl_id
+        - nacl_info.nacls[0].nacl_id == nacl_id
+        - nacl_info.nacls[0].tags == ( second_tags | combine(name_tags) )
+
+  # ============================================================
+
+  - name: Modify tags without purge (check mode)
+    amazon.aws.ec2_vpc_nacl:
+      vpc_id: "{{ vpc_id }}"
+      name: "{{ nacl_name }}"
+      subnets: "{{ subnet_ids }}"
+      tags: "{{ third_tags }}"
+      state: 'present'
+      purge_tags: False
+    register: nacl
+    check_mode: True
+
+  - name: Assert would change
+    ansible.builtin.assert:
+      that:
+        - nacl is changed
+        - nacl.nacl_id == nacl_id
+
+  - name: Modify tags without purge
+    amazon.aws.ec2_vpc_nacl:
+      vpc_id: "{{ vpc_id }}"
+      name: "{{ nacl_name }}"
+      subnets: "{{ subnet_ids }}"
+      tags: "{{ third_tags }}"
+      state: 'present'
+      purge_tags: False
+    register: nacl
+
+  - name: Get network ACL facts
+    amazon.aws.ec2_vpc_nacl_info:
+      nacl_ids:
+        - "{{ nacl.nacl_id }}"
+    register: nacl_info
+
+  - name: Verify the tags were added
+    ansible.builtin.assert:
+      that:
+        - nacl is changed
+        - nacl.nacl_id == nacl_id
+        - nacl_info.nacls[0].nacl_id == nacl_id
+        - nacl_info.nacls[0].tags == ( final_tags | combine(name_tags) )
+
+  - name: Modify tags without purge - IDEMPOTENCY (check mode)
+    amazon.aws.ec2_vpc_nacl:
+      vpc_id: "{{ vpc_id }}"
+      name: "{{ nacl_name }}"
+      subnets: "{{ subnet_ids }}"
+      tags: "{{ third_tags }}"
+      state: 'present'
+      purge_tags: False
+    register: nacl
+    check_mode: True
+
+  - name: Assert would not change
+    ansible.builtin.assert:
+      that:
+        - nacl is not changed
+        - nacl.nacl_id == nacl_id
+
+  - name: Modify tags without purge - IDEMPOTENCY
+    amazon.aws.ec2_vpc_nacl:
+      vpc_id: "{{ vpc_id }}"
+      name: "{{ nacl_name }}"
+      subnets: "{{ subnet_ids }}"
+      tags: "{{ third_tags }}"
+      state: 'present'
+      purge_tags: False
+    register: nacl
+
+  - name: Get network ACL facts
+    amazon.aws.ec2_vpc_nacl_info:
+      nacl_ids:
+        - "{{ nacl.nacl_id }}"
+    register: nacl_info
+
+  - name: Verify no change
+    ansible.builtin.assert:
+      that:
+        - nacl is not changed
+        - nacl.nacl_id == nacl_id
+        - nacl_info.nacls[0].nacl_id == nacl_id
+        - nacl_info.nacls[0].tags == ( final_tags | combine(name_tags) )
+
+  # ============================================================
+
+  - name: No change to tags without setting tags (check mode)
+    amazon.aws.ec2_vpc_nacl:
+      vpc_id: "{{ vpc_id }}"
+      name: "{{ nacl_name }}"
+      subnets: "{{ subnet_ids }}"
+      state: 'present'
+    register: nacl
+    check_mode: True
+
+  - name: Assert would change
+    ansible.builtin.assert:
+      that:
+        - nacl is not changed
+        - nacl.nacl_id == nacl_id
+
+  - name: No change to tags without setting tags
+    amazon.aws.ec2_vpc_nacl:
+      vpc_id: "{{ vpc_id }}"
+      name: "{{ nacl_name }}"
+      subnets: "{{ subnet_ids }}"
+      state: 'present'
+    register: nacl
+
+  - name: Get network ACL facts
+    amazon.aws.ec2_vpc_nacl_info:
+      nacl_ids:
+        - "{{ nacl.nacl_id }}"
+    register: nacl_info
+
+  - name: Verify the tags were added
+    ansible.builtin.assert:
+      that:
+        - nacl is not changed
+        - nacl.nacl_id == nacl_id
+        - nacl_info.nacls[0].nacl_id == nacl_id
+        - nacl_info.nacls[0].tags == ( final_tags | combine(name_tags) )
+
+  # ============================================================
+
+  - name: Remove non name tags (check mode)
+    amazon.aws.ec2_vpc_nacl:
+      vpc_id: "{{ vpc_id }}"
+      name: "{{ nacl_name }}"
+      subnets: "{{ subnet_ids }}"
+      tags: {}
+      state: 'present'
+    register: nacl
+    check_mode: True
+
+  - name: Assert would change
+    ansible.builtin.assert:
+      that:
+        - nacl is changed
+        - nacl.nacl_id == nacl_id
+
+  - name: Remove non name tags
+    amazon.aws.ec2_vpc_nacl:
+      vpc_id: "{{ vpc_id }}"
+      name: "{{ nacl_name }}"
+      subnets: "{{ subnet_ids }}"
+      tags: {}
+      state: 'present'
+    register: nacl
+
+  - name: Get network ACL facts
+    amazon.aws.ec2_vpc_nacl_info:
+      nacl_ids:
+        - "{{ nacl.nacl_id }}"
+    register: nacl_info
+
+  - name: Verify the tags were added
+    ansible.builtin.assert:
+      that:
+        - nacl is changed
+        - nacl.nacl_id == nacl_id
+        - nacl_info.nacls[0].nacl_id == nacl_id
+        - nacl_info.nacls[0].tags == name_tags
+
+  - name: Remove non name tags - IDEMPOTENCY (check mode)
+    amazon.aws.ec2_vpc_nacl:
+      vpc_id: "{{ vpc_id }}"
+      name: "{{ nacl_name }}"
+      subnets: "{{ subnet_ids }}"
+      tags: {}
+      state: 'present'
+    register: nacl
+    check_mode: True
+
+  - name: Assert would not change
+    ansible.builtin.assert:
+      that:
+        - nacl is not changed
+        - nacl.nacl_id == nacl_id
+
+  - name: Remove non name tags - IDEMPOTENCY
+    amazon.aws.ec2_vpc_nacl:
+      vpc_id: "{{ vpc_id }}"
+      name: "{{ nacl_name }}"
+      subnets: "{{ subnet_ids }}"
+      tags: {}
+      state: 'present'
+    register: nacl
+
+  - name: Get network ACL facts
+    amazon.aws.ec2_vpc_nacl_info:
+      nacl_ids:
+        - "{{ nacl.nacl_id }}"
+    register: nacl_info
+
+  - name: Verify no change
+    ansible.builtin.assert:
+      that:
+        - nacl is not changed
+        - nacl.nacl_id == nacl_id
+        - nacl_info.nacls[0].nacl_id == nacl_id
+        - nacl_info.nacls[0].tags == name_tags
+
+  # ============================================================
+
+  always:
+  - name: Remove the network ACL
+    amazon.aws.ec2_vpc_nacl:
+      vpc_id: "{{ vpc_id }}"
+      name: "{{ nacl_name }}"
+      state: absent
+    register: nacl
+
+  - name: Assert nacl was removed
+    ansible.builtin.assert:
+      that:
+        - nacl.changed
