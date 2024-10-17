@@ -1,0 +1,8 @@
+---
+major_changes:
+  - ec2_vpc_vpn - The module has been migrated from the ``community.aws`` collection.
+    Playbooks using the Fully Qualified Collection Name for this module should be
+    updated to use ``amazon.aws.ec2_vpc_vpn``.
+  - ec2_vpc_vpn_info - The module has been migrated from the ``community.aws`` collection.
+    Playbooks using the Fully Qualified Collection Name for this module should be
+    updated to use ``amazon.aws.ec2_vpc_vpn_info``.
