@@ -318,10 +318,10 @@ ec2_data = {
             "operation": "DescribeVpnGateways",
             "acceptors": [
                 {
-                    "matcher": "path",
-                    "expected": True,
-                    "argument": "VpnGateways[0].VpcAttachments[0].State == 'detached'",
+                    "expected": "detached",
+                    "matcher": "pathAll",
                     "state": "success",
+                    "argument": "VpnGateways[].VpcAttachments[].State",
                 },
             ],
         },
@@ -331,10 +331,10 @@ ec2_data = {
             "operation": "DescribeVpnGateways",
             "acceptors": [
                 {
-                    "matcher": "path",
-                    "expected": True,
-                    "argument": "VpnGateways[0].VpcAttachments[0].State == 'attached'",
+                    "expected": "attached",
+                    "matcher": "pathAll",
                     "state": "success",
+                    "argument": "VpnGateways[].VpcAttachments[].State",
                 },
             ],
         },

@@ -365,7 +365,7 @@ def reject_vpc_peering_connection(client, peering_id: str) -> bool:
     return True
 
 
-# EC2 VPC VPN
+# EC2 vpn
 class EC2VpnErrorHandler(AWSErrorHandler):
     _CUSTOM_EXCEPTION = AnsibleEC2Error
 
@@ -648,8 +648,8 @@ def create_dhcp_options(
     return client.create_dhcp_options(**params)["DhcpOptions"]
 
 
-# EC2 VPC VPN Gateways
-class EC2VpcVpnGatewaysErrorHandler(AWSErrorHandler):
+# EC2 vpn Gateways
+class EC2VpnGatewaysErrorHandler(AWSErrorHandler):
     _CUSTOM_EXCEPTION = AnsibleEC2Error
 
     @classmethod
@@ -657,45 +657,46 @@ class EC2VpcVpnGatewaysErrorHandler(AWSErrorHandler):
         return is_boto3_error_code(["InvalidVpnGatewayID.NotFound", "InvalidVpnGatewayState"])
 
 
-@EC2VpcVpnGatewaysErrorHandler.list_error_handler("describe vpc vpn gateways", [])
+@EC2VpnGatewaysErrorHandler.list_error_handler("describe vpn gateways", [])
 @AWSRetry.jittered_backoff()
-def describe_vpc_vpn_gateways(
+def describe_vpn_gateways(
     client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
 ) -> List[Dict[str, Any]]:
     return client.describe_vpn_gateways(**params)["VpnGateways"]
 
 
-@EC2VpcVpnGatewaysErrorHandler.list_error_handler("create vpc vpn gateway", [])
+@EC2VpnGatewaysErrorHandler.list_error_handler("create vpn gateway", [])
 @AWSRetry.jittered_backoff()
-def create_vpc_vpn_gateway(
+def create_vpn_gateway(
     client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
-) -> List[Dict[str, Any]]:
-    return client.create_vpn_gateway(**params)
+) -> Dict[str, Any]:
+    return client.create_vpn_gateway(**params)["VpnGateway"]
 
 
-@EC2VpcVpnGatewaysErrorHandler.list_error_handler("delete vpc vpn gateway", [])
+@EC2VpnGatewaysErrorHandler.list_error_handler("delete vpn gateway", [])
 @AWSRetry.jittered_backoff()
-def delete_vpc_vpn_gateway(
-    client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
-) -> List[Dict[str, Any]]:
-    client.delete_vpn_gateway(**params)
-
-
-@EC2VpcVpnGatewaysErrorHandler.list_error_handler("attach vpc vpn gateway", [])
-@AWSRetry.jittered_backoff()
-def attach_vpc_vpn_gateway(
-    client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
-) -> List[Dict[str, Any]]:
-    client.attach_vpn_gateway(**params)
+def delete_vpn_gateway(
+    client, vpn_gateway_id: str
+) -> bool:
+    client.delete_vpn_gateway(VpnGatewayId=vpn_gateway_id)
     return True
 
 
-@EC2VpcVpnGatewaysErrorHandler.list_error_handler("detach vpc vpn gateway", [])
+@EC2VpnGatewaysErrorHandler.list_error_handler("attach vpn gateway", [])
 @AWSRetry.jittered_backoff()
-def detach_vpc_vpn_gateway(
-    client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
+def attach_vpn_gateway(
+    client, vpc_id: str, vpn_gateway_id: str
 ) -> List[Dict[str, Any]]:
-    client.detach_vpn_gateway(**params)
+    client.attach_vpn_gateway(VpcId=vpc_id, VpnGatewayId=vpn_gateway_id)
+    return True
+
+
+@EC2VpnGatewaysErrorHandler.list_error_handler("detach vpn gateway", [])
+@AWSRetry.jittered_backoff()
+def detach_vpn_gateway(
+    client, vpc_id: str, vpn_gateway_id: str
+) -> List[Dict[str, Any]]:
+    client.detach_vpn_gateway(VpcId=vpc_id, VpnGatewayId=vpn_gateway_id)
     return True
 
 
