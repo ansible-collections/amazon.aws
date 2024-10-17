@@ -1806,13 +1806,12 @@ def describe_ec2_transit_gateways(
 @AWSRetry.jittered_backoff()
 def create_ec2_transit_gateway(
     client, **params: Dict[str, Union[List[str], List[Dict[str, Union[str, List[str]]]]]]
-) -> List[Dict[str, Any]]:
-    return client.create_transit_gateway(**params)
+) -> Dict[str, Any]:
+    return client.create_transit_gateway(**params)["TransitGateway"]
 
 
 @EC2TransitGatewayErrorHandler.deletion_error_handler("delete transit gateway")
 @AWSRetry.jittered_backoff()
-def delete_ec2_transit_gateway(
-    client, **params: Dict[str, Union[List[str], List[Dict[str, Union[str, List[str]]]]]]
-) -> List[Dict[str, Any]]:
-    return client.delete_transit_gateway(**params)
+def delete_ec2_transit_gateway(client, transit_gateway_id: str) -> bool:
+    client.delete_transit_gateway(TransitGatewayId=transit_gateway_id)
+    return True
