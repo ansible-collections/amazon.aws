@@ -33,11 +33,11 @@ EXAMPLES = r"""
 # see the AWS Guide for details.
 
 - name: List all placement groups.
-  community.aws.ec2_placement_group_info:
+  amazon.aws.ec2_placement_group_info:
   register: all_ec2_placement_groups
 
 - name: List two placement groups.
-  community.aws.ec2_placement_group_info:
+  amazon.aws.ec2_placement_group_info:
     names:
       - my-cluster
       - my-other-cluster
