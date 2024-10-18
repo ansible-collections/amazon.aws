@@ -9,7 +9,7 @@
 - block:
   - name: (CHECK_MODE) Create an attachment - complex parameters
     check_mode: true
-    community.aws.ec2_transit_gateway_vpc_attachment:
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
       name: '{{ attachment_name_complex }}'
       transit_gateway: '{{ tgw_id }}'
       subnets:
@@ -53,7 +53,7 @@
       attachment: '{{ complex_attach.attachments[0] }}'
 
   - name: Create an attachment - complex parameters
-    community.aws.ec2_transit_gateway_vpc_attachment:
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
       name: '{{ attachment_name_complex }}'
       transit_gateway: '{{ tgw_id }}'
       subnets:
@@ -112,7 +112,7 @@
 
   - name: (CHECK_MODE) Create an attachment - complex parameters -- IDEMPOTENCY
     check_mode: true
-    community.aws.ec2_transit_gateway_vpc_attachment:
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
       name: '{{ attachment_name_complex }}'
       transit_gateway: '{{ tgw_id }}'
       subnets:
@@ -165,7 +165,7 @@
       attachment: '{{ complex_attach.attachments[0] }}'
 
   - name: Create an attachment - complex parameters -- IDEMPOTENCY
-    community.aws.ec2_transit_gateway_vpc_attachment:
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
       name: '{{ attachment_name_complex }}'
       transit_gateway: '{{ tgw_id }}'
       subnets:
@@ -222,7 +222,7 @@
 
   - name: (CHECK_MODE) Update an attachment - complex parameters
     check_mode: true
-    community.aws.ec2_transit_gateway_vpc_attachment:
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
       name: '{{ attachment_name_complex }}'
       transit_gateway: '{{ tgw_id }}'
       subnets:
@@ -279,7 +279,7 @@
       attachment: '{{ complex_attach.attachments[0] }}'
 
   - name: Update an attachment - complex parameters
-    community.aws.ec2_transit_gateway_vpc_attachment:
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
       name: '{{ attachment_name_complex }}'
       transit_gateway: '{{ tgw_id }}'
       subnets:
@@ -337,7 +337,7 @@
 
   - name: (CHECK_MODE) Update an attachment - complex parameters -- IDEMPOTENCY
     check_mode: true
-    community.aws.ec2_transit_gateway_vpc_attachment:
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
       name: '{{ attachment_name_complex }}'
       transit_gateway: '{{ tgw_id }}'
       subnets:
@@ -394,7 +394,7 @@
       attachment: '{{ complex_attach.attachments[0] }}'
 
   - name: Update an attachment - complex parameters -- IDEMPOTENCY
-    community.aws.ec2_transit_gateway_vpc_attachment:
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
       name: '{{ attachment_name_complex }}'
       transit_gateway: '{{ tgw_id }}'
       subnets:

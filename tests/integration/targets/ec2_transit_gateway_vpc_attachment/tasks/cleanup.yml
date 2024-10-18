@@ -1,12 +1,12 @@
 - name: Describe all attachments on our VPC
-  community.aws.ec2_transit_gateway_vpc_attachment_info:
+  amazon.aws.ec2_transit_gateway_vpc_attachment_info:
     filters:
       transit-gateway-id: '{{ tgw_id }}'
   register: info
   ignore_errors: true
 
 - name: Start deletion of all attachments
-  community.aws.ec2_transit_gateway_vpc_attachment:
+  amazon.aws.ec2_transit_gateway_vpc_attachment:
     state: absent
     id: '{{ item.transit_gateway_attachment_id }}'
     wait: false
@@ -14,7 +14,7 @@
   ignore_errors: true
 
 - name: Wait for deletion of all attachments
-  community.aws.ec2_transit_gateway_vpc_attachment:
+  amazon.aws.ec2_transit_gateway_vpc_attachment:
     state: absent
     id: '{{ item.transit_gateway_attachment_id }}'
     wait: true

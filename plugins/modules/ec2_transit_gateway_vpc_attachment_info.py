@@ -157,8 +157,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_tra
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import boto3_resource_to_ansible_dict
-
-from ansible_collections.community.aws.plugins.module_utils.transitgateway import get_states
+from ansible_collections.amazon.aws.plugins.module_utils.transitgateway import get_states
 
 
 def main():
