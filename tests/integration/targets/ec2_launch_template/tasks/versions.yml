@@ -6,7 +6,7 @@
   # Create the launch template
   #=====================================================================
   - name: Create a launch template (check mode)
-    community.aws.ec2_launch_template:
+    amazon.aws.ec2_launch_template:
       name: "{{ test_launch_template_name }}"
       image_id: "{{ ec2_ami_id }}"
       tags:
@@ -30,7 +30,7 @@
         - _template_info.launch_templates | length == 0
 
   - name: Create a launch template
-    community.aws.ec2_launch_template:
+    amazon.aws.ec2_launch_template:
       name: "{{ test_launch_template_name }}"
       image_id: "{{ ec2_ami_id }}"
       tags:
@@ -58,7 +58,7 @@
         - _template_info.launch_templates[0].versions.0.launch_template_data.instance_type == "c4.large"
 
   - name: Create the same launch template once again
-    community.aws.ec2_launch_template:
+    amazon.aws.ec2_launch_template:
       name: "{{ test_launch_template_name }}"
       image_id: "{{ ec2_ami_id }}"
       tags:
@@ -89,7 +89,7 @@
   # Create a new version of the launch template (set first version as default)
   #=====================================================================
   - name: Create a new version of the launch template (check mode)
-    community.aws.ec2_launch_template:
+    amazon.aws.ec2_launch_template:
       name: "{{ test_launch_template_name }}"
       default_version: 1
       image_id: "{{ ec2_ami_id }}"
@@ -115,7 +115,7 @@
         - _template_info.launch_templates[0].versions | length == 1
 
   - name: Create a new version of the launch template
-    community.aws.ec2_launch_template:
+    amazon.aws.ec2_launch_template:
       name: "{{ test_launch_template_name }}"
       default_version: 1
       image_id: "{{ ec2_ami_id }}"
@@ -146,7 +146,7 @@
       created_template: "{{ _template_info.launch_templates[0].versions | selectattr('version_number', 'equalto', 2) | first }}"
 
   - name: Create a new version of the launch template (idempotency)
-    community.aws.ec2_launch_template:
+    amazon.aws.ec2_launch_template:
       name: "{{ test_launch_template_name }}"
       default_version: 1
       image_id: "{{ ec2_ami_id }}"
@@ -176,7 +176,7 @@
   # Set the latest version of the launch template as default
   #=====================================================================
   - name: Set the latest version of the launch template as default (check mode)
-    community.aws.ec2_launch_template:
+    amazon.aws.ec2_launch_template:
       name: "{{ test_launch_template_name }}"
       default_version: latest
       image_id: "{{ ec2_ami_id }}"
@@ -202,7 +202,7 @@
         - _template_info.launch_templates[0].versions | length == 2
 
   - name: Set the latest version of the launch template as default
-    community.aws.ec2_launch_template:
+    amazon.aws.ec2_launch_template:
       name: "{{ test_launch_template_name }}"
       default_version: latest
       image_id: "{{ ec2_ami_id }}"
@@ -233,7 +233,7 @@
       created_template: "{{ _template_info.launch_templates[0].versions | selectattr('version_number', 'equalto', 2) | first }}"
 
   - name: Set the latest version of the launch template as default (idempotency)
-    community.aws.ec2_launch_template:
+    amazon.aws.ec2_launch_template:
       name: "{{ test_launch_template_name }}"
       default_version: latest
       image_id: "{{ ec2_ami_id }}"
@@ -262,7 +262,7 @@
   # Create another version 
   #=====================================================================
   - name: Create a new launch template version (check mode)
-    community.aws.ec2_launch_template:
+    amazon.aws.ec2_launch_template:
       name: "{{ test_launch_template_name }}"
       image_id: "{{ ec2_ami_id }}"
       tags:
@@ -287,7 +287,7 @@
         - _template_info.launch_templates[0].versions | length == 2
 
   - name: Create a new launch template version
-    community.aws.ec2_launch_template:
+    amazon.aws.ec2_launch_template:
       name: "{{ test_launch_template_name }}"
       image_id: "{{ ec2_ami_id }}"
       tags:
@@ -317,7 +317,7 @@
       created_template: "{{ _template_info.launch_templates[0].versions | selectattr('version_number', 'equalto', 3) | first }}"
 
   - name: Create a new launch template version (idempotency)
-    community.aws.ec2_launch_template:
+    amazon.aws.ec2_launch_template:
       name: "{{ test_launch_template_name }}"
       image_id: "{{ ec2_ami_id }}"
       tags:
@@ -346,7 +346,7 @@
   # Create another version based on an old version
   #=====================================================================
   - name: Create new template version based on an old version (check mode)
-    community.aws.ec2_launch_template:
+    amazon.aws.ec2_launch_template:
       name: "{{ test_launch_template_name }}"
       cpu_options:
           core_count: 1
@@ -371,7 +371,7 @@
         - _template_info.launch_templates[0].versions | length == 3
 
   - name: Create new template version based on an old version
-    community.aws.ec2_launch_template:
+    amazon.aws.ec2_launch_template:
       name: "{{ test_launch_template_name }}"
       cpu_options:
           core_count: 1
@@ -406,7 +406,7 @@
   # Create another version with updated description
   #=====================================================================
   - name: Create a launch template version with another description (check mode)
-    community.aws.ec2_launch_template:
+    amazon.aws.ec2_launch_template:
       name: "{{ test_launch_template_name }}"
       version_description: "Fix something."
     register: _version_description_check
@@ -428,7 +428,7 @@
         - _template_info.launch_templates[0].versions | length == 4
 
   - name: Create a launch template version with another description
-    community.aws.ec2_launch_template:
+    amazon.aws.ec2_launch_template:
       name: "{{ test_launch_template_name }}"
       version_description: "Fix something."
     register: _version_description
@@ -456,7 +456,7 @@
 
   always:
   - name: Delete the template
-    community.aws.ec2_launch_template:
+    amazon.aws.ec2_launch_template:
       name: "{{ test_launch_template_name }}"
       state: absent
     ignore_errors: true

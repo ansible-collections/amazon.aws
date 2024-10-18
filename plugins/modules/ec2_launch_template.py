@@ -8,6 +8,7 @@ DOCUMENTATION = r"""
 ---
 module: ec2_launch_template
 version_added: 1.0.0
+version_added_collection: community.aws
 short_description: Manage EC2 launch templates
 description:
 - Create, modify, and delete EC2 Launch Templates, which can be used to
@@ -416,7 +417,7 @@ extends_documentation_fragment:
 
 EXAMPLES = r"""
 - name: Create an ec2 launch template
-  community.aws.ec2_launch_template:
+  amazon.aws.ec2_launch_template:
     name: "my_template"
     image_id: "ami-04b762b4289fba92b"
     key_name: my_ssh_key
@@ -427,25 +428,25 @@ EXAMPLES = r"""
 - name: >
     Create a new version of an existing ec2 launch template with a different instance type,
     while leaving an older version as the default version
-  community.aws.ec2_launch_template:
+  amazon.aws.ec2_launch_template:
     name: "my_template"
     default_version: 1
     instance_type: c5.4xlarge
 
 - name: Delete an ec2 launch template
-  community.aws.ec2_launch_template:
+  amazon.aws.ec2_launch_template:
     name: "my_template"
     state: absent
 
 - name: Delete a specific version of an ec2 launch template
-  community.aws.ec2_launch_template:
+  amazon.aws.ec2_launch_template:
     name: "my_template"
     versions_to_delete:
       - 2
     state: absent
 
 - name: Delete a specific version of an ec2 launch template and change the default version
-  community.aws.ec2_launch_template:
+  amazon.aws.ec2_launch_template:
     name: "my_template"
     versions_to_delete:
       - 1
@@ -453,7 +454,7 @@ EXAMPLES = r"""
     state: absent
 
 - name: Create an ec2 launch template with specific tags
-  community.aws.ec2_launch_template:
+  amazon.aws.ec2_launch_template:
     name: "my_template"
     image_id: "ami-04b762b4289fba92b"
     instance_type: t2.micro
@@ -463,7 +464,7 @@ EXAMPLES = r"""
       Another: tag
 
 - name: Create an ec2 launch template with different tag for volume and instance
-  community.aws.ec2_launch_template:
+  amazon.aws.ec2_launch_template:
     name: "my_template"
     image_id: "ami-04b762b4289fba92b"
     instance_type: t2.micro
@@ -1148,11 +1149,10 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_lau
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import determine_iam_arn_from_name
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import modify_launch_template
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
-
-from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
 
 def find_existing(client, module: AnsibleAWSModule) -> Tuple[Optional[Dict[str, Any]], Optional[List[Dict[str, Any]]]]:

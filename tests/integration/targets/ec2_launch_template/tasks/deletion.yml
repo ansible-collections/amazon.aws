@@ -10,7 +10,7 @@
       - t2.xlarge
   block:
     - name: Create multiple versions of the launch template
-      community.aws.ec2_launch_template:
+      amazon.aws.ec2_launch_template:
         name: "{{ deletion_launch_template_name }}"
         instance_type: "{{ item }}"
       with_items: "{{ test_ec2_instance_types }}"
@@ -33,7 +33,7 @@
     # Validate deletion errors
     #====================================================================
     - name: Delete a non-existent template
-      community.aws.ec2_launch_template:
+      amazon.aws.ec2_launch_template:
         name: "{{ resource_prefix }}-not-a-real-template"
         state: absent
       register: delete_fake_template
@@ -45,7 +45,7 @@
           - delete_fake_template is not failed
 
     - name: Trying to delete the default version
-      community.aws.ec2_launch_template:
+      amazon.aws.ec2_launch_template:
         name: "{{ deletion_launch_template_name }}"
         state: absent
         versions_to_delete: "{{ range(1, 6) }}"
@@ -59,7 +59,7 @@
           - 'delete_default_v.msg == "Cannot delete the launch template default version."'
 
     - name: Trying to delete a version and a non-existing version as default
-      community.aws.ec2_launch_template:
+      amazon.aws.ec2_launch_template:
         name: "{{ deletion_launch_template_name }}"
         state: absent
         versions_to_delete: "{{ range(3, 6) }}"
@@ -76,7 +76,7 @@
         error_m: "Could not set version '6' as default, the launch template version was not found"
 
     - name: Trying to delete non-existing version (should failed)
-      community.aws.ec2_launch_template:
+      amazon.aws.ec2_launch_template:
         name: "{{ deletion_launch_template_name }}"
         state: absent
         versions_to_delete: 10
@@ -95,7 +95,7 @@
     # Delete default version and set latest version as new default
     #====================================================================
     - name: Delete default version and set a new default version (check mode)
-      community.aws.ec2_launch_template:
+      amazon.aws.ec2_launch_template:
         name: "{{ deletion_launch_template_name }}"
         state: absent
         versions_to_delete: 5
@@ -118,7 +118,7 @@
           - _templates.launch_templates[0].default_version_number == 5
 
     - name: Delete default version and set a new default version
-      community.aws.ec2_launch_template:
+      amazon.aws.ec2_launch_template:
         name: "{{ deletion_launch_template_name }}"
         state: absent
         versions_to_delete: 5
@@ -148,7 +148,7 @@
     # Delete a single version and set a new default version different from the latest
     #====================================================================
     - name: Delete a single version and set a new default version different from the latest (check mode)
-      community.aws.ec2_launch_template:
+      amazon.aws.ec2_launch_template:
         name: "{{ deletion_launch_template_name }}"
         state: absent
         versions_to_delete: 3
@@ -172,7 +172,7 @@
           - _templates.launch_templates[0].default_version_number == 4
 
     - name: Delete a single version and set a new default version different from the latest
-      community.aws.ec2_launch_template:
+      amazon.aws.ec2_launch_template:
         name: "{{ deletion_launch_template_name }}"
         state: absent
         versions_to_delete: 3
@@ -203,7 +203,7 @@
     # Delete multiple versions
     #====================================================================
     - name: Delete multiple versions (check mode)
-      community.aws.ec2_launch_template:
+      amazon.aws.ec2_launch_template:
         name: "{{ deletion_launch_template_name }}"
         state: absent
         versions_to_delete: [1, 2]
@@ -226,7 +226,7 @@
           - _templates.launch_templates[0].default_version_number == 1
 
     - name: Delete multiple versions
-      community.aws.ec2_launch_template:
+      amazon.aws.ec2_launch_template:
         name: "{{ deletion_launch_template_name }}"
         state: absent
         versions_to_delete: [1, 2]
@@ -256,7 +256,7 @@
     # Delete launch template
     #====================================================================
     - name: Delete launch template (check mode)
-      community.aws.ec2_launch_template:
+      amazon.aws.ec2_launch_template:
         name: "{{ deletion_launch_template_name }}"
         state: absent
       check_mode: true
@@ -278,7 +278,7 @@
           - _templates.launch_templates[0].default_version_number == 4
 
     - name: Delete launch template
-      community.aws.ec2_launch_template:
+      amazon.aws.ec2_launch_template:
         name: "{{ deletion_launch_template_name }}"
         state: absent
       register: delete_template
@@ -300,7 +300,7 @@
           - _templates_v.launch_templates | length == 0
 
     - name: Delete launch template once again (idempotency)
-      community.aws.ec2_launch_template:
+      amazon.aws.ec2_launch_template:
         name: "{{ deletion_launch_template_name }}"
         state: absent
       register: delete_template_idempotency
@@ -316,7 +316,7 @@
     # Delete launch template with multiple versions
     #====================================================================
     - name: Create multiple versions of the launch template
-      community.aws.ec2_launch_template:
+      amazon.aws.ec2_launch_template:
         name: "{{ deletion_launch_template_name_2 }}"
         instance_type: "{{ item }}"
       with_items: "{{ test_ec2_instance_types }}"
@@ -336,7 +336,7 @@
           - _templates.launch_templates[0].default_version_number == 5
 
     - name: Delete launch template with multiple versions (check mode)
-      community.aws.ec2_launch_template:
+      amazon.aws.ec2_launch_template:
         name: "{{ deletion_launch_template_name_2 }}"
         state: absent
       check_mode: true
@@ -356,7 +356,7 @@
           - _templates.launch_templates[0].versions | length == 5
 
     - name: Delete launch template with multiple versions
-      community.aws.ec2_launch_template:
+      amazon.aws.ec2_launch_template:
         name: "{{ deletion_launch_template_name_2 }}"
         state: absent
       register: delete_template
@@ -381,7 +381,7 @@
           - _templates_v.launch_templates | length == 0
 
     - name: Delete launch template with multiple versions once again (idempotency)
-      community.aws.ec2_launch_template:
+      amazon.aws.ec2_launch_template:
         name: "{{ deletion_launch_template_name_2 }}"
         state: absent
       register: delete_template_idempotency
@@ -395,7 +395,7 @@
 
   always:
     - name: Delete the launch template
-      community.aws.ec2_launch_template:
+      amazon.aws.ec2_launch_template:
         name: "{{ item }}"
         state: absent
       with_items:

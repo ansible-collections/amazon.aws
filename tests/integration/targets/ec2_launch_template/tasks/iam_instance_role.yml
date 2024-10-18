@@ -23,7 +23,7 @@
       register: iam_role_2
 
     - name: Make instance with an instance_role
-      community.aws.ec2_launch_template:
+      amazon.aws.ec2_launch_template:
         name: "{{ test_launch_template_name }}"
         image_id: "{{ ec2_ami_id }}"
         instance_type: t2.micro
@@ -47,7 +47,7 @@
           - _template_info.launch_templates[0].versions[0].launch_template_data.image_id == ec2_ami_id
 
     - name: Create template again, with no change to instance_role
-      community.aws.ec2_launch_template:
+      amazon.aws.ec2_launch_template:
         name: "{{ test_launch_template_name }}"
         image_id: "{{ ec2_ami_id }}"
         instance_type: t2.micro
@@ -72,7 +72,7 @@
           - _template_info.launch_templates[0].versions[0].launch_template_data.image_id == ec2_ami_id
 
     - name: Update instance with new instance_role
-      community.aws.ec2_launch_template:
+      amazon.aws.ec2_launch_template:
         name: "{{ test_launch_template_name }}"
         image_id: "{{ ec2_ami_id }}"
         instance_type: t2.micro
@@ -102,7 +102,7 @@
         template_version: "{{ _template_info.launch_templates[0].versions | selectattr('version_number', 'equalto', 2) | list | first }}"
 
     - name: Re-set with same new instance_role
-      community.aws.ec2_launch_template:
+      amazon.aws.ec2_launch_template:
         name: "{{ test_launch_template_name }}"
         image_id: "{{ ec2_ami_id }}"
         instance_type: t2.micro
@@ -124,7 +124,7 @@
           - _template_info.launch_templates[0].versions | length == 2
 
     - name: Update instance with original instance_role (pass profile ARN)
-      community.aws.ec2_launch_template:
+      amazon.aws.ec2_launch_template:
         name: "{{ test_launch_template_name }}"
         image_id: "{{ ec2_ami_id }}"
         instance_type: t2.micro
@@ -155,7 +155,7 @@
         template_version: "{{ _template_info.launch_templates[0].versions | selectattr('version_number', 'equalto', 3) | list | first }}"
 
     - name: Re-set with same new instance_role (pass profile ARN)
-      community.aws.ec2_launch_template:
+      amazon.aws.ec2_launch_template:
         name: "{{ test_launch_template_name }}"
         image_id: "{{ ec2_ami_id }}"
         instance_type: t2.micro
@@ -178,7 +178,7 @@
 
   always:
     - name: Delete launch template
-      community.aws.ec2_launch_template:
+      amazon.aws.ec2_launch_template:
         name: "{{ test_launch_template_name }}"
         state: absent
       register: lt_removed

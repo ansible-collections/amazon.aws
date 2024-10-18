@@ -4,7 +4,7 @@
   block:
     # Launch template meta data
     - name: Create launch template (check mode)
-      community.aws.ec2_launch_template:
+      amazon.aws.ec2_launch_template:
         name: "{{ test_launch_template_name }}"
         image_id: "{{ ec2_ami_id }}"
         instance_type: c4.large
@@ -40,7 +40,7 @@
           - _templates.launch_templates | length == 0
 
     - name: Create launch template
-      community.aws.ec2_launch_template:
+      amazon.aws.ec2_launch_template:
         name: "{{ test_launch_template_name }}"
         image_id: "{{ ec2_ami_id }}"
         instance_type: c4.large
@@ -89,7 +89,7 @@
           - _templates.launch_templates[0].versions[0].launch_template_data.network_interfaces[1].ipv6_address_count == 1
 
     - name: Create launch template once again with same parameters (idempotency)
-      community.aws.ec2_launch_template:
+      amazon.aws.ec2_launch_template:
         name: "{{ test_launch_template_name }}"
         image_id: "{{ ec2_ami_id }}"
         instance_type: c4.large
@@ -139,7 +139,7 @@
 
   always:
     - name: delete the template
-      community.aws.ec2_launch_template:
+      amazon.aws.ec2_launch_template:
         name: "{{ test_launch_template_name }}"
         state: absent
       ignore_errors: true
