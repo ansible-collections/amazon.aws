@@ -1,0 +1,16 @@
+---
+# defaults file for ec2_asg
+vpc_seed: '{{ tiny_prefix }}'
+subnet_a_cidr: '10.{{ 256 | random(seed=vpc_seed) }}.32.0/24'
+
+default_resource_name: '{{ resource_prefix }}-asg-refresh'
+short_resource_name: '{{ tiny_prefix }}-asg-refresh'
+
+vpc_name: '{{ default_resource_name }}'
+subnet_name: '{{ default_resource_name }}'
+route_name: '{{ default_resource_name }}'
+sg_name: '{{ default_resource_name }}'
+asg_name: '{{ default_resource_name }}'
+lc_name_1: '{{ default_resource_name }}-1'
+lc_name_2: '{{ default_resource_name }}-2'
+load_balancer_name: '{{ short_resource_name }}'
