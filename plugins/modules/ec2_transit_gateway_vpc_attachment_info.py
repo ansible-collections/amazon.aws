@@ -48,16 +48,16 @@ extends_documentation_fragment:
 
 EXAMPLES = r"""
 - name: Describe a specific Transit Gateway attachment
-  community.aws.ec2_transit_gateway_vpc_attachment_info:
+  amazon.aws.ec2_transit_gateway_vpc_attachment_info:
     id: "tgw-attach-0123456789abcdef0"
 
 - name: Describe all attachments attached to a transit gateway
-  community.aws.ec2_transit_gateway_vpc_attachment_info:
+  amazon.aws.ec2_transit_gateway_vpc_attachment_info:
     filters:
       transit-gateway-id: "tgw-0fedcba9876543210"
 
 - name: Describe all attachments in an account
-  community.aws.ec2_transit_gateway_vpc_attachment_info:
+  amazon.aws.ec2_transit_gateway_vpc_attachment_info:
 """
 
 RETURN = r"""

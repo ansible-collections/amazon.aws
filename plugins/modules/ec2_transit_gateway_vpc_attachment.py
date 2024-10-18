@@ -106,7 +106,7 @@ extends_documentation_fragment:
 
 EXAMPLES = r"""
 - name: Create a Transit Gateway attachment
-  community.aws.ec2_transit_gateway_vpc_attachment:
+  amazon.aws.ec2_transit_gateway_vpc_attachment:
     state: "present"
     transit_gateway: "tgw-123456789abcdef01"
     name: "AnsibleTest-1"
@@ -122,7 +122,7 @@ EXAMPLES = r"""
       TestTag: "changed data in Test Tag"
 
 - name: Set sub options on a Transit Gateway attachment
-  community.aws.ec2_transit_gateway_vpc_attachment:
+  amazon.aws.ec2_transit_gateway_vpc_attachment:
     state: "present"
     id: "tgw-attach-0c0c5fd0b0f01d1c9"
     name: "AnsibleTest-1"
@@ -132,7 +132,7 @@ EXAMPLES = r"""
     appliance_mode_support: true
 
 - name: Delete the transit gateway
-  community.aws.ec2_transit_gateway_vpc_attachment:
+  amazon.aws.ec2_transit_gateway_vpc_attachment:
     state: "absent"
     id: "tgw-attach-0c0c5fd0b0f01d1c9"
 """
