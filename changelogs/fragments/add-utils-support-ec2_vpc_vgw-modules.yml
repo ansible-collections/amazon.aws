@@ -1,0 +1,2 @@
+minor_changes:
+  - module_utils/ec2 - add utils for the ec2_vpc_vgw_* modules (https://github.com/ansible-collections/amazon.aws/pull/2331).
