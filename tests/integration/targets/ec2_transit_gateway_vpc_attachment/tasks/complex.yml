@@ -8,9 +8,9 @@
 # Creation
 
 - block:
-  - name: '(CHECK_MODE) Create an attachment - complex parameters'
-    check_mode: True
-    ec2_transit_gateway_vpc_attachment:
+  - name: (CHECK_MODE) Create an attachment - complex parameters
+    check_mode: true
+    community.aws.ec2_transit_gateway_vpc_attachment:
       name: '{{ attachment_name_complex }}'
       transit_gateway: '{{ tgw_id }}'
       subnets:
@@ -19,11 +19,12 @@
       tags:
         tagA: 'example Value'
         Tag_B: 'second value'
-      appliance_mode_support: True
-      ipv6_support: True
+      appliance_mode_support: true
+      ipv6_support: true
     register: complex_attach
 
-  - assert:
+  - name: Assert that the test is successful
+    ansible.builtin.assert:
       that:
       - complex_attach is changed
       - '"attachments" in complex_attach'
@@ -52,8 +53,8 @@
     vars:
       attachment: '{{ complex_attach.attachments[0] }}'
 
-  - name: 'Create an attachment - complex parameters'
-    ec2_transit_gateway_vpc_attachment:
+  - name: Create an attachment - complex parameters
+    community.aws.ec2_transit_gateway_vpc_attachment:
       name: '{{ attachment_name_complex }}'
       transit_gateway: '{{ tgw_id }}'
       subnets:
@@ -62,11 +63,12 @@
       tags:
         tagA: 'example Value'
         Tag_B: 'second value'
-      appliance_mode_support: True
-      ipv6_support: True
+      appliance_mode_support: true
+      ipv6_support: true
     register: complex_attach
 
-  - assert:
+  - name: Assert that the test is successful
+    ansible.builtin.assert:
       that:
       - complex_attach is changed
       - '"attachments" in complex_attach'
@@ -108,9 +110,9 @@
     set_fact:
       complex_attachment_id: '{{ complex_attach.attachments[0].transit_gateway_attachment_id }}'
 
-  - name: '(CHECK_MODE) Create an attachment - complex parameters -- IDEMPOTENCY'
-    check_mode: True
-    ec2_transit_gateway_vpc_attachment:
+  - name: (CHECK_MODE) Create an attachment - complex parameters -- IDEMPOTENCY
+    check_mode: true
+    community.aws.ec2_transit_gateway_vpc_attachment:
       name: '{{ attachment_name_complex }}'
       transit_gateway: '{{ tgw_id }}'
       subnets:
@@ -119,11 +121,12 @@
       tags:
         tagA: 'example Value'
         Tag_B: 'second value'
-      appliance_mode_support: True
-      ipv6_support: True
+      appliance_mode_support: true
+      ipv6_support: true
     register: complex_attach
 
-  - assert:
+  - name: Assert that there is no change
+    ansible.builtin.assert:
       that:
       - complex_attach is not changed
       - '"attachments" in complex_attach'
@@ -161,8 +164,8 @@
     vars:
       attachment: '{{ complex_attach.attachments[0] }}'
 
-  - name: 'Create an attachment - complex parameters -- IDEMPOTENCY'
-    ec2_transit_gateway_vpc_attachment:
+  - name: Create an attachment - complex parameters -- IDEMPOTENCY
+    community.aws.ec2_transit_gateway_vpc_attachment:
       name: '{{ attachment_name_complex }}'
       transit_gateway: '{{ tgw_id }}'
       subnets:
@@ -171,11 +174,12 @@
       tags:
         tagA: 'example Value'
         Tag_B: 'second value'
-      appliance_mode_support: True
-      ipv6_support: True
+      appliance_mode_support: true
+      ipv6_support: true
     register: complex_attach
 
-  - assert:
+  - name: Assert that there is no change
+    ansible.builtin.assert:
       that:
       - complex_attach is not changed
       - '"attachments" in complex_attach'
@@ -216,23 +220,24 @@
 # =============================================================================
 # Update
 
-  - name: '(CHECK_MODE) Update an attachment - complex parameters'
-    check_mode: True
-    ec2_transit_gateway_vpc_attachment:
+  - name: (CHECK_MODE) Update an attachment - complex parameters
+    check_mode: true
+    community.aws.ec2_transit_gateway_vpc_attachment:
       name: '{{ attachment_name_complex }}'
       transit_gateway: '{{ tgw_id }}'
       subnets:
       - '{{ subnet_id_b_1 }}'
-      purge_subnets: True
+      purge_subnets: true
       tags:
         tagC: '3'
         Tag_D: 'Hello again dear world'
-      purge_tags: False
-      dns_support: False
-      ipv6_support: False
+      purge_tags: false
+      dns_support: false
+      ipv6_support: false
     register: complex_attach
 
-  - assert:
+  - name: Assert that the test is successful
+    ansible.builtin.assert:
       that:
       - complex_attach is changed
       - '"attachments" in complex_attach'
@@ -273,22 +278,23 @@
     vars:
       attachment: '{{ complex_attach.attachments[0] }}'
 
-  - name: 'Update an attachment - complex parameters'
-    ec2_transit_gateway_vpc_attachment:
+  - name: Update an attachment - complex parameters
+    community.aws.ec2_transit_gateway_vpc_attachment:
       name: '{{ attachment_name_complex }}'
       transit_gateway: '{{ tgw_id }}'
       subnets:
       - '{{ subnet_id_b_1 }}'
-      purge_subnets: True
+      purge_subnets: true
       tags:
         tagC: '3'
         Tag_D: 'Hello again dear world'
-      purge_tags: False
-      dns_support: False
-      ipv6_support: False
+      purge_tags: false
+      dns_support: false
+      ipv6_support: false
     register: complex_attach
 
-  - assert:
+  - name: Assert that the test is successful
+    ansible.builtin.assert:
       that:
       - complex_attach is changed
       - '"attachments" in complex_attach'
@@ -329,23 +335,24 @@
     vars:
       attachment: '{{ complex_attach.attachments[0] }}'
 
-  - name: '(CHECK_MODE) Update an attachment - complex parameters -- IDEMPOTENCY'
-    check_mode: True
-    ec2_transit_gateway_vpc_attachment:
+  - name: (CHECK_MODE) Update an attachment - complex parameters -- IDEMPOTENCY
+    check_mode: true
+    community.aws.ec2_transit_gateway_vpc_attachment:
       name: '{{ attachment_name_complex }}'
       transit_gateway: '{{ tgw_id }}'
       subnets:
       - '{{ subnet_id_b_1 }}'
-      purge_subnets: True
+      purge_subnets: true
       tags:
         tagC: '3'
         Tag_D: 'Hello again dear world'
-      purge_tags: False
-      dns_support: False
-      ipv6_support: False
+      purge_tags: false
+      dns_support: false
+      ipv6_support: false
     register: complex_attach
 
-  - assert:
+  - name: Assert that there is no change
+    ansible.builtin.assert:
       that:
       - complex_attach is not changed
       - '"attachments" in complex_attach'
@@ -386,22 +393,23 @@
     vars:
       attachment: '{{ complex_attach.attachments[0] }}'
 
-  - name: 'Update an attachment - complex parameters -- IDEMPOTENCY'
-    ec2_transit_gateway_vpc_attachment:
+  - name: Update an attachment - complex parameters -- IDEMPOTENCY
+    community.aws.ec2_transit_gateway_vpc_attachment:
       name: '{{ attachment_name_complex }}'
       transit_gateway: '{{ tgw_id }}'
       subnets:
       - '{{ subnet_id_b_1 }}'
-      purge_subnets: True
+      purge_subnets: true
       tags:
         tagC: '3'
         Tag_D: 'Hello again dear world'
-      purge_tags: False
-      dns_support: False
-      ipv6_support: False
+      purge_tags: false
+      dns_support: false
+      ipv6_support: false
     register: complex_attach
 
-  - assert:
+  - name: Assert that there is no change
+    ansible.builtin.assert:
       that:
       - complex_attach is not changed
       - '"attachments" in complex_attach'
