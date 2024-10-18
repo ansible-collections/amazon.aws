@@ -1,0 +1,404 @@
+- name: Test deletion of launch template
+  vars:
+    deletion_launch_template_name: "{{ resource_prefix }}-deletion"
+    deletion_launch_template_name_2: "{{ resource_prefix }}-deletion-2"
+    test_ec2_instance_types:
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - t2.large
+      - t2.xlarge
+  block:
+    - name: Create multiple versions of the launch template
+      amazon.aws.ec2_launch_template:
+        name: "{{ deletion_launch_template_name }}"
+        instance_type: "{{ item }}"
+      with_items: "{{ test_ec2_instance_types }}"
+
+    - name: Retrieve Launch template information
+      amazon.aws.ec2_launch_template_info:
+        filters:
+          launch-template-name: "{{ deletion_launch_template_name }}"
+      register: _templates
+
+    - name: Validate Launch template details
+      ansible.builtin.assert:
+        that:
+          - _templates.launch_templates | length == 1
+          - _templates.launch_templates[0].versions | length == 5
+          - _templates.launch_templates[0].latest_version_number == 5
+          - _templates.launch_templates[0].default_version_number == 5
+  
+    #====================================================================
+    # Validate deletion errors
+    #====================================================================
+    - name: Delete a non-existent template
+      amazon.aws.ec2_launch_template:
+        name: "{{ resource_prefix }}-not-a-real-template"
+        state: absent
+      register: delete_fake_template
+      ignore_errors: true
+
+    - name: Ensure module did not failed while trying to delete non-existent template
+      assert:
+        that:
+          - delete_fake_template is not failed
+
+    - name: Trying to delete the default version
+      amazon.aws.ec2_launch_template:
+        name: "{{ deletion_launch_template_name }}"
+        state: absent
+        versions_to_delete: "{{ range(1, 6) }}"
+      ignore_errors: true
+      register: delete_default_v
+
+    - name: Ensure the module failed with proper message
+      ansible.builtin.assert:
+        that:
+          - delete_default_v is failed
+          - 'delete_default_v.msg == "Cannot delete the launch template default version."'
+
+    - name: Trying to delete a version and a non-existing version as default
+      amazon.aws.ec2_launch_template:
+        name: "{{ deletion_launch_template_name }}"
+        state: absent
+        versions_to_delete: "{{ range(3, 6) }}"
+        default_version: 6
+      ignore_errors: true
+      register: delete_set_non_existing_v
+
+    - name: Ensure the module failed with proper message
+      ansible.builtin.assert:
+        that:
+          - delete_set_non_existing_v is failed
+          - error_m in delete_set_non_existing_v.msg
+      vars:
+        error_m: "Could not set version '6' as default, the launch template version was not found"
+
+    - name: Trying to delete non-existing version (should failed)
+      amazon.aws.ec2_launch_template:
+        name: "{{ deletion_launch_template_name }}"
+        state: absent
+        versions_to_delete: 10
+      ignore_errors: true
+      register: delete_non_existing_v
+
+    - name: Ensure the module failed with proper message
+      ansible.builtin.assert:
+        that:
+          - delete_non_existing_v is failed
+          - error_m in delete_non_existing_v.msg
+      vars:
+        error_m: "The following versions [10] do not exist for launch template id"
+
+    #====================================================================
+    # Delete default version and set latest version as new default
+    #====================================================================
+    - name: Delete default version and set a new default version (check mode)
+      amazon.aws.ec2_launch_template:
+        name: "{{ deletion_launch_template_name }}"
+        state: absent
+        versions_to_delete: 5
+      check_mode: true
+      register: delete_default_v_check_mode
+
+    - name: Retrieve Launch template information
+      amazon.aws.ec2_launch_template_info:
+        filters:
+          launch-template-name: "{{ deletion_launch_template_name }}"
+      register: _templates
+
+    - name: Ensure module reported change while no change was made
+      ansible.builtin.assert:
+        that:
+          - delete_default_v_check_mode is changed
+          - _templates.launch_templates | length == 1
+          - _templates.launch_templates[0].versions | length == 5
+          - _templates.launch_templates[0].latest_version_number == 5
+          - _templates.launch_templates[0].default_version_number == 5
+
+    - name: Delete default version and set a new default version
+      amazon.aws.ec2_launch_template:
+        name: "{{ deletion_launch_template_name }}"
+        state: absent
+        versions_to_delete: 5
+      register: delete_default_v
+
+    - name: Retrieve Launch template information
+      amazon.aws.ec2_launch_template_info:
+        filters:
+          launch-template-name: "{{ deletion_launch_template_name }}"
+      register: _templates
+
+    - name: Validate deletion result
+      ansible.builtin.assert:
+        that:
+          - delete_default_v is changed
+          - delete_default_v.deleted_template == {}
+          - delete_default_v.deleted_versions | length == 1
+          - delete_default_v.deleted_versions.0.version_number == 5
+          - delete_default_v.deleted_versions.0.launch_template_name == deletion_launch_template_name
+          - delete_default_v.deleted_versions.0.launch_template_id == _templates.launch_templates[0].launch_template_id
+          - _templates.launch_templates | length == 1
+          - _templates.launch_templates[0].versions | length == 4
+          - _templates.launch_templates[0].latest_version_number == 4
+          - _templates.launch_templates[0].default_version_number == 4
+
+    #====================================================================
+    # Delete a single version and set a new default version different from the latest
+    #====================================================================
+    - name: Delete a single version and set a new default version different from the latest (check mode)
+      amazon.aws.ec2_launch_template:
+        name: "{{ deletion_launch_template_name }}"
+        state: absent
+        versions_to_delete: 3
+        default_version: 1
+      check_mode: true
+      register: delete_single_v_check_mode
+
+    - name: Retrieve Launch template information
+      amazon.aws.ec2_launch_template_info:
+        filters:
+          launch-template-name: "{{ deletion_launch_template_name }}"
+      register: _templates
+
+    - name: Ensure module reported change while no change was made
+      ansible.builtin.assert:
+        that:
+          - delete_default_v_check_mode is changed
+          - _templates.launch_templates | length == 1
+          - _templates.launch_templates[0].versions | length == 4
+          - _templates.launch_templates[0].latest_version_number == 4
+          - _templates.launch_templates[0].default_version_number == 4
+
+    - name: Delete a single version and set a new default version different from the latest
+      amazon.aws.ec2_launch_template:
+        name: "{{ deletion_launch_template_name }}"
+        state: absent
+        versions_to_delete: 3
+        default_version: 1
+      register: delete_single_v
+
+    - name: Retrieve Launch template information
+      amazon.aws.ec2_launch_template_info:
+        filters:
+          launch-template-name: "{{ deletion_launch_template_name }}"
+      register: _templates
+
+    - name: Validate deletion result
+      ansible.builtin.assert:
+        that:
+          - delete_single_v is changed
+          - delete_single_v.deleted_template == {}
+          - delete_single_v.deleted_versions | length == 1
+          - delete_single_v.deleted_versions.0.version_number == 3
+          - delete_single_v.deleted_versions.0.launch_template_name == deletion_launch_template_name
+          - delete_single_v.deleted_versions.0.launch_template_id == _templates.launch_templates[0].launch_template_id
+          - _templates.launch_templates | length == 1
+          - _templates.launch_templates[0].versions | length == 3
+          - _templates.launch_templates[0].latest_version_number == 4
+          - _templates.launch_templates[0].default_version_number == 1
+
+    #====================================================================
+    # Delete multiple versions
+    #====================================================================
+    - name: Delete multiple versions (check mode)
+      amazon.aws.ec2_launch_template:
+        name: "{{ deletion_launch_template_name }}"
+        state: absent
+        versions_to_delete: [1, 2]
+      check_mode: true
+      register: delete_multiple_v_check_mode
+
+    - name: Retrieve Launch template information
+      amazon.aws.ec2_launch_template_info:
+        filters:
+          launch-template-name: "{{ deletion_launch_template_name }}"
+      register: _templates
+
+    - name: Ensure module reported change while no change was made
+      ansible.builtin.assert:
+        that:
+          - delete_multiple_v_check_mode is changed
+          - _templates.launch_templates | length == 1
+          - _templates.launch_templates[0].versions | length == 3
+          - _templates.launch_templates[0].latest_version_number == 4
+          - _templates.launch_templates[0].default_version_number == 1
+
+    - name: Delete multiple versions
+      amazon.aws.ec2_launch_template:
+        name: "{{ deletion_launch_template_name }}"
+        state: absent
+        versions_to_delete: [1, 2]
+      register: delete_multiple_v
+
+    - name: Retrieve Launch template information
+      amazon.aws.ec2_launch_template_info:
+        filters:
+          launch-template-name: "{{ deletion_launch_template_name }}"
+      register: _templates
+
+    - name: Ensure module reported change while no change was made
+      ansible.builtin.assert:
+        that:
+          - delete_multiple_v is changed
+          - delete_multiple_v.deleted_template == {}
+          - delete_multiple_v.deleted_versions | length == 2
+          - delete_multiple_v.deleted_versions | map(attribute='launch_template_name') | unique | list == [deletion_launch_template_name]
+          - delete_multiple_v.deleted_versions | map(attribute='launch_template_id') | unique | list == [_templates.launch_templates[0].launch_template_id]
+          - delete_multiple_v.deleted_versions | map(attribute='version_number') | sort | list == [1, 2]
+          - _templates.launch_templates | length == 1
+          - _templates.launch_templates[0].versions | length == 1
+          - _templates.launch_templates[0].latest_version_number == 4
+          - _templates.launch_templates[0].default_version_number == 4
+
+    #====================================================================
+    # Delete launch template
+    #====================================================================
+    - name: Delete launch template (check mode)
+      amazon.aws.ec2_launch_template:
+        name: "{{ deletion_launch_template_name }}"
+        state: absent
+      check_mode: true
+      register: delete_template_check_mode
+
+    - name: Retrieve Launch template information
+      amazon.aws.ec2_launch_template_info:
+        filters:
+          launch-template-name: "{{ deletion_launch_template_name }}"
+      register: _templates
+
+    - name: Ensure module reported change while no change was made
+      ansible.builtin.assert:
+        that:
+          - delete_template_check_mode is changed
+          - _templates.launch_templates | length == 1
+          - _templates.launch_templates[0].versions | length == 1
+          - _templates.launch_templates[0].latest_version_number == 4
+          - _templates.launch_templates[0].default_version_number == 4
+
+    - name: Delete launch template
+      amazon.aws.ec2_launch_template:
+        name: "{{ deletion_launch_template_name }}"
+        state: absent
+      register: delete_template
+
+    - name: Retrieve Launch template information
+      amazon.aws.ec2_launch_template_info:
+        filters:
+          launch-template-name: "{{ deletion_launch_template_name }}"
+      register: _templates_v
+
+    - name: Ensure the launch template was deleted
+      ansible.builtin.assert:
+        that:
+          - delete_template is changed
+          - delete_template.deleted_template.launch_template_id == _templates.launch_templates[0].launch_template_id
+          - delete_template.deleted_template.latest_version_number == _templates.launch_templates[0].latest_version_number
+          - delete_template.deleted_template.default_version_number == _templates.launch_templates[0].default_version_number
+          - delete_template.deleted_versions | length == 0
+          - _templates_v.launch_templates | length == 0
+
+    - name: Delete launch template once again (idempotency)
+      amazon.aws.ec2_launch_template:
+        name: "{{ deletion_launch_template_name }}"
+        state: absent
+      register: delete_template_idempotency
+
+    - name: Ensure module idempotency
+      ansible.builtin.assert:
+        that:
+          - delete_template_idempotency is not changed
+          - delete_template_idempotency.deleted_template == {}
+          - delete_template_idempotency.deleted_versions == []
+
+    #====================================================================
+    # Delete launch template with multiple versions
+    #====================================================================
+    - name: Create multiple versions of the launch template
+      amazon.aws.ec2_launch_template:
+        name: "{{ deletion_launch_template_name_2 }}"
+        instance_type: "{{ item }}"
+      with_items: "{{ test_ec2_instance_types }}"
+
+    - name: Retrieve Launch template information
+      amazon.aws.ec2_launch_template_info:
+        filters:
+          launch-template-name: "{{ deletion_launch_template_name_2 }}"
+      register: _templates
+
+    - name: Validate Launch template details
+      ansible.builtin.assert:
+        that:
+          - _templates.launch_templates | length == 1
+          - _templates.launch_templates[0].versions | length == 5
+          - _templates.launch_templates[0].latest_version_number == 5
+          - _templates.launch_templates[0].default_version_number == 5
+
+    - name: Delete launch template with multiple versions (check mode)
+      amazon.aws.ec2_launch_template:
+        name: "{{ deletion_launch_template_name_2 }}"
+        state: absent
+      check_mode: true
+      register: delete_template_check_mode
+
+    - name: Retrieve Launch template information
+      amazon.aws.ec2_launch_template_info:
+        filters:
+          launch-template-name: "{{ deletion_launch_template_name_2 }}"
+      register: _templates
+
+    - name: Ensure module reported change while no change was made
+      ansible.builtin.assert:
+        that:
+          - delete_template_check_mode is changed
+          - _templates.launch_templates | length == 1
+          - _templates.launch_templates[0].versions | length == 5
+
+    - name: Delete launch template with multiple versions
+      amazon.aws.ec2_launch_template:
+        name: "{{ deletion_launch_template_name_2 }}"
+        state: absent
+      register: delete_template
+
+    - name: Retrieve Launch template information
+      amazon.aws.ec2_launch_template_info:
+        filters:
+          launch-template-name: "{{ deletion_launch_template_name_2 }}"
+      register: _templates_v
+
+    - name: Ensure the launch template was deleted
+      ansible.builtin.assert:
+        that:
+          - delete_template is changed
+          - delete_template.deleted_template.launch_template_id == _templates.launch_templates[0].launch_template_id
+          - delete_template.deleted_template.latest_version_number == _templates.launch_templates[0].latest_version_number
+          - delete_template.deleted_template.default_version_number == _templates.launch_templates[0].default_version_number
+          - delete_template.deleted_versions | length == 4
+          - delete_template.deleted_versions | map(attribute='launch_template_name') | unique | list == [deletion_launch_template_name_2]
+          - delete_template.deleted_versions | map(attribute='launch_template_id') | unique | list == [_templates.launch_templates[0].launch_template_id]
+          - delete_template.deleted_versions | map(attribute='version_number') | sort | list == [1, 2, 3, 4]
+          - _templates_v.launch_templates | length == 0
+
+    - name: Delete launch template with multiple versions once again (idempotency)
+      amazon.aws.ec2_launch_template:
+        name: "{{ deletion_launch_template_name_2 }}"
+        state: absent
+      register: delete_template_idempotency
+
+    - name: Ensure module idempotency
+      ansible.builtin.assert:
+        that:
+          - delete_template_idempotency is not changed
+          - delete_template_idempotency.deleted_template == {}
+          - delete_template_idempotency.deleted_versions == []
+
+  always:
+    - name: Delete the launch template
+      amazon.aws.ec2_launch_template:
+        name: "{{ item }}"
+        state: absent
+      with_items:
+        - "{{ deletion_launch_template_name }}"
+        - "{{ deletion_launch_template_name_2 }}"
+      ignore_errors: true

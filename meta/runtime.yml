@@ -43,6 +43,7 @@ action_groups:
     - ec2_instance_info
     - ec2_key
     - ec2_key_info
+    - ec2_launch_template
     - ec2_launch_template_info
     - ec2_security_group
     - ec2_security_group_info
@@ -164,10 +165,10 @@ plugin_routing:
     rds_param_group:
       redirect: amazon.aws.rds_instance_param_group
       deprecation:
-         removal_version: 10.0.0
-         warning_text: >-
-           rds_param_group has been renamed to rds_instance_param_group.
-           Please update your tasks.
+        removal_version: 10.0.0
+        warning_text: >-
+          rds_param_group has been renamed to rds_instance_param_group.
+          Please update your tasks.
   lookup:
     aws_ssm:
       # Deprecation for this alias should not *start* prior to 2024-09-01
