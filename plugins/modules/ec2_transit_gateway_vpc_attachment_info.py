@@ -14,31 +14,32 @@ options:
   id:
     description:
       - The ID of the Transit Gateway Attachment.
-      - Mutually exclusive with I(name) and I(filters)
+      - Mutually exclusive with O(name) and O(filters).
     type: str
     required: false
-    aliases: ['attachment_id']
+    aliases: ["attachment_id"]
   name:
     description:
-      - The C(Name) tag of the Transit Gateway attachment.
+      - The V(Name) tag of the Transit Gateway attachment.
     type: str
     required: false
   filters:
     description:
       - A dictionary of filters to apply. Each dict item consists of a filter key and a filter value.
-      - Setting a C(tag:Name) filter will override the I(name) parameter.
+      - Setting a V(tag:Name) filter will override the O(name) parameter.
     type: dict
     required: false
   include_deleted:
     description:
-      - If I(include_deleted=True), then attachments in a deleted state will
+      - If O(include_deleted=True), then attachments in a deleted state will
         also be returned.
-      - Setting a C(state) filter will override the I(include_deleted) parameter.
+      - Setting a V(state) filter will override the O(include_deleted) parameter.
     type: bool
     required: false
     default: false
 author:
-  - "Mark Chappell (@tremble)"
+  - Mark Chappell (@tremble)
+  - Alina Buzachis (@alinabuzachis)
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
@@ -46,23 +47,21 @@ extends_documentation_fragment:
 """
 
 EXAMPLES = r"""
-# Describe a specific Transit Gateway attachment.
-- community.aws.ec2_transit_gateway_vpc_attachment_info:
-    id: 'tgw-attach-0123456789abcdef0'
+- name: Describe a specific Transit Gateway attachment
+  community.aws.ec2_transit_gateway_vpc_attachment_info:
+    id: "tgw-attach-0123456789abcdef0"
 
-# Describe all attachments attached to a transit gateway.
-- community.aws.ec2_transit_gateway_vpc_attachment_info:
+- name: Describe all attachments attached to a transit gateway
+  community.aws.ec2_transit_gateway_vpc_attachment_info:
     filters:
-      transit-gateway-id: tgw-0fedcba9876543210'
+      transit-gateway-id: "tgw-0fedcba9876543210"
 
-# Describe all attachments in an account.
-- community.aws.ec2_transit_gateway_vpc_attachment_info:
-    filters:
-      transit-gateway-id: tgw-0fedcba9876543210'
+- name: Describe all attachments in an account
+  community.aws.ec2_transit_gateway_vpc_attachment_info:
 """
 
 RETURN = r"""
-transit_gateway_attachments:
+attachments:
   description: The attributes of the Transit Gateway attachments.
   type: list
   elements: dict
@@ -73,7 +72,7 @@ transit_gateway_attachments:
         - An ISO 8601 date time stamp of when the attachment was created.
       type: str
       returned: success
-      example: '2022-03-10T16:40:26+00:00'
+      sample: "2022-03-10T16:40:26+00:00"
     options:
       description:
         - Additional VPC attachment options.
@@ -85,32 +84,38 @@ transit_gateway_attachments:
             - Indicates whether appliance mode support is enabled.
           type: str
           returned: success
-          example: 'enable'
+          sample: "enable"
         dns_support:
           description:
             - Indicates whether DNS support is enabled.
           type: str
           returned: success
-          example: 'disable'
+          sample: "disable"
         ipv6_support:
           description:
             - Indicates whether IPv6 support is disabled.
           type: str
           returned: success
-          example: 'disable'
+          sample: "disable"
+        security_group_referencing_support:
+          description:
+            - Indicated weather security group referencing support is disabled.
+          type: str
+          returned: success
+          sample: "enable"
     state:
       description:
         - The state of the attachment.
       type: str
       returned: success
-      example: 'deleting'
+      sample: "deleting"
     subnet_ids:
       description:
         - The IDs of the subnets in use by the attachment.
       type: list
       elements: str
       returned: success
-      example: ['subnet-0123456789abcdef0', 'subnet-11111111111111111']
+      sample: ["subnet-0123456789abcdef0", "subnet-11111111111111111"]
     tags:
       description:
         - A dictionary representing the resource tags.
@@ -121,29 +126,38 @@ transit_gateway_attachments:
         - The ID of the attachment.
       type: str
       returned: success
-      example: 'tgw-attach-0c0c5fd0b0f01d1c9'
+      sample: "tgw-attach-0c0c5fd0b0f01d1c9"
     transit_gateway_id:
       description:
         - The ID of the transit gateway that the attachment is connected to.
       type: str
       returned: success
-      example: 'tgw-0123456789abcdef0'
+      sample: "tgw-0123456789abcdef0"
     vpc_id:
       description:
         - The ID of the VPC that the attachment is connected to.
       type: str
       returned: success
-      example: 'vpc-0123456789abcdef0'
+      sample: "vpc-0123456789abcdef0"
     vpc_owner_id:
       description:
         - The ID of the account that the VPC belongs to.
       type: str
       returned: success
-      example: '123456789012'
+      sample: "123456789012"
 """
 
+from typing import Any
+from typing import Dict
+from typing import List
+
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleEC2Error
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_transit_gateway_vpc_attachments
+from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
+from ansible_collections.amazon.aws.plugins.module_utils.transformation import boto3_resource_to_ansible_dict
+
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
-from ansible_collections.community.aws.plugins.module_utils.transitgateway import TransitGatewayVpcAttachmentManager
+from ansible_collections.community.aws.plugins.module_utils.transitgateway import get_states
 
 
 def main():
@@ -162,39 +176,45 @@ def main():
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
         supports_check_mode=True,
+        mutually_exclusive=mutually_exclusive,
     )
 
-    name = module.params.get("name", None)
-    id = module.params.get("id", None)
-    opt_filters = module.params.get("filters", None)
+    name = module.params.get("name")
+    attachment_id = module.params.get("id")
+    opt_filters = module.params.get("filters")
+    include_deleted = module.params.get("include_deleted")
 
-    search_manager = TransitGatewayVpcAttachmentManager(module=module)
-    filters = dict()
+    client = module.client("ec2")
 
+    params: Dict[str, Any] = {}
+    filters: Dict[str, Any] = {}
+    attachments: List[Dict[str, Any]] = []
+
+    if attachment_id:
+        params["TransitGatewayAttachmentIds"] = [attachment_id]
+
+    # Add filter by name if provided
     if name:
         filters["tag:Name"] = name
 
-    if not module.params.get("include_deleted"):
-        # Attachments lurk in a 'deleted' state, for a while, ignore them so we
-        # can reuse the names
-        filters["state"] = [
-            "available",
-            "deleting",
-            "failed",
-            "failing",
-            "initiatingRequest",
-            "modifying",
-            "pendingAcceptance",
-            "pending",
-            "rollingBack",
-            "rejected",
-            "rejecting",
-        ]
+    # Include only active states if "include_deleted" is False
+    if not include_deleted:
+        filters["state"] = get_states()
 
+    # Include any additional filters provided by the user
     if opt_filters:
         filters.update(opt_filters)
 
-    attachments = search_manager.list(filters=filters, id=id)
+    if filters:
+        params["Filters"] = ansible_dict_to_boto3_filter_list(filters)
+
+    try:
+        result = describe_transit_gateway_vpc_attachments(client, **params)
+    except AnsibleEC2Error as e:
+        module.fail_json_aws_error(e)
+
+    if result:
+        attachments = [boto3_resource_to_ansible_dict(attachment) for attachment in result]
 
     module.exit_json(changed=False, attachments=attachments, filters=filters)
 

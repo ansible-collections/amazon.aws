@@ -1,5 +1,5 @@
 ---
-- name: 'Pick 2 AZs available for use'
+- name: Pick 2 AZs available for use
   set_fact:
     subnet_az_a_1: '{{ ec2_availability_zone_names[0] }}'
     subnet_az_a_1a: '{{ ec2_availability_zone_names[0] }}'
@@ -8,23 +8,23 @@
     subnet_az_b_1: '{{ ec2_availability_zone_names[0] }}'
     subnet_az_b_2: '{{ ec2_availability_zone_names[1] }}'
 
-- name: 'Create Transit Gateways'
-  ec2_transit_gateway:
+- name: Create Transit Gateways
+  community.aws.ec2_transit_gateway:
     description: '{{ item.description }}'
     tags:
       Name: '{{ item.name }}'
   loop:
-  - description: 'Transit Gateway for testing ec2_transit_gateway_attachment'
+  - description: 'Transit Gateway for testing community.aws.ec2_transit_gateway_attachment'
     name: '{{ tgw_name }}'
-  - description: 'Second Transit Gateway for testing ec2_transit_gateway_attachment'
+  - description: 'Second Transit Gateway for testing community.aws.ec2_transit_gateway_attachment'
     name: '{{ tgw_name_2 }}'
   register: create_tgws
 
-- name: 'Create VPCs to attach to TGW'
-  ec2_vpc_net:
+- name: Create VPCs to attach to TGW
+  amazon.aws.ec2_vpc_net:
     cidr_block: '{{ item.cidr }}'
     name: '{{ item.name }}'
-    ipv6_cidr: True
+    ipv6_cidr: true
   loop:
   - cidr: '{{ vpc_cidr_a }}'
     name: '{{ vpc_name_a }}'
@@ -51,8 +51,8 @@
     vpc_ipv6_a: '{{ vpc_a.ipv6_cidr_block_association_set[0].ipv6_cidr_block }}'
     vpc_ipv6_b: '{{ vpc_b.ipv6_cidr_block_association_set[0].ipv6_cidr_block }}'
 
-- name: 'Create subnets'
-  ec2_vpc_subnet:
+- name: Create subnets
+  amazon.aws.ec2_vpc_subnet:
     az: '{{ item.az }}'
     cidr: '{{ item.cidr }}'
     ipv6_cidr: '{{ item.ipv6_cidr }}'

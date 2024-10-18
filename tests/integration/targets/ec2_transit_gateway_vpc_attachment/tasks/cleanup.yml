@@ -1,29 +1,29 @@
 ---
-- name: 'Describe all attachments on our VPC'
-  ec2_transit_gateway_vpc_attachment_info:
+- name: Describe all attachments on our VPC
+  community.aws.ec2_transit_gateway_vpc_attachment_info:
     filters:
       transit-gateway-id: '{{ tgw_id }}'
   register: info
-  ignore_errors: True
+  ignore_errors: true
 
-- name: 'Start deletion of all attachments'
-  ec2_transit_gateway_vpc_attachment:
+- name: Start deletion of all attachments
+  community.aws.ec2_transit_gateway_vpc_attachment:
     state: absent
     id: '{{ item.transit_gateway_attachment_id }}'
-    wait: False
+    wait: false
   loop: '{{ info.attachments }}'
-  ignore_errors: True
+  ignore_errors: true
 
-- name: 'Wait for deletion of all attachments'
-  ec2_transit_gateway_vpc_attachment:
+- name: Wait for deletion of all attachments
+  community.aws.ec2_transit_gateway_vpc_attachment:
     state: absent
     id: '{{ item.transit_gateway_attachment_id }}'
-    wait: True
+    wait: true
   loop: '{{ info.attachments }}'
-  ignore_errors: True
+  ignore_errors: true
 
-- name: 'Delete subnets'
-  ec2_vpc_subnet:
+- name: Delete subnets
+  amazon.aws.ec2_vpc_subnet:
     state: absent
     cidr: '{{ item.cidr }}'
     vpc_id: '{{ item.vpc_id }}'
@@ -42,8 +42,8 @@
     vpc_id: '{{ vpc_id_a }}'
   ignore_errors: True
 
-- name: 'Create VPCs to attach to TGW'
-  ec2_vpc_net:
+- name: Delete VPCs to attach to TGW
+  amazon.aws.ec2_vpc_net:
     state: absent
     cidr_block: '{{ item.cidr }}'
     name: '{{ item.name }}'
@@ -52,13 +52,19 @@
     name: '{{ vpc_name_a }}'
   - cidr: '{{ vpc_cidr_b }}'
     name: '{{ vpc_name_b }}'
-  ignore_errors: True
+  ignore_errors: true
 
-- name: 'Create Transit Gateways'
-  ec2_transit_gateway:
+- name: Gather info about all transit gateways
+  community.aws.ec2_transit_gateway_info:
+    transit_gateway_ids:
+      - '{{ tgw_id }}'
+      - '{{ tgw_id_2 }}'
+
+- name: Delete Transit Gateways
+  community.aws.ec2_transit_gateway:
     state: absent
     transit_gateway_id: '{{ item.tgw_id }}'
   loop:
   - tgw_id: '{{ tgw_id }}'
   - tgw_id: '{{ tgw_id_2 }}'
-  ignore_errors: True
+  ignore_errors: true
