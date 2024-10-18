@@ -1784,6 +1784,7 @@ def determine_iam_arn_from_name(iam_client, name_or_arn: str) -> str:
         raise AnsibleEC2Error(message=f"Could not find IAM instance profile {name_or_arn}")
     return iam_instance_profiles[0]["Arn"]
 
+
 # EC2 Transit Gateway
 class EC2TransitGatewayErrorHandler(AWSErrorHandler):
     _CUSTOM_EXCEPTION = AnsibleEC2Error
