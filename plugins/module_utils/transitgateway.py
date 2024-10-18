@@ -455,7 +455,7 @@ class TransitGatewayVpcAttachmentManager:
             # Wait for resources to finish creating before updating
             self.state_manager.wait_for_state_change("available")
         elif self.existing.get("State") == "deleting":
-            self.module.fail_json(msg="Deletion in progress, unable to update", route_tables=[self.original_resource])
+            self.module.fail_json(msg="Deletion in progress, unable to update", route_tables=[self.existing])
 
         # Apply the configuration
         if self.apply_configuration():
