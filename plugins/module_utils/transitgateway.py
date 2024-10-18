@@ -5,221 +5,234 @@
 
 from copy import deepcopy
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+try:
+    from botocore.exceptions import BotoCoreError
+    from botocore.exceptions import ClientError
+except ImportError:
+    pass
+
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Tuple
+
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleEC2Error
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import create_transit_gateway_vpc_attachment
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import delete_transit_gateway_vpc_attachment
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_subnets
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_transit_gateway_vpc_attachments
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import modify_transit_gateway_vpc_attachment
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
+from ansible_collections.amazon.aws.plugins.module_utils.transformation import boto3_resource_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
 
-from ansible_collections.community.aws.plugins.module_utils.ec2 import BaseEc2Manager
-from ansible_collections.community.aws.plugins.module_utils.ec2 import Boto3Mixin
-from ansible_collections.community.aws.plugins.module_utils.ec2 import Ec2WaiterFactory
-
-
-class TgwWaiterFactory(Ec2WaiterFactory):
-    @property
-    def _waiter_model_data(self):
-        data = super(TgwWaiterFactory, self)._waiter_model_data
-        # split the TGW waiters so we can keep them close to everything else.
-        tgw_data = dict(
-            tgw_attachment_available=dict(
-                operation="DescribeTransitGatewayAttachments",
-                delay=5,
-                maxAttempts=120,
-                acceptors=[
-                    dict(
-                        state="success",
-                        matcher="pathAll",
-                        expected="available",
-                        argument="TransitGatewayAttachments[].State",
-                    ),
-                ],
-            ),
-            tgw_attachment_deleted=dict(
-                operation="DescribeTransitGatewayAttachments",
-                delay=5,
-                maxAttempts=120,
-                acceptors=[
-                    dict(
-                        state="retry",
-                        matcher="pathAll",
-                        expected="deleting",
-                        argument="TransitGatewayAttachments[].State",
-                    ),
-                    dict(
-                        state="success",
-                        matcher="pathAll",
-                        expected="deleted",
-                        argument="TransitGatewayAttachments[].State",
-                    ),
-                    dict(
-                        state="success",
-                        matcher="path",
-                        expected=True,
-                        argument="length(TransitGatewayAttachments[]) == `0`",
-                    ),
-                    dict(state="success", matcher="error", expected="InvalidRouteTableID.NotFound"),
-                ],
-            ),
-        )
-        data.update(tgw_data)
-        return data
+from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
 
-class TGWAttachmentBoto3Mixin(Boto3Mixin):
-    def __init__(self, module, **kwargs):
-        self.tgw_waiter_factory = TgwWaiterFactory(module)
-        super(TGWAttachmentBoto3Mixin, self).__init__(module, **kwargs)
+def get_states() -> List[str]:
+    return [
+        "available",
+        "deleting",
+        "failed",
+        "failing",
+        "initiatingRequest",
+        "modifying",
+        "pendingAcceptance",
+        "pending",
+        "rollingBack",
+        "rejected",
+        "rejecting",
+    ]
 
-    # Paginators can't be (easily) wrapped, so we wrap this method with the
-    # retry - retries the full fetch, but better than simply giving up.
-    @AWSRetry.jittered_backoff()
-    def _paginated_describe_transit_gateway_vpc_attachments(self, **params):
-        paginator = self.client.get_paginator("describe_transit_gateway_vpc_attachments")
-        return paginator.paginate(**params).build_full_result()
 
-    @Boto3Mixin.aws_error_handler("describe transit gateway attachments")
-    def _describe_vpc_attachments(self, **params):
-        result = self._paginated_describe_transit_gateway_vpc_attachments(**params)
-        return result.get("TransitGatewayVpcAttachments", None)
+def subnets_to_vpc(
+    client, module: AnsibleAWSModule, subnets: List[str], subnet_details: Optional[List[Dict[str, Any]]] = None
+) -> Optional[str]:
+    if not subnets:
+        return None
 
-    @Boto3Mixin.aws_error_handler("create transit gateway attachment")
-    def _create_vpc_attachment(self, **params):
-        result = self.client.create_transit_gateway_vpc_attachment(aws_retry=True, **params)
-        return result.get("TransitGatewayVpcAttachment", None)
-
-    @Boto3Mixin.aws_error_handler("modify transit gateway attachment")
-    def _modify_vpc_attachment(self, **params):
-        result = self.client.modify_transit_gateway_vpc_attachment(aws_retry=True, **params)
-        return result.get("TransitGatewayVpcAttachment", None)
-
-    @Boto3Mixin.aws_error_handler("delete transit gateway attachment")
-    def _delete_vpc_attachment(self, **params):
+    if subnet_details is None:
         try:
-            result = self.client.delete_transit_gateway_vpc_attachment(aws_retry=True, **params)
-        except is_boto3_error_code("ResourceNotFoundException"):
-            return None
-        return result.get("TransitGatewayVpcAttachment", None)
+            subnet_details = describe_subnets(client, SubnetIds=list(subnets))
+        except AnsibleEC2Error as e:
+            module.fail_json_aws_error(e)
 
-    @Boto3Mixin.aws_error_handler("transit gateway attachment to finish deleting")
-    def _wait_tgw_attachment_deleted(self, **params):
-        waiter = self.tgw_waiter_factory.get_waiter("tgw_attachment_deleted")
-        waiter.wait(**params)
-
-    @Boto3Mixin.aws_error_handler("transit gateway attachment to become available")
-    def _wait_tgw_attachment_available(self, **params):
-        waiter = self.tgw_waiter_factory.get_waiter("tgw_attachment_available")
-        waiter.wait(**params)
-
-    def _normalize_tgw_attachment(self, rtb):
-        return self._normalize_boto3_resource(rtb)
-
-    def _get_tgw_vpc_attachment(self, **params):
-        # Only for use with a single attachment, use _describe_vpc_attachments for
-        # multiple tables.
-        attachments = self._describe_vpc_attachments(**params)
-
-        if not attachments:
-            return None
-
-        attachment = attachments[0]
-        return attachment
-
-
-class BaseTGWManager(BaseEc2Manager):
-    @Boto3Mixin.aws_error_handler("connect to AWS")
-    def _create_client(self, client_name="ec2"):
-        if client_name == "ec2":
-            error_codes = ["IncorrectState"]
-        else:
-            error_codes = []
-
-        retry_decorator = AWSRetry.jittered_backoff(
-            catch_extra_error_codes=error_codes,
+    vpcs = [s.get("VpcId") for s in subnet_details]
+    if len(set(vpcs)) > 1:
+        module.fail_json(
+            msg="Attachment subnets may only be in one VPC, multiple VPCs found",
+            vpcs=list(set(vpcs)),
+            subnets=subnet_details,
         )
-        client = self.module.client(client_name, retry_decorator=retry_decorator)
-        return client
+
+    return vpcs[0]
 
 
-class TransitGatewayVpcAttachmentManager(TGWAttachmentBoto3Mixin, BaseTGWManager):
-    TAG_RESOURCE_TYPE = "transit-gateway-attachment"
+def find_existing_attachment(
+    client, module: AnsibleAWSModule, filters: Optional[Dict[str, Any]] = None, attachment_id: Optional[str] = None
+) -> Optional[Dict[str, Any]]:
+    """Find an existing transit gateway attachment based on filters or attachment ID.
 
-    def __init__(self, module, id=None):
-        self._subnet_updates = dict()
-        super(TransitGatewayVpcAttachmentManager, self).__init__(module=module, id=id)
+    Args:
+        client: The AWS client used to interact with the EC2 service.
+        module: The Ansible module instance used for error handling.
+        filters (Optional[Dict[str, Any]]): A dictionary of filters to apply when searching for attachments.
+        attachment_id (Optional[str]): The ID of a specific attachment to find.
 
-    def _get_id_params(self, id=None, id_list=False):
-        if not id:
-            id = self.resource_id
-        if not id:
-            # Users should never see this, but let's cover ourself
-            self.module.fail_json(msg="Attachment identifier parameter missing")
+    Returns:
+        Optional[Dict[str, Any]]: The found attachment details or None if not found.
 
-        if id_list:
-            return dict(TransitGatewayAttachmentIds=[id])
-        return dict(TransitGatewayAttachmentId=id)
+    Raises:
+        ValueError: If multiple attachments match the criteria.
+    """
+    # Find an existing attachment based on filters
+    params = {}
 
-    def _extra_error_output(self):
-        output = super(TransitGatewayVpcAttachmentManager, self)._extra_error_output()
-        if self.resource_id:
-            output["TransitGatewayAttachmentId"] = self.resource_id
-        return output
+    if attachment_id:
+        params["TransitGatewayAttachmentIds"] = [attachment_id]
+    elif filters:
+        params["Filters"] = ansible_dict_to_boto3_filter_list(filters)
 
-    def _filter_immutable_resource_attributes(self, resource):
-        resource = super(TransitGatewayVpcAttachmentManager, self)._filter_immutable_resource_attributes(resource)
-        resource.pop("TransitGatewayId", None)
-        resource.pop("VpcId", None)
-        resource.pop("VpcOwnerId", None)
-        resource.pop("State", None)
-        resource.pop("SubnetIds", None)
-        resource.pop("CreationTime", None)
-        resource.pop("Tags", None)
-        return resource
+    try:
+        attachments = describe_transit_gateway_vpc_attachments(client, **params)
+    except AnsibleEC2Error as e:
+        module.fail_json_aws_error(e)
 
-    def _set_option(self, name, value):
-        if value is None:
+    if len(attachments) > 1:
+        raise ValueError("Multiple matching attachments found, provide an ID.")
+
+    return attachments[0] if attachments else None
+
+
+class TransitGatewayAttachmentStateManager:
+    def __init__(self, client, module: AnsibleAWSModule, attachment_id: str) -> None:
+        self.client = client
+        self.module = module
+        self.attachment_id = attachment_id
+
+    @property
+    def waiter_config(self) -> Dict[str, Any]:
+        params: Dict[str, Any] = {}
+
+        delay = min(5, self.module.params.get("wait_timeout"))
+        max_attempts = self.module.params.get("wait_timeout") // delay
+        config = dict(Delay=delay, MaxAttempts=max_attempts)
+        params["WaiterConfig"] = config
+
+        return params
+
+    def create_attachment(self, params: Dict[str, Any]) -> str:
+        """
+        Create a new transit gateway attachment.
+
+        Args:
+            params (Dict[str, Any]): A dictionary containing the parameters needed to
+                create the transit gateway attachment.
+
+        Returns:
+            str: The ID of the newly created transit gateway attachment.
+
+        Raises:
+            AnsibleEC2Error: If there is an error while creating the VPC attachment,
+                it will fail the module and provide an error message.
+        """
+        try:
+            tags = params.pop("Tags")
+        except KeyError:
+            tags = None
+
+        if tags:
+            params["TagSpecifications"] = boto3_tag_specifications(tags, types=["transit-gateway-attachment"])
+
+        try:
+            response = create_transit_gateway_vpc_attachment(self.client, **params)
+        except AnsibleEC2Error as e:
+            self.module.fail_json_aws_error(e)
+
+        self.attachment_id = response["TransitGatewayAttachmentId"]
+
+        return response["TransitGatewayAttachmentId"]
+
+    def delete_attachment(self) -> bool:
+        # Delete the transit gateway attachment
+
+        if not self.attachment_id:
             return False
-        # For now VPC Attachment options are all enable/disable
-        if value:
-            value = "enable"
-        else:
-            value = "disable"
 
-        options = deepcopy(self._preupdate_resource.get("Options", dict()))
-        options.update(self._resource_updates.get("Options", dict()))
-        options[name] = value
+        if not self.module.check_mode:
+            try:
+                delete_transit_gateway_vpc_attachment(self.client, self.attachment_id)
+            except AnsibleEC2Error as e:
+                self.module.fail_json_aws_error(e)
 
-        return self._set_resource_value("Options", options)
+        return True
 
-    def set_dns_support(self, value):
-        return self._set_option("DnsSupport", value)
+    def wait_for_state_change(self, desired_state: str) -> None:
+        # Wait until attachment reaches the desired state
+        params = {"TransitGatewayAttachmentIds": [self.attachment_id]}
+        params.update(self.waiter_config)
+        try:
+            waiter = get_waiter(self.client, f"transit_gateway_vpc_attachment_{desired_state}")
+            waiter.wait(**params)
+        except (BotoCoreError, ClientError) as e:
+            self.module.fail_json_aws_error(e)
 
-    def set_multicast_support(self, value):
-        return self._set_option("MulticastSupport", value)
 
-    def set_ipv6_support(self, value):
-        return self._set_option("Ipv6Support", value)
+class AttachmentConfigurationManager:
+    def __init__(self, client, module: AnsibleAWSModule, attachment_id: str, existing: Dict[str, Any]) -> None:
+        self.client = client
+        self.module = module
+        self.attachment_id = attachment_id
 
-    def set_appliance_mode_support(self, value):
-        return self._set_option("ApplianceModeSupport", value)
+        self.existing = existing or {}
+        self._resource_updates = {}
+        self._subnets_to_add = []
+        self._subnets_to_remove = []
 
-    def set_transit_gateway(self, tgw_id):
-        return self._set_resource_value("TransitGatewayId", tgw_id)
+    @property
+    def resource_updates(self) -> Dict[str, Any]:
+        return self._resource_updates
 
-    def set_vpc(self, vpc_id):
-        return self._set_resource_value("VpcId", vpc_id)
+    @property
+    def subnets_to_add(self) -> List[str]:
+        return self._subnets_to_add
 
-    def set_subnets(self, subnets=None, purge=True):
+    @property
+    def subnets_to_remove(self) -> List[str]:
+        return self._subnets_to_remove
+
+    def set_subnets(self, subnets: Optional[List[str]] = None, purge: bool = True) -> None:
+        """
+        Set or update the subnets associated with the transit gateway attachment.
+
+        Args:
+            subnets (Optional[List[str]]): A list of subnet IDs to associate with
+                the attachment.
+            purge (bool): If True, the existing subnets will be replaced with the
+                specified subnets.
+        """
+        # Set or update the subnets associated with the attachment
         if subnets is None:
-            return False
+            return
 
-        current_subnets = set(self._preupdate_resource.get("SubnetIds", []))
+        current_subnets = set(self.existing.get("SubnetIds", []))
         desired_subnets = set(subnets)
         if not purge:
             desired_subnets = desired_subnets.union(current_subnets)
 
         # We'll pull the VPC ID from the subnets, no point asking for
         # information we 'know'.
-        subnet_details = self._describe_subnets(SubnetIds=list(desired_subnets))
-        vpc_id = self.subnets_to_vpc(desired_subnets, subnet_details)
+        try:
+            subnet_details = describe_subnets(self.client, SubnetIds=list(desired_subnets))
+        except AnsibleEC2Error as e:
+            self.module.fail_json_aws_error(e)
+        vpc_id = subnets_to_vpc(self.client, self.module, desired_subnets, subnet_details)
         self._set_resource_value("VpcId", vpc_id, immutable=True)
 
         # Only one subnet per-AZ is permitted
@@ -231,138 +244,269 @@ class TransitGatewayVpcAttachmentManager(TGWAttachmentBoto3Mixin, BaseTGWManager
                 subnets=subnet_details,
             )
 
-        subnets_to_add = list(desired_subnets.difference(current_subnets))
-        subnets_to_remove = list(current_subnets.difference(desired_subnets))
-        if not subnets_to_remove and not subnets_to_add:
-            return False
-        self._subnet_updates = dict(add=subnets_to_add, remove=subnets_to_remove)
+        self._subnets_to_add = list(desired_subnets.difference(current_subnets))
+        self._subnets_to_remove = list(current_subnets.difference(desired_subnets))
         self._set_resource_value("SubnetIds", list(desired_subnets))
+
+    def set_dns_support(self, value):
+        return self._set_option("DnsSupport", value)
+
+    def set_ipv6_support(self, value):
+        return self._set_option("Ipv6Support", value)
+
+    def set_appliance_mode_support(self, value):
+        return self._set_option("ApplianceModeSupport", value)
+
+    def set_transit_gateway(self, tgw_id: str):
+        return self._set_resource_value("TransitGatewayId", tgw_id)
+
+    def set_vpc(self, vpc_id: str):
+        return self._set_resource_value("VpcId", vpc_id)
+
+    def set_tags(self, tags, purge_tags):
+        current_tags = boto3_tag_list_to_ansible_dict(self.existing.get("Tags", None))
+
+        if purge_tags:
+            desired_tags = deepcopy(tags)
+        else:
+            desired_tags = {**current_tags, **tags}
+
+        self._set_resource_value("Tags", desired_tags)
+
+    def _get_resource_value(self, key, default=None):
+        default_value = self.existing.get(key, default)
+        return self._resource_updates.get(key, default_value)
+
+    def _set_option(self, name: str, value: Optional[bool]) -> bool:
+        """
+        Set a VPC attachment option to either enable or disable.
+
+        Args:
+            name (str): The name of the option to be updated.
+            value (Optional[bool]): A boolean indicating whether to enable (True)
+                or disable (False) the specified option. If None, no action is
+                taken.
+
+        Returns:
+            bool: Returns True if the option was successfully set, or False if
+            no update was made (because the value was None).
+        """
+        if value is None:
+            return False
+
+        # For now VPC Attachment options are all enable/disable
+        value = "enable" if value else "disable"
+
+        options = deepcopy(self.existing.get("Options", dict()))
+        options.update(self._resource_updates.get("Options", dict()))
+        options[name] = value
+
+        return self._set_resource_value("Options", options)
+
+    def _set_resource_value(self, key, value, description: Optional[str] = None, immutable: bool = False) -> bool:
+        """
+        Set a value for a resource attribute and track changes.
+
+        Args:
+            key (str): The attribute key to be updated.
+            value (Any): The new value to set for the specified key.
+            description (Optional[str], optional): A human-readable description of the
+                resource attribute.
+            immutable (bool, optional): A flag indicating whether the attribute is
+                immutable. If True, and the resource exists, an error will be raised
+                if attempting to change the value. Defaults to False.
+
+        Returns:
+            bool: Returns True if the value was successfully set, or False if no
+            update was made.
+        """
+        if value is None or value == self._get_resource_value(key):
+            return False
+
+        if immutable and self.existing:
+            description = description or key
+            self.module.fail_json(msg=f"{description} can not be updated after creation")
+
+        self.resource_updates[key] = value
+
         return True
 
-    def subnets_to_vpc(self, subnets, subnet_details=None):
-        if not subnets:
-            return None
+    def filter_immutable_resource_attributes(self, resource: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Filter out immutable resource attributes from the given resource dictionary.
 
-        if subnet_details is None:
-            subnet_details = self._describe_subnets(SubnetIds=list(subnets))
+        Args:
+            resource (Dict[str, Any]): A dictionary representing the resource, which
+                may contain various attributes, including both mutable and immutable ones.
 
-        vpcs = [s.get("VpcId") for s in subnet_details]
-        if len(set(vpcs)) > 1:
-            self.module.fail_json(
-                msg="Attachment subnets may only be in one VPC, multiple VPCs found",
-                vpcs=list(set(vpcs)),
-                subnets=subnet_details,
-            )
+        Returns:
+            Dict[str, Any]: A new dictionary containing only the mutable attributes
+            of the resource.
+        """
+        immutable_options = ["TransitGatewayId", "VpcId", "VpcOwnerId", "State", "SubnetIds", "CreationTime", "Tags"]
+        return {key: value for key, value in resource.items() if key not in immutable_options}
 
-        return vpcs[0]
 
-    def _do_deletion_wait(self, id=None, **params):
-        all_params = self._get_id_params(id=id, id_list=True)
-        all_params.update(**params)
-        return self._wait_tgw_attachment_deleted(**all_params)
+class TransitGatewayVpcAttachmentManager:
+    def __init__(
+        self, client, module: AnsibleAWSModule, existing: Dict[str, Any], attachment_id: Optional[str] = None
+    ) -> None:
+        self.client = client
+        self.module = module
+        self.attachment_id = attachment_id
+        self.existing = existing or {}
+        self.updated = {}
+        self.changed = False
 
-    def _do_creation_wait(self, id=None, **params):
-        all_params = self._get_id_params(id=id, id_list=True)
-        all_params.update(**params)
-        return self._wait_tgw_attachment_available(**all_params)
+        self.state_manager = TransitGatewayAttachmentStateManager(client, module, attachment_id)
+        self.config_manager = AttachmentConfigurationManager(client, module, attachment_id, existing)
 
-    def _do_update_wait(self, id=None, **params):
-        all_params = self._get_id_params(id=id, id_list=True)
-        all_params.update(**params)
-        return self._wait_tgw_attachment_available(**all_params)
+    def merge_resource_changes(self, filter_immutable: bool = True) -> Dict[str, Any]:
+        """Merge existing resource attributes with updates, optionally filtering out immutable attributes.
 
-    def _do_create_resource(self):
-        params = self._merge_resource_changes(filter_immutable=False, creation=True)
-        response = self._create_vpc_attachment(**params)
-        if response:
-            self.resource_id = response.get("TransitGatewayAttachmentId", None)
-        return response
+        Args:
+            filter_immutable (bool): Whether to filter out immutable resource attributes. Defaults to True.
 
-    def _do_update_resource(self):
-        if self._preupdate_resource.get("State", None) == "pending":
-            # Resources generally don't like it if you try to update before creation
-            # is complete.  If things are in a 'pending' state they'll often throw
-            # exceptions.
-            self._wait_for_creation()
-        elif self._preupdate_resource.get("State", None) == "deleting":
-            self.module.fail_json(msg="Deletion in progress, unable to update", route_tables=[self.original_resource])
+        Returns:
+            Dict[str, Any]: The merged resource attributes.
+        """
+        resource = deepcopy(self.existing)
+        resource.update(self.config_manager.resource_updates)
 
-        updates = self._filter_immutable_resource_attributes(self._resource_updates)
-        subnets_to_add = self._subnet_updates.get("add", [])
-        subnets_to_remove = self._subnet_updates.get("remove", [])
+        if filter_immutable:
+            resource = self.config_manager.filter_immutable_resource_attributes(resource)
+
+        return resource
+
+    def apply_configuration(self):
+        """Apply configuration changes to the transit gateway attachment.
+
+        Returns:
+            bool: True if configuration changes were applied, False otherwise.
+        """
+        # Apply any configuration changes to the attachment
+        if not self.attachment_id:
+            return False
+
+        updates = self.config_manager.filter_immutable_resource_attributes(self.config_manager.resource_updates)
+
+        subnets_to_add = self.config_manager.subnets_to_add
+        subnets_to_remove = self.config_manager.subnets_to_remove
+
+        # Check if there are no changes to apply
+        if not updates and not subnets_to_add and not subnets_to_remove:
+            return False
+
         if subnets_to_add:
             updates["AddSubnetIds"] = subnets_to_add
         if subnets_to_remove:
             updates["RemoveSubnetIds"] = subnets_to_remove
 
-        if not updates:
-            return False
+        updates["TransitGatewayAttachmentId"] = self.attachment_id
 
-        if self.module.check_mode:
-            return True
-
-        updates.update(self._get_id_params(id_list=False))
-        self._modify_vpc_attachment(**updates)
+        if not self.module.check_mode:
+            try:
+                modify_transit_gateway_vpc_attachment(self.client, **updates)
+            except AnsibleEC2Error as e:
+                self.module.fail_json_aws_error(e)
         return True
 
-    def get_resource(self):
-        return self.get_attachment()
+    def _set_configuration_parameters(self) -> None:
+        """Set configuration parameters for the transit gateway attachment."""
+        self.config_manager.set_transit_gateway(self.module.params.get("transit_gateway"))
+        self.config_manager.set_subnets(self.module.params["subnets"], self.module.params.get("purge_subnets", True))
+        self.config_manager.set_dns_support(self.module.params.get("dns_support"))
+        self.config_manager.set_ipv6_support(self.module.params.get("ipv6_support"))
+        self.config_manager.set_appliance_mode_support(self.module.params.get("appliance_mode_support"))
 
-    def delete(self, id=None):
-        if id:
-            id_params = self._get_id_params(id=id, id_list=True)
-            result = self._get_tgw_vpc_attachment(**id_params)
-        else:
-            result = self._preupdate_resource
+    def _prepare_tags(self) -> Tuple[Optional[Dict[str, str]], bool]:
+        """Prepare and return the tags and purge flag.
 
-        self.updated_resource = dict()
+        Returns:
+            Tuple[Optional[Dict[str, str]], bool]: A tuple containing the tags dictionary and the purge flag.
+        """
+        tags = self.module.params.get("tags")
+        purge_tags = self.module.params.get("purge_tags")
 
-        if not result:
-            return False
+        if self.module.params.get("name"):
+            new_tags = {"Name": self.module.params["name"]}
+            if tags is None:
+                purge_tags = False
+            else:
+                new_tags.update(tags)
+            tags = new_tags
 
-        if result.get("State") == "deleting":
-            self._wait_for_deletion()
-            return False
+        return {} if tags is None else tags, purge_tags
 
-        if self.module.check_mode:
+    def _create_attachment(self) -> None:
+        """Create a new transit gateway attachment."""
+        if not self.module.check_mode:
+            params = self.merge_resource_changes(filter_immutable=False)
+            self.attachment_id = self.state_manager.create_attachment(params)
+
+            if self.module.params.get("wait"):
+                self.state_manager.wait_for_state_change("available")
+
+        self.changed = True
+
+    def _update_attachment(self, tags: Dict[str, Any], purge_tags: bool) -> None:
+        """Update an existing transit gateway attachment."""
+        if self.existing.get("State") == "pending":
+            # Wait for resources to finish creating before updating
+            self.state_manager.wait_for_state_change("available")
+        elif self.existing.get("State") == "deleting":
+            self.module.fail_json(msg="Deletion in progress, unable to update", route_tables=[self.original_resource])
+
+        # Apply the configuration
+        if self.apply_configuration():
             self.changed = True
-            return True
+            if self.module.params.get("wait"):
+                self.state_manager.wait_for_state_change("available")
 
-        id_params = self._get_id_params(id=id, id_list=False)
+        # Ensure tags are applied
+        self.changed |= ensure_ec2_tags(
+            self.client,
+            self.module,
+            self.attachment_id,
+            resource_type="transit-gateway-attachment",
+            tags=tags,
+            purge_tags=purge_tags,
+        )
 
-        result = self._delete_vpc_attachment(**id_params)
+    def create_or_modify_attachment(self):
+        """Create or modify a transit gateway attachment based on the provided parameters."""
 
-        self.changed |= bool(result)
+        # Set the configuration parameters
+        self._set_configuration_parameters()
 
-        self._wait_for_deletion()
-        return bool(result)
+        # Handle tags
+        tags, purge_tags = self._prepare_tags()
 
-    def list(self, filters=None, id=None):
-        params = dict()
-        if id:
-            params["TransitGatewayAttachmentIds"] = [id]
-        if filters:
-            params["Filters"] = ansible_dict_to_boto3_filter_list(filters)
-        attachments = self._describe_vpc_attachments(**params)
-        if not attachments:
-            return list()
+        # Set tags in the configuration manager
+        self.config_manager.set_tags(tags, purge_tags)
 
-        return [self._normalize_tgw_attachment(a) for a in attachments]
+        if not self.existing:
+            self._create_attachment()
+        else:
+            self._update_attachment(tags, purge_tags)
 
-    def get_attachment(self, id=None):
-        # RouteTable needs a list, Association/Propagation needs a single ID
-        id_params = self._get_id_params(id=id, id_list=True)
-        id_param = self._get_id_params(id=id, id_list=False)
-        result = self._get_tgw_vpc_attachment(**id_params)
+        # Handle check mode updates
+        if self.module.check_mode:
+            self.updated = camel_dict_to_snake_dict(
+                self.merge_resource_changes(filter_immutable=False), ignore_list=["Tags"]
+            )
+        else:
+            self.updated = boto3_resource_to_ansible_dict(
+                find_existing_attachment(self.client, self.module, attachment_id=self.attachment_id)
+            )
 
-        if not result:
-            return None
-
-        if not id:
-            self._preupdate_resource = deepcopy(result)
-
-        attachment = self._normalize_tgw_attachment(result)
-        return attachment
-
-    def _normalize_resource(self, resource):
-        return self._normalize_tgw_attachment(resource)
+    def delete_attachment(self):
+        """Delete attachment"""
+        if self.existing.get("State") == "deleting":
+            if self.module.params.get("wait"):
+                self.state_manager.wait_for_state_change("deleted")
+            self.change = False
+        else:
+            self.changed |= self.state_manager.delete_attachment()
+            if self.module.params.get("wait"):
+                self.state_manager.wait_for_state_change("deleted")
