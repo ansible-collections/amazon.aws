@@ -8,6 +8,7 @@ DOCUMENTATION = r"""
 module: ec2_transit_gateway_vpc_attachment
 short_description: Create and delete AWS Transit Gateway VPC attachments
 version_added: 4.0.0
+version_added_collection: community.aws
 description:
   - Creates, Deletes and Updates AWS Transit Gateway VPC Attachments.
 options:
@@ -226,9 +227,9 @@ attachments:
 
 from typing import NoReturn
 
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import boto3_resource_to_ansible_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.community.aws.plugins.module_utils.transitgateway import TransitGatewayVpcAttachmentManager
 from ansible_collections.community.aws.plugins.module_utils.transitgateway import find_existing_attachment
 from ansible_collections.community.aws.plugins.module_utils.transitgateway import get_states
