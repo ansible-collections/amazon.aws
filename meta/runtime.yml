@@ -52,6 +52,8 @@ action_groups:
     - ec2_spot_instance_info
     - ec2_tag
     - ec2_tag_info
+    - ec2_transit_gateway_vpc_attachment
+    - ec2_transit_gateway_vpc_attachment_info
     - ec2_vol
     - ec2_vol_info
     - ec2_vpc_dhcp_option
@@ -164,10 +166,10 @@ plugin_routing:
     rds_param_group:
       redirect: amazon.aws.rds_instance_param_group
       deprecation:
-         removal_version: 10.0.0
-         warning_text: >-
-           rds_param_group has been renamed to rds_instance_param_group.
-           Please update your tasks.
+        removal_version: 10.0.0
+        warning_text: >-
+          rds_param_group has been renamed to rds_instance_param_group.
+          Please update your tasks.
   lookup:
     aws_ssm:
       # Deprecation for this alias should not *start* prior to 2024-09-01
