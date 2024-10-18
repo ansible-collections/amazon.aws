@@ -666,7 +666,7 @@ def describe_vpn_gateways(
 
 
 @EC2VpnGatewaysErrorHandler.common_error_handler("create vpn gateway")
-@AWSRetry.jittered_backoff()
+@AWSRetry.jittered_backoff(catch_extra_error_codes=['VpnGatewayLimitExceeded'])
 def create_vpn_gateway(
     client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
 ) -> Dict[str, Any]:
