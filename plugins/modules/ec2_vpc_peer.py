@@ -8,6 +8,7 @@ DOCUMENTATION = r"""
 module: ec2_vpc_peer
 short_description: create, delete, accept, and reject VPC peering connections between two VPCs.
 version_added: 1.0.0
+version_added_collection: community.aws
 description:
   - Read the AWS documentation for VPC Peering Connections
     U(https://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/vpc-peering.html).

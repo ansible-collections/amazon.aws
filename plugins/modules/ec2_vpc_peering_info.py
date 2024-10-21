@@ -8,6 +8,7 @@ DOCUMENTATION = r"""
 module: ec2_vpc_peering_info
 short_description: Retrieves AWS VPC Peering details using AWS methods
 version_added: 1.0.0
+version_added_collection: community.aws
 description:
   - Gets various details related to AWS VPC Peers
 options:
