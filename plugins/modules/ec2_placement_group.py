@@ -46,7 +46,7 @@ options:
     type: str
   tags:
     description:
-      - A dict of key value pairs to associate with the placement group
+      - A dict of key value pairs to associate with the placement group.
     type: dict
     version_added: 8.1.0
 extends_documentation_fragment:
@@ -85,7 +85,7 @@ EXAMPLES = r"""
 
 RETURN = r"""
 placement_group:
-  description: Placement group attributes
+  description: Placement group attributes.
   returned: when state != absent
   type: dict
   contains:

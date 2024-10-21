@@ -52,20 +52,20 @@ EXAMPLES = r"""
 
 RETURN = r"""
 placement_groups:
-  description: Placement group attributes
+  description: Placement group attributes.
   returned: always
   type: complex
   contains:
     name:
-      description: PG name
+      description: PG name.
       type: str
       sample: "my-cluster"
     state:
-      description: PG state
+      description: PG state.
       type: str
       sample: "available"
     strategy:
-      description: PG strategy
+      description: PG strategy.
       type: str
       sample: "cluster"
     tags:
