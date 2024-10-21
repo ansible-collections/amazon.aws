@@ -44,8 +44,8 @@ vars:
 RETURN = r"""
 _raw:
   description:
-    Returns a boolean when I(attribute) is check_ec2_classic. Otherwise returns the value(s) of the attribute
-    (or all attributes if one is not specified).
+    - Returns a boolean when O(attribute=check_ec2_classic). Otherwise returns the value(s) of the attribute
+      (or all attributes if one is not specified).
 """
 
 try:

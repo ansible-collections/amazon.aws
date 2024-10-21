@@ -26,11 +26,11 @@ options:
       - By default if an AccessDenied exception is encountered this plugin will fail. You can set strict_permissions to
         False in the inventory config file which will allow the restrictions to be gracefully skipped.
     type: bool
-    default: True
+    default: true
   include_clusters:
     description: Whether or not to query for Aurora clusters as well as instances.
     type: bool
-    default: False
+    default: false
   statuses:
     description: A list of desired states for instances/clusters to be added to inventory. Set to ['all'] as a shorthand to find everything.
     type: list

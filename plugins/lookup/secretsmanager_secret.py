@@ -13,45 +13,45 @@ description:
   - Look up secrets stored in AWS Secrets Manager provided the caller
     has the appropriate permissions to read the secret.
   - Lookup is based on the secret's I(Name) value.
-  - Optional parameters can be passed into this lookup; I(version_id) and I(version_stage)
+  - Optional parameters can be passed into this lookup; O(version_id) and O(version_stage).
   - Prior to release 6.0.0 this module was known as C(aws_ssm), the usage remains the same.
 
 options:
   _terms:
     description: Name of the secret to look up in AWS Secrets Manager.
-    required: True
+    required: true
   bypath:
     description: A boolean to indicate whether the parameter is provided as a hierarchy.
     default: false
-    type: boolean
+    type: bool
     version_added: 1.4.0
   nested:
     description: A boolean to indicate the secret contains nested values.
-    type: boolean
+    type: bool
     default: false
     version_added: 1.4.0
   version_id:
     description: Version of the secret(s).
-    required: False
+    required: false
   version_stage:
     description: Stage of the secret version.
-    required: False
+    required: false
   join:
     description:
       - Join two or more entries to form an extended secret.
       - This is useful for overcoming the 4096 character limit imposed by AWS.
-      - No effect when used with I(bypath).
-    type: boolean
+      - No effect when used with O(bypath).
+    type: bool
     default: false
   on_deleted:
     description:
       - Action to take if the secret has been marked for deletion.
-      - C(error) will raise a fatal error when the secret has been marked for deletion.
-      - C(skip) will silently ignore the deleted secret.
-      - C(warn) will skip over the deleted secret but issue a warning.
-    default: error
-    type: string
-    choices: ['error', 'skip', 'warn']
+      - V(error) will raise a fatal error when the secret has been marked for deletion.
+      - V(skip) will silently ignore the deleted secret.
+      - V(warn) will skip over the deleted secret but issue a warning.
+    default: "error"
+    type: str
+    choices: ["error", "skip", "warn"]
     version_added: 2.0.0
   on_missing:
     description:
@@ -59,18 +59,18 @@ options:
       - C(error) will raise a fatal error when the secret is missing.
       - C(skip) will silently ignore the missing secret.
       - C(warn) will skip over the missing secret but issue a warning.
-    default: error
-    type: string
-    choices: ['error', 'skip', 'warn']
+    default: "error"
+    type: str
+    choices: ["error", "skip", "warn"]
   on_denied:
     description:
       - Action to take if access to the secret is denied.
       - C(error) will raise a fatal error when access to the secret is denied.
       - C(skip) will silently ignore the denied secret.
       - C(warn) will skip over the denied secret but issue a warning.
-    default: error
-    type: string
-    choices: ['error', 'skip', 'warn']
+    default: "error"
+    type: str
+    choices: ["error", "skip", "warn"]
 extends_documentation_fragment:
   - amazon.aws.boto3
   - amazon.aws.common.plugins
@@ -78,33 +78,32 @@ extends_documentation_fragment:
 """
 
 EXAMPLES = r"""
-- name: lookup secretsmanager secret in the current region
-  debug: msg="{{ lookup('amazon.aws.aws_secret', '/path/to/secrets', bypath=true) }}"
+- name: Lookup secretsmanager secret in the current region
+  ansible.builtin.debug: msg="{{ lookup('amazon.aws.aws_secret', '/path/to/secrets', bypath=true) }}"
 
 - name: Create RDS instance with aws_secret lookup for password param
-  rds:
-    command: create
-    instance_name: app-db
-    db_engine: MySQL
-    size: 10
+  amazon.aws.rds_instance:
+    state: present
+    db_instance_identifier: app-db
+    engine: mysql
     instance_type: db.m1.small
     username: dbadmin
     password: "{{ lookup('amazon.aws.aws_secret', 'DbSecret') }}"
     tags:
       Environment: staging
 
-- name: skip if secret does not exist
-  debug: msg="{{ lookup('amazon.aws.aws_secret', 'secret-not-exist', on_missing='skip')}}"
+- name: Skip if secret does not exist
+  ansible.builtin.debug: msg="{{ lookup('amazon.aws.aws_secret', 'secret-not-exist', on_missing='skip')}}"
 
-- name: warn if access to the secret is denied
-  debug: msg="{{ lookup('amazon.aws.aws_secret', 'secret-denied', on_denied='warn')}}"
+- name: Warn if access to the secret is denied
+  ansible.builtin.debug: msg="{{ lookup('amazon.aws.aws_secret', 'secret-denied', on_denied='warn')}}"
 
-- name: lookup secretsmanager secret in the current region using the nested feature
-  debug: msg="{{ lookup('amazon.aws.aws_secret', 'secrets.environments.production.password', nested=true) }}"
+- name: Lookup secretsmanager secret in the current region using the nested feature
+  ansible.builtin.debug: msg="{{ lookup('amazon.aws.aws_secret', 'secrets.environments.production.password', nested=true) }}"
   # The secret can be queried using the following syntax: `aws_secret_object_name.key1.key2.key3`.
   # If an object is of the form `{"key1":{"key2":{"key3":1}}}` the query would return the value `1`.
-- name: lookup secretsmanager secret in a specific region using specified region and aws profile using nested feature
-  debug: >
+- name: Lookup secretsmanager secret in a specific region using specified region and aws profile using nested feature
+  ansible.builtin.debug: >
    msg="{{ lookup('amazon.aws.aws_secret', 'secrets.environments.production.password', region=region, profile=aws_profile,
    access_key=aws_access_key, secret_key=aws_secret_key, nested=true) }}"
   # The secret can be queried using the following syntax: `aws_secret_object_name.key1.key2.key3`.
@@ -115,8 +114,7 @@ EXAMPLES = r"""
 
 RETURN = r"""
 _raw:
-  description:
-    Returns the value of the secret stored in AWS Secrets Manager.
+  description: Returns the value of the secret stored in AWS Secrets Manager.
 """
 
 import json
