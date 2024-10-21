@@ -69,7 +69,7 @@ placement_groups:
       type: str
       sample: "cluster"
     tags:
-      description: Tags associated with the placement group
+      description: Tags associated with the placement group.
       type: dict
       version_added: 8.1.0
       sample:
