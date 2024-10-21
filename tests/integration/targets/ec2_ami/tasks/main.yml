@@ -708,8 +708,12 @@
         tags:
           Name: "{{ ec2_ami_name }}_permissions"
         launch_permissions:
-          org_arns: ["arn:aws:organizations::123456789012:organization/o-123ab4cdef"]
-          org_unit_arns: ["arn:aws:organizations::123456789012:ou/o-123example/ou-1234-5exampld"]
+          org_arns:
+            ["arn:aws:organizations::123456789012:organization/o-123ab4cdef"]
+          org_unit_arns:
+            [
+              "arn:aws:organizations::123456789012:ou/o-123example/ou-1234-5exampld",
+            ]
       register: permissions_update_result
 
     - name: Get ami info
@@ -726,6 +730,27 @@
           - permissions_info_result.images[0].launch_permissions[0]['organization_arn'] == 'arn:aws:organizations::123456789012:organization/o-123ab4cdef'
           - "'organizational_unit_arn' in permissions_info_result.images[0].launch_permissions[1]"
           - permissions_info_result.images[0].launch_permissions[1]['organizational_unit_arn'] == 'arn:aws:organizations::123456789012:ou/o-123example/ou-1234-5exampld'
+
+    - name: Create image with imdsv2 enabled
+      amazon.aws.ec2_ami:
+        state: present
+        instance_id: "{{ ec2_instance_id }}"
+        name: "{{ ec2_ami_name }}_imdsv2"
+        tags:
+          Name: "{{ ec2_ami_name }}_imdsv2"
+        imdsv2_enable: true
+      register: imdsv2_image
+
+    - name: Get ami info
+      amazon.aws.ec2_ami_info:
+        image_ids: "{{ imdsv2_image.image_id }}"
+        describe_image_attributes: true
+      register: imdsv2_info
+
+    - name: Assert ami IMDSV2 is set
+      ansible.builtin.assert:
+        that:
+          - imdsv2_info.images[0].imdsv2_enabled
 
   # ============================================================
 
