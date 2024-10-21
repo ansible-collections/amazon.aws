@@ -52,55 +52,55 @@ ec2_data = {
             ],
         },
         "TransitGatewayAvailable": {
-                "operation": "DescribeTransitGateways",
-                "delay": 5,
-                "maxAttempts": 120,
-                "acceptors": [
-                    {
-                        "state": "success",
-                        "matcher": "pathAll",
-                        "argument": "TransitGateways[].State",
-                        "expected": "available",
-                    },
-                    {
-                        "state": "retry",
-                        "matcher": "pathAll",
-                        "argument": "TransitGateways[].State",
-                        "expected": "pending",
-                    },
-                    {
-                        "state": "failure",
-                        "matcher": "pathAny",
-                        "argument": "TransitGateways[].State",
-                        "expected": "failed",
-                    },
-                ],
-            },
+            "operation": "DescribeTransitGateways",
+            "delay": 5,
+            "maxAttempts": 120,
+            "acceptors": [
+                {
+                    "state": "success",
+                    "matcher": "pathAll",
+                    "argument": "TransitGateways[].State",
+                    "expected": "available",
+                },
+                {
+                    "state": "retry",
+                    "matcher": "pathAll",
+                    "argument": "TransitGateways[].State",
+                    "expected": "pending",
+                },
+                {
+                    "state": "failure",
+                    "matcher": "pathAny",
+                    "argument": "TransitGateways[].State",
+                    "expected": "failed",
+                },
+            ],
+        },
         "TransitGatewayDeleted": {
-                "operation": "DescribeTransitGateways",
-                "delay": 5,
-                "maxAttempts": 120,
-                "acceptors": [
-                    {
-                        "state": "success",
-                        "matcher": "pathAll",
-                        "argument": "TransitGateways[].State",
-                        "expected": "deleted",
-                    },
-                    {
-                        "state": "retry",
-                        "matcher": "pathAll",
-                        "argument": "TransitGateways[].State",
-                        "expected": "deleting",
-                    },
-                    {
-                        "state": "failure",
-                        "matcher": "pathAny",
-                        "argument": "TransitGateways[].State",
-                        "expected": "failed",
-                    },
-                ],
-            },
+            "operation": "DescribeTransitGateways",
+            "delay": 5,
+            "maxAttempts": 120,
+            "acceptors": [
+                {
+                    "state": "success",
+                    "matcher": "pathAll",
+                    "argument": "TransitGateways[].State",
+                    "expected": "deleted",
+                },
+                {
+                    "state": "retry",
+                    "matcher": "pathAll",
+                    "argument": "TransitGateways[].State",
+                    "expected": "deleting",
+                },
+                {
+                    "state": "failure",
+                    "matcher": "pathAny",
+                    "argument": "TransitGateways[].State",
+                    "expected": "failed",
+                },
+            ],
+        },
         "TGWVpcAttachmentAvailable": {
             "operation": "DescribeTransitGatewayVpcAttachments",
             "delay": 5,
@@ -882,7 +882,8 @@ waiters_by_name = {
         "internet_gateway_attached",
         ec2_model("InternetGatewayAttached"),
         core_waiter.NormalizedOperationMethod(ec2.describe_internet_gateways),
-    ),("EC2", "transit_gateway_available"): lambda ec2: core_waiter.Waiter(
+    ),
+    ("EC2", "transit_gateway_available"): lambda ec2: core_waiter.Waiter(
         "transit_gateway_available",
         ec2_model("TransitGatewayAvailable"),
         core_waiter.NormalizedOperationMethod(ec2.describe_transit_gateways),
