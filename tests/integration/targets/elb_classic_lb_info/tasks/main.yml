@@ -65,7 +65,7 @@
       - '[8080, 8080, "HTTP", "HTTP"] in create.elb.listeners'
 
   - name: Get ELB info
-    elb_classic_lb_info:
+    amazon.aws.elb_classic_lb_info:
       names: '{{ elb_name }}'
     register: info
 
@@ -139,7 +139,7 @@
       - update_az.elb.zones[0] == aws_region ~ 'c'
 
   - name: Get ELB info after changing AZ's
-    elb_classic_lb_info:
+    amazon.aws.elb_classic_lb_info:
       names: '{{ elb_name }}'
     register: info
 
@@ -177,7 +177,7 @@
       - aws_region ~ 'c' in update_az.elb.zones
 
   - name: Get ELB info after updating AZ's
-    elb_classic_lb_info:
+    amazon.aws.elb_classic_lb_info:
       names: '{{ elb_name }}'
     register: info
 
@@ -216,7 +216,7 @@
       - purge_listeners.elb.listeners|length == 1
 
   - name: Get ELB info after purging listeners
-    elb_classic_lb_info:
+    amazon.aws.elb_classic_lb_info:
       names: '{{ elb_name }}'
     register: info
 
@@ -256,7 +256,7 @@
       - update_listeners.elb.listeners|length == 2
 
   - name: Get ELB info after adding listeners
-    elb_classic_lb_info:
+    amazon.aws.elb_classic_lb_info:
       names: '{{ elb_name }}'
     register: info
 
@@ -276,7 +276,7 @@
 
     # Test getting nonexistent load balancer
   - name: get nonexistent load balancer
-    elb_classic_lb_info:
+    amazon.aws.elb_classic_lb_info:
       names: invalid-elb
     register: info
 
@@ -286,7 +286,7 @@
 
     # Test getting a valid and nonexistent load balancer
   - name: get nonexistent load balancer
-    elb_classic_lb_info:
+    amazon.aws.elb_classic_lb_info:
       names: ['{{ elb_name }}', invalid-elb]
     register: info
 
@@ -298,7 +298,7 @@
     # ============================================================
 
   - name: get all load balancers
-    elb_classic_lb_info:
+    amazon.aws.elb_classic_lb_info:
       names: '{{ omit }}'
     register: info
 
