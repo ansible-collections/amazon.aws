@@ -27,7 +27,7 @@
     # create test elb with listeners, certificate, and health check
 
   - name: Create ELB
-    elb_classic_lb:
+    amazon.aws.elb_classic_lb:
       name: '{{ elb_name }}'
       state: present
       zones:
@@ -50,7 +50,7 @@
         healthy_threshold: 10
     register: create
 
-  - assert:
+  - ansible.builtin.assert:
       that:
       - create is changed
           # We rely on these for the info test, make sure they're what we expect
@@ -69,7 +69,7 @@
       names: '{{ elb_name }}'
     register: info
 
-  - assert:
+  - ansible.builtin.assert:
       that:
       - info.elbs|length == 1
       - elb.availability_zones|length == 2
@@ -113,7 +113,7 @@
     # Change AZ's
 
   - name: Change AZ's
-    elb_classic_lb:
+    amazon.aws.elb_classic_lb:
       name: '{{ elb_name }}'
       state: present
       zones:
@@ -133,7 +133,7 @@
         healthy_threshold: 10
     register: update_az
 
-  - assert:
+  - ansible.builtin.assert:
       that:
       - update_az is changed
       - update_az.elb.zones[0] == aws_region ~ 'c'
@@ -143,7 +143,7 @@
       names: '{{ elb_name }}'
     register: info
 
-  - assert:
+  - ansible.builtin.assert:
       that:
       - elb.availability_zones|length == 1
       - aws_region ~ 'c' in elb.availability_zones[0]
@@ -155,7 +155,7 @@
     # Update AZ's
 
   - name: Update AZ's
-    elb_classic_lb:
+    amazon.aws.elb_classic_lb:
       name: '{{ elb_name }}'
       state: present
       zones:
@@ -169,7 +169,7 @@
       purge_zones: yes
     register: update_az
 
-  - assert:
+  - ansible.builtin.assert:
       that:
       - update_az is changed
       - aws_region ~ 'a' in update_az.elb.zones
@@ -181,7 +181,7 @@
       names: '{{ elb_name }}'
     register: info
 
-  - assert:
+  - ansible.builtin.assert:
       that:
       - elb.availability_zones|length == 3
       - aws_region ~ 'a' in elb.availability_zones
@@ -195,7 +195,7 @@
     # Purge Listeners
 
   - name: Purge Listeners
-    elb_classic_lb:
+    amazon.aws.elb_classic_lb:
       name: '{{ elb_name }}'
       state: present
       zones:
@@ -209,7 +209,7 @@
       purge_listeners: yes
     register: purge_listeners
 
-  - assert:
+  - ansible.builtin.assert:
       that:
       - purge_listeners is changed
       - '[80, 81, "HTTP", "HTTP"] in purge_listeners.elb.listeners'
@@ -220,7 +220,7 @@
       names: '{{ elb_name }}'
     register: info
 
-  - assert:
+  - ansible.builtin.assert:
       that:
       - elb.listener_descriptions|length == 1
       - '{"instance_port": 81, "instance_protocol": "HTTP", "load_balancer_port":
@@ -234,7 +234,7 @@
     # add Listeners
 
   - name: Add Listeners
-    elb_classic_lb:
+    amazon.aws.elb_classic_lb:
       name: '{{ elb_name }}'
       state: present
       zones:
@@ -248,7 +248,7 @@
       purge_listeners: no
     register: update_listeners
 
-  - assert:
+  - ansible.builtin.assert:
       that:
       - update_listeners is changed
       - '[80, 81, "HTTP", "HTTP"] in update_listeners.elb.listeners'
@@ -260,7 +260,7 @@
       names: '{{ elb_name }}'
     register: info
 
-  - assert:
+  - ansible.builtin.assert:
       that:
       - elb.listener_descriptions|length == 2
       - '{"instance_port": 81, "instance_protocol": "HTTP", "load_balancer_port":
@@ -280,7 +280,7 @@
       names: invalid-elb
     register: info
 
-  - assert:
+  - ansible.builtin.assert:
       that:
       - info.elbs|length==0
 
@@ -290,7 +290,7 @@
       names: ['{{ elb_name }}', invalid-elb]
     register: info
 
-  - assert:
+  - ansible.builtin.assert:
       that:
       - info.elbs|length==1
       - info.elbs[0].load_balancer_name == elb_name
@@ -302,7 +302,7 @@
       names: '{{ omit }}'
     register: info
 
-  - assert:
+  - ansible.builtin.assert:
       that:
       - info.elbs|length>0
 
@@ -310,7 +310,7 @@
 
     # ============================================================
   - name: remove the test load balancer completely
-    elb_classic_lb:
+    amazon.aws.elb_classic_lb:
       name: '{{ elb_name }}'
       state: absent
     register: result
