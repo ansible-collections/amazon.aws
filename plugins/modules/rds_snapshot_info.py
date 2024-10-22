@@ -185,7 +185,7 @@ snapshots:
       type: str
       sample: "2018-05-16T04:03:33.871000+00:00"
     snapshot_target:
-      description: Where manual snapshots are stored: Amazon Web Services Outposts or the Amazon Web Services Region.
+      description: "Where manual snapshots are stored: Amazon Web Services Outposts or the Amazon Web Services Region."
       returned: always
       type: str
       sample: "region"
