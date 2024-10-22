@@ -20,7 +20,7 @@ jobs:
       init-fail-on-error: true
       intersphinx-links: |
         community_aws:https://ansible-collections.github.io/community.aws/branch/main/
-        ansible_devel:https://docs.ansible.com/ansible-core/devel/
+        ansible_stable:https://docs.ansible.com/ansible-core/2.17/
       artifact-name: ${{ github.event.repository.name }}_validate_docs_${{ github.event.pull_request.head.sha }}
 
 
@@ -34,7 +34,7 @@ jobs:
       init-fail-on-error: false
       intersphinx-links: |
         community_aws:https://ansible-collections.github.io/community.aws/branch/main/
-        ansible_devel:https://docs.ansible.com/ansible-core/devel/
+        ansible_stable:https://docs.ansible.com/ansible-core/2.17/
 
   comment:
     permissions:
