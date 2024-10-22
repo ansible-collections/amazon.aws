@@ -330,6 +330,7 @@ def wait_for_status(client, module: AnsibleAWSModule, waiter_name: str, nat_gate
 def get_nat_gateways(
     client, subnet_id: Optional[str] = None, nat_gateway_id: Optional[str] = None, states: Optional[List[str]] = None
 ) -> List[Dict[str, Any]]:
+    # Test
     """Retrieve a list of NAT Gateways
     Args:
         client (botocore.client.EC2): Boto3 client
