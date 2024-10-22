@@ -69,9 +69,119 @@ EXAMPLES = r"""
 """
 
 RETURN = r"""
+snapshots:
+  description: List of non-clustered snapshots.
+  returned: When cluster parameters are not passed
+  type: complex
+  contains:
+    allocated_storage:
+      description: How many gigabytes of storage are allocated.
+      returned: always
+      type: int
+      sample: 10
+    availability_zone:
+      description: The availability zone of the database from which the snapshot was taken.
+      returned: always
+      type: str
+      sample: "us-west-2b"
+    db_instance_identifier:
+      description: Database instance identifier.
+      returned: always
+      type: str
+      sample: "hello-world-rds"
+    db_snapshot_arn:
+      description: Snapshot ARN.
+      returned: always
+      type: str
+      sample: "arn:aws:rds:us-west-2:123456789012:snapshot:rds:hello-world-rds-us1-2018-05-16-04-03"
+    db_snapshot_identifier:
+      description: Snapshot name.
+      returned: always
+      type: str
+      sample: "rds:hello-world-rds-us1-2018-05-16-04-03"
+    encrypted:
+      description: Whether the snapshot was encrypted.
+      returned: always
+      type: bool
+      sample: true
+    engine:
+      description: Database engine.
+      returned: always
+      type: str
+      sample: "postgres"
+    engine_version:
+      description: Database engine version.
+      returned: always
+      type: str
+      sample: "9.5.10"
+    iam_database_authentication_enabled:
+      description: Whether database authentication through IAM is enabled.
+      returned: always
+      type: bool
+      sample: false
+    instance_create_time:
+      description: Time the Instance was created.
+      returned: always
+      type: str
+      sample: "2017-10-10T04:00:07.434000+00:00"
+    kms_key_id:
+      description: ID of the KMS Key encrypting the snapshot.
+      returned: always
+      type: str
+      sample: "arn:aws:kms:us-west-2:123456789012:key/abcd1234-1234-aaaa-0000-1234567890ab"
+    license_model:
+      description: License model.
+      returned: always
+      type: str
+      sample: "postgresql-license"
+    master_username:
+      description: Database master username.
+      returned: always
+      type: str
+      sample: "dbadmin"
+    option_group_name:
+      description: Database option group name.
+      returned: always
+      type: str
+      sample: "default:postgres-9-5"
+    percent_progress:
+      description: Percent progress of snapshot
+      returned: always
+      type: int
+      sample: 100
+    snapshot_create_time:
+      description: Time snapshot was created.
+      returned: always
+      type: str
+      sample: "2018-05-16T04:03:33.871000+00:00"
+    snapshot_type:
+      description: Type of snapshot.
+      returned: always
+      type: str
+      sample: "automated"
+    status:
+      description: Status of snapshot.
+      returned: always
+      type: str
+      sample: "available"
+    storage_type:
+      description: Storage type of underlying DB.
+      returned: always
+      type: str
+      sample: "gp2"
+    tags:
+      description: Snapshot tags.
+      returned: when snapshot is not shared
+      type: complex
+      contains: {}
+    vpc_id:
+      description: ID of VPC containing the DB.
+      returned: always
+      type: str
+      sample: "vpc-abcd1234"
 cluster_snapshots:
   description: List of cluster snapshots.
-  returned: always
+  returned: When cluster parameters are passed
   type: complex
   contains:
     allocated_storage:
