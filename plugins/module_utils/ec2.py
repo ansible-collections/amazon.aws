@@ -666,7 +666,7 @@ def describe_vpn_gateways(
 
 
 @EC2VpnGatewaysErrorHandler.common_error_handler("create vpn gateway")
-@AWSRetry.jittered_backoff(catch_extra_error_codes=['VpnGatewayLimitExceeded'])
+@AWSRetry.jittered_backoff(catch_extra_error_codes=["VpnGatewayLimitExceeded"])
 def create_vpn_gateway(
     client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
 ) -> Dict[str, Any]:
@@ -675,27 +675,21 @@ def create_vpn_gateway(
 
 @EC2VpnGatewaysErrorHandler.deletion_error_handler("delete vpn gateway")
 @AWSRetry.jittered_backoff()
-def delete_vpn_gateway(
-    client, vpn_gateway_id: str
-) -> bool:
+def delete_vpn_gateway(client, vpn_gateway_id: str) -> bool:
     client.delete_vpn_gateway(VpnGatewayId=vpn_gateway_id)
     return True
 
 
 @EC2VpnGatewaysErrorHandler.common_error_handler("attach vpn gateway")
 @AWSRetry.jittered_backoff()
-def attach_vpn_gateway(
-    client, vpc_id: str, vpn_gateway_id: str
-) -> bool:
+def attach_vpn_gateway(client, vpc_id: str, vpn_gateway_id: str) -> bool:
     client.attach_vpn_gateway(VpcId=vpc_id, VpnGatewayId=vpn_gateway_id)
     return True
 
 
 @EC2VpnGatewaysErrorHandler.common_error_handler("detach vpn gateway")
 @AWSRetry.jittered_backoff()
-def detach_vpn_gateway(
-    client, vpc_id: str, vpn_gateway_id: str
-) -> bool:
+def detach_vpn_gateway(client, vpc_id: str, vpn_gateway_id: str) -> bool:
     client.detach_vpn_gateway(VpcId=vpc_id, VpnGatewayId=vpn_gateway_id)
     return True
 
