@@ -24,53 +24,44 @@ options:
     default: true
     type: bool
   auto_attach:
-    description:
-      - Enable or disable automatic acceptance of attachment requests.
+    description: Enable or disable automatic acceptance of attachment requests.
     default: false
     type: bool
   auto_propagate:
-    description:
-      - Enable or disable automatic propagation of routes to the default propagation route table.
+    description: Enable or disable automatic propagation of routes to the default propagation route table.
     default: true
     type: bool
   description:
-     description:
-       - The description of the transit gateway.
+     description: The description of the transit gateway.
      type: str
   dns_support:
-    description:
-      - Whether to enable AWS DNS support.
+    description: Whether to enable AWS DNS support.
     default: true
     type: bool
   multicast_support:
-    description:
-      - Whether to enable AWS Multicast support. Valid only at the time of creation of the Transit Gateway.
+    description: Whether to enable AWS Multicast support. Valid only at the time of creation of the Transit Gateway.
     type: bool
     version_added: 8.1.0
   state:
     description:
-      - C(present) to ensure resource is created.
-      - C(absent) to remove resource.
+      - V(present) to ensure resource is created.
+      - V(absent) to remove resource.
     default: present
     choices: [ "present", "absent"]
     type: str
   transit_gateway_id:
-    description:
-      - The ID of the transit gateway.
+    description: The ID of the transit gateway.
     type: str
   vpn_ecmp_support:
-    description:
-      - Enable or disable Equal Cost Multipath Protocol support.
+    description: Enable or disable Equal Cost Multipath Protocol support.
     default: true
     type: bool
   wait:
-    description:
-      - Whether to wait for status
+    description: Whether to wait for status.
     default: true
     type: bool
   wait_timeout:
-    description:
-      - number of seconds to wait for status
+    description: Number of seconds to wait for status.
     default: 300
     type: int
 
@@ -123,7 +114,7 @@ EXAMPLES = r"""
 RETURN = r"""
 transit_gateway:
   description: The attributes of the transit gateway.
-  type: complex
+  type: dict
   returned: I(state=present)
   contains:
     creation_time:
@@ -135,11 +126,11 @@ transit_gateway:
       description: The description of the transit gateway.
       returned: always
       type: str
-      sample: my test tgw
+      sample: "my test tgw"
     options:
-      description: The options attributes of the transit gateway
+      description: The options attributes of the transit gateway.
       returned: always
-      type: complex
+      type: dict
       contains:
         amazon_side_asn:
           description:
@@ -147,64 +138,64 @@ transit_gateway:
               The range is 64512 to 65534 for 16-bit ASNs and 4200000000 to 4294967294 for 32-bit ASNs.
           returned: always
           type: str
-          sample: 64512
+          sample: "64512"
         auto_accept_shared_attachements:
           description: Indicates whether attachment requests are automatically accepted.
           returned: always
           type: str
-          sample: disable
+          sample: "disable"
         default_route_table_association:
           description:
            - Indicates  whether resource attachments are automatically
               associated with the default association route table.
           returned: always
           type: str
-          sample: enable
+          sample: "enable"
         association_default_route_table_id:
           description: The ID of the default association route table.
           returned: Iwhen exists
           type: str
-          sample: tgw-rtb-abc123444
+          sample: "tgw-rtb-abc123444"
         default_route_table_propagation:
           description:
            - Indicates  whether  resource  attachments   automatically
              propagate routes to the default propagation route table.
           returned: always
           type: str
-          sample: disable
+          sample: "disable"
         propagation_default_route_table_id:
           description: The ID of the default propagation route table.
           returned: when exists
           type: str
-          sample: tgw-rtb-def456777
+          sample: "tgw-rtb-def456777"
         vpn_ecmp_support:
           description: Indicates  whether  Equal Cost Multipath Protocol support is enabled.
           returned: always
           type: str
-          sample: enable
+          sample: "enable"
         dns_support:
           description: Indicates whether DNS support is enabled.
           returned: always
           type: str
-          sample: enable
+          sample: "enable"
         multicast_support:
           description: Indicates whether Multicast support is enabled.
           returned: always
           type: str
-          sample: enable
+          sample: "enable"
           version_added: 7.3.0
     owner_id:
       description: The account that owns the transit gateway.
       returned: always
       type: str
-      sample: '123456789012'
+      sample: "123456789012"
     state:
       description: The state of the transit gateway.
       returned: always
       type: str
-      sample: pending
+      sample: "pending"
     tags:
-      description: A dictionary of resource tags
+      description: A dictionary of resource tags.
       returned: always
       type: dict
       sample:
@@ -214,52 +205,44 @@ transit_gateway:
       description: The ID of the transit_gateway.
       returned: always
       type: str
-      sample: tgw-3a9aa123
+      sample: "tgw-3a9aa123"
     transit_gateway_id:
       description: The ID of the transit_gateway.
       returned: always
       type: str
-      sample: tgw-3a9aa123
+      sample: "tgw-3a9aa123"
 """
 
-from time import sleep
-from time import time
-
-try:
-    from botocore.exceptions import BotoCoreError
-    from botocore.exceptions import ClientError
-except ImportError:
-    pass  # handled by imported AnsibleAWSModule
+from typing import Any
+from typing import Dict
+from typing import Optional
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import create_ec2_transit_gateway
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import delete_ec2_transit_gateway
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_ec2_transit_gateways
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
+from ansible_collections.amazon.aws.plugins.module_utils.waiters import wait_for_resource_state
 
 from ansible_collections.community.aws.plugins.module_utils.modules import AnsibleCommunityAWSModule as AnsibleAWSModule
 
 
-class AnsibleEc2Tgw(object):
-    def __init__(self, module, results):
+class AnsibleEc2Tgw:
+    def __init__(self, module: AnsibleAWSModule, results: Dict[str, Any]) -> None:
         self._module = module
         self._results = results
         retry_decorator = AWSRetry.jittered_backoff(
             catch_extra_error_codes=["IncorrectState"],
         )
-        connection = module.client("ec2", retry_decorator=retry_decorator)
-        self._connection = connection
+        self._connection = module.client("ec2")
         self._check_mode = self._module.check_mode
 
-    def process(self):
-        """Process the request based on state parameter .
-        state = present will search for an existing tgw based and return the object data.
-          if no object is found it will be created
-
-        state = absent will attempt to remove the tgw however will fail if it still has
-          attachments or associations
-        """
+    def process(self) -> None:
+        """Process the request based on state parameter."""
         description = self._module.params.get("description")
         state = self._module.params.get("state", "present")
         tgw_id = self._module.params.get("transit_gateway_id")
@@ -269,71 +252,60 @@ class AnsibleEc2Tgw(object):
         elif state == "absent":
             self.ensure_tgw_absent(tgw_id, description)
 
-    def wait_for_status(self, wait_timeout, tgw_id, status, skip_deleted=True):
+    def wait_for_status(self, wait_timeout: int, tgw_id: str, status: str, skip_deleted: bool = True) -> Dict[str, Any]:
         """
-        Wait for the Transit Gateway to reach  the specified status
+        Wait for the Transit Gateway to reach the specified status.
         :param wait_timeout: Number of seconds to wait, until this timeout is reached.
-        :param tgw_id: The Amazon nat id.
+        :param tgw_id: The Amazon NAT ID.
         :param status: The status to wait for.
-                examples. status=available, status=deleted
-        :param skip_deleted: ignore deleted transit gateways
-        :return dict: transit gateway object
+        :param skip_deleted: Ignore deleted transit gateways.
+        :return: Transit gateway object.
         """
         polling_increment_secs = 5
-        wait_timeout = time() + wait_timeout
-        status_achieved = False
-        transit_gateway = dict()
+        max_attempts = wait_timeout // polling_increment_secs
 
-        while wait_timeout > time():
-            try:
-                transit_gateway = self.get_matching_tgw(tgw_id=tgw_id, skip_deleted=skip_deleted)
+        waiter_method = f"transit_gateway_{status}"
 
-                if transit_gateway:
-                    if self._check_mode:
-                        transit_gateway["state"] = status
+        wait_for_resource_state(
+            self._connection,
+            self._module,
+            waiter_method,
+            TransitGatewayIds=[tgw_id],
+            delay=polling_increment_secs,
+            max_attempts=max_attempts,
+        )
 
-                    if transit_gateway.get("state") == status:
-                        status_achieved = True
-                        break
-
-                    elif transit_gateway.get("state") == "failed":
-                        break
-
-                else:
-                    sleep(polling_increment_secs)
-
-            except ClientError as e:
-                self._module.fail_json_aws(e)
-
-        if not status_achieved:
-            self._module.fail_json(msg="Wait time out reached, while waiting for results")
+        transit_gateway = self.get_matching_tgw(tgw_id=tgw_id, skip_deleted=skip_deleted)
+        if transit_gateway is None:
+            self._module.fail_json(msg="Transit Gateway not found after waiting.")
 
         return transit_gateway
 
-    def get_matching_tgw(self, tgw_id, description=None, skip_deleted=True):
-        """search for  an existing tgw by either tgw_id or description
-        :param tgw_id:  The AWS id of the transit gateway
-        :param description:  The description of the transit gateway.
-        :param skip_deleted: ignore deleted transit gateways
-        :return dict: transit gateway object
+    def get_matching_tgw(
+        self, tgw_id: Optional[str], description: Optional[str] = None, skip_deleted: bool = True
+    ) -> Optional[Dict[str, Any]]:
+        """Search for an existing tgw by either tgw_id or description.
+        :param tgw_id: The AWS id of the transit gateway.
+        :param description: The description of the transit gateway.
+        :param skip_deleted: Ignore deleted transit gateways.
+        :return: Transit gateway object.
         """
         filters = []
+        params = {}
         if tgw_id:
             filters = ansible_dict_to_boto3_filter_list({"transit-gateway-id": tgw_id})
 
-        try:
-            response = AWSRetry.exponential_backoff()(self._connection.describe_transit_gateways)(Filters=filters)
-        except (ClientError, BotoCoreError) as e:
-            self._module.fail_json_aws(e)
+        params["Filters"] = filters
+        response = describe_ec2_transit_gateways(self._connection, **params)
 
         tgw = None
         tgws = []
 
-        if len(response.get("TransitGateways", [])) == 1 and tgw_id:
-            if (response["TransitGateways"][0]["State"] != "deleted") or not skip_deleted:
-                tgws.extend(response["TransitGateways"])
+        if len(response) == 1 and tgw_id:
+            if (response[0]["State"] != "deleted") or not skip_deleted:
+                tgws.extend(response)
 
-        for gateway in response.get("TransitGateways", []):
+        for gateway in response:
             if description == gateway["Description"] and gateway["State"] != "deleted":
                 tgws.append(gateway)
 
@@ -348,21 +320,18 @@ class AnsibleEc2Tgw(object):
         return tgw
 
     @staticmethod
-    def enable_option_flag(flag):
+    def enable_option_flag(flag: Optional[bool]) -> str:
         disabled = "disable"
         enabled = "enable"
-        if flag:
-            return enabled
-        return disabled
+        return enabled if flag else disabled
 
-    def create_tgw(self, description):
+    def create_tgw(self, description: str) -> Dict[str, Any]:
         """
         Create a transit gateway and optionally wait for status to become available.
-
         :param description: The description of the transit gateway.
-        :return dict: transit gateway object
+        :return: Transit gateway object.
         """
-        options = dict()
+        options: Dict[str, Any] = {}
         wait = self._module.params.get("wait")
         wait_timeout = self._module.params.get("wait_timeout")
 
@@ -376,36 +345,31 @@ class AnsibleEc2Tgw(object):
         options["DnsSupport"] = self.enable_option_flag(self._module.params.get("dns_support"))
         options["MulticastSupport"] = self.enable_option_flag(self._module.params.get("multicast_support"))
 
-        try:
-            response = self._connection.create_transit_gateway(Description=description, Options=options)
-        except (ClientError, BotoCoreError) as e:
-            self._module.fail_json_aws(e)
+        params = {"Description": description, "Options": options}
 
-        tgw_id = response["TransitGateway"]["TransitGatewayId"]
+        response = create_ec2_transit_gateway(self._connection, **params)
+
+        tgw_id = response["TransitGatewayId"]
 
         if wait:
             result = self.wait_for_status(wait_timeout=wait_timeout, tgw_id=tgw_id, status="available")
         else:
             result = self.get_matching_tgw(tgw_id=tgw_id)
 
-        self._results["msg"] = f" Transit gateway {result['transit_gateway_id']} created"
+        self._results["msg"] = f"Transit gateway {result['transit_gateway_id']} created"
 
         return result
 
-    def delete_tgw(self, tgw_id):
+    def delete_tgw(self, tgw_id: str) -> Dict[str, Any]:
         """
-        De;lete the transit gateway and optionally wait for status to become deleted
-
-        :param tgw_id: The id of the transit gateway
-        :return dict: transit gateway object
+        Delete the transit gateway and optionally wait for status to become deleted.
+        :param tgw_id: The id of the transit gateway.
+        :return: Transit gateway object.
         """
         wait = self._module.params.get("wait")
         wait_timeout = self._module.params.get("wait_timeout")
 
-        try:
-            response = self._connection.delete_transit_gateway(TransitGatewayId=tgw_id)
-        except (ClientError, BotoCoreError) as e:
-            self._module.fail_json_aws(e)
+        delete_ec2_transit_gateway(self._connection, tgw_id)
 
         if wait:
             result = self.wait_for_status(
@@ -414,18 +378,17 @@ class AnsibleEc2Tgw(object):
         else:
             result = self.get_matching_tgw(tgw_id=tgw_id, skip_deleted=False)
 
-        self._results["msg"] = f" Transit gateway {tgw_id} deleted"
+        self._results["msg"] = f"Transit gateway {tgw_id} deleted"
 
         return result
 
-    def ensure_tgw_present(self, tgw_id=None, description=None):
+    def ensure_tgw_present(self, tgw_id: Optional[str] = None, description: Optional[str] = None) -> Dict[str, Any]:
         """
-        Will create a tgw if no match to the tgw_id or description are found
-        Will update the tgw tags if matching one found but tags are not synced
-
-        :param tgw_id:  The AWS id of the transit gateway
-        :param description:  The description of the transit gateway.
-        :return dict: transit gateway object
+        Will create a tgw if no match to the tgw_id or description are found.
+        Will update the tgw tags if matching one found but tags are not synced.
+        :param tgw_id: The AWS id of the transit gateway.
+        :param description: The description of the transit gateway.
+        :return: Transit gateway object.
         """
         tgw = self.get_matching_tgw(tgw_id, description)
 
@@ -435,13 +398,10 @@ class AnsibleEc2Tgw(object):
                 self._results["transit_gateway_id"] = None
                 return self._results
 
-            try:
-                if not description:
-                    self._module.fail_json(msg="Failed to create Transit Gateway: description argument required")
-                tgw = self.create_tgw(description)
-                self._results["changed"] = True
-            except (BotoCoreError, ClientError) as e:
-                self._module.fail_json_aws(e, msg="Unable to create Transit Gateway")
+            if not description:
+                self._module.fail_json(msg="Failed to create Transit Gateway: description argument required")
+            tgw = self.create_tgw(description)
+            self._results["changed"] = True
 
         self._results["changed"] |= ensure_ec2_tags(
             self._connection,
@@ -455,13 +415,12 @@ class AnsibleEc2Tgw(object):
 
         return self._results
 
-    def ensure_tgw_absent(self, tgw_id=None, description=None):
+    def ensure_tgw_absent(self, tgw_id: Optional[str] = None, description: Optional[str] = None) -> Dict[str, Any]:
         """
-        Will delete the tgw if a single tgw is found not yet in deleted status
-
-        :param tgw_id:  The AWS id of the transit gateway
-        :param description:  The description of the transit gateway.
-        :return doct: transit gateway object
+        Will delete the tgw if a single tgw is found not yet in deleted status.
+        :param tgw_id: The AWS id of the transit gateway.
+        :param description: The description of the transit gateway.
+        :return: Transit gateway object.
         """
         self._results["transit_gateway_id"] = None
         tgw = self.get_matching_tgw(tgw_id, description)
@@ -471,19 +430,16 @@ class AnsibleEc2Tgw(object):
                 self._results["changed"] = True
                 return self._results
 
-            try:
-                tgw = self.delete_tgw(tgw_id=tgw["transit_gateway_id"])
-                self._results["changed"] = True
-                self._results["transit_gateway"] = self.get_matching_tgw(
-                    tgw_id=tgw["transit_gateway_id"], skip_deleted=False
-                )
-            except (BotoCoreError, ClientError) as e:
-                self._module.fail_json_aws(e, msg="Unable to delete Transit Gateway")
+            tgw = self.delete_tgw(tgw_id=tgw["transit_gateway_id"])
+            self._results["changed"] = True
+            self._results["transit_gateway"] = self.get_matching_tgw(
+                tgw_id=tgw["transit_gateway_id"], skip_deleted=False
+            )
 
         return self._results
 
 
-def setup_module_object():
+def setup_module_object() -> AnsibleAWSModule:
     """
     merge argument spec and create Ansible module object
     :return: Ansible module object
