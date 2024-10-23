@@ -8,6 +8,7 @@ DOCUMENTATION = r"""
 module: ec2_transit_gateway_info
 short_description: Retrieve information about EC2 Transit Gateways in AWS
 version_added: 1.0.0
+version_added_collection: community.aws
 description:
   - Gather information about EC2 Transit Gateways in AWS.
 author:
