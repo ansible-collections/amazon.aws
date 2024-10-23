@@ -34,18 +34,18 @@ EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Gather information about all virtual gateways for an account or profile
-  community.aws.ec2_vpc_vgw_info:
+  amazon.aws.ec2_vpc_vgw_info:
     region: ap-southeast-2
 
 - name: Gather information about a filtered list of Virtual Gateways
-  community.aws.ec2_vpc_vgw_info:
+  amazon.aws.ec2_vpc_vgw_info:
     region: ap-southeast-2
     profile: production
     filters:
       "tag:Name": "main-virt-gateway"
 
 - name: Gather information about a specific virtual gateway by VpnGatewayIds
-  community.aws.ec2_vpc_vgw_info:
+  amazon.aws.ec2_vpc_vgw_info:
     region: ap-southeast-2
     profile: production
     vpn_gateway_ids: vgw-c432f6a7

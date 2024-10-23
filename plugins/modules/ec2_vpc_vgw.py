@@ -61,7 +61,7 @@ extends_documentation_fragment:
 
 EXAMPLES = r"""
 - name: Create a new VGW attached to a specific VPC
-  community.aws.ec2_vpc_vgw:
+  amazon.aws.ec2_vpc_vgw:
     state: present
     region: ap-southeast-2
     profile: personal
@@ -70,7 +70,7 @@ EXAMPLES = r"""
     type: ipsec.1
 
 - name: Create a new unattached VGW
-  community.aws.ec2_vpc_vgw:
+  amazon.aws.ec2_vpc_vgw:
     state: present
     region: ap-southeast-2
     profile: personal
@@ -81,7 +81,7 @@ EXAMPLES = r"""
       owner: ABC
 
 - name: Remove a new VGW using the name
-  community.aws.ec2_vpc_vgw:
+  amazon.aws.ec2_vpc_vgw:
     state: absent
     region: ap-southeast-2
     profile: personal
@@ -89,20 +89,20 @@ EXAMPLES = r"""
     type: ipsec.1
 
 - name: Remove a new VGW using the vpn_gateway_id
-  community.aws.ec2_vpc_vgw:
+  amazon.aws.ec2_vpc_vgw:
     state: absent
     region: ap-southeast-2
     profile: personal
     vpn_gateway_id: vgw-3a9aa123
 
 - name: Detach vpn gateway from VPC
-  community.aws.ec2_vpc_vgw:
+  amazon.aws.ec2_vpc_vgw:
     state: present
     name: "{{ vgw_name }}"
     register: vgw
 
 - name: Delete vpn gateway
-  community.aws.ec2_vpc_vgw:
+  amazon.aws.ec2_vpc_vgw:
     state: absent
     vpn_gateway_id: '{{ vgw.vgw.id | default(vgw_id) }}'
     ignore_errors: true
