@@ -37,21 +37,21 @@ EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Gather info about all transit gateways
-  community.aws.ec2_transit_gateway_info:
+  amazon.aws.ec2_transit_gateway_info:
 
 - name: Gather info about a particular transit gateway using filter transit gateway ID
-  community.aws.ec2_transit_gateway_info:
+  amazon.aws.ec2_transit_gateway_info:
     filters:
       transit-gateway-id: tgw-02c42332e6b7da829
 
 - name: Gather info about a particular transit gateway using multiple option filters
-  community.aws.ec2_transit_gateway_info:
+  amazon.aws.ec2_transit_gateway_info:
     filters:
       options.dns-support: enable
       options.vpn-ecmp-support: enable
 
 - name: Gather info about multiple transit gateways using module param
-  community.aws.ec2_transit_gateway_info:
+  amazon.aws.ec2_transit_gateway_info:
     transit_gateway_ids:
       - tgw-02c42332e6b7da829
       - tgw-03c53443d5a8cb716
