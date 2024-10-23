@@ -19,8 +19,7 @@ options:
     type: dict
     default: {}
   vpn_gateway_ids:
-    description:
-      - Get details of a specific Virtual Gateway ID.
+    description: One or more virtual private gateway IDs.
     type: list
     elements: str
 author:
@@ -32,13 +31,11 @@ extends_documentation_fragment:
 """
 
 EXAMPLES = r"""
-# # Note: These examples do not set authentication details, see the AWS Guide for details.
+# Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Gather information about all virtual gateways for an account or profile
   community.aws.ec2_vpc_vgw_info:
     region: ap-southeast-2
-    profile: production
-  register: vgw_info
 
 - name: Gather information about a filtered list of Virtual Gateways
   community.aws.ec2_vpc_vgw_info:
@@ -46,40 +43,38 @@ EXAMPLES = r"""
     profile: production
     filters:
       "tag:Name": "main-virt-gateway"
-  register: vgw_info
 
 - name: Gather information about a specific virtual gateway by VpnGatewayIds
   community.aws.ec2_vpc_vgw_info:
     region: ap-southeast-2
     profile: production
     vpn_gateway_ids: vgw-c432f6a7
-  register: vgw_info
 """
 
 RETURN = r"""
 virtual_gateways:
-    description: The virtual gateways for the account.
+    description: Information about one or more virtual private gateways.
     returned: always
     type: list
     elements: dict
     contains:
       vpn_gateway_id:
-        description: The ID of the VGW.
+        description: The ID of the virtual private gateway.
         type: str
         returned: success
         example: "vgw-0123456789abcdef0"
       state:
-        description: The current state of the VGW.
+        description: Informtion about the current state of the virtual private gateway.
         type: str
         returned: success
         example: "available"
       type:
-        description: The type of VPN connection the VGW supports.
+        description: Information about type of VPN connection the virtual private gateway supports.
         type: str
         returned: success
         example: "ipsec.1"
       vpc_attachments:
-        description: A description of the attachment of VPCs to the VGW.
+        description: Information about the VPCs attached to the virtual private gateway.
         type: list
         elements: dict
         returned: success
@@ -88,16 +83,16 @@ virtual_gateways:
             description: The current state of the attachment.
             type: str
             returned: success
-            example: available
+            example: "available"
           vpc_id:
             description: The ID of the VPC.
             type: str
             returned: success
-            example: vpc-12345678901234567
+            example: "vpc-12345678901234567"
       tags:
         description:
-          - A list of dictionaries representing the tags attached to the VGW.
-          - Represents the same details as I(resource_tags).
+          - A list of dictionaries representing the tags attached to the virtual private gateway.
+          - Represents the same details as RV(virtual_gateways.resource_tags).
         type: list
         elements: dict
         returned: success
@@ -106,28 +101,28 @@ virtual_gateways:
             description: The key of the tag.
             type: str
             returned: success
-            example: MyKey
+            example: "MyKey"
           value:
             description: The value of the tag.
             type: str
             returned: success
-            example: MyValue
+            example: "MyValue"
       resource_tags:
         description:
           - A dictionary representing the tags attached to the VGW.
-          - Represents the same details as I(tags).
+          - Represents the same details as RV(virtual_gateways.tags).
         type: dict
         returned: success
-        example: {"MyKey": "MyValue"}
+        example: {
+                    "MyKey": "MyValue",
+                    "Env": "Dev_Test_01"
+                  }
 """
-
-try:
-    import botocore
-except ImportError:
-    pass  # Handled by AnsibleAWSModule
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleEC2Error
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_vpn_gateways
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 
@@ -150,20 +145,22 @@ def get_virtual_gateway_info(virtual_gateway):
 
 def list_virtual_gateways(client, module):
     params = dict()
+    vpn_gateway_ids = module.params.get("vpn_gateway_ids")
+    filters = module.params.get("filters")
 
-    params["Filters"] = ansible_dict_to_boto3_filter_list(module.params.get("filters"))
-
-    if module.params.get("vpn_gateway_ids"):
-        params["VpnGatewayIds"] = module.params.get("vpn_gateway_ids")
+    if filters:
+        params["Filters"] = ansible_dict_to_boto3_filter_list(filters)
+    if vpn_gateway_ids:
+        params["VpnGatewayIds"] = vpn_gateway_ids
 
     try:
-        all_virtual_gateways = client.describe_vpn_gateways(**params)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to list gateways")
+        all_virtual_gateways = describe_vpn_gateways(client, **params)
+    except AnsibleEC2Error as e:
+        module.fail_json_aws_error(e)
 
     return [
         camel_dict_to_snake_dict(get_virtual_gateway_info(vgw), ignore_list=["ResourceTags"])
-        for vgw in all_virtual_gateways["VpnGateways"]
+        for vgw in all_virtual_gateways
     ]
 
 
@@ -175,12 +172,7 @@ def main():
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
-    try:
-        connection = module.client("ec2")
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to connect to AWS")
-
-    # call your function here
+    connection = module.client("ec2")
     results = list_virtual_gateways(connection, module)
 
     module.exit_json(virtual_gateways=results)
