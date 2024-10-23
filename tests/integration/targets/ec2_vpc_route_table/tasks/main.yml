@@ -141,7 +141,7 @@
       register: nat_gateway
 
     - name: Create  transit gateway
-      community.aws.ec2_transit_gateway:
+      amazon.aws.ec2_transit_gateway:
         state: present
         description: "Ansible TGW"
         asn: 4200000000
@@ -151,7 +151,7 @@
       register: transit_gateway
 
     - name: Create VPC attachment
-      community.aws.ec2_transit_gateway_vpc_attachment:
+      amazon.aws.ec2_transit_gateway_vpc_attachment:
         state: present
         name: "{{ resource_prefix }}_vpc_attachment"
         transit_gateway: "{{ transit_gateway.transit_gateway.transit_gateway_id }}"
@@ -1567,13 +1567,13 @@
         vpc_id: "{{ vpc.vpc.id }}"
       ignore_errors: true
     - name: Delete VPC attachment
-      community.aws.ec2_transit_gateway_vpc_attachment:
+      amazon.aws.ec2_transit_gateway_vpc_attachment:
         state: absent
         id: "{{ vpc_attachment.attachments[0].transit_gateway_attachment_id }}"
         wait: true
       ignore_errors: true
     - name: Delete transit gateway
-      community.aws.ec2_transit_gateway:
+      amazon.aws.ec2_transit_gateway:
         state: absent
         transit_gateway_id: '{{ transit_gateway.transit_gateway.transit_gateway_id }}'
         wait: true
