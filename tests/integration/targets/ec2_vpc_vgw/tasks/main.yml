@@ -25,7 +25,7 @@
 
     # ============================================================
   - name: Create vpn gateway and attach it to vpc - check_mode
-    community.aws.ec2_vpc_vgw:
+    amazon.aws.ec2_vpc_vgw:
       state: present
       vpc_id: '{{ vpc_id_1 }}'
       name: '{{ vgw_name }}'
@@ -41,7 +41,7 @@
       - "'ec2:AttachVpnGateway' not in vgw_check_mode.resource_actions"
 
   - name: Create vpn gateway and attach it to vpc
-    community.aws.ec2_vpc_vgw:
+    amazon.aws.ec2_vpc_vgw:
       state: present
       vpc_id: '{{ vpc_id_1 }}'
       name: '{{ vgw_name }}'
@@ -59,7 +59,7 @@
       - vgw.vgw.tags.Name == vgw_name
 
   - name: Test idempotence
-    community.aws.ec2_vpc_vgw:
+    amazon.aws.ec2_vpc_vgw:
       state: present
       vpc_id: '{{ vpc_id_1 }}'
       name: '{{ vgw_name }}'
@@ -73,7 +73,7 @@
 
     # ============================================================
   - name: Attach vpn gateway to the other VPC - check_mode
-    community.aws.ec2_vpc_vgw:
+    amazon.aws.ec2_vpc_vgw:
       state: present
       vpc_id: '{{ vpc_id_2 }}'
       name: '{{ vgw_name }}'
@@ -90,7 +90,7 @@
       - "'ec2:DetachVpnGateway' not in vgw_check_mode.resource_actions"
 
   - name: Attach vpn gateway to the other VPC
-    community.aws.ec2_vpc_vgw:
+    amazon.aws.ec2_vpc_vgw:
       state: present
       vpc_id: '{{ vpc_id_2 }}'
       name: '{{ vgw_name }}'
@@ -104,7 +104,7 @@
       - vgw.vgw.vpc_id == vpc_id_2
 
   - name: Attach vpn gateway to the other VPC - idempotency
-    community.aws.ec2_vpc_vgw:
+    amazon.aws.ec2_vpc_vgw:
       state: present
       vpc_id: '{{ vpc_id_2 }}'
       name: '{{ vgw_name }}'
@@ -122,7 +122,7 @@
     # ============================================================
 
   - name: Get VPC VGW facts by ID (CHECK)
-    community.aws.ec2_vpc_vgw_info:
+    amazon.aws.ec2_vpc_vgw_info:
       vpn_gateway_ids: ['{{ vgw_id }}']
     register: vgw_info
     check_mode: true
@@ -155,7 +155,7 @@
       - attach_2_description in vgw_details.vpc_attachments
 
   - name: Get VPC VGW facts by Tag
-    community.aws.ec2_vpc_vgw_info:
+    amazon.aws.ec2_vpc_vgw_info:
       filters:
         tag:Name: '{{ vgw_name }}'
     register: vgw_info
@@ -190,7 +190,7 @@
     # ============================================================
 
   - name: Get all VGWs
-    community.aws.ec2_vpc_vgw_info:
+    amazon.aws.ec2_vpc_vgw_info:
     register: vgw_info
 
   - name: Verify test VGW is in the results
@@ -203,7 +203,7 @@
 
     # ============================================================
   - name: Detach vpn gateway - check_mode
-    community.aws.ec2_vpc_vgw:
+    amazon.aws.ec2_vpc_vgw:
       state: present
       name: '{{ vgw_name }}'
     register: vgw_check_mode
@@ -217,7 +217,7 @@
       - "'ec2:DetachVpcGateway' not in vgw_check_mode.resource_actions"
 
   - name: Detach vpn gateway
-    community.aws.ec2_vpc_vgw:
+    amazon.aws.ec2_vpc_vgw:
       state: present
       name: '{{ vgw_name }}'
     register: vgw
@@ -229,7 +229,7 @@
       - not vgw.vgw.vpc_id
 
   - name: Test idempotence
-    community.aws.ec2_vpc_vgw:
+    amazon.aws.ec2_vpc_vgw:
       state: present
       name: '{{ vgw_name }}'
     register: vgw
@@ -246,7 +246,7 @@
     # ============================================================
 
   - name: Delete vpn gateway - check_mode
-    community.aws.ec2_vpc_vgw:
+    amazon.aws.ec2_vpc_vgw:
       state: absent
       name: '{{ vgw_name }}'
     register: vgw_check_mode
@@ -260,7 +260,7 @@
       - "'ec2:DeleteVpnGateway' not in vgw_check_mode.resource_actions"
 
   - name: Delete vpn gateway
-    community.aws.ec2_vpc_vgw:
+    amazon.aws.ec2_vpc_vgw:
       state: absent
       name: '{{ vgw_name }}'
     register: vgw
@@ -271,7 +271,7 @@
       - vgw.changed
 
   - name: Test idempotence
-    community.aws.ec2_vpc_vgw:
+    amazon.aws.ec2_vpc_vgw:
       state: absent
       name: '{{ vgw_name }}'
     register: vgw
@@ -286,7 +286,7 @@
   - ansible.builtin.debug: msg="Removing test dependencies"
 
   - name: Delete vpn gateway
-    community.aws.ec2_vpc_vgw:
+    amazon.aws.ec2_vpc_vgw:
       state: absent
       vpn_gateway_id: '{{ vgw.vgw.id | default(vgw_id) }}'
     ignore_errors: true

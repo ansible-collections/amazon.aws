@@ -8,6 +8,7 @@ DOCUMENTATION = r"""
 ---
 module: ec2_vpc_vgw_info
 version_added: 1.0.0
+version_added_collection: community.aws
 short_description: Gather information about virtual gateways in AWS
 description:
   - Gather information about virtual gateways (VGWs) in AWS.

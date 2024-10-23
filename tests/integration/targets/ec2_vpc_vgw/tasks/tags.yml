@@ -27,16 +27,16 @@
     name_tags:
       Name: '{{ vgw_name }}'
   module_defaults:
-    community.aws.ec2_vpc_vgw:
+    amazon.aws.ec2_vpc_vgw:
       name: '{{ vgw_name }}'
-    ec2_vpc_vgw_info:
+    amazon.aws.ec2_vpc_vgw_info:
       vpn_gateway_ids: ['{{ vgw_id }}']
   block:
 
   # ============================================================
 
   - name: Add tags - check_mode
-    community.aws.ec2_vpc_vgw:
+    amazon.aws.ec2_vpc_vgw:
       tags: '{{ first_tags }}'
       state: present
     register: tag_vgw
@@ -50,13 +50,13 @@
       - "'ec2:CreateTags' not in tag_vgw.resource_actions"
 
   - name: Add tags
-    community.aws.ec2_vpc_vgw:
+    amazon.aws.ec2_vpc_vgw:
       tags: '{{ first_tags }}'
       state: present
     register: tag_vgw
 
   - name: Get VPC VGW facts
-    ec2_vpc_vgw_info: {}
+    amazon.aws.ec2_vpc_vgw_info: {}
     register: tag_vgw_info
 
   - name: Verify the tags were added
@@ -69,7 +69,7 @@
         )
 
   - name: Add tags - IDEMPOTENCY - check_mode
-    community.aws.ec2_vpc_vgw:
+    amazon.aws.ec2_vpc_vgw:
       tags: '{{ first_tags }}'
       state: present
     register: tag_vgw
@@ -82,7 +82,7 @@
       - tag_vgw.vgw.id == vgw_id
 
   - name: Add tags - IDEMPOTENCY
-    community.aws.ec2_vpc_vgw:
+    amazon.aws.ec2_vpc_vgw:
       tags: '{{ first_tags }}'
       state: present
     register: tag_vgw
@@ -102,7 +102,7 @@
   # ============================================================
 
   - name: Get VPC VGW facts by filter
-    ec2_vpc_vgw_info:
+    amazon.aws.ec2_vpc_vgw_info:
       filters:
         tag:Name: '{{ vgw_name }}'
       vpn_gateway_ids: '{{ omit }}'
@@ -118,7 +118,7 @@
   # ============================================================
 
   - name: Modify tags with purge - check_mode
-    community.aws.ec2_vpc_vgw:
+    amazon.aws.ec2_vpc_vgw:
       tags: '{{ second_tags }}'
       state: present
     register: tag_vgw
@@ -131,12 +131,13 @@
       - tag_vgw.vgw.id == vgw_id
 
   - name: Modify tags with purge
-    community.aws.ec2_vpc_vgw:
+    amazon.aws.ec2_vpc_vgw:
       tags: '{{ second_tags }}'
       state: present
     register: tag_vgw
+
   - name: Get VPC VGW facts
-    ec2_vpc_vgw_info:
+    amazon.aws.ec2_vpc_vgw_info:
     register: tag_vgw_info
 
   - name: Verify the tags were added
@@ -149,7 +150,7 @@
         )
 
   - name: Modify tags with purge - IDEMPOTENCY - check_mode
-    community.aws.ec2_vpc_vgw:
+    amazon.aws.ec2_vpc_vgw:
       tags: '{{ second_tags }}'
       state: present
     register: tag_vgw
@@ -162,7 +163,7 @@
       - tag_vgw.vgw.id == vgw_id
 
   - name: Modify tags with purge - IDEMPOTENCY
-    community.aws.ec2_vpc_vgw:
+    amazon.aws.ec2_vpc_vgw:
       tags: '{{ second_tags }}'
       state: present
     register: tag_vgw
@@ -182,7 +183,7 @@
   # ============================================================
 
   - name: Modify tags without purge - check_mode
-    community.aws.ec2_vpc_vgw:
+    amazon.aws.ec2_vpc_vgw:
       tags: '{{ third_tags }}'
       state: present
       purge_tags: false
@@ -196,13 +197,14 @@
       - tag_vgw.vgw.id == vgw_id
 
   - name: Modify tags without purge
-    community.aws.ec2_vpc_vgw:
+    amazon.aws.ec2_vpc_vgw:
       tags: '{{ third_tags }}'
       state: present
       purge_tags: false
     register: tag_vgw
-  - name: et VPC VGW facts
-    ec2_vpc_vgw_info:
+
+  - name: Get VPC VGW facts
+    amazon.aws.ec2_vpc_vgw_info:
     register: tag_vgw_info
 
   - name: Verify the tags were added
@@ -215,7 +217,7 @@
         )
 
   - name: Modify tags without purge - IDEMPOTENCY - check_mode
-    community.aws.ec2_vpc_vgw:
+    amazon.aws.ec2_vpc_vgw:
       tags: '{{ third_tags }}'
       state: present
       purge_tags: false
@@ -229,7 +231,7 @@
       - tag_vgw.vgw.id == vgw_id
 
   - name: Modify tags without purge - IDEMPOTENCY
-    community.aws.ec2_vpc_vgw:
+    amazon.aws.ec2_vpc_vgw:
       tags: '{{ third_tags }}'
       state: present
       purge_tags: false
@@ -250,7 +252,7 @@
   # ============================================================
 
   - name: No change to tags without setting tags - check_mode
-    community.aws.ec2_vpc_vgw:
+    amazon.aws.ec2_vpc_vgw:
       state: present
     register: tag_vgw
     check_mode: true
@@ -262,7 +264,7 @@
       - tag_vgw.vgw.id == vgw_id
 
   - name: No change to tags without setting tags
-    community.aws.ec2_vpc_vgw:
+    amazon.aws.ec2_vpc_vgw:
       state: present
     register: tag_vgw
   - name: Get VPC VGW facts
@@ -281,7 +283,7 @@
   # ============================================================
 
   - name: Remove non name tags - check_mode
-    community.aws.ec2_vpc_vgw:
+    amazon.aws.ec2_vpc_vgw:
       tags: {}
       state: present
     register: tag_vgw
@@ -294,7 +296,7 @@
       - tag_vgw.vgw.id == vgw_id
 
   - name: Remove non name tags
-    community.aws.ec2_vpc_vgw:
+    amazon.aws.ec2_vpc_vgw:
       tags: {}
       state: present
     register: tag_vgw
@@ -311,7 +313,7 @@
       - tag_vgw_info.virtual_gateways[0].resource_tags == name_tags
 
   - name: Remove non name tags - IDEMPOTENCY - check_mode
-    community.aws.ec2_vpc_vgw:
+    amazon.aws.ec2_vpc_vgw:
       tags: {}
       state: present
     register: tag_vgw
@@ -324,7 +326,7 @@
       - tag_vgw.vgw.id == vgw_id
 
   - name: Remove non name tags - IDEMPOTENCY
-    community.aws.ec2_vpc_vgw:
+    amazon.aws.ec2_vpc_vgw:
       tags: {}
       state: present
     register: tag_vgw
