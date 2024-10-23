@@ -1,26 +1,26 @@
 - vars:
     first_tags:
-      'Key with Spaces': Value with spaces
+      Key with Spaces: Value with spaces
       CamelCaseKey: CamelCaseValue
       pascalCaseKey: pascalCaseValue
       snake_case_key: snake_case_value
     second_tags:
-      'New Key with Spaces': Value with spaces
+      New Key with Spaces: Value with spaces
       NewCamelCaseKey: CamelCaseValue
       newPascalCaseKey: pascalCaseValue
       new_snake_case_key: snake_case_value
     third_tags:
-      'Key with Spaces': Value with spaces
+      Key with Spaces: Value with spaces
       CamelCaseKey: CamelCaseValue
       pascalCaseKey: pascalCaseValue
       snake_case_key: snake_case_value
-      'New Key with Spaces': Updated Value with spaces
+      New Key with Spaces: Updated Value with spaces
     final_tags:
-      'Key with Spaces': Value with spaces
+      Key with Spaces: Value with spaces
       CamelCaseKey: CamelCaseValue
       pascalCaseKey: pascalCaseValue
       snake_case_key: snake_case_value
-      'New Key with Spaces': Updated Value with spaces
+      New Key with Spaces: Updated Value with spaces
       NewCamelCaseKey: CamelCaseValue
       newPascalCaseKey: pascalCaseValue
       new_snake_case_key: snake_case_value
@@ -38,21 +38,21 @@
   - name: Add tags - check_mode
     community.aws.ec2_vpc_vgw:
       tags: '{{ first_tags }}'
-      state: 'present'
+      state: present
     register: tag_vgw
-    check_mode: True
+    check_mode: true
 
   - name: Assert would change
     ansible.builtin.assert:
       that:
-        - tag_vgw is changed
-        - tag_vgw is not failed
-        - "'ec2:CreateTags' not in tag_vgw.resource_actions"
+      - tag_vgw is changed
+      - tag_vgw is not failed
+      - "'ec2:CreateTags' not in tag_vgw.resource_actions"
 
   - name: Add tags
     community.aws.ec2_vpc_vgw:
       tags: '{{ first_tags }}'
-      state: 'present'
+      state: present
     register: tag_vgw
 
   - name: Get VPC VGW facts
@@ -62,28 +62,29 @@
   - name: Verify the tags were added
     ansible.builtin.assert:
       that:
-        - tag_vgw is changed
-        - tag_vgw.vgw.id == vgw_id
-        - tag_vgw_info.virtual_gateways[0].vpn_gateway_id == vgw_id
-        - tag_vgw_info.virtual_gateways[0].resource_tags == ( first_tags | combine(name_tags) )
+      - tag_vgw is changed
+      - tag_vgw.vgw.id == vgw_id
+      - tag_vgw_info.virtual_gateways[0].vpn_gateway_id == vgw_id
+      - tag_vgw_info.virtual_gateways[0].resource_tags == ( first_tags | combine(name_tags)
+        )
 
   - name: Add tags - IDEMPOTENCY - check_mode
     community.aws.ec2_vpc_vgw:
       tags: '{{ first_tags }}'
-      state: 'present'
+      state: present
     register: tag_vgw
-    check_mode: True
+    check_mode: true
 
   - name: Assert would not change
     ansible.builtin.assert:
       that:
-        - tag_vgw is not changed
-        - tag_vgw.vgw.id == vgw_id
+      - tag_vgw is not changed
+      - tag_vgw.vgw.id == vgw_id
 
   - name: Add tags - IDEMPOTENCY
     community.aws.ec2_vpc_vgw:
       tags: '{{ first_tags }}'
-      state: 'present'
+      state: present
     register: tag_vgw
   - name: Get VPC VGW facts
     ec2_vpc_vgw_info: {}
@@ -92,46 +93,47 @@
   - name: Verify no change
     ansible.builtin.assert:
       that:
-        - tag_vgw is not changed
-        - tag_vgw.vgw.id == vgw_id
-        - tag_vgw_info.virtual_gateways[0].vpn_gateway_id == vgw_id
-        - tag_vgw_info.virtual_gateways[0].resource_tags == ( first_tags | combine(name_tags) )
+      - tag_vgw is not changed
+      - tag_vgw.vgw.id == vgw_id
+      - tag_vgw_info.virtual_gateways[0].vpn_gateway_id == vgw_id
+      - tag_vgw_info.virtual_gateways[0].resource_tags == ( first_tags | combine(name_tags)
+        )
 
   # ============================================================
 
   - name: Get VPC VGW facts by filter
     ec2_vpc_vgw_info:
       filters:
-        'tag:Name': '{{ vgw_name }}'
+        tag:Name: '{{ vgw_name }}'
       vpn_gateway_ids: '{{ omit }}'
     register: tag_vgw_info
 
   - name: Assert the facts are the same as before
     ansible.builtin.assert:
       that:
-        - tag_vgw_info.virtual_gateways | length == 1
-        - tag_vgw.vgw.id == vgw_id
-        - tag_vgw_info.virtual_gateways[0].vpn_gateway_id == vgw_id
+      - tag_vgw_info.virtual_gateways | length == 1
+      - tag_vgw.vgw.id == vgw_id
+      - tag_vgw_info.virtual_gateways[0].vpn_gateway_id == vgw_id
 
   # ============================================================
 
   - name: Modify tags with purge - check_mode
     community.aws.ec2_vpc_vgw:
       tags: '{{ second_tags }}'
-      state: 'present'
+      state: present
     register: tag_vgw
-    check_mode: True
+    check_mode: true
 
   - name: Assert would change
     ansible.builtin.assert:
       that:
-        - tag_vgw is changed
-        - tag_vgw.vgw.id == vgw_id
+      - tag_vgw is changed
+      - tag_vgw.vgw.id == vgw_id
 
   - name: Modify tags with purge
     community.aws.ec2_vpc_vgw:
       tags: '{{ second_tags }}'
-      state: 'present'
+      state: present
     register: tag_vgw
   - name: Get VPC VGW facts
     ec2_vpc_vgw_info:
@@ -140,28 +142,29 @@
   - name: Verify the tags were added
     ansible.builtin.assert:
       that:
-        - tag_vgw is changed
-        - tag_vgw.vgw.id == vgw_id
-        - tag_vgw_info.virtual_gateways[0].vpn_gateway_id == vgw_id
-        - tag_vgw_info.virtual_gateways[0].resource_tags == ( second_tags | combine(name_tags) )
+      - tag_vgw is changed
+      - tag_vgw.vgw.id == vgw_id
+      - tag_vgw_info.virtual_gateways[0].vpn_gateway_id == vgw_id
+      - tag_vgw_info.virtual_gateways[0].resource_tags == ( second_tags | combine(name_tags)
+        )
 
   - name: Modify tags with purge - IDEMPOTENCY - check_mode
     community.aws.ec2_vpc_vgw:
       tags: '{{ second_tags }}'
-      state: 'present'
+      state: present
     register: tag_vgw
-    check_mode: True
+    check_mode: true
 
   - name: Assert would not change
     ansible.builtin.assert:
       that:
-        - tag_vgw is not changed
-        - tag_vgw.vgw.id == vgw_id
+      - tag_vgw is not changed
+      - tag_vgw.vgw.id == vgw_id
 
   - name: Modify tags with purge - IDEMPOTENCY
     community.aws.ec2_vpc_vgw:
       tags: '{{ second_tags }}'
-      state: 'present'
+      state: present
     register: tag_vgw
   - name: Get VPC VGW facts
     ec2_vpc_vgw_info:
@@ -170,32 +173,33 @@
   - name: Verify no change
     ansible.builtin.assert:
       that:
-        - tag_vgw is not changed
-        - tag_vgw.vgw.id == vgw_id
-        - tag_vgw_info.virtual_gateways[0].vpn_gateway_id == vgw_id
-        - tag_vgw_info.virtual_gateways[0].resource_tags == ( second_tags | combine(name_tags) )
+      - tag_vgw is not changed
+      - tag_vgw.vgw.id == vgw_id
+      - tag_vgw_info.virtual_gateways[0].vpn_gateway_id == vgw_id
+      - tag_vgw_info.virtual_gateways[0].resource_tags == ( second_tags | combine(name_tags)
+        )
 
   # ============================================================
 
   - name: Modify tags without purge - check_mode
     community.aws.ec2_vpc_vgw:
       tags: '{{ third_tags }}'
-      state: 'present'
-      purge_tags: False
+      state: present
+      purge_tags: false
     register: tag_vgw
-    check_mode: True
+    check_mode: true
 
   - name: Assert would change
     ansible.builtin.assert:
       that:
-        - tag_vgw is changed
-        - tag_vgw.vgw.id == vgw_id
+      - tag_vgw is changed
+      - tag_vgw.vgw.id == vgw_id
 
   - name: Modify tags without purge
     community.aws.ec2_vpc_vgw:
       tags: '{{ third_tags }}'
-      state: 'present'
-      purge_tags: False
+      state: present
+      purge_tags: false
     register: tag_vgw
   - name: et VPC VGW facts
     ec2_vpc_vgw_info:
@@ -204,30 +208,31 @@
   - name: Verify the tags were added
     ansible.builtin.assert:
       that:
-        - tag_vgw is changed
-        - tag_vgw.vgw.id == vgw_id
-        - tag_vgw_info.virtual_gateways[0].vpn_gateway_id == vgw_id
-        - tag_vgw_info.virtual_gateways[0].resource_tags == ( final_tags | combine(name_tags) )
+      - tag_vgw is changed
+      - tag_vgw.vgw.id == vgw_id
+      - tag_vgw_info.virtual_gateways[0].vpn_gateway_id == vgw_id
+      - tag_vgw_info.virtual_gateways[0].resource_tags == ( final_tags | combine(name_tags)
+        )
 
   - name: Modify tags without purge - IDEMPOTENCY - check_mode
     community.aws.ec2_vpc_vgw:
       tags: '{{ third_tags }}'
-      state: 'present'
-      purge_tags: False
+      state: present
+      purge_tags: false
     register: tag_vgw
-    check_mode: True
+    check_mode: true
 
   - name: Assert would not change
     ansible.builtin.assert:
       that:
-        - tag_vgw is not changed
-        - tag_vgw.vgw.id == vgw_id
+      - tag_vgw is not changed
+      - tag_vgw.vgw.id == vgw_id
 
   - name: Modify tags without purge - IDEMPOTENCY
     community.aws.ec2_vpc_vgw:
       tags: '{{ third_tags }}'
-      state: 'present'
-      purge_tags: False
+      state: present
+      purge_tags: false
     register: tag_vgw
   - name: Get VPC VGW facts
     ec2_vpc_vgw_info:
@@ -236,28 +241,29 @@
   - name: Verify no change
     ansible.builtin.assert:
       that:
-        - tag_vgw is not changed
-        - tag_vgw.vgw.id == vgw_id
-        - tag_vgw_info.virtual_gateways[0].vpn_gateway_id == vgw_id
-        - tag_vgw_info.virtual_gateways[0].resource_tags == ( final_tags | combine(name_tags) )
+      - tag_vgw is not changed
+      - tag_vgw.vgw.id == vgw_id
+      - tag_vgw_info.virtual_gateways[0].vpn_gateway_id == vgw_id
+      - tag_vgw_info.virtual_gateways[0].resource_tags == ( final_tags | combine(name_tags)
+        )
 
   # ============================================================
 
   - name: No change to tags without setting tags - check_mode
     community.aws.ec2_vpc_vgw:
-      state: 'present'
+      state: present
     register: tag_vgw
-    check_mode: True
+    check_mode: true
 
   - name: Assert would change
     ansible.builtin.assert:
       that:
-        - tag_vgw is not changed
-        - tag_vgw.vgw.id == vgw_id
+      - tag_vgw is not changed
+      - tag_vgw.vgw.id == vgw_id
 
   - name: No change to tags without setting tags
     community.aws.ec2_vpc_vgw:
-      state: 'present'
+      state: present
     register: tag_vgw
   - name: Get VPC VGW facts
     ec2_vpc_vgw_info:
@@ -266,30 +272,31 @@
   - name: Verify the tags were added
     ansible.builtin.assert:
       that:
-        - tag_vgw is not changed
-        - tag_vgw.vgw.id == vgw_id
-        - tag_vgw_info.virtual_gateways[0].vpn_gateway_id == vgw_id
-        - tag_vgw_info.virtual_gateways[0].resource_tags == ( final_tags | combine(name_tags) )
+      - tag_vgw is not changed
+      - tag_vgw.vgw.id == vgw_id
+      - tag_vgw_info.virtual_gateways[0].vpn_gateway_id == vgw_id
+      - tag_vgw_info.virtual_gateways[0].resource_tags == ( final_tags | combine(name_tags)
+        )
 
   # ============================================================
 
   - name: Remove non name tags - check_mode
     community.aws.ec2_vpc_vgw:
       tags: {}
-      state: 'present'
+      state: present
     register: tag_vgw
-    check_mode: True
+    check_mode: true
 
   - name: Assert would change
     ansible.builtin.assert:
       that:
-        - tag_vgw is changed
-        - tag_vgw.vgw.id == vgw_id
+      - tag_vgw is changed
+      - tag_vgw.vgw.id == vgw_id
 
   - name: Remove non name tags
     community.aws.ec2_vpc_vgw:
       tags: {}
-      state: 'present'
+      state: present
     register: tag_vgw
   - name: Get VPC VGW facts
     ec2_vpc_vgw_info:
@@ -298,28 +305,28 @@
   - name: Verify the tags were added
     ansible.builtin.assert:
       that:
-        - tag_vgw is changed
-        - tag_vgw.vgw.id == vgw_id
-        - tag_vgw_info.virtual_gateways[0].vpn_gateway_id == vgw_id
-        - tag_vgw_info.virtual_gateways[0].resource_tags == name_tags
+      - tag_vgw is changed
+      - tag_vgw.vgw.id == vgw_id
+      - tag_vgw_info.virtual_gateways[0].vpn_gateway_id == vgw_id
+      - tag_vgw_info.virtual_gateways[0].resource_tags == name_tags
 
   - name: Remove non name tags - IDEMPOTENCY - check_mode
     community.aws.ec2_vpc_vgw:
       tags: {}
-      state: 'present'
+      state: present
     register: tag_vgw
-    check_mode: True
+    check_mode: true
 
   - name: Assert would not change
     ansible.builtin.assert:
       that:
-        - tag_vgw is not changed
-        - tag_vgw.vgw.id == vgw_id
+      - tag_vgw is not changed
+      - tag_vgw.vgw.id == vgw_id
 
   - name: Remove non name tags - IDEMPOTENCY
     community.aws.ec2_vpc_vgw:
       tags: {}
-      state: 'present'
+      state: present
     register: tag_vgw
   - name: Get VPC VGW facts
     ec2_vpc_vgw_info:
@@ -328,7 +335,7 @@
   - name: Verify no change
     ansible.builtin.assert:
       that:
-        - tag_vgw is not changed
-        - tag_vgw.vgw.id == vgw_id
-        - tag_vgw_info.virtual_gateways[0].vpn_gateway_id == vgw_id
-        - tag_vgw_info.virtual_gateways[0].resource_tags == name_tags
+      - tag_vgw is not changed
+      - tag_vgw.vgw.id == vgw_id
+      - tag_vgw_info.virtual_gateways[0].vpn_gateway_id == vgw_id
+      - tag_vgw_info.virtual_gateways[0].resource_tags == name_tags
