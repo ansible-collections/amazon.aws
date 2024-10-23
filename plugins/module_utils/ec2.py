@@ -365,7 +365,7 @@ def reject_vpc_peering_connection(client, peering_id: str) -> bool:
     return True
 
 
-# EC2 VPC VPN
+# EC2 vpn
 class EC2VpnErrorHandler(AWSErrorHandler):
     _CUSTOM_EXCEPTION = AnsibleEC2Error
 
@@ -646,6 +646,52 @@ def create_dhcp_options(
     client, **params: Dict[str, Union[Dict[str, Union[str, List[str]]], EC2TagSpecifications]]
 ) -> Dict[str, Any]:
     return client.create_dhcp_options(**params)["DhcpOptions"]
+
+
+# EC2 vpn Gateways
+class EC2VpnGatewaysErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleEC2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code(["InvalidVpnGatewayID.NotFound", "InvalidVpnGatewayState"])
+
+
+@EC2VpnGatewaysErrorHandler.list_error_handler("describe vpn gateways", [])
+@AWSRetry.jittered_backoff()
+def describe_vpn_gateways(
+    client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
+    return client.describe_vpn_gateways(**params)["VpnGateways"]
+
+
+@EC2VpnGatewaysErrorHandler.common_error_handler("create vpn gateway")
+@AWSRetry.jittered_backoff(catch_extra_error_codes=["VpnGatewayLimitExceeded"])
+def create_vpn_gateway(
+    client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
+) -> Dict[str, Any]:
+    return client.create_vpn_gateway(**params)["VpnGateway"]
+
+
+@EC2VpnGatewaysErrorHandler.deletion_error_handler("delete vpn gateway")
+@AWSRetry.jittered_backoff()
+def delete_vpn_gateway(client, vpn_gateway_id: str) -> bool:
+    client.delete_vpn_gateway(VpnGatewayId=vpn_gateway_id)
+    return True
+
+
+@EC2VpnGatewaysErrorHandler.common_error_handler("attach vpn gateway")
+@AWSRetry.jittered_backoff()
+def attach_vpn_gateway(client, vpc_id: str, vpn_gateway_id: str) -> bool:
+    client.attach_vpn_gateway(VpcId=vpc_id, VpnGatewayId=vpn_gateway_id)
+    return True
+
+
+@EC2VpnGatewaysErrorHandler.common_error_handler("detach vpn gateway")
+@AWSRetry.jittered_backoff()
+def detach_vpn_gateway(client, vpc_id: str, vpn_gateway_id: str) -> bool:
+    client.detach_vpn_gateway(VpcId=vpc_id, VpnGatewayId=vpn_gateway_id)
+    return True
 
 
 # EC2 Volumes
@@ -1737,3 +1783,36 @@ def determine_iam_arn_from_name(iam_client, name_or_arn: str) -> str:
     if not iam_instance_profiles:
         raise AnsibleEC2Error(message=f"Could not find IAM instance profile {name_or_arn}")
     return iam_instance_profiles[0]["Arn"]
+
+
+# EC2 Transit Gateway
+class EC2TransitGatewayErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleEC2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code("InvalidTransitGatewayID.NotFound")
+
+
+@EC2TransitGatewayErrorHandler.list_error_handler("describe transit gateway", [])
+@AWSRetry.jittered_backoff()
+def describe_ec2_transit_gateways(
+    client, **params: Dict[str, Union[List[str], List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
+    paginator = client.get_paginator("describe_transit_gateways")
+    return paginator.paginate(**params).build_full_result()["TransitGateways"]
+
+
+@EC2TransitGatewayErrorHandler.common_error_handler("create transit gateway")
+@AWSRetry.jittered_backoff()
+def create_ec2_transit_gateway(
+    client, **params: Dict[str, Union[List[str], List[Dict[str, Union[str, List[str]]]]]]
+) -> Dict[str, Any]:
+    return client.create_transit_gateway(**params)["TransitGateway"]
+
+
+@EC2TransitGatewayErrorHandler.deletion_error_handler("delete transit gateway")
+@AWSRetry.jittered_backoff()
+def delete_ec2_transit_gateway(client, transit_gateway_id: str) -> bool:
+    client.delete_transit_gateway(TransitGatewayId=transit_gateway_id)
+    return True
