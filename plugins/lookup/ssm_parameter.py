@@ -20,7 +20,7 @@ description:
     5 layers may be specified.
   - If looking up an explicitly listed parameter by name which does not exist then the lookup
     will generate an error. You can use the C(default) filter to give a default value in
-    this case but must set the I(on_missing) parameter to C(skip) or C(warn). You must
+    this case but must set the O(on_missing) parameter to V(skip) or V(warn). You must
     also set the second parameter of the C(default) filter to C(true) (see examples below).
   - When looking up a path for parameters under it a dictionary will be returned for each path.
     If there is no parameter under that path then the lookup will generate an error.
@@ -34,27 +34,27 @@ options:
   decrypt:
     description: A boolean to indicate whether to decrypt the parameter.
     default: true
-    type: boolean
+    type: bool
   bypath:
     description: A boolean to indicate whether the parameter is provided as a hierarchy.
     default: false
-    type: boolean
+    type: bool
   recursive:
     description: A boolean to indicate whether to retrieve all parameters within a hierarchy.
     default: false
-    type: boolean
+    type: bool
   shortnames:
     description:
         - Indicates whether to return the name only without path if using a parameter hierarchy.
         - The O(shortnames) and O(droppath) options are mutually exclusive.
     default: false
-    type: boolean
+    type: bool
   droppath:
     description:
         - Indicates whether to return the parameter name with the searched parameter heirarchy removed.
         - The O(shortnames) and O(droppath) options are mutually exclusive.
     default: false
-    type: boolean
+    type: bool
     version_added: 8.2.0
   on_missing:
     description:
@@ -62,19 +62,19 @@ options:
         - V(error) will raise a fatal error when the SSM parameter is missing.
         - V(skip) will silently ignore the missing SSM parameter.
         - V(warn) will skip over the missing SSM parameter but issue a warning.
-    default: error
-    type: string
-    choices: ['error', 'skip', 'warn']
+    default: "error"
+    type: str
+    choices: ["error", "skip", "warn"]
     version_added: 2.0.0
   on_denied:
     description:
         - Action to take if access to the SSM parameter is denied.
-        - C(error) will raise a fatal error when access to the SSM parameter is denied.
-        - C(skip) will silently ignore the denied SSM parameter.
-        - C(warn) will skip over the denied SSM parameter but issue a warning.
-    default: error
+        - v(error) will raise a fatal error when access to the SSM parameter is denied.
+        - v(skip) will silently ignore the denied SSM parameter.
+        - v(warn) will skip over the denied SSM parameter but issue a warning.
+    default: "error"
     type: string
-    choices: ['error', 'skip', 'warn']
+    choices: ["error", "skip", "warn"]
     version_added: 2.0.0
 extends_documentation_fragment:
   - amazon.aws.boto3
@@ -84,59 +84,59 @@ extends_documentation_fragment:
 
 EXAMPLES = r"""
 # lookup sample:
-- name: lookup ssm parameter store in the current region
-  debug: msg="{{ lookup('amazon.aws.aws_ssm', 'Hello' ) }}"
+- name: Lookup ssm parameter store in the current region
+  ansible.builtin.debug: msg="{{ lookup('amazon.aws.aws_ssm', 'Hello' ) }}"
 
-- name: lookup ssm parameter store in specified region
-  debug: msg="{{ lookup('amazon.aws.aws_ssm', 'Hello', region='us-east-2' ) }}"
+- name: Lookup ssm parameter store in specified region
+  ansible.builtin.debug: msg="{{ lookup('amazon.aws.aws_ssm', 'Hello', region='us-east-2' ) }}"
 
-- name: lookup ssm parameter store without decryption
-  debug: msg="{{ lookup('amazon.aws.aws_ssm', 'Hello', decrypt=False ) }}"
+- name: Lookup ssm parameter store without decryption
+  ansible.builtin.debug: msg="{{ lookup('amazon.aws.aws_ssm', 'Hello', decrypt=False ) }}"
 
-- name: lookup ssm parameter store using a specified aws profile
-  debug: msg="{{ lookup('amazon.aws.aws_ssm', 'Hello', profile='myprofile' ) }}"
+- name: Lookup ssm parameter store using a specified aws profile
+  ansible.builtin.debug: msg="{{ lookup('amazon.aws.aws_ssm', 'Hello', profile='myprofile' ) }}"
 
-- name: lookup ssm parameter store using explicit aws credentials
-  debug:
+- name: Lookup ssm parameter store using explicit aws credentials
+  ansible.builtin.debug:
     msg: >-
       {{ lookup('amazon.aws.aws_ssm', 'Hello', access_key=my_aws_access_key, secret_key=my_aws_secret_key, session_token=my_session_token ) }}"
 
-- name: lookup ssm parameter store with all options
-  debug: msg="{{ lookup('amazon.aws.aws_ssm', 'Hello', decrypt=false, region='us-east-2', profile='myprofile') }}"
+- name: Lookup ssm parameter store with all options
+  ansible.builtin.debug: msg="{{ lookup('amazon.aws.aws_ssm', 'Hello', decrypt=false, region='us-east-2', profile='myprofile') }}"
 
-- name: lookup ssm parameter and fail if missing
-  debug: msg="{{ lookup('amazon.aws.aws_ssm', 'missing-parameter') }}"
+- name: Lookup ssm parameter and fail if missing
+  ansible.builtin.debug: msg="{{ lookup('amazon.aws.aws_ssm', 'missing-parameter') }}"
 
-- name: lookup a key which doesn't exist, returning a default ('root')
-  debug: msg="{{ lookup('amazon.aws.aws_ssm', 'AdminID', on_missing="skip") | default('root', true) }}"
+- name: Lookup a key which doesn't exist, returning a default ('root')
+  ansible.builtin.debug: msg="{{ lookup('amazon.aws.aws_ssm', 'AdminID', on_missing="skip") | default('root', true) }}"
 
-- name: lookup a key which doesn't exist failing to store it in a fact
-  set_fact:
+- name: Lookup a key which doesn't exist failing to store it in a fact
+  ansible.builtin.set_fact:
     temp_secret: "{{ lookup('amazon.aws.aws_ssm', '/NoAccess/hiddensecret') }}"
   ignore_errors: true
 
-- name: show fact default to "access failed" if we don't have access
-  debug: msg="{{ 'the secret was:' ~ temp_secret | default('could not access secret') }}"
+- name: Show fact default to "access failed" if we don't have access
+  ansible.builtin.debug: msg="{{ 'the secret was:' ~ temp_secret | default('could not access secret') }}"
 
-- name: return a dictionary of ssm parameters from a hierarchy path
-  debug: msg="{{ lookup('amazon.aws.aws_ssm', '/PATH/to/params', region='ap-southeast-2', bypath=true, recursive=true ) }}"
+- name: Return a dictionary of ssm parameters from a hierarchy path
+  ansible.builtin.debug: msg="{{ lookup('amazon.aws.aws_ssm', '/PATH/to/params', region='ap-southeast-2', bypath=true, recursive=true ) }}"
 
-- name: return a dictionary of ssm parameters from a hierarchy path with shortened names (param instead of /PATH/to/params/foo/bar/param)
-  debug: msg="{{ lookup('amazon.aws.aws_ssm', '/PATH/to/params', region='ap-southeast-2', shortnames=true, bypath=true, recursive=true ) }}"
+- name: Return a dictionary of ssm parameters from a hierarchy path with shortened names (param instead of /PATH/to/params/foo/bar/param)
+  ansible.builtin.debug: msg="{{ lookup('amazon.aws.aws_ssm', '/PATH/to/params', region='ap-southeast-2', shortnames=true, bypath=true, recursive=true ) }}"
 
-- name: return a dictionary of ssm parameters from a hierarchy path with the heirarchy path dropped (foo/bar/param instead of /PATH/to/params/foo/bar/param)
-  debug: msg="{{ lookup('amazon.aws.aws_ssm', '/PATH/to/params', region='ap-southeast-2', droppath=true, bypath=true, recursive=true ) }}"
+- name: Return a dictionary of ssm parameters from a hierarchy path with the heirarchy path dropped (foo/bar/param instead of /PATH/to/params/foo/bar/param)
+  ansible.builtin.debug: msg="{{ lookup('amazon.aws.aws_ssm', '/PATH/to/params', region='ap-southeast-2', droppath=true, bypath=true, recursive=true ) }}"
 
 - name: Iterate over a parameter hierarchy (one iteration per parameter)
-  debug: msg='Key contains {{ item.key }} , with value {{ item.value }}'
+  ansible.builtin.debug: msg='Key contains {{ item.key }} , with value {{ item.value }}'
   loop: "{{ lookup('amazon.aws.aws_ssm', '/demo/', region='ap-southeast-2', bypath=True) | dict2items }}"
 
 - name: Iterate over multiple paths as dictionaries (one iteration per path)
-  debug: msg='Path contains {{ item }}'
+  ansible.builtin.debug: msg='Path contains {{ item }}'
   loop: "{{ lookup('amazon.aws.aws_ssm', '/demo/', '/demo1/', bypath=True)}}"
 
-- name: lookup ssm parameter warn if access is denied
-  debug: msg="{{ lookup('amazon.aws.aws_ssm', 'missing-parameter', on_denied="warn" ) }}"
+- name: Lookup ssm parameter warn if access is denied
+  ansible.builtin.debug: msg="{{ lookup('amazon.aws.aws_ssm', 'missing-parameter', on_denied="warn" ) }}"
 """
 
 try:
@@ -212,7 +212,7 @@ class LookupModule(AWSLookupBase):
                     for x in paramlist:
                         x["Name"] = x["Name"].replace(ssm_dict["Path"], "")
 
-                display.vvvv(f"AWS_ssm path lookup returned: {to_native(paramlist)}")
+                display.vvvv(f"aws_ssm path lookup returned: {to_native(paramlist)}")
 
                 ret.append(
                     boto3_tag_list_to_ansible_dict(paramlist, tag_name_key_name="Name", tag_value_key_name="Value")
@@ -220,10 +220,10 @@ class LookupModule(AWSLookupBase):
         # Lookup by parameter name - always returns a list with one or
         # no entry.
         else:
-            display.vvv(f"AWS_ssm name lookup term: {terms}")
+            display.vvv(f"aws_ssm name lookup term: {terms}")
             for term in terms:
                 ret.append(self.get_parameter_value(client, ssm_dict, term, on_missing.lower(), on_denied.lower()))
-        display.vvvv(f"AWS_ssm path lookup returning: {to_native(ret)} ")
+        display.vvvv(f"aws_ssm path lookup returning: {to_native(ret)} ")
         return ret
 
     def get_path_parameters(self, client, ssm_dict, term, on_missing, on_denied):
