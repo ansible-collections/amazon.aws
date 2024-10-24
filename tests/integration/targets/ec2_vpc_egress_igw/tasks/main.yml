@@ -1,0 +1,237 @@
+---
+- name: Run ec2_vpc_egress_igw integration tests
+  module_defaults:
+    group/aws:
+      access_key: '{{ aws_access_key }}'
+      secret_key: '{{ aws_secret_key }}'
+      session_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+  block:
+
+  # ============================================================
+  - name: Test failure with no parameters
+    amazon.aws.ec2_vpc_egress_igw:
+    register: result
+    ignore_errors: true
+
+  - name: Assert failure with no parameters
+    assert:
+      that:
+        - result is failed
+        - 'result.msg == "missing required arguments: vpc_id"'
+
+  # ============================================================
+  - name: Test failure with non-existent VPC ID
+    amazon.aws.ec2_vpc_egress_igw:
+      state: present
+      vpc_id: vpc-02394e50abc1807e8
+    register: result
+    ignore_errors: true
+
+  - name: Assert failure with non-existent VPC ID
+    assert:
+      that:
+        - result is failed
+        - e_msg in result.exception
+    vars:
+      e_msg: "The vpc ID 'vpc-02394e50abc1807e8' does not exist"
+
+  # ============================================================
+  - name: Create a VPC
+    amazon.aws.ec2_vpc_net:
+      name: "{{ resource_prefix }}-vpc"
+      state: present
+      cidr_block: "10.232.232.128/26"
+      tags:
+        Name: "{{ resource_prefix }}-vpc"
+        Description: "Created by ansible-test"
+    register: vpc_result
+
+  # ============================================================
+  - name: Create egress-only internet gateway using check_mode=true
+    amazon.aws.ec2_vpc_egress_igw:
+      state: present
+      vpc_id: "{{ vpc_result.vpc.id }}"
+    register: vpc_eigw_create_check_mode
+    check_mode: true
+
+  - name: List all Egress only internet gateway
+    amazon.aws.ec2_vpc_egress_igw_info:
+    register: egress_only_igws
+
+  - name: Assert module returned changed and the Egress IGW was not created
+    assert:
+      that:
+          - vpc_eigw_create_check_mode is changed
+          - egress_only_igws.egress_only_internet_gateways | selectattr('attachments.0.vpc_id', 'equalto', vpc_result.vpc.id) | list == []
+
+  # # ============================================================
+  - name: Create egress-only internet gateway (expected changed=true)
+    amazon.aws.ec2_vpc_egress_igw:
+      state: present
+      vpc_id: "{{ vpc_result.vpc.id }}"
+    register: vpc_eigw_create
+
+  - name: List all Egress only internet gateway
+    amazon.aws.ec2_vpc_egress_igw_info:
+    register: egress_only_igws
+
+  - name: Assert module returned changed and the Egress IGW was not created
+    ansible.builtin.assert:
+      that:
+          - vpc_eigw_create is changed
+          - egress_only_igws.egress_only_internet_gateways | selectattr('attachments.0.vpc_id', 'equalto', vpc_result.vpc.id) | list | length == 1
+
+  # # ============================================================
+  - name: Create egress-only internet gateway once again (idempotency)
+    amazon.aws.ec2_vpc_egress_igw:
+      state: present
+      vpc_id: "{{ vpc_result.vpc.id }}"
+    register: vpc_eigw_create_idempotency
+
+  - name: List all Egress only internet gateway
+    amazon.aws.ec2_vpc_egress_igw_info:
+    register: egress_only_igws
+
+  - name: Assert module returned changed and the Egress IGW was not created
+    ansible.builtin.assert:
+      that:
+          - vpc_eigw_create_idempotency is not changed
+          - vpc_eigw_create_idempotency.gateway_id == vpc_eigw_create.gateway_id
+          - egress_only_igws.egress_only_internet_gateways | selectattr('attachments.0.vpc_id', 'equalto', vpc_result.vpc.id) | list | length == 1
+
+  # # ============================================================
+  - name: Delete egress-only internet gateway (check_mode)
+    amazon.aws.ec2_vpc_egress_igw:
+      state: absent
+      vpc_id: "{{ vpc_result.vpc.id }}"
+    register: vpc_eigw_delete_check_mode
+    check_mode: true
+
+  - name: List all Egress only internet gateway
+    amazon.aws.ec2_vpc_egress_igw_info:
+    register: egress_only_igws
+
+  - name: Assert module returned changed and the Egress IGW was not created
+    ansible.builtin.assert:
+      that:
+          - vpc_eigw_delete_check_mode is changed
+          - vpc_eigw_create_idempotency.gateway_id == vpc_eigw_delete_check_mode.gateway_id
+          - egress_only_igws.egress_only_internet_gateways | selectattr('attachments.0.vpc_id', 'equalto', vpc_result.vpc.id) | list | length == 1
+
+  # # ============================================================
+  - name: Delete egress-only internet gateway once again (idempotency)
+    amazon.aws.ec2_vpc_egress_igw:
+      state: absent
+      vpc_id: "{{ vpc_result.vpc.id }}"
+    register: vpc_eigw_delete
+
+  - name: List all Egress only internet gateway
+    amazon.aws.ec2_vpc_egress_igw_info:
+    register: egress_only_igws
+
+  - name: Assert module returned changed and the Egress IGW was not created
+    ansible.builtin.assert:
+      that:
+        - vpc_eigw_delete is changed
+        - vpc_eigw_create_idempotency.gateway_id == vpc_eigw_delete.gateway_id
+        - egress_only_igws.egress_only_internet_gateways | selectattr('attachments.0.vpc_id', 'equalto', vpc_result.vpc.id) | list == []
+
+  # # ============================================================
+  - name: Delete egress-only internet gateway
+    amazon.aws.ec2_vpc_egress_igw:
+      state: absent
+      vpc_id: "{{ vpc_result.vpc.id }}"
+    register: vpc_eigw_delete_idempotency
+
+  - name: Assert module returned changed and the Egress IGW was not created
+    ansible.builtin.assert:
+      that:
+        - vpc_eigw_delete_idempotency is not changed
+
+  ## ============================================================
+  ## Tagging
+  - name: Create Egress only internet gateway with tags
+    amazon.aws.ec2_vpc_egress_igw:
+      vpc_id: "{{ vpc_result.vpc.id }}"
+      tags:
+        ResourcePrefix: "{{ resource_prefix }}"
+        VpcId: "{{ vpc_result.vpc.id }}"
+    register: create_with_tags
+
+  - name: List all Egress only internet gateway
+    amazon.aws.ec2_vpc_egress_igw_info:
+    register: egress_only_igws
+
+  - name: Assert that the Egress IGW was created with tags
+    ansible.builtin.assert:
+      that:
+        - create_with_tags is changed
+        - egress_info.tags == resource_tags
+    vars:
+      egress_info: "{{ egress_only_igws.egress_only_internet_gateways | selectattr('attachments.0.vpc_id', 'equalto', vpc_result.vpc.id) | list | first }}"
+      resource_tags:
+        ResourcePrefix: "{{ resource_prefix }}"
+        VpcId: "{{ vpc_result.vpc.id }}"
+
+  - name: Trying to update tags (no change)
+    amazon.aws.ec2_vpc_egress_igw:
+      vpc_id: "{{ vpc_result.vpc.id }}"
+      tags:
+        ResourcePrefix: "{{ resource_prefix }}"
+        VpcId: "{{ vpc_result.vpc.id }}"
+    register: update_tags
+
+  - name: List all Egress only internet gateway
+    amazon.aws.ec2_vpc_egress_igw_info:
+    register: egress_only_igws
+
+  - name: Assert that the Egress IGW was not updated
+    ansible.builtin.assert:
+      that:
+        - update_tags is not changed
+        - egress_info.tags == resource_tags
+    vars:
+      egress_info: "{{ egress_only_igws.egress_only_internet_gateways | selectattr('attachments.0.vpc_id', 'equalto', vpc_result.vpc.id) | list | first }}"
+      resource_tags:
+        ResourcePrefix: "{{ resource_prefix }}"
+        VpcId: "{{ vpc_result.vpc.id }}"
+
+  - name: Add tag to existing tags
+    amazon.aws.ec2_vpc_egress_igw:
+      vpc_id: "{{ vpc_result.vpc.id }}"
+      tags:
+        Phase: integration
+      purge_tags: false
+    register: add_tag
+
+  - name: List all Egress only internet gateway
+    amazon.aws.ec2_vpc_egress_igw_info:
+    register: egress_only_igws
+
+  - name: Assert that the Egress IGW was created with tags
+    ansible.builtin.assert:
+      that:
+        - add_tag is changed
+        - egress_info.tags == resource_tags
+    vars:
+      egress_info: "{{ egress_only_igws.egress_only_internet_gateways | selectattr('attachments.0.vpc_id', 'equalto', vpc_result.vpc.id) | list | first }}"
+      resource_tags:
+        ResourcePrefix: "{{ resource_prefix }}"
+        VpcId: "{{ vpc_result.vpc.id }}"
+        Phase: integration
+
+  always:
+    # ============================================================
+    - name: Tidy up EIGW
+      amazon.aws.ec2_vpc_egress_igw:
+        state: absent
+        vpc_id: "{{ vpc_result.vpc.id }}"
+      ignore_errors: true
+
+    - name: Tidy up VPC
+      amazon.aws.ec2_vpc_net:
+        name: "{{ resource_prefix }}-vpc"
+        state: absent
+        cidr_block: "10.232.232.128/26"
+      ignore_errors: true
