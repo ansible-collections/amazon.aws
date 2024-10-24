@@ -6,8 +6,7 @@
 from copy import deepcopy
 
 try:
-    from botocore.exceptions import BotoCoreError
-    from botocore.exceptions import ClientError
+    from botocore.exceptions import WaiterError
 except ImportError:
     pass
 
@@ -176,11 +175,12 @@ class TransitGatewayAttachmentStateManager:
         # Wait until attachment reaches the desired state
         params = {"TransitGatewayAttachmentIds": [self.attachment_id]}
         params.update(self.waiter_config)
+        waiter = get_waiter(self.client, f"transit_gateway_vpc_attachment_{desired_state}")
+
         try:
-            waiter = get_waiter(self.client, f"transit_gateway_vpc_attachment_{desired_state}")
             waiter.wait(**params)
-        except (BotoCoreError, ClientError) as e:
-            self.module.fail_json_aws_error(e)
+        except WaiterError as e:
+            self.module.fail_json_aws(e, "Timeout waiting for State change")
 
 
 class AttachmentConfigurationManager:

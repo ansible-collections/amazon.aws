@@ -107,8 +107,13 @@
 
   - name: Save Attachment ID
     set_fact:
-      complex_attachment_id: '{{ complex_attach.attachments[0].transit_gateway_attachment_id
-        }}'
+      complex_attachment_id: '{{ complex_attach.attachments[0].transit_gateway_attachment_id }}'
+
+  - name: Gather information about the attachment
+    amazon.aws.ec2_transit_gateway_vpc_attachment_info:
+      filters:
+        transit-gateway-id: '{{ tgw_id }}'
+    register: info
 
   - name: (CHECK_MODE) Create an attachment - complex parameters -- IDEMPOTENCY
     check_mode: true
