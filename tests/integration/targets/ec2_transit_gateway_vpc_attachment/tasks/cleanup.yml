@@ -60,7 +60,7 @@
     - '{{ tgw_id_2 }}'
 
 - name: Delete Transit Gateways
-  community.aws.ec2_transit_gateway:
+  amazon.aws.ec2_transit_gateway:
     state: absent
     transit_gateway_id: '{{ item.tgw_id }}'
   loop:

@@ -141,7 +141,7 @@
       register: nat_gateway
 
     - name: Create  transit gateway
-      community.aws.ec2_transit_gateway:
+      amazon.aws.ec2_transit_gateway:
         state: present
         description: "Ansible TGW"
         asn: 4200000000
@@ -1573,7 +1573,7 @@
         wait: true
       ignore_errors: true
     - name: Delete transit gateway
-      community.aws.ec2_transit_gateway:
+      amazon.aws.ec2_transit_gateway:
         state: absent
         transit_gateway_id: '{{ transit_gateway.transit_gateway.transit_gateway_id }}'
         wait: true
