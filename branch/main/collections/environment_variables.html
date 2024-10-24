@@ -119,6 +119,51 @@
 <p>The following index documents all environment variables declared by plugins in collections.
 Environment variables used by the ansible-core configuration are documented in <a class="reference external" href="https://docs.ansible.com/ansible-core/devel/reference_appendices/config.html#ansible-configuration-settings" title="(in Ansible Core vdevel)"><span>Ansible Configuration Settings</span></a>.</p>
 <dl class="std envvar">
+<dt class="sig sig-object std" id="envvar-ANSIBLE_INVENTORY_CACHE">
+<span class="sig-name descname"><span class="pre">ANSIBLE_INVENTORY_CACHE</span></span><a class="headerlink" href="#envvar-ANSIBLE_INVENTORY_CACHE" title="Link to this definition"></a></dt>
+<dd><p>Toggle to enable/disable the caching of the inventory’s source data, requires a cache plugin setup to work.</p>
+<p><em>Used by:</em>
+<a class="reference internal" href="amazon/aws/aws_ec2_inventory.html#ansible-collections-amazon-aws-aws-ec2-inventory"><span class="std std-ref">amazon.aws.aws_ec2 inventory plugin</span></a>,
+<a class="reference internal" href="amazon/aws/aws_rds_inventory.html#ansible-collections-amazon-aws-aws-rds-inventory"><span class="std std-ref">amazon.aws.aws_rds inventory plugin</span></a></p>
+</dd></dl>
+
+<dl class="std envvar">
+<dt class="sig sig-object std" id="envvar-ANSIBLE_INVENTORY_CACHE_CONNECTION">
+<span class="sig-name descname"><span class="pre">ANSIBLE_INVENTORY_CACHE_CONNECTION</span></span><a class="headerlink" href="#envvar-ANSIBLE_INVENTORY_CACHE_CONNECTION" title="Link to this definition"></a></dt>
+<dd><p>Cache connection data or path, read cache plugin documentation for specifics.</p>
+<p><em>Used by:</em>
+<a class="reference internal" href="amazon/aws/aws_ec2_inventory.html#ansible-collections-amazon-aws-aws-ec2-inventory"><span class="std std-ref">amazon.aws.aws_ec2 inventory plugin</span></a>,
+<a class="reference internal" href="amazon/aws/aws_rds_inventory.html#ansible-collections-amazon-aws-aws-rds-inventory"><span class="std std-ref">amazon.aws.aws_rds inventory plugin</span></a></p>
+</dd></dl>
+
+<dl class="std envvar">
+<dt class="sig sig-object std" id="envvar-ANSIBLE_INVENTORY_CACHE_PLUGIN">
+<span class="sig-name descname"><span class="pre">ANSIBLE_INVENTORY_CACHE_PLUGIN</span></span><a class="headerlink" href="#envvar-ANSIBLE_INVENTORY_CACHE_PLUGIN" title="Link to this definition"></a></dt>
+<dd><p>Cache plugin to use for the inventory’s source data.</p>
+<p><em>Used by:</em>
+<a class="reference internal" href="amazon/aws/aws_ec2_inventory.html#ansible-collections-amazon-aws-aws-ec2-inventory"><span class="std std-ref">amazon.aws.aws_ec2 inventory plugin</span></a>,
+<a class="reference internal" href="amazon/aws/aws_rds_inventory.html#ansible-collections-amazon-aws-aws-rds-inventory"><span class="std std-ref">amazon.aws.aws_rds inventory plugin</span></a></p>
+</dd></dl>
+
+<dl class="std envvar">
+<dt class="sig sig-object std" id="envvar-ANSIBLE_INVENTORY_CACHE_PLUGIN_PREFIX">
+<span class="sig-name descname"><span class="pre">ANSIBLE_INVENTORY_CACHE_PLUGIN_PREFIX</span></span><a class="headerlink" href="#envvar-ANSIBLE_INVENTORY_CACHE_PLUGIN_PREFIX" title="Link to this definition"></a></dt>
+<dd><p>Prefix to use for cache plugin files/tables.</p>
+<p><em>Used by:</em>
+<a class="reference internal" href="amazon/aws/aws_ec2_inventory.html#ansible-collections-amazon-aws-aws-ec2-inventory"><span class="std std-ref">amazon.aws.aws_ec2 inventory plugin</span></a>,
+<a class="reference internal" href="amazon/aws/aws_rds_inventory.html#ansible-collections-amazon-aws-aws-rds-inventory"><span class="std std-ref">amazon.aws.aws_rds inventory plugin</span></a></p>
+</dd></dl>
+
+<dl class="std envvar">
+<dt class="sig sig-object std" id="envvar-ANSIBLE_INVENTORY_CACHE_TIMEOUT">
+<span class="sig-name descname"><span class="pre">ANSIBLE_INVENTORY_CACHE_TIMEOUT</span></span><a class="headerlink" href="#envvar-ANSIBLE_INVENTORY_CACHE_TIMEOUT" title="Link to this definition"></a></dt>
+<dd><p>Cache duration in seconds.</p>
+<p><em>Used by:</em>
+<a class="reference internal" href="amazon/aws/aws_ec2_inventory.html#ansible-collections-amazon-aws-aws-ec2-inventory"><span class="std std-ref">amazon.aws.aws_ec2 inventory plugin</span></a>,
+<a class="reference internal" href="amazon/aws/aws_rds_inventory.html#ansible-collections-amazon-aws-aws-rds-inventory"><span class="std std-ref">amazon.aws.aws_rds inventory plugin</span></a></p>
+</dd></dl>
+
+<dl class="std envvar">
 <dt class="sig sig-object std" id="envvar-ANSIBLE_INVENTORY_USE_EXTRA_VARS">
 <span class="sig-name descname"><span class="pre">ANSIBLE_INVENTORY_USE_EXTRA_VARS</span></span><a class="headerlink" href="#envvar-ANSIBLE_INVENTORY_USE_EXTRA_VARS" title="Link to this definition"></a></dt>
 <dd><p>Merge extra vars into the available variables for composition (highest precedence).</p>
