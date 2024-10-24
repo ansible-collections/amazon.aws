@@ -81,6 +81,7 @@ action_groups:
     - ec2_vpc_net
     - ec2_vpc_net_info
     - ec2_vpc_peer
+    - ec2_vpc_peering
     - ec2_vpc_peering_info
     - ec2_vpc_route_table
     - ec2_vpc_route_table_info
@@ -194,6 +195,13 @@ plugin_routing:
         removal_version: 10.0.0
         warning_text: >-
           rds_param_group has been renamed to rds_instance_param_group.
+          Please update your tasks.
+    ec2_vpc_peer:
+      redirect: amazon.aws.ec2_vpc_peer
+      deprecation:
+        removal_version: 11.0.0
+        warning_text: >-
+          ec2_vpc_peer has been renamed to ec2_vpc_peering.
           Please update your tasks.
   lookup:
     aws_ssm:
