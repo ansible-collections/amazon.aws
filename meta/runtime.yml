@@ -58,10 +58,7 @@ action_groups:
     - ec2_tag
     - ec2_tag_info
     - ec2_transit_gateway
-    - ec2_transit_gateway_info
     - ec2_transit_gateway_vpc_attachment
-    - ec2_transit_gateway_vpc_attachment
-    - ec2_transit_gateway_vpc_attachment_info
     - ec2_transit_gateway_vpc_attachment_info
     - ec2_vol
     - ec2_vol_info
@@ -183,10 +180,6 @@ plugin_routing:
     ec2_metric_alarm:
       # Deprecation for this alias should not *start* prior to 2024-09-01
       redirect: amazon.aws.cloudwatch_metric_alarm
-    ec2_transit_gateway_vpc_attachment:
-      redirect: amazon.aws.ec2_transit_gateway_vpc_attachment
-    ec2_transit_gateway_vpc_attachment_info:
-      redirect: amazon.aws.ec2_transit_gateway_vpc_attachment_info
     execute_lambda:
       # Deprecation for this alias should not *start* prior to 2024-09-01
       redirect: amazon.aws.lambda_execute
