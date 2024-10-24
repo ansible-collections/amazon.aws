@@ -1,0 +1,304 @@
+- name: ec2_vpc_vgw integration tests
+  module_defaults:
+    group/aws:
+      access_key: '{{ aws_access_key }}'
+      secret_key: '{{ aws_secret_key }}'
+      session_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+  block:
+
+    # ============================================================
+  - name: Create a VPC
+    amazon.aws.ec2_vpc_net:
+      name: '{{ vpc_name }}-{{ item }}'
+      state: present
+      cidr_block: '{{ vpc_cidr }}'
+      tags:
+        Description: Created by ansible-test for IGW tests
+    register: vpc_result
+    loop: [1, 2]
+
+  - name: Use set fact for vpc ids
+    ansible.builtin.set_fact:
+      vpc_id_1: '{{ vpc_result.results.0.vpc.id }}'
+      vpc_id_2: '{{ vpc_result.results.1.vpc.id }}'
+
+    # ============================================================
+  - name: Create vpn gateway and attach it to vpc - check_mode
+    amazon.aws.ec2_vpc_vgw:
+      state: present
+      vpc_id: '{{ vpc_id_1 }}'
+      name: '{{ vgw_name }}'
+    register: vgw_check_mode
+    check_mode: true
+
+  - name: Assert check_mode result - no vgw creation
+    ansible.builtin.assert:
+      that:
+      - vgw_check_mode.changed
+      - not vgw_check_mode.failed
+      - "'ec2:CreateVpnGateway' not in vgw_check_mode.resource_actions"
+      - "'ec2:AttachVpnGateway' not in vgw_check_mode.resource_actions"
+
+  - name: Create vpn gateway and attach it to vpc
+    amazon.aws.ec2_vpc_vgw:
+      state: present
+      vpc_id: '{{ vpc_id_1 }}'
+      name: '{{ vgw_name }}'
+    register: vgw
+
+  - name: Use set fact for vgw ids
+    ansible.builtin.set_fact:
+      vgw_id: '{{ vgw.vgw.id }}'
+
+  - name: Assert result - vgw creation
+    ansible.builtin.assert:
+      that:
+      - vgw.changed
+      - vgw.vgw.vpc_id == vpc_id_1
+      - vgw.vgw.tags.Name == vgw_name
+
+  - name: Test idempotence
+    amazon.aws.ec2_vpc_vgw:
+      state: present
+      vpc_id: '{{ vpc_id_1 }}'
+      name: '{{ vgw_name }}'
+    register: vgw
+
+  - name: Assert idempotence result - no change
+    ansible.builtin.assert:
+      that:
+      - not vgw.changed
+      - vgw.vgw.id == vgw_id
+
+    # ============================================================
+  - name: Attach vpn gateway to the other VPC - check_mode
+    amazon.aws.ec2_vpc_vgw:
+      state: present
+      vpc_id: '{{ vpc_id_2 }}'
+      name: '{{ vgw_name }}'
+    register: vgw_check_mode
+    check_mode: true
+
+  - name: Assert check_mode result - no create/attach/detach
+    ansible.builtin.assert:
+      that:
+      - vgw_check_mode.changed
+      - not vgw_check_mode.failed
+      - "'ec2:CreateVpnGateway' not in vgw_check_mode.resource_actions"
+      - "'ec2:AttachVpnGateway' not in vgw_check_mode.resource_actions"
+      - "'ec2:DetachVpnGateway' not in vgw_check_mode.resource_actions"
+
+  - name: Attach vpn gateway to the other VPC
+    amazon.aws.ec2_vpc_vgw:
+      state: present
+      vpc_id: '{{ vpc_id_2 }}'
+      name: '{{ vgw_name }}'
+    register: vgw
+
+  - name: Assert attach result
+    ansible.builtin.assert:
+      that:
+      - vgw.changed
+      - vgw.vgw.id == vgw_id
+      - vgw.vgw.vpc_id == vpc_id_2
+
+  - name: Attach vpn gateway to the other VPC - idempotency
+    amazon.aws.ec2_vpc_vgw:
+      state: present
+      vpc_id: '{{ vpc_id_2 }}'
+      name: '{{ vgw_name }}'
+    register: vgw
+
+  - name: Assert idempotency result - no change
+    ansible.builtin.assert:
+      that:
+      - not vgw.changed
+      - not vgw.failed
+      - "'ec2:CreateVpnGateway' not in vgw_check_mode.resource_actions"
+      - "'ec2:AttachVpnGateway' not in vgw_check_mode.resource_actions"
+      - "'ec2:DetachVpnGateway' not in vgw_check_mode.resource_actions"
+
+    # ============================================================
+
+  - name: Get VPC VGW facts by ID (CHECK)
+    amazon.aws.ec2_vpc_vgw_info:
+      vpn_gateway_ids: ['{{ vgw_id }}']
+    register: vgw_info
+    check_mode: true
+
+  - name: Verify expected facts
+    vars:
+      vgw_details: '{{ vgw_info.virtual_gateways[0] }}'
+      attach_1_description:
+        state: detached
+        vpc_id: '{{ vpc_id_1 }}'
+      attach_2_description:
+        state: attached
+        vpc_id: '{{ vpc_id_2 }}'
+    ansible.builtin.assert:
+      that:
+      - vgw_info.virtual_gateways | length == 1
+      - '"resource_tags" in vgw_details'
+      - '"state" in vgw_details'
+      - '"tags" in vgw_details'
+      - '"type" in vgw_details'
+      - '"vpc_attachments" in vgw_details'
+      - '"vpn_gateway_id" in vgw_details'
+      - vgw_details.vpn_gateway_id == vgw_id
+      - vgw_details.type == 'ipsec.1'
+      - vgw_details.state == 'available'
+      - '"Name" in vgw_details.resource_tags'
+      - vgw_details.resource_tags.Name == vgw_name
+      - ( attach_1_description in vgw_details.vpc_attachments and vgw_details.vpc_attachments
+        | length == 2 ) or ( vgw_details.vpc_attachments | length == 1 )
+      - attach_2_description in vgw_details.vpc_attachments
+
+  - name: Get VPC VGW facts by Tag
+    amazon.aws.ec2_vpc_vgw_info:
+      filters:
+        tag:Name: '{{ vgw_name }}'
+    register: vgw_info
+
+  - name: Verify expected facts
+    vars:
+      vgw_details: '{{ vgw_info.virtual_gateways[0] }}'
+      attach_1_description:
+        state: detached
+        vpc_id: '{{ vpc_id_1 }}'
+      attach_2_description:
+        state: attached
+        vpc_id: '{{ vpc_id_2 }}'
+    ansible.builtin.assert:
+      that:
+      - vgw_info.virtual_gateways | length == 1
+      - '"resource_tags" in vgw_details'
+      - '"state" in vgw_details'
+      - '"tags" in vgw_details'
+      - '"type" in vgw_details'
+      - '"vpc_attachments" in vgw_details'
+      - '"vpn_gateway_id" in vgw_details'
+      - vgw_details.vpn_gateway_id == vgw_id
+      - vgw_details.type == 'ipsec.1'
+      - vgw_details.state == 'available'
+      - '"Name" in vgw_details.resource_tags'
+      - vgw_details.resource_tags.Name == vgw_name
+      - ( attach_1_description in vgw_details.vpc_attachments and vgw_details.vpc_attachments
+        | length == 2 ) or ( vgw_details.vpc_attachments | length == 1 )
+      - attach_2_description in vgw_details.vpc_attachments
+
+    # ============================================================
+
+  - name: Get all VGWs
+    amazon.aws.ec2_vpc_vgw_info:
+    register: vgw_info
+
+  - name: Verify test VGW is in the results
+    vars:
+      vgw_id_list: '{{ vgw_info.virtual_gateways | map(attribute="vpn_gateway_id")
+        | list }}'
+    ansible.builtin.assert:
+      that:
+      - vgw_id in vgw_id_list
+
+    # ============================================================
+  - name: Detach vpn gateway - check_mode
+    amazon.aws.ec2_vpc_vgw:
+      state: present
+      name: '{{ vgw_name }}'
+    register: vgw_check_mode
+    check_mode: true
+
+  - name: Assert check_mode results - no detach action
+    ansible.builtin.assert:
+      that:
+      - vgw_check_mode.changed
+      - not vgw_check_mode.failed
+      - "'ec2:DetachVpcGateway' not in vgw_check_mode.resource_actions"
+
+  - name: Detach vpn gateway
+    amazon.aws.ec2_vpc_vgw:
+      state: present
+      name: '{{ vgw_name }}'
+    register: vgw
+
+  - name: Assert results
+    ansible.builtin.assert:
+      that:
+      - vgw.changed
+      - not vgw.vgw.vpc_id
+
+  - name: Test idempotence
+    amazon.aws.ec2_vpc_vgw:
+      state: present
+      name: '{{ vgw_name }}'
+    register: vgw
+
+  - name: Assert idempotency result - no change
+    ansible.builtin.assert:
+      that:
+      - not vgw.changed
+
+    # ============================================================
+
+  - include_tasks: tags.yml
+
+    # ============================================================
+
+  - name: Delete vpn gateway - check_mode
+    amazon.aws.ec2_vpc_vgw:
+      state: absent
+      name: '{{ vgw_name }}'
+    register: vgw_check_mode
+    check_mode: true
+
+  - name: Assert check_mode result - no delete action
+    ansible.builtin.assert:
+      that:
+      - vgw_check_mode.changed
+      - not vgw_check_mode.failed
+      - "'ec2:DeleteVpnGateway' not in vgw_check_mode.resource_actions"
+
+  - name: Delete vpn gateway
+    amazon.aws.ec2_vpc_vgw:
+      state: absent
+      name: '{{ vgw_name }}'
+    register: vgw
+
+  - name: Assert result
+    ansible.builtin.assert:
+      that:
+      - vgw.changed
+
+  - name: Test idempotence
+    amazon.aws.ec2_vpc_vgw:
+      state: absent
+      name: '{{ vgw_name }}'
+    register: vgw
+
+  - name: Assert idempotency result - no change
+    ansible.builtin.assert:
+      that:
+      - not vgw.changed
+
+  always:
+
+  - ansible.builtin.debug: msg="Removing test dependencies"
+
+  - name: Delete vpn gateway
+    amazon.aws.ec2_vpc_vgw:
+      state: absent
+      vpn_gateway_id: '{{ vgw.vgw.id | default(vgw_id) }}'
+    ignore_errors: true
+
+  - name: Delete vpc
+    amazon.aws.ec2_vpc_net:
+      name: '{{ vpc_name }}-{{ item }}'
+      state: absent
+      cidr_block: '{{ vpc_cidr }}'
+    loop: [1, 2]
+    register: result
+    retries: 10
+    delay: 5
+    until: result is not failed
+    ignore_errors: true
