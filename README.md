@@ -3,9 +3,11 @@ The Ansible Amazon AWS collection includes a variety of Ansible content to help 
 
 ## Description
 
-The primary purpose of this collection is to simplify and streamline the management of AWS resources through automation. By leveraging this collection, organizations can reduce manual intervention, minimize errors, and ensure consistent and repeatable deployments. This leads to increased efficiency, faster deployments, and a more agile IT infrastructure. 
+The primary purpose of this collection is to simplify and streamline the management of AWS resources through automation. By leveraging this collection, organizations can reduce manual intervention, minimize errors, and ensure consistent and repeatable deployments. This leads to increased efficiency, faster deployments, and a more agile IT infrastructure.
 
 AWS related modules and plugins supported by the Ansible community are in the [community.aws](https://github.com/ansible-collections/community.aws/) collection.
+
+Being Red Hat Ansible Certified Content, this collection is eligible for support through the [Ansible Automation Platform](https://www.redhat.com/en/technologies/management/ansible).
 
 ## Communication
 
@@ -56,7 +58,7 @@ As such support for Python less than 3.8 will be removed in a release after 2024
 
 Starting with the 2.0.0 releases of amazon.aws and community.aws, it is generally the collection's policy to support the versions of `botocore` and `boto3` that were released 12 months prior to the most recent major collection release, following semantic versioning (for example, 2.0.0, 3.0.0).
 
-Version 7.0.0 of this collection supports `boto3 >= 1.26.0` and `botocore >= 1.29.0`
+Version 9.0.0 of this collection supports `boto3 >= 1.28.0` and `botocore >= 1.31.0`
 
 All support for the original AWS SDK `boto` was removed in release 4.0.0.
 

@@ -58,6 +58,7 @@ from ansible.module_utils.six import string_types
 
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.arn
 from .arn import is_outpost_arn as is_outposts_arn  # pylint: disable=unused-import
+from .arn import validate_aws_arn
 
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.botocore
 from .botocore import HAS_BOTO3  # pylint: disable=unused-import
@@ -72,6 +73,7 @@ from .errors import AWSErrorHandler
 
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.exceptions
 from .exceptions import AnsibleAWSError  # pylint: disable=unused-import
+from .iam import list_iam_instance_profiles
 
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.modules
 # The names have been changed in .modules to better reflect their applicability.
@@ -363,6 +365,49 @@ def reject_vpc_peering_connection(client, peering_id: str) -> bool:
     return True
 
 
+# EC2 vpn
+class EC2VpnErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleEC2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code(["InvalidVpnConnectionID.NotFound", "InvalidRoute.NotFound"])
+
+
+@EC2VpcErrorHandler.list_error_handler("describe vpn connections", [])
+@AWSRetry.jittered_backoff()
+def describe_vpn_connections(client, **params: Dict[str, Any]) -> List[Dict[str, Any]]:
+    # The paginator does not exist for `describe_vpn_connections`
+    return client.describe_vpn_connections(**params)["VpnConnections"]
+
+
+@EC2VpcErrorHandler.common_error_handler("create vpn connection route")
+@AWSRetry.jittered_backoff()
+def create_vpn_connection_route(client, vpn_connection_id: str, route: Dict[str, Any]) -> bool:
+    client.create_vpn_connection_route(VpnConnectionId=vpn_connection_id, DestinationCidrBlock=route)
+    return True
+
+
+@EC2VpcErrorHandler.deletion_error_handler("delete vpn connection route")
+@AWSRetry.jittered_backoff()
+def delete_vpn_connection_route(client, vpn_connection_id: str, route: Dict[str, Any]) -> bool:
+    client.delete_vpn_connection_route(VpnConnectionId=vpn_connection_id, DestinationCidrBlock=route)
+    return True
+
+
+@EC2VpcErrorHandler.common_error_handler("create vpn connection")
+@AWSRetry.jittered_backoff()
+def create_vpn_connection(client, **params: Dict[str, Any]) -> Dict[str, Any]:
+    return client.create_vpn_connection(**params)["VpnConnection"]
+
+
+@EC2VpcErrorHandler.deletion_error_handler("delete vpn connection")
+@AWSRetry.jittered_backoff()
+def delete_vpn_connection(client, vpn_connection_id: str) -> Dict[str, Any]:
+    client.delete_vpn_connection(VpnConnectionId=vpn_connection_id)
+    return True
+
+
 # EC2 Internet Gateway
 class EC2InternetGatewayErrorHandler(AWSErrorHandler):
     _CUSTOM_EXCEPTION = AnsibleEC2Error
@@ -601,6 +646,52 @@ def create_dhcp_options(
     client, **params: Dict[str, Union[Dict[str, Union[str, List[str]]], EC2TagSpecifications]]
 ) -> Dict[str, Any]:
     return client.create_dhcp_options(**params)["DhcpOptions"]
+
+
+# EC2 vpn Gateways
+class EC2VpnGatewaysErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleEC2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code(["InvalidVpnGatewayID.NotFound", "InvalidVpnGatewayState"])
+
+
+@EC2VpnGatewaysErrorHandler.list_error_handler("describe vpn gateways", [])
+@AWSRetry.jittered_backoff()
+def describe_vpn_gateways(
+    client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
+    return client.describe_vpn_gateways(**params)["VpnGateways"]
+
+
+@EC2VpnGatewaysErrorHandler.common_error_handler("create vpn gateway")
+@AWSRetry.jittered_backoff(catch_extra_error_codes=["VpnGatewayLimitExceeded"])
+def create_vpn_gateway(
+    client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
+) -> Dict[str, Any]:
+    return client.create_vpn_gateway(**params)["VpnGateway"]
+
+
+@EC2VpnGatewaysErrorHandler.deletion_error_handler("delete vpn gateway")
+@AWSRetry.jittered_backoff()
+def delete_vpn_gateway(client, vpn_gateway_id: str) -> bool:
+    client.delete_vpn_gateway(VpnGatewayId=vpn_gateway_id)
+    return True
+
+
+@EC2VpnGatewaysErrorHandler.common_error_handler("attach vpn gateway")
+@AWSRetry.jittered_backoff()
+def attach_vpn_gateway(client, vpc_id: str, vpn_gateway_id: str) -> bool:
+    client.attach_vpn_gateway(VpcId=vpc_id, VpnGatewayId=vpn_gateway_id)
+    return True
+
+
+@EC2VpnGatewaysErrorHandler.common_error_handler("detach vpn gateway")
+@AWSRetry.jittered_backoff()
+def detach_vpn_gateway(client, vpc_id: str, vpn_gateway_id: str) -> bool:
+    client.detach_vpn_gateway(VpcId=vpc_id, VpnGatewayId=vpn_gateway_id)
+    return True
 
 
 # EC2 Volumes
@@ -1196,7 +1287,7 @@ class EC2NetworkAclErrorHandler(AWSErrorHandler):
 
     @classmethod
     def _is_missing(cls):
-        return is_boto3_error_code("")
+        return is_boto3_error_code("InvalidNetworkAclID.NotFound")
 
 
 @EC2NetworkAclErrorHandler.list_error_handler("describe network acls", [])
@@ -1286,6 +1377,138 @@ def replace_network_acl_association(client, network_acl_id: str, association_id:
     ]
 
 
+# EC2 Placement Group
+class EC2PlacementGroupErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleEC2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code("InvalidPlacementGroup.Unknown")
+
+
+@EC2PlacementGroupErrorHandler.list_error_handler("describe placement group", [])
+@AWSRetry.jittered_backoff()
+def describe_ec2_placement_groups(
+    client, **params: Dict[str, Union[List[str], int, List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
+    return client.describe_placement_groups(**params)["PlacementGroups"]
+
+
+@EC2PlacementGroupErrorHandler.deletion_error_handler("delete placement group")
+@AWSRetry.jittered_backoff()
+def delete_ec2_placement_group(client, group_name: str) -> bool:
+    client.delete_placement_group(GroupName=group_name)
+    return True
+
+
+@EC2PlacementGroupErrorHandler.common_error_handler("create placement group")
+@AWSRetry.jittered_backoff()
+def create_ec2_placement_group(client, **params: Dict[str, Union[str, EC2TagSpecifications]]) -> Dict[str, Any]:
+    return client.create_placement_group(**params)["PlacementGroup"]
+
+
+# EC2 Launch template
+class EC2LaunchTemplateErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleEC2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code(["InvalidLaunchTemplateName.NotFoundException", "InvalidLaunchTemplateId.NotFound"])
+
+
+@EC2LaunchTemplateErrorHandler.list_error_handler("describe launch templates", [])
+@AWSRetry.jittered_backoff()
+def describe_launch_templates(
+    client,
+    launch_template_ids: Optional[List[str]] = None,
+    launch_template_names: Optional[List[str]] = None,
+    filters: Optional[List[Dict[str, List[str]]]] = None,
+) -> List[Dict[str, Any]]:
+    params = {}
+    if launch_template_ids:
+        params["LaunchTemplateIds"] = launch_template_ids
+    if launch_template_names:
+        params["LaunchTemplateNames"] = launch_template_names
+    if filters:
+        params["Filters"] = filters
+    paginator = client.get_paginator("describe_launch_templates")
+    return paginator.paginate(**params).build_full_result()["LaunchTemplates"]
+
+
+@EC2LaunchTemplateErrorHandler.common_error_handler("describe launch template versions")
+@AWSRetry.jittered_backoff()
+def describe_launch_template_versions(client, **params: Dict[str, Any]) -> List[Dict[str, Any]]:
+    paginator = client.get_paginator("describe_launch_template_versions")
+    return paginator.paginate(**params).build_full_result()["LaunchTemplateVersions"]
+
+
+@EC2LaunchTemplateErrorHandler.common_error_handler("delete launch template versions")
+@AWSRetry.jittered_backoff()
+def delete_launch_template_versions(
+    client, versions: List[str], launch_template_id: Optional[str] = None, launch_template_name: Optional[str] = None
+) -> Dict[str, Any]:
+    params = {}
+    if launch_template_id:
+        params["LaunchTemplateId"] = launch_template_id
+    if launch_template_name:
+        params["LaunchTemplateName"] = launch_template_name
+    response = {
+        "UnsuccessfullyDeletedLaunchTemplateVersions": [],
+        "SuccessfullyDeletedLaunchTemplateVersions": [],
+    }
+    # Using this API, You can specify up to 200 launch template version numbers.
+    for i in range(0, len(versions), 200):
+        result = client.delete_launch_template_versions(Versions=list(versions[i : i + 200]), **params)
+        for x in ("SuccessfullyDeletedLaunchTemplateVersions", "UnsuccessfullyDeletedLaunchTemplateVersions"):
+            response[x] += result.get(x, [])
+    return response
+
+
+@EC2LaunchTemplateErrorHandler.common_error_handler("delete launch template")
+@AWSRetry.jittered_backoff()
+def delete_launch_template(
+    client, launch_template_id: Optional[str] = None, launch_template_name: Optional[str] = None
+) -> Dict[str, Any]:
+    params = {}
+    if launch_template_id:
+        params["LaunchTemplateId"] = launch_template_id
+    if launch_template_name:
+        params["LaunchTemplateName"] = launch_template_name
+    return client.delete_launch_template(**params)["LaunchTemplate"]
+
+
+@EC2LaunchTemplateErrorHandler.common_error_handler("create launch template")
+@AWSRetry.jittered_backoff()
+def create_launch_template(
+    client,
+    launch_template_name: str,
+    launch_template_data: Dict[str, Any],
+    tags: Optional[EC2TagSpecifications] = None,
+    **kwargs: Dict[str, Any],
+) -> Dict[str, Any]:
+    params = {"LaunchTemplateName": launch_template_name, "LaunchTemplateData": launch_template_data}
+    if tags:
+        params["TagSpecifications"] = boto3_tag_specifications(tags, types="launch-template")
+    params.update(kwargs)
+    return client.create_launch_template(**params)["LaunchTemplate"]
+
+
+@EC2LaunchTemplateErrorHandler.common_error_handler("create launch template version")
+@AWSRetry.jittered_backoff()
+def create_launch_template_version(
+    client, launch_template_data: Dict[str, Any], **params: Dict[str, Any]
+) -> Dict[str, Any]:
+    return client.create_launch_template_version(LaunchTemplateData=launch_template_data, **params)[
+        "LaunchTemplateVersion"
+    ]
+
+
+@EC2LaunchTemplateErrorHandler.common_error_handler("modify launch template")
+@AWSRetry.jittered_backoff()
+def modify_launch_template(client, **params: Dict[str, Any]) -> Dict[str, Any]:
+    return client.modify_launch_template(**params)["LaunchTemplate"]
+
+
 def get_ec2_security_group_ids_from_names(sec_group_list, ec2_connection, vpc_id=None, boto3=None):
     """Return list of security group IDs from security group names. Note that security group names are not unique
     across VPCs.  If a name exists across multiple VPCs and no VPC ID is supplied, all matching IDs will be returned. This
@@ -1341,6 +1564,49 @@ def get_ec2_security_group_ids_from_names(sec_group_list, ec2_connection, vpc_id
     sec_group_id_list += [get_sg_id(all_sg) for all_sg in all_sec_groups if get_sg_name(all_sg) in sec_group_name_list]
 
     return sec_group_id_list
+
+
+# EC2 Transit Gateway VPC Attachment Error handler
+class EC2TransitGatewayVPCAttachmentErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleEC2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code("InvalidGatewayID.NotFound")
+
+
+@EC2TransitGatewayVPCAttachmentErrorHandler.common_error_handler("describe transit gateway vpc attachments")
+@AWSRetry.jittered_backoff()
+def describe_transit_gateway_vpc_attachments(
+    client, **params: Dict[str, Union[List[str], bool, List[Dict[str, Union[str, List[str]]]]]]
+) -> List:
+    paginator = client.get_paginator("describe_transit_gateway_vpc_attachments")
+    return paginator.paginate(**params).build_full_result()["TransitGatewayVpcAttachments"]
+
+
+@EC2TransitGatewayVPCAttachmentErrorHandler.common_error_handler("create transit gateway vpc attachment")
+@AWSRetry.jittered_backoff()
+def create_transit_gateway_vpc_attachment(
+    client, **params: Dict[str, Union[List[str], bool, List[Dict[str, Union[str, List[str]]]]]]
+) -> Dict[str, Any]:
+    return client.create_transit_gateway_vpc_attachment(**params)["TransitGatewayVpcAttachment"]
+
+
+@EC2TransitGatewayVPCAttachmentErrorHandler.common_error_handler("modify transit gateway vpc attachment")
+@AWSRetry.jittered_backoff()
+def modify_transit_gateway_vpc_attachment(
+    client, **params: Dict[str, Union[List[str], bool, List[Dict[str, Union[str, List[str]]]]]]
+) -> Dict[str, Any]:
+    return client.modify_transit_gateway_vpc_attachment(**params)["TransitGatewayVpcAttachment"]
+
+
+@EC2TransitGatewayVPCAttachmentErrorHandler.deletion_error_handler("delete transit gateway vpc attachment")
+@AWSRetry.jittered_backoff()
+def delete_transit_gateway_vpc_attachment(client, transit_gateway_attachment_id: str) -> bool:
+    client.delete_transit_gateway_vpc_attachment(TransitGatewayAttachmentId=transit_gateway_attachment_id)[
+        "TransitGatewayVpcAttachment"
+    ]
+    return True
 
 
 def add_ec2_tags(client, module, resource_id, tags_to_set, retry_codes=None):
@@ -1507,3 +1773,46 @@ def normalize_ec2_vpc_dhcp_config(option_config: List[Dict[str, Any]]) -> Dict[s
                 config_data[option] = [val["Value"] for val in config_item["Values"]]
 
     return config_data
+
+
+def determine_iam_arn_from_name(iam_client, name_or_arn: str) -> str:
+    if validate_aws_arn(name_or_arn, service="iam", resource_type="instance-profile"):
+        return name_or_arn
+
+    iam_instance_profiles = list_iam_instance_profiles(iam_client, name=name_or_arn)
+    if not iam_instance_profiles:
+        raise AnsibleEC2Error(message=f"Could not find IAM instance profile {name_or_arn}")
+    return iam_instance_profiles[0]["Arn"]
+
+
+# EC2 Transit Gateway
+class EC2TransitGatewayErrorHandler(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleEC2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code("InvalidTransitGatewayID.NotFound")
+
+
+@EC2TransitGatewayErrorHandler.list_error_handler("describe transit gateway", [])
+@AWSRetry.jittered_backoff()
+def describe_ec2_transit_gateways(
+    client, **params: Dict[str, Union[List[str], List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
+    paginator = client.get_paginator("describe_transit_gateways")
+    return paginator.paginate(**params).build_full_result()["TransitGateways"]
+
+
+@EC2TransitGatewayErrorHandler.common_error_handler("create transit gateway")
+@AWSRetry.jittered_backoff()
+def create_ec2_transit_gateway(
+    client, **params: Dict[str, Union[List[str], List[Dict[str, Union[str, List[str]]]]]]
+) -> Dict[str, Any]:
+    return client.create_transit_gateway(**params)["TransitGateway"]
+
+
+@EC2TransitGatewayErrorHandler.deletion_error_handler("delete transit gateway")
+@AWSRetry.jittered_backoff()
+def delete_ec2_transit_gateway(client, transit_gateway_id: str) -> bool:
+    client.delete_transit_gateway(TransitGatewayId=transit_gateway_id)
+    return True
