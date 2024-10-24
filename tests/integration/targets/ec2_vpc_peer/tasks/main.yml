@@ -1,0 +1,657 @@
+- name: EC2 VPC Peering Connection integration tests
+  module_defaults:
+    group/aws:
+      access_key: '{{ aws_access_key }}'
+      secret_key: '{{ aws_secret_key }}'
+      session_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+  block:
+  - name: Get ARN of calling user
+    aws_caller_info:
+    register: aws_caller_info
+
+  - name: Store Account ID for later use
+    ansible.builtin.set_fact:
+      account_id: '{{ aws_caller_info.account }}'
+
+  # ============================================================
+  - name: Fetch EC2 VPC Peering Connections in check_mode
+    amazon.aws.ec2_vpc_peering_info:
+    register: peers_info
+    check_mode: true
+
+  - name: Assert success
+    ansible.builtin.assert:
+      that:
+      - peers_info is successful
+      - '"result" in peers_info'
+
+  # ============================================================
+  - name: Create VPC 1
+    amazon.aws.ec2_vpc_net:
+      name: '{{ vpc_1_name }}'
+      state: present
+      cidr_block: '{{ vpc_1_cidr }}'
+      tags:
+        Name: '{{ vpc_1_name }}'
+        TestPrefex: '{{ resource_prefix }}'
+    register: vpc_1_result
+
+  - name: Assert success
+    ansible.builtin.assert:
+      that:
+      - vpc_1_result is successful
+
+  - name: Create VPC 2
+    amazon.aws.ec2_vpc_net:
+      name: '{{ vpc_2_name }}'
+      state: present
+      cidr_block: '{{ vpc_2_cidr }}'
+      tags:
+        Name: '{{ vpc_2_name }}'
+        TestPrefex: '{{ resource_prefix }}'
+    register: vpc_2_result
+
+  - name: Assert success
+    ansible.builtin.assert:
+      that:
+      - vpc_2_result is successful
+
+  - name: Store VPC IDs
+    set_fact:
+      vpc_1: '{{ vpc_1_result.vpc.id }}'
+      vpc_2: '{{ vpc_2_result.vpc.id }}'
+
+  - name: Set a name to use with the connections
+    ansible.builtin.set_fact:
+      connection_name: Peering connection for VPC {{ vpc_1 }} to VPC {{ vpc_2 }}
+
+  - name: Create local account EC2 VPC Peering Connection request (check_mode)
+    amazon.aws.ec2_vpc_peer:
+      vpc_id: '{{ vpc_1 }}'
+      peer_vpc_id: '{{ vpc_2 }}'
+      state: present
+      tags:
+        Name: '{{ connection_name }}'
+    check_mode: true
+    register: vpc_peer
+
+  - name: Assert success
+    ansible.builtin.assert:
+      that:
+      - vpc_peer is changed
+
+  - name: Create local account EC2 VPC Peering Connection request
+    amazon.aws.ec2_vpc_peer:
+      vpc_id: '{{ vpc_1 }}'
+      peer_vpc_id: '{{ vpc_2 }}'
+      state: present
+      tags:
+        Name: '{{ connection_name }}'
+    register: vpc_peer
+
+  - name: Assert success
+    ansible.builtin.assert:
+      that:
+      - vpc_peer is changed
+      - vpc_peer is successful
+      - "'peering_id' in vpc_peer"
+      - vpc_peer.vpc_peering_connection.requester_vpc_info.cidr_block == vpc_1_cidr
+      - vpc_peer.peering_id.startswith('pcx-')
+
+  - name: Store Connection ID
+    ansible.builtin.set_fact:
+      peer_id_1: '{{ vpc_peer.peering_id }}'
+
+  - name: Re-create local account EC2 VPC Peering Connection request (idempotency
+      check_mode)
+    amazon.aws.ec2_vpc_peer:
+      vpc_id: '{{ vpc_1 }}'
+      peer_vpc_id: '{{ vpc_2 }}'
+      state: present
+      tags:
+        Name: '{{ connection_name }}'
+    check_mode: true
+    register: vpc_peer
+
+  - name: Assert success
+    ansible.builtin.assert:
+      that:
+      - vpc_peer is not changed
+
+  - name: Re-create local account EC2 VPC Peering Connection request (idempotency)
+    amazon.aws.ec2_vpc_peer:
+      vpc_id: '{{ vpc_1 }}'
+      peer_vpc_id: '{{ vpc_2 }}'
+      state: present
+      tags:
+        Name: '{{ connection_name }}'
+    register: vpc_peer
+
+  - name: Assert success
+    ansible.builtin.assert:
+      that:
+      - vpc_peer is not changed
+      - vpc_peer is successful
+      - vpc_peer.peering_id == peer_id_1
+
+  - name: Create local account EC2 VPC Peering Connection request with accepter/requester
+      reversed (idempotency check_mode)
+    amazon.aws.ec2_vpc_peer:
+      vpc_id: '{{ vpc_2 }}'
+      peer_vpc_id: '{{ vpc_1 }}'
+      state: present
+      tags:
+        Name: '{{ connection_name }}'
+    check_mode: true
+    register: vpc_peer
+
+  - name: Assert success
+    ansible.builtin.assert:
+      that:
+      - vpc_peer is not changed
+
+  - name: Create local account EC2 VPC Peering Connection request with accepter/requester
+      reversed (idempotency)
+    amazon.aws.ec2_vpc_peer:
+      vpc_id: '{{ vpc_2 }}'
+      peer_vpc_id: '{{ vpc_1 }}'
+      state: present
+      tags:
+        Name: '{{ connection_name }}'
+    register: vpc_peer
+
+  - name: Assert success
+    ansible.builtin.assert:
+      that:
+      - vpc_peer is not changed
+      - vpc_peer is successful
+      - vpc_peer.peering_id == peer_id_1
+
+  - name: Get details on specific EC2 VPC Peering Connection
+    amazon.aws.ec2_vpc_peering_info:
+      peer_connection_ids:
+      - '{{ peer_id_1 }}'
+    register: peer_info
+
+  - name: Assert expected values
+    ansible.builtin.assert:
+      that:
+      - peer_info is successful
+      - "'vpc_peering_connections' in peer_info"
+      - "'result' in peer_info"
+      - "'accepter_vpc_info' in peer_details"
+      - "'requester_vpc_info' in peer_details"
+      - "'status' in peer_details"
+      - "'code' in peer_details.status"
+      - peer_details.status.code == "pending-acceptance"
+      - "'message' in peer_details.status"
+      - "'tags' in peer_details"
+      - "'Name' in peer_details.tags"
+      - peer_details.tags.Name == connection_name
+      - "'vpc_peering_connection_id' in peer_details"
+      - peer_details.vpc_peering_connection_id == peer_id_1
+        # Acceptor info isn't available until the connection has been accepted
+      - "'cidr_block' not in acceptor_details"
+      - "'cidr_block_set' not in acceptor_details"
+      - "'peering_options' not in acceptor_details"
+      - "'owner_id' in acceptor_details"
+      - acceptor_details.owner_id == account_id
+      - "'region' in acceptor_details"
+      - acceptor_details.region == aws_region
+      - "'vpc_id' in acceptor_details"
+      - acceptor_details.vpc_id == vpc_2
+        # Information about the 'requesting' VPC
+      - "'cidr_block' in requester_details"
+      - requester_details.cidr_block == vpc_1_cidr
+      - "'cidr_block_set' in requester_details"
+      - requester_details.cidr_block_set | length == 1
+      - "'cidr_block' in requester_details.cidr_block_set[0]"
+      - requester_details.cidr_block_set[0].cidr_block == vpc_1_cidr
+      - "'peering_options' in requester_details"
+      - "'owner_id' in requester_details"
+      - requester_details.owner_id == account_id
+      - "'region' in requester_details"
+      - requester_details.region == aws_region
+      - "'vpc_id' in requester_details"
+      - requester_details.vpc_id == vpc_1
+    vars:
+      peer_details: '{{ peer_info.vpc_peering_connections[0] }}'
+      acceptor_details: '{{ peer_details["accepter_vpc_info"] }}'
+      requester_details: '{{ peer_details["requester_vpc_info"] }}'
+
+  - name: Get all EC2 VPC Peering Connections with specific filters
+    amazon.aws.ec2_vpc_peering_info:
+      filters:
+        status-code: [pending-acceptance]
+    register: pending_vpc_peers
+
+  - name: Assert expected values
+    ansible.builtin.assert:
+      that:
+        # Not guaranteed to just be us, only assert the shape
+      - pending_vpc_peers is successful
+      - "'vpc_peering_connections' in peer_info"
+      - "'result' in peer_info"
+      - "'accepter_vpc_info' in peer_details"
+      - "'requester_vpc_info' in peer_details"
+      - "'status' in peer_details"
+      - "'code' in peer_details.status"
+      - peer_details.status.code == "pending-acceptance"
+      - "'message' in peer_details.status"
+      - "'tags' in peer_details"
+      - "'vpc_peering_connection_id' in peer_details"
+        # Acceptor info isn't available until the connection has been accepted
+      - "'cidr_block' not in acceptor_details"
+      - "'cidr_block_set' not in acceptor_details"
+      - "'peering_options' not in acceptor_details"
+      - "'owner_id' in acceptor_details"
+      - "'region' in acceptor_details"
+      - "'vpc_id' in acceptor_details"
+        # Information about the 'requesting' VPC
+      - "'cidr_block' in requester_details"
+      - "'cidr_block_set' in requester_details"
+      - "'cidr_block' in requester_details.cidr_block_set[0]"
+      - "'peering_options' in requester_details"
+      - "'owner_id' in requester_details"
+      - "'region' in requester_details"
+      - "'vpc_id' in requester_details"
+    vars:
+      peer_details: '{{ pending_vpc_peers.vpc_peering_connections[0] }}'
+      acceptor_details: '{{ peer_details["accepter_vpc_info"] }}'
+      requester_details: '{{ peer_details["requester_vpc_info"] }}'
+
+  - name: Update tags on the EC2 VPC Peering Connection (check_mode)
+    amazon.aws.ec2_vpc_peer:
+      vpc_id: '{{ vpc_1 }}'
+      peer_vpc_id: '{{ vpc_2 }}'
+      state: present
+      tags:
+        Name: '{{ connection_name }}'
+        testPrefix: '{{ resource_prefix }}'
+    check_mode: true
+    register: tag_peer
+
+  - name: Assert success
+    ansible.builtin.assert:
+      that:
+      - tag_peer is changed
+
+  - name: Update tags on the EC2 VPC Peering Connection
+    amazon.aws.ec2_vpc_peer:
+      vpc_id: '{{ vpc_1 }}'
+      peer_vpc_id: '{{ vpc_2 }}'
+      state: present
+      tags:
+        Name: '{{ connection_name }}'
+        testPrefix: '{{ resource_prefix }}'
+    register: tag_peer
+
+  - name: Assert success
+    ansible.builtin.assert:
+      that:
+      - tag_peer is changed
+      - tag_peer is successful
+      - tag_peer.peering_id == peer_id_1
+
+  - name: Update tags on the EC2 VPC Peering Connection (idempotency check_mode)
+    amazon.aws.ec2_vpc_peer:
+      vpc_id: '{{ vpc_1 }}'
+      peer_vpc_id: '{{ vpc_2 }}'
+      state: present
+      tags:
+        Name: '{{ connection_name }}'
+        testPrefix: '{{ resource_prefix }}'
+    check_mode: true
+    register: tag_peer
+
+  - name: Assert success
+    ansible.builtin.assert:
+      that:
+      - tag_peer is not changed
+
+  - name: Update tags on the EC2 VPC Peering Connection (idempotency)
+    amazon.aws.ec2_vpc_peer:
+      vpc_id: '{{ vpc_1 }}'
+      peer_vpc_id: '{{ vpc_2 }}'
+      state: present
+      tags:
+        Name: '{{ connection_name }}'
+        testPrefix: '{{ resource_prefix }}'
+    register: tag_peer
+
+  - name: Assert success
+    ansible.builtin.assert:
+      that:
+      - tag_peer is not changed
+      - tag_peer is successful
+      - tag_peer.peering_id == peer_id_1
+
+  - name: Get details on specific EC2 VPC Peering Connection
+    amazon.aws.ec2_vpc_peering_info:
+      peer_connection_ids:
+      - '{{ peer_id_1 }}'
+    register: peer_info
+
+  - name: Assert expected tags
+    ansible.builtin.assert:
+      that:
+      - peer_info is successful
+      - "'tags' in peer_details"
+      - "'Name' in peer_details.tags"
+      - "'testPrefix' in peer_details.tags"
+      - peer_details.tags.Name == connection_name
+      - peer_details.tags.testPrefix == resource_prefix
+    vars:
+      peer_details: '{{ peer_info.vpc_peering_connections[0] }}'
+
+  - name: Accept local EC2 VPC Peering request (check_mode)
+    amazon.aws.ec2_vpc_peer:
+      peering_id: '{{ vpc_peer.peering_id }}'
+      state: accept
+      wait: true
+    check_mode: true
+    register: action_peer
+
+  - name: Assert success
+    ansible.builtin.assert:
+      that:
+      - action_peer is changed
+
+  - name: Accept local EC2 VPC Peering request
+    amazon.aws.ec2_vpc_peer:
+      peering_id: '{{ vpc_peer.peering_id }}'
+      state: accept
+      wait: true
+    register: action_peer
+
+  - name: Assert success
+    ansible.builtin.assert:
+      that:
+      - action_peer is changed
+      - action_peer is successful
+      - action_peer.peering_id == peer_id_1
+      - action_peer.vpc_peering_connection.accepter_vpc_info.cidr_block == vpc_2_cidr
+      - action_peer.vpc_peering_connection.vpc_peering_connection_id == peer_id_1
+
+  - name: Get details on specific EC2 VPC Peering Connection
+    amazon.aws.ec2_vpc_peering_info:
+      peer_connection_ids:
+      - '{{ peer_id_1 }}'
+    register: peer_info
+
+  - name: Assert expected values
+    ansible.builtin.assert:
+      that:
+      - peer_info is successful
+      - "'vpc_peering_connections' in peer_info"
+      - "'result' in peer_info"
+      - "'accepter_vpc_info' in peer_details"
+      - "'requester_vpc_info' in peer_details"
+      - "'status' in peer_details"
+      - "'code' in peer_details.status"
+      - peer_details.status.code == "active"
+      - "'message' in peer_details.status"
+      - "'tags' in peer_details"
+      - "'Name' in peer_details.tags"
+      - peer_details.tags.Name == connection_name
+      - "'testPrefix' in peer_details.tags"
+      - peer_details.tags.testPrefix == resource_prefix
+      - "'vpc_peering_connection_id' in peer_details"
+      - peer_details.vpc_peering_connection_id == peer_id_1
+        # Information about the 'accepting' VPC should be available now
+      - "'cidr_block' in acceptor_details"
+      - acceptor_details.cidr_block == vpc_2_cidr
+      - "'cidr_block_set' in acceptor_details"
+      - acceptor_details.cidr_block_set | length == 1
+      - "'cidr_block' in acceptor_details.cidr_block_set[0]"
+      - acceptor_details.cidr_block_set[0].cidr_block == vpc_2_cidr
+      - "'peering_options' in acceptor_details"
+      - "'owner_id' in acceptor_details"
+      - acceptor_details.owner_id == account_id
+      - "'region' in acceptor_details"
+      - acceptor_details.region == aws_region
+      - "'vpc_id' in acceptor_details"
+      - acceptor_details.vpc_id == vpc_2
+        # Information about the 'requesting' VPC
+      - "'cidr_block' in requester_details"
+      - requester_details.cidr_block == vpc_1_cidr
+      - "'cidr_block_set' in requester_details"
+      - requester_details.cidr_block_set | length == 1
+      - "'cidr_block' in requester_details.cidr_block_set[0]"
+      - requester_details.cidr_block_set[0].cidr_block == vpc_1_cidr
+      - "'peering_options' in requester_details"
+      - "'owner_id' in requester_details"
+      - requester_details.owner_id == account_id
+      - "'region' in requester_details"
+      - requester_details.region == aws_region
+      - "'vpc_id' in requester_details"
+      - requester_details.vpc_id == vpc_1
+    vars:
+      peer_details: '{{ peer_info.vpc_peering_connections[0] }}'
+      acceptor_details: '{{ peer_details["accepter_vpc_info"] }}'
+      requester_details: '{{ peer_details["requester_vpc_info"] }}'
+
+  - name: Accept local EC2 VPC Peering request (idempotency check_mode)
+    amazon.aws.ec2_vpc_peer:
+      peering_id: '{{ vpc_peer.peering_id }}'
+      state: accept
+    check_mode: true
+    register: action_peer
+
+  - name: Assert success
+    ansible.builtin.assert:
+      that:
+      - action_peer is not changed
+
+  - name: Accept local EC2 VPC Peering request (idempotency)
+    amazon.aws.ec2_vpc_peer:
+      peering_id: '{{ vpc_peer.peering_id }}'
+      state: accept
+    register: action_peer
+
+  - name: Assert success
+    ansible.builtin.assert:
+      that:
+      - action_peer is not changed
+      - action_peer is successful
+      - action_peer.peering_id == peer_id_1
+      - action_peer.vpc_peering_connection.vpc_peering_connection_id == peer_id_1
+
+  - name: Delete a local EC2 VPC Peering Connection (check_mode)
+    amazon.aws.ec2_vpc_peer:
+      peering_id: '{{ vpc_peer.peering_id }}'
+      state: absent
+    check_mode: true
+    register: delete_peer
+
+  - name: Assert success
+    ansible.builtin.assert:
+      that:
+      - delete_peer is changed
+
+  - name: Delete a local EC2 VPC Peering Connection
+    amazon.aws.ec2_vpc_peer:
+      peering_id: '{{ vpc_peer.peering_id }}'
+      state: absent
+    register: delete_peer
+
+  - name: Assert success
+    ansible.builtin.assert:
+      that:
+      - delete_peer is changed
+      - delete_peer is successful
+      - "'peering_id' in delete_peer"
+
+  - name: Get details on specific EC2 VPC Peering Connection
+    amazon.aws.ec2_vpc_peering_info:
+      peer_connection_ids:
+      - '{{  peer_id_1}}'
+    register: peer_info
+
+  - name: Assert expected values
+    ansible.builtin.assert:
+      that:
+      - peer_info is successful
+      - "'vpc_peering_connections' in peer_info"
+      - "'result' in peer_info"
+      - "'accepter_vpc_info' in peer_details"
+      - "'requester_vpc_info' in peer_details"
+      - "'status' in peer_details"
+      - "'code' in peer_details.status"
+      - peer_details.status.code == "deleted"
+      - "'message' in peer_details.status"
+      - "'tags' in peer_details"
+      - "'Name' in peer_details.tags"
+      - peer_details.tags.Name == connection_name
+      - "'testPrefix' in peer_details.tags"
+      - peer_details.tags.testPrefix == resource_prefix
+      - "'vpc_peering_connection_id' in peer_details"
+      - peer_details.vpc_peering_connection_id == peer_id_1
+        # Information about the 'accepting' VPC is reduced again
+      - "'cidr_block' not in acceptor_details"
+      - "'cidr_block_set' not in acceptor_details"
+      - "'peering_options' not in acceptor_details"
+      - "'owner_id' in acceptor_details"
+      - acceptor_details.owner_id == account_id
+      - "'region' in acceptor_details"
+      - acceptor_details.region == aws_region
+      - "'vpc_id' in acceptor_details"
+      - acceptor_details.vpc_id == vpc_2
+        # Information about the 'requesting' VPC is reduced once the VPC's deleted
+      - "'cidr_block' not in requester_details"
+      - "'cidr_block_set' not in requester_details"
+      - "'peering_options' not in requester_details"
+      - "'owner_id' in requester_details"
+      - requester_details.owner_id == account_id
+      - "'region' in requester_details"
+      - requester_details.region == aws_region
+      - "'vpc_id' in requester_details"
+      - requester_details.vpc_id == vpc_1
+    vars:
+      peer_details: '{{ peer_info.vpc_peering_connections[0] }}'
+      acceptor_details: '{{ peer_details["accepter_vpc_info"] }}'
+      requester_details: '{{ peer_details["requester_vpc_info"] }}'
+
+  - name: Delete a local EC2 VPC Peering Connection (idempotency check_mode)
+    amazon.aws.ec2_vpc_peer:
+      peering_id: '{{ vpc_peer.peering_id }}'
+      state: absent
+    check_mode: true
+    register: delete_peer
+
+  - name: Assert success
+    ansible.builtin.assert:
+      that:
+      - delete_peer is not changed
+
+  - name: Delete a local EC2 VPC Peering Connection (idempotency)
+    amazon.aws.ec2_vpc_peer:
+      peering_id: '{{ vpc_peer.peering_id }}'
+      state: absent
+    register: delete_peer
+
+  - name: Assert success
+    ansible.builtin.assert:
+      that:
+      - delete_peer is not changed
+      - delete_peer is successful
+
+  - name: Create local account EC2 VPC Peering Connection
+    amazon.aws.ec2_vpc_peer:
+      vpc_id: '{{ vpc_1 }}'
+      peer_vpc_id: '{{ vpc_2 }}'
+      state: present
+      tags:
+        Name: Peering connection for VPC {{ vpc_1 }} to VPC {{ vpc_2 }}
+    register: vpc_peer2
+
+  - name: Assert success
+    ansible.builtin.assert:
+      that:
+      - vpc_peer2 is changed
+      - vpc_peer2 is successful
+      - "'peering_id' in vpc_peer2"
+      - vpc_peer2.peering_id.startswith('pcx-')
+
+  - name: Store Connection ID
+    ansible.builtin.set_fact:
+      peer_id_2: '{{ vpc_peer2.peering_id }}'
+
+  - name: Reject a local EC2 VPC Peering Connection
+    amazon.aws.ec2_vpc_peer:
+      peering_id: '{{ vpc_peer2.peering_id }}'
+      state: reject
+      wait: true
+    register: reject_peer
+
+  - name: Assert success
+    ansible.builtin.assert:
+      that:
+      - reject_peer is changed
+      - reject_peer is successful
+      - reject_peer.peering_id == peer_id_2
+
+  - name: Reject a local EC2 VPC Peering Connection (idempotency)
+    amazon.aws.ec2_vpc_peer:
+      peering_id: '{{ vpc_peer2.peering_id }}'
+      state: reject
+    register: reject_peer
+
+  - name: Assert success
+    ansible.builtin.assert:
+      that:
+      - reject_peer is not changed
+      - reject_peer is successful
+      - reject_peer.peering_id == peer_id_2
+      - reject_peer.vpc_peering_connection.vpc_peering_connection_id == peer_id_2
+
+  - name: Delete a local EC2 VPC Peering Connections
+    amazon.aws.ec2_vpc_peer:
+      peering_id: '{{ vpc_peer2.peering_id }}'
+      state: absent
+    register: delete_peer
+
+  - name: Assert success
+    ansible.builtin.assert:
+      that:
+      - delete_peer is not changed
+      - delete_peer is successful
+
+  always:
+
+  - name: Find all EC2 VPC Peering Connections for our VPCs
+    amazon.aws.ec2_vpc_peering_info:
+      filters:
+        accepter-vpc-info.vpc-id: '{{ item }}'
+    register: peering_info
+    loop:
+    - '{{ vpc_1 }}'
+    - '{{ vpc_2 }}'
+
+  - ansible.builtin.set_fact:
+      vpc_peering_connection_ids: '{{ _vpc_peering_connections | map(attribute="vpc_peering_connection_id")
+        | list }}'
+    vars:
+      _vpc_peering_connections: '{{ peering_info.results | map(attribute="vpc_peering_connections")
+        | flatten }}'
+    ignore_errors: true
+
+    # ============================================================
+
+  - name: Delete remaining EC2 VPC Peering Connections
+    amazon.aws.ec2_vpc_peer:
+      peering_id: '{{ item }}'
+      state: absent
+    ignore_errors: true
+    loop: '{{ vpc_peering_connection_ids }}'
+
+  - name: Tidy up VPCs
+    amazon.aws.ec2_vpc_net:
+      name: '{{ item.name }}'
+      state: absent
+      cidr_block: '{{ item.cidr }}'
+    ignore_errors: true
+    loop:
+    - {name: '{{ vpc_2_name }}', cidr: '{{ vpc_2_cidr }}'}
+    - {name: '{{ vpc_1_name }}', cidr: '{{ vpc_1_cidr }}'}

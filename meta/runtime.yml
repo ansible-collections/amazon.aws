@@ -74,6 +74,8 @@ action_groups:
     - ec2_vpc_nat_gateway_info
     - ec2_vpc_net
     - ec2_vpc_net_info
+    - ec2_vpc_peer
+    - ec2_vpc_peering_info
     - ec2_vpc_route_table
     - ec2_vpc_route_table_info
     - ec2_vpc_subnet
