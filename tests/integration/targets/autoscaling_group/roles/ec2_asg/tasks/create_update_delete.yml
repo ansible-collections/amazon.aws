@@ -580,3 +580,25 @@
           - output.target_group_arns | length == 1
           - output.target_group_arns[0] == out_tg1.target_group_arn
           - output.changed == false
+    # ============================================================
+    - name: Create autosclaing group with instance protection enabled
+      amazon.aws.autoscaling_group:
+        name: "{{ resource_prefix }}-asg"
+        protected_from_scale_in: true
+      register: output
+
+    - name: Assert ASG created
+      ansible.builtin.assert:
+        that:
+          - output.changed == true or (output.changed == false and output.protected_from_scale_in == true)
+      
+    - name: Disable instance protection from asg
+      amazon.aws.autoscaling_group:
+        name: "{{ resource_prefix  }}-asg"
+        protected_from_scale_in: false
+      register: modified_output
+    
+    - name: Assert ASG modification
+      ansible.builtin.assert:
+        that:
+          - protected_from_scale_in.changed == true
