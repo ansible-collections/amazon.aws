@@ -1,0 +1,3706 @@
+# =============================================================================
+# Creation
+- block:
+  - name: (CHECK_MODE) Create an attachment - minimal parameters
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      transit_gateway: '{{ tgw_id }}'
+      subnets:
+      - '{{ subnet_id_a_1 }}'
+    register: simple_attach
+
+  - name: Assert that attachment parameters are returned in CHECK_MODE
+    ansible.builtin.assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: Create an attachment - minimal parameters
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      transit_gateway: '{{ tgw_id }}'
+      subnets:
+      - '{{ subnet_id_a_1 }}'
+    register: simple_attach
+
+  - name: Assert that the create attachment is successful
+    ansible.builtin.assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.transit_gateway_attachment_id.startswith('tgw-attach-')
+      - attachment.state == 'available'
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: Save Attachment ID
+    ansible.builtin.set_fact:
+      simple_attachment_id: '{{ simple_attach.attachments[0].transit_gateway_attachment_id
+        }}'
+
+  - name: (CHECK_MODE) Create an attachment - minimal parameters -- IDEMPOTENCY
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      transit_gateway: '{{ tgw_id }}'
+      subnets:
+      - '{{ subnet_id_a_1 }}'
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: Create an attachment - minimal parameters -- IDEMPOTENCY
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      transit_gateway: '{{ tgw_id }}'
+      subnets:
+      - '{{ subnet_id_a_1 }}'
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+# =====
+
+  - name: (CHECK_MODE) By Id - minimal parameters -- IDEMPOTENCY
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_1 }}'
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: By Id - minimal parameters -- IDEMPOTENCY
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_1 }}'
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+# =============================================================================
+# Set a name
+
+  - name: (CHECK_MODE) Set name
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      name: '{{ attachment_name }}'
+    register: simple_attach
+
+  - name: Assert that the attachment parameters are returned in CHECK_MODE
+    ansible.builtin.assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 1
+      - '"Name" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: Set name
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      name: '{{ attachment_name }}'
+    register: simple_attach
+
+  - name: Assert that 'Set name' is successful
+    ansible.builtin.assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 1
+      - '"Name" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: (CHECK_MODE) Set name -- IDEMPOTENCY
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      name: '{{ attachment_name }}'
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 1
+      - '"Name" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: Set name -- IDEMPOTENCY
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      name: '{{ attachment_name }}'
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 1
+      - '"Name" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+# =====
+
+  - name: (CHECK_MODE) By Name - minimal parameters -- IDEMPOTENCY
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+      subnets:
+      - '{{ subnet_id_a_1 }}'
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 1
+      - '"Name" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: By Name - minimal parameters -- IDEMPOTENCY
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+      subnets:
+      - '{{ subnet_id_a_1 }}'
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 1
+      - '"Name" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+# =============================================================================
+# Describe
+
+  - name: Describe all attachments
+    amazon.aws.ec2_transit_gateway_vpc_attachment_info:
+    register: info
+
+  - name: Assert that the transit_gateway_vpc_attachment_info is returned sucessfully
+    ansible.builtin.assert:
+      that:
+      - info is not changed
+      - '"attachments" in info'
+      - info.attachments | length >= 2
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length >= 1
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - '"Name" in attachment.tags'
+    vars:
+      attachment: '{{ info.attachments[0] }}'
+
+  - name: Describe attachments on a specific VPC
+    amazon.aws.ec2_transit_gateway_vpc_attachment_info:
+      filters:
+        transit-gateway-id: '{{ tgw_id }}'
+    register: info
+
+  - name: Assert that the returned info is correct
+    ansible.builtin.assert:
+      that:
+      - info is not changed
+      - '"attachments" in info'
+      - info.attachments | length == 2
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length >= 1
+      - attachment.transit_gateway_id == tgw_id
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - '"Name" in attachment.tags'
+    vars:
+      attachment: '{{ info.attachments[0] }}'
+
+  - name: Describe attachment with a specific name
+    amazon.aws.ec2_transit_gateway_vpc_attachment_info:
+      name: '{{ attachment_name }}'
+    register: info
+
+  - name: Assert that the returned info is correct
+    ansible.builtin.assert:
+      that:
+      - info is not changed
+      - '"attachments" in info'
+      - info.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 1
+      - '"Name" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ info.attachments[0] }}'
+
+  - name: Describe attachment by ID
+    amazon.aws.ec2_transit_gateway_vpc_attachment_info:
+      id: '{{ simple_attachment_id }}'
+    register: info
+
+  - name: Assert that the returned info is correct
+    ansible.builtin.assert:
+      that:
+      - info is not changed
+      - '"attachments" in info'
+      - info.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 1
+      - '"Name" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ info.attachments[0] }}'
+
+# =============================================================================
+# Tag attachment
+
+  - name: (CHECK_MODE) Set tags
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+      tags:
+        CamelCase: CamelCaseValue
+        pascalCase: pascalCaseValue
+        snake_case: snake_case_value
+        Tag with Space: value with space
+    register: simple_attach
+
+  - name: Assert that 'Set tags' is successful
+    ansible.builtin.assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 5
+      - '"Name" in attachment.tags'
+      - '"CamelCase" in attachment.tags'
+      - '"pascalCase" in attachment.tags'
+      - '"snake_case" in attachment.tags'
+      - '"Tag with Space" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.tags.CamelCase == 'CamelCaseValue'
+      - attachment.tags.pascalCase == 'pascalCaseValue'
+      - attachment.tags.snake_case == 'snake_case_value'
+      - attachment.tags['Tag with Space'] == 'value with space'
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: Set tags
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+      tags:
+        CamelCase: CamelCaseValue
+        pascalCase: pascalCaseValue
+        snake_case: snake_case_value
+        Tag with Space: value with space
+    register: simple_attach
+
+  - name: Assert that 'Set tags' is successful
+    ansible.builtin.assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 5
+      - '"Name" in attachment.tags'
+      - '"CamelCase" in attachment.tags'
+      - '"pascalCase" in attachment.tags'
+      - '"snake_case" in attachment.tags'
+      - '"Tag with Space" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.tags.CamelCase == 'CamelCaseValue'
+      - attachment.tags.pascalCase == 'pascalCaseValue'
+      - attachment.tags.snake_case == 'snake_case_value'
+      - attachment.tags['Tag with Space'] == 'value with space'
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: (CHECK_MODE) Set tags -- IDEMPOTENCY
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+      tags:
+        CamelCase: CamelCaseValue
+        pascalCase: pascalCaseValue
+        snake_case: snake_case_value
+        Tag with Space: value with space
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 5
+      - '"Name" in attachment.tags'
+      - '"CamelCase" in attachment.tags'
+      - '"pascalCase" in attachment.tags'
+      - '"snake_case" in attachment.tags'
+      - '"Tag with Space" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.tags.CamelCase == 'CamelCaseValue'
+      - attachment.tags.pascalCase == 'pascalCaseValue'
+      - attachment.tags.snake_case == 'snake_case_value'
+      - attachment.tags['Tag with Space'] == 'value with space'
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: Set tags -- IDEMPOTENCY
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+      tags:
+        CamelCase: CamelCaseValue
+        pascalCase: pascalCaseValue
+        snake_case: snake_case_value
+        Tag with Space: value with space
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 5
+      - '"Name" in attachment.tags'
+      - '"CamelCase" in attachment.tags'
+      - '"pascalCase" in attachment.tags'
+      - '"snake_case" in attachment.tags'
+      - '"Tag with Space" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.tags.CamelCase == 'CamelCaseValue'
+      - attachment.tags.pascalCase == 'pascalCaseValue'
+      - attachment.tags.snake_case == 'snake_case_value'
+      - attachment.tags['Tag with Space'] == 'value with space'
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: Describe attachment with tags set
+    amazon.aws.ec2_transit_gateway_vpc_attachment_info:
+      id: '{{ simple_attachment_id }}'
+    register: info
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - info is not changed
+      - '"attachments" in info'
+      - info.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 5
+      - '"Name" in attachment.tags'
+      - '"CamelCase" in attachment.tags'
+      - '"pascalCase" in attachment.tags'
+      - '"snake_case" in attachment.tags'
+      - '"Tag with Space" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.tags.CamelCase == 'CamelCaseValue'
+      - attachment.tags.pascalCase == 'pascalCaseValue'
+      - attachment.tags.snake_case == 'snake_case_value'
+      - attachment.tags['Tag with Space'] == 'value with space'
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ info.attachments[0] }}'
+
+# =====
+
+  - name: (CHECK_MODE) No change to tags with name set -- IDEMPOTENCY
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 5
+      - '"Name" in attachment.tags'
+      - '"CamelCase" in attachment.tags'
+      - '"pascalCase" in attachment.tags'
+      - '"snake_case" in attachment.tags'
+      - '"Tag with Space" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.tags.CamelCase == 'CamelCaseValue'
+      - attachment.tags.pascalCase == 'pascalCaseValue'
+      - attachment.tags.snake_case == 'snake_case_value'
+      - attachment.tags['Tag with Space'] == 'value with space'
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: No change to tags with name set -- IDEMPOTENCY
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 5
+      - '"Name" in attachment.tags'
+      - '"CamelCase" in attachment.tags'
+      - '"pascalCase" in attachment.tags'
+      - '"snake_case" in attachment.tags'
+      - '"Tag with Space" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.tags.CamelCase == 'CamelCaseValue'
+      - attachment.tags.pascalCase == 'pascalCaseValue'
+      - attachment.tags.snake_case == 'snake_case_value'
+      - attachment.tags['Tag with Space'] == 'value with space'
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+# =====
+
+  - name: (CHECK_MODE) Update tags
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+      purge_tags: false
+      tags:
+        snake_case: snake_case_value 2
+        Tag with Space: value with space 2
+    register: simple_attach
+
+  - name: Assert that the test is successful
+    ansible.builtin.assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 5
+      - '"Name" in attachment.tags'
+      - '"CamelCase" in attachment.tags'
+      - '"pascalCase" in attachment.tags'
+      - '"snake_case" in attachment.tags'
+      - '"Tag with Space" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.tags.CamelCase == 'CamelCaseValue'
+      - attachment.tags.pascalCase == 'pascalCaseValue'
+      - attachment.tags.snake_case == 'snake_case_value 2'
+      - attachment.tags['Tag with Space'] == 'value with space 2'
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: Update tags
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+      purge_tags: false
+      tags:
+        snake_case: snake_case_value 2
+        Tag with Space: value with space 2
+    register: simple_attach
+
+  - name: Assert that the test is successful
+    ansible.builtin.assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 5
+      - '"Name" in attachment.tags'
+      - '"CamelCase" in attachment.tags'
+      - '"pascalCase" in attachment.tags'
+      - '"snake_case" in attachment.tags'
+      - '"Tag with Space" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.tags.CamelCase == 'CamelCaseValue'
+      - attachment.tags.pascalCase == 'pascalCaseValue'
+      - attachment.tags.snake_case == 'snake_case_value 2'
+      - attachment.tags['Tag with Space'] == 'value with space 2'
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: (CHECK_MODE) Update tags -- IDEMPOTENCY
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+      purge_tags: false
+      tags:
+        snake_case: snake_case_value 2
+        Tag with Space: value with space 2
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 5
+      - '"Name" in attachment.tags'
+      - '"CamelCase" in attachment.tags'
+      - '"pascalCase" in attachment.tags'
+      - '"snake_case" in attachment.tags'
+      - '"Tag with Space" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.tags.CamelCase == 'CamelCaseValue'
+      - attachment.tags.pascalCase == 'pascalCaseValue'
+      - attachment.tags.snake_case == 'snake_case_value 2'
+      - attachment.tags['Tag with Space'] == 'value with space 2'
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: Update tags -- IDEMPOTENCY
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+      purge_tags: false
+      tags:
+        snake_case: snake_case_value 2
+        Tag with Space: value with space 2
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 5
+      - '"Name" in attachment.tags'
+      - '"CamelCase" in attachment.tags'
+      - '"pascalCase" in attachment.tags'
+      - '"snake_case" in attachment.tags'
+      - '"Tag with Space" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.tags.CamelCase == 'CamelCaseValue'
+      - attachment.tags.pascalCase == 'pascalCaseValue'
+      - attachment.tags.snake_case == 'snake_case_value 2'
+      - attachment.tags['Tag with Space'] == 'value with space 2'
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+# =====
+
+  - name: (CHECK_MODE) Remove tags
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+      tags:
+        CamelCase: CamelCaseValue
+        pascalCase: pascalCaseValue
+    register: simple_attach
+
+  - name: Assert that the test is successful
+    ansible.builtin.assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 3
+      - '"Name" in attachment.tags'
+      - '"CamelCase" in attachment.tags'
+      - '"pascalCase" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.tags.CamelCase == 'CamelCaseValue'
+      - attachment.tags.pascalCase == 'pascalCaseValue'
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: Remove tags
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+      tags:
+        CamelCase: CamelCaseValue
+        pascalCase: pascalCaseValue
+    register: simple_attach
+
+  - name: Assert that the test is successful
+    ansible.builtin.assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 3
+      - '"Name" in attachment.tags'
+      - '"CamelCase" in attachment.tags'
+      - '"pascalCase" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.tags.CamelCase == 'CamelCaseValue'
+      - attachment.tags.pascalCase == 'pascalCaseValue'
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: (CHECK_MODE) Remove tags -- IDEMPOTENCY
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+      tags:
+        CamelCase: CamelCaseValue
+        pascalCase: pascalCaseValue
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 3
+      - '"Name" in attachment.tags'
+      - '"CamelCase" in attachment.tags'
+      - '"pascalCase" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.tags.CamelCase == 'CamelCaseValue'
+      - attachment.tags.pascalCase == 'pascalCaseValue'
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: Remove tags -- IDEMPOTENCY
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+      tags:
+        CamelCase: CamelCaseValue
+        pascalCase: pascalCaseValue
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 3
+      - '"Name" in attachment.tags'
+      - '"CamelCase" in attachment.tags'
+      - '"pascalCase" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.tags.CamelCase == 'CamelCaseValue'
+      - attachment.tags.pascalCase == 'pascalCaseValue'
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+# =====
+
+  - name: (CHECK_MODE) Add tags with no purge
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+      purge_tags: false
+      tags:
+        AnotherTag: Another Value
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 4
+      - '"Name" in attachment.tags'
+      - '"CamelCase" in attachment.tags'
+      - '"pascalCase" in attachment.tags'
+      - '"AnotherTag" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.tags.CamelCase == 'CamelCaseValue'
+      - attachment.tags.pascalCase == 'pascalCaseValue'
+      - attachment.tags.AnotherTag == 'Another Value'
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: Add tags with no purge
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+      purge_tags: false
+      tags:
+        AnotherTag: Another Value
+    register: simple_attach
+
+  - name: Assert that the test is successful
+    ansible.builtin.assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 4
+      - '"Name" in attachment.tags'
+      - '"CamelCase" in attachment.tags'
+      - '"pascalCase" in attachment.tags'
+      - '"AnotherTag" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.tags.CamelCase == 'CamelCaseValue'
+      - attachment.tags.pascalCase == 'pascalCaseValue'
+      - attachment.tags.AnotherTag == 'Another Value'
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: (CHECK_MODE) Add tags with no purge -- IDEMPOTENCY
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+      purge_tags: false
+      tags:
+        AnotherTag: Another Value
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 4
+      - '"Name" in attachment.tags'
+      - '"CamelCase" in attachment.tags'
+      - '"pascalCase" in attachment.tags'
+      - '"AnotherTag" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.tags.CamelCase == 'CamelCaseValue'
+      - attachment.tags.pascalCase == 'pascalCaseValue'
+      - attachment.tags.AnotherTag == 'Another Value'
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: Add tags with no purge -- IDEMPOTENCY
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+      purge_tags: false
+      tags:
+        AnotherTag: Another Value
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 4
+      - '"Name" in attachment.tags'
+      - '"CamelCase" in attachment.tags'
+      - '"pascalCase" in attachment.tags'
+      - '"AnotherTag" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.tags.CamelCase == 'CamelCaseValue'
+      - attachment.tags.pascalCase == 'pascalCaseValue'
+      - attachment.tags.AnotherTag == 'Another Value'
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+# =====
+
+  - name: (CHECK_MODE) Remove all tags with name set
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+      tags: {}
+    register: simple_attach
+
+  - name: Assert that the test is successful
+    ansible.builtin.assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 1
+      - '"Name" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: Remove all tags with name set
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+      tags: {}
+    register: simple_attach
+
+  - name: Assert that the test is successful
+    ansible.builtin.assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 1
+      - '"Name" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: (CHECK_MODE) Remove all tags with name set -- IDEMPOTENCY
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+      tags: {}
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 1
+      - '"Name" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: Remove all tags with name set -- IDEMPOTENCY
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+      tags: {}
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 1
+      - '"Name" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+# =====
+
+  - name: (CHECK_MODE) Remove all tags including name
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      tags: {}
+    register: simple_attach
+
+  - name: Assert that the test is successful
+    ansible.builtin.assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: Remove all tags including name
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      tags: {}
+    register: simple_attach
+
+  - name: Assert that the test is successful
+    ansible.builtin.assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: (CHECK_MODE) Remove all tags including name -- IDEMPOTENCY
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      tags: {}
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: Remove all tags including name -- IDEMPOTENCY
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      tags: {}
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+# =============================================================================
+# Options
+
+  - name: (CHECK_MODE) Set IPv6 support
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      ipv6_support: true
+    register: simple_attach
+
+  - name: Assert that the test is successful
+    ansible.builtin.assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'enable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: Set IPv6 support
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      ipv6_support: true
+    register: simple_attach
+
+  - name: Assert that the test is successful
+    ansible.builtin.assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'enable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: (CHECK_MODE) Set IPv6 support -- IDEMPOTENCY
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      ipv6_support: true
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'enable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: Set IPv6 support -- IDEMPOTENCY
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      ipv6_support: true
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'enable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+# =====
+
+  - name: (CHECK_MODE) Set DNS support
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      dns_support: false
+    register: simple_attach
+
+  - name: Assert that the test is successful
+    ansible.builtin.assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'disable'
+      - attachment.options.ipv6_support == 'enable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: Set DNS support
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      dns_support: false
+    register: simple_attach
+
+  - name: Assert that the test is successful
+    ansible.builtin.assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'disable'
+      - attachment.options.ipv6_support == 'enable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: (CHECK_MODE) Set DNS support -- IDEMPOTENCY
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      dns_support: false
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'disable'
+      - attachment.options.ipv6_support == 'enable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: Set DNS support -- IDEMPOTENCY
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      dns_support: false
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'disable'
+      - attachment.options.ipv6_support == 'enable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+# =====
+
+  - name: (CHECK_MODE) Set Appliance Mode support
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      appliance_mode_support: true
+    register: simple_attach
+
+  - name: Assert that the test is successful
+    ansible.builtin.assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'enable'
+      - attachment.options.dns_support == 'disable'
+      - attachment.options.ipv6_support == 'enable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: Set Appliance Mode support
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      appliance_mode_support: true
+    register: simple_attach
+
+  - name: Assert that the test is successful
+    ansible.builtin.assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'enable'
+      - attachment.options.dns_support == 'disable'
+      - attachment.options.ipv6_support == 'enable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: (CHECK_MODE) Set Appliance Mode support -- IDEMPOTENCY
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      appliance_mode_support: true
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'enable'
+      - attachment.options.dns_support == 'disable'
+      - attachment.options.ipv6_support == 'enable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: Set Appliance Mode support -- IDEMPOTENCY
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      appliance_mode_support: true
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'enable'
+      - attachment.options.dns_support == 'disable'
+      - attachment.options.ipv6_support == 'enable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+# =====
+
+  - name: (CHECK_MODE) Update IPv6 support
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      ipv6_support: false
+    register: simple_attach
+
+  - name: Assert that the test is successful
+    ansible.builtin.assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'enable'
+      - attachment.options.dns_support == 'disable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: Update IPv6 support
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      ipv6_support: false
+    register: simple_attach
+
+  - name: Assert that the test is successful
+    ansible.builtin.assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'enable'
+      - attachment.options.dns_support == 'disable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: (CHECK_MODE) Update IPv6 support -- IDEMPOTENCY
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      ipv6_support: false
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'enable'
+      - attachment.options.dns_support == 'disable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: Update IPv6 support -- IDEMPOTENCY
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      ipv6_support: false
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'enable'
+      - attachment.options.dns_support == 'disable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+# =====
+
+  - name: (CHECK_MODE) Update DNS support
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      dns_support: true
+    register: simple_attach
+
+  - name: Assert that the test is successful
+    ansible.builtin.assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'enable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: Update DNS support
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      dns_support: true
+    register: simple_attach
+
+  - name: Assert that the test is successful
+    ansible.builtin.assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'enable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: (CHECK_MODE) Update DNS support -- IDEMPOTENCY
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      dns_support: true
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'enable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: Update DNS support -- IDEMPOTENCY
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      dns_support: true
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'enable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+# =====
+
+  - name: (CHECK_MODE) Update Appliance Mode support
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      appliance_mode_support: false
+    register: simple_attach
+
+  - name: Assert that the test is successful
+    ansible.builtin.assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: Update Appliance Mode support
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      appliance_mode_support: false
+    register: simple_attach
+
+  - name: Assert that the test is successful
+    ansible.builtin.assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: (CHECK_MODE) Update Appliance Mode support -- IDEMPOTENCY
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      appliance_mode_support: false
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: Update Appliance Mode support -- IDEMPOTENCY
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      appliance_mode_support: false
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+# =============================================================================
+# Subnet Management
+
+  - name: (CHECK_MODE) Try to add subnet from a different VPC - no purge
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_b_2 }}'
+      purge_subnets: false
+    register: simple_attach
+    ignore_errors: true
+
+  - name: Assert that the test failed
+    ansible.builtin.assert:
+      that:
+      - simple_attach is failed
+
+  - name: Try to add subnet from a different VPC - no purge
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_b_2 }}'
+      purge_subnets: false
+    register: simple_attach
+    ignore_errors: true
+
+  - name: Assert that the test failed
+    ansible.builtin.assert:
+      that:
+      - simple_attach is failed
+
+# =====
+
+  - name: (CHECK_MODE) Try to add subnet from a different VPC - with purge
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_1 }}'
+      - '{{ subnet_id_b_2 }}'
+      purge_subnets: true
+    register: simple_attach
+    ignore_errors: true
+
+  - name: Assert that the test failed
+    ansible.builtin.assert:
+      that:
+      - simple_attach is failed
+
+  - name: Try to add subnet from a different VPC - with purge
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_1 }}'
+      - '{{ subnet_id_b_2 }}'
+      purge_subnets: true
+    register: simple_attach
+    ignore_errors: true
+
+  - name: Assert that the test failed
+    ansible.builtin.assert:
+      that:
+      - simple_attach is failed
+
+# =====
+
+  - name: (CHECK_MODE) Try to add subnet in the same AZ - no purge
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_b_1a }}'
+      purge_subnets: false
+    register: simple_attach
+    ignore_errors: true
+
+  - name: Assert that the test failed
+    ansible.builtin.assert:
+      that:
+      - simple_attach is failed
+
+  - name: Try to add subnet in the same AZ - no purge
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_1a }}'
+      purge_subnets: false
+    register: simple_attach
+    ignore_errors: true
+
+  - name: Assert that the test failed
+    ansible.builtin.assert:
+      that:
+      - simple_attach is failed
+
+# =====
+
+  - name: (CHECK_MODE) Try to add subnet in the same AZ - with purge
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_1 }}'
+      - '{{ subnet_id_a_1a }}'
+      purge_subnets: true
+    register: simple_attach
+    ignore_errors: true
+
+  - name: Assert that the test failed
+    ansible.builtin.assert:
+      that:
+      - simple_attach is failed
+
+  - name: Try to add subnet in the same AZ - with purge
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_1 }}'
+      - '{{ subnet_id_a_1a }}'
+      purge_subnets: true
+    register: simple_attach
+    ignore_errors: true
+
+  - name: Assert that the test failed
+    ansible.builtin.assert:
+      that:
+      - simple_attach is failed
+
+# =====
+
+  - name: (CHECK_MODE) Add subnet - without purge
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_2 }}'
+      purge_subnets: false
+    register: simple_attach
+
+  - name: Assert that the test is successful
+    ansible.builtin.assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 2
+      - subnet_id_a_1 in attachment.subnet_ids
+      - subnet_id_a_2 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: Add subnet - without purge
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_2 }}'
+      purge_subnets: false
+    register: simple_attach
+
+  - name: Assert that the test is successful
+    ansible.builtin.assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 2
+      - subnet_id_a_1 in attachment.subnet_ids
+      - subnet_id_a_2 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: (CHECK_MODE) Add subnet - without purge -- IDEMPOTENCY
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_2 }}'
+      purge_subnets: false
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 2
+      - subnet_id_a_1 in attachment.subnet_ids
+      - subnet_id_a_2 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: Add subnet - without purge -- IDEMPOTENCY
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_2 }}'
+      purge_subnets: false
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 2
+      - subnet_id_a_1 in attachment.subnet_ids
+      - subnet_id_a_2 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+# =====
+
+  - name: (CHECK_MODE) Add subnet - with purge
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_1 }}'
+      - '{{ subnet_id_a_2 }}'
+      - '{{ subnet_id_a_3 }}'
+      purge_subnets: true
+    register: simple_attach
+
+  - name: Assert that the test is successful
+    ansible.builtin.assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 3
+      - subnet_id_a_1 in attachment.subnet_ids
+      - subnet_id_a_2 in attachment.subnet_ids
+      - subnet_id_a_3 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: Add subnet - with purge
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_1 }}'
+      - '{{ subnet_id_a_2 }}'
+      - '{{ subnet_id_a_3 }}'
+      purge_subnets: true
+    register: simple_attach
+
+  - name: Assert that the test is successful
+    ansible.builtin.assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 3
+      - subnet_id_a_1 in attachment.subnet_ids
+      - subnet_id_a_2 in attachment.subnet_ids
+      - subnet_id_a_3 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: (CHECK_MODE) Add subnet - with purge -- IDEMPOTENCY
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_1 }}'
+      - '{{ subnet_id_a_2 }}'
+      - '{{ subnet_id_a_3 }}'
+      purge_subnets: true
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 3
+      - subnet_id_a_1 in attachment.subnet_ids
+      - subnet_id_a_2 in attachment.subnet_ids
+      - subnet_id_a_3 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: Add subnet - with purge -- IDEMPOTENCY
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_1 }}'
+      - '{{ subnet_id_a_2 }}'
+      - '{{ subnet_id_a_3 }}'
+      purge_subnets: true
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 3
+      - subnet_id_a_1 in attachment.subnet_ids
+      - subnet_id_a_2 in attachment.subnet_ids
+      - subnet_id_a_3 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+# =====
+
+  - name: (CHECK_MODE) Remove subnet
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_2 }}'
+      - '{{ subnet_id_a_3 }}'
+      purge_subnets: true
+    register: simple_attach
+
+  - name: Assert that the test is successful
+    ansible.builtin.assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 2
+      - subnet_id_a_2 in attachment.subnet_ids
+      - subnet_id_a_3 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: Remove subnet
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_2 }}'
+      - '{{ subnet_id_a_3 }}'
+      purge_subnets: true
+    register: simple_attach
+
+  - name: Assert that the test is successful
+    ansible.builtin.assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 2
+      - subnet_id_a_2 in attachment.subnet_ids
+      - subnet_id_a_3 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: (CHECK_MODE) Remove subnet -- IDEMPOTENCY
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_2 }}'
+      - '{{ subnet_id_a_3 }}'
+      purge_subnets: true
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 2
+      - subnet_id_a_2 in attachment.subnet_ids
+      - subnet_id_a_3 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: Remove subnet -- IDEMPOTENCY
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_2 }}'
+      - '{{ subnet_id_a_3 }}'
+      purge_subnets: true
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 2
+      - subnet_id_a_2 in attachment.subnet_ids
+      - subnet_id_a_3 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+# =====
+
+  - name: (CHECK_MODE) Remove and add subnet
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_1 }}'
+      - '{{ subnet_id_a_2 }}'
+      purge_subnets: true
+    register: simple_attach
+
+  - name: Assert that the test is successful
+    ansible.builtin.assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 2
+      - subnet_id_a_1 in attachment.subnet_ids
+      - subnet_id_a_2 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: Remove and add subnet
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_1 }}'
+      - '{{ subnet_id_a_2 }}'
+      purge_subnets: true
+    register: simple_attach
+
+  - name: Assert that the test is successful
+    ansible.builtin.assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 2
+      - subnet_id_a_1 in attachment.subnet_ids
+      - subnet_id_a_2 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: (CHECK_MODE) Remove and add subnet -- IDEMPOTENCY
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_1 }}'
+      - '{{ subnet_id_a_2 }}'
+      purge_subnets: true
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 2
+      - subnet_id_a_1 in attachment.subnet_ids
+      - subnet_id_a_2 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: Remove and add subnet -- IDEMPOTENCY
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_1 }}'
+      - '{{ subnet_id_a_2 }}'
+      purge_subnets: true
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 2
+      - subnet_id_a_1 in attachment.subnet_ids
+      - subnet_id_a_2 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+# =============================================================================
+# Deletion
+
+  - name: (CHECK_MODE) Delete an attachment - minimal parameters
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      state: absent
+      id: '{{ simple_attachment_id }}'
+      wait: false
+    register: simple_attach
+
+  - name: Assert that the test is successful
+    ansible.builtin.assert:
+      that:
+      - simple_attach is changed
+
+  - name: Delete an attachment - minimal parameters
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      state: absent
+      id: '{{ simple_attachment_id }}'
+      wait: false
+    register: simple_attach
+
+  - name: Assert that the test is successful
+    ansible.builtin.assert:
+      that:
+      - simple_attach is changed
+
+  - name: (CHECK_MODE) Delete an attachment - minimal parameters -- IDEMPOTENCY
+    check_mode: true
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      state: absent
+      id: '{{ simple_attachment_id }}'
+      wait: false
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is not changed
+
+  - name: Delete an attachment - minimal parameters -- IDEMPOTENCY
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      state: absent
+      id: '{{ simple_attachment_id }}'
+      wait: false
+    register: simple_attach
+
+  - name: Assert that there is no change
+    ansible.builtin.assert:
+      that:
+      - simple_attach is not changed
+
+  always:
+  - name: Delete attachment
+    amazon.aws.ec2_transit_gateway_vpc_attachment:
+      state: absent
+      id: '{{ simple_attachment_id }}'
+      wait: false
+    ignore_errors: true

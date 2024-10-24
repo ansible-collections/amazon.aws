@@ -57,6 +57,8 @@ action_groups:
     - ec2_spot_instance_info
     - ec2_tag
     - ec2_tag_info
+    - ec2_transit_gateway_vpc_attachment
+    - ec2_transit_gateway_vpc_attachment_info
     - ec2_vol
     - ec2_vol_info
     - ec2_vpc_dhcp_option

@@ -1,0 +1,69 @@
+- name: Describe all attachments on our VPC
+  amazon.aws.ec2_transit_gateway_vpc_attachment_info:
+    filters:
+      transit-gateway-id: '{{ tgw_id }}'
+  register: info
+  ignore_errors: true
+
+- name: Start deletion of all attachments
+  amazon.aws.ec2_transit_gateway_vpc_attachment:
+    state: absent
+    id: '{{ item.transit_gateway_attachment_id }}'
+    wait: false
+  loop: '{{ info.attachments }}'
+  ignore_errors: true
+
+- name: Wait for deletion of all attachments
+  amazon.aws.ec2_transit_gateway_vpc_attachment:
+    state: absent
+    id: '{{ item.transit_gateway_attachment_id }}'
+    wait: true
+  loop: '{{ info.attachments }}'
+  ignore_errors: true
+
+- name: Delete subnets
+  amazon.aws.ec2_vpc_subnet:
+    state: absent
+    cidr: '{{ item.cidr }}'
+    vpc_id: '{{ item.vpc_id }}'
+  loop:
+  - cidr: '{{ subnet_cidr_a_1 }}'
+    vpc_id: '{{ vpc_id_a }}'
+  - cidr: '{{ subnet_cidr_a_2 }}'
+    vpc_id: '{{ vpc_id_a }}'
+  - cidr: '{{ subnet_cidr_a_3 }}'
+    vpc_id: '{{ vpc_id_a }}'
+  - cidr: '{{ subnet_cidr_b_1 }}'
+    vpc_id: '{{ vpc_id_b }}'
+  - cidr: '{{ subnet_cidr_b_2 }}'
+    vpc_id: '{{ vpc_id_b }}'
+  - cidr: '{{ subnet_cidr_a_1a }}'
+    vpc_id: '{{ vpc_id_a }}'
+  ignore_errors: true
+
+- name: Delete VPCs to attach to TGW
+  amazon.aws.ec2_vpc_net:
+    state: absent
+    cidr_block: '{{ item.cidr }}'
+    name: '{{ item.name }}'
+  loop:
+  - cidr: '{{ vpc_cidr_a }}'
+    name: '{{ vpc_name_a }}'
+  - cidr: '{{ vpc_cidr_b }}'
+    name: '{{ vpc_name_b }}'
+  ignore_errors: true
+
+- name: Gather info about all transit gateways
+  community.aws.ec2_transit_gateway_info:
+    transit_gateway_ids:
+    - '{{ tgw_id }}'
+    - '{{ tgw_id_2 }}'
+
+- name: Delete Transit Gateways
+  community.aws.ec2_transit_gateway:
+    state: absent
+    transit_gateway_id: '{{ item.tgw_id }}'
+  loop:
+  - tgw_id: '{{ tgw_id }}'
+  - tgw_id: '{{ tgw_id_2 }}'
+  ignore_errors: true
