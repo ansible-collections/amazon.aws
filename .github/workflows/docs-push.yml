@@ -22,6 +22,7 @@ jobs:
     with:
       init-lenient: false
       init-fail-on-error: true
+      ansible-ref: devel
       intersphinx-links: |
         community_aws:https://ansible-collections.github.io/community.aws/branch/main/
         ansible_devel:https://docs.ansible.com/ansible-core/devel/
