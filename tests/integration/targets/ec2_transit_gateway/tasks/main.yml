@@ -12,7 +12,7 @@
       tgw_description: '{{ resource_prefix }}-tgw'
 
   - name: Test create transit gateway without tags - check_mode
-    community.aws.ec2_transit_gateway:
+    amazon.aws.ec2_transit_gateway:
       description: '{{ tgw_description }}'
     register: create_result
     check_mode: true
@@ -24,7 +24,7 @@
       - '"ec2:CreateTransitGateway" not in create_result.resource_actions'
 
   - name: Test create transit gateway without tags
-    community.aws.ec2_transit_gateway:
+    amazon.aws.ec2_transit_gateway:
       description: '{{ tgw_description }}'
     register: create_result
 
@@ -34,7 +34,7 @@
       - create_result.changed == True
 
   - name: Test create transit gateway without tags - idempotency
-    community.aws.ec2_transit_gateway:
+    amazon.aws.ec2_transit_gateway:
       description: '{{ tgw_description }}'
     register: create_result
 
@@ -45,7 +45,7 @@
       - '"ec2:CreateTransitGateway" not in create_result.resource_actions'
 
   - name: Test update transit gateway with tags by description - check_mode
-    community.aws.ec2_transit_gateway:
+    amazon.aws.ec2_transit_gateway:
       description: '{{ tgw_description }}'
       tags:
         Name: Ansible Test TGW
@@ -59,7 +59,7 @@
       - '"ec2:CreateTags" not in result.resource_actions'
 
   - name: Test update transit gateway with tags by description
-    community.aws.ec2_transit_gateway:
+    amazon.aws.ec2_transit_gateway:
       description: '{{ tgw_description }}'
       tags:
         Name: Ansible Test TGW
@@ -73,7 +73,7 @@
       - "'Name' in result.transit_gateway.tags"
 
   - name: Test update transit gateway with tags by description - idempotency
-    community.aws.ec2_transit_gateway:
+    amazon.aws.ec2_transit_gateway:
       description: '{{ tgw_description }}'
       tags:
         Name: Ansible Test TGW
@@ -87,7 +87,7 @@
       - "'Name' in result.transit_gateway.tags"
 
   - name: Test update transit gateway with new tag and purge_tags false - check_mode
-    community.aws.ec2_transit_gateway:
+    amazon.aws.ec2_transit_gateway:
       transit_gateway_id: '{{ create_result.transit_gateway.transit_gateway_id }}'
       purge_tags: false
       tags:
@@ -104,7 +104,7 @@
       - '"ec2:CreateTags" not in result.resource_actions'
 
   - name: Test update transit gateway with new tag and purge_tags false
-    community.aws.ec2_transit_gateway:
+    amazon.aws.ec2_transit_gateway:
       transit_gateway_id: '{{ create_result.transit_gateway.transit_gateway_id }}'
       purge_tags: false
       tags:
@@ -119,7 +119,7 @@
       - "'Name' in result.transit_gateway.tags"
 
   - name: Test update transit gateway with new tag and purge_tags false - idempotency
-    community.aws.ec2_transit_gateway:
+    amazon.aws.ec2_transit_gateway:
       transit_gateway_id: '{{ create_result.transit_gateway.transit_gateway_id }}'
       purge_tags: false
       tags:
@@ -134,7 +134,7 @@
       - "'Name' in result.transit_gateway.tags"
 
   - name: Test update transit gateway with purge_tags true - check_mode
-    community.aws.ec2_transit_gateway:
+    amazon.aws.ec2_transit_gateway:
       transit_gateway_id: '{{ create_result.transit_gateway.transit_gateway_id }}'
       purge_tags: true
       tags:
@@ -150,7 +150,7 @@
       - '"ec2:DeleteTags" not in result.resource_actions'
 
   - name: Test update transit gateway with purge_tags true
-    community.aws.ec2_transit_gateway:
+    amazon.aws.ec2_transit_gateway:
       transit_gateway_id: '{{ create_result.transit_gateway.transit_gateway_id }}'
       purge_tags: true
       tags:
@@ -165,7 +165,7 @@
       - "'Name' not in result.transit_gateway.tags"
 
   - name: Test idempotence
-    community.aws.ec2_transit_gateway:
+    amazon.aws.ec2_transit_gateway:
       description: '{{ tgw_description }}'
       purge_tags: true
       tags:
@@ -182,7 +182,7 @@
       tgw_description_multicast: '{{ resource_prefix }}-tgw-multicast'
 
   - name: Test create transit gateway with multicast enabled - check_mode
-    community.aws.ec2_transit_gateway:
+    amazon.aws.ec2_transit_gateway:
       description: '{{ tgw_description_multicast }}'
       multicast_support: true
     register: create_result
@@ -195,7 +195,7 @@
       - '"ec2:CreateTransitGateway" not in create_result.resource_actions'
 
   - name: Test create transit gateway with multicast enabled
-    community.aws.ec2_transit_gateway:
+    amazon.aws.ec2_transit_gateway:
       description: '{{ tgw_description_multicast }}'
       multicast_support: true
     register: create_result
@@ -206,7 +206,7 @@
       - create_result.changed == True
 
   - name: Test create transit gateway with multicast enabled - idempotency
-    community.aws.ec2_transit_gateway:
+    amazon.aws.ec2_transit_gateway:
       description: '{{ tgw_description_multicast }}'
       multicast_support: true
     register: create_result
@@ -288,7 +288,7 @@
   always:
     ###### TEARDOWN STARTS HERE ######
   - name: Delete transit gateway
-    community.aws.ec2_transit_gateway:
+    amazon.aws.ec2_transit_gateway:
       description: '{{ item }}'
       state: absent
     ignore_errors: true
