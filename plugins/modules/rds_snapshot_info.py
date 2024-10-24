@@ -100,7 +100,7 @@ snapshots:
       type: str
       sample: "rds:hello-world-rds-us1-2018-05-16-04-03"
     dbi_resource_id:
-      description: The identifier for the source DB instance, which can’t be changed and which is unique to an Amazon Web Services Region.
+      description: The identifier for the source DB instance, which can't be changed and which is unique to an Amazon Web Services Region.
       returned: always
       type: str
       sample: "db-ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -165,7 +165,7 @@ snapshots:
       type: str
       sample: "default:postgres-9-5"
     original_snapshot_create_time:
-      description: The time of the CreateDBSnapshot operation. Doesn’t change when the snapshot is copied.
+      description: The time of the CreateDBSnapshot operation. Doesn't change when the snapshot is copied.
       returned: always
       type: str
       sample: "2017-10-10T04:00:07.434000+00:00"
