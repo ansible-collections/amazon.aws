@@ -1,0 +1,11 @@
+---
+ec2_asg_setup_run_once: true
+default_resource_name: "{{ resource_prefix }}-asg-instance"
+default_tiny_name: "{{ tiny_prefix }}-asg-i"
+
+vpc_seed: "{{ default_resource_name }}"
+vpc_cidr: 10.{{ 256 | random(seed=vpc_seed) }}.0.0/16
+subnet_a_az: "{{ ec2_availability_zone_names[0] }}"
+subnet_a_cidr: 10.{{ 256 | random(seed=vpc_seed) }}.32.0/24
+subnet_b_az: "{{ ec2_availability_zone_names[1] }}"
+subnet_b_cidr: 10.{{ 256 | random(seed=vpc_seed) }}.33.0/24

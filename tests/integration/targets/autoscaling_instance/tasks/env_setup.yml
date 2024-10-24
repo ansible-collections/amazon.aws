@@ -1,0 +1,106 @@
+---
+# Set up the testing dependencies: VPC, subnet, security group, and two launch configurations
+- name: Create VPC for use in testing
+  amazon.aws.ec2_vpc_net:
+    name: "{{ default_resource_name }}"
+    cidr_block: "{{ vpc_cidr }}"
+    tenancy: default
+  register: testing_vpc
+
+- ansible.builtin.set_fact:
+    vpc_id: "{{ testing_vpc.vpc.id }}"
+
+- name: Create internet gateway for use in testing
+  amazon.aws.ec2_vpc_igw:
+    vpc_id: "{{ vpc_id }}"
+    state: present
+    tags:
+      Name: "{{ default_resource_name }}"
+  register: igw
+
+- name: Create subnet for use in testing
+  amazon.aws.ec2_vpc_subnet:
+    state: present
+    vpc_id: "{{ vpc_id }}"
+    cidr: "{{ subnet_a_cidr }}"
+    az: "{{ subnet_a_az }}"
+    tags:
+      Name: "{{ default_resource_name }}"
+
+  register: testing_subnet
+- name: create routing rules
+  amazon.aws.ec2_vpc_route_table:
+    vpc_id: "{{ vpc_id }}"
+    tags:
+      Name: "{{ default_resource_name }}"
+    routes:
+      - dest: "0.0.0.0/0"
+        gateway_id: "{{ igw.gateway_id }}"
+    subnets:
+      - "{{ testing_subnet.subnet.id }}"
+
+- name: create a security group with the vpc created in the ec2_setup
+  amazon.aws.ec2_security_group:
+    name: "{{ default_resource_name }}"
+    description: a security group for ansible tests
+    vpc_id: "{{ vpc_id }}"
+    rules:
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: "0.0.0.0/0"
+      - proto: tcp
+        from_port: 80
+        to_port: 80
+        cidr_ip: "0.0.0.0/0"
+  register: sg
+
+# Note: main autoscaling tests use ASG "Launch Configs", these are being phased out in favour of EC2
+# Launch Templates
+- name: ensure launch templates exist
+  community.aws.ec2_launch_template:
+    name: "{{ item }}"
+    network_interfaces:
+      - device_index: 0
+        # XXX confusing - ec2_instance (incorrectly) calls this assign_public_ip
+        associate_public_ip_address: true
+        delete_on_termination: true
+        # XXX confsuing - at the top level this would be security_groups, here it's groups
+        groups: "{{ sg.group_id }}"
+    image_id: "{{ ec2_ami_id }}"
+    user_data: "{{ lookup('ansible.builtin.file', 'user_data') | ansible.builtin.b64encode }}"
+    instance_type: t3.micro
+  loop:
+    - "{{ default_resource_name }}-1"
+    - "{{ default_resource_name }}-2"
+
+- name: create asg and wait for instances to be deemed healthy (no ELB)
+  amazon.aws.autoscaling_group:
+    name: "{{ default_resource_name }}"
+    launch_template:
+      launch_template_name: "{{ default_resource_name }}-1"
+    desired_capacity: 2
+    health_check_period: 10
+    default_cooldown: 10
+    min_size: 0
+    max_size: 4
+    vpc_zone_identifier: "{{ testing_subnet.subnet.id }}"
+    state: present
+    wait_for_instances: true
+  register: create_asg
+- ansible.builtin.assert:
+    that:
+      - create_asg.viable_instances == 2
+      - create_asg.instances | length == 2
+
+- ansible.builtin.assert:
+    that:
+      - create_asg.viable_instances == 2
+      - create_asg.instances | length == 2
+
+- ansible.builtin.set_fact:
+    initial_instances: "{{ create_asg.instances }}"
+    all_instances: "{{ create_asg.instances }}"
+
+- amazon.aws.autoscaling_group_info:
+    name: "{{ default_resource_name }}"
