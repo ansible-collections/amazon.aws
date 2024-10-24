@@ -1,0 +1,203 @@
+- name: Test using IAM instance profile
+  vars:
+    test_launch_template_name: "{{ resource_prefix }}-test-instance-role"
+  block:
+    - name: Create IAM role for test
+      amazon.aws.iam_role:
+        name: "{{ test_role_name }}-1"
+        assume_role_policy_document: "{{ lookup('file','assume-role-policy.json') }}"
+        state: present
+        create_instance_profile: yes
+        managed_policy:
+        - AWSDenyAll
+      register: iam_role
+
+    - name: Create second IAM role for test
+      amazon.aws.iam_role:
+        name: "{{ test_role_name }}-2"
+        assume_role_policy_document: "{{ lookup('file','assume-role-policy.json') }}"
+        state: present
+        create_instance_profile: yes
+        managed_policy:
+        - AWSDenyAll
+      register: iam_role_2
+
+    - name: Make instance with an instance_role
+      amazon.aws.ec2_launch_template:
+        name: "{{ test_launch_template_name }}"
+        image_id: "{{ ec2_ami_id }}"
+        instance_type: t2.micro
+        iam_instance_profile: "{{ test_role_name }}-1"
+      register: template_with_role
+
+    - name: Get launch template details
+      amazon.aws.ec2_launch_template_info:
+        filters:
+          launch-template-name: "{{ test_launch_template_name }}"
+      register: _template_info
+
+    - name: Ensure the launch template was created with IAM instance profile
+      ansible.builtin.assert:
+        that:
+          - 'template_with_role.default_template.launch_template_data.iam_instance_profile.arn == iam_role.iam_role.arn.replace(":role/", ":instance-profile/")'
+          - _template_info.launch_templates | length == 1
+          - _template_info.launch_templates[0].versions | length == 1
+          - _template_info.launch_templates[0].versions[0].launch_template_data.iam_instance_profile.arn == iam_role.iam_role.arn.replace(":role/", ":instance-profile/")
+          - _template_info.launch_templates[0].versions[0].launch_template_data.instance_type == "t2.micro"
+          - _template_info.launch_templates[0].versions[0].launch_template_data.image_id == ec2_ami_id
+
+    - name: Create template again, with no change to instance_role
+      amazon.aws.ec2_launch_template:
+        name: "{{ test_launch_template_name }}"
+        image_id: "{{ ec2_ami_id }}"
+        instance_type: t2.micro
+        iam_instance_profile: "{{ test_role_name }}-1"
+      register: template_with_role
+
+    - name: Get launch template details
+      amazon.aws.ec2_launch_template_info:
+        filters:
+          launch-template-name: "{{ test_launch_template_name }}"
+      register: _template_info
+
+    - name: Validate idempotency
+      ansible.builtin.assert:
+        that:
+          - 'template_with_role.default_template.launch_template_data.iam_instance_profile.arn == iam_role.iam_role.arn.replace(":role/", ":instance-profile/")'
+          - 'template_with_role is not changed'
+          - _template_info.launch_templates | length == 1
+          - _template_info.launch_templates[0].versions | length == 1
+          - _template_info.launch_templates[0].versions[0].launch_template_data.iam_instance_profile.arn == iam_role.iam_role.arn.replace(":role/", ":instance-profile/")
+          - _template_info.launch_templates[0].versions[0].launch_template_data.instance_type == "t2.micro"
+          - _template_info.launch_templates[0].versions[0].launch_template_data.image_id == ec2_ami_id
+
+    - name: Update instance with new instance_role
+      amazon.aws.ec2_launch_template:
+        name: "{{ test_launch_template_name }}"
+        image_id: "{{ ec2_ami_id }}"
+        instance_type: t2.micro
+        iam_instance_profile: "{{ test_role_name }}-2"
+      register: template_with_updated_role
+
+    - name: Get launch template details
+      amazon.aws.ec2_launch_template_info:
+        filters:
+          launch-template-name: "{{ test_launch_template_name }}"
+      register: _template_info
+
+    - name: Ensure that the launch template was updated with new IAM instance profile
+      ansible.builtin.assert:
+        that:
+          - 'template_with_updated_role.default_template.launch_template_data.iam_instance_profile.arn == iam_role_2.iam_role.arn.replace(":role/", ":instance-profile/")'
+          - 'template_with_updated_role.default_template.launch_template_data.iam_instance_profile.arn == iam_role_2.iam_role.arn.replace(":role/", ":instance-profile/")'
+          - 'template_with_role.default_template.version_number < template_with_updated_role.default_template.version_number'
+          - 'template_with_updated_role is changed'
+          - 'template_with_updated_role is not failed'
+          - _template_info.launch_templates | length == 1
+          - _template_info.launch_templates[0].versions | length == 2
+          - template_version.launch_template_data.iam_instance_profile.arn == iam_role_2.iam_role.arn.replace(":role/", ":instance-profile/")
+          - template_version.launch_template_data.instance_type == "t2.micro"
+          - template_version.launch_template_data.image_id == ec2_ami_id
+      vars:
+        template_version: "{{ _template_info.launch_templates[0].versions | selectattr('version_number', 'equalto', 2) | list | first }}"
+
+    - name: Re-set with same new instance_role
+      amazon.aws.ec2_launch_template:
+        name: "{{ test_launch_template_name }}"
+        image_id: "{{ ec2_ami_id }}"
+        instance_type: t2.micro
+        iam_instance_profile: "{{ test_role_name }}-2"
+      register: template_with_updated_role
+
+    - name: Get launch template details
+      amazon.aws.ec2_launch_template_info:
+        filters:
+          launch-template-name: "{{ test_launch_template_name }}"
+      register: _template_info
+
+    - name: Ensure that module did not reported change
+      ansible.builtin.assert:
+        that:
+          - 'template_with_updated_role is not changed'
+          - 'template_with_updated_role.default_template.launch_template_data.iam_instance_profile.arn == iam_role_2.iam_role.arn.replace(":role/", ":instance-profile/")'
+          - _template_info.launch_templates | length == 1
+          - _template_info.launch_templates[0].versions | length == 2
+
+    - name: Update instance with original instance_role (pass profile ARN)
+      amazon.aws.ec2_launch_template:
+        name: "{{ test_launch_template_name }}"
+        image_id: "{{ ec2_ami_id }}"
+        instance_type: t2.micro
+        # By default an instance profile will be created with the same name as the role
+        iam_instance_profile: '{{ iam_role.iam_role.arn.replace(":role/", ":instance-profile/") }}'
+      register: template_with_updated_role
+
+    - name: Get launch template details
+      amazon.aws.ec2_launch_template_info:
+        filters:
+          launch-template-name: "{{ test_launch_template_name }}"
+      register: _template_info
+
+    - name: Validate that the launch template was updated
+      ansible.builtin.assert:
+        that:
+          - 'template_with_updated_role.default_template.launch_template_data.iam_instance_profile.arn == iam_role.iam_role.arn.replace(":role/", ":instance-profile/")'
+          - 'template_with_updated_role.default_template.launch_template_data.iam_instance_profile.arn == iam_role.iam_role.arn.replace(":role/", ":instance-profile/")'
+          - 'template_with_role.default_template.version_number < template_with_updated_role.default_template.version_number'
+          - 'template_with_updated_role is changed'
+          - 'template_with_updated_role is not failed'
+          - _template_info.launch_templates | length == 1
+          - _template_info.launch_templates[0].versions | length == 3
+          - template_version.launch_template_data.iam_instance_profile.arn == iam_role.iam_role.arn.replace(":role/", ":instance-profile/")
+          - template_version.launch_template_data.instance_type == "t2.micro"
+          - template_version.launch_template_data.image_id == ec2_ami_id
+      vars:
+        template_version: "{{ _template_info.launch_templates[0].versions | selectattr('version_number', 'equalto', 3) | list | first }}"
+
+    - name: Re-set with same new instance_role (pass profile ARN)
+      amazon.aws.ec2_launch_template:
+        name: "{{ test_launch_template_name }}"
+        image_id: "{{ ec2_ami_id }}"
+        instance_type: t2.micro
+        iam_instance_profile: '{{ iam_role.iam_role.arn.replace(":role/", ":instance-profile/") }}'
+      register: template_with_updated_role
+
+    - name: Get launch template details
+      amazon.aws.ec2_launch_template_info:
+        filters:
+          launch-template-name: "{{ test_launch_template_name }}"
+      register: _template_info
+
+    - name: Assert that the template was not updated
+      ansible.builtin.assert:
+        that:
+          - 'template_with_updated_role is not changed'
+          - 'template_with_updated_role.default_template.launch_template_data.iam_instance_profile.arn == iam_role.iam_role.arn.replace(":role/", ":instance-profile/")'
+          - _template_info.launch_templates | length == 1
+          - _template_info.launch_templates[0].versions | length == 3
+
+  always:
+    - name: Delete launch template
+      amazon.aws.ec2_launch_template:
+        name: "{{ test_launch_template_name }}"
+        state: absent
+      register: lt_removed
+      ignore_errors: true
+  
+    - name: Delete IAM role for test
+      amazon.aws.iam_role:
+        name: "{{ test_role_name }}-1"
+        assume_role_policy_document: "{{ lookup('file','assume-role-policy.json') }}"
+        state: absent
+        delete_instance_profile: true
+      register: iam_removed
+      ignore_errors: true
+
+    - name: Delete IAM role for test
+      iam_role:
+        name: "{{ test_role_name }}-2"
+        assume_role_policy_document: "{{ lookup('file','assume-role-policy.json') }}"
+        state: absent
+        delete_instance_profile: true
+      register: iam_2_removed
+      ignore_errors: true

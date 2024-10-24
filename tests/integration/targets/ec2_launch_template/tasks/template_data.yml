@@ -1,0 +1,145 @@
+- name: Test launch template data
+  vars:
+    test_launch_template_name: "{{ resource_prefix }}-template-data"
+  block:
+    # Launch template meta data
+    - name: Create launch template (check mode)
+      amazon.aws.ec2_launch_template:
+        name: "{{ test_launch_template_name }}"
+        image_id: "{{ ec2_ami_id }}"
+        instance_type: c4.large
+        cpu_options:
+            core_count: 1
+            threads_per_core: 1
+        network_interfaces:
+          - device_index: 0
+            associate_public_ip_address: false
+            delete_on_termination: true
+          - device_index: 1
+            associate_public_ip_address: true
+            delete_on_termination: false
+            ipv6_address_count: 1
+        metadata_options:
+          http_put_response_hop_limit: 1
+          http_tokens: required
+          http_protocol_ipv6: enabled
+          instance_metadata_tags: enabled
+      register: _create_check
+      check_mode: true
+
+    - name: Retrieve Launch template information
+      amazon.aws.ec2_launch_template_info:
+        filters:
+          launch-template-name: "{{ test_launch_template_name }}"
+      register: _templates
+
+    - name: Ensure module reported change while the template was not created
+      ansible.builtin.assert:
+        that:
+          - _create_check is changed
+          - _templates.launch_templates | length == 0
+
+    - name: Create launch template
+      amazon.aws.ec2_launch_template:
+        name: "{{ test_launch_template_name }}"
+        image_id: "{{ ec2_ami_id }}"
+        instance_type: c4.large
+        cpu_options:
+            core_count: 1
+            threads_per_core: 3
+        network_interfaces:
+          - device_index: 0
+            associate_public_ip_address: false
+            delete_on_termination: true
+          - device_index: 1
+            associate_public_ip_address: true
+            delete_on_termination: false
+            ipv6_address_count: 1
+        metadata_options:
+          http_put_response_hop_limit: 1
+          http_tokens: required
+          http_protocol_ipv6: enabled
+          instance_metadata_tags: enabled
+      register: _create
+
+    - name: Retrieve Launch template information
+      amazon.aws.ec2_launch_template_info:
+        filters:
+          launch-template-name: "{{ test_launch_template_name }}"
+      register: _templates
+
+    - name: Ensure module reported change while the template was not created
+      ansible.builtin.assert:
+        that:
+          - _create is changed
+          - _templates.launch_templates | length == 1
+          - _templates.launch_templates[0].versions | length == 1
+          - _templates.launch_templates[0].versions[0].launch_template_data.cpu_options.core_count == 1
+          - _templates.launch_templates[0].versions[0].launch_template_data.cpu_options.threads_per_core == 3
+          - _templates.launch_templates[0].versions[0].launch_template_data.metadata_options.http_put_response_hop_limit == 1
+          - _templates.launch_templates[0].versions[0].launch_template_data.metadata_options.http_tokens == 'required'
+          - _templates.launch_templates[0].versions[0].launch_template_data.metadata_options.http_protocol_ipv6 == 'enabled'
+          - _templates.launch_templates[0].versions[0].launch_template_data.metadata_options.instance_metadata_tags == 'enabled'
+          - _templates.launch_templates[0].versions[0].launch_template_data.network_interfaces[0].associate_public_ip_address == False
+          - _templates.launch_templates[0].versions[0].launch_template_data.network_interfaces[0].delete_on_termination == True
+          - _templates.launch_templates[0].versions[0].launch_template_data.network_interfaces[0].device_index == 0
+          - _templates.launch_templates[0].versions[0].launch_template_data.network_interfaces[1].associate_public_ip_address == True
+          - _templates.launch_templates[0].versions[0].launch_template_data.network_interfaces[1].delete_on_termination == False
+          - _templates.launch_templates[0].versions[0].launch_template_data.network_interfaces[1].device_index == 1
+          - _templates.launch_templates[0].versions[0].launch_template_data.network_interfaces[1].ipv6_address_count == 1
+
+    - name: Create launch template once again with same parameters (idempotency)
+      amazon.aws.ec2_launch_template:
+        name: "{{ test_launch_template_name }}"
+        image_id: "{{ ec2_ami_id }}"
+        instance_type: c4.large
+        cpu_options:
+            core_count: 1
+            threads_per_core: 3
+        network_interfaces:
+          - device_index: 0
+            associate_public_ip_address: false
+            delete_on_termination: true
+          - device_index: 1
+            associate_public_ip_address: true
+            delete_on_termination: false
+            ipv6_address_count: 1
+        metadata_options:
+          http_put_response_hop_limit: 1
+          http_tokens: required
+          http_protocol_ipv6: enabled
+          instance_metadata_tags: enabled
+      register: _create_idempotency
+
+    - name: Retrieve Launch template information
+      amazon.aws.ec2_launch_template_info:
+        filters:
+          launch-template-name: "{{ test_launch_template_name }}"
+      register: _templates
+
+    - name: Ensure module reported change while the template was not created
+      ansible.builtin.assert:
+        that:
+          - _create_idempotency is not changed
+          - _templates.launch_templates | length == 1
+          - _templates.launch_templates[0].versions | length == 1
+          - _templates.launch_templates[0].versions[0].launch_template_data.cpu_options.core_count == 1
+          - _templates.launch_templates[0].versions[0].launch_template_data.cpu_options.threads_per_core == 3
+          - _templates.launch_templates[0].versions[0].launch_template_data.metadata_options.http_put_response_hop_limit == 1
+          - _templates.launch_templates[0].versions[0].launch_template_data.metadata_options.http_tokens == 'required'
+          - _templates.launch_templates[0].versions[0].launch_template_data.metadata_options.http_protocol_ipv6 == 'enabled'
+          - _templates.launch_templates[0].versions[0].launch_template_data.metadata_options.instance_metadata_tags == 'enabled'
+          - _templates.launch_templates[0].versions[0].launch_template_data.network_interfaces[0].associate_public_ip_address == False
+          - _templates.launch_templates[0].versions[0].launch_template_data.network_interfaces[0].delete_on_termination == True
+          - _templates.launch_templates[0].versions[0].launch_template_data.network_interfaces[0].device_index == 0
+          - _templates.launch_templates[0].versions[0].launch_template_data.network_interfaces[1].associate_public_ip_address == True
+          - _templates.launch_templates[0].versions[0].launch_template_data.network_interfaces[1].delete_on_termination == False
+          - _templates.launch_templates[0].versions[0].launch_template_data.network_interfaces[1].device_index == 1
+          - _templates.launch_templates[0].versions[0].launch_template_data.network_interfaces[1].ipv6_address_count == 1
+
+  always:
+    - name: delete the template
+      amazon.aws.ec2_launch_template:
+        name: "{{ test_launch_template_name }}"
+        state: absent
+      ignore_errors: true

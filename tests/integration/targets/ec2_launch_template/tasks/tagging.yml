@@ -1,0 +1,210 @@
+---
+- name: Test tagging
+  vars:
+    test_launch_template_name: "{{ resource_prefix }}-tagging"
+    launch_template_instance_tags:
+      - key: foo
+        value: bar
+      - key: environment
+        value: test
+    launch_template_network_tags:
+      - key: owner
+        value: ansible
+    ansible_instance_tags:
+      foo: bar
+      environment: test
+    ansible_network_tags:
+      owner: ansible
+  block:
+    # Create launch template with tags
+    - name: Create Launch template with tags
+      amazon.aws.ec2_launch_template:
+        name: "{{ test_launch_template_name }}"
+        instance_type: t2.micro
+        network_interfaces:
+          - associate_public_ip_address: false
+            delete_on_termination: true
+            device_index: 0
+        tag_specifications:
+          - resource_type: instance
+            tags: "{{ ansible_instance_tags }}"
+          - resource_type: network-interface
+            tags: "{{ ansible_network_tags }}"
+        tags:
+          ResourcePrefix: "{{ resource_prefix }}"
+          InstanceType: "t2.micro"
+      register: _create_with_tags
+
+    - name: Retrieve Launch template information
+      amazon.aws.ec2_launch_template_info:
+        filters:
+          launch-template-name: "{{ test_launch_template_name }}"
+      register: _templates
+    
+    - name: Ensure the launch template was created with tags
+      ansible.builtin.assert:
+        that:
+          - _create_with_tags is changed
+          - '"tags" in _create_with_tags.template'
+          - _create_with_tags.template.tags.InstanceType == "t2.micro"
+          - _create_with_tags.template.tags.ResourcePrefix == resource_prefix
+          - _templates.launch_templates[0].tags.InstanceType == "t2.micro"
+          - _templates.launch_templates[0].tags.ResourcePrefix == resource_prefix
+          - _templates.launch_templates[0].versions | length == 1
+          - _templates.launch_templates[0].versions[0].launch_template_data.tag_specifications | length == 2
+          - instance_tags.tags == launch_template_instance_tags
+          - network_interface_tags.tags == launch_template_network_tags
+      vars:
+        instance_tags: "{{ _templates.launch_templates[0].versions[0].launch_template_data.tag_specifications | selectattr('resource_type', 'equalto', 'instance') | list | first }}"
+        network_interface_tags: "{{ _templates.launch_templates[0].versions[0].launch_template_data.tag_specifications | selectattr('resource_type', 'equalto', 'network-interface') | list | first }}"
+
+    # Create launch template once again with same tags (expected no change)
+    - name: Create launch template once again with same tags (expected no change)
+      amazon.aws.ec2_launch_template:
+        name: "{{ test_launch_template_name }}"
+        instance_type: t2.micro
+        network_interfaces:
+          - associate_public_ip_address: false
+            delete_on_termination: true
+            device_index: 0
+        tag_specifications:
+          - resource_type: instance
+            tags: "{{ ansible_instance_tags }}"
+          - resource_type: network-interface
+            tags: "{{ ansible_network_tags }}"
+        tags:
+          ResourcePrefix: "{{ resource_prefix }}"
+          InstanceType: "t2.micro"
+      register: _create_with_tags_idempotency
+
+    - name: Retrieve Launch template information
+      amazon.aws.ec2_launch_template_info:
+        filters:
+          launch-template-name: "{{ test_launch_template_name }}"
+      register: _templates
+
+    - name: Ensure the launch template was created with tags
+      ansible.builtin.assert:
+        that:
+          - _create_with_tags_idempotency is not changed
+          - '"tags" in _create_with_tags_idempotency.template'
+          - _create_with_tags_idempotency.template.tags.InstanceType == "t2.micro"
+          - _create_with_tags_idempotency.template.tags.ResourcePrefix == resource_prefix
+          - _templates.launch_templates[0].tags.InstanceType == "t2.micro"
+          - _templates.launch_templates[0].tags.ResourcePrefix == resource_prefix
+          - _templates.launch_templates[0].versions | length == 1
+          - _templates.launch_templates[0].versions[0].launch_template_data.tag_specifications | length == 2
+          - instance_tags.tags == launch_template_instance_tags
+          - network_interface_tags.tags == launch_template_network_tags
+      vars:
+        instance_tags: "{{ _templates.launch_templates[0].versions[0].launch_template_data.tag_specifications | selectattr('resource_type', 'equalto', 'instance') | list | first }}"
+        network_interface_tags: "{{ _templates.launch_templates[0].versions[0].launch_template_data.tag_specifications | selectattr('resource_type', 'equalto', 'network-interface') | list | first }}"
+
+    # Add new tag
+    - name: Add new tag with purge_tags=false
+      amazon.aws.ec2_launch_template:
+        name: "{{ test_launch_template_name }}"
+        instance_type: t2.micro
+        network_interfaces:
+          - associate_public_ip_address: false
+            delete_on_termination: true
+            device_index: 0
+        tag_specifications:
+          - resource_type: instance
+            tags: "{{ ansible_instance_tags }}"
+          - resource_type: network-interface
+            tags: "{{ ansible_network_tags }}"
+        tags:
+          Phase: integration
+        purge_tags: false
+      register: _add_tag
+
+    - name: Retrieve Launch template information
+      amazon.aws.ec2_launch_template_info:
+        filters:
+          launch-template-name: "{{ test_launch_template_name }}"
+      register: _templates
+
+    - name: Ensure the launch template was created with tags
+      ansible.builtin.assert:
+        that:
+          - _add_tag is changed
+          - '"tags" in _add_tag.template'
+          - _add_tag.template.tags.InstanceType == "t2.micro"
+          - _add_tag.template.tags.ResourcePrefix == resource_prefix
+          - _add_tag.template.tags.Phase == "integration"
+          - _templates.launch_templates[0].tags.InstanceType == "t2.micro"
+          - _templates.launch_templates[0].tags.ResourcePrefix == resource_prefix
+          - _templates.launch_templates[0].tags.Phase == "integration"
+          - _templates.launch_templates[0].versions | length == 1
+          - _templates.launch_templates[0].versions[0].launch_template_data.tag_specifications | length == 2
+          - instance_tags.tags == launch_template_instance_tags
+          - network_interface_tags.tags == launch_template_network_tags
+      vars:
+        instance_tags: "{{ _templates.launch_templates[0].versions[0].launch_template_data.tag_specifications | selectattr('resource_type', 'equalto', 'instance') | list | first }}"
+        network_interface_tags: "{{ _templates.launch_templates[0].versions[0].launch_template_data.tag_specifications | selectattr('resource_type', 'equalto', 'network-interface') | list | first }}"
+
+    # Add new launch template version and update tags
+    - name: Add new launch template version and update tags
+      amazon.aws.ec2_launch_template:
+        name: "{{ test_launch_template_name }}"
+        instance_type: t3.micro
+        tags:
+          Team: Ansible
+        purge_tags: true
+        source_version: ""
+      register: _add_tag_and_version
+
+    - name: Retrieve Launch template information
+      amazon.aws.ec2_launch_template_info:
+        filters:
+          launch-template-name: "{{ test_launch_template_name }}"
+      register: _templates
+
+    - name: Ensure the launch template was created with tags
+      ansible.builtin.assert:
+        that:
+          - _add_tag_and_version is changed
+          - '"tags" in _add_tag.template'
+          - '"InstanceType" not in _add_tag_and_version.template.tags'
+          - '"ResourcePrefix" not in _add_tag_and_version.template.tags'
+          - '"Phase" not in _add_tag_and_version.template.tags'
+          - _add_tag_and_version.template.tags.Team == "Ansible"
+          - '"InstanceType" not in _templates.launch_templates[0].tags'
+          - '"ResourcePrefix" not in _templates.launch_templates[0].tags'
+          - '"Phase" not in _templates.launch_templates[0].tags'
+          - _templates.launch_templates[0].tags.Team == "Ansible"
+          - _templates.launch_templates[0].versions | length == 2
+          - '"tag_specifications" not in latest_version_template_data.launch_template_data'
+      vars:
+        latest_version_template_data: '{{ _templates.launch_templates[0].versions | selectattr("version_number", "equalto", 2) | list | first }}'
+
+    # Purge tags
+    - name: Purge all tags from launch template
+      amazon.aws.ec2_launch_template:
+        name: "{{ test_launch_template_name }}"
+        instance_type: t3.micro
+        tags: {}
+        purge_tags: true
+      register: _purge_tags
+
+    - name: Retrieve Launch template information
+      amazon.aws.ec2_launch_template_info:
+        filters:
+          launch-template-name: "{{ test_launch_template_name }}"
+      register: _templates
+
+    - name: Ensure the launch template was created with tags
+      ansible.builtin.assert:
+        that:
+          - _purge_tags is changed
+          - '"tags" not in _purge_tags.template'
+          - _templates.launch_templates[0].tags == {}
+          - _templates.launch_templates[0].versions | length == 2
+
+  always:
+    - name: Delete launch template
+      amazon.aws.ec2_launch_template:
+        state: absent
+        name: "{{ test_launch_template_name }}"
+      ignore_errors: true

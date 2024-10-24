@@ -45,6 +45,7 @@ action_groups:
     - ec2_instance_info
     - ec2_key
     - ec2_key_info
+    - ec2_launch_template
     - ec2_launch_template_info
     - ec2_placement_group
     - ec2_placement_group_info
