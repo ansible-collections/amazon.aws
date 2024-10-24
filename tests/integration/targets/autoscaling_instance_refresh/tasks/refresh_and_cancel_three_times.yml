@@ -1,0 +1,14 @@
+---
+- name: Test starting a refresh with an ASG name
+  amazon.aws.autoscaling_instance_refresh:
+    name: "{{ asg_name }}"
+    state: "started"
+  retries: 10
+  delay: 5
+  register: refreshout
+  until: refreshout is not failed
+
+- name: Test cancelling a refresh with an ASG name
+  amazon.aws.autoscaling_instance_refresh:
+    name: "{{ asg_name }}"
+    state: "cancelled"

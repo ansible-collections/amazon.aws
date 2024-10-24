@@ -1,0 +1,206 @@
+---
+- name: test invalid cancelation - V1 - (pre-refresh)
+  amazon.aws.autoscaling_instance_refresh:
+    name: "{{ asg_name }}"
+    state: "cancelled"
+  ignore_errors: true
+  register: result
+
+- name: Assert that module failed with proper message
+  ansible.builtin.assert:
+    that:
+      - "'An error occurred (ActiveInstanceRefreshNotFound) when calling the CancelInstanceRefresh operation: No in progress or pending Instance Refresh found for Auto Scaling group ' ~ resource_prefix ~ '-asg' in result.msg"
+
+- name: Test starting a refresh with a valid ASG name - check_mode
+  amazon.aws.autoscaling_instance_refresh:
+    name: "{{ asg_name }}"
+    state: "started"
+  check_mode: true
+  register: output
+
+- name: Validate starting in check_mode
+  ansible.builtin.assert:
+    that:
+      - output is changed
+      - '"autoscaling:StartInstanceRefresh" not in output.resource_actions'
+
+- name: Test starting a refresh with a valid ASG name
+  amazon.aws.autoscaling_instance_refresh:
+    name: "{{ asg_name }}"
+    state: "started"
+  register: output
+
+- name: Validate start
+  ansible.builtin.assert:
+    that:
+      - "'instance_refresh_id' in output.instance_refreshes"
+
+- name: Test starting a refresh with a valid ASG name - Idempotent
+  amazon.aws.autoscaling_instance_refresh:
+    name: "{{ asg_name }}"
+    state: "started"
+  ignore_errors: true
+  register: output
+
+- name: Validate starting Idempotency
+  ansible.builtin.assert:
+    that:
+      - output is not changed
+      - '"Failed to start InstanceRefresh: An error occurred (InstanceRefreshInProgress) when calling the StartInstanceRefresh operation: An Instance Refresh is already in progress and blocks the execution of this Instance Refresh." in output.msg'
+
+- name: Test starting a refresh with a valid ASG name - Idempotent (check_mode)
+  amazon.aws.autoscaling_instance_refresh:
+    name: "{{ asg_name }}"
+    state: "started"
+  check_mode: true
+  register: output
+
+- name: Validate starting Idempotency in check_mode
+  ansible.builtin.assert:
+    that:
+      - output is not changed
+      - '"In check_mode - Instance Refresh is already in progress, can not start new instance refresh." in output.msg'
+
+- name: Test starting a refresh with a nonexistent ASG name
+  amazon.aws.autoscaling_instance_refresh:
+    name: "nonexistentname-asg"
+    state: "started"
+  ignore_errors: true
+  register: result
+
+- name: Assert that module failed with proper message
+  ansible.builtin.assert:
+    that:
+      - "'Failed to start InstanceRefresh: An error occurred (ValidationError) when calling the StartInstanceRefresh operation: AutoScalingGroup name not found' in result.msg"
+
+- name: Test canceling a refresh with an ASG name - check_mode
+  amazon.aws.autoscaling_instance_refresh:
+    name: "{{ asg_name }}"
+    state: "cancelled"
+  check_mode: true
+  register: output
+
+- name: Validate cancelation
+  ansible.builtin.assert:
+    that:
+      - output is not failed
+      - output is changed
+      - '"autoscaling:CancelInstanceRefresh" not in output.resource_actions'
+
+- name: Test canceling a refresh with an ASG name
+  amazon.aws.autoscaling_instance_refresh:
+    name: "{{ asg_name }}"
+    state: "cancelled"
+  register: output
+
+- name: Validate cancelation
+  ansible.builtin.assert:
+    that:
+      - "'instance_refresh_id' in output.instance_refreshes"
+
+- name: Test canceling a refresh with a ASG name - Idempotent
+  amazon.aws.autoscaling_instance_refresh:
+    name: "{{ asg_name }}"
+    state: "cancelled"
+  register: output
+  ignore_errors: true
+
+- name: Validate cancelling Idempotency
+  ansible.builtin.assert:
+    that:
+      - output is not changed
+
+- name: Test cancelling a refresh with a valid ASG name - Idempotent (check_mode)
+  amazon.aws.autoscaling_instance_refresh:
+    name: "{{ asg_name }}"
+    state: "cancelled"
+  check_mode: true
+  register: output
+
+- name: Validate cancelling Idempotency in check_mode
+  ansible.builtin.assert:
+    that:
+      - output is not changed
+
+- name: Test starting a refresh with an ASG name and preferences dict
+  amazon.aws.autoscaling_instance_refresh:
+    name: "{{ asg_name }}"
+    state: "started"
+    preferences:
+      min_healthy_percentage: 10
+      instance_warmup: 10
+  retries: 5
+  register: output
+  until: output is not failed
+
+- name: Assert that module succeed with preferences
+  ansible.builtin.assert:
+    that:
+      - "'instance_refresh_id' in output.instance_refreshes"
+
+- name: Re-test canceling a refresh with an ASG name
+  amazon.aws.autoscaling_instance_refresh:
+    name: "{{ asg_name }}"
+    state: "cancelled"
+  register: output
+
+- name: Assert that module returned instance refresh id
+  ansible.builtin.assert:
+    that:
+      - "'instance_refresh_id' in output.instance_refreshes"
+
+- name: Test valid start - V1 - (with preferences missing instance_warmup)
+  amazon.aws.autoscaling_instance_refresh:
+    name: "{{ asg_name }}"
+    state: "started"
+    preferences:
+      min_healthy_percentage: 10
+  retries: 5
+  register: output
+  until: output is not failed
+
+- name: Validate start with preferences missing instance warmup
+  ansible.builtin.assert:
+    that:
+      - "'instance_refresh_id' in output.instance_refreshes"
+
+- name: Re-test canceling a refresh with an ASG name
+  amazon.aws.autoscaling_instance_refresh:
+    name: "{{ asg_name }}"
+    state: "cancelled"
+  register: output
+
+- name: Validate canceling Idempotency
+  ansible.builtin.assert:
+    that:
+      - "'instance_refresh_id' in output.instance_refreshes"
+
+- name: Test valid start - V2 - (with preferences missing min_healthy_percentage)
+  amazon.aws.autoscaling_instance_refresh:
+    name: "{{ asg_name }}"
+    state: "started"
+    preferences:
+      instance_warmup: 10
+  retries: 5
+  register: output
+  until: output is not failed
+
+- name: Assert that module did not returned and instance refresh id
+  ansible.builtin.assert:
+    that:
+      - "'instance_refresh_id' in output.instance_refreshes"
+
+- name: Test invalid cancelation - V2 - (with preferences)
+  amazon.aws.autoscaling_instance_refresh:
+    name: "{{ asg_name }}"
+    state: "cancelled"
+    preferences:
+      min_healthy_percentage: 10
+      instance_warmup: 10
+  ignore_errors: true
+  register: result
+
+- name: Assert that module failed with proper message
+  ansible.builtin.assert:
+    that:
+      - "'can not pass preferences dict when canceling a refresh' in result.msg"

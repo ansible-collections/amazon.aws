@@ -1,0 +1,99 @@
+---
+- name: Test getting info for an ASG name
+  amazon.aws.autoscaling_instance_refresh_info:
+    name: "{{ asg_name }}"
+  register: output
+
+- name: Assert that the correct number of records are returned
+  ansible.builtin.assert:
+    that:
+      - output.instance_refreshes | map(attribute='instance_refresh_id') | unique | length == 7
+
+- name: Test using fake refresh ID
+  amazon.aws.autoscaling_instance_refresh_info:
+    name: "{{ asg_name }}"
+    ids: ['0e367f58-blabla-bla-bla-ca870dc5dbfe']
+  register: output
+
+- name: Assert that no record is returned
+  ansible.builtin.assert:
+    that:
+      - output.instance_refreshes | length == 0
+
+- name: Test using a real refresh ID
+  amazon.aws.autoscaling_instance_refresh_info:
+    name: "{{ asg_name }}"
+    ids: [ '{{ refreshout.instance_refreshes.instance_refresh_id }}' ]
+  register: output
+
+- name: Assert that the correct record is returned
+  ansible.builtin.assert:
+    that:
+      - output.instance_refreshes | length == 1
+
+- name: Test getting info for an ASG name which doesn't exist
+  amazon.aws.autoscaling_instance_refresh_info:
+    name: n0n3x1stentname27b
+  ignore_errors: true
+  register: output
+
+- name: Assert that module failed to return record
+  ansible.builtin.assert:
+    that:
+      - "'Failed to describe InstanceRefreshes: An error occurred (ValidationError) when calling the DescribeInstanceRefreshes operation: AutoScalingGroup name not found - AutoScalingGroup n0n3x1stentname27b not found' in output.msg"
+
+- name: Retrieve instance refresh info
+  amazon.aws.autoscaling_instance_refresh_info:
+    name: "{{ asg_name }}"
+  register: output
+
+- name: Assert that the correct number of records are returned
+  ansible.builtin.assert:
+    that:
+      - output.instance_refreshes | length == 7
+
+- name: Retrieve instance refresh info using next_token
+  amazon.aws.autoscaling_instance_refresh_info:
+    name: "{{ asg_name }}"
+    next_token: "fake-token-123"
+  ignore_errors: true
+  register: output
+
+- name: Assert that valid message with fake-token is returned
+  ansible.builtin.assert:
+    that:
+      - '"Failed to describe InstanceRefreshes: An error occurred (InvalidNextToken) when calling the DescribeInstanceRefreshes operation: The token ''********'' is invalid." in output.msg'
+
+- name: Retrieve instance refresh info using max_records
+  amazon.aws.autoscaling_instance_refresh_info:
+    name: "{{ asg_name }}"
+    max_records: 1
+  register: output_with_token
+
+- name: Assert that max records=1 returns no more than one record
+  ansible.builtin.assert:
+    that:
+      - output_with_token.instance_refreshes | length == 1
+
+- name: Retrieve instance refresh using valid token
+  amazon.aws.autoscaling_instance_refresh_info:
+    name: "{{ asg_name }}"
+    next_token: "{{ output_with_token.next_token }}"
+  register: output
+
+- name: Assert that valid message with real-token is returned
+  ansible.builtin.assert:
+    that:
+      - output.instance_refreshes | length == 6
+
+- name: Test using both real nextToken and max_records=1
+  amazon.aws.autoscaling_instance_refresh_info:
+    name: "{{ asg_name }}"
+    max_records: 1
+    next_token: "{{ output_with_token.next_token }}"
+  register: output
+
+- name: Assert that only one instance refresh is returned
+  ansible.builtin.assert:
+    that:
+      - output.instance_refreshes | length == 1
