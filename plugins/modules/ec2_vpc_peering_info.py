@@ -382,13 +382,13 @@ def main():
         peer["tags"] = boto3_tag_list_to_ansible_dict(peer.get("tags", []))
 
     module.deprecate(
-            (
-                "The 'result' return key is deprecated and will be replaced by 'vpc_peering_connections'. Both values are"
-                " returned for now."
-            ),
-            version="11.0.0",
-            collection_name="amazon.aws",
-        )
+        (
+            "The 'result' return key is deprecated and will be replaced by 'vpc_peering_connections'. Both values are"
+            " returned for now."
+        ),
+        version="11.0.0",
+        collection_name="amazon.aws",
+    )
 
     module.exit_json(result=results, vpc_peering_connections=results)
 
