@@ -54,7 +54,9 @@
     register: tag_vpn
 
   - name: Get EC2 VPC VPN facts
-    amazon.aws.ec2_vpc_vpn_info: {}
+    amazon.aws.ec2_vpc_vpn_info:
+      filters:
+        vpn-connection-id: '{{ vpn.vpn_connection_id }}'
     register: tag_vpn_info
 
   - name: Verify the tags were added
@@ -85,7 +87,9 @@
     register: tag_vpn
 
   - name: Get EC2 VPC VPN facts
-    amazon.aws.ec2_vpc_vpn_info: {}
+    amazon.aws.ec2_vpc_vpn_info:
+      filters:
+        vpn-connection-id: '{{ vpn.vpn_connection_id }}'
     register: tag_vpn_info
 
   - name: Verify no change
@@ -121,6 +125,8 @@
 
   - name: Get EC2 VPC VPN facts
     amazon.aws.ec2_vpc_vpn_info:
+      filters:
+        vpn-connection-id: '{{ vpn.vpn_connection_id }}'
     register: tag_vpn_info
 
   - name: Verify the tags were added
@@ -154,6 +160,8 @@
 
   - name: Get EC2 VPC VPN facts
     amazon.aws.ec2_vpc_vpn_info:
+      filters:
+        vpn-connection-id: '{{ vpn.vpn_connection_id }}'
     register: tag_vpn_info
 
   - name: Verify no change
@@ -189,6 +197,8 @@
 
   - name: Get EC2 VPC VPN facts
     amazon.aws.ec2_vpc_vpn_info:
+      filters:
+        vpn-connection-id: '{{ vpn.vpn_connection_id }}'
     register: tag_vpn_info
 
   - name: verify the tags were added
@@ -222,6 +232,8 @@
 
   - name: Get EC2 VPC VPN facts
     amazon.aws.ec2_vpc_vpn_info:
+      filters:
+        vpn-connection-id: '{{ vpn.vpn_connection_id }}'
     register: tag_vpn_info
 
   - name: Verify no change
@@ -253,6 +265,8 @@
 
   - name: Get CE2 VPC VPN facts
     amazon.aws.ec2_vpc_vpn_info:
+      filters:
+        vpn-connection-id: '{{ vpn.vpn_connection_id }}'
     register: tag_vpn_info
 
   - name: Verify no tags were added
@@ -288,6 +302,8 @@
 
   - name: Get EC2 VPC VPN facts
     amazon.aws.ec2_vpc_vpn_info:
+      filters:
+        vpn-connection-id: '{{ vpn.vpn_connection_id }}'
     register: tag_vpn_info
 
   - name: Verify the tags were removed
@@ -320,6 +336,8 @@
 
   - name: Get VPC VPN facts
     amazon.aws.ec2_vpc_vpn_info:
+      filters:
+        vpn-connection-id: '{{ vpn.vpn_connection_id }}'
     register: tag_vpn_info
 
   - name: Verify no change
