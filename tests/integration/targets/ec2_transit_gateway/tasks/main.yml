@@ -1,0 +1,297 @@
+- name: Run 'ec2_transit_gateway integration tests'
+  module_defaults:
+    group/aws:
+      access_key: '{{ aws_access_key }}'
+      secret_key: '{{ aws_secret_key }}'
+      session_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+  block:
+
+  - name: Generate unique value for testing
+    ansible.builtin.set_fact:
+      tgw_description: '{{ resource_prefix }}-tgw'
+
+  - name: Test create transit gateway without tags - check_mode
+    amazon.aws.ec2_transit_gateway:
+      description: '{{ tgw_description }}'
+    register: create_result
+    check_mode: true
+
+  - name: Assert changed is True - check_mode
+    ansible.builtin.assert:
+      that:
+      - create_result.changed == True
+      - '"ec2:CreateTransitGateway" not in create_result.resource_actions'
+
+  - name: Test create transit gateway without tags
+    amazon.aws.ec2_transit_gateway:
+      description: '{{ tgw_description }}'
+    register: create_result
+
+  - name: Assert changed is True
+    ansible.builtin.assert:
+      that:
+      - create_result.changed == True
+
+  - name: Test create transit gateway without tags - idempotency
+    amazon.aws.ec2_transit_gateway:
+      description: '{{ tgw_description }}'
+    register: create_result
+
+  - name: Assert changed is True
+    ansible.builtin.assert:
+      that:
+      - create_result.changed == False
+      - '"ec2:CreateTransitGateway" not in create_result.resource_actions'
+
+  - name: Test update transit gateway with tags by description - check_mode
+    amazon.aws.ec2_transit_gateway:
+      description: '{{ tgw_description }}'
+      tags:
+        Name: Ansible Test TGW
+    register: result
+    check_mode: true
+
+  - name: Assert changed is True - check_mode
+    ansible.builtin.assert:
+      that:
+      - result.changed == True
+      - '"ec2:CreateTags" not in result.resource_actions'
+
+  - name: Test update transit gateway with tags by description
+    amazon.aws.ec2_transit_gateway:
+      description: '{{ tgw_description }}'
+      tags:
+        Name: Ansible Test TGW
+    register: result
+
+  - name: Assert changed is True
+    ansible.builtin.assert:
+      that:
+      - result.changed == True
+      - result.transit_gateway.tags | length == 1
+      - "'Name' in result.transit_gateway.tags"
+
+  - name: Test update transit gateway with tags by description - idempotency
+    amazon.aws.ec2_transit_gateway:
+      description: '{{ tgw_description }}'
+      tags:
+        Name: Ansible Test TGW
+    register: result
+
+  - name: Assert changed is False - idempotency
+    ansible.builtin.assert:
+      that:
+      - result.changed == False
+      - result.transit_gateway.tags | length == 1
+      - "'Name' in result.transit_gateway.tags"
+
+  - name: Test update transit gateway with new tag and purge_tags false - check_mode
+    amazon.aws.ec2_transit_gateway:
+      transit_gateway_id: '{{ create_result.transit_gateway.transit_gateway_id }}'
+      purge_tags: false
+      tags:
+        status: ok to delete
+    register: result
+    check_mode: true
+
+  - name: Assert changed is True and have 2 tags - check_mode
+    ansible.builtin.assert:
+      that:
+      - result.changed == True
+      - result.transit_gateway.tags | length != 2
+      - "'Name' in result.transit_gateway.tags"
+      - '"ec2:CreateTags" not in result.resource_actions'
+
+  - name: Test update transit gateway with new tag and purge_tags false
+    amazon.aws.ec2_transit_gateway:
+      transit_gateway_id: '{{ create_result.transit_gateway.transit_gateway_id }}'
+      purge_tags: false
+      tags:
+        status: ok to delete
+    register: result
+
+  - name: Assert changed is True and have 2 tags
+    ansible.builtin.assert:
+      that:
+      - result.changed == True
+      - result.transit_gateway.tags | length == 2
+      - "'Name' in result.transit_gateway.tags"
+
+  - name: Test update transit gateway with new tag and purge_tags false - idempotency
+    amazon.aws.ec2_transit_gateway:
+      transit_gateway_id: '{{ create_result.transit_gateway.transit_gateway_id }}'
+      purge_tags: false
+      tags:
+        status: ok to delete
+    register: result
+
+  - name: Assert changed is True and have 2 tags - idempotency
+    ansible.builtin.assert:
+      that:
+      - result.changed == False
+      - result.transit_gateway.tags | length == 2
+      - "'Name' in result.transit_gateway.tags"
+
+  - name: Test update transit gateway with purge_tags true - check_mode
+    amazon.aws.ec2_transit_gateway:
+      transit_gateway_id: '{{ create_result.transit_gateway.transit_gateway_id }}'
+      purge_tags: true
+      tags:
+        status: ok to delete
+    register: result
+    check_mode: true
+
+  - name: Assert changed is True and TGW tag is absent - check_mode
+    ansible.builtin.assert:
+      that:
+      - result.changed == True
+      - result.transit_gateway.tags | length == 2
+      - '"ec2:DeleteTags" not in result.resource_actions'
+
+  - name: Test update transit gateway with purge_tags true
+    amazon.aws.ec2_transit_gateway:
+      transit_gateway_id: '{{ create_result.transit_gateway.transit_gateway_id }}'
+      purge_tags: true
+      tags:
+        status: ok to delete
+    register: result
+
+  - name: Assert changed is True and TGW tag is absent
+    ansible.builtin.assert:
+      that:
+      - result.changed == True
+      - result.transit_gateway.tags | length == 1
+      - "'Name' not in result.transit_gateway.tags"
+
+  - name: Test idempotence
+    amazon.aws.ec2_transit_gateway:
+      description: '{{ tgw_description }}'
+      purge_tags: true
+      tags:
+        status: ok to delete
+    register: result
+
+  - name: Assert changed is False
+    ansible.builtin.assert:
+      that:
+      - result.changed == False
+
+  - name: Generate unique value for testing
+    ansible.builtin.set_fact:
+      tgw_description_multicast: '{{ resource_prefix }}-tgw-multicast'
+
+  - name: Test create transit gateway with multicast enabled - check_mode
+    amazon.aws.ec2_transit_gateway:
+      description: '{{ tgw_description_multicast }}'
+      multicast_support: true
+    register: create_result
+    check_mode: true
+
+  - name: Assert changed is True - check_mode
+    ansible.builtin.assert:
+      that:
+      - create_result.changed == True
+      - '"ec2:CreateTransitGateway" not in create_result.resource_actions'
+
+  - name: Test create transit gateway with multicast enabled
+    amazon.aws.ec2_transit_gateway:
+      description: '{{ tgw_description_multicast }}'
+      multicast_support: true
+    register: create_result
+
+  - name: Assert changed is True
+    ansible.builtin.assert:
+      that:
+      - create_result.changed == True
+
+  - name: Test create transit gateway with multicast enabled - idempotency
+    amazon.aws.ec2_transit_gateway:
+      description: '{{ tgw_description_multicast }}'
+      multicast_support: true
+    register: create_result
+
+  - name: Assert changed is True - idempotency
+    ansible.builtin.assert:
+      that:
+      - create_result.changed == False
+
+  - name: Test success with filter
+    community.aws.ec2_transit_gateway_info:
+      filters:
+        options.multicast-support: enable
+    register: result
+
+  - name: Assert success with multicast-support filter
+    ansible.builtin.assert:
+      that:
+      - result.transit_gateways != []
+
+  # ==== Combine ec2_transit_gateway_info ======================
+  - name: Test success with no parameters
+    community.aws.ec2_transit_gateway_info:
+    register: result
+  - name: Assert success with no parameters
+    ansible.builtin.assert:
+      that:
+      - result.changed == false
+      - result.transit_gateways != []
+
+  - name: Test success with single filter
+    community.aws.ec2_transit_gateway_info:
+      filters:
+        transit-gateway-id: '{{ create_result.transit_gateway.transit_gateway_id }}'
+    register: result
+
+  - name: Assert success with transit_gateway_id filter
+    ansible.builtin.assert:
+      that:
+      - result.changed == false
+      - result.transit_gateways != []
+
+  - name: Test empty result set for non-existent tgw id via filter
+    community.aws.ec2_transit_gateway_info:
+      filters:
+        transit-gateway-id: tgw-00000011111111122
+    register: result
+
+  - name: Assert success with transit_gateway_id filter
+    ansible.builtin.assert:
+      that:
+      - result.changed == false
+      - result.transit_gateways == []
+
+  - name: Test NotFound exception caught and returned empty result set
+    community.aws.ec2_transit_gateway_info:
+      transit_gateway_id: tgw-00000011111111122
+    register: result
+
+  - name: Assert success with transit_gateway_id filter
+    ansible.builtin.assert:
+      that:
+      - result.changed == false
+      - result.transit_gateways == []
+
+  - name: Test success with multiple filters
+    community.aws.ec2_transit_gateway_info:
+      filters:
+        options.dns-support: enable
+        options.vpn-ecmp-support: enable
+    register: result
+
+  - name: Assert success with transit_gateway_id filter
+    ansible.builtin.assert:
+      that:
+      - result.changed == false
+      - result.transit_gateways != []
+
+  always:
+    ###### TEARDOWN STARTS HERE ######
+  - name: Delete transit gateway
+    amazon.aws.ec2_transit_gateway:
+      description: '{{ item }}'
+      state: absent
+    ignore_errors: true
+    loop:
+    - '{{ tgw_description }}'
+    - '{{ tgw_description_multicast }}'
