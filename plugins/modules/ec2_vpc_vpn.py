@@ -664,9 +664,7 @@ def create_connection(
             WaiterConfig={"Delay": delay, "MaxAttempts": max_attempts},
         )
     except WaiterError as e:
-        module.fail_json_aws(
-            e, msg=f"Failed to wait for VPN connection {vpn['VpnConnection']['VpnConnectionId']} to be available"
-        )
+        module.fail_json_aws(e, msg=f"Failed to wait for VPN connection {vpn['VpnConnectionId']} to be available")
     except AnsibleEC2Error as e:
         module.fail_json_aws(e, msg="Failed to create VPN connection")
 
