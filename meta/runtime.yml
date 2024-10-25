@@ -199,7 +199,7 @@ plugin_routing:
     ec2_vpc_peer:
       redirect: amazon.aws.ec2_vpc_peer
       deprecation:
-        removal_version: 11.0.0
+        removal_version: 13.0.0
         warning_text: >-
           ec2_vpc_peer has been renamed to ec2_vpc_peering.
           Please update your tasks.
