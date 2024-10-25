@@ -2,6 +2,8 @@
 requires_ansible: ">=2.15.0"
 action_groups:
   aws:
+    - autoscaling_instance
+    - autoscaling_instance_info
     - autoscaling_group
     - autoscaling_group_info
     - autoscaling_instance_refresh

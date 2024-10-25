@@ -1,0 +1,436 @@
+---
+# =====================================================
+#      Test updating the protection status of all instances
+# =====================================================
+
+# Set all to Unprotected - no change
+- name: instance_ids - all Unprotected (idempotency) - check_mode
+  amazon.aws.autoscaling_instance:
+    instance_ids: "{{ initial_instances }}"
+    group_name: "{{ default_resource_name }}"
+    state: present
+    protection: False
+  diff: True
+  register: unprotected_all
+  check_mode: True
+
+- ansible.builtin.assert:
+    that:
+      - "'autoscaling:SetInstanceProtection' not in current_result.resource_actions"
+      - current_result is not changed
+      - "'auto_scaling_instances' in current_result"
+      - initial_instances[0] in listed_instance_ids
+      - initial_instances[1] in listed_instance_ids
+      - "'protected_from_scale_in' in specific_instance_info"
+      - specific_instance_info.protected_from_scale_in == False
+      - "'health_status' in specific_instance_info"
+      - specific_instance_info.health_status == "HEALTHY"
+      - "'protected_from_scale_in' in other_instance_info"
+      - other_instance_info.protected_from_scale_in == False
+      - "'health_status' in other_instance_info"
+      - other_instance_info.health_status == "HEALTHY"
+      # Ensure we only make the limited calls we expect
+      - "'autoscaling:DetachInstances' not in current_result.resource_actions"
+      - "'autoscaling:AttachInstances' not in current_result.resource_actions"
+      - "'autoscaling:SetInstanceHealth' not in current_result.resource_actions"
+  vars:
+    current_result: "{{ unprotected_all }}"
+    listed_instance_ids: "{{ current_result.auto_scaling_instances | map(attribute='instance_id') | list }}"
+    specific_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[1]) | first }}"
+    other_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[0]) | first }}"
+
+- name: instance_ids - all Unprotected (idempotency)
+  amazon.aws.autoscaling_instance:
+    instance_ids: "{{ initial_instances }}"
+    group_name: "{{ default_resource_name }}"
+    state: present
+    protection: False
+  diff: True
+  register: unprotected_all
+
+- ansible.builtin.assert:
+    that:
+      - "'autoscaling:SetInstanceProtection' not in current_result.resource_actions"
+      - current_result is not changed
+      - "'auto_scaling_instances' in current_result"
+      - initial_instances[0] in listed_instance_ids
+      - initial_instances[1] in listed_instance_ids
+      - "'protected_from_scale_in' in specific_instance_info"
+      - specific_instance_info.protected_from_scale_in == False
+      - "'health_status' in specific_instance_info"
+      - specific_instance_info.health_status == "HEALTHY"
+      - "'protected_from_scale_in' in other_instance_info"
+      - other_instance_info.protected_from_scale_in == False
+      - "'health_status' in other_instance_info"
+      - other_instance_info.health_status == "HEALTHY"
+      # Ensure we only make the limited calls we expect
+      - "'autoscaling:DetachInstances' not in current_result.resource_actions"
+      - "'autoscaling:AttachInstances' not in current_result.resource_actions"
+      - "'autoscaling:SetInstanceHealth' not in current_result.resource_actions"
+  vars:
+    current_result: "{{ unprotected_all }}"
+    listed_instance_ids: "{{ current_result.auto_scaling_instances | map(attribute='instance_id') | list }}"
+    specific_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[1]) | first }}"
+    other_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[0]) | first }}"
+
+# Set all to Protected
+- name: instance_ids - all Protected - check_mode
+  amazon.aws.autoscaling_instance:
+    instance_ids: "{{ initial_instances }}"
+    group_name: "{{ default_resource_name }}"
+    state: present
+    protection: True
+  diff: True
+  register: protected_all
+  check_mode: True
+
+- ansible.builtin.assert:
+    that:
+      - "'autoscaling:SetInstanceProtection' not in current_result.resource_actions"
+      - current_result is changed
+      - "'auto_scaling_instances' in current_result"
+      - initial_instances[0] in listed_instance_ids
+      - initial_instances[1] in listed_instance_ids
+      - "'protected_from_scale_in' in specific_instance_info"
+      - specific_instance_info.protected_from_scale_in == True
+      - "'health_status' in specific_instance_info"
+      - specific_instance_info.health_status == "HEALTHY"
+      - "'protected_from_scale_in' in other_instance_info"
+      - other_instance_info.protected_from_scale_in == True
+      - "'health_status' in other_instance_info"
+      - other_instance_info.health_status == "HEALTHY"
+      # Ensure we only make the limited calls we expect
+      - "'autoscaling:DetachInstances' not in current_result.resource_actions"
+      - "'autoscaling:AttachInstances' not in current_result.resource_actions"
+      - "'autoscaling:SetInstanceHealth' not in current_result.resource_actions"
+  vars:
+    current_result: "{{ protected_all }}"
+    listed_instance_ids: "{{ current_result.auto_scaling_instances | map(attribute='instance_id') | list }}"
+    specific_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[1]) | first }}"
+    other_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[0]) | first }}"
+
+- name: instance_ids - all Protected
+  amazon.aws.autoscaling_instance:
+    instance_ids: "{{ initial_instances }}"
+    group_name: "{{ default_resource_name }}"
+    state: present
+    protection: True
+  diff: True
+  register: protected_all
+
+- ansible.builtin.assert:
+    that:
+      - "'autoscaling:SetInstanceProtection' in current_result.resource_actions"
+      - current_result is changed
+      - "'auto_scaling_instances' in current_result"
+      - initial_instances[0] in listed_instance_ids
+      - initial_instances[1] in listed_instance_ids
+      - "'protected_from_scale_in' in specific_instance_info"
+      - specific_instance_info.protected_from_scale_in == True
+      - "'health_status' in specific_instance_info"
+      - specific_instance_info.health_status == "HEALTHY"
+      - "'protected_from_scale_in' in other_instance_info"
+      - other_instance_info.protected_from_scale_in == True
+      - "'health_status' in other_instance_info"
+      - other_instance_info.health_status == "HEALTHY"
+      # Ensure we only make the limited calls we expect
+      - "'autoscaling:DetachInstances' not in current_result.resource_actions"
+      - "'autoscaling:AttachInstances' not in current_result.resource_actions"
+      - "'autoscaling:SetInstanceHealth' not in current_result.resource_actions"
+  vars:
+    current_result: "{{ protected_all }}"
+    listed_instance_ids: "{{ current_result.auto_scaling_instances | map(attribute='instance_id') | list }}"
+    specific_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[1]) | first }}"
+    other_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[0]) | first }}"
+
+- name: instance_ids - all Protected (idempotency) - check_mode
+  amazon.aws.autoscaling_instance:
+    instance_ids: "{{ initial_instances }}"
+    group_name: "{{ default_resource_name }}"
+    state: present
+    protection: True
+  diff: True
+  register: protected_all
+  check_mode: True
+
+- ansible.builtin.assert:
+    that:
+      - "'autoscaling:SetInstanceProtection' not in current_result.resource_actions"
+      - current_result is not changed
+      - "'auto_scaling_instances' in current_result"
+      - initial_instances[0] in listed_instance_ids
+      - initial_instances[1] in listed_instance_ids
+      - "'protected_from_scale_in' in specific_instance_info"
+      - specific_instance_info.protected_from_scale_in == True
+      - "'health_status' in specific_instance_info"
+      - specific_instance_info.health_status == "HEALTHY"
+      - "'protected_from_scale_in' in other_instance_info"
+      - other_instance_info.protected_from_scale_in == True
+      - "'health_status' in other_instance_info"
+      - other_instance_info.health_status == "HEALTHY"
+      # Ensure we only make the limited calls we expect
+      - "'autoscaling:DetachInstances' not in current_result.resource_actions"
+      - "'autoscaling:AttachInstances' not in current_result.resource_actions"
+      - "'autoscaling:SetInstanceHealth' not in current_result.resource_actions"
+  vars:
+    current_result: "{{ protected_all }}"
+    listed_instance_ids: "{{ current_result.auto_scaling_instances | map(attribute='instance_id') | list }}"
+    specific_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[1]) | first }}"
+    other_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[0]) | first }}"
+
+- name: instance_ids - all Protected (idempotency)
+  amazon.aws.autoscaling_instance:
+    instance_ids: "{{ initial_instances }}"
+    group_name: "{{ default_resource_name }}"
+    state: present
+    protection: True
+  diff: True
+  register: protected_all
+
+- ansible.builtin.assert:
+    that:
+      - "'autoscaling:SetInstanceProtection' not in current_result.resource_actions"
+      - current_result is not changed
+      - "'auto_scaling_instances' in current_result"
+      - initial_instances[0] in listed_instance_ids
+      - initial_instances[1] in listed_instance_ids
+      - "'protected_from_scale_in' in specific_instance_info"
+      - specific_instance_info.protected_from_scale_in == True
+      - "'health_status' in specific_instance_info"
+      - specific_instance_info.health_status == "HEALTHY"
+      - "'protected_from_scale_in' in other_instance_info"
+      - other_instance_info.protected_from_scale_in == True
+      - "'health_status' in other_instance_info"
+      - other_instance_info.health_status == "HEALTHY"
+      # Ensure we only make the limited calls we expect
+      - "'autoscaling:DetachInstances' not in current_result.resource_actions"
+      - "'autoscaling:AttachInstances' not in current_result.resource_actions"
+      - "'autoscaling:SetInstanceHealth' not in current_result.resource_actions"
+  vars:
+    current_result: "{{ protected_all }}"
+    listed_instance_ids: "{{ current_result.auto_scaling_instances | map(attribute='instance_id') | list }}"
+    specific_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[1]) | first }}"
+    other_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[0]) | first }}"
+
+# Set all to Unprotected again
+- name: instance_ids - all Unprotected - check_mode
+  amazon.aws.autoscaling_instance:
+    instance_ids: "{{ initial_instances }}"
+    group_name: "{{ default_resource_name }}"
+    state: present
+    protection: False
+  diff: True
+  register: unprotected_all
+  check_mode: True
+
+- ansible.builtin.assert:
+    that:
+      - "'autoscaling:SetInstanceProtection' not in current_result.resource_actions"
+      - current_result is changed
+      - "'auto_scaling_instances' in current_result"
+      - initial_instances[0] in listed_instance_ids
+      - initial_instances[1] in listed_instance_ids
+      - "'protected_from_scale_in' in specific_instance_info"
+      - specific_instance_info.protected_from_scale_in == False
+      - "'health_status' in specific_instance_info"
+      - specific_instance_info.health_status == "HEALTHY"
+      - "'protected_from_scale_in' in other_instance_info"
+      - other_instance_info.protected_from_scale_in == False
+      - "'health_status' in other_instance_info"
+      - other_instance_info.health_status == "HEALTHY"
+      # Ensure we only make the limited calls we expect
+      - "'autoscaling:DetachInstances' not in current_result.resource_actions"
+      - "'autoscaling:AttachInstances' not in current_result.resource_actions"
+      - "'autoscaling:SetInstanceHealth' not in current_result.resource_actions"
+  vars:
+    current_result: "{{ unprotected_all }}"
+    listed_instance_ids: "{{ current_result.auto_scaling_instances | map(attribute='instance_id') | list }}"
+    specific_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[1]) | first }}"
+    other_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[0]) | first }}"
+
+- name: instance_ids - all Unprotected
+  amazon.aws.autoscaling_instance:
+    instance_ids: "{{ initial_instances }}"
+    group_name: "{{ default_resource_name }}"
+    state: present
+    protection: False
+  diff: True
+  register: unprotected_all
+
+- ansible.builtin.assert:
+    that:
+      - "'autoscaling:SetInstanceProtection' in current_result.resource_actions"
+      - current_result is changed
+      - "'auto_scaling_instances' in current_result"
+      - initial_instances[0] in listed_instance_ids
+      - initial_instances[1] in listed_instance_ids
+      - "'protected_from_scale_in' in specific_instance_info"
+      - specific_instance_info.protected_from_scale_in == False
+      - "'health_status' in specific_instance_info"
+      - specific_instance_info.health_status == "HEALTHY"
+      - "'protected_from_scale_in' in other_instance_info"
+      - other_instance_info.protected_from_scale_in == False
+      - "'health_status' in other_instance_info"
+      - other_instance_info.health_status == "HEALTHY"
+      # Ensure we only make the limited calls we expect
+      - "'autoscaling:DetachInstances' not in current_result.resource_actions"
+      - "'autoscaling:AttachInstances' not in current_result.resource_actions"
+      - "'autoscaling:SetInstanceHealth' not in current_result.resource_actions"
+  vars:
+    current_result: "{{ unprotected_all }}"
+    listed_instance_ids: "{{ current_result.auto_scaling_instances | map(attribute='instance_id') | list }}"
+    specific_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[1]) | first }}"
+    other_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[0]) | first }}"
+
+# -- implicit instance list --
+
+# implicitly change all
+- name: no instance_ids - all Protected
+  amazon.aws.autoscaling_instance:
+    group_name: "{{ default_resource_name }}"
+    state: present
+    protection: True
+  diff: True
+  register: protected_all
+
+- ansible.builtin.assert:
+    that:
+      - "'autoscaling:SetInstanceProtection' in current_result.resource_actions"
+      - current_result is changed
+      - "'auto_scaling_instances' in current_result"
+      - initial_instances[0] in listed_instance_ids
+      - initial_instances[1] in listed_instance_ids
+      - "'protected_from_scale_in' in specific_instance_info"
+      - specific_instance_info.protected_from_scale_in == True
+      - "'health_status' in specific_instance_info"
+      - specific_instance_info.health_status == "HEALTHY"
+      - "'protected_from_scale_in' in other_instance_info"
+      - other_instance_info.protected_from_scale_in == True
+      - "'health_status' in other_instance_info"
+      - other_instance_info.health_status == "HEALTHY"
+      # Ensure we only make the limited calls we expect
+      - "'autoscaling:DetachInstances' not in current_result.resource_actions"
+      - "'autoscaling:AttachInstances' not in current_result.resource_actions"
+      - "'autoscaling:SetInstanceHealth' not in current_result.resource_actions"
+  vars:
+    current_result: "{{ protected_all }}"
+    listed_instance_ids: "{{ current_result.auto_scaling_instances | map(attribute='instance_id') | list }}"
+    specific_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[1]) | first }}"
+    other_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[0]) | first }}"
+
+# implicitly change all
+- name: no instance_ids - all Unprotected
+  amazon.aws.autoscaling_instance:
+    group_name: "{{ default_resource_name }}"
+    state: present
+    protection: False
+  diff: True
+  register: unprotected_all
+
+- ansible.builtin.assert:
+    that:
+      - "'autoscaling:SetInstanceProtection' in current_result.resource_actions"
+      - current_result is changed
+      - "'auto_scaling_instances' in current_result"
+      - initial_instances[0] in listed_instance_ids
+      - initial_instances[1] in listed_instance_ids
+      - "'protected_from_scale_in' in specific_instance_info"
+      - specific_instance_info.protected_from_scale_in == False
+      - "'health_status' in specific_instance_info"
+      - specific_instance_info.health_status == "HEALTHY"
+      - "'protected_from_scale_in' in other_instance_info"
+      - other_instance_info.protected_from_scale_in == False
+      - "'health_status' in other_instance_info"
+      - other_instance_info.health_status == "HEALTHY"
+      # Ensure we only make the limited calls we expect
+      - "'autoscaling:DetachInstances' not in current_result.resource_actions"
+      - "'autoscaling:AttachInstances' not in current_result.resource_actions"
+      - "'autoscaling:SetInstanceHealth' not in current_result.resource_actions"
+  vars:
+    current_result: "{{ unprotected_all }}"
+    listed_instance_ids: "{{ current_result.auto_scaling_instances | map(attribute='instance_id') | list }}"
+    specific_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[1]) | first }}"
+    other_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[0]) | first }}"
+
+# =====================================================
+#       Test updating the health of one instance
+# =====================================================
+
+# Set to Unprotected - no change
+- name: instance_ids - one Unprotected (idempotency) - check_mode
+  amazon.aws.autoscaling_instance:
+    instance_ids: "{{ initial_instances[1] }}"
+    group_name: "{{ default_resource_name }}"
+    state: present
+    protection: False
+  diff: True
+  register: unprotected_one
+  check_mode: True
+
+- name: instance_ids - one Unprotected (idempotency)
+  amazon.aws.autoscaling_instance:
+    instance_ids: "{{ initial_instances[1] }}"
+    group_name: "{{ default_resource_name }}"
+    state: present
+    protection: False
+  diff: True
+  register: unprotected_one
+
+# Set to Protected
+- name: instance_ids - one Protected - check_mode
+  amazon.aws.autoscaling_instance:
+    instance_ids: "{{ initial_instances[1] }}"
+    group_name: "{{ default_resource_name }}"
+    state: present
+    protection: True
+  diff: True
+  register: protected_one
+  check_mode: True
+
+- name: instance_ids - one Protected
+  amazon.aws.autoscaling_instance:
+    instance_ids: "{{ initial_instances[1] }}"
+    group_name: "{{ default_resource_name }}"
+    state: present
+    protection: True
+  diff: True
+  register: protected_one
+
+- name: instance_ids - one Protected (idempotency) - check_mode
+  amazon.aws.autoscaling_instance:
+    instance_ids: "{{ initial_instances[1] }}"
+    group_name: "{{ default_resource_name }}"
+    state: present
+    protection: True
+  diff: True
+  register: protected_one
+  check_mode: True
+
+- name: instance_ids - one Protected (idempotency)
+  amazon.aws.autoscaling_instance:
+    instance_ids: "{{ initial_instances[1] }}"
+    group_name: "{{ default_resource_name }}"
+    state: present
+    protection: True
+  diff: True
+  register: protected_one
+
+# Set to Unprotected again
+- name: instance_ids - one Unprotected - check_mode
+  amazon.aws.autoscaling_instance:
+    instance_ids: "{{ initial_instances[1] }}"
+    group_name: "{{ default_resource_name }}"
+    state: present
+    protection: False
+  diff: True
+  register: unprotected_one
+  check_mode: True
+
+- name: instance_ids - one Unprotected
+  amazon.aws.autoscaling_instance:
+    instance_ids: "{{ initial_instances[1] }}"
+    group_name: "{{ default_resource_name }}"
+    state: present
+    protection: False
+  diff: True
+  register: unprotected_one

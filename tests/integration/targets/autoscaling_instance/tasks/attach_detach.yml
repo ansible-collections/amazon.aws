@@ -1,0 +1,298 @@
+---
+### Simple _info tests
+### instance_ids - idempotency
+
+# All current instances passed, no purge requested
+# - no change should happen
+- name: instance_ids - idempotency/all - no purge - check_mode
+  amazon.aws.autoscaling_instance:
+    instance_ids: "{{ initial_instances }}"
+    group_name: "{{ default_resource_name }}"
+    state: present
+    purge_instances: False
+  diff: True
+  register: present_no_change
+  check_mode: True
+
+- ansible.builtin.assert:
+    that:
+      - present_no_change is not changed
+      - "'auto_scaling_instances' in present_no_change"
+      - present_no_change.auto_scaling_instances | length == 2
+      - initial_instances[0] in listed_instance_ids
+      - "'auto_scaling_group_name' in specific_instance_info"
+      - specific_instance_info.auto_scaling_group_name == default_resource_name
+      - "'availability_zone' in specific_instance_info"
+      - "'health_status' in specific_instance_info"
+      - specific_instance_info.health_status == "HEALTHY"
+      - "'instance_id' in specific_instance_info"
+      - specific_instance_info.instance_id == initial_instances[0]
+      - "'instance_type' in specific_instance_info"
+      - specific_instance_info.instance_type == "t3.micro"
+      - "'launch_template' in specific_instance_info"
+      - specific_instance_info.launch_template.launch_template_name.startswith(default_resource_name)
+      - "'lifecycle_state' in specific_instance_info"
+      - specific_instance_info.lifecycle_state == "InService"
+      - "'protected_from_scale_in' in specific_instance_info"
+      - specific_instance_info.protected_from_scale_in == False
+  vars:
+    listed_instance_ids: "{{ present_no_change.auto_scaling_instances | map(attribute='instance_id') | list }}"
+    specific_instance_info: "{{ present_no_change.auto_scaling_instances[0] }}"
+
+- name: instance_ids - idempotency/all - no purge
+  amazon.aws.autoscaling_instance:
+    instance_ids: "{{ initial_instances }}"
+    group_name: "{{ default_resource_name }}"
+    state: present
+    purge_instances: False
+  diff: True
+  register: present_no_change
+
+- ansible.builtin.assert:
+    that:
+      - present_no_change is not changed
+      - "'auto_scaling_instances' in present_no_change"
+      - present_no_change.auto_scaling_instances | length == 2
+      - initial_instances[0] in listed_instance_ids
+      - "'auto_scaling_group_name' in specific_instance_info"
+      - specific_instance_info.auto_scaling_group_name == default_resource_name
+      - "'availability_zone' in specific_instance_info"
+      - "'health_status' in specific_instance_info"
+      - specific_instance_info.health_status == "HEALTHY"
+      - "'instance_id' in specific_instance_info"
+      - specific_instance_info.instance_id == initial_instances[0]
+      - "'instance_type' in specific_instance_info"
+      - specific_instance_info.instance_type == "t3.micro"
+      - "'launch_template' in specific_instance_info"
+      - specific_instance_info.launch_template.launch_template_name.startswith(default_resource_name)
+      - "'lifecycle_state' in specific_instance_info"
+      - specific_instance_info.lifecycle_state == "InService"
+      - "'protected_from_scale_in' in specific_instance_info"
+      - specific_instance_info.protected_from_scale_in == False
+  vars:
+    listed_instance_ids: "{{ present_no_change.auto_scaling_instances | map(attribute='instance_id') | list }}"
+    specific_instance_info: "{{ present_no_change.auto_scaling_instances[0] }}"
+
+# One of the current instances passed, no purge requested
+# - no change should happen
+- name: instance_ids - idempotency/partial - no purge - check_mode
+  amazon.aws.autoscaling_instance:
+    instance_ids: "{{ initial_instances[0] }}"
+    group_name: "{{ default_resource_name }}"
+    state: present
+    purge_instances: False
+  diff: True
+  register: present_no_change
+  check_mode: True
+
+- ansible.builtin.assert:
+    that:
+      - present_no_change is not changed
+      - "'auto_scaling_instances' in present_no_change"
+      - present_no_change.auto_scaling_instances | length == 2
+      - initial_instances[0] in listed_instance_ids
+      - "'auto_scaling_group_name' in specific_instance_info"
+      - specific_instance_info.auto_scaling_group_name == default_resource_name
+      - "'availability_zone' in specific_instance_info"
+      - "'health_status' in specific_instance_info"
+      - specific_instance_info.health_status == "HEALTHY"
+      - "'instance_id' in specific_instance_info"
+      - specific_instance_info.instance_id == initial_instances[0]
+      - "'instance_type' in specific_instance_info"
+      - specific_instance_info.instance_type == "t3.micro"
+      - "'launch_template' in specific_instance_info"
+      - specific_instance_info.launch_template.launch_template_name.startswith(default_resource_name)
+      - "'lifecycle_state' in specific_instance_info"
+      - specific_instance_info.lifecycle_state == "InService"
+      - "'protected_from_scale_in' in specific_instance_info"
+      - specific_instance_info.protected_from_scale_in == False
+  vars:
+    listed_instance_ids: "{{ present_no_change.auto_scaling_instances | map(attribute='instance_id') | list }}"
+    specific_instance_info: "{{ present_no_change.auto_scaling_instances[0] }}"
+
+- name: instance_ids - idempotency/partial - no purge
+  amazon.aws.autoscaling_instance:
+    instance_ids: "{{ initial_instances[0] }}"
+    group_name: "{{ default_resource_name }}"
+    state: present
+    purge_instances: False
+  diff: True
+  register: present_no_change
+
+- ansible.builtin.assert:
+    that:
+      - present_no_change is not changed
+      - "'auto_scaling_instances' in present_no_change"
+      - present_no_change.auto_scaling_instances | length == 2
+      - initial_instances[0] in listed_instance_ids
+      - "'auto_scaling_group_name' in specific_instance_info"
+      - specific_instance_info.auto_scaling_group_name == default_resource_name
+      - "'availability_zone' in specific_instance_info"
+      - "'health_status' in specific_instance_info"
+      - specific_instance_info.health_status == "HEALTHY"
+      - "'instance_id' in specific_instance_info"
+      - specific_instance_info.instance_id == initial_instances[0]
+      - "'instance_type' in specific_instance_info"
+      - specific_instance_info.instance_type == "t3.micro"
+      - "'launch_template' in specific_instance_info"
+      - specific_instance_info.launch_template.launch_template_name.startswith(default_resource_name)
+      - "'lifecycle_state' in specific_instance_info"
+      - specific_instance_info.lifecycle_state == "InService"
+      - "'protected_from_scale_in' in specific_instance_info"
+      - specific_instance_info.protected_from_scale_in == False
+  vars:
+    listed_instance_ids: "{{ present_no_change.auto_scaling_instances | map(attribute='instance_id') | list }}"
+    specific_instance_info: "{{ present_no_change.auto_scaling_instances[0] }}"
+
+# All current instances passed, purge requested
+# - no change should happen as there are no instances that are attached but not requested
+- name: instance_ids - idempotency/all - purge - check_mode
+  amazon.aws.autoscaling_instance:
+    instance_ids: "{{ initial_instances }}"
+    group_name: "{{ default_resource_name }}"
+    purge_instances: True
+    state: present
+  diff: True
+  register: present_no_change
+  check_mode: True
+
+- ansible.builtin.assert:
+    that:
+      - present_no_change is not changed
+      - "'auto_scaling_instances' in present_no_change"
+      - present_no_change.auto_scaling_instances | length == 2
+      - initial_instances[0] in listed_instance_ids
+      - "'auto_scaling_group_name' in specific_instance_info"
+      - specific_instance_info.auto_scaling_group_name == default_resource_name
+      - "'availability_zone' in specific_instance_info"
+      - "'health_status' in specific_instance_info"
+      - specific_instance_info.health_status == "HEALTHY"
+      - "'instance_id' in specific_instance_info"
+      - specific_instance_info.instance_id == initial_instances[0]
+      - "'instance_type' in specific_instance_info"
+      - specific_instance_info.instance_type == "t3.micro"
+      - "'launch_template' in specific_instance_info"
+      - specific_instance_info.launch_template.launch_template_name.startswith(default_resource_name)
+      - "'lifecycle_state' in specific_instance_info"
+      - specific_instance_info.lifecycle_state == "InService"
+      - "'protected_from_scale_in' in specific_instance_info"
+      - specific_instance_info.protected_from_scale_in == False
+  vars:
+    listed_instance_ids: "{{ present_no_change.auto_scaling_instances | map(attribute='instance_id') | list }}"
+    specific_instance_info: "{{ present_no_change.auto_scaling_instances[0] }}"
+
+### instance_ids - attach/detach
+# Detach a specific instance
+- name: instance_ids - single instance - detach - check_mode
+  amazon.aws.autoscaling_instance:
+    instance_ids: "{{ initial_instances[0] }}"
+    group_name: "{{ default_resource_name }}"
+    state: detached
+    decrement_desired_capacity: True
+  diff: True
+  register: absent_one
+  check_mode: True
+
+- ansible.builtin.assert:
+    that:
+      - absent_one is changed
+      - "'autoscaling:DetachInstances' not in absent_one.resource_actions" # CHECK_MODE
+      - "'auto_scaling_instances' in absent_one"
+      - initial_instances[1] in listed_instance_ids
+      - "'auto_scaling_group_name' in specific_instance_info"
+      - specific_instance_info.auto_scaling_group_name == default_resource_name
+      - "'availability_zone' in specific_instance_info"
+      - "'health_status' in specific_instance_info"
+      - specific_instance_info.health_status == "HEALTHY"
+      - "'instance_id' in specific_instance_info"
+      - specific_instance_info.instance_id == initial_instances[1]
+      - "'instance_type' in specific_instance_info"
+      - specific_instance_info.instance_type == "t3.micro"
+      - "'launch_template' in specific_instance_info"
+      - specific_instance_info.launch_template.launch_template_name.startswith(default_resource_name)
+      - "'lifecycle_state' in specific_instance_info"
+      - specific_instance_info.lifecycle_state == "InService"
+      - "'protected_from_scale_in' in specific_instance_info"
+      - specific_instance_info.protected_from_scale_in == False
+  vars:
+    listed_instance_ids: "{{ absent_one.auto_scaling_instances | map(attribute='instance_id') | list }}"
+    specific_instance_info: "{{ absent_one.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[1]) | first }}"
+
+- name: instance_ids - single instance - detach
+  amazon.aws.autoscaling_instance:
+    instance_ids: "{{ initial_instances[0] }}"
+    group_name: "{{ default_resource_name }}"
+    state: detached
+    decrement_desired_capacity: True
+  diff: True
+  register: absent_one
+
+- ansible.builtin.assert:
+    that:
+      - absent_one is changed
+      - "'auto_scaling_instances' in absent_one"
+      - initial_instances[1] in listed_instance_ids
+      - "'auto_scaling_group_name' in specific_instance_info"
+      - specific_instance_info.auto_scaling_group_name == default_resource_name
+      - "'availability_zone' in specific_instance_info"
+      - "'health_status' in specific_instance_info"
+      - specific_instance_info.health_status == "HEALTHY"
+      - "'instance_id' in specific_instance_info"
+      - specific_instance_info.instance_id == initial_instances[1]
+      - "'instance_type' in specific_instance_info"
+      - specific_instance_info.instance_type == "t3.micro"
+      - "'launch_template' in specific_instance_info"
+      - specific_instance_info.launch_template.launch_template_name.startswith(default_resource_name)
+      - "'lifecycle_state' in specific_instance_info"
+      - specific_instance_info.lifecycle_state == "InService"
+      - "'protected_from_scale_in' in specific_instance_info"
+      - specific_instance_info.protected_from_scale_in == False
+  vars:
+    listed_instance_ids: "{{ absent_one.auto_scaling_instances | map(attribute='instance_id') | list }}"
+    specific_instance_info: "{{ absent_one.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[1]) | first }}"
+
+# Ensure present state (not using standby - should be the same as attached)
+- name: instance_ids - single instance - attach/present - check_mode
+  amazon.aws.autoscaling_instance:
+    instance_ids: "{{ initial_instances[0] }}"
+    group_name: "{{ default_resource_name }}"
+    state: present
+  diff: True
+  register: present_one
+  check_mode: True
+
+- name: instance_ids - single instance - attach/present
+  amazon.aws.autoscaling_instance:
+    instance_ids: "{{ initial_instances[0] }}"
+    group_name: "{{ default_resource_name }}"
+    state: present
+  diff: True
+  register: present_one
+
+# Detach it again so we can reattach
+- name: instance_ids - single instance - detach (again - prepare to attach)
+  amazon.aws.autoscaling_instance:
+    instance_ids: "{{ initial_instances[0] }}"
+    group_name: "{{ default_resource_name }}"
+    state: detached
+    decrement_desired_capacity: True
+  diff: True
+  register: detach_one
+
+# Ensure attached state (not using standby - should be the same as attached)
+- name: instance_ids - single instance - attach/attach - check_mode
+  amazon.aws.autoscaling_instance:
+    instance_ids: "{{ initial_instances[0] }}"
+    group_name: "{{ default_resource_name }}"
+    state: attached
+  diff: True
+  register: attached_one
+  check_mode: True
+
+- name: instance_ids - single instance - attach/attach
+  amazon.aws.autoscaling_instance:
+    instance_ids: "{{ initial_instances[0] }}"
+    group_name: "{{ default_resource_name }}"
+    state: attached
+  diff: True
+  register: attached_one

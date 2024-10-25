@@ -1,0 +1,5 @@
+---
+- ansible.builtin.include_tasks: describe.yml
+- ansible.builtin.include_tasks: attach_detach.yml
+- ansible.builtin.include_tasks: health.yml
+- ansible.builtin.include_tasks: protection.yml
