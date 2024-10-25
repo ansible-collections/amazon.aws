@@ -107,5 +107,5 @@ def test__custom_uri(m_fetch_url, ec2_instance):
     module.params = {
         "ec2_metadata_token_uri": "http://example.com/ec2_metadata_token_uri"
     }
-    default = ec2_metadata_facts.Ec2Metadata(module)
-    assert default.ec2_metadata_token_uri == "http://example.com/ec2_metadata_token_uri"
+    custom = ec2_metadata_facts.Ec2Metadata(module)
+    assert custom.ec2_metadata_token_uri == "http://example.com/ec2_metadata_token_uri"
