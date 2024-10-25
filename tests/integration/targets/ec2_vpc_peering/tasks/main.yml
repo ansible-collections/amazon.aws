@@ -7,7 +7,7 @@
       region: '{{ aws_region }}'
   block:
   - name: Get ARN of calling user
-    aws_caller_info:
+    amazon.aws.aws_caller_info:
     register: aws_caller_info
 
   - name: Store Account ID for later use
@@ -67,7 +67,7 @@
       connection_name: Peering connection for VPC {{ vpc_1 }} to VPC {{ vpc_2 }}
 
   - name: Create local account EC2 VPC Peering Connection request (check_mode)
-    amazon.aws.ec2_vpc_peer:
+    amazon.aws.ec2_vpc_peering:
       vpc_id: '{{ vpc_1 }}'
       peer_vpc_id: '{{ vpc_2 }}'
       state: present
@@ -82,7 +82,7 @@
       - vpc_peer is changed
 
   - name: Create local account EC2 VPC Peering Connection request
-    amazon.aws.ec2_vpc_peer:
+    amazon.aws.ec2_vpc_peering:
       vpc_id: '{{ vpc_1 }}'
       peer_vpc_id: '{{ vpc_2 }}'
       state: present
@@ -105,7 +105,7 @@
 
   - name: Re-create local account EC2 VPC Peering Connection request (idempotency
       check_mode)
-    amazon.aws.ec2_vpc_peer:
+    amazon.aws.ec2_vpc_peering:
       vpc_id: '{{ vpc_1 }}'
       peer_vpc_id: '{{ vpc_2 }}'
       state: present
@@ -120,7 +120,7 @@
       - vpc_peer is not changed
 
   - name: Re-create local account EC2 VPC Peering Connection request (idempotency)
-    amazon.aws.ec2_vpc_peer:
+    amazon.aws.ec2_vpc_peering:
       vpc_id: '{{ vpc_1 }}'
       peer_vpc_id: '{{ vpc_2 }}'
       state: present
@@ -137,7 +137,7 @@
 
   - name: Create local account EC2 VPC Peering Connection request with accepter/requester
       reversed (idempotency check_mode)
-    amazon.aws.ec2_vpc_peer:
+    amazon.aws.ec2_vpc_peering:
       vpc_id: '{{ vpc_2 }}'
       peer_vpc_id: '{{ vpc_1 }}'
       state: present
@@ -153,7 +153,7 @@
 
   - name: Create local account EC2 VPC Peering Connection request with accepter/requester
       reversed (idempotency)
-    amazon.aws.ec2_vpc_peer:
+    amazon.aws.ec2_vpc_peering:
       vpc_id: '{{ vpc_2 }}'
       peer_vpc_id: '{{ vpc_1 }}'
       state: present
@@ -262,7 +262,7 @@
       requester_details: '{{ peer_details["requester_vpc_info"] }}'
 
   - name: Update tags on the EC2 VPC Peering Connection (check_mode)
-    amazon.aws.ec2_vpc_peer:
+    amazon.aws.ec2_vpc_peering:
       vpc_id: '{{ vpc_1 }}'
       peer_vpc_id: '{{ vpc_2 }}'
       state: present
@@ -278,7 +278,7 @@
       - tag_peer is changed
 
   - name: Update tags on the EC2 VPC Peering Connection
-    amazon.aws.ec2_vpc_peer:
+    amazon.aws.ec2_vpc_peering:
       vpc_id: '{{ vpc_1 }}'
       peer_vpc_id: '{{ vpc_2 }}'
       state: present
@@ -295,7 +295,7 @@
       - tag_peer.peering_id == peer_id_1
 
   - name: Update tags on the EC2 VPC Peering Connection (idempotency check_mode)
-    amazon.aws.ec2_vpc_peer:
+    amazon.aws.ec2_vpc_peering:
       vpc_id: '{{ vpc_1 }}'
       peer_vpc_id: '{{ vpc_2 }}'
       state: present
@@ -311,7 +311,7 @@
       - tag_peer is not changed
 
   - name: Update tags on the EC2 VPC Peering Connection (idempotency)
-    amazon.aws.ec2_vpc_peer:
+    amazon.aws.ec2_vpc_peering:
       vpc_id: '{{ vpc_1 }}'
       peer_vpc_id: '{{ vpc_2 }}'
       state: present
@@ -346,7 +346,7 @@
       peer_details: '{{ peer_info.vpc_peering_connections[0] }}'
 
   - name: Accept local EC2 VPC Peering request (check_mode)
-    amazon.aws.ec2_vpc_peer:
+    amazon.aws.ec2_vpc_peering:
       peering_id: '{{ vpc_peer.peering_id }}'
       state: accept
       wait: true
@@ -359,7 +359,7 @@
       - action_peer is changed
 
   - name: Accept local EC2 VPC Peering request
-    amazon.aws.ec2_vpc_peer:
+    amazon.aws.ec2_vpc_peering:
       peering_id: '{{ vpc_peer.peering_id }}'
       state: accept
       wait: true
@@ -433,7 +433,7 @@
       requester_details: '{{ peer_details["requester_vpc_info"] }}'
 
   - name: Accept local EC2 VPC Peering request (idempotency check_mode)
-    amazon.aws.ec2_vpc_peer:
+    amazon.aws.ec2_vpc_peering:
       peering_id: '{{ vpc_peer.peering_id }}'
       state: accept
     check_mode: true
@@ -459,7 +459,7 @@
       - action_peer.vpc_peering_connection.vpc_peering_connection_id == peer_id_1
 
   - name: Delete a local EC2 VPC Peering Connection (check_mode)
-    amazon.aws.ec2_vpc_peer:
+    amazon.aws.ec2_vpc_peering:
       peering_id: '{{ vpc_peer.peering_id }}'
       state: absent
     check_mode: true
@@ -471,7 +471,7 @@
       - delete_peer is changed
 
   - name: Delete a local EC2 VPC Peering Connection
-    amazon.aws.ec2_vpc_peer:
+    amazon.aws.ec2_vpc_peering:
       peering_id: '{{ vpc_peer.peering_id }}'
       state: absent
     register: delete_peer
@@ -534,7 +534,7 @@
       requester_details: '{{ peer_details["requester_vpc_info"] }}'
 
   - name: Delete a local EC2 VPC Peering Connection (idempotency check_mode)
-    amazon.aws.ec2_vpc_peer:
+    amazon.aws.ec2_vpc_peering:
       peering_id: '{{ vpc_peer.peering_id }}'
       state: absent
     check_mode: true
@@ -546,7 +546,7 @@
       - delete_peer is not changed
 
   - name: Delete a local EC2 VPC Peering Connection (idempotency)
-    amazon.aws.ec2_vpc_peer:
+    amazon.aws.ec2_vpc_peering:
       peering_id: '{{ vpc_peer.peering_id }}'
       state: absent
     register: delete_peer
@@ -558,7 +558,7 @@
       - delete_peer is successful
 
   - name: Create local account EC2 VPC Peering Connection
-    amazon.aws.ec2_vpc_peer:
+    amazon.aws.ec2_vpc_peering:
       vpc_id: '{{ vpc_1 }}'
       peer_vpc_id: '{{ vpc_2 }}'
       state: present
@@ -579,7 +579,7 @@
       peer_id_2: '{{ vpc_peer2.peering_id }}'
 
   - name: Reject a local EC2 VPC Peering Connection
-    amazon.aws.ec2_vpc_peer:
+    amazon.aws.ec2_vpc_peering:
       peering_id: '{{ vpc_peer2.peering_id }}'
       state: reject
       wait: true
@@ -593,7 +593,7 @@
       - reject_peer.peering_id == peer_id_2
 
   - name: Reject a local EC2 VPC Peering Connection (idempotency)
-    amazon.aws.ec2_vpc_peer:
+    amazon.aws.ec2_vpc_peering:
       peering_id: '{{ vpc_peer2.peering_id }}'
       state: reject
     register: reject_peer
@@ -607,7 +607,7 @@
       - reject_peer.vpc_peering_connection.vpc_peering_connection_id == peer_id_2
 
   - name: Delete a local EC2 VPC Peering Connections
-    amazon.aws.ec2_vpc_peer:
+    amazon.aws.ec2_vpc_peering:
       peering_id: '{{ vpc_peer2.peering_id }}'
       state: absent
     register: delete_peer
@@ -640,7 +640,7 @@
     # ============================================================
 
   - name: Delete remaining EC2 VPC Peering Connections
-    amazon.aws.ec2_vpc_peer:
+    amazon.aws.ec2_vpc_peering:
       peering_id: '{{ item }}'
       state: absent
     ignore_errors: true
