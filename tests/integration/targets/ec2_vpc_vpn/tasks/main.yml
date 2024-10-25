@@ -35,6 +35,7 @@
   - name: Create transit gateway
     community.aws.ec2_transit_gateway:
       description: Transit Gateway for vpn attachment
+      wait: true
     register: tgw
 
   - name: Create an EC2 VPN Connection, with customer gateway, vpn_gateway_id and
