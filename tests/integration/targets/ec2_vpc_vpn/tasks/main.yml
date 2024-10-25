@@ -1,0 +1,232 @@
+- name: EC2 VPN Connection integration tests
+  module_defaults:
+    group/aws:
+      access_key: '{{ aws_access_key }}'
+      secret_key: '{{ aws_secret_key }}'
+      session_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+  block:
+
+  # ============================================================
+  - name: Create a VPC
+    amazon.aws.ec2_vpc_net:
+      name: '{{ resource_prefix }}-vpc'
+      state: present
+      cidr_block: 10.0.0.0/26
+      tags:
+        Name: '{{ resource_prefix }}-vpc'
+        Description: Created by ansible-test
+    register: vpc_result
+
+  - name: Create an EC2 VPC gateway and attach it to VPC
+    community.aws.ec2_vpc_vgw:
+      state: present
+      vpc_id: '{{ vpc_result.vpc.id }}'
+      name: '{{ resource_prefix }}-vgw'
+    register: vgw
+
+  - name: Create customer gateway
+    community.aws.ec2_customer_gateway:
+      bgp_asn: 12345
+      ip_address: 1.2.3.4
+      name: testcgw
+    register: cgw
+
+  - name: Create transit gateway
+    community.aws.ec2_transit_gateway:
+      description: Transit Gateway for vpn attachment
+      wait: true
+    register: tgw
+
+  - name: Create an EC2 VPN Connection, with customer gateway, vpn_gateway_id and
+      transit_gateway
+    amazon.aws.ec2_vpc_vpn:
+      customer_gateway_id: '{{ cgw.gateway.customer_gateway.customer_gateway_id }}'
+      vpn_gateway_id: '{{ vgw.vgw.id }}'
+      transit_gateway_id: '{{ tgw.transit_gateway.transit_gateway_id }}'
+      state: present
+    register: result
+    ignore_errors: true
+
+  - name: Assert creation of vpn failed
+    ansible.builtin.assert:
+      that:
+      - result is failed
+      - result.msg == "parameters are mutually exclusive: vpn_gateway_id|transit_gateway_id"
+
+  - name: Create EC2 VPN Connection, with customer gateway and transit_gateway
+    amazon.aws.ec2_vpc_vpn:
+      customer_gateway_id: '{{ cgw.gateway.customer_gateway.customer_gateway_id }}'
+      transit_gateway_id: '{{ tgw.transit_gateway.transit_gateway_id }}'
+      state: present
+      wait_timeout: 1000
+    register: tgw_vpn
+
+  - name: Store ID of VPN
+    ansible.builtin.set_fact:
+      vpn_id: '{{ tgw_vpn.vpn_connection_id }}'
+
+  # ============================================================
+  - name: Test success with no parameters
+    amazon.aws.ec2_vpc_vpn_info:
+    register: result
+
+  - name: Assert success with no parameters
+    ansible.builtin.assert:
+      that:
+      - result.changed == false
+      - result.vpn_connections != []
+  # ============================================================
+
+  - name: Delete EC2 VPN Connection created with transit gateway
+    amazon.aws.ec2_vpc_vpn:
+      state: absent
+      vpn_connection_id: '{{ vpn_id }}'
+    register: result
+    retries: 10
+    delay: 3
+    until: result is not failed
+    ignore_errors: true
+
+  # ============================================================
+
+  - name: Create EC2 VPN Connection, with customer gateway and vpn gateway
+    amazon.aws.ec2_vpc_vpn:
+      customer_gateway_id: '{{ cgw.gateway.customer_gateway.customer_gateway_id }}'
+      vpn_gateway_id: '{{ vgw.vgw.id }}'
+      state: present
+    register: vpn
+
+  - name: Store ID of the EC2 VPN Connection
+    ansible.builtin.set_fact:
+      vpn_id: '{{ vpn.vpn_connection_id }}'
+
+  # ============================================================
+
+  - name: Test success with no parameters
+    amazon.aws.ec2_vpc_vpn_info:
+    register: result
+
+  - name: Assert success with no parameters
+    ansible.builtin.assert:
+      that:
+      - result.changed == false
+      - result.vpn_connections != []
+
+  - name: Test success with customer gateway id as a filter
+    amazon.aws.ec2_vpc_vpn_info:
+      filters:
+        customer-gateway-id: '{{ cgw.gateway.customer_gateway.customer_gateway_id
+          }}'
+        vpn-connection-id: '{{ vpn.vpn_connection_id }}'
+    register: result
+
+  - name: Assert success with customer gateway id as filter
+    ansible.builtin.assert:
+      that:
+      - result.changed == false
+      - result.vpn_connections != []
+
+  # ============================================================
+
+  - include_tasks: tags.yml
+
+  # ============================================================
+
+  - name: Delete EC2 VPN Connection (check_mode)
+    amazon.aws.ec2_vpc_vpn:
+      state: absent
+      vpn_connection_id: '{{ vpn_id }}'
+    register: result
+    check_mode: true
+
+  - name: Assert EC2 VPN Connection is deleted (check_mode)
+    ansible.builtin.assert:
+      that:
+      - result is changed
+
+  - name: Delete EC2 VPN Connection
+    amazon.aws.ec2_vpc_vpn:
+      state: absent
+      vpn_connection_id: '{{ vpn_id }}'
+    register: result
+
+  - name: Assert EC2 VPN Connection is deleted
+    ansible.builtin.assert:
+      that:
+      - result is changed
+
+  - name: Delete EC2 VPN Connection - idempotency (check)
+    amazon.aws.ec2_vpc_vpn:
+      state: absent
+      vpn_connection_id: '{{ vpn_id }}'
+    register: result
+    check_mode: true
+
+  - name: Assert result has not changed (idempotency check_mode)
+    ansible.builtin.assert:
+      that:
+      - result is not changed
+
+  - name: Delete EC2 VPN Connection - idempotency
+    amazon.aws.ec2_vpc_vpn:
+      state: absent
+      vpn_connection_id: '{{ vpn_id }}'
+    register: result
+
+  - name: Assert result has not changed (idempotency)
+    ansible.builtin.assert:
+      that:
+      - result is not changed
+
+  # ============================================================
+  always:
+
+  - name: Delete EC2 VPN Connection
+    amazon.aws.ec2_vpc_vpn:
+      state: absent
+      vpn_connection_id: '{{ vpn.vpn_connection_id }}'
+    register: result
+    retries: 10
+    delay: 3
+    until: result is not failed
+    ignore_errors: true
+
+  - name: Delete customer gateway
+    community.aws.ec2_customer_gateway:
+      state: absent
+      ip_address: 1.2.3.4
+      name: testcgw
+      bgp_asn: 12345
+    register: result
+    retries: 10
+    delay: 3
+    until: result is not failed
+    ignore_errors: true
+
+  - name: Delete VPN gateway
+    community.aws.ec2_vpc_vgw:
+      state: absent
+      vpn_gateway_id: '{{ vgw.vgw.id }}'
+    register: result
+    retries: 10
+    delay: 3
+    until: result is not failed
+    ignore_errors: true
+
+  - name: Delete VPC
+    amazon.aws.ec2_vpc_net:
+      name: '{{ resource_prefix }}-vpc'
+      state: absent
+      cidr_block: 10.0.0.0/26
+    register: result
+    retries: 10
+    delay: 3
+    until: result is not failed
+    ignore_errors: true
+
+  - name: Delete transit gateway
+    community.aws.ec2_transit_gateway:
+      transit_gateway_id: '{{ tgw.transit_gateway.transit_gateway_id }}'
+      state: absent
+    ignore_errors: true

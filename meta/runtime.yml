@@ -87,6 +87,8 @@ action_groups:
     - ec2_vpc_subnet_info
     - ec2_vpc_vgw
     - ec2_vpc_vgw_info
+    - ec2_vpc_vpn
+    - ec2_vpc_vpn_info
     - elb_application_lb
     - elb_application_lb_info
     - elb_classic_lb
