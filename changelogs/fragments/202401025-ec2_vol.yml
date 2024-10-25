@@ -1,0 +1,2 @@
+bugfixes:
+  - ec2_vol - output volume informations when volume exists in check mode (https://github.com/ansible-collections/amazon.aws/pull/2133).
