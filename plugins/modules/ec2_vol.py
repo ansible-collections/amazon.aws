@@ -568,7 +568,7 @@ def attach_volume(
                 module.exit_json(
                     changed=False,
                     msg=f"IN CHECK MODE - volume already attached to instance: {instance_id}.",
-                    **volume_dict,
+                    volume=volume_dict,
                 )
         if not volume_dict["multi_attach_enabled"]:
             # volumes without MultiAttach Enabled can be attached to 1 instance only
