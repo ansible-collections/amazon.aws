@@ -1,8 +1,10 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta content="2.14.0" name="antsibull-docs" />
+<meta content="2.15.0" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>amazon.aws.ec2_instance module – Create &amp; manage EC2 instances &mdash; Ansible collections  documentation</title>
@@ -13,15 +15,11 @@
 
   
     <link rel="shortcut icon" href="../../../_static/images/Ansible-Mark-RGB_Black.png"/>
-  <!--[if lt IE 9]>
-    <script src="../../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
-        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../../_static/documentation_options.js?v=7f41d439"></script>
-        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
-        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=7f41d439"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="amazon.aws.ec2_instance_info module – Gather information about ec2 instances in AWS" href="ec2_instance_info_module.html" />
@@ -194,7 +192,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 </div></td>
 <td><div class="ansible-option-cell"><p>Preconfigured user-data to enable an instance to perform an Ansible Automation Platform callback (Linux only).</p>
 <p>For Windows instances, to enable remote access via Ansible set <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-instance-module-parameter-aap-callback-windows"><span class="std std-ref"><span class="pre">aap_callback.windows</span></span></a></strong></code> to <code class="ansible-value docutils literal notranslate"><span class="pre">true</span></code>, and optionally set an admin password.</p>
-<p>If using <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-instance-module-parameter-aap-callback-windows"><span class="std std-ref"><span class="pre">aap_callback.windows</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-instance-module-parameter-aap-callback-set-password"><span class="std std-ref"><span class="pre">aap_callback.set_password</span></span></a></strong></code>, callback ton Ansible Automation Platform will not be performed but the instance will be ready to receive winrm connections from Ansible.</p>
+<p>If using <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-instance-module-parameter-aap-callback-windows"><span class="std std-ref"><span class="pre">aap_callback.windows</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-instance-module-parameter-aap-callback-set-password"><span class="std std-ref"><span class="pre">aap_callback.set_password</span></span></a></strong></code>, callback to Ansible Automation Platform will not be performed but the instance will be ready to receive winrm connections from Ansible.</p>
 <p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-instance-module-parameter-user-data"><span class="std std-ref"><span class="pre">user_data</span></span></a></strong></code>.</p>
 </div></td>
 </tr>

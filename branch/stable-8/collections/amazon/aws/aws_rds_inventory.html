@@ -1,8 +1,10 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta content="2.14.0" name="antsibull-docs" />
+<meta content="2.15.0" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>amazon.aws.aws_rds inventory – RDS instance inventory source &mdash; Ansible collections  documentation</title>
@@ -13,15 +15,11 @@
 
   
     <link rel="shortcut icon" href="../../../_static/images/Ansible-Mark-RGB_Black.png"/>
-  <!--[if lt IE 9]>
-    <script src="../../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
-        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../../_static/documentation_options.js?v=7f41d439"></script>
-        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
-        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=7f41d439"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="amazon.aws.aws_account_attribute lookup – Look up AWS account attributes" href="aws_account_attribute_lookup.html" />
@@ -231,12 +229,12 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-rds-
 <p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
 <ul>
 <li><p>INI entry:</p>
-<div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">[</span><span class="nv">inventory</span><span class="p p-Indicator">]</span>
-<span class="l l-Scalar l-Scalar-Plain">cache = false</span>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[inventory]</span>
+<span class="na">cache</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">false</span>
 </pre></div>
 </div>
 </li>
-<li><p>Environment variable: <span class="target" id="index-3"></span><a class="reference external" href="https://docs.ansible.com/ansible-core/devel/reference_appendices/config.html#envvar-ANSIBLE_INVENTORY_CACHE" title="(in Ansible Core vdevel)"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">ANSIBLE_INVENTORY_CACHE</span></code></a></p></li>
+<li><p>Environment variable: <span class="target" id="index-3"></span><a class="reference external" href="https://ansible-collections.github.io/community.aws/branch/main/collections/environment_variables.html#envvar-ANSIBLE_INVENTORY_CACHE" title="(in Ansible collections)"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">ANSIBLE_INVENTORY_CACHE</span></code></a></p></li>
 </ul>
 </div></td>
 </tr>
@@ -248,17 +246,17 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-rds-
 <p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
 <ul>
 <li><p>INI entries:</p>
-<div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">[</span><span class="nv">defaults</span><span class="p p-Indicator">]</span>
-<span class="l l-Scalar l-Scalar-Plain">fact_caching_connection = VALUE</span>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[defaults]</span>
+<span class="na">fact_caching_connection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">VALUE</span>
 </pre></div>
 </div>
-<div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">[</span><span class="nv">inventory</span><span class="p p-Indicator">]</span>
-<span class="l l-Scalar l-Scalar-Plain">cache_connection = VALUE</span>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[inventory]</span>
+<span class="na">cache_connection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">VALUE</span>
 </pre></div>
 </div>
 </li>
 <li><p>Environment variable: <span class="target" id="index-4"></span><a class="reference external" href="https://docs.ansible.com/ansible-core/devel/reference_appendices/config.html#envvar-ANSIBLE_CACHE_PLUGIN_CONNECTION" title="(in Ansible Core vdevel)"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">ANSIBLE_CACHE_PLUGIN_CONNECTION</span></code></a></p></li>
-<li><p>Environment variable: <span class="target" id="index-5"></span><a class="reference external" href="https://docs.ansible.com/ansible-core/devel/reference_appendices/config.html#envvar-ANSIBLE_INVENTORY_CACHE_CONNECTION" title="(in Ansible Core vdevel)"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">ANSIBLE_INVENTORY_CACHE_CONNECTION</span></code></a></p></li>
+<li><p>Environment variable: <span class="target" id="index-5"></span><a class="reference external" href="https://ansible-collections.github.io/community.aws/branch/main/collections/environment_variables.html#envvar-ANSIBLE_INVENTORY_CACHE_CONNECTION" title="(in Ansible collections)"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">ANSIBLE_INVENTORY_CACHE_CONNECTION</span></code></a></p></li>
 </ul>
 </div></td>
 </tr>
@@ -271,17 +269,17 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-rds-
 <p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
 <ul>
 <li><p>INI entries:</p>
-<div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">[</span><span class="nv">defaults</span><span class="p p-Indicator">]</span>
-<span class="l l-Scalar l-Scalar-Plain">fact_caching = memory</span>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[defaults]</span>
+<span class="na">fact_caching</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">memory</span>
 </pre></div>
 </div>
-<div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">[</span><span class="nv">inventory</span><span class="p p-Indicator">]</span>
-<span class="l l-Scalar l-Scalar-Plain">cache_plugin = memory</span>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[inventory]</span>
+<span class="na">cache_plugin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">memory</span>
 </pre></div>
 </div>
 </li>
 <li><p>Environment variable: <span class="target" id="index-6"></span><a class="reference external" href="https://docs.ansible.com/ansible-core/devel/reference_appendices/config.html#envvar-ANSIBLE_CACHE_PLUGIN" title="(in Ansible Core vdevel)"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">ANSIBLE_CACHE_PLUGIN</span></code></a></p></li>
-<li><p>Environment variable: <span class="target" id="index-7"></span><a class="reference external" href="https://docs.ansible.com/ansible-core/devel/reference_appendices/config.html#envvar-ANSIBLE_INVENTORY_CACHE_PLUGIN" title="(in Ansible Core vdevel)"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">ANSIBLE_INVENTORY_CACHE_PLUGIN</span></code></a></p></li>
+<li><p>Environment variable: <span class="target" id="index-7"></span><a class="reference external" href="https://ansible-collections.github.io/community.aws/branch/main/collections/environment_variables.html#envvar-ANSIBLE_INVENTORY_CACHE_PLUGIN" title="(in Ansible collections)"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">ANSIBLE_INVENTORY_CACHE_PLUGIN</span></code></a></p></li>
 </ul>
 </div></td>
 </tr>
@@ -289,22 +287,22 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-rds-
 <div class="ansibleOptionAnchor" id="parameter-cache_prefix"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-cache-prefix"><strong>cache_prefix</strong></p>
 <a class="ansibleOptionLink" href="#parameter-cache_prefix" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Prefix to use for cache plugin files/tables</p>
+<td><div class="ansible-option-cell"><p>Prefix to use for cache plugin files/tables.</p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;ansible_inventory_&quot;</span></code></p>
 <p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
 <ul>
 <li><p>INI entries:</p>
-<div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">[</span><span class="nv">defaults</span><span class="p p-Indicator">]</span>
-<span class="l l-Scalar l-Scalar-Plain">fact_caching_prefix = ansible_inventory_</span>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[defaults]</span>
+<span class="na">fact_caching_prefix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ansible_inventory_</span>
 </pre></div>
 </div>
-<div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">[</span><span class="nv">inventory</span><span class="p p-Indicator">]</span>
-<span class="l l-Scalar l-Scalar-Plain">cache_prefix = ansible_inventory_</span>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[inventory]</span>
+<span class="na">cache_prefix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ansible_inventory_</span>
 </pre></div>
 </div>
 </li>
 <li><p>Environment variable: <span class="target" id="index-8"></span><a class="reference external" href="https://docs.ansible.com/ansible-core/devel/reference_appendices/config.html#envvar-ANSIBLE_CACHE_PLUGIN_PREFIX" title="(in Ansible Core vdevel)"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">ANSIBLE_CACHE_PLUGIN_PREFIX</span></code></a></p></li>
-<li><p>Environment variable: <span class="target" id="index-9"></span><a class="reference external" href="https://docs.ansible.com/ansible-core/devel/reference_appendices/config.html#envvar-ANSIBLE_INVENTORY_CACHE_PLUGIN_PREFIX" title="(in Ansible Core vdevel)"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">ANSIBLE_INVENTORY_CACHE_PLUGIN_PREFIX</span></code></a></p></li>
+<li><p>Environment variable: <span class="target" id="index-9"></span><a class="reference external" href="https://ansible-collections.github.io/community.aws/branch/main/collections/environment_variables.html#envvar-ANSIBLE_INVENTORY_CACHE_PLUGIN_PREFIX" title="(in Ansible collections)"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">ANSIBLE_INVENTORY_CACHE_PLUGIN_PREFIX</span></code></a></p></li>
 </ul>
 </div></td>
 </tr>
@@ -312,22 +310,22 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-rds-
 <div class="ansibleOptionAnchor" id="parameter-cache_timeout"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-cache-timeout"><strong>cache_timeout</strong></p>
 <a class="ansibleOptionLink" href="#parameter-cache_timeout" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Cache duration in seconds</p>
+<td><div class="ansible-option-cell"><p>Cache duration in seconds.</p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">3600</span></code></p>
 <p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
 <ul>
 <li><p>INI entries:</p>
-<div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">[</span><span class="nv">defaults</span><span class="p p-Indicator">]</span>
-<span class="l l-Scalar l-Scalar-Plain">fact_caching_timeout = 3600</span>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[defaults]</span>
+<span class="na">fact_caching_timeout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">3600</span>
 </pre></div>
 </div>
-<div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">[</span><span class="nv">inventory</span><span class="p p-Indicator">]</span>
-<span class="l l-Scalar l-Scalar-Plain">cache_timeout = 3600</span>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[inventory]</span>
+<span class="na">cache_timeout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">3600</span>
 </pre></div>
 </div>
 </li>
 <li><p>Environment variable: <span class="target" id="index-10"></span><a class="reference external" href="https://docs.ansible.com/ansible-core/devel/reference_appendices/config.html#envvar-ANSIBLE_CACHE_PLUGIN_TIMEOUT" title="(in Ansible Core vdevel)"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">ANSIBLE_CACHE_PLUGIN_TIMEOUT</span></code></a></p></li>
-<li><p>Environment variable: <span class="target" id="index-11"></span><a class="reference external" href="https://docs.ansible.com/ansible-core/devel/reference_appendices/config.html#envvar-ANSIBLE_INVENTORY_CACHE_TIMEOUT" title="(in Ansible Core vdevel)"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">ANSIBLE_INVENTORY_CACHE_TIMEOUT</span></code></a></p></li>
+<li><p>Environment variable: <span class="target" id="index-11"></span><a class="reference external" href="https://ansible-collections.github.io/community.aws/branch/main/collections/environment_variables.html#envvar-ANSIBLE_INVENTORY_CACHE_TIMEOUT" title="(in Ansible collections)"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">ANSIBLE_INVENTORY_CACHE_TIMEOUT</span></code></a></p></li>
 </ul>
 </div></td>
 </tr>
@@ -424,21 +422,21 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-rds-
 <div class="ansibleOptionAnchor" id="parameter-keyed_groups/key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-keyed-groups-key"><strong>key</strong></p>
 <a class="ansibleOptionLink" href="#parameter-keyed_groups/key" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The key from input dictionary used to generate groups</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The key from input dictionary used to generate groups.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-keyed_groups/parent_group"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-keyed-groups-parent-group"><strong>parent_group</strong></p>
 <a class="ansibleOptionLink" href="#parameter-keyed_groups/parent_group" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>parent group for keyed group</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>parent group for keyed group.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-keyed_groups/prefix"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-keyed-groups-prefix"><strong>prefix</strong></p>
 <a class="ansibleOptionLink" href="#parameter-keyed_groups/prefix" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A keyed group name will start with this prefix</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A keyed group name will start with this prefix.</p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
 </div></td>
 </tr>
@@ -446,7 +444,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-rds-
 <div class="ansibleOptionAnchor" id="parameter-keyed_groups/separator"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-keyed-groups-separator"><strong>separator</strong></p>
 <a class="ansibleOptionLink" href="#parameter-keyed_groups/separator" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>separator used to build the keyed group name</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>separator used to build the keyed group name.</p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;_&quot;</span></code></p>
 </div></td>
 </tr>
@@ -455,7 +453,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-rds-
 <a class="ansibleOptionLink" href="#parameter-keyed_groups/trailing_separator" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 <p><em class="ansible-option-versionadded">added in ansible-core 2.12</em></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Set this option to <code class="ansible-value docutils literal notranslate"><span class="pre">False</span></code> to omit the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-aws-rds-inventory-parameter-keyed-groups-separator"><span class="std std-ref"><span class="pre">keyed_groups[].separator</span></span></a></strong></code> after the host variable when the value is an empty string.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Set this option to <code class="ansible-value docutils literal notranslate"><span class="pre">false</span></code> to omit the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-aws-rds-inventory-parameter-keyed-groups-separator"><span class="std std-ref"><span class="pre">keyed_groups[].separator</span></span></a></strong></code> after the host variable when the value is an empty string.</p>
 <p>This option is mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-aws-rds-inventory-parameter-keyed-groups-default-value"><span class="std std-ref"><span class="pre">keyed_groups[].default_value</span></span></a></strong></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
@@ -469,10 +467,10 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-rds-
 <a class="ansibleOptionLink" href="#parameter-leading_separator" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 <p><em class="ansible-option-versionadded">added in ansible-core 2.11</em></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Use in conjunction with keyed_groups.</p>
+<td><div class="ansible-option-cell"><p>Use in conjunction with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-aws-rds-inventory-parameter-keyed-groups"><span class="std std-ref"><span class="pre">keyed_groups</span></span></a></strong></code>.</p>
 <p>By default, a keyed group that does not have a prefix or a separator provided will have a name that starts with an underscore.</p>
-<p>This is because the default prefix is “” and the default separator is “_”.</p>
-<p>Set this option to False to omit the leading underscore (or other separator) if no prefix is given.</p>
+<p>This is because the default prefix is <code class="ansible-value docutils literal notranslate"><span class="pre">&quot;&quot;</span></code> and the default separator is <code class="ansible-value docutils literal notranslate"><span class="pre">&quot;_&quot;</span></code>.</p>
+<p>Set this option to <code class="ansible-value docutils literal notranslate"><span class="pre">false</span></code> to omit the leading underscore (or other separator) if no prefix is given.</p>
 <p>If the group name is derived from a mapping the separator is still used to concatenate the items.</p>
 <p>To not use a separator in the group name at all, set the separator for the keyed group to an empty string instead.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
@@ -630,8 +628,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-rds-
 <p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
 <ul>
 <li><p>INI entry:</p>
-<div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">[</span><span class="nv">inventory_plugins</span><span class="p p-Indicator">]</span>
-<span class="l l-Scalar l-Scalar-Plain">use_extra_vars = false</span>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[inventory_plugins]</span>
+<span class="na">use_extra_vars</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">false</span>
 </pre></div>
 </div>
 </li>
