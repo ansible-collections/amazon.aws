@@ -69,100 +69,260 @@ EXAMPLES = r"""
 """
 
 RETURN = r"""
-cluster_snapshots:
-  description: List of cluster snapshots.
-  returned: always
+snapshots:
+  description: List of non-clustered snapshots.
+  returned: When cluster parameters are not passed.
   type: complex
   contains:
     allocated_storage:
-      description: How many gigabytes of storage are allocated.
+      description: The allocated storage size in gibibytes (GiB).
       returned: always
       type: int
-      sample: 1
-    availability_zones:
-      description: The availability zones of the database from which the snapshot was taken.
-      returned: always
-      type: list
-      sample:
-      - ca-central-1a
-      - ca-central-1b
-    cluster_create_time:
-      description: Date and time the cluster was created.
+      sample: 10
+    availability_zone:
+      description: The name of the Availability Zone the DB instance was located in at the time of the DB snapshot.
       returned: always
       type: str
-      sample: "2018-05-17T00:13:40.223000+00:00"
-    db_cluster_identifier:
-      description: Database cluster identifier.
+      sample: "us-west-2b"
+    db_instance_identifier:
+      description: The DB instance identifier of the DB instance this DB snapshot was created from.
       returned: always
       type: str
-      sample: "test-aurora-cluster"
-    db_cluster_snapshot_arn:
-      description: ARN of the database snapshot.
+      sample: "hello-world-rds"
+    db_snapshot_arn:
+      description: The Amazon Resource Name (ARN) for the DB snapshot.
       returned: always
       type: str
-      sample: "arn:aws:rds:ca-central-1:123456789012:cluster-snapshot:test-aurora-snapshot"
-    db_cluster_snapshot_identifier:
-      description: Snapshot identifier.
+      sample: "arn:aws:rds:us-west-2:123456789012:snapshot:rds:hello-world-rds-us1-2018-05-16-04-03"
+    db_snapshot_identifier:
+      description: The identifier for the DB snapshot.
       returned: always
       type: str
-      sample: "test-aurora-snapshot"
-    engine:
-      description: Database engine.
+      sample: "rds:hello-world-rds-us1-2018-05-16-04-03"
+    dbi_resource_id:
+      description: The identifier for the source DB instance, which can't be changed and which is unique to an Amazon Web Services Region.
       returned: always
       type: str
-      sample: "aurora"
-    engine_version:
-      description: Database engine version.
-      returned: always
-      type: str
-      sample: "5.6.10a"
-    iam_database_authentication_enabled:
-      description: Whether database authentication through IAM is enabled.
+      sample: "db-ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    dedicated_log_volume:
+      description: Whether the DB instance has a dedicated log volume (DLV) enabled.
       returned: always
       type: bool
       sample: false
-    kms_key_id:
-      description: ID of the KMS Key encrypting the snapshot.
+    encrypted:
+      description: Whether the DB snapshot is encrypted.
+      returned: always
+      type: bool
+      sample: true
+    engine:
+      description: The name of the database engine.
       returned: always
       type: str
-      sample: "arn:aws:kms:ca-central-1:123456789012:key/abcd1234-abcd-1111-aaaa-0123456789ab"
-    license_model:
-      description: License model.
+      sample: "postgres"
+    engine_version:
+      description: The version of the database engine.
       returned: always
       type: str
-      sample: "aurora"
-    master_username:
-      description: Database master username.
+      sample: "9.5.10"
+    iam_database_authentication_enabled:
+      description: Whether mapping of Amazon Web Services Identity and Access Management (IAM) accounts to database accounts is enabled.
+      returned: always
+      type: bool
+      sample: false
+    instance_create_time:
+      description: The time when the DB instance, from which the snapshot was taken, was created.
       returned: always
       type: str
-      sample: "shertel"
-    percent_progress:
-      description: Percent progress of snapshot.
+      sample: "2017-10-10T04:00:07.434000+00:00"
+    iops:
+      description: The Provisioned IOPS (I/O operations per second) value of the DB instance at the time of the snapshot.
       returned: always
       type: int
-      sample: 0
+      sample: 3000
+    kms_key_id:
+      description: The Amazon Web Services KMS key identifier for the encrypted DB snapshot.
+      returned: when encrypted is true
+      type: str
+      sample: "arn:aws:kms:us-west-2:123456789012:key/abcd1234-1234-aaaa-0000-1234567890ab"
+    license_model:
+      description: License model information for the restored DB instance.
+      returned: always
+      type: str
+      sample: "postgresql-license"
+    master_username:
+      description: The master username for the DB snapshot.
+      returned: always
+      type: str
+      sample: "dbadmin"
+    multi_tenant:
+      description: Whether the snapshot is of a DB instance using the multi-tenant configuration (TRUE) or the single-tenant configuration (FALSE).
+      returned: always
+      type: bool
+      sample: false
+    option_group_name:
+      description: The option group name for the DB snapshot.
+      returned: always
+      type: str
+      sample: "default:postgres-9-5"
+    original_snapshot_create_time:
+      description: The time of the CreateDBSnapshot operation. Doesn't change when the snapshot is copied.
+      returned: always
+      type: str
+      sample: "2017-10-10T04:00:07.434000+00:00"
+    percent_progress:
+      description: The percentage of the estimated data that has been transferred.
+      returned: always
+      type: int
+      sample: 100
     port:
-      description: Database port.
+      description: The port that the database engine was listening on at the time of the snapshot.
       returned: always
       type: int
       sample: 0
     snapshot_create_time:
-      description: Date and time when the snapshot was created.
+      description: When the snapshot was taken.
+      returned: always
+      type: str
+      sample: "2018-05-16T04:03:33.871000+00:00"
+    snapshot_target:
+      description: "Where manual snapshots are stored: Amazon Web Services Outposts or the Amazon Web Services Region."
+      returned: always
+      type: str
+      sample: "region"
+    snapshot_type:
+      description: The type of the DB snapshot.
+      returned: always
+      type: str
+      sample: "automated"
+    status:
+      description: The status of this DB snapshot.
+      returned: always
+      type: str
+      sample: "available"
+    storage_throughput:
+      description: The storage throughput for the DB snapshot.
+      returned: always
+      type: int
+      sample: 500
+    storage_type:
+      description: The storage type associated with DB snapshot.
+      returned: always
+      type: str
+      sample: "gp2"
+    tags:
+      description: Tags of the snapshot.
+      returned: when snapshot is not shared.
+      type: complex
+      contains: {}
+    vpc_id:
+      description: The VPC ID associated with the DB snapshot.
+      returned: always
+      type: str
+      sample: "vpc-abcd1234"
+cluster_snapshots:
+  description: List of cluster snapshots.
+  returned: When cluster parameters are passed.
+  type: complex
+  contains:
+    allocated_storage:
+      description: The allocated storage size in gibibytes (GiB).
+      returned: always
+      type: int
+      sample: 1
+    availability_zones:
+      description: The list of Availability Zones (AZs) where instances in the DB cluster snapshot can be restored.
+      returned: always
+      type: list
+      sample:
+      - "ca-central-1a"
+      - "ca-central-1b"
+    cluster_create_time:
+      description: The time when the DB cluster was created.
+      returned: always
+      type: str
+      sample: "2018-05-17T00:13:40.223000+00:00"
+    db_cluster_identifier:
+      description: The DB cluster identifier of the DB cluster that this DB cluster snapshot was created from.
+      returned: always
+      type: str
+      sample: "test-aurora-cluster"
+    db_cluster_resource_id:
+      description: The resource ID of the DB cluster that this DB cluster snapshot was created from.
+      returned: always
+      type: str
+      sample: "cluster-ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    db_cluster_snapshot_arn:
+      description: The Amazon Resource Name (ARN) for the DB cluster snapshot.6
+      returned: always
+      type: str
+      sample: "arn:aws:rds:ca-central-1:123456789012:cluster-snapshot:test-aurora-snapshot"
+    db_cluster_snapshot_identifier:
+      description: The identifier for the DB cluster snapshot.
+      returned: always
+      type: str
+      sample: "test-aurora-snapshot"
+    engine:
+      description: The name of the database engine for this DB cluster snapshot.
+      returned: always
+      type: str
+      sample: "aurora"
+    engine_mode:
+      description: The engine mode of the database engine for this DB cluster snapshot.
+      returned: always
+      type: str
+      sample: "provisioned"
+    engine_version:
+      description: The version of the database engine for this DB cluster snapshot.
+      returned: always
+      type: str
+      sample: "5.6.10a"
+    iam_database_authentication_enabled:
+      description: Whether mapping of Amazon Web Services Identity and Access Management (IAM) accounts to database accounts is enabled.
+      returned: always
+      type: bool
+      sample: false
+    kms_key_id:
+      description: the Amazon Web Services KMS key identifier for the encrypted DB cluster snapshot.
+      returned: when storage_encrypted is true
+      type: str
+      sample: "arn:aws:kms:us-west-2:123456789012:key/abcd1234-1234-aaaa-0000-1234567890ab"
+    license_model:
+      description: The license model information for this DB cluster snapshot.
+      returned: always
+      type: str
+      sample: "aurora"
+    master_username:
+      description: The master username for this DB cluster snapshot.
+      returned: always
+      type: str
+      sample: "shertel"
+    percent_progress:
+      description: The percentage of the estimated data that has been transferred.
+      returned: always
+      type: int
+      sample: 0
+    port:
+      description: The port that the DB cluster was listening on at the time of the snapshot.
+      returned: always
+      type: int
+      sample: 0
+    snapshot_create_time:
+      description: The time when the snapshot was taken.
       returned: always
       type: str
       sample: "2018-05-17T00:23:23.731000+00:00"
     snapshot_type:
-      description: Type of snapshot.
+      description: The type of the DB cluster snapshot.
       returned: always
       type: str
       sample: "manual"
     status:
-      description: Status of snapshot.
+      description: The status of this DB cluster snapshot.
       returned: always
       type: str
       sample: "creating"
     storage_encrypted:
-      description: Whether the snapshot is encrypted.
+      description: Indicates whether the DB cluster snapshot is encrypted.
       returned: always
       type: bool
       sample: true
@@ -172,7 +332,7 @@ cluster_snapshots:
       type: complex
       contains: {}
     vpc_id:
-      description: VPC of the database.
+      description: The VPC ID associated with the DB cluster snapshot.
       returned: always
       type: str
       sample: "vpc-abcd1234"
