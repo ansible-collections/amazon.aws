@@ -1,3 +1,0 @@
-breaking_changes:
-  - aws_ec2 - the parameter ``include_extra_api_calls`` was previously deprecated and has been removed (https://github.com/ansible-collections/amazon.aws/pull/2320).
-  - iam_policy - the ``policies`` return key was previously deprecated and has been removed, please use ``policy_names`` instead (https://github.com/ansible-collections/amazon.aws/pull/2320).
