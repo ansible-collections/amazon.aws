@@ -3305,8 +3305,8 @@ releases:
         type (https://github.com/ansible-collections/amazon.aws/issues/469).
       - ec2_instance - refactored code to use ``AnsibleEC2Error`` and shared code
         from module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2192).
-      - ec2_instance_info - Replaced call to deprecated function `datetime.utcnow()`
-        by `datetime.now(timezone.utc)` (https://github.com/ansible-collections/amazon.aws/pull/2192).
+      - ec2_instance_info - Replaced call to deprecated function ``datetime.utcnow()``
+        by ``datetime.now(timezone.utc)`` (https://github.com/ansible-collections/amazon.aws/pull/2192).
       - ec2_instance_info - refactored code to use ``AnsibleEC2Error`` and shared
         code from module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2192).
       - ec2_key - refactored code to use ``AnsibleEC2Error`` as well as moving shared
