@@ -52,7 +52,7 @@ Minor Changes
 - ec2_eni_info - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2166).
 - ec2_import_image - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2167).
 - ec2_import_image_info - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2167).
-- ec2_instance - Pass variables `client` and `module` as function arguments instead of global variables (https://github.com/ansible-collections/amazon.aws/pull/2192).
+- ec2_instance - Pass variables ``client`` and ``module`` as function arguments instead of global variables (https://github.com/ansible-collections/amazon.aws/pull/2192).
 - ec2_instance - add the possibility to upgrade / downgrade existing ec2 instance type (https://github.com/ansible-collections/amazon.aws/issues/469).
 - ec2_instance - refactored code to use ``AnsibleEC2Error`` and shared code from module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2192).
 - ec2_instance_info - Replaced call to deprecated function `datetime.utcnow()` by `datetime.now(timezone.utc)` (https://github.com/ansible-collections/amazon.aws/pull/2192).
