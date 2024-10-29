@@ -1,3 +1,0 @@
----
-minor_changes:
-  - Bump version of ansible-lint to minimum 24.7.0 (https://github.com/ansible-collections/amazon.aws/pull/2201).

@@ -1,3 +1,0 @@
----
-bugfixes:
-- s3_bucket - Fixes Python 3.7 compilation issue due to addition of typing information (https://github.com/ansible-collections/amazon.aws/issues/2287).

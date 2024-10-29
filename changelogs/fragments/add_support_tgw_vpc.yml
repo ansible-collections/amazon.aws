@@ -1,3 +1,0 @@
----
-minor_changes:
-  - Add support for transit gateway vpc attachment module (https://github.com/ansible-collections/amazon.aws/pull/2314).
