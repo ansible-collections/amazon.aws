@@ -1,3 +1,0 @@
----
-bugfixes:
-- aws_ec2 - fix SSM inventory collection for multiple (>40) hosts  (https://github.com/ansible-collections/amazon.aws/pull/2227).

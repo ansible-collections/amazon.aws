@@ -4,6 +4,141 @@ amazon.aws Release Notes
 
 .. contents:: Topics
 
+v9.0.0
+======
+
+Release Summary
+---------------
+
+This major release brings a new set of supported modules that have been promoted from community.aws, several bugfixes, minor changes and deprecated features. We also dropped support for botocore<1.31.0 and boto3<1.28.0. Due to the AWS SDKs announcing the end of support for Python less than 3.8 (https://aws.amazon.com/blogs/developer/python-support-policy-updates-for-aws-sdks-and-tools/), support for Python less than 3.8 by this collection was deprecated in this release and will be removed in release 10.0.0.
+
+Major Changes
+-------------
+
+- autoscaling_instance_refresh - The module has been migrated from the ``community.aws`` collection. Playbooks using the Fully Qualified Collection Name for this module should be updated to use ``amazon.aws.autoscaling_instance_refresh`` (https://github.com/ansible-collections/amazon.aws/pull/2338).
+- autoscaling_instance_refresh_info - The module has been migrated from the ``community.aws`` collection. Playbooks using the Fully Qualified Collection Name for this module should be updated to use ``amazon.aws.autoscaling_instance_refresh_info`` (https://github.com/ansible-collections/amazon.aws/pull/2338).
+- ec2_launch_template - The module has been migrated from the ``community.aws`` collection. Playbooks using the Fully Qualified Collection Name for this module should be updated to use ``amazon.aws.ec2_launch_template`` (https://github.com/ansible-collections/amazon.aws/pull/2348).
+- ec2_placement_group - The module has been migrated from the ``community.aws`` collection. Playbooks using the Fully Qualified Collection Name for this module should be updated to use ``amazon.aws.ec2_placement_group``.
+- ec2_placement_group_info - The module has been migrated from the ``community.aws`` collection. Playbooks using the Fully Qualified Collection Name for this module should be updated to use ``amazon.aws.ec2_placement_group_info``.
+- ec2_transit_gateway - The module has been migrated from the ``community.aws`` collection. Playbooks using the Fully Qualified Collection Name for this module should be updated to use ``amazon.aws.ec2_transit_gateway``.
+- ec2_transit_gateway_info - The module has been migrated from the ``community.aws`` collection. Playbooks using the Fully Qualified Collection Name for this module should be updated to use ``amazon.aws.ec2_transit_gateway_info``.
+- ec2_transit_gateway_vpc_attachment - The module has been migrated from the ``community.aws`` collection. Playbooks using the Fully Qualified Collection Name for this module should be updated to use ``amazon.aws.ec2_transit_gateway_vpc_attachment``.
+- ec2_transit_gateway_vpc_attachment_info - The module has been migrated from the ``community.aws`` collection. Playbooks using the Fully Qualified Collection Name for this module should be updated to use ``amazon.aws.ec2_transit_gateway_vpc_attachment_info``.
+- ec2_vpc_egress_igw - The module has been migrated from the ``community.aws`` collection. Playbooks using the Fully Qualified Collection Name for this module should be updated to use ``amazon.aws.ec2_vpc_egress_igw`` (https://api.github.com/repos/ansible-collections/amazon.aws/pulls/2327).
+- ec2_vpc_nacl - The module has been migrated from the ``community.aws`` collection. Playbooks using the Fully Qualified Collection Name for this module should be updated to use ``amazon.aws.ec2_vpc_nacl`` (https://github.com/ansible-collections/amazon.aws/pull/2339).
+- ec2_vpc_nacl_info - The module has been migrated from the ``community.aws`` collection. Playbooks using the Fully Qualified Collection Name for this module should be updated to use ``amazon.aws.ec2_vpc_nacl_info`` (https://github.com/ansible-collections/amazon.aws/pull/2339).
+- ec2_vpc_peer - The module has been migrated from the ``community.aws`` collection. Playbooks using the Fully Qualified Collection Name for this module should be updated to use ``amazon.aws.ec2_vpc_peer``.
+- ec2_vpc_peering_info - The module has been migrated from the ``community.aws`` collection. Playbooks using the Fully Qualified Collection Name for this module should be updated to use ``amazon.aws.ec2_vpc_peering_info``.
+- ec2_vpc_vgw - The module has been migrated from the ``community.aws`` collection. Playbooks using the Fully Qualified Collection Name for this module should be updated to use ``amazon.aws.ec2_vpc_vgw``.
+- ec2_vpc_vgw_info - The module has been migrated from the ``community.aws`` collection. Playbooks using the Fully Qualified Collection Name for this module should be updated to use ``amazon.aws.ec2_vpc_vgw_info``.
+- ec2_vpc_vpn - The module has been migrated from the ``community.aws`` collection. Playbooks using the Fully Qualified Collection Name for this module should be updated to use ``amazon.aws.ec2_vpc_vpn``.
+- ec2_vpc_vpn_info - The module has been migrated from the ``community.aws`` collection. Playbooks using the Fully Qualified Collection Name for this module should be updated to use ``amazon.aws.ec2_vpc_vpn_info``.
+- elb_classic_lb_info - The module has been migrated from the ``community.aws`` collection. Playbooks using the Fully Qualified Collection Name for this module should be updated to use ``amazon.aws.elb_classic_lb_info``.
+
+Minor Changes
+-------------
+
+- Add support for transit gateway vpc attachment module (https://github.com/ansible-collections/amazon.aws/pull/2314).
+- Bump version of ansible-lint to minimum 24.7.0 (https://github.com/ansible-collections/amazon.aws/pull/2201).
+- Move function ``determine_iam_role`` from module ``ec2_instance`` to module_utils/ec2 so that it can be used by ``community.aws.ec2_launch_template`` module (https://github.com/ansible-collections/amazon.aws/pull/2319).
+- aws_az_info - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2163).  - aws_region_info - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2163).
+- backup_vault - Update code to remove unnecessary return values returned as None (https://github.com/ansible-collections/amazon.aws/pull/2105).
+- cloudwatchlogs_log_group_metric_filter - Add support for ``unit`` and ``dimensions`` options (https://github.com/ansible-collections/amazon.aws/pull/2286)
+- ec2_ami - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2164).
+- ec2_ami_info - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2164).
+- ec2_eip - Add support to update reverse DNS record of an EIP (https://github.com/ansible-collections/amazon.aws/pull/2292).
+- ec2_eip - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2165).  - ec2_eip_info - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2165).
+- ec2_eni - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2166).
+- ec2_eni_info - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2166).
+- ec2_import_image - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2167).
+- ec2_import_image_info - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2167).
+- ec2_instance - Pass variables ``client`` and ``module`` as function arguments instead of global variables (https://github.com/ansible-collections/amazon.aws/pull/2192).
+- ec2_instance - add the possibility to upgrade / downgrade existing ec2 instance type (https://github.com/ansible-collections/amazon.aws/issues/469).
+- ec2_instance - refactored code to use ``AnsibleEC2Error`` and shared code from module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2192).
+- ec2_instance_info - Replaced call to deprecated function ``datetime.utcnow()`` by ``datetime.now(timezone.utc)`` (https://github.com/ansible-collections/amazon.aws/pull/2192).
+- ec2_instance_info - refactored code to use ``AnsibleEC2Error`` and shared code from module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2192).
+- ec2_key - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2168).
+- ec2_key_info - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2168).
+- ec2_security_group - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2169).
+- ec2_security_group_info - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2169).
+- ec2_snapshot - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2099).
+- ec2_snapshot_info - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2099).
+- ec2_spot_instance - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2099).
+- ec2_spot_instance_info - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2099).
+- ec2_vol - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2170).
+- ec2_vol_info - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2170).
+- ec2_vpc_dhcp_option - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2097).
+- ec2_vpc_dhcp_option_info - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2097).
+- ec2_vpc_endpoint - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2097).
+- ec2_vpc_endpoint_info - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2097).
+- ec2_vpc_endpoint_service_info - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2097).
+- ec2_vpc_igw - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2099).
+- ec2_vpc_igw_info - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2099).
+- ec2_vpc_nat_gateway - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2099).
+- ec2_vpc_nat_gateway_info - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2099).
+- ec2_vpc_net - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2158).
+- ec2_vpc_net_info - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2158).
+- ec2_vpc_route_table - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2159).
+- ec2_vpc_route_table - update the ec2_vpc_route_table routes parameter to support the transit gateway id (https://github.com/ansible-collections/amazon.aws/pull/2291).
+- ec2_vpc_route_table_info - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2159).
+- ec2_vpc_subnet - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2160).
+- ec2_vpc_subnet_info - refactored code to use ``AnsibleEC2Error`` as well as moving shared code into module_utils.ec2 (https://github.com/ansible-collections/amazon.aws/pull/2160).
+- module_utils.botocore - replace use of ``botocore.Session`` with ``boto3.Session`` for consistency (https://github.com/ansible-collections/amazon.aws/pull/2157).
+- module_utils.botocore - the ``boto3_conn`` method now catches ``BotoCoreError`` rather than an incomplete list of subclasses (https://github.com/ansible-collections/amazon.aws/pull/2157).
+- module_utils/autoscaling - create utils to handle AWS call for the ``autoscaling`` client (https://github.com/ansible-collections/amazon.aws/pull/2301).
+- module_utils/ec2 - add some shared code for Launch template AWS API calls (https://github.com/ansible-collections/amazon.aws/pull/2319).
+- module_utils/ec2 - add utils for the ec2_placement_group* modules (https://github.com/ansible-collections/amazon.aws/pull/2322).
+- module_utils/ec2 - add utils for the ec2_transit_gateway_* modules (https://github.com/ansible-collections/amazon.aws/pull/2325).
+- module_utils/ec2 - add utils for the ec2_vpc_peer* modules (https://github.com/ansible-collections/amazon.aws/pull/2303).
+- module_utils/ec2 - add utils for the ec2_vpc_vgw_* modules (https://github.com/ansible-collections/amazon.aws/pull/2331).
+- module_utils/ec2 - add utils for the ec2_vpc_vpn* modules (https://github.com/ansible-collections/amazon.aws/pull/2312).
+- module_utils/ec2 - move shared code for ec2 client (https://github.com/ansible-collections/amazon.aws/pull/2302).
+- module_utils/elbv2 - Refactor listeners and rules comparison logic (https://github.com/ansible-collections/amazon.aws/issues/1981).
+- module_utils/rds.py - Add shared functionality from rds snapshot modules (https://github.com/ansible-collections/amazon.aws/pull/2138).
+- module_utils/rds.py - Refactor shared boto3 client functionality, add type hinting and function docstrings (https://github.com/ansible-collections/amazon.aws/pull/2119).
+- plugin_utils.botocore - the ``boto3_conn`` method now catches ``BotoCoreError`` rather than an incomplete list of subclasses (https://github.com/ansible-collections/amazon.aws/pull/2157).
+- rds_cluster_snapshot - Refactor shared boto3 client functionality, add type hinting and function docstrings (https://github.com/ansible-collections/amazon.aws/pull/2138).
+- rds_instance - Add support for  Multi-Tenant CDB Databases(https://github.com/ansible-collections/amazon.aws/pull/2275).
+- rds_instance - Refactor shared boto3 client functionality, add type hinting and function docstrings (https://github.com/ansible-collections/amazon.aws/pull/2119).
+- rds_instance - Remove shared functioanlity added to module_utils/rds.py (https://github.com/ansible-collections/amazon.aws/pull/2138).
+- rds_instance_info - Refactor shared boto3 client functionality, add type hinting and function docstrings (https://github.com/ansible-collections/amazon.aws/pull/2119).
+- rds_instance_info - Refactor shared boto3 client functionality, add type hinting and function docstrings (https://github.com/ansible-collections/amazon.aws/pull/2138).
+- rds_instance_snapshot - Refactor shared boto3 client functionality, add type hinting and function docstrings (https://github.com/ansible-collections/amazon.aws/pull/2138).
+- rds_snapshot_info - Refactor shared boto3 client functionality, add type hinting and function docstrings (https://github.com/ansible-collections/amazon.aws/pull/2138).
+- s3_object_info - Added support for ``max_keys`` and ``marker`` parameter (https://github.com/ansible-collections/amazon.aws/pull/2328).
+
+Breaking Changes / Porting Guide
+--------------------------------
+
+- The amazon.aws collection has dropped support for ``botocore<1.31.0`` and ``boto3<1.28.0``. Most modules will continue to work with older versions of the AWS SDK.  However, compatability with older versions of the SDK is not guaranteed and will not be tested. When using older versions of the SDK a warning will be emitted by Ansible (https://github.com/ansible-collections/amazon.aws/pull/2161).
+- aws_ec2 - the parameter ``include_extra_api_calls`` was previously deprecated and has been removed (https://github.com/ansible-collections/amazon.aws/pull/2320).
+- iam_policy - the ``policies`` return key was previously deprecated and has been removed, please use ``policy_names`` instead (https://github.com/ansible-collections/amazon.aws/pull/2320).
+- module_utils.botocore - ``boto3_conn``'s  ``conn_type`` parameter is now mandatory (https://github.com/ansible-collections/amazon.aws/pull/2157).
+
+Deprecated Features
+-------------------
+
+- amazon.aws collection - due to the AWS SDKs announcing the end of support for Python less than 3.8 (https://aws.amazon.com/blogs/developer/python-support-policy-updates-for-aws-sdks-and-tools/) support for Python less than 3.8 by this collection has been deprecated and will removed in release 10.0.0 (https://github.com/ansible-collections/amazon.aws/pull/2161).
+- ec2_vpc_peer - the ``ec2_vpc_peer`` module has been renamed to ``ec2_vpc_peering``. The usage of the module has not changed. The ec2_vpc_peer alias will be removed in version 13.0.0 (https://github.com/ansible-collections/amazon.aws/pull/2356).
+- ec2_vpc_peering_info - ``result`` return key has been deprecated and will be removed in release 11.0.0.  Use the ``vpc_peering_connections`` return key instead (https://github.com/ansible-collections/amazon.aws/pull/2359).
+- s3_object - Support for ``mode=list`` has been deprecated.  ``amazon.aws.s3_object_info`` should be used instead (https://github.com/ansible-collections/amazon.aws/pull/2328).
+
+Bugfixes
+--------
+
+- aws_ec2 - fix SSM inventory collection for multiple (>40) hosts  (https://github.com/ansible-collections/amazon.aws/pull/2227).
+- ec2_vol - output volume informations when volume exists in check mode (https://github.com/ansible-collections/amazon.aws/pull/2133).
+- s3_bucket - Fixes Python 3.7 compilation issue due to addition of typing information (https://github.com/ansible-collections/amazon.aws/issues/2287).
+- s3_object - Fixed an issue where ``max_keys`` was not respected (https://github.com/ansible-collections/amazon.aws/pull/2328).
+
+New Modules
+-----------
+
+- autoscaling_instance - manage instances associated with AWS AutoScaling Groups (ASGs)
+- autoscaling_instance_info - describe instances associated with AWS AutoScaling Groups (ASGs)
+- ec2_launch_template_info - Gather information about launch templates and versions
+- ec2_vpc_egress_igw_info - Gather information about AWS VPC Egress Only Internet gateway
+
 v8.2.1
 ======
 
