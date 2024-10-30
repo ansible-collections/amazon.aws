@@ -37,7 +37,7 @@ EXAMPLES = r"""
 
 - name: Get specific DB parameter group's info
   amazon.aws.rds_instance_param_group_info:
-    db_parameter_group_name: mandkulk-test-pg
+    db_parameter_group_name: my-test-pg
 
 - name: Get all parameter group info from the region
   amazon.aws.rds_instance_param_group_info:
