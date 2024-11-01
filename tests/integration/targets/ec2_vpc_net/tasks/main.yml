@@ -1491,8 +1491,23 @@
           - result is changed
           - result.vpc.ipv6_cidr_block_association_set | length == 1
           - result.vpc.ipv6_cidr_block_association_set[0].association_id.startswith("vpc-cidr-assoc-")
-          - result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block | ansible.netcommon.ipv6
+          - result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block | ansible.utils.ipv6
           - result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block_state.state in ["disassociated"]
+
+
+    - name: Retry to remove IPv6 CIDR association from VPC
+      amazon.aws.ec2_vpc_net:
+        state: present
+        cidr_block: "{{ vpc_cidr }}"
+        name: "{{ vpc_name }}"
+        ipv6_cidr: false
+      register: result
+
+    - name: assert the task passes and there is no change
+      ansible.builtin.assert:
+        that:
+          - result is successful
+          - result is not changed
 
     - name: Add IPv6 CIDR association to VPC again
       amazon.aws.ec2_vpc_net:
@@ -1510,10 +1525,10 @@
           # now there should be one disassociated block and one associated block.
           - result.vpc.ipv6_cidr_block_association_set | length == 2
           - result.vpc.ipv6_cidr_block_association_set[0].association_id.startswith("vpc-cidr-assoc-")
-          - result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block | ansible.netcommon.ipv6
+          - result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block | ansible.utils.ipv6
           - result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block_state.state in ["disassociated", "disassociating"]
           - result.vpc.ipv6_cidr_block_association_set[1].association_id.startswith("vpc-cidr-assoc-")
-          - result.vpc.ipv6_cidr_block_association_set[1].ipv6_cidr_block | ansible.netcommon.ipv6
+          - result.vpc.ipv6_cidr_block_association_set[1].ipv6_cidr_block | ansible.utils.ipv6
           - result.vpc.ipv6_cidr_block_association_set[1].ipv6_cidr_block_state.state in ["associated", "associating"]
 
     # ============================================================
