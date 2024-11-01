@@ -1,4 +1,0 @@
----
-minor_changes:
-  - Move function ``determine_iam_role`` from module ``ec2_instance`` to module_utils/ec2 so that it can be used by ``community.aws.ec2_launch_template`` module (https://github.com/ansible-collections/amazon.aws/pull/2319).
-  - module_utils/ec2 - add some shared code for Launch template AWS API calls (https://github.com/ansible-collections/amazon.aws/pull/2319).

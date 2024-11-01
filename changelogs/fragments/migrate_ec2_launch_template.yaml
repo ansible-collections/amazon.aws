@@ -1,5 +1,0 @@
----
-major_changes:
-  - ec2_launch_template - The module has been migrated from the ``community.aws``
-    collection. Playbooks using the Fully Qualified Collection Name for this module
-    should be updated to use ``amazon.aws.ec2_launch_template`` (https://github.com/ansible-collections/amazon.aws/pull/2348).
