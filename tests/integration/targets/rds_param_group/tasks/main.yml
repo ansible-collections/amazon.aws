@@ -43,6 +43,13 @@
         state: present
       register: result
 
+    - name: Get specific DB parameter group's info
+      amazon.aws.rds_instance_param_group_info:
+        db_parameter_group_name: "{{ rds_param_group.name }}"
+      register: param_group_info
+      ignore_errors: true
+    - debug: var=param_group_info
+
     - name: assert rds parameter group changed
       ansible.builtin.assert:
         that:
@@ -51,6 +58,10 @@
           - (result.db_parameter_group_name | lower) == (rds_param_group.name | lower)
           - '"description" in result'
           - result.tags == {}
+          - param_group_info.db_parameter_groups is defined
+          - param_group_info.db_parameter_groups[0].db_parameter_group_arn is defined
+          - param_group_info.db_parameter_groups[0].db_parameter_group_family == "{{ rds_param_group.engine }}"
+
 
     # ============================================================
     - name: test empty parameter group with no arguments changes nothing - CHECK_MODE
