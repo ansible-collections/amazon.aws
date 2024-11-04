@@ -19,6 +19,7 @@ except ImportError:
     pass
 
 from ansible.module_utils._text import to_text
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import get_boto3_client_method_parameters
@@ -741,6 +742,26 @@ def describe_db_cluster_parameter_groups(
         pass
     except ClientError as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Couldn't access parameter groups information")
+    return result
+
+
+@AWSRetry.jittered_backoff()
+def describe_db_parameter_groups(
+    connection: Any, module: AnsibleAWSModule, db_parameter_group_name: str = None
+) -> List[dict]:
+    try:
+        if db_parameter_group_name:
+            result = connection.describe_db_parameter_groups(DBParameterGroupName=db_parameter_group_name)[
+                "DBParameterGroups"
+            ]
+            result = [camel_dict_to_snake_dict(result[0])] if result else []
+        else:
+            result = connection.describe_db_parameter_groups()["DBParameterGroups"]
+            result = [camel_dict_to_snake_dict(group) for group in result] if result else []
+    except is_boto3_error_code("DBParameterGroupNotFound"):
+        return []
+    except ClientError as e:
+        module.fail_json_aws(e, msg="Couldn't access parameter group information")
     return result
 
 

@@ -10,7 +10,8 @@ module: rds_instance_param_group_info
 version_added: 9.1.0
 short_description: Describes the RDS parameter group.
 description:
-  - Describe a specific RDS parameter group, the parameter group associated with a specified RDS instance, or all parameter groups available in the current region.
+  - Describe a specific RDS parameter group, the parameter group associated with a specified RDS instance, or
+    all parameter groups available in the current region.
 options:
   db_instance_identifier:
     description:
@@ -67,17 +68,16 @@ db_parameter_groups:
       type: str
 """
 
-from typing import Any, List
+from typing import Any
 
 try:
     import botocore
 except ImportError:
     pass  # handled by AnsibleAWSModule
 
-from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_instances
+from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_parameter_groups
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 
 
@@ -88,21 +88,6 @@ def get_db_instance_param_group_name(connection: Any, module: AnsibleAWSModule) 
 
     response = describe_db_instances(connection, DBInstanceIdentifier=db_instance_identifier)
     return response[0]["DBParameterGroups"][0]["DBParameterGroupName"] if response else None
-
-
-def describe_db_parameter_groups(connection: Any, module: AnsibleAWSModule, db_parameter_group_name: str = None) -> List[dict]:
-    try:
-        if db_parameter_group_name:
-            result = connection.describe_db_parameter_groups(DBParameterGroupName=db_parameter_group_name)["DBParameterGroups"]
-            return [camel_dict_to_snake_dict(result[0])] if result else []
-        else:
-            result = connection.describe_db_parameter_groups()["DBParameterGroups"]
-            return [camel_dict_to_snake_dict(group) for group in result] if result else []
-
-    except is_boto3_error_code("DBParameterGroupNotFound"):
-        return []
-    except botocore.exceptions.ClientError as e:
-        module.fail_json_aws(e, msg="Couldn't access parameter group information")
 
 
 def main() -> None:
@@ -124,7 +109,7 @@ def main() -> None:
 
     db_parameter_group_name = (
         get_db_instance_param_group_name(client, module)
-        if module.params.get("db_instance_identifier") 
+        if module.params.get("db_instance_identifier")
         else module.params.get("db_parameter_group_name")
     )
 
@@ -138,4 +123,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
