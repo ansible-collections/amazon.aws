@@ -547,22 +547,6 @@
       register: result
       ignore_errors: true
 
-    - name: Delete minimal MariaDB Instance
-      amazon.aws.rds_instance:
-        db_instance_identifier: "ansible-test-{{ tiny_prefix }}"
-        state: absent
-        engine: mariadb
-        engine_version: 11.4
-        username: "{{ rds_param_group.username }}"
-        password: "{{ rds_param_group.password }}"
-        db_instance_class: db.t3.micro
-        allocated_storage: 20
-        deletion_protection: false
-        db_parameter_group_name: "{{ rds_param_group.name }}-{{ tiny_prefix }}"
-        skip_final_snapshot: true
-        wait: false
-      ignore_errors: true
-
     - name: assert state=absent (expect changed=false)
       ansible.builtin.assert:
         that:
