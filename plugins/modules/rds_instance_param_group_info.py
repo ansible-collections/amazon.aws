@@ -59,14 +59,8 @@ db_parameter_groups:
       type: str
 """
 
-try:
-    import botocore
-except ImportError:
-    pass  # handled by AnsibleAWSModule
-
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_parameter_groups
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 
 
 def main() -> None:
@@ -76,14 +70,9 @@ def main() -> None:
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
-        supports_check_mode=True,
     )
 
-    try:
-        client = module.client("rds", retry_decorator=AWSRetry.jittered_backoff(retries=10))
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to connect to AWS.")
-
+    client = module.client("rds")
     db_parameter_group_name = module.params.get("db_parameter_group_name")
 
     if db_parameter_group_name:
