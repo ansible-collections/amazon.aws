@@ -10,14 +10,9 @@ module: rds_instance_param_group_info
 version_added: 9.1.0
 short_description: Describes the RDS parameter group.
 description:
-  - Describe a specific RDS parameter group, the parameter group associated with a specified RDS instance, or
+  - Describe a specific RDS parameter group, or
     all parameter groups available in the current region.
 options:
-  db_instance_identifier:
-    description:
-      - The RDS instance's unique identifier.
-    required: false
-    type: str
   db_parameter_group_name:
     description:
       - The name of a specific DB parameter group to return details for.
@@ -32,10 +27,6 @@ extends_documentation_fragment:
 """
 
 EXAMPLES = r"""
-- name: Get specific DB instance's parameter group info
-  amazon.aws.rds_instance_param_group_info:
-    db_instance_identifier: database-1
-
 - name: Get specific DB parameter group's info
   amazon.aws.rds_instance_param_group_info:
     db_parameter_group_name: my-test-pg
@@ -68,38 +59,24 @@ db_parameter_groups:
       type: str
 """
 
-from typing import Any
-
 try:
     import botocore
 except ImportError:
     pass  # handled by AnsibleAWSModule
 
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_instances
 from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_parameter_groups
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 
 
-def get_db_instance_param_group_name(connection: Any, module: AnsibleAWSModule) -> str:
-    db_instance_identifier = module.params.get("db_instance_identifier")
-    if not db_instance_identifier:
-        return None
-
-    response = describe_db_instances(connection, DBInstanceIdentifier=db_instance_identifier)
-    return response[0]["DBParameterGroups"][0]["DBParameterGroupName"] if response else None
-
-
 def main() -> None:
     argument_spec = {
-        "db_instance_identifier": {"type": "str", "required": False},
         "db_parameter_group_name": {"type": "str", "required": False},
     }
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
         supports_check_mode=True,
-        mutually_exclusive=[["db_instance_identifier", "db_parameter_group_name"]],
     )
 
     try:
@@ -107,11 +84,7 @@ def main() -> None:
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to connect to AWS.")
 
-    db_parameter_group_name = (
-        get_db_instance_param_group_name(client, module)
-        if module.params.get("db_instance_identifier")
-        else module.params.get("db_parameter_group_name")
-    )
+    db_parameter_group_name = module.params.get("db_parameter_group_name")
 
     if db_parameter_group_name:
         result = describe_db_parameter_groups(client, module, db_parameter_group_name)
