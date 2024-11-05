@@ -43,13 +43,6 @@
         state: present
       register: result
 
-    - name: Get specific DB parameter group's info
-      amazon.aws.rds_instance_param_group_info:
-        db_parameter_group_name: "{{ rds_param_group.name }}"
-      register: param_group_info
-      ignore_errors: true
-    - debug: var=param_group_info
-
     - name: assert rds parameter group changed
       ansible.builtin.assert:
         that:
@@ -58,10 +51,65 @@
           - (result.db_parameter_group_name | lower) == (rds_param_group.name | lower)
           - '"description" in result'
           - result.tags == {}
+
+    # ============================================================
+
+    - name: Create an MariaDB parameter group
+      amazon.aws.rds_instance_param_group:
+        name: "{{ rds_param_group.name }}-{{ tiny_prefix }}"
+        engine: mariadb11.4
+        description: "{{ rds_param_group.description }}"
+        state: present
+      register: result
+
+    - name: Get specific DB parameter group's info
+      amazon.aws.rds_instance_param_group_info:
+        db_parameter_group_name: "{{ rds_param_group.name }}-{{ tiny_prefix }}"
+      register: param_group_info
+
+    - name: Assert rds parameter group info
+      ansible.builtin.assert:
+        that:
           - param_group_info.db_parameter_groups is defined
           - param_group_info.db_parameter_groups[0].db_parameter_group_arn is defined
-          - param_group_info.db_parameter_groups[0].db_parameter_group_family == "{{ rds_param_group.engine }}"
+          - param_group_info.db_parameter_groups[0].db_parameter_group_family == "mariadb11.4"
 
+    - name: Create minimal MariaDB Instance
+      amazon.aws.rds_instance:
+        db_instance_identifier: "ansible-test-{{ tiny_prefix }}"
+        state: present
+        engine: mariadb
+        engine_version: 11.4
+        username: "{{ rds_param_group.username }}"
+        password: "{{ rds_param_group.password }}"
+        db_instance_class: db.t3.micro
+        allocated_storage: 20
+        deletion_protection: false
+        db_parameter_group_name: "{{ rds_param_group.name }}-{{ tiny_prefix }}"
+        wait: false
+
+    - name: Get specific DB instance's parameter group info
+      amazon.aws.rds_instance_param_group_info:
+        db_instance_identifier: "ansible-test-{{ tiny_prefix }}"
+      register: param_group_info
+
+    - name: Assert rds parameter group info
+      ansible.builtin.assert:
+        that:
+          - param_group_info.db_parameter_groups is defined
+          - param_group_info.db_parameter_groups[0].db_parameter_group_arn is defined
+          - param_group_info.db_parameter_groups[0].description is defined
+          - param_group_info.db_parameter_groups[0].db_parameter_group_name == "{{ rds_param_group.name }}-{{ tiny_prefix }}"
+          - param_group_info.db_parameter_groups[0].db_parameter_group_family == "mariadb11.4"
+
+    - name: Get all parameter group info from the region
+      amazon.aws.rds_instance_param_group_info:
+      register: param_group_info
+
+    - name: Assert rds parameter group info
+      ansible.builtin.assert:
+        that:
+          - param_group_info.db_parameter_groups is defined
 
     # ============================================================
     - name: test empty parameter group with no arguments changes nothing - CHECK_MODE
@@ -533,6 +581,22 @@
         name: "{{ rds_param_group.name }}"
         state: absent
       register: result
+      ignore_errors: true
+
+    - name: Delete minimal MariaDB Instance
+      amazon.aws.rds_instance:
+        db_instance_identifier: "ansible-test-{{ tiny_prefix }}"
+        state: absent
+        engine: mariadb
+        engine_version: 11.4
+        username: "{{ rds_param_group.username }}"
+        password: "{{ rds_param_group.password }}"
+        db_instance_class: db.t3.micro
+        allocated_storage: 20
+        deletion_protection: false
+        db_parameter_group_name: "{{ rds_param_group.name }}-{{ tiny_prefix }}"
+        skip_final_snapshot: true
+        wait: false
       ignore_errors: true
 
     - name: assert state=absent (expect changed=false)
