@@ -370,6 +370,9 @@ def wait_for_vpc_ipv6_state(module, connection, vpc_id, ipv6_assoc_state):
         current_value = get_vpc(module, connection, vpc_id)
         if current_value:
             ipv6_set = current_value.get("Ipv6CidrBlockAssociationSet")
+            # "ipv6_cidr": false and no Ipv6CidrBlockAssociationSet
+            if not ipv6_set and not ipv6_assoc_state:
+                return
             if ipv6_set:
                 if ipv6_assoc_state:
                     # At least one 'Amazon' IPv6 CIDR block must be associated.
