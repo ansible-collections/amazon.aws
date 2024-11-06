@@ -1,0 +1,2 @@
+trivial:
+  - cloudwatch_metric_alarm - Fix missing FQCN for integration tests cloudwatch_metric_alarm.
