@@ -510,7 +510,7 @@
           - '"parameters are mutually exclusive" in ec2_instance_metric_mutually_exclusive.msg'
 
     - name: create alarm without dimensions
-      cloudwatch_metric_alarm:
+      amazon.aws.cloudwatch_metric_alarm:
         state: present
         name: '{{ alarm_full_name }}'
         metric: CPUUtilization
@@ -539,7 +539,7 @@
           - alarm_info_metrics_alarm_no_dimensions.metric_alarms[0].dimensions | length == 0
 
     - name: create alarm without dimensions (idempotent)
-      cloudwatch_metric_alarm:
+      amazon.aws.cloudwatch_metric_alarm:
         state: present
         name: '{{ alarm_full_name }}'
         metric: CPUUtilization
