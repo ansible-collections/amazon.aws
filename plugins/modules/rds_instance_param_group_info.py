@@ -86,13 +86,6 @@ def main() -> None:
     db_parameter_group_name = module.params.get("db_parameter_group_name")
 
     result = describe_db_parameter_groups(client, module, db_parameter_group_name)
-    # Get tags
-    for parameter_group in result:
-        # Fetch the tags for the current DB parameter group
-        existing_tags = client.list_tags_for_resource(ResourceName=parameter_group["db_parameter_group_arn"])["TagList"]
-
-        # Add the tags to the current group dictionary
-        parameter_group["tags"] = boto3_tag_list_to_ansible_dict(existing_tags)
 
     module.exit_json(changed=False, db_parameter_groups=result)
 

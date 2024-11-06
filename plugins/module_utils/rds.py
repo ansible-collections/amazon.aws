@@ -756,7 +756,15 @@ def describe_db_parameter_groups(
             ]
         else:
             result = connection.describe_db_parameter_groups()["DBParameterGroups"]
-        return [camel_dict_to_snake_dict(group) for group in result] if result else []
+
+        # Get tags
+        for parameter_group in result:
+            existing_tags = connection.list_tags_for_resource(ResourceName=parameter_group["DBParameterGroupArn"])[
+                "TagList"
+            ]
+            parameter_group["tags"] = boto3_tag_list_to_ansible_dict(existing_tags)
+
+        return [camel_dict_to_snake_dict(group, ignore_list=["tags"]) for group in result] if result else []
     except is_boto3_error_code("DBParameterGroupNotFound"):
         return []
     except ClientError as e:
