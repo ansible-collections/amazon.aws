@@ -1,3 +1,0 @@
----
-minor_changes:
-  - rds_instance_pram_group_info - Added a new module that describes the RDS Instance parameter groups (https://github.com/ansible-collections/amazon.aws/pull/2372).

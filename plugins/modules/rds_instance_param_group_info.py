@@ -57,10 +57,19 @@ db_parameter_groups:
       description:
         - The Amazon Resource Name (ARN) for the RDS instance parameter group.
       type: str
+    tags:
+      description: Any tags associated to the parameter group.
+      returned: always
+      type: dict
+      sample: {
+                "Name": "test-parameter-group",
+                "Env": "Dev001"
+              }
 """
 
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_parameter_groups
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 
 
 def main() -> None:
@@ -70,15 +79,20 @@ def main() -> None:
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
+        supports_check_mode=True,
     )
 
     client = module.client("rds")
     db_parameter_group_name = module.params.get("db_parameter_group_name")
 
-    if db_parameter_group_name:
-        result = describe_db_parameter_groups(client, module, db_parameter_group_name)
-    else:
-        result = describe_db_parameter_groups(client, module)
+    result = describe_db_parameter_groups(client, module, db_parameter_group_name)
+    # Get tags
+    for parameter_group in result:
+        # Fetch the tags for the current DB parameter group
+        existing_tags = client.list_tags_for_resource(ResourceName=parameter_group["db_parameter_group_arn"])["TagList"]
+
+        # Add the tags to the current group dictionary
+        parameter_group["tags"] = boto3_tag_list_to_ansible_dict(existing_tags)
 
     module.exit_json(changed=False, db_parameter_groups=result)
 

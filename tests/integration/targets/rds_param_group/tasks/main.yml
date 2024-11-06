@@ -41,6 +41,9 @@
         engine: "{{ rds_param_group.engine }}"
         description: "{{ rds_param_group.description }}"
         state: present
+        tags:
+          Environment: test
+          TestName: "{{ rds_param_group.name }}"
       register: result
 
     - name: assert rds parameter group changed
@@ -50,7 +53,7 @@
           - '"db_parameter_group_arn" in result'
           - (result.db_parameter_group_name | lower) == (rds_param_group.name | lower)
           - '"description" in result'
-          - result.tags == {}
+          - result.tags != {}
 
     - name: Get specific DB parameter group's info
       amazon.aws.rds_instance_param_group_info:
@@ -62,6 +65,7 @@
         that:
           - param_group_info.db_parameter_groups is defined
           - param_group_info.db_parameter_groups[0].db_parameter_group_arn is defined
+          - param_group_info.db_parameter_groups[0].tags is defined
           - param_group_info.db_parameter_groups[0].db_parameter_group_family == "{{ rds_param_group.engine }}"
           - param_group_info.db_parameter_groups[0].db_parameter_group_name == "{{ rds_param_group.name }}"
           - param_group_info.db_parameter_groups[0].description ==  "{{ rds_param_group.description }}"

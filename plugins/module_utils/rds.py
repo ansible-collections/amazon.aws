@@ -754,10 +754,9 @@ def describe_db_parameter_groups(
             result = connection.describe_db_parameter_groups(DBParameterGroupName=db_parameter_group_name)[
                 "DBParameterGroups"
             ]
-            result = [camel_dict_to_snake_dict(result[0])] if result else []
         else:
             result = connection.describe_db_parameter_groups()["DBParameterGroups"]
-            result = [camel_dict_to_snake_dict(group) for group in result] if result else []
+        return [camel_dict_to_snake_dict(group) for group in result] if result else []
     except is_boto3_error_code("DBParameterGroupNotFound"):
         return []
     except ClientError as e:
