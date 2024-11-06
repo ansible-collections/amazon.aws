@@ -37,6 +37,7 @@ class AWSInventoryBase(BaseInventoryPlugin, Constructable, Cacheable, AWSPluginB
             "assume_role_arn",
             "region",
             "regions",
+            "filters",
         )
 
         def __init__(self, templar, options):
@@ -51,13 +52,18 @@ class AWSInventoryBase(BaseInventoryPlugin, Constructable, Cacheable, AWSPluginB
 
         def get(self, *args):
             value = self.original_options.get(*args)
-            if (
+             if (
                 not value
                 or not self.templar
                 or args[0] not in self.TEMPLATABLE_OPTIONS
-                or not self.templar.is_template(value)
             ):
                 return value
+
+            if isinstance(value, dict):
+                new = {}
+                for i in value:
+                    new[i] = self.templar.template(variable=value[i], disable_lookups=False)
+                return new
 
             return self.templar.template(variable=value, disable_lookups=False)
 
