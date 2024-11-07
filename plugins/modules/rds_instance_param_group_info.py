@@ -36,7 +36,7 @@ EXAMPLES = r"""
 """
 
 RETURN = r"""
-db_parameter_groups:
+db_instance_parameter_groups:
   description: List of RDS instance parameter groups.
   returned: always
   type: list
@@ -68,7 +68,7 @@ db_parameter_groups:
 """
 
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_parameter_groups
+from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_instance_parameter_groups
 
 
 def main() -> None:
@@ -84,9 +84,9 @@ def main() -> None:
     client = module.client("rds")
     db_parameter_group_name = module.params.get("db_parameter_group_name")
 
-    result = describe_db_parameter_groups(client, module, db_parameter_group_name)
+    result = describe_db_instance_parameter_groups(client, module, db_parameter_group_name)
 
-    module.exit_json(changed=False, db_parameter_groups=result)
+    module.exit_json(changed=False, db_instance_parameter_groups=result)
 
 
 if __name__ == "__main__":

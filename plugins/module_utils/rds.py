@@ -746,7 +746,7 @@ def describe_db_cluster_parameter_groups(
 
 
 @AWSRetry.jittered_backoff()
-def describe_db_parameter_groups(
+def describe_db_instance_parameter_groups(
     connection: Any, module: AnsibleAWSModule, db_parameter_group_name: str = None
 ) -> List[dict]:
     try:
