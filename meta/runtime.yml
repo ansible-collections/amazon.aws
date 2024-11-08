@@ -130,6 +130,7 @@ action_groups:
     - rds_instance
     - rds_instance_info
     - rds_instance_param_group
+    - rds_instance_param_group_info
     - rds_instance_snapshot
     - rds_option_group
     - rds_option_group_info
