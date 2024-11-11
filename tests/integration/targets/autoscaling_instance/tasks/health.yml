@@ -15,6 +15,9 @@
 # =====================================================
 #      Test updating the health of all instances
 # =====================================================
+- name: Sleep to wait for the health check period to be over before making any changes
+  ansible.builtin.wait_for:
+    timeout: 10
 
 # Set all to Healthy - no change
 - name: instance_ids - all Healthy (idempotency) - check_mode
