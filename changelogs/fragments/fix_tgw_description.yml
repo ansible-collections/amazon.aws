@@ -1,0 +1,2 @@
+minor_changes:
+  - ec2_transit_gateway - handle empty description while deleting transit gateway (https://github.com/ansible-collections/community.aws/pull/2086).
