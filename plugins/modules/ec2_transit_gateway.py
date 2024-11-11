@@ -306,7 +306,7 @@ class AnsibleEc2Tgw:
                 tgws.extend(response)
 
         for gateway in response:
-            if description == gateway["Description"] and gateway["State"] != "deleted":
+            if description == gateway.get("Description", "") and gateway["State"] != "deleted":
                 tgws.append(gateway)
 
         if len(tgws) > 1:
