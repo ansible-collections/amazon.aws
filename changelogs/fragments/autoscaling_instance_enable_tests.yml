@@ -1,0 +1,2 @@
+trivial:
+  - autoscaling_instance - Enable integration tests which were disabled earlier due to permission issues (https://github.com/ansible-collections/amazon.aws/pull/2383).
