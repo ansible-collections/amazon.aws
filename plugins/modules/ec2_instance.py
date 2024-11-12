@@ -1567,7 +1567,7 @@ def build_network_spec(client, module: AnsibleAWSModule) -> List[Dict[str, Any]]
                 for inty in network_interfaces
             ]
         )
-    elif not network and not network_interfaces_ids not module.params.get("launch_template"):
+    elif not network and not network_interfaces_ids and not module.params.get("launch_template"):
         # No network interface configuration specified and no launch template
         # Build network interface using subnet_id and security group(s) defined in the module
         interfaces.append(ansible_to_boto3_eni_specification(client, module, {}, vpc_subnet_id, groups))
