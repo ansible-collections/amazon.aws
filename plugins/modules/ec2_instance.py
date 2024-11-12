@@ -1567,12 +1567,10 @@ def build_network_spec(client, module: AnsibleAWSModule) -> List[Dict[str, Any]]
                 for inty in network_interfaces
             ]
         )
-    elif not network and not network_interfaces_ids:
-        # They did not specify any network interface configuration
-        # build network interface using subnet_id and security group(s) defined on the module
-        # if they did not specified a launch template
-        if not module.params.get("launch_template"):
-            interfaces.append(ansible_to_boto3_eni_specification(client, module, {}, vpc_subnet_id, groups))
+    elif not network and not network_interfaces_ids not module.params.get("launch_template"):
+        # No network interface configuration specified and no launch template
+        # Build network interface using subnet_id and security group(s) defined in the module
+        interfaces.append(ansible_to_boto3_eni_specification(client, module, {}, vpc_subnet_id, groups))
     elif network:
         # handle list of `network.interfaces` options
         interfaces.extend(
@@ -2647,7 +2645,7 @@ def build_filters(client, module: AnsibleAWSModule) -> Dict[str, Any]:
     filters = {}
     instance_ids = module.params.get("instance_ids")
     if isinstance(instance_ids, string_types):
-        filters = {"instance-id": instance_ids, "instance-state-name": instance_state_names}
+        filters = {"instance-id": [instance_ids], "instance-state-name": instance_state_names}
     elif isinstance(instance_ids, list) and len(instance_ids):
         filters = {"instance-id": instance_ids, "instance-state-name": instance_state_names}
     else:

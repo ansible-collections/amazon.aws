@@ -34,7 +34,7 @@
       register: _create_check
       check_mode: true
 
-    - name: Ensure module did reported change while running in check mode
+    - name: Ensure module reported change while running in check mode
       ansible.builtin.assert:
         that:
           - _create_check is changed
