@@ -1093,7 +1093,9 @@
                   StatusCode: "404"
       register: alb
       check_mode: true
-    - ansible.builtin.assert:
+
+    - name: Assert check_mode result
+      ansible.builtin.assert:
         that:
           - alb is changed
           - alb.msg is match('Would have updated ALB if not in check mode.')
@@ -1114,7 +1116,9 @@
                   MessageBody: Not available
                   StatusCode: "404"
       register: alb
-    - ansible.builtin.assert:
+
+    - name: Assert update ALB result
+      ansible.builtin.assert:
         that:
           - alb is changed
           - alb.listeners[0].default_actions[0].type == "fixed-response"
@@ -1136,7 +1140,9 @@
                   StatusCode: "404"
       register: alb
       check_mode: true
-    - ansible.builtin.assert:
+
+    - name: Assert check_mode idempotence result
+      ansible.builtin.assert:
         that:
           - alb is not changed
           - alb.msg is match('IN CHECK MODE - no changes to make to ALB specified.')
@@ -1157,7 +1163,9 @@
                   MessageBody: Not available
                   StatusCode: "404"
       register: alb
-    - ansible.builtin.assert:
+
+    - name: Assert idempotence result
+      ansible.builtin.assert:
         that:
           - alb is not changed
           - alb.listeners[0].default_actions[0].type == "fixed-response"
