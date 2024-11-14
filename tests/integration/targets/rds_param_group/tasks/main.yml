@@ -21,7 +21,7 @@
       region: "{{ aws_region }}"
   block:
     # ============================================================
-    - name: test empty parameter group - CHECK_MODE
+    - name: Test empty parameter group - CHECK_MODE
       amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
@@ -30,30 +30,57 @@
       check_mode: true
       register: result
 
-    - name: assert rds parameter group changed - CHECK_MODE
+    - name: Assert rds parameter group changed - CHECK_MODE
       ansible.builtin.assert:
         that:
           - result.changed
 
-    - name: test empty parameter group
+    - name: Test empty parameter group
       amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
         description: "{{ rds_param_group.description }}"
         state: present
+        tags:
+          Environment: test
+          TestName: "{{ rds_param_group.name }}"
       register: result
 
-    - name: assert rds parameter group changed
+    - name: Assert rds parameter group changed
       ansible.builtin.assert:
         that:
           - result.changed
           - '"db_parameter_group_arn" in result'
           - (result.db_parameter_group_name | lower) == (rds_param_group.name | lower)
           - '"description" in result'
-          - result.tags == {}
+          - result.tags != {}
+
+    - name: Get specific DB parameter group's info
+      amazon.aws.rds_instance_param_group_info:
+        db_parameter_group_name: "{{ rds_param_group.name }}"
+      register: param_group_info
+
+    - name: Assert rds parameter group info
+      ansible.builtin.assert:
+        that:
+          - param_group_info.db_instance_parameter_groups is defined
+          - param_group_info.db_instance_parameter_groups[0].db_parameter_group_arn is defined
+          - param_group_info.db_instance_parameter_groups[0].tags is defined
+          - param_group_info.db_instance_parameter_groups[0].db_parameter_group_family == rds_param_group.engine
+          - param_group_info.db_instance_parameter_groups[0].db_parameter_group_name == rds_param_group.name
+          - param_group_info.db_instance_parameter_groups[0].description ==  rds_param_group.description
+
+    - name: Get all parameter group info from the region
+      amazon.aws.rds_instance_param_group_info:
+      register: param_group_info
+
+    - name: Assert rds parameter group info
+      ansible.builtin.assert:
+        that:
+          - param_group_info.db_instance_parameter_groups is defined
 
     # ============================================================
-    - name: test empty parameter group with no arguments changes nothing - CHECK_MODE
+    - name: Test empty parameter group with no arguments changes nothing - CHECK_MODE
       amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
@@ -62,12 +89,12 @@
       check_mode: true
       register: result
 
-    - name: assert no change when running empty parameter group a second time - CHECK_MODE
+    - name: Assert no change when running empty parameter group a second time - CHECK_MODE
       ansible.builtin.assert:
         that:
           - not result.changed
 
-    - name: test empty parameter group with no arguments changes nothing
+    - name: Test empty parameter group with no arguments changes nothing
       amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
@@ -75,13 +102,13 @@
         state: present
       register: result
 
-    - name: assert no change when running empty parameter group a second time
+    - name: Assert no change when running empty parameter group a second time
       ansible.builtin.assert:
         that:
           - not result.changed
 
     # ============================================================
-    - name: test adding numeric tag - CHECK_MODE
+    - name: Test adding numeric tag - CHECK_MODE
       amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
@@ -93,11 +120,12 @@
       check_mode: true
       register: result
 
-    - name: adding numeric tag just silently converts - CHECK_MODE
+    - name: Adding numeric tag just silently converts - CHECK_MODE
       ansible.builtin.assert:
         that:
           - result.changed
-    - name: test adding numeric tag
+
+    - name: Test adding numeric tag
       amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
@@ -108,7 +136,7 @@
           Test: 123
       register: result
 
-    - name: adding numeric tag just silently converts
+    - name: Adding numeric tag just silently converts
       ansible.builtin.assert:
         that:
           - result.changed
@@ -122,7 +150,7 @@
 
     # ============================================================
 
-    - name: test modifying rds parameter group engine/family (warning displayed)
+    - name: Test modifying rds parameter group engine/family (warning displayed)
       amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine_to_modify_to }}"
@@ -133,7 +161,7 @@
           Test: 123
       register: result
 
-    - name: verify that modifying rds param group engine/family displays warning
+    - name: Verify that modifying rds param group engine/family displays warning
       ansible.builtin.assert:
         that:
           - not result.changed
@@ -142,7 +170,7 @@
           - result.warnings | length > 0
 
     # ============================================================
-    - name: test tagging existing group - CHECK_MODE
+    - name: Test tagging existing group - CHECK_MODE
       amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
@@ -155,11 +183,12 @@
       check_mode: true
       register: result
 
-    - name: assert tagging existing group changes it and adds tags - CHECK_MODE
+    - name: Assert tagging existing group changes it and adds tags - CHECK_MODE
       ansible.builtin.assert:
         that:
           - result.changed
-    - name: test tagging existing group
+
+    - name: Test tagging existing group
       amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
@@ -171,7 +200,7 @@
           NewTag: hello
       register: result
 
-    - name: assert tagging existing group changes it and adds tags
+    - name: Assert tagging existing group changes it and adds tags
       ansible.builtin.assert:
         that:
           - result.changed
@@ -185,7 +214,7 @@
           - result.tags["NewTag"] == 'hello'
 
     # ============================================================
-    - name: test repeating tagging existing group - CHECK_MODE
+    - name: Test repeating tagging existing group - CHECK_MODE
       amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
@@ -198,7 +227,7 @@
       check_mode: true
       register: result
 
-    - name: assert tagging existing group changes it and adds tags - CHECK_MODE
+    - name: Assert tagging existing group changes it and adds tags - CHECK_MODE
       ansible.builtin.assert:
         that:
           - not result.changed
@@ -211,7 +240,7 @@
           - result.tags["Test"] == '123'
           - result.tags["NewTag"] == 'hello'
 
-    - name: test repeating tagging existing group
+    - name: Test repeating tagging existing group
       amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
@@ -223,7 +252,7 @@
           NewTag: hello
       register: result
 
-    - name: assert tagging existing group changes it and adds tags
+    - name: Assert tagging existing group changes it and adds tags
       ansible.builtin.assert:
         that:
           - not result.changed
@@ -237,7 +266,7 @@
           - result.tags["NewTag"] == 'hello'
 
     # ============================================================
-    - name: test deleting tags from existing group - CHECK_MODE
+    - name: Test deleting tags from existing group - CHECK_MODE
       amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
@@ -249,11 +278,12 @@
       check_mode: true
       register: result
 
-    - name: assert removing tags from existing group changes it - CHECK_MODE
+    - name: Assert removing tags from existing group changes it - CHECK_MODE
       ansible.builtin.assert:
         that:
           - result.changed
-    - name: test deleting tags from existing group
+
+    - name: Test deleting tags from existing group
       amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
@@ -264,7 +294,7 @@
         purge_tags: true
       register: result
 
-    - name: assert removing tags from existing group changes it
+    - name: Assert removing tags from existing group changes it
       ansible.builtin.assert:
         that:
           - result.changed
@@ -276,7 +306,7 @@
           - result.tags["Environment"] == 'test'
 
     # ============================================================
-    - name: test state=absent with engine defined (expect changed=true) - CHECK_MODE
+    - name: Test state=absent with engine defined (expect changed=true) - CHECK_MODE
       amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
@@ -284,25 +314,25 @@
       check_mode: true
       register: result
 
-    - name: assert state=absent with engine defined (expect changed=true) - CHECK_MODE
+    - name: Assert state=absent with engine defined (expect changed=true) - CHECK_MODE
       ansible.builtin.assert:
         that:
           - result.changed
 
-    - name: test state=absent with engine defined (expect changed=true)
+    - name: Test state=absent with engine defined (expect changed=true)
       amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
         state: absent
       register: result
 
-    - name: assert state=absent with engine defined (expect changed=true)
+    - name: Assert state=absent with engine defined (expect changed=true)
       ansible.builtin.assert:
         that:
           - result.changed
 
     # ============================================================
-    - name: test creating group with parameters - CHECK_MODE
+    - name: Test creating group with parameters - CHECK_MODE
       amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
@@ -319,12 +349,12 @@
       check_mode: true
       register: result
 
-    - name: assert creating a new group with parameter changes it - CHECK_MODE
+    - name: Assert creating a new group with parameter changes it - CHECK_MODE
       ansible.builtin.assert:
         that:
           - result.changed
 
-    - name: test creating group with parameters
+    - name: Test creating group with parameters
       amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
@@ -340,7 +370,7 @@
           Test: "123"
       register: result
 
-    - name: assert creating a new group with parameter changes it
+    - name: Assert creating a new group with parameter changes it
       ansible.builtin.assert:
         that:
           - result.changed
@@ -354,7 +384,7 @@
           - result.errors|length == 2
 
     # ============================================================
-    - name: test repeating group with parameters - CHECK_MODE
+    - name: Test repeating group with parameters - CHECK_MODE
       amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
@@ -371,12 +401,12 @@
       check_mode: true
       register: result
 
-    - name: assert repeating group with parameters does not change it - CHECK_MODE
+    - name: Assert repeating group with parameters does not change it - CHECK_MODE
       ansible.builtin.assert:
         that:
           - not result.changed
 
-    - name: test repeating group with parameters
+    - name: Test repeating group with parameters
       amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
@@ -392,7 +422,7 @@
           Test: "123"
       register: result
 
-    - name: assert repeating group with parameters does not change it
+    - name: Assert repeating group with parameters does not change it
       ansible.builtin.assert:
         that:
           - not result.changed
@@ -406,7 +436,7 @@
           - result.errors|length == 2
 
     # ============================================================
-    - name: test state=absent with engine defined (expect changed=true) - CHECK_MODE
+    - name: Test state=absent with engine defined (expect changed=true) - CHECK_MODE
       amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
@@ -414,24 +444,25 @@
       check_mode: true
       register: result
 
-    - name: assert state=absent with engine defined (expect changed=true) - CHECK_MODE
+    - name: Assert state=absent with engine defined (expect changed=true) - CHECK_MODE
       ansible.builtin.assert:
         that:
           - result.changed
-    - name: test state=absent with engine defined (expect changed=true)
+
+    - name: Test state=absent with engine defined (expect changed=true)
       amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
         state: absent
       register: result
 
-    - name: assert state=absent with engine defined (expect changed=true)
+    - name: Assert state=absent with engine defined (expect changed=true)
       ansible.builtin.assert:
         that:
           - result.changed
 
     # ============================================================
-    - name: test repeating state=absent (expect changed=false) - CHECK_MODE
+    - name: Test repeating state=absent (expect changed=false) - CHECK_MODE
       amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
@@ -440,11 +471,12 @@
       check_mode: true
       ignore_errors: true
 
-    - name: assert repeating state=absent (expect changed=false) - CHECK_MODE
+    - name: Assert repeating state=absent (expect changed=false) - CHECK_MODE
       ansible.builtin.assert:
         that:
           - not result.changed
-    - name: test repeating state=absent (expect changed=false)
+
+    - name: Test repeating state=absent (expect changed=false)
       amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
@@ -452,13 +484,13 @@
       register: result
       ignore_errors: true
 
-    - name: assert repeating state=absent (expect changed=false)
+    - name: Assert repeating state=absent (expect changed=false)
       ansible.builtin.assert:
         that:
           - not result.changed
 
     # ============================================================
-    - name: test creating group with more than 20 parameters - CHECK_MODE
+    - name: Test creating group with more than 20 parameters - CHECK_MODE
       amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
@@ -468,11 +500,12 @@
       check_mode: true
       register: result
 
-    - name: assert creating a new group with lots of parameter changes it - CHECK_MODE
+    - name: Assert creating a new group with lots of parameter changes it - CHECK_MODE
       ansible.builtin.assert:
         that:
           - result.changed
-    - name: test creating group with more than 20 parameters
+
+    - name: Test creating group with more than 20 parameters
       amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
@@ -481,13 +514,13 @@
         state: present
       register: result
 
-    - name: assert creating a new group with lots of parameter changes it
+    - name: Assert creating a new group with lots of parameter changes it
       ansible.builtin.assert:
         that:
           - result.changed
 
     # ============================================================
-    - name: test creating group with more than 20 parameters - CHECK_MODE
+    - name: Test creating group with more than 20 parameters - CHECK_MODE
       amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
@@ -497,11 +530,12 @@
       check_mode: true
       register: result
 
-    - name: assert repeating a group with lots of parameter does not change it - CHECK_MODE
+    - name: Assert repeating a group with lots of parameter does not change it - CHECK_MODE
       ansible.builtin.assert:
         that:
           - not result.changed
-    - name: test creating group with more than 20 parameters
+
+    - name: Test creating group with more than 20 parameters
       amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         engine: "{{ rds_param_group.engine }}"
@@ -510,21 +544,21 @@
         state: present
       register: result
 
-    - name: assert repeating a group with lots of parameter does not change it
+    - name: Assert repeating a group with lots of parameter does not change it
       ansible.builtin.assert:
         that:
           - not result.changed
 
   always:
     # ============================================================
-    - name: test state=absent (expect changed=false)
+    - name: Test state=absent (expect changed=false)
       amazon.aws.rds_instance_param_group:
         name: "{{ rds_param_group.name }}"
         state: absent
       register: result
       ignore_errors: true
 
-    - name: assert state=absent (expect changed=false)
+    - name: Assert state=absent (expect changed=false)
       ansible.builtin.assert:
         that:
           - result.changed
