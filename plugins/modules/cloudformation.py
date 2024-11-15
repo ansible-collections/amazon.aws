@@ -779,14 +779,17 @@ def main():
     if state == "present":
         if not stack_info:
             result = create_stack(module, stack_params, cfn, module.params.get("events_limit"))
-        elif module.params.get("create_changeset"):
-            result = create_changeset(module, stack_params, cfn, module.params.get("events_limit"))
         else:
+            changeset_updated = False
+            if module.params.get("create_changeset"):
+                result = create_changeset(module, stack_params, cfn, module.params.get("events_limit"))
+                changeset_updated = True
             if module.params.get("termination_protection") is not None:
                 update_termination_protection(
                     module, cfn, stack_params["StackName"], bool(module.params.get("termination_protection"))
                 )
-            result = update_stack(module, stack_params, cfn, module.params.get("events_limit"))
+            if not changeset_updated:
+                result = update_stack(module, stack_params, cfn, module.params.get("events_limit"))
 
         # format the stack output
 
