@@ -1,0 +1,2 @@
+bugfixes:
+  - lambda - Remove non UTF-8 data (contents of Lambda ZIP file) from the module output to avoid Ansible error (https://github.com/ansible-collections/amazon.aws/issues/2386).
