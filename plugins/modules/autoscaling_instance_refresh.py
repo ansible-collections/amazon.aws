@@ -27,6 +27,7 @@ options:
   name:
     description:
       - The name of the auto scaling group you are searching for.
+    aliases: ['group_name']
     type: str
     required: true
   strategy:
@@ -271,7 +272,7 @@ def main():
             required=True,
             choices=["started", "cancelled"],
         ),
-        name=dict(required=True),
+        name=dict(required=True, aliases=["group_name"]),
         strategy=dict(type="str", default="Rolling", required=False),
         preferences=dict(
             type="dict",

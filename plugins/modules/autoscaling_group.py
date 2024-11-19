@@ -27,6 +27,7 @@ options:
   name:
     description:
       - Unique name for group to be created or deleted.
+    aliases: ['group_name']
     required: true
     type: str
   load_balancers:
@@ -1852,7 +1853,7 @@ def asg_exists(connection):
 
 def main():
     argument_spec = dict(
-        name=dict(required=True, type="str"),
+        name=dict(required=True, type="str", aliases=["group_name"]),
         load_balancers=dict(type="list", elements="str"),
         target_group_arns=dict(type="list", elements="str"),
         availability_zones=dict(type="list", elements="str"),

@@ -23,6 +23,7 @@ options:
       - The name of the Auto Scaling group.
     type: str
     required: true
+    aliases: ["group_name"]
   ids:
     description:
       - One or more instance refresh IDs.
@@ -205,7 +206,7 @@ def find_asg_instance_refreshes(client, module: AnsibleAWSModule) -> None:
 
 def main():
     argument_spec = dict(
-        name=dict(required=True, type="str"),
+        name=dict(required=True, type="str", aliases=["group_name"]),
         ids=dict(required=False, default=[], elements="str", type="list"),
         next_token=dict(required=False, default=None, type="str", no_log=True),
         max_records=dict(required=False, type="int"),
