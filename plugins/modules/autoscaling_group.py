@@ -49,11 +49,14 @@ options:
   launch_config_name:
     description:
       - Name of the Launch configuration to use for the group. See the M(community.aws.autoscaling_launch_config) module for managing these.
-      - If unspecified then the current group value will be used.  One of O(launch_config_name) or O(launch_template) must be provided.
+      - Exactly one of O(launch_config_name) or O(launch_template) must be provided when creating a new AutoScaling Group.
+      - B(Note) Amazon has deprecated support for AutoScaling Launch Configurations in favour of EC2 Launch Templates.  See
+        U(https://docs.aws.amazon.com/autoscaling/ec2/userguide/launch-configurations.html) for more information
     type: str
   launch_template:
     description:
-      - Dictionary describing the Launch Template to use
+      - Dictionary describing the Launch Template to use.
+      - Exactly one of O(launch_config_name) or O(launch_template) must be provided when creating a new AutoScaling Group.
     suboptions:
       version:
         description:
@@ -370,13 +373,14 @@ extends_documentation_fragment:
 """
 
 EXAMPLES = r"""
-# Basic configuration with Launch Configuration
+# Basic configuration with Launch Template
 
 - amazon.aws.autoscaling_group:
     name: special
     load_balancers: ['lb1', 'lb2']
     availability_zones: ['eu-west-1a', 'eu-west-1b']
-    launch_config_name: 'lc-1'
+    launch_template:
+      launch_template_name: 'template-1'
     min_size: 1
     max_size: 10
     desired_capacity: 5
@@ -395,44 +399,47 @@ EXAMPLES = r"""
 # This could also be considered a rolling deploy of a pre-baked AMI.
 #
 # If this is a newly created group, the instances will not be replaced since all instances
-# will have the current launch configuration.
+# will have the current launch configuration.  By setting max_healthy_percentage to a value over
+# 100, the old rolling-replacement behaviour of scaling up before scaling in can be maintained.
 
 - name: create launch config
-  community.aws.autoscaling_launch_config:
-    name: my_new_lc
-    image_id: ami-lkajsf
+  community.aws.ec2_launch_template:
+    name: my_new_template
+    image_id: ami-0123456789abcdef1
     key_name: mykey
     region: us-east-1
-    security_groups: sg-23423
-    instance_type: m1.small
-    assign_public_ip: true
+    security_group_ids: sg-0123456789abcdef1
+    instance_type: t3.micro
 
 - amazon.aws.autoscaling_group:
     name: myasg
-    launch_config_name: my_new_lc
+    launch_template:
+      launch_template_name: my_new_template
     health_check_period: 60
     health_check_type: ELB
-    replace_all_instances: true
-    min_size: 5
-    max_size: 5
+    min_size: 2
+    max_size: 7
     desired_capacity: 5
     region: us-east-1
+
+- amazon.aws.autoscaling_instance_refresh:
+    group_name: myasg
+    state: started
+    strategy: Rolling
+    preferences:
+      skip_matching: true
+      max_healthy_percentage: 125  # Prefer to scale out before terminating instances during replacement
 
 # To only replace a couple of instances instead of all of them, supply a list
 # to "replace_instances":
 
-- amazon.aws.autoscaling_group:
-    name: myasg
-    launch_config_name: my_new_lc
-    health_check_period: 60
-    health_check_type: ELB
-    replace_instances:
+- amazon.aws.autoscaling_instance:
+    group_name: myasg
+    state: terminated
+    instance_ids:
       - i-b345231
       - i-24c2931
-    min_size: 5
-    max_size: 5
-    desired_capacity: 5
-    region: us-east-1
+    decrement_desired_capacity: false
 
 # Basic Configuration with Launch Template
 
