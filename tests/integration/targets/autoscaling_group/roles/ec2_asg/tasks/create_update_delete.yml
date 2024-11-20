@@ -377,7 +377,7 @@
 
     # we need a launch template, otherwise we cannot test the mixed instance policy
     - name: create launch template for autoscaling group to test its mixed instances policy
-      community.aws.ec2_launch_template:
+      amazon.aws.ec2_launch_template:
         template_name: "{{ resource_prefix }}-lt"
         image_id: "{{ ec2_ami_id }}"
         instance_type: t3.micro

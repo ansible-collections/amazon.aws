@@ -157,15 +157,6 @@
         - "{{ lc_name_1 }}"
         - "{{ lc_name_2 }}"
 
-    - name: Delete launch template
-      community.aws.ec2_launch_template:
-        name: "{{ resource_prefix }}-lt"
-        state: absent
-      register: del_lt
-      retries: 10
-      until: del_lt is not failed
-      ignore_errors: true
-
     - name: Remove the security group
       amazon.aws.ec2_security_group:
         name: "{{ sg_name }}"

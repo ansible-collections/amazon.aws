@@ -13,9 +13,9 @@
     tags:
       Name: '{{ item.name }}'
   loop:
-  - description: Transit Gateway for testing community.aws.ec2_transit_gateway_attachment
+  - description: Transit Gateway for testing ec2_transit_gateway_attachment
     name: '{{ tgw_name }}'
-  - description: Second Transit Gateway for testing community.aws.ec2_transit_gateway_attachment
+  - description: Second Transit Gateway for testing ec2_transit_gateway_attachment
     name: '{{ tgw_name_2 }}'
   register: create_tgws
 
