@@ -4,10 +4,6 @@
   gather_facts: false
   environment: "{{ ansible_test.environment }}"
 
-  collections:
-    - amazon.aws
-    - community.aws
-
   module_defaults:
     group/aws:
       access_key: "{{ aws_access_key }}"

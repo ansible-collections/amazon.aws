@@ -1,7 +1,5 @@
 ---
 - name: Integration tests for kms_key
-  collections:
-    - community.aws
   module_defaults:
     group/aws:
       access_key: "{{ aws_access_key }}"

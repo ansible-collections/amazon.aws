@@ -1,13 +1,13 @@
 ---
 - name: rds_instance / restore integration tests
-  collections:
-    - community.aws
+
   module_defaults:
     group/aws:
       access_key: "{{ aws_access_key }}"
       secret_key: "{{ aws_secret_key }}"
       session_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
+
   block:
     # TODO: snapshot, s3
 

@@ -8,10 +8,6 @@
 
   hosts: localhost
 
-  collections:
-    - amazon.aws
-    - community.aws
-
   tasks:
   # ============================================================
 
