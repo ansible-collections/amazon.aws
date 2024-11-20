@@ -23,6 +23,6 @@ deprecated_features:
 - autoscaling_group - the ``decrement_desired_capacity`` parameter has been deprecated and will be removed in release 14.0.0 of this collection.
   Management of instances attached an autoscaling group can be performed using the  ``amazon.aws.autoscaling_instance`` module
   (https://github.com/ansible-collections/amazon.aws/pull/2396).
-trivial_changes:
+trivial:
 - autoscaling_instance - tweak the state description to better explain replacing individual instances
   (https://github.com/ansible-collections/amazon.aws/pull/2396).
