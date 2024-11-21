@@ -375,8 +375,9 @@ extends_documentation_fragment:
 EXAMPLES = r"""
 # Basic configuration with Launch Template
 
-- amazon.aws.autoscaling_group:
-    name: special
+- name: Create an autoscaling group using launch template
+  amazon.aws.autoscaling_group:
+    name: example_asg
     load_balancers: ['lb1', 'lb2']
     availability_zones: ['eu-west-1a', 'eu-west-1b']
     launch_template:
@@ -391,60 +392,46 @@ EXAMPLES = r"""
 
 # Rolling ASG Updates
 
-# Below is an example of how to assign a new launch config to an ASG and terminate old instances.
-#
-# All instances in "myasg" that do not have the launch configuration named "my_new_lc" will be terminated in
-# a rolling fashion with instances using the current launch configuration, "my_new_lc".
-#
-# This could also be considered a rolling deploy of a pre-baked AMI.
-#
-# If this is a newly created group, the instances will not be replaced since all instances
-# will have the current launch configuration.  By setting max_healthy_percentage to a value over
-# 100, the old rolling-replacement behaviour of scaling up before scaling in can be maintained.
+# Below is an example of how to assign a new launch template to an ASG and replace old instances.
+# By setting max_healthy_percentage to a value over 100 the old rolling-replacement behaviour of
+# scaling up before scaling in can be maintained.
 
-- name: create launch config
-  community.aws.ec2_launch_template:
-    name: my_new_template
-    image_id: ami-0123456789abcdef1
-    key_name: mykey
-    region: us-east-1
-    security_group_ids: sg-0123456789abcdef1
-    instance_type: t3.micro
-
-- amazon.aws.autoscaling_group:
-    name: myasg
+- name: Update autoscaling group with new template - instances are not replaced
+  amazon.aws.autoscaling_group:
+    name: example_asg
     launch_template:
-      launch_template_name: my_new_template
+      launch_template_name: template-2
     health_check_period: 60
     health_check_type: ELB
     min_size: 2
-    max_size: 7
-    desired_capacity: 5
+    max_size: 13
+    desired_capacity: 6
     region: us-east-1
 
-- amazon.aws.autoscaling_instance_refresh:
-    group_name: myasg
-    state: started
-    strategy: Rolling
-    preferences:
-      skip_matching: true
-      max_healthy_percentage: 125  # Prefer to scale out before terminating instances during replacement
-
-# To only replace a couple of instances instead of all of them, supply a list
-# to "replace_instances":
-
-- amazon.aws.autoscaling_instance:
-    group_name: myasg
+- name: Replace 2 instances based on EC2 Instance ID by marking them for termination
+  amazon.aws.autoscaling_instance:
+    group_name: example_asg
     state: terminated
     instance_ids:
       - i-b345231
       - i-24c2931
     decrement_desired_capacity: false
+    wait: true
+
+- name: Trigger rolling replacement of all instances that do not match the current configuration.
+  amazon.aws.autoscaling_instance_refresh:
+    group_name: example_asg
+    state: started
+    strategy: Rolling
+    preferences:
+      skip_matching: true
+      max_healthy_percentage: 125  # scale out before terminating instances during replacement
 
 # Basic Configuration with Launch Template
 
-- amazon.aws.autoscaling_group:
-    name: special
+- name: Example autoscaling group creation with a launch template
+  amazon.aws.autoscaling_group:
+    name: example_with_template
     load_balancers: ['lb1', 'lb2']
     availability_zones: ['eu-west-1a', 'eu-west-1b']
     launch_template:
@@ -461,8 +448,9 @@ EXAMPLES = r"""
 
 # Basic Configuration with Launch Template using mixed instance policy
 
-- amazon.aws.autoscaling_group:
-    name: special
+- name: Example autoscaling group creation with a mixed instance policy
+  amazon.aws.autoscaling_group:
+    name: example_with_policy
     load_balancers: ['lb1', 'lb2']
     availability_zones: ['eu-west-1a', 'eu-west-1b']
     launch_template:
