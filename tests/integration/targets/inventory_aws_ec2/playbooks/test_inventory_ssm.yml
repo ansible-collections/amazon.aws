@@ -12,20 +12,20 @@
       region: "{{ aws_region }}"
 
   vars:
-    ami_details:
-      owner: 125523088429
-      name: Fedora-Cloud-Base-37*
-      user_data: |
-        #!/bin/sh
-        sudo dnf install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
-        sudo systemctl start amazon-ssm-agent
-      os_type: linux
+    instance_user_data: |
+      #!/bin/sh
+      sudo dnf install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
+      sudo systemctl start amazon-ssm-agent
     iam_role_name: "{{ resource_prefix }}-inventory-ssm"
 
   tasks:
     - block:
+        - ansible.builtin.include_role:
+            name: ../setup_ec2_facts
+
         # Create VPC, subnet, security group, and find image_id to create instance
         - ansible.builtin.include_tasks: tasks/setup.yml
+
         - name: Ensure IAM instance role exists
           amazon.aws.iam_role:
             name: "{{ iam_role_name }}"
@@ -37,30 +37,15 @@
             wait: true
           register: role_output
 
-        - name: AMI Lookup (ami_info)
-          amazon.aws.ec2_ami_info:
-            owners: '{{ ami_details.owner | default("amazon") }}'
-            filters:
-              architecture: x86_64
-              name: "{{ ami_details.name }}"
-          register: ec2_amis
-          no_log: true
-
-        - name: Set facts with latest AMIs
-          vars:
-            latest_ami: '{{ ec2_amis.images | default([]) | sort(attribute="creation_date") | last }}'
-          ansible.builtin.set_fact:
-            latest_ami_id: "{{ ssm_amis | default(latest_ami.image_id) }}"
-
         - name: Create EC2 instance
           amazon.aws.ec2_instance:
             instance_type: t3.micro
             ebs_optimized: true
-            image_id: "{{ latest_ami_id }}"
+            image_id: "{{ ec2_ami_id }}"
             wait: "yes"
             instance_role: "{{ role_output.iam_role.role_name }}"
             name: "{{ resource_prefix }}-inventory-ssm"
-            user_data: "{{ ami_details.user_data }}"
+            user_data: "{{ instance_user_data }}"
             state: running
             tags:
               TestPrefix: "{{ resource_prefix }}"
@@ -87,7 +72,7 @@
           amazon.aws.ec2_instance:
             name: "{{ resource_prefix }}-inventory-std"
             instance_type: t3.micro
-            image_id: "{{ latest_ami_id }}"
+            image_id: "{{ ec2_ami_id }}"
             wait: true
             state: running
           register: _instance
