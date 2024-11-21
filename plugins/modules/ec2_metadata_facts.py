@@ -653,11 +653,12 @@ class Ec2Metadata:
             token_data = None
         return to_text(token_data)
 
-    def get_instance_tags(self, tag_keys):
+    def get_instance_tags(self, tag_keys, data):
         tags = {}
         for key in tag_keys:
-            value = self._fetch("{}/{}".format(self.uri_instance_tags, key))
-            tags[key] = value
+            value = data.get("ansible_ec2_tags_instance_{}".format(key))
+            if value is not None:
+                tags[key] = value
         return tags
 
     def run(self):
@@ -677,7 +678,7 @@ class Ec2Metadata:
         instance_tags_keys = instance_tags_keys.split("\n") if instance_tags_keys != "None" else []
         data[self._prefix % "instance_tags_keys"] = instance_tags_keys
 
-        instance_tags = self.get_instance_tags(instance_tags_keys)
+        instance_tags = self.get_instance_tags(instance_tags_keys, data)
         data[self._prefix % "instance_tags"] = instance_tags
 
         # Maintain old key for backwards compatibility
