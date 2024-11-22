@@ -4,7 +4,7 @@
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta content="2.15.0" name="antsibull-docs" />
+<meta content="2.16.1" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>amazon.aws.autoscaling_instance module – manage instances associated with AWS AutoScaling Groups (ASGs) &mdash; Ansible collections  documentation</title>
@@ -391,7 +391,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <p><code class="ansible-value docutils literal notranslate"><span class="pre">attached</span></code> - The instance(s) should be attached to the AutoScaling Group. Instances in Standby will remain in standby.</p>
 <p><code class="ansible-value docutils literal notranslate"><span class="pre">standby</span></code> - The instance(s) should be placed into standby. Instances must already be part of the AutoScaling Group.</p>
 <p><code class="ansible-value docutils literal notranslate"><span class="pre">detached</span></code> - The instance(s) will be detached from the AutoScaling Group.</p>
-<p><code class="ansible-value docutils literal notranslate"><span class="pre">terminated</span></code> - The instance(s) will be terminated.</p>
+<p><code class="ansible-value docutils literal notranslate"><span class="pre">terminated</span></code> - The instance(s) will be terminated. By default terminated instances will be replaced with new instances, to reduce the desired capacity at the same time as terminating instances set <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-instance-module-parameter-decrement-desired-capacity"><span class="std std-ref"><span class="pre">decrement_desired_capacity=True</span></span></a></code>.</p>
 <p><strong>Note:</strong> When adding instances to an AutoScaling Group or returning instances to service from standby, the desired capacity is <strong>always</strong> incremented. If the total number of instances would exceed the maximum size of the group then the operation will fail.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
