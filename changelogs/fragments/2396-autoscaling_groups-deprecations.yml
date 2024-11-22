@@ -1,0 +1,28 @@
+minor_changes:
+- autoscaling_group - adds ``group_name`` as an alias for the ``name`` parameter
+  (https://github.com/ansible-collections/amazon.aws/pull/2396).
+- autoscaling_group_info - adds ``group_name`` as an alias for the ``name`` parameter
+  (https://github.com/ansible-collections/amazon.aws/pull/2396).
+- autoscaling_instance_refresh - adds ``group_name`` as an alias for the ``name`` parameter
+  (https://github.com/ansible-collections/amazon.aws/pull/2396).
+- autoscaling_instance_refresh_info - adds ``group_name`` as an alias for the ``name`` parameter
+  (https://github.com/ansible-collections/amazon.aws/pull/2396).
+deprecated_features:
+- autoscaling_group - the functionality provided through the ``replace_all_instances`` parameter has been deprecated and will be removed in release 14.0.0 of this collection.
+  Rolling replacement of instances in an autoscaling group can be performed using the  ``amazon.aws.autoscaling_instance_refresh`` module
+  (https://github.com/ansible-collections/amazon.aws/pull/2396).
+- autoscaling_group - the ``replace_batch_size``, ``lc_check`` and ``lt_check`` parameters have been deprecated and will be removed in release 14.0.0 of this collection.
+  Rolling replacement of instances in an autoscaling group can be performed using the  ``amazon.aws.autoscaling_instance_refresh`` module
+  (https://github.com/ansible-collections/amazon.aws/pull/2396).
+- autoscaling_group - the functionality provided through the ``detach_instances`` parameter has been deprecated and will be removed in release 14.0.0 of this collection.
+  Management of instances attached an autoscaling group can be performed using the  ``amazon.aws.autoscaling_instance`` module
+  (https://github.com/ansible-collections/amazon.aws/pull/2396).
+- autoscaling_group - the functionality provided through the ``replace_instances`` parameter has been deprecated and will be removed in release 14.0.0 of this collection.
+  Management of instances attached an autoscaling group can be performed using the  ``amazon.aws.autoscaling_instance`` module
+  (https://github.com/ansible-collections/amazon.aws/pull/2396).
+- autoscaling_group - the ``decrement_desired_capacity`` parameter has been deprecated and will be removed in release 14.0.0 of this collection.
+  Management of instances attached an autoscaling group can be performed using the  ``amazon.aws.autoscaling_instance`` module
+  (https://github.com/ansible-collections/amazon.aws/pull/2396).
+trivial:
+- autoscaling_instance - tweak the state description to better explain replacing individual instances
+  (https://github.com/ansible-collections/amazon.aws/pull/2396).
