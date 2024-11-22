@@ -7,7 +7,7 @@
       region: "{{ aws_region }}"
   block:
     - name: Create a Launch template
-      community.aws.ec2_launch_template:
+      amazon.aws.ec2_launch_template:
         template_name: "{{ resource_prefix }}-template"
         instance_type: t2.micro
         image_id: "{{ ec2_ami_id }}"
