@@ -245,7 +245,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <a class="ansibleOptionLink" href="#parameter-decrement_desired_capacity" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 <p><em class="ansible-option-versionadded">added in community.aws 3.2.0</em></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Indicates whether the AutoScalingGroup decrements the desired capacity value by the number of instances detached.</p>
+<td><div class="ansible-option-cell"><p>Support for the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-detach-instances"><span class="std std-ref"><span class="pre">detach_instances</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-decrement-desired-capacity"><span class="std std-ref"><span class="pre">decrement_desired_capacity</span></span></a></strong></code> parameters has been deprecated and will be removed in release 14.0.0. The <a class="reference internal" href="autoscaling_instance_module.html#ansible-collections-amazon-aws-autoscaling-instance-module"><span class="std std-ref">amazon.aws.autoscaling_instance</span></a> module can be used to attach instances to and detach and detach instances from an AutoScaling Group.</p>
+<p>Indicates whether the AutoScalingGroup decrements the desired capacity value by the number of instances detached.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -273,7 +274,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <a class="ansibleOptionLink" href="#parameter-detach_instances" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 <p><em class="ansible-option-versionadded">added in community.aws 3.2.0</em></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Removes one or more instances from the specified AutoScalingGroup.</p>
+<td><div class="ansible-option-cell"><p>Support for the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-detach-instances"><span class="std std-ref"><span class="pre">detach_instances</span></span></a></strong></code> parameter has been deprecated and will be removed in release 14.0.0. The <a class="reference internal" href="autoscaling_instance_module.html#ansible-collections-amazon-aws-autoscaling-instance-module"><span class="std std-ref">amazon.aws.autoscaling_instance</span></a> module can be used to attach instances to and detach and detach instances from an AutoScaling Group.</p>
+<p>Removes one or more instances from the specified AutoScalingGroup.</p>
 <p>If <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-decrement-desired-capacity"><span class="std std-ref"><span class="pre">decrement_desired_capacity</span></span></a></strong></code> flag is not set, new instance(s) are launched to replace the detached instance(s).</p>
 <p>If a Classic Load Balancer is attached to the AutoScalingGroup, the instances are also deregistered from the load balancer.</p>
 <p>If there are target groups attached to the AutoScalingGroup, the instances are also deregistered from the target groups.</p>
@@ -319,14 +321,16 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <a class="ansibleOptionLink" href="#parameter-launch_config_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Name of the Launch configuration to use for the group. See the <a class="reference external" href="https://ansible-collections.github.io/community.aws/branch/main/collections/community/aws/autoscaling_launch_config_module.html#ansible-collections-community-aws-autoscaling-launch-config-module" title="(in Ansible collections)"><span class="xref std std-ref">community.aws.autoscaling_launch_config</span></a> module for managing these.</p>
-<p>If unspecified then the current group value will be used. One of <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-launch-config-name"><span class="std std-ref"><span class="pre">launch_config_name</span></span></a></strong></code> or <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-launch-template"><span class="std std-ref"><span class="pre">launch_template</span></span></a></strong></code> must be provided.</p>
+<p>Exactly one of <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-launch-config-name"><span class="std std-ref"><span class="pre">launch_config_name</span></span></a></strong></code> or <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-launch-template"><span class="std std-ref"><span class="pre">launch_template</span></span></a></strong></code> must be provided when creating a new AutoScaling Group.</p>
+<p><strong>Note</strong> Amazon has deprecated support for AutoScaling Launch Configurations in favour of EC2 Launch Templates. See <a class="reference external" href="https://docs.aws.amazon.com/autoscaling/ec2/userguide/launch-configurations.html">https://docs.aws.amazon.com/autoscaling/ec2/userguide/launch-configurations.html</a> for more information</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-launch_template"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-module-parameter-launch-template"><strong>launch_template</strong></p>
 <a class="ansibleOptionLink" href="#parameter-launch_template" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Dictionary describing the Launch Template to use</p>
+<td><div class="ansible-option-cell"><p>Dictionary describing the Launch Template to use.</p>
+<p>Exactly one of <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-launch-config-name"><span class="std std-ref"><span class="pre">launch_config_name</span></span></a></strong></code> or <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-launch-template"><span class="std std-ref"><span class="pre">launch_template</span></span></a></strong></code> must be provided when creating a new AutoScaling Group.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -355,7 +359,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <div class="ansibleOptionAnchor" id="parameter-lc_check"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-module-parameter-lc-check"><strong>lc_check</strong></p>
 <a class="ansibleOptionLink" href="#parameter-lc_check" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Check to make sure instances that are being replaced with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-replace-instances"><span class="std std-ref"><span class="pre">replace_instances</span></span></a></strong></code> do not already have the current launch config.</p>
+<td><div class="ansible-option-cell"><p>Support for the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-detach-instances"><span class="std std-ref"><span class="pre">detach_instances</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-lc-check"><span class="std std-ref"><span class="pre">lc_check</span></span></a></strong></code> parameters has been deprecated and will be removed in release 14.0.0. The <a class="reference internal" href="autoscaling_instance_module.html#ansible-collections-amazon-aws-autoscaling-instance-module"><span class="std std-ref">amazon.aws.autoscaling_instance</span></a> module can be used to attach instances to and detach and detach instances from an AutoScaling Group.</p>
+<p>Check to make sure instances that are being replaced with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-replace-instances"><span class="std std-ref"><span class="pre">replace_instances</span></span></a></strong></code> do not already have the current launch config.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
@@ -374,7 +379,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <div class="ansibleOptionAnchor" id="parameter-lt_check"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-module-parameter-lt-check"><strong>lt_check</strong></p>
 <a class="ansibleOptionLink" href="#parameter-lt_check" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Check to make sure instances that are being replaced with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-replace-instances"><span class="std std-ref"><span class="pre">replace_instances</span></span></a></strong></code> do not already have the current <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-launch-template"><span class="std std-ref"><span class="pre">launch_template</span></span></a></strong></code> or <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-launch-template"><span class="std std-ref"><span class="pre">launch_template</span></span></a></strong></code> <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-launch-template-version"><span class="std std-ref"><span class="pre">launch_template.version</span></span></a></strong></code>.</p>
+<td><div class="ansible-option-cell"><p>Support for the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-detach-instances"><span class="std std-ref"><span class="pre">detach_instances</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-lt-check"><span class="std std-ref"><span class="pre">lt_check</span></span></a></strong></code> parameters has been deprecated and will be removed in release 14.0.0. The <a class="reference internal" href="autoscaling_instance_module.html#ansible-collections-amazon-aws-autoscaling-instance-module"><span class="std std-ref">amazon.aws.autoscaling_instance</span></a> module can be used to attach instances to and detach and detach instances from an AutoScaling Group.</p>
+<p>Check to make sure instances that are being replaced with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-replace-instances"><span class="std std-ref"><span class="pre">replace_instances</span></span></a></strong></code> do not already have the current <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-launch-template"><span class="std std-ref"><span class="pre">launch_template</span></span></a></strong></code> or <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-launch-template"><span class="std std-ref"><span class="pre">launch_template</span></span></a></strong></code> <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-launch-template-version"><span class="std std-ref"><span class="pre">launch_template.version</span></span></a></strong></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
@@ -514,8 +520,10 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-module-parameter-name"><strong>name</strong></p>
-<a class="ansibleOptionLink" href="#parameter-name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
+<div class="ansibleOptionAnchor" id="parameter-name"></div>
+<div class="ansibleOptionAnchor" id="parameter-group_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-module-parameter-name"><span id="ansible-collections-amazon-aws-autoscaling-group-module-parameter-group-name"></span><strong>name</strong></p>
+<a class="ansibleOptionLink" href="#parameter-name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: group_name</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Unique name for group to be created or deleted.</p>
 </div></td>
@@ -587,7 +595,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <div class="ansibleOptionAnchor" id="parameter-replace_all_instances"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-module-parameter-replace-all-instances"><strong>replace_all_instances</strong></p>
 <a class="ansibleOptionLink" href="#parameter-replace_all_instances" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>In a rolling fashion, replace all instances that used the old launch configuration with one from the new launch configuration. It increases the ASG size by <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-replace-batch-size"><span class="std std-ref"><span class="pre">replace_batch_size</span></span></a></strong></code>, waits for the new instances to be up and running. After that, it terminates a batch of old instances, waits for the replacements, and repeats, until all old instances are replaced. Once that’s done the ASG size is reduced back to the expected size.</p>
+<td><div class="ansible-option-cell"><p>Support for the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-replace-all-instances"><span class="std std-ref"><span class="pre">replace_all_instances</span></span></a></strong></code> parameter has been deprecated and will be removed in release 14.0.0. The <a class="reference internal" href="autoscaling_instance_refresh_module.html#ansible-collections-amazon-aws-autoscaling-instance-refresh-module"><span class="std std-ref">amazon.aws.autoscaling_instance_refresh</span></a> module can be used to perform an automated replacement of instances.</p>
+<p>In a rolling fashion, replace all instances that used the old launch configuration with one from the new launch configuration. It increases the ASG size by <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-replace-batch-size"><span class="std std-ref"><span class="pre">replace_batch_size</span></span></a></strong></code>, waits for the new instances to be up and running. After that, it terminates a batch of old instances, waits for the replacements, and repeats, until all old instances are replaced. Once that’s done the ASG size is reduced back to the expected size.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -599,7 +608,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <div class="ansibleOptionAnchor" id="parameter-replace_batch_size"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-module-parameter-replace-batch-size"><strong>replace_batch_size</strong></p>
 <a class="ansibleOptionLink" href="#parameter-replace_batch_size" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Number of instances you’d like to replace at a time. Used with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-replace-all-instances"><span class="std std-ref"><span class="pre">replace_all_instances</span></span></a></strong></code>.</p>
+<td><div class="ansible-option-cell"><p>Support for the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-replace-all-instances"><span class="std std-ref"><span class="pre">replace_all_instances</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-replace-batch-size"><span class="std std-ref"><span class="pre">replace_batch_size</span></span></a></strong></code> parameters has been deprecated and will be removed in release 14.0.0. The <a class="reference internal" href="autoscaling_instance_refresh_module.html#ansible-collections-amazon-aws-autoscaling-instance-refresh-module"><span class="std std-ref">amazon.aws.autoscaling_instance_refresh</span></a> module can be used to perform an automated replacement of instances.</p>
+<p>Number of instances you’d like to replace at a time. Used with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-replace-all-instances"><span class="std std-ref"><span class="pre">replace_all_instances</span></span></a></strong></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">1</span></code></p>
 </div></td>
 </tr>
@@ -607,7 +617,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <div class="ansibleOptionAnchor" id="parameter-replace_instances"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-module-parameter-replace-instances"><strong>replace_instances</strong></p>
 <a class="ansibleOptionLink" href="#parameter-replace_instances" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>List of instance ids belonging to the named AutoScalingGroup that you would like to terminate and be replaced with instances matching the current launch configuration.</p>
+<td><div class="ansible-option-cell"><p>Support for the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-autoscaling-group-module-parameter-replace-instances"><span class="std std-ref"><span class="pre">replace_instances</span></span></a></strong></code> parameter has been deprecated and will be removed in release 14.0.0. The <a class="reference internal" href="autoscaling_instance_module.html#ansible-collections-amazon-aws-autoscaling-instance-module"><span class="std std-ref">amazon.aws.autoscaling_instance</span></a> module can be used to terminate instances attached to an AutoScaling Group.</p>
+<p>List of instance ids belonging to the named AutoScalingGroup that you would like to terminate and be replaced with instances matching the current launch configuration.</p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[]</span></code></p>
 </div></td>
 </tr>
@@ -754,13 +765,15 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 </section>
 <section id="examples">
 <h2><a class="toc-backref" href="#id5" role="doc-backlink">Examples</a><a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
-<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># Basic configuration with Launch Configuration</span>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># Basic configuration with Launch Template</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.autoscaling_group</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">special</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create an autoscaling group using launch template</span>
+<span class="w">  </span><span class="nt">amazon.aws.autoscaling_group</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example_asg</span>
 <span class="w">    </span><span class="nt">load_balancers</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;lb1&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;lb2&#39;</span><span class="p p-Indicator">]</span>
 <span class="w">    </span><span class="nt">availability_zones</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;eu-west-1a&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;eu-west-1b&#39;</span><span class="p p-Indicator">]</span>
-<span class="w">    </span><span class="nt">launch_config_name</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;lc-1&#39;</span>
+<span class="w">    </span><span class="nt">launch_template</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">launch_template_name</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;template-1&#39;</span>
 <span class="w">    </span><span class="nt">min_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
 <span class="w">    </span><span class="nt">max_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
 <span class="w">    </span><span class="nt">desired_capacity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
@@ -771,57 +784,46 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 
 <span class="c1"># Rolling ASG Updates</span>
 
-<span class="c1"># Below is an example of how to assign a new launch config to an ASG and terminate old instances.</span>
-<span class="c1">#</span>
-<span class="c1"># All instances in &quot;myasg&quot; that do not have the launch configuration named &quot;my_new_lc&quot; will be terminated in</span>
-<span class="c1"># a rolling fashion with instances using the current launch configuration, &quot;my_new_lc&quot;.</span>
-<span class="c1">#</span>
-<span class="c1"># This could also be considered a rolling deploy of a pre-baked AMI.</span>
-<span class="c1">#</span>
-<span class="c1"># If this is a newly created group, the instances will not be replaced since all instances</span>
-<span class="c1"># will have the current launch configuration.</span>
+<span class="c1"># Below is an example of how to assign a new launch template to an ASG and replace old instances.</span>
+<span class="c1"># By setting max_healthy_percentage to a value over 100 the old rolling-replacement behaviour of</span>
+<span class="c1"># scaling up before scaling in can be maintained.</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">create launch config</span>
-<span class="w">  </span><span class="nt">community.aws.autoscaling_launch_config</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_new_lc</span>
-<span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ami-lkajsf</span>
-<span class="w">    </span><span class="nt">key_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mykey</span>
-<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-1</span>
-<span class="w">    </span><span class="nt">security_groups</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sg-23423</span>
-<span class="w">    </span><span class="nt">instance_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">m1.small</span>
-<span class="w">    </span><span class="nt">assign_public_ip</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.autoscaling_group</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">myasg</span>
-<span class="w">    </span><span class="nt">launch_config_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_new_lc</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Update autoscaling group with new template - instances are not replaced</span>
+<span class="w">  </span><span class="nt">amazon.aws.autoscaling_group</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example_asg</span>
+<span class="w">    </span><span class="nt">launch_template</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">launch_template_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">template-2</span>
 <span class="w">    </span><span class="nt">health_check_period</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">60</span>
 <span class="w">    </span><span class="nt">health_check_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ELB</span>
-<span class="w">    </span><span class="nt">replace_all_instances</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<span class="w">    </span><span class="nt">min_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
-<span class="w">    </span><span class="nt">max_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
-<span class="w">    </span><span class="nt">desired_capacity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
+<span class="w">    </span><span class="nt">min_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<span class="w">    </span><span class="nt">max_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">13</span>
+<span class="w">    </span><span class="nt">desired_capacity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">6</span>
 <span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-1</span>
 
-<span class="c1"># To only replace a couple of instances instead of all of them, supply a list</span>
-<span class="c1"># to &quot;replace_instances&quot;:</span>
-
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.autoscaling_group</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">myasg</span>
-<span class="w">    </span><span class="nt">launch_config_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_new_lc</span>
-<span class="w">    </span><span class="nt">health_check_period</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">60</span>
-<span class="w">    </span><span class="nt">health_check_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ELB</span>
-<span class="w">    </span><span class="nt">replace_instances</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Replace 2 instances based on EC2 Instance ID by marking them for termination</span>
+<span class="w">  </span><span class="nt">amazon.aws.autoscaling_instance</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">group_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example_asg</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">terminated</span>
+<span class="w">    </span><span class="nt">instance_ids</span><span class="p">:</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">i-b345231</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">i-24c2931</span>
-<span class="w">    </span><span class="nt">min_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
-<span class="w">    </span><span class="nt">max_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
-<span class="w">    </span><span class="nt">desired_capacity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
-<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-1</span>
+<span class="w">    </span><span class="nt">decrement_desired_capacity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">    </span><span class="nt">wait</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Trigger rolling replacement of all instances that do not match the current configuration.</span>
+<span class="w">  </span><span class="nt">amazon.aws.autoscaling_instance_refresh</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">group_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example_asg</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">started</span>
+<span class="w">    </span><span class="nt">strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Rolling</span>
+<span class="w">    </span><span class="nt">preferences</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">skip_matching</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">      </span><span class="nt">max_healthy_percentage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">125</span><span class="w">  </span><span class="c1"># scale out before terminating instances during replacement</span>
 
 <span class="c1"># Basic Configuration with Launch Template</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.autoscaling_group</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">special</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Example autoscaling group creation with a launch template</span>
+<span class="w">  </span><span class="nt">amazon.aws.autoscaling_group</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example_with_template</span>
 <span class="w">    </span><span class="nt">load_balancers</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;lb1&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;lb2&#39;</span><span class="p p-Indicator">]</span>
 <span class="w">    </span><span class="nt">availability_zones</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;eu-west-1a&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;eu-west-1b&#39;</span><span class="p p-Indicator">]</span>
 <span class="w">    </span><span class="nt">launch_template</span><span class="p">:</span>
@@ -838,8 +840,9 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 
 <span class="c1"># Basic Configuration with Launch Template using mixed instance policy</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.autoscaling_group</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">special</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Example autoscaling group creation with a mixed instance policy</span>
+<span class="w">  </span><span class="nt">amazon.aws.autoscaling_group</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example_with_policy</span>
 <span class="w">    </span><span class="nt">load_balancers</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;lb1&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;lb2&#39;</span><span class="p p-Indicator">]</span>
 <span class="w">    </span><span class="nt">availability_zones</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;eu-west-1a&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;eu-west-1b&#39;</span><span class="p p-Indicator">]</span>
 <span class="w">    </span><span class="nt">launch_template</span><span class="p">:</span>
