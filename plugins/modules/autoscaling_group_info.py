@@ -23,6 +23,7 @@ options:
       - "Note: This is a regular expression match with implicit '^' (beginning of string). Append '$' for a complete name match."
     type: str
     required: false
+    aliases: ["group_name"]
   tags:
     description:
       - >
@@ -549,7 +550,7 @@ def find_asgs(conn, module, name=None, tags=None):
 
 def main():
     argument_spec = dict(
-        name=dict(type="str"),
+        name=dict(type="str", aliases=["group_name"]),
         tags=dict(type="dict"),
     )
 

@@ -27,6 +27,7 @@ options:
   name:
     description:
       - Unique name for group to be created or deleted.
+    aliases: ['group_name']
     required: true
     type: str
   load_balancers:
@@ -48,11 +49,14 @@ options:
   launch_config_name:
     description:
       - Name of the Launch configuration to use for the group. See the M(community.aws.autoscaling_launch_config) module for managing these.
-      - If unspecified then the current group value will be used.  One of O(launch_config_name) or O(launch_template) must be provided.
+      - Exactly one of O(launch_config_name) or O(launch_template) must be provided when creating a new AutoScaling Group.
+      - B(Note) Amazon has deprecated support for AutoScaling Launch Configurations in favour of EC2 Launch Templates.  See
+        U(https://docs.aws.amazon.com/autoscaling/ec2/userguide/launch-configurations.html) for more information
     type: str
   launch_template:
     description:
-      - Dictionary describing the Launch Template to use
+      - Dictionary describing the Launch Template to use.
+      - Exactly one of O(launch_config_name) or O(launch_template) must be provided when creating a new AutoScaling Group.
     suboptions:
       version:
         description:
@@ -175,6 +179,10 @@ options:
     type: int
   replace_all_instances:
     description:
+      - Support for the O(replace_all_instances) parameter has been deprecated and will be removed
+        in release 14.0.0.
+        The M(amazon.aws.autoscaling_instance_refresh) module can be used to perform an automated
+        replacement of instances.
       - In a rolling fashion, replace all instances that used the old launch configuration with one from the new launch configuration.
         It increases the ASG size by O(replace_batch_size), waits for the new instances to be up and running.
         After that, it terminates a batch of old instances, waits for the replacements, and repeats, until all old instances are replaced.
@@ -183,12 +191,20 @@ options:
     type: bool
   replace_batch_size:
     description:
+      - Support for the O(replace_all_instances) and O(replace_batch_size) parameters has been
+        deprecated and will be removed in release 14.0.0.
+        The M(amazon.aws.autoscaling_instance_refresh) module can be used to perform an automated
+        replacement of instances.
       - Number of instances you'd like to replace at a time.  Used with O(replace_all_instances).
     required: false
     default: 1
     type: int
   replace_instances:
     description:
+      - Support for the O(replace_instances) parameter has been deprecated and will be removed in
+        release 14.0.0.
+        The M(amazon.aws.autoscaling_instance) module can be used to terminate instances attached
+        to an AutoScaling Group.
       - List of instance ids belonging to the named AutoScalingGroup that you would like to terminate and be replaced with instances
         matching the current launch configuration.
     type: list
@@ -196,6 +212,10 @@ options:
     default: []
   detach_instances:
     description:
+      - Support for the O(detach_instances) parameter has been deprecated and will be removed in
+        release 14.0.0.
+        The M(amazon.aws.autoscaling_instance) module can be used to attach instances to and detach
+        and detach instances from an AutoScaling Group.
       - Removes one or more instances from the specified AutoScalingGroup.
       - If O(decrement_desired_capacity) flag is not set, new instance(s) are launched to replace the detached instance(s).
       - If a Classic Load Balancer is attached to the AutoScalingGroup, the instances are also deregistered from the load balancer.
@@ -207,6 +227,10 @@ options:
     version_added_collection: community.aws
   decrement_desired_capacity:
     description:
+      - Support for the O(detach_instances) and O(decrement_desired_capacity) parameters has been
+        deprecated and will be removed in release 14.0.0.
+        The M(amazon.aws.autoscaling_instance) module can be used to attach instances to and detach
+        and detach instances from an AutoScaling Group.
       - Indicates whether the AutoScalingGroup decrements the desired capacity value by the number of instances detached.
     default: false
     type: bool
@@ -214,11 +238,19 @@ options:
     version_added_collection: community.aws
   lc_check:
     description:
+      - Support for the O(detach_instances) and O(lc_check) parameters has been deprecated and will
+        be removed in release 14.0.0.
+        The M(amazon.aws.autoscaling_instance) module can be used to attach instances to and detach
+        and detach instances from an AutoScaling Group.
       - Check to make sure instances that are being replaced with O(replace_instances) do not already have the current launch config.
     default: true
     type: bool
   lt_check:
     description:
+      - Support for the O(detach_instances) and O(lt_check) parameters has been deprecated and will
+        be removed in release 14.0.0.
+        The M(amazon.aws.autoscaling_instance) module can be used to attach instances to and detach
+        and detach instances from an AutoScaling Group.
       - Check to make sure instances that are being replaced with O(replace_instances) do not already have the current
         O(launch_template) or O(launch_template) O(launch_template.version).
     default: true
@@ -341,13 +373,15 @@ extends_documentation_fragment:
 """
 
 EXAMPLES = r"""
-# Basic configuration with Launch Configuration
+# Basic configuration with Launch Template
 
-- amazon.aws.autoscaling_group:
-    name: special
+- name: Create an autoscaling group using launch template
+  amazon.aws.autoscaling_group:
+    name: example_asg
     load_balancers: ['lb1', 'lb2']
     availability_zones: ['eu-west-1a', 'eu-west-1b']
-    launch_config_name: 'lc-1'
+    launch_template:
+      launch_template_name: 'template-1'
     min_size: 1
     max_size: 10
     desired_capacity: 5
@@ -358,57 +392,46 @@ EXAMPLES = r"""
 
 # Rolling ASG Updates
 
-# Below is an example of how to assign a new launch config to an ASG and terminate old instances.
-#
-# All instances in "myasg" that do not have the launch configuration named "my_new_lc" will be terminated in
-# a rolling fashion with instances using the current launch configuration, "my_new_lc".
-#
-# This could also be considered a rolling deploy of a pre-baked AMI.
-#
-# If this is a newly created group, the instances will not be replaced since all instances
-# will have the current launch configuration.
+# Below is an example of how to assign a new launch template to an ASG and replace old instances.
+# By setting max_healthy_percentage to a value over 100 the old rolling-replacement behaviour of
+# scaling up before scaling in can be maintained.
 
-- name: create launch config
-  community.aws.autoscaling_launch_config:
-    name: my_new_lc
-    image_id: ami-lkajsf
-    key_name: mykey
-    region: us-east-1
-    security_groups: sg-23423
-    instance_type: m1.small
-    assign_public_ip: true
-
-- amazon.aws.autoscaling_group:
-    name: myasg
-    launch_config_name: my_new_lc
+- name: Update autoscaling group with new template - instances are not replaced
+  amazon.aws.autoscaling_group:
+    name: example_asg
+    launch_template:
+      launch_template_name: template-2
     health_check_period: 60
     health_check_type: ELB
-    replace_all_instances: true
-    min_size: 5
-    max_size: 5
-    desired_capacity: 5
+    min_size: 2
+    max_size: 13
+    desired_capacity: 6
     region: us-east-1
 
-# To only replace a couple of instances instead of all of them, supply a list
-# to "replace_instances":
-
-- amazon.aws.autoscaling_group:
-    name: myasg
-    launch_config_name: my_new_lc
-    health_check_period: 60
-    health_check_type: ELB
-    replace_instances:
+- name: Replace 2 instances based on EC2 Instance ID by marking them for termination
+  amazon.aws.autoscaling_instance:
+    group_name: example_asg
+    state: terminated
+    instance_ids:
       - i-b345231
       - i-24c2931
-    min_size: 5
-    max_size: 5
-    desired_capacity: 5
-    region: us-east-1
+    decrement_desired_capacity: false
+    wait: true
+
+- name: Trigger rolling replacement of all instances that do not match the current configuration.
+  amazon.aws.autoscaling_instance_refresh:
+    group_name: example_asg
+    state: started
+    strategy: Rolling
+    preferences:
+      skip_matching: true
+      max_healthy_percentage: 125  # scale out before terminating instances during replacement
 
 # Basic Configuration with Launch Template
 
-- amazon.aws.autoscaling_group:
-    name: special
+- name: Example autoscaling group creation with a launch template
+  amazon.aws.autoscaling_group:
+    name: example_with_template
     load_balancers: ['lb1', 'lb2']
     availability_zones: ['eu-west-1a', 'eu-west-1b']
     launch_template:
@@ -425,8 +448,9 @@ EXAMPLES = r"""
 
 # Basic Configuration with Launch Template using mixed instance policy
 
-- amazon.aws.autoscaling_group:
-    name: special
+- name: Example autoscaling group creation with a mixed instance policy
+  amazon.aws.autoscaling_group:
+    name: example_with_policy
     load_balancers: ['lb1', 'lb2']
     availability_zones: ['eu-west-1a', 'eu-west-1b']
     launch_template:
@@ -1852,7 +1876,7 @@ def asg_exists(connection):
 
 def main():
     argument_spec = dict(
-        name=dict(required=True, type="str"),
+        name=dict(required=True, type="str", aliases=["group_name"]),
         load_balancers=dict(type="list", elements="str"),
         target_group_arns=dict(type="list", elements="str"),
         availability_zones=dict(type="list", elements="str"),
@@ -1891,13 +1915,50 @@ def main():
         placement_group=dict(type="str"),
         desired_capacity=dict(type="int"),
         vpc_zone_identifier=dict(type="list", elements="str"),
-        replace_batch_size=dict(type="int", default=1),
-        replace_all_instances=dict(type="bool", default=False),
-        replace_instances=dict(type="list", default=[], elements="str"),
-        detach_instances=dict(type="list", default=[], elements="str"),
-        decrement_desired_capacity=dict(type="bool", default=False),
-        lc_check=dict(type="bool", default=True),
-        lt_check=dict(type="bool", default=True),
+        replace_batch_size=dict(
+            removed_in_version="14.0.0",
+            removed_from_collection="amazon.aws",
+            type="int",
+            default=1,
+        ),
+        replace_all_instances=dict(
+            removed_in_version="14.0.0",
+            removed_from_collection="amazon.aws",
+            type="bool",
+            default=False,
+        ),
+        replace_instances=dict(
+            removed_in_version="14.0.0",
+            removed_from_collection="amazon.aws",
+            type="list",
+            default=[],
+            elements="str",
+        ),
+        detach_instances=dict(
+            removed_in_version="14.0.0",
+            removed_from_collection="amazon.aws",
+            type="list",
+            default=[],
+            elements="str",
+        ),
+        decrement_desired_capacity=dict(
+            removed_in_version="14.0.0",
+            removed_from_collection="amazon.aws",
+            type="bool",
+            default=False,
+        ),
+        lc_check=dict(
+            removed_in_version="14.0.0",
+            removed_from_collection="amazon.aws",
+            type="bool",
+            default=True,
+        ),
+        lt_check=dict(
+            removed_in_version="14.0.0",
+            removed_from_collection="amazon.aws",
+            type="bool",
+            default=True,
+        ),
         wait_timeout=dict(type="int", default=300),
         state=dict(default="present", choices=["present", "absent"]),
         tags=dict(type="list", default=[], elements="dict"),

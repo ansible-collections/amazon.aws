@@ -31,6 +31,8 @@ options:
         Instances must already be part of the AutoScaling Group.
       - V(detached) - The instance(s) will be detached from the AutoScaling Group.
       - V(terminated) - The instance(s) will be terminated.
+        By default terminated instances will be replaced with new instances, to reduce the desired
+        capacity at the same time as terminating instances set O(decrement_desired_capacity=True).
       - B(Note:) When adding instances to an AutoScaling Group or returning instances to service
         from standby, the desired capacity is B(always) incremented.  If the total number of
         instances would exceed the maximum size of the group then the operation will fail.
