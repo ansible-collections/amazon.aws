@@ -16,6 +16,8 @@
           - ansible_ec2_instance_tags is defined
           - ansible_ec2_instance_tags | length == 3
           - ansible_ec2_instance_tags.snake_case_key == "a_snake_case_value"
+          - ansible_ec2_instance_tags.camelCaseKey == "aCamelCaseValue"
+          - ansible_ec2_instance_tags.Name == resource_prefix+"-ec2-metadata-facts"
           - ansible_ec2_instance_tags_keys is defined
           - ansible_ec2_instance_tags_keys | length == 3
 
