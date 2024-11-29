@@ -160,7 +160,16 @@ def _sort_actions(actions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 
 
 def _sort_listener_actions(actions: List[Dict[str, str]]) -> List[Dict[str, str]]:
-    return sorted(actions, key=lambda x: (x["TargetGroupArn"], x["Type"]))
+    return sorted(
+        actions,
+        key=lambda x: (
+            x.get("AuthenticateOidcConfig"),
+            x.get("FixedResponseConfig"),
+            x.get("RedirectConfig"),
+            x.get("TargetGroupArn"),
+            x.get("Type"),
+        ),
+    )
 
 
 class ElasticLoadBalancerV2:
@@ -796,7 +805,13 @@ def _compare_listener(current_listener: Dict[str, Any], new_listener: Dict[str, 
     if new_default_actions:
         if current_default_actions and len(current_default_actions) == len(new_default_actions):
             current_actions_sorted = _sort_listener_actions(
-                [{"TargetGroupArn": x["TargetGroupArn"], "Type": x["Type"]} for x in current_default_actions]
+                {
+                    k: v
+                    for k, v in x.items()
+                    if k
+                    in ["AuthenticateOidcConfig", "FixedResponseConfig", "RedirectConfig", "TargetGroupArn", "Type"]
+                }
+                for x in current_default_actions
             )
             if current_actions_sorted != _sort_listener_actions(new_default_actions):
                 modified_listener["DefaultActions"] = new_default_actions

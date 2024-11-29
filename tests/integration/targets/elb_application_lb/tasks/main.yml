@@ -1076,6 +1076,102 @@
 
     # ------------------------------------------------------------------------------------------
 
+    - name: Update an ALB with different listener by modifying default actions - check mode
+      amazon.aws.elb_application_lb:
+        name: "{{ alb_name }}"
+        subnets: "{{ public_subnets }}"
+        security_groups: "{{ sec_group.group_id }}"
+        state: present
+        listeners:
+          - Protocol: HTTP
+            Port: 80
+            DefaultActions:
+              - Type: fixed-response
+                FixedResponseConfig:
+                  ContentType: text/plain
+                  MessageBody: Not available
+                  StatusCode: "404"
+      register: alb
+      check_mode: true
+
+    - name: Assert check_mode result
+      ansible.builtin.assert:
+        that:
+          - alb is changed
+          - alb.msg is match('Would have updated ALB if not in check mode.')
+
+    - name: Update an ALB with different listener by modifying default actions
+      amazon.aws.elb_application_lb:
+        name: "{{ alb_name }}"
+        subnets: "{{ public_subnets }}"
+        security_groups: "{{ sec_group.group_id }}"
+        state: present
+        listeners:
+          - Protocol: HTTP
+            Port: 80
+            DefaultActions:
+              - Type: fixed-response
+                FixedResponseConfig:
+                  ContentType: text/plain
+                  MessageBody: Not available
+                  StatusCode: "404"
+      register: alb
+
+    - name: Assert update ALB result
+      ansible.builtin.assert:
+        that:
+          - alb is changed
+          - alb.listeners[0].default_actions[0].type == "fixed-response"
+
+    - name: Update an ALB with different listener by modifying default actions (idempotence) - check_mode
+      amazon.aws.elb_application_lb:
+        name: "{{ alb_name }}"
+        subnets: "{{ public_subnets }}"
+        security_groups: "{{ sec_group.group_id }}"
+        state: present
+        listeners:
+          - Protocol: HTTP
+            Port: 80
+            DefaultActions:
+              - Type: fixed-response
+                FixedResponseConfig:
+                  ContentType: text/plain
+                  MessageBody: Not available
+                  StatusCode: "404"
+      register: alb
+      check_mode: true
+
+    - name: Assert check_mode idempotence result
+      ansible.builtin.assert:
+        that:
+          - alb is not changed
+          - alb.msg is match('IN CHECK MODE - no changes to make to ALB specified.')
+
+    - name: Update an ALB with different listener by modifying default actions (idempotence)
+      amazon.aws.elb_application_lb:
+        name: "{{ alb_name }}"
+        subnets: "{{ public_subnets }}"
+        security_groups: "{{ sec_group.group_id }}"
+        state: present
+        listeners:
+          - Protocol: HTTP
+            Port: 80
+            DefaultActions:
+              - Type: fixed-response
+                FixedResponseConfig:
+                  ContentType: text/plain
+                  MessageBody: Not available
+                  StatusCode: "404"
+      register: alb
+
+    - name: Assert idempotence result
+      ansible.builtin.assert:
+        that:
+          - alb is not changed
+          - alb.listeners[0].default_actions[0].type == "fixed-response"
+
+    # ------------------------------------------------------------------------------------------
+
     - name: Update an ALB by deleting listener - check_mode
       amazon.aws.elb_application_lb:
         name: "{{ alb_name }}"
