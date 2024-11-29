@@ -65,6 +65,9 @@ class AWSInventoryBase(BaseInventoryPlugin, Constructable, Cacheable, AWSPluginB
                     new[i] = self.templar.template(variable=value[i], disable_lookups=False)
                 return new
 
+            elif not self.templar.is_template(value):
+                return value
+                
             return self.templar.template(variable=value, disable_lookups=False)
 
     def get_options(self, *args):
