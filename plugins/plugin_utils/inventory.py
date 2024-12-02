@@ -52,11 +52,7 @@ class AWSInventoryBase(BaseInventoryPlugin, Constructable, Cacheable, AWSPluginB
 
         def get(self, *args):
             value = self.original_options.get(*args)
-            if (
-                not value
-                or not self.templar
-                or args[0] not in self.TEMPLATABLE_OPTIONS
-            ):
+            if not value or not self.templar or args[0] not in self.TEMPLATABLE_OPTIONS:
                 return value
 
             if isinstance(value, dict):
