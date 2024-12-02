@@ -63,7 +63,7 @@ class AWSInventoryBase(BaseInventoryPlugin, Constructable, Cacheable, AWSPluginB
 
             elif not self.templar.is_template(value):
                 return value
-                
+
             return self.templar.template(variable=value, disable_lookups=False)
 
     def get_options(self, *args):
