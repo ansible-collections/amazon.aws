@@ -1336,19 +1336,31 @@ def get_diff_final_resource(client, module, security_group):
             elif rule.get("from_port") or rule.get("to_port"):
                 format_rule["from_port"] = rule.get("from_port", rule.get("to_port"))
                 format_rule["to_port"] = rule.get("to_port", rule.get("from_port"))
-            for source_type in ("cidr_ip", "cidr_ipv6", "prefix_list_id"):
+            for source_type in ("cidr_ip", "cidr_ipv6"):
                 if rule.get(source_type):
                     rule_key = {
                         "cidr_ip": "ip_ranges",
                         "cidr_ipv6": "ipv6_ranges",
-                        "prefix_list_id": "prefix_list_ids",
                     }.get(source_type)
+                    if not isinstance(rule[source_type], list):
+                        rule[source_type] = [rule[source_type]]
                     if rule.get("rule_desc"):
-                        format_rule[rule_key] = [{source_type: rule[source_type], "description": rule["rule_desc"]}]
+                        format_rule[rule_key] = [
+                            {source_type: target, "description": rule["rule_desc"]} for target in rule[source_type]
+                        ]
                     else:
-                        if not isinstance(rule[source_type], list):
-                            rule[source_type] = [rule[source_type]]
                         format_rule[rule_key] = [{source_type: target} for target in rule[source_type]]
+            # Prefix list (ansible option is 'ip_prefix')
+            if rule.get("ip_prefix"):
+                ip_prefix = rule["ip_prefix"]
+                if not isinstance(ip_prefix, list):
+                    ip_prefix = [ip_prefix]
+                if rule.get("rule_desc"):
+                    format_rule["prefix_list_ids"] = [
+                        {"prefix_list_id": i, "description": rule["rule_desc"]} for i in ip_prefix
+                    ]
+                else:
+                    format_rule["prefix_list_ids"] = [{"prefix_list_id": i} for i in ip_prefix]
             if rule.get("group_id") or rule.get("group_name"):
                 # XXX bug - doesn't cope with a list of ids/names
                 rule_sg = group_exists(
