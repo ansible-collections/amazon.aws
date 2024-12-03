@@ -13,8 +13,12 @@
           - ansible_ec2_placement_availability_zone == availability_zone
           - ansible_ec2_security_groups == resource_prefix+"-sg"
           - ansible_ec2_user_data == "None"
+          - ansible_ec2_instance_tags is defined
+          - ansible_ec2_instance_tags.snake_case_key == "a_snake_case_value"
+          - ansible_ec2_instance_tags.camelCaseKey == "aCamelCaseValue"
           - ansible_ec2_instance_tags_keys is defined
-          - ansible_ec2_instance_tags_keys | length == 3
+          - '"snake_case_key" in ansible_ec2_instance_tags_keys'
+          - '"camelCaseKey" in ansible_ec2_instance_tags_keys'
 
     - name: Clear facts for another test
       ansible.builtin.meta: clear_facts
@@ -29,5 +33,9 @@
           - ansible_ec2_placement_availability_zone == availability_zone
           - ansible_ec2_security_groups == resource_prefix+"-sg"
           - ansible_ec2_user_data == "None"
+          - ansible_ec2_instance_tags is defined
+          - ansible_ec2_instance_tags.snake_case_key == "a_snake_case_value"
+          - ansible_ec2_instance_tags.camelCaseKey == "aCamelCaseValue"
           - ansible_ec2_instance_tags_keys is defined
-          - ansible_ec2_instance_tags_keys | length == 3
+          - '"snake_case_key" in ansible_ec2_instance_tags_keys'
+          - '"camelCaseKey" in ansible_ec2_instance_tags_keys'
