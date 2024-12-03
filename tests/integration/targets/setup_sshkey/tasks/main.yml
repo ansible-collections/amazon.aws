@@ -38,24 +38,30 @@
     sshkey_pub: "{{ sshkey_dir.path }}/key_one.pub"
     another_sshkey_pub: "{{ sshkey_dir.path }}/key_two.pub"
 
-- name: generate sshkey
-  ansible.builtin.shell: echo 'y' | ssh-keygen -P '' -f '{{ sshkey }}'
+# Because some older OSes don't like the Elliptic Curve keys we'll stick to 4096 bit RSA for now
+- name: generate sshkey (4096 bit RSA)
+  ansible.builtin.shell: echo 'y' | ssh-keygen -t rsa -b 4096 -P '' -f '{{ sshkey }}'
   tags:
     - prepare
 
+# AWS uses a custom MD5 checksum for its RSA keys (rather than the modern default of a base64 encoded sha256 hash)
 - name: record fingerprint
   ansible.builtin.shell: "{{ sshkey_dir.path }}/ec2-fingerprint.py {{ sshkey_pub }}"
   register: fingerprint
   tags:
     - prepare
 
-- name: generate another_sshkey
-  ansible.builtin.shell: echo 'y' | ssh-keygen -P '' -f {{ another_sshkey }}
+# With OpenSSH 9.5 the default changed to ED25519, to avoid confusing issues when running locally vs
+# in CI, we set the default
+- name: generate another_sshkey (ED25519)
+  ansible.builtin.shell: echo 'y' | ssh-keygen -t ed25519 -P '' -f {{ another_sshkey }}
   tags:
     - prepare
 
+# When adding support for ED25519 Amazon stuck to the newer default of base64 encoded sha256 hashes, this means we can
+# ask ssh-keygen for the fingerprint, but we'll explicitly ask for the sha256 version just in case the default changes
 - name: record another fingerprint
-  ansible.builtin.shell: "{{ sshkey_dir.path }}/ec2-fingerprint.py {{ another_sshkey_pub }}"
+  ansible.builtin.shell: "ssh-keygen -l -E sha256 -f {{ another_sshkey_pub }} | cut -c 12-54"
   register: another_fingerprint
   tags:
     - prepare
@@ -63,10 +69,14 @@
 - name: set facts for future roles
   ansible.builtin.set_fact:
     # Public SSH keys (OpenSSH format)
+    # - 4096 bit RSA (broad support)
     key_material: "{{ lookup('file', sshkey_pub) }}"
+    # - ED25519 (modern, not supported by some older services/OSes)
     another_key_material: "{{ lookup('file', another_sshkey_pub) }}"
-    # AWS 'fingerprint' (md5digest)
+    # AWS Format fingerprints
+    # - RSA: MD5sum based
     fingerprint: "{{ fingerprint.stdout }}"
-    another_fingerprint: "{{ another_fingerprint.stdout }}"
+    # - ED25519: AWS pad the base64 output (technically correct), ssh-keygen truncates the output
+    another_fingerprint: "{{ another_fingerprint.stdout }}="
   tags:
     - prepare
