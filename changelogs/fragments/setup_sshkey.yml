@@ -1,0 +1,2 @@
+trivial:
+  - setup_sshkey - fix SSH key generation post OpenSSH 9.5 changed default key type to ed25519
