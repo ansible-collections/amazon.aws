@@ -605,6 +605,7 @@
         that:
           - result.changed
           - result.key.fingerprint != fingerprint
+          - result.key.fingerprint == another_fingerprint
 
     # ============================================================
     - name: test state=absent (expect changed=true)
