@@ -9,7 +9,7 @@
   hosts: localhost
 
   collections:
-    - amzon.aws
+    - amazon.aws
     - community.aws
 
   vars:
@@ -29,6 +29,7 @@
 
     - ansible.builtin.include_role:
         name: ../setup_sshkey
+
     - ansible.builtin.include_role:
         name: ../setup_ec2_facts
 
@@ -102,6 +103,14 @@
         key_material: "{{ key_material }}"
         state: present
       register: ec2_key_result
+
+    - amazon.aws.ec2_key_info:
+        filters:
+          fingerprint: "{{ fingerprint }}"
+      register: key_info
+      until: key_info.keypairs | length == 1
+      retries: 5
+      delay: 10
 
     - name: Set facts to simplify use of extra resources
       ansible.builtin.set_fact:

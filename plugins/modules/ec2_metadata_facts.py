@@ -261,6 +261,13 @@ ansible_facts:
             description: The purchasing option of the instance.
             type: str
             sample: "on-demand"
+        ansible_ec2_instance_tags:
+            description:
+                - The dict of tags for the instance.
+                - Returns empty dict if access to tags (InstanceMetadataTags) in instance metadata is not enabled.
+            type: dict
+            sample: {"tagKey1": "tag value 1", "tag_key2": "tag value 2"}
+            version_added: 9.1.0
         ansible_ec2_instance_tags_keys:
             description:
                 - The list of tags keys of the instance.
@@ -646,6 +653,14 @@ class Ec2Metadata:
             token_data = None
         return to_text(token_data)
 
+    def get_instance_tags(self, tag_keys, data):
+        tags = {}
+        for key in tag_keys:
+            value = data.get("ansible_ec2_tags_instance_{}".format(key))
+            if value is not None:
+                tags[key] = value
+        return tags
+
     def run(self):
         self._token = self.fetch_session_token(self.uri_token)  # create session token for IMDS
         self.fetch(self.uri_meta)  # populate _data with metadata
@@ -662,6 +677,9 @@ class Ec2Metadata:
         instance_tags_keys = self._fetch(self.uri_instance_tags)
         instance_tags_keys = instance_tags_keys.split("\n") if instance_tags_keys != "None" else []
         data[self._prefix % "instance_tags_keys"] = instance_tags_keys
+
+        instance_tags = self.get_instance_tags(instance_tags_keys, data)
+        data[self._prefix % "instance_tags"] = instance_tags
 
         # Maintain old key for backwards compatibility
         if "ansible_ec2_instance_identity_document_region" in data:
