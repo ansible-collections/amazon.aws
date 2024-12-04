@@ -72,6 +72,7 @@
         caller_reference: "{{ aws_caller_info.arn }}"
         status: "ACTIVE"
         state: present
+        wait: true
       register: _ksk_request
 
     - name: Assert success
@@ -97,6 +98,74 @@
           - _ksk_request is successful
           - '"change_info" in _ksk_request'
           - not _ksk_request.changed
+
+    - name: Enable DNSSEC for Route53 public zone (check_mode)
+      amazon.aws.route53_zone:
+        zone: "{{ resource_prefix }}.public"
+        state: present
+        dnssec: true
+      check_mode: true
+      register: _hosted_zone_dnssec
+
+    - name: Assert success
+      ansible.builtin.assert:
+        that:
+          - _hosted_zone_dnssec is successful
+          - _hosted_zone_dnssec.changed
+
+    - name: Enable DNSSEC for Route53 public zone
+      amazon.aws.route53_zone:
+        zone: "{{ resource_prefix }}.public"
+        state: present
+        dnssec: true
+      register: _hosted_zone_dnssec
+
+    - name: Assert success
+      ansible.builtin.assert:
+        that:
+          - _hosted_zone_dnssec is successful
+          - _hosted_zone_dnssec.changed
+
+    - name: Disable DNSSEC for Route53 public zone (check_mode)
+      amazon.aws.route53_zone:
+        zone: "{{ resource_prefix }}.public"
+        state: present
+        dnssec: false
+      check_mode: true
+      register: _hosted_zone_dnssec
+
+    - name: Assert success
+      ansible.builtin.assert:
+        that:
+          - _hosted_zone_dnssec is successful
+          - _hosted_zone_dnssec.changed
+
+    - name: Disable DNSSEC for Route53 public zone
+      amazon.aws.route53_zone:
+        zone: "{{ resource_prefix }}.public"
+        state: present
+        dnssec: false
+      register: _hosted_zone_dnssec
+
+    - name: Assert success
+      ansible.builtin.assert:
+        that:
+          - _hosted_zone_dnssec is successful
+          - _hosted_zone_dnssec.changed
+
+    - name: Delete the Route53 public zone (expected to fail)
+      amazon.aws.route53_zone:
+        zone: "{{ resource_prefix }}.public"
+        state: absent
+      register: _delete_hosted_zone
+      ignore_errors: true
+
+    - name: Assert success
+      ansible.builtin.assert:
+        that:
+          - _delete_hosted_zone is not successful
+          - '"msg" in _delete_hosted_zone'
+          - '"The specified hosted zone contains DNSSEC Key Signing Keys and so cannot be deleted" in _delete_hosted_zone.msg'
 
     - name: Deactivate the Key Signing Key request
       amazon.aws.route53_ksk:
@@ -159,17 +228,21 @@
       ansible.builtin.assert:
         that:
           - _ksk_request is successful
-          - '"change_info" in _ksk_request'
           - not _ksk_request.changed
 
-    # it shouldn't fail, but fails for the moment
     - name: Delete a not existing Key Signing Key request
       amazon.aws.route53_ksk:
         name: "not existing ksk"
         hosted_zone_id: "{{ _hosted_zone.zone_id }}"
         status: "INACTIVE"
         state: absent
-      ignore_errors: true
+      register: _ksk_request
+
+    - name: Assert success
+      ansible.builtin.assert:
+        that:
+          - _ksk_request is successful
+          - not _ksk_request.changed
 
   always:
     - name: Delete the Key Signing Key Request

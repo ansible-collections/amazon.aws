@@ -95,63 +95,103 @@ EXAMPLES = r"""
 """
 
 RETURN = r"""
-comment:
-    description: Optional hosted zone comment.
-    returned: when hosted zone exists
-    type: str
-    sample: "Private zone"
-name:
-    description: Hosted zone name.
-    returned: when hosted zone exists
-    type: str
-    sample: "private.local."
-private_zone:
-    description: Whether hosted zone is private or public.
-    returned: when hosted zone exists
-    type: bool
-    sample: true
-vpc_id:
-    description: Id of the first vpc attached to private hosted zone (use vpcs for associating multiple).
-    returned: for private hosted zone
-    type: str
-    sample: "vpc-1d36c84f"
-vpc_region:
-    description: Region of the first vpc attached to private hosted zone (use vpcs for assocaiting multiple).
-    returned: for private hosted zone
-    type: str
-    sample: "eu-west-1"
-vpcs:
-    version_added: 5.3.0
-    description: The list of VPCs attached to the private hosted zone.
-    returned: for private hosted zone
-    type: list
-    elements: dict
-    sample: "[{'id': 'vpc-123456', 'region': 'us-west-2'}]"
+change_info:
+    description: A dictionary that escribes change information about changes made to your hosted zone.
+    returned: when the Key Signing Request to be deleted exists
+    type: dict
     contains:
         id:
-            description: ID of the VPC.
-            returned: for private hosted zone
+            description: Change ID.
             type: str
-            sample: "vpc-123456"
-        region:
-            description: Region of the VPC.
-            returned: for private hosted zone
+        status:
+            description: The current state of the request.
             type: str
-            sample: "eu-west-2"
-zone_id:
-    description: Hosted zone id.
-    returned: when hosted zone exists
+        submitted_at:
+            description: The date and time that the change request was submitted in ISO 8601 format and Coordinated Universal Time (UTC).
+            type: str
+        comment:
+            description: A comment you can provide.
+            type: str
+    sample: {
+        "id": "/change/C090307813XORZJ5J3U4",
+        "status": "PENDING",
+        "submitted_at": "2024-12-04T15:15:36.743000+00:00"
+    }
+location:
+    description: The unique URL representing the new key-signing key (KSK).
+    returned: when O(state=present)
     type: str
-    sample: "Z6JQG9820BEFMW"
-delegation_set_id:
-    description: Id of the associated reusable delegation set.
-    returned: for public hosted zones, if they have been associated with a reusable delegation set
-    type: str
-    sample: "A1BCDEF2GHIJKL"
-tags:
-    description: Tags associated with the zone.
-    returned: when tags are defined
+    sample: "https://route53.amazonaws.com/2013-04-01/keysigningkey/xxx/ansible-test-ksk"
+key_signing_key:
+    description:
+    returned: only when a new Key Signing Request is created
     type: dict
+    contains:
+        name:
+            description: A string used to identify a key-signing key (KSK).
+            type: str
+        kms_arn:
+            description: The Amazon resource name (ARN) used to identify the customer managed key in Key Management Service (KMS).
+            type: str
+        flag:
+            description: An integer that specifies how the key is used.
+            type: int
+        signing_algorithm_mnemonic:
+            description: A string used to represent the signing algorithm.
+            type: str
+        signing_algorithm_type:
+            description: An integer used to represent the signing algorithm.
+            type: str
+        digest_algorithm_mnemonic:
+            description: A string used to represent the delegation signer digest algorithm.
+            type: str
+        digest_algorithm_type:
+            description: An integer used to represent the delegation signer digest algorithm.
+            type: str
+        key_tag:
+            description: An integer used to identify the DNSSEC record for the domain name.
+            type: str
+        digest_value:
+            description: A cryptographic digest of a DNSKEY resource record (RR).
+            type: str
+        public_key:
+            description: The public key, represented as a Base64 encoding.
+            type: str
+        ds_record:
+            description: A string that represents a delegation signer (DS) record.
+            type: str
+        dnskey_record:
+            description: A string that represents a DNSKEY record.
+            type: str
+        status:
+            description: A string that represents the current key-signing key (KSK) status.
+            type: str
+        status_message:
+            description: The status message provided for ACTION_NEEDED or INTERNAL_FAILURE statuses.
+            type: str
+        created_date:
+            description: The date when the key-signing key (KSK) was created.
+            type: str
+        last_modified_date:
+            description: The last time that the key-signing key (KSK) was changed.
+            type: str
+    sample: {
+        "created_date": "2024-12-04T15:15:36.715000+00:00",
+        "digest_algorithm_mnemonic": "SHA-256",
+        "digest_algorithm_type": 2,
+        "digest_value": "xxx",
+        "dnskey_record": "xxx",
+        "ds_record": "xxx",
+        "flag": 257,
+        "key_tag": 18948,
+        "kms_arn": "arn:aws:kms:us-east-1:xxx:key/xxx",
+        "last_modified_date": "2024-12-04T15:15:36.715000+00:00",
+        "name": "ansible-test-44230979--ksk",
+        "public_key": "xxxx",
+        "signing_algorithm_mnemonic": "ECDSAP256SHA256",
+        "signing_algorithm_type": 13,
+        "status": "INACTIVE"
+    }
 """
 
 import datetime
@@ -181,6 +221,10 @@ def activate(client, hosted_zone_id, name):
         HostedZoneId=hosted_zone_id,
         Name=name
     )
+
+
+def get_change(client, change_id):
+    return client.get_change(Id=change_id)
 
 
 def wait(client, module, change_id):
@@ -233,6 +277,7 @@ def create(client, module: AnsibleAWSModule):
                 if module.params.get("wait"):
                     change_id = response["ChangeInfo"]["Id"]
                     wait(client, module, change_id)
+                    response["ChangeInfo"] = get_change(client, change_id)
             else:
                 changed = False
 
@@ -245,8 +290,12 @@ def delete(client, module: AnsibleAWSModule):
     name = module.params.get("name")
 
     if module.params.get('status') == "INACTIVE":
-        # Deactivate the Key Signing Request before deleting
-        result = deactivate(client, zone_id, name)
+        try:
+            # Deactivate the Key Signing Request before deleting
+            result = deactivate(client, zone_id, name)
+        except is_boto3_error_code("NoSuchKeySigningKey"):
+            return changed, {}
+
         change_id = result["ChangeInfo"]["Id"]
         wait(client, module, change_id)
     try:
@@ -259,8 +308,9 @@ def delete(client, module: AnsibleAWSModule):
         if module.params.get("wait"):
             change_id = response["ChangeInfo"]["Id"]
             wait(client, module, change_id)
+            response["ChangeInfo"] = get_change(client, change_id)
     except is_boto3_error_code("NoSuchKeySigningKey"):
-        pass
+       return changed, {}
 
     return changed, response
 
@@ -298,7 +348,9 @@ def main() -> None:
     except AnsibleAWSError as e:
         module.fail_json_aws_error(e)
 
-    del result["ResponseMetadata"]
+    if "ResponseMetadata" in result:
+        del result["ResponseMetadata"]
+
     module.exit_json(changed=changed, **camel_dict_to_snake_dict(result))
 
 

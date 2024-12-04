@@ -184,6 +184,93 @@ delegation_set_id:
     returned: for public hosted zones, if they have been associated with a reusable delegation set
     type: str
     sample: "A1BCDEF2GHIJKL"
+dnssec:
+    description: Information about DNSSEC for a specific hosted zone.
+    returned: when O(state=present)
+    version_added: 9.2.0
+    type: dict
+    contains:
+        key_signing_key:
+            description:
+            returned: when O(state=present)
+            type: list
+            elements: dict
+            contains:
+                name:
+                    description: A string used to identify a key-signing key (KSK).
+                    type: str
+                kms_arn:
+                    description: The Amazon resource name (ARN) used to identify the customer managed key in Key Management Service (KMS).
+                    type: str
+                flag:
+                    description: An integer that specifies how the key is used.
+                    type: int
+                signing_algorithm_mnemonic:
+                    description: A string used to represent the signing algorithm.
+                    type: str
+                signing_algorithm_type:
+                    description: An integer used to represent the signing algorithm.
+                    type: str
+                digest_algorithm_mnemonic:
+                    description: A string used to represent the delegation signer digest algorithm.
+                    type: str
+                digest_algorithm_type:
+                    description: An integer used to represent the delegation signer digest algorithm.
+                    type: str
+                key_tag:
+                    description: An integer used to identify the DNSSEC record for the domain name.
+                    type: str
+                digest_value:
+                    description: A cryptographic digest of a DNSKEY resource record (RR).
+                    type: str
+                public_key:
+                    description: The public key, represented as a Base64 encoding.
+                    type: str
+                ds_record:
+                    description: A string that represents a delegation signer (DS) record.
+                    type: str
+                dnskey_record:
+                    description: A string that represents a DNSKEY record.
+                    type: str
+                status:
+                    description: A string that represents the current key-signing key (KSK) status.
+                    type: str
+                status_message:
+                    description: The status message provided for ACTION_NEEDED or INTERNAL_FAILURE statuses.
+                    type: str
+                created_date:
+                    description: The date when the key-signing key (KSK) was created.
+                    type: str
+                last_modified_date:
+                    description: The last time that the key-signing key (KSK) was changed.
+                    type: str
+            sample: [{
+                "created_date": "2024-12-04T15:15:36.715000+00:00",
+                "digest_algorithm_mnemonic": "SHA-256",
+                "digest_algorithm_type": 2,
+                "digest_value": "xxx",
+                "dnskey_record": "xxx",
+                "ds_record": "xxx",
+                "flag": 257,
+                "key_tag": 18948,
+                "kms_arn": "arn:aws:kms:us-east-1:xxx:key/xxx",
+                "last_modified_date": "2024-12-04T15:15:36.715000+00:00",
+                "name": "ansible-test-44230979--ksk",
+                "public_key": "xxxx",
+                "signing_algorithm_mnemonic": "ECDSAP256SHA256",
+                "signing_algorithm_type": 13,
+                "status": "INACTIVE"
+            }]
+        status:
+            description: A dictionary representing the status of DNSSEC.
+            type: dict
+            contains:
+                serve_signature:
+                    description: A string that represents the current hosted zone signing status.
+                    type: str
+            sample: {
+                "serve_signature": "SIGNING"
+            }
 tags:
     description: Tags associated with the zone.
     returned: when tags are defined
@@ -192,14 +279,20 @@ tags:
 
 import time
 
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.route53 import get_tags
 from ansible_collections.amazon.aws.plugins.module_utils.route53 import manage_tags
+from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+
 
 try:
     from botocore.exceptions import BotoCoreError
     from botocore.exceptions import ClientError
+    from botocore.exceptions import WaiterError
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
@@ -226,6 +319,68 @@ def find_zones(zone_in, private_zone):
             zones.append(r53zone)
 
     return zones
+
+
+def get_dnssec(client, module, zone_id):
+    try:
+        response = client.get_dnssec(HostedZoneId=zone_id)
+    except (BotoCoreError, ClientError) as e:
+        module.fail_json_aws(e, msg=f"Could not get DNSSEC for {zone_id}")
+    return response
+
+
+def ensure_dnssec(client, module, zone_id):
+    changed = False
+    dnssec = module.params.get("dnssec")
+
+    response = get_dnssec(client, module, zone_id)
+    dnssec_status = response["Status"]["ServeSignature"]
+
+    # If get_dnssec command output returns "NOT_SIGNING",
+    # the Domain Name System Security Extensions (DNSSEC) signing is not enabled for the
+    # Amazon Route 53 hosted zone.
+    if dnssec is True:
+        if dnssec_status == "NOT_SIGNING":
+            # Enable DNSSEC
+            if not module.check_mode:
+                try:
+                    client.enable_hosted_zone_dnssec(HostedZoneId=zone_id)
+                except (BotoCoreError, ClientError) as e:
+                    module.fail_json_aws(e, msg=f"Could not enable DNSSEC for {zone_id}")
+            changed = True
+        elif dnssec_status == "DELETING":
+            # DNSSEC signing is in the process of being removed for the hosted zone.
+            module.warn(
+                f"DNSSEC signing is in the process of being removed for the hosted zone: {zone_id}."
+                "Could not enable it."
+            )
+    elif dnssec is False:
+        if dnssec_status == "SIGNING":
+            # Disable DNSSEC
+            if not module.check_mode:
+                try:
+                    client.disable_hosted_zone_dnssec(HostedZoneId=zone_id)
+                except (BotoCoreError, ClientError) as e:
+                    module.fail_json_aws(e, msg=f"Could not enable DNSSEC for {zone_id}")
+            changed = True
+        # if dnssec_status == "DELETING":
+        # DNSSEC signing is in the process of being removed for the hosted zone.
+
+    return changed
+
+def wait(client, module, change_id):
+    try:
+        waiter = get_waiter(client, "resource_record_sets_changed")
+        waiter.wait(
+            Id=change_id,
+            WaiterConfig=dict(
+                Delay=5,
+                MaxAttempts=10,
+            ),
+        )
+    except WaiterError as e:
+        module.fail_json_aws(e, msg="Timeout waiting for changes to be applied")
+
 
 
 def create(matching_zones):
@@ -261,29 +416,15 @@ def create(matching_zones):
 
     zone_id = result.get("zone_id")
 
-    # enable/disable dnssec if not already enabled
-    #dnssec = module.params.get("dnssec")
-    # get dnsec on zonde_if
-    #response = client.get_dnssec(HostedZoneId='string')
-    # If get-dnssec command output returns "NOT_SIGNING",
-    # the Domain Name System Security Extensions (DNSSEC) signing is not enabled for the
-    # Amazon Route 53 hosted zone.
-    # if dnssec is True:
-    #     if response.get("Status", None).get("ServeSignature", None) == "NOT_SIGNING":
-    #         # enable
-    #         client.enable_hosted_zone_dnssec(HostedZoneId=zone_id)
-    #     elif response.get("Status", None).get("ServeSignature", None) == "DELETING":
-    #         # wait and enabled
-    #         pass
-    # elif dnssec is False:
-    #     if response.get("Status", None).get("ServeSignature", None) == "SIGNING":
-    #         # disable
-    #         client.disable_hosted_zone_dnssec(HostedZoneId=zone_id)
-    #     elif response.get("Status", None).get("ServeSignature", None) == "DELETING":
-    #         # changed false
-    #         pass
-
     if zone_id:
+        # Enable/Disable DNSSEC
+        changed |= ensure_dnssec(client, module, zone_id)
+
+        # Update result with information about DNSSEC
+        result["dnssec"] = camel_dict_to_snake_dict(get_dnssec(client, module, zone_id))
+        del result["dnssec"]["response_metadata"]
+
+        # Handle Tags
         if tags is not None:
             changed |= manage_tags(module, client, "hostedzone", zone_id, tags, purge_tags)
         result["tags"] = get_tags(module, client, "hostedzone", zone_id)
@@ -431,10 +572,7 @@ def delete_private(matching_zones, vpcs):
         if isinstance(vpc_details, dict):
             if vpc_details["VPC"]["VPCId"] == vpcs[0]["id"] and vpcs[0]["region"] == vpc_details["VPC"]["VPCRegion"]:
                 if not module.check_mode:
-                    try:
-                        client.delete_hosted_zone(Id=z["Id"])
-                    except (BotoCoreError, ClientError) as e:
-                        module.fail_json_aws(e, msg=f"Could not delete hosted zone {z['Id']}")
+                    delete_hosted_zone(client, module, z["Id"])
                 return True, f"Successfully deleted {zone_details['Name']}"
         else:
             # Sort the lists and compare them to make sure they contain the same items
@@ -442,10 +580,7 @@ def delete_private(matching_zones, vpcs):
                 [vpc["region"] for vpc in vpcs]
             ) == sorted([v["VPCRegion"] for v in vpc_details]):
                 if not module.check_mode:
-                    try:
-                        client.delete_hosted_zone(Id=z["Id"])
-                    except (BotoCoreError, ClientError) as e:
-                        module.fail_json_aws(e, msg=f"Could not delete hosted zone {z['Id']}")
+                    delete_hosted_zone(client, module, z["Id"])
                 return True, f"Successfully deleted {zone_details['Name']}"
 
     return False, "The VPCs do not match a private hosted zone."
@@ -457,10 +592,7 @@ def delete_public(matching_zones):
         msg = "There are multiple zones that match. Use hosted_zone_id to specify the correct zone."
     else:
         if not module.check_mode:
-            try:
-                client.delete_hosted_zone(Id=matching_zones[0]["Id"])
-            except (BotoCoreError, ClientError) as e:
-                module.fail_json_aws(e, msg=f"Could not get delete hosted zone {matching_zones[0]['Id']}")
+            delete_hosted_zone(client, module, matching_zones[0]["Id"])
         changed = True
         msg = f"Successfully deleted {matching_zones[0]['Id']}"
     return changed, msg
@@ -472,24 +604,27 @@ def delete_hosted_id(hosted_zone_id, matching_zones):
         for z in matching_zones:
             deleted.append(z["Id"])
             if not module.check_mode:
-                try:
-                    client.delete_hosted_zone(Id=z["Id"])
-                except (BotoCoreError, ClientError) as e:
-                    module.fail_json_aws(e, msg=f"Could not delete hosted zone {z['Id']}")
+                delete_hosted_zone(client, module, z["Id"])
         changed = True
         msg = f"Successfully deleted zones: {deleted}"
     elif hosted_zone_id in [zo["Id"].replace("/hostedzone/", "") for zo in matching_zones]:
         if not module.check_mode:
-            try:
-                client.delete_hosted_zone(Id=hosted_zone_id)
-            except (BotoCoreError, ClientError) as e:
-                module.fail_json_aws(e, msg=f"Could not delete hosted zone {hosted_zone_id}")
+            delete_hosted_zone(client, module, hosted_zone_id)
         changed = True
         msg = f"Successfully deleted zone: {hosted_zone_id}"
     else:
         changed = False
         msg = f"There is no zone to delete that matches hosted_zone_id {hosted_zone_id}."
     return changed, msg
+
+
+def delete_hosted_zone(client, module, hosted_zone_id):
+    try:
+        client.delete_hosted_zone(Id=hosted_zone_id)
+    except is_boto3_error_code("HostedZoneNotEmpty") as e:
+        module.fail_json_aws(e, msg=f"Could not get delete hosted zone {hosted_zone_id}")
+    except (BotoCoreError, ClientError) as e:
+        module.fail_json_aws(e, msg=f"Could not delete hosted zone {hosted_zone_id}")
 
 
 def delete(matching_zones):
@@ -536,6 +671,7 @@ def main():
         delegation_set_id=dict(),
         tags=dict(type="dict", aliases=["resource_tags"]),
         purge_tags=dict(type="bool", default=True),
+        dnssec=dict(type="bool", default=False),
     )
 
     mutually_exclusive = [
