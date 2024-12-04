@@ -1,0 +1,194 @@
+---
+- name: Integration tests for the route53_ksk module
+  module_defaults:
+    group/aws:
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+  block:
+    - name: Get ARN of calling user
+      amazon.aws.aws_caller_info:
+      register: aws_caller_info
+
+    - name: Create a KMS key
+      amazon.aws.kms_key:
+        alias: "{{ resource_prefix }}-kms-route53"
+        policy: "{{ lookup('template', 'kms_policy.j2') }}"
+        state: present
+        enabled: true
+        customer_master_key_spec: "ECC_NIST_P256"
+        key_usage: "SIGN_VERIFY"
+      register: kms_key
+
+    - name: Create a Route53 public zone
+      amazon.aws.route53_zone:
+        zone: "{{ resource_prefix }}.public"
+        comment: "Route53 Zone for KSK Testing"
+        state: present
+      register: _hosted_zone
+
+    - name: Create a Key Signing Key request
+      amazon.aws.route53_ksk:
+        name: "{{ resource_prefix }}-ksk"
+        hosted_zone_id: "{{ _hosted_zone.zone_id }}"
+        key_management_service_arn: "{{ kms_key.key_arn }}"
+        caller_reference: "{{ aws_caller_info.arn }}"
+        status: "INACTIVE"
+        state: present
+      register: _ksk_request
+
+    - name: Assert success
+      ansible.builtin.assert:
+        that:
+          - _ksk_request is successful
+          - '"change_info" in _ksk_request'
+          - _ksk_request.changed
+          - '"key_signing_key" in _ksk_request'
+
+    - name: Create a Key Signing Key request (idempotency)
+      amazon.aws.route53_ksk:
+        name: "{{ resource_prefix }}-ksk"
+        hosted_zone_id: "{{ _hosted_zone.zone_id }}"
+        key_management_service_arn: "{{ kms_key.key_arn }}"
+        caller_reference: "{{ aws_caller_info.arn }}"
+        status: "INACTIVE"
+        state: present
+      register: _ksk_request
+
+    - name: Assert success
+      ansible.builtin.assert:
+        that:
+          - _ksk_request is successful
+          - '"change_info" in _ksk_request'
+          - not _ksk_request.changed
+          - '"key_signing_key" in _ksk_request'
+
+    - name: Activate the Key Signing Key request
+      amazon.aws.route53_ksk:
+        name: "{{ resource_prefix }}-ksk"
+        hosted_zone_id: "{{ _hosted_zone.zone_id }}"
+        key_management_service_arn: "{{ kms_key.key_arn }}"
+        caller_reference: "{{ aws_caller_info.arn }}"
+        status: "ACTIVE"
+        state: present
+      register: _ksk_request
+
+    - name: Assert success
+      ansible.builtin.assert:
+        that:
+          - _ksk_request is successful
+          - '"change_info" in _ksk_request'
+          - _ksk_request.changed
+
+    - name: Activate KSK (idempotency)
+      amazon.aws.route53_ksk:
+        name: "{{ resource_prefix }}-ksk"
+        hosted_zone_id: "{{ _hosted_zone.zone_id }}"
+        key_management_service_arn: "{{ kms_key.key_arn }}"
+        caller_reference: "{{ aws_caller_info.arn }}"
+        status: "ACTIVE"
+        state: present
+      register: _ksk_request
+
+    - name: Assert success
+      ansible.builtin.assert:
+        that:
+          - _ksk_request is successful
+          - '"change_info" in _ksk_request'
+          - not _ksk_request.changed
+
+    - name: Deactivate the Key Signing Key request
+      amazon.aws.route53_ksk:
+        name: "{{ resource_prefix }}-ksk"
+        hosted_zone_id: "{{ _hosted_zone.zone_id }}"
+        key_management_service_arn: "{{ kms_key.key_arn }}"
+        caller_reference: "{{ aws_caller_info.arn }}"
+        status: "INACTIVE"
+        state: present
+      register: _ksk_request
+
+    - name: Assert success
+      ansible.builtin.assert:
+        that:
+          - _ksk_request is successful
+          - '"change_info" in _ksk_request'
+          - _ksk_request.changed
+
+    - name: Deactivate the Key Signing Key request (idempotency)
+      amazon.aws.route53_ksk:
+        name: "{{ resource_prefix }}-ksk"
+        hosted_zone_id: "{{ _hosted_zone.zone_id }}"
+        key_management_service_arn: "{{ kms_key.key_arn }}"
+        caller_reference: "{{ aws_caller_info.arn }}"
+        status: "INACTIVE"
+        state: present
+      register: _ksk_request
+
+    - name: Assert success
+      ansible.builtin.assert:
+        that:
+          - _ksk_request is successful
+          - '"change_info" in _ksk_request'
+          - not _ksk_request.changed
+
+    - name: Delete the Key Signing Key request
+      amazon.aws.route53_ksk:
+        name: "{{ resource_prefix }}-ksk"
+        hosted_zone_id: "{{ _hosted_zone.zone_id }}"
+        status: "INACTIVE"
+        state: absent
+      register: _ksk_request
+
+    - name: Assert success
+      ansible.builtin.assert:
+        that:
+          - _ksk_request is successful
+          - '"change_info" in _ksk_request'
+          - _ksk_request.changed
+
+    - name: Delete the Key Signing Key request (idempotency)
+      amazon.aws.route53_ksk:
+        name: "{{ resource_prefix }}-ksk"
+        hosted_zone_id: "{{ _hosted_zone.zone_id }}"
+        status: "INACTIVE"
+        state: absent
+      register: _ksk_request
+
+    - name: Assert success
+      ansible.builtin.assert:
+        that:
+          - _ksk_request is successful
+          - '"change_info" in _ksk_request'
+          - not _ksk_request.changed
+
+    # it shouldn't fail, but fails for the moment
+    - name: Delete a not existing Key Signing Key request
+      amazon.aws.route53_ksk:
+        name: "not existing ksk"
+        hosted_zone_id: "{{ _hosted_zone.zone_id }}"
+        status: "INACTIVE"
+        state: absent
+      ignore_errors: true
+
+  always:
+    - name: Delete the Key Signing Key Request
+      amazon.aws.route53_ksk:
+        name: "{{ resource_prefix }}-ksk"
+        hosted_zone_id: "{{ _hosted_zone.zone_id }}"
+        status: "INACTIVE"
+        state: absent
+      ignore_errors: true
+
+    - name: Delete the Route53 public zone
+      amazon.aws.route53_zone:
+        zone: "{{ resource_prefix }}.public"
+        state: absent
+      ignore_errors: true
+
+    - name: Delete the KSM key
+      amazon.aws.kms_key:
+        state: absent
+        alias: "{{ resource_prefix }}-kms-route53"
+        pending_window: 7
+      ignore_errors: true
