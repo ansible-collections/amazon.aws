@@ -26,12 +26,12 @@ options:
     caller_reference:
         description:
             - A unique string that identifies the request.
-        required: true
         type: str
     hosted_zone_id:
         description:
             - The unique string (ID) used to identify a hosted zone.
         type: str
+        required: true
         aliases: ["zone_id"]
     key_management_service_arn:
         description:
@@ -49,6 +49,7 @@ options:
               You can set the value to V(ACTIVE) or V(INACTIVE).
         type: str
         default: "ACTIVE"
+        choices: ["ACTIVE", "INACTIVE"]
     wait:
         description:
             - Wait until the changes have been replicated.
@@ -125,7 +126,7 @@ location:
     type: str
     sample: "https://route53.amazonaws.com/2013-04-01/keysigningkey/xxx/ansible-test-ksk"
 key_signing_key:
-    description:
+    description: The key-signing key (KSK) that the request creates.
     returned: only when a new Key Signing Request is created
     type: dict
     contains:
@@ -312,9 +313,9 @@ def main() -> None:
     argument_spec = dict(
         caller_reference=dict(type="str"),
         hosted_zone_id=dict(type="str", aliases=["zone_id"], required=True),
-        key_management_service_arn=dict(type="str", aliases=["kms_arn"]),
+        key_management_service_arn=dict(type="str", aliases=["kms_arn"], no_log=False),
         name=dict(type="str", required=True),
-        status=dict(type="str", default=["ACTIVE"], choices=["ACTIVE", "INACTIVE"]),
+        status=dict(type="str", default="ACTIVE", choices=["ACTIVE", "INACTIVE"]),
         state=dict(default="present", choices=["present", "absent"]),
         wait=dict(type="bool", default=False),
         wait_timeout=dict(type="int", default=300),
