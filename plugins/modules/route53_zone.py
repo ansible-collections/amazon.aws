@@ -281,13 +281,12 @@ import time
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.route53 import get_tags
 from ansible_collections.amazon.aws.plugins.module_utils.route53 import manage_tags
 from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
-
 
 try:
     from botocore.exceptions import BotoCoreError
@@ -368,6 +367,7 @@ def ensure_dnssec(client, module, zone_id):
 
     return changed
 
+
 def wait(client, module, change_id):
     try:
         waiter = get_waiter(client, "resource_record_sets_changed")
@@ -380,7 +380,6 @@ def wait(client, module, change_id):
         )
     except WaiterError as e:
         module.fail_json_aws(e, msg="Timeout waiting for changes to be applied")
-
 
 
 def create(matching_zones):

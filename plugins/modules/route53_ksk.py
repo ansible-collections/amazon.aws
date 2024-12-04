@@ -203,24 +203,18 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.exceptions import AnsibleAWSError
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.exceptions import AnsibleAWSError
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
 
 
 def deactivate(client, hosted_zone_id, name):
-    return client.deactivate_key_signing_key(
-        HostedZoneId=hosted_zone_id,
-        Name=name
-    )
+    return client.deactivate_key_signing_key(HostedZoneId=hosted_zone_id, Name=name)
 
 
 def activate(client, hosted_zone_id, name):
-    return client.activate_key_signing_key(
-        HostedZoneId=hosted_zone_id,
-        Name=name
-    )
+    return client.activate_key_signing_key(HostedZoneId=hosted_zone_id, Name=name)
 
 
 def get_change(client, change_id):
@@ -238,7 +232,7 @@ def wait(client, module, change_id):
             ),
         )
     except botocore.exceptions.WaiterError as e:
-            module.fail_json_aws(e, msg="Timeout waiting for changes to be applied")
+        module.fail_json_aws(e, msg="Timeout waiting for changes to be applied")
 
 
 def create(client, module: AnsibleAWSModule):
@@ -255,7 +249,7 @@ def create(client, module: AnsibleAWSModule):
         KeyManagementServiceArn=module.params.get("key_management_service_arn"),
         HostedZoneId=zone_id,
         Name=name,
-        Status=status
+        Status=status,
     )
 
     if response and response.get("ChangeInfo", {}):
@@ -269,7 +263,7 @@ def create(client, module: AnsibleAWSModule):
 
                 if module.params.get("status") == "ACTIVE":
                     response = activate(client, zone_id, name)
-                elif module.params.get('status') == "INACTIVE":
+                elif module.params.get("status") == "INACTIVE":
                     response = deactivate(client, zone_id, name)
                 else:
                     changed = False
@@ -289,7 +283,7 @@ def delete(client, module: AnsibleAWSModule):
     zone_id = module.params.get("hosted_zone_id")
     name = module.params.get("name")
 
-    if module.params.get('status') == "INACTIVE":
+    if module.params.get("status") == "INACTIVE":
         try:
             # Deactivate the Key Signing Request before deleting
             result = deactivate(client, zone_id, name)
@@ -299,10 +293,7 @@ def delete(client, module: AnsibleAWSModule):
         change_id = result["ChangeInfo"]["Id"]
         wait(client, module, change_id)
     try:
-        response = client.delete_key_signing_key(
-            HostedZoneId=zone_id,
-            Name=name
-        )
+        response = client.delete_key_signing_key(HostedZoneId=zone_id, Name=name)
         changed = True
 
         if module.params.get("wait"):
@@ -310,7 +301,7 @@ def delete(client, module: AnsibleAWSModule):
             wait(client, module, change_id)
             response["ChangeInfo"] = get_change(client, change_id)
     except is_boto3_error_code("NoSuchKeySigningKey"):
-       return changed, {}
+        return changed, {}
 
     return changed, response
 
