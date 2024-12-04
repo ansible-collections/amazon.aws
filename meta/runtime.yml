@@ -140,6 +140,7 @@ action_groups:
     - route53
     - route53_health_check
     - route53_info
+    - route53_ksk
     - route53_zone
     - s3_bucket
     - s3_bucket_info

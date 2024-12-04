@@ -63,6 +63,12 @@ options:
             - The reusable delegation set ID to be associated with the zone.
             - Note that you can't associate a reusable delegation set with a private hosted zone.
         type: str
+    dnssec:
+        description:
+            - Enables DNSSEC signing in a specific hosted zone.
+        type: bool
+        default: false
+        version_added: 9.2.0
 extends_documentation_fragment:
     - amazon.aws.common.modules
     - amazon.aws.region.modules
@@ -254,6 +260,29 @@ def create(matching_zones):
         changed, result = create_or_update_public(matching_zones, record)
 
     zone_id = result.get("zone_id")
+
+    # enable/disable dnssec if not already enabled
+    #dnssec = module.params.get("dnssec")
+    # get dnsec on zonde_if
+    #response = client.get_dnssec(HostedZoneId='string')
+    # If get-dnssec command output returns "NOT_SIGNING",
+    # the Domain Name System Security Extensions (DNSSEC) signing is not enabled for the
+    # Amazon Route 53 hosted zone.
+    # if dnssec is True:
+    #     if response.get("Status", None).get("ServeSignature", None) == "NOT_SIGNING":
+    #         # enable
+    #         client.enable_hosted_zone_dnssec(HostedZoneId=zone_id)
+    #     elif response.get("Status", None).get("ServeSignature", None) == "DELETING":
+    #         # wait and enabled
+    #         pass
+    # elif dnssec is False:
+    #     if response.get("Status", None).get("ServeSignature", None) == "SIGNING":
+    #         # disable
+    #         client.disable_hosted_zone_dnssec(HostedZoneId=zone_id)
+    #     elif response.get("Status", None).get("ServeSignature", None) == "DELETING":
+    #         # changed false
+    #         pass
+
     if zone_id:
         if tags is not None:
             changed |= manage_tags(module, client, "hostedzone", zone_id, tags, purge_tags)
