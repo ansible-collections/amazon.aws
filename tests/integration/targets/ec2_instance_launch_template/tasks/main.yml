@@ -1,0 +1,112 @@
+---
+- module_defaults:
+    group/aws:
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+  block:
+    - name: Create a Launch template
+      amazon.aws.ec2_launch_template:
+        template_name: "{{ resource_prefix }}-template"
+        instance_type: t2.micro
+        image_id: "{{ ec2_ami_id }}"
+        block_device_mappings:
+          - device_name: /dev/sdb
+            ebs:
+              volume_size: 20
+              delete_on_termination: true
+              volume_type: standard
+        network_interfaces:
+          - device_index: 0
+            associate_public_ip_address: false
+            delete_on_termination: true
+            subnet_id: "{{ testing_subnet_a.subnet.id }}"
+            description: "A network interface from the testing subnet a"
+      register: _launch_template
+
+    - name: Create EC2 instance using launch template (check mode)
+      amazon.aws.ec2_instance:
+        state: present
+        wait: true
+        launch_template:
+          id: "{{ _launch_template.template.launch_template_id }}"
+      register: _create_check
+      check_mode: true
+
+    - name: Ensure module reported change while running in check mode
+      ansible.builtin.assert:
+        that:
+          - _create_check is changed
+          - '"instance_ids" not in _create_check'
+
+    - name: Create EC2 instance using launch template
+      amazon.aws.ec2_instance:
+        state: present
+        launch_template:
+          id: "{{ _launch_template.template.launch_template_id }}"
+        wait: true
+      register: _instance_a
+
+    - name: Set instances to delete
+      ansible.builtin.set_fact:
+        test_instance_ids: "{{ _instance_a.instance_ids | default([]) }}"
+
+    - name: Validate instance created as expected
+      ansible.builtin.assert:
+        that:
+          - _instance_a is changed
+          - '"instance_ids" in _instance_a'
+          - '"instances" in _instance_a'
+          - _instance_a.instances | length == 1
+          - _instance_a.instances[0].instance_type == 't2.micro'
+          - _instance_a.instances[0].image_id == ec2_ami_id
+          - _instance_a.instances[0].network_interfaces | length == 1
+          - _instance_a.instances[0].network_interfaces[0].subnet_id == testing_subnet_a.subnet.id
+          - _instance_a.instances[0].network_interfaces[0].description == "A network interface from the testing subnet a"
+          # AWS adds automatically a tag with the launch template id
+          - '"aws:ec2launchtemplate:id" in _instance_a.instances[0].tags'
+          - _instance_a.instances[0].tags["aws:ec2launchtemplate:id"] == _launch_template.template.launch_template_id
+
+    - name: Create antoher EC2 instance using launch template and some override parameters
+      amazon.aws.ec2_instance:
+        state: present
+        launch_template:
+          id: "{{ _launch_template.template.launch_template_id }}"
+        instance_type: t3.nano
+        network_interfaces:
+          - device_index: 0
+            assign_public_ip: false
+            delete_on_termination: true
+            subnet_id: "{{ testing_subnet_b.subnet.id }}"
+            description: "A network interface from the testing subnet b"
+        wait: true
+      register: _instance_b
+
+    - name: Set instances to delete
+      ansible.builtin.set_fact:
+        test_instance_ids: "{{ test_instance_ids + _instance_b.instance_ids | default([])}}"
+
+    - name: Validate instance created as expected
+      ansible.builtin.assert:
+        that:
+          - _instance_b is changed
+          - '"instance_ids" in _instance_b'
+          - _instance_a.instance_ids != _instance_b.instance_ids
+          - _instance_b.instances | length == 1
+          - _instance_b.instances[0].instance_type == 't3.nano'
+          - _instance_b.instances[0].image_id == ec2_ami_id
+          - _instance_b.instances[0].network_interfaces | length == 1
+          - _instance_b.instances[0].network_interfaces[0].subnet_id == testing_subnet_b.subnet.id
+          - _instance_b.instances[0].network_interfaces[0].description == "A network interface from the testing subnet b"
+          # AWS adds automatically a tag with the launch template id
+          - '"aws:ec2launchtemplate:id" in _instance_b.instances[0].tags'
+          - _instance_b.instances[0].tags["aws:ec2launchtemplate:id"] == _launch_template.template.launch_template_id
+
+  always:
+    - name: Delete instances
+      amazon.aws.ec2_instance:
+        state: absent
+        instance_ids: "{{ test_instance_ids }}"
+        wait: true
+      when: test_instance_ids is defined
