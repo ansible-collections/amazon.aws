@@ -7,7 +7,7 @@
 DOCUMENTATION = r"""
 module: route53_ksk
 short_description: Manages a key-signing key (KSK)
-version_added: 5.0.0
+version_added: 9.2.0
 description:
     - Creates a new key-signing key (KSK) associated with a hosted zone.
       You can only have two KSKs per hosted zone.
@@ -63,6 +63,8 @@ extends_documentation_fragment:
     - amazon.aws.common.modules
     - amazon.aws.region.modules
     - amazon.aws.boto3
+notes:
+    - This module does not support check_mode.
 author:
     - Alina Buzachis (@alinabuzachis)
 """
@@ -141,16 +143,16 @@ key_signing_key:
             type: str
         signing_algorithm_type:
             description: An integer used to represent the signing algorithm.
-            type: str
+            type: int
         digest_algorithm_mnemonic:
             description: A string used to represent the delegation signer digest algorithm.
             type: str
         digest_algorithm_type:
             description: An integer used to represent the delegation signer digest algorithm.
-            type: str
+            type: int
         key_tag:
             description: An integer used to identify the DNSSEC record for the domain name.
-            type: str
+            type: int
         digest_value:
             description: A cryptographic digest of a DNSKEY resource record (RR).
             type: str

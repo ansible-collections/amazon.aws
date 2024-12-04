@@ -210,16 +210,16 @@ dnssec:
                     type: str
                 signing_algorithm_type:
                     description: An integer used to represent the signing algorithm.
-                    type: str
+                    type: int
                 digest_algorithm_mnemonic:
                     description: A string used to represent the delegation signer digest algorithm.
                     type: str
                 digest_algorithm_type:
                     description: An integer used to represent the delegation signer digest algorithm.
-                    type: str
+                    type: int
                 key_tag:
                     description: An integer used to identify the DNSSEC record for the domain name.
-                    type: str
+                    type: int
                 digest_value:
                     description: A cryptographic digest of a DNSKEY resource record (RR).
                     type: str
@@ -286,12 +286,10 @@ from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleA
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.route53 import get_tags
 from ansible_collections.amazon.aws.plugins.module_utils.route53 import manage_tags
-from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
 
 try:
     from botocore.exceptions import BotoCoreError
     from botocore.exceptions import ClientError
-    from botocore.exceptions import WaiterError
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
@@ -366,20 +364,6 @@ def ensure_dnssec(client, module, zone_id):
         # DNSSEC signing is in the process of being removed for the hosted zone.
 
     return changed
-
-
-def wait(client, module, change_id):
-    try:
-        waiter = get_waiter(client, "resource_record_sets_changed")
-        waiter.wait(
-            Id=change_id,
-            WaiterConfig=dict(
-                Delay=5,
-                MaxAttempts=10,
-            ),
-        )
-    except WaiterError as e:
-        module.fail_json_aws(e, msg="Timeout waiting for changes to be applied")
 
 
 def create(matching_zones):
