@@ -191,7 +191,7 @@ dnssec:
     type: dict
     contains:
         key_signing_key:
-            description:
+            description: The key-signing key (KSK) that the request creates.
             returned: when O(state=present)
             type: list
             elements: dict
