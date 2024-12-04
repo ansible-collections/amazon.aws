@@ -9,9 +9,6 @@
       secret_key: "{{ aws_secret_key }}"
       session_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
-  collections:
-    - amazon.aws
-    - community.general
   block:
     # ===================================================================
     # Prepare

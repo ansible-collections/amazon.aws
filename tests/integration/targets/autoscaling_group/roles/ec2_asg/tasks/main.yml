@@ -15,8 +15,6 @@
           # Unfortunately AWSRetry doesn't support paginators and boto3's paginators
           # don't support any configuration of the delay between retries.
           max_attempts: 20
-  collections:
-    - community.aws
   block:
   # https://github.com/ansible/ansible/issues/77257
     - name: Set async_dir for HOME env

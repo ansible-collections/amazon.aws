@@ -27,8 +27,6 @@
       region: "{{ aws_region }}"
     amazon.aws.iam_role:
       assume_role_policy_document: '{{ lookup("file", "deny-assume.json") }}'
-  collections:
-    - community.general
   block:
     - ansible.builtin.set_fact:
         assume_deny_policy: '{{ lookup("file", "deny-assume.json") | from_json }}'

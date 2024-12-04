@@ -10,8 +10,6 @@
       secret_key: "{{ aws_secret_key }}"
       session_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
-  collections:
-    - community.aws
   block:
     - ansible.builtin.include_tasks: env_setup.yml
     - ansible.builtin.include_tasks: tests.yml

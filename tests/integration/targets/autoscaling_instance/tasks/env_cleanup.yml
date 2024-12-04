@@ -32,7 +32,7 @@
     - "{{ default_tiny_name }}-2"
 
 - name: remove launch templates
-  community.aws.ec2_launch_template:
+  amazon.aws.ec2_launch_template:
     name: "{{ item }}"
     state: absent
   register: removed
@@ -42,15 +42,7 @@
   loop:
     - "{{ default_resource_name }}-1"
     - "{{ default_resource_name }}-2"
-
-- name: delete launch template
-  community.aws.ec2_launch_template:
-    name: "{{ default_resource_name }}"
-    state: absent
-  register: del_lt
-  retries: 10
-  until: del_lt is not failed
-  ignore_errors: true
+    - "{{ default_resource_name }}"
 
 - ansible.builtin.include_role:
     name: setup_ec2_vpc

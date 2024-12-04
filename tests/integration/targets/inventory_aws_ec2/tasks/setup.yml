@@ -1,18 +1,10 @@
 ---
-- name: get image ID to create an instance
-  amazon.aws.ec2_ami_info:
-    filters:
-      architecture: x86_64
-      # CentOS Community Platform Engineering (CPE)
-      owner-id: "125523088429"
-      virtualization-type: hvm
-      root-device-type: ebs
-      name: Fedora-Cloud-Base-37*
-  register: fedora_images
+- ansible.builtin.include_role:
+    name: ../setup_ec2_facts
 
 - name: Set image id, vpc cidr and subnet cidr
   ansible.builtin.set_fact:
-    image_id: "{{ fedora_images.images.0.image_id }}"
+    image_id: "{{ ec2_ami_id }}"
     vpc_cidr: 10.{{ 256 | random(seed=resource_prefix) }}.0.0/16
     subnet_cidr: 10.{{ 256 | random(seed=resource_prefix) }}.0.0/24
 

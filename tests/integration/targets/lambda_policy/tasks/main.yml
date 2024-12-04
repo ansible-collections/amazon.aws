@@ -6,10 +6,6 @@
       secret_key: "{{ aws_secret_key }}"
       session_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
-  collections:
-    - community.general
-    - amazon.aws
-    - community.aws
   block:
     - name: create minimal lambda role
       amazon.aws.iam_role:

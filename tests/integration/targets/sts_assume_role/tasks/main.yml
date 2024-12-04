@@ -7,8 +7,7 @@
       access_key: "{{ aws_access_key }}"
       secret_key: "{{ aws_secret_key }}"
       session_token: "{{ security_token | default(omit) }}"
-  collections:
-    - amazon.aws
+
   block:
     # Get some information about who we are before starting our tests
     # we'll need this as soon as we start working on the policies

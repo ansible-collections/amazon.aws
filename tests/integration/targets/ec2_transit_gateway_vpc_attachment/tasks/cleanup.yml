@@ -54,7 +54,7 @@
   ignore_errors: true
 
 - name: Gather info about all transit gateways
-  community.aws.ec2_transit_gateway_info:
+  amazon.aws.ec2_transit_gateway_info:
     transit_gateway_ids:
     - '{{ tgw_id }}'
     - '{{ tgw_id_2 }}'

@@ -3,9 +3,6 @@
   connection: local
   gather_facts: false
   environment: "{{ ansible_test.environment }}"
-  collections:
-    - amazon.aws
-    - community.aws
   tasks:
     - name: assert group was populated with inventory but is empty
       ansible.builtin.assert:
