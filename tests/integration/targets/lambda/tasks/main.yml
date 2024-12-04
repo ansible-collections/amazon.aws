@@ -6,8 +6,6 @@
       secret_key: "{{ aws_secret_key }}"
       session_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
-  collections:
-    - community.general
   block:
   # https://github.com/ansible/ansible/issues/77257
     - name: Set async_dir for HOME env

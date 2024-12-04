@@ -6,11 +6,6 @@
       session_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
 
-  collections:
-    - amazon.aws
-    - ansible.utils
-    - community.aws
-
   block:
   # ============================================================
     - name: create a VPC

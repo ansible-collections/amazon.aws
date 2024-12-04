@@ -58,7 +58,7 @@
 # Note: main autoscaling tests use ASG "Launch Configs", these are being phased out in favour of EC2
 # Launch Templates
 - name: ensure launch templates exist
-  community.aws.ec2_launch_template:
+  amazon.aws.ec2_launch_template:
     name: "{{ item }}"
     network_interfaces:
       - device_index: 0

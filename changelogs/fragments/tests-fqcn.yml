@@ -1,0 +1,4 @@
+---
+trivial:
+- Update FQCN of modules that moved to amazon.aws
+- Remove explicit call to ``collections`` from defaults stanza, now we're using FQCNs we don't need to pull it in.

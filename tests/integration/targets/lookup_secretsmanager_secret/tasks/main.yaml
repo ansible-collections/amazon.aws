@@ -14,9 +14,6 @@
       access_key: "{{ aws_access_key }}"
       secret_key: "{{ aws_secret_key }}"
       session_token: "{{ security_token | default(omit) }}"
-  collections:
-    - amazon.aws
-    - community.aws
   block:
     - name: define secret name
       ansible.builtin.set_fact:

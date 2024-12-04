@@ -11,14 +11,14 @@
           Description: Created by ansible-test
       register: vpc_result_2
     - name: Peer the secondary-VPC to the main VPC
-      community.aws.ec2_vpc_peering:
+      amazon.aws.ec2_vpc_peering:
         vpc_id: "{{ vpc_result_2.vpc.id }}"
         peer_vpc_id: "{{ vpc_result.vpc.id }}"
         peer_owner_id: "{{ caller_facts.account }}"
         peer_region: "{{ aws_region }}"
       register: peer_origin
     - name: Accept the secondary-VPC peering connection in the main VPC
-      community.aws.ec2_vpc_peering:
+      amazon.aws.ec2_vpc_peering:
         peer_vpc_id: "{{ vpc_result_2.vpc.id }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         state: accept
@@ -83,7 +83,7 @@
   always:
     - ansible.builtin.pause: seconds=5
     - name: Delete secondary-VPC side of peer
-      community.aws.ec2_vpc_peering:
+      amazon.aws.ec2_vpc_peering:
         vpc_id: "{{ vpc_result_2.vpc.id }}"
         peer_vpc_id: "{{ vpc_result.vpc.id }}"
         peering_id: "{{ peer_origin.peering_id }}"
@@ -92,7 +92,7 @@
         peer_region: "{{ aws_region }}"
       ignore_errors: true
     - name: Delete main-VPC side of peer
-      community.aws.ec2_vpc_peering:
+      amazon.aws.ec2_vpc_peering:
         peer_vpc_id: "{{ vpc_result_2.vpc.id }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         state: absent

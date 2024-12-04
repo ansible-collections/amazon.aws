@@ -30,8 +30,6 @@
     amazon.aws.cloudtrail:
       s3_bucket_name: "{{ s3_bucket_name }}"
       region: "{{ aws_region }}"
-  collections:
-    - amazon.aws
   block:
   # ============================================================
   #   Argument Tests

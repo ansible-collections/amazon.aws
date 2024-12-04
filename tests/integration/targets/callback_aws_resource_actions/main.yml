@@ -1,8 +1,6 @@
 ---
 - hosts: localhost
   gather_facts: false
-  collections:
-    - amazon.aws
   module_defaults:
     group/aws:
       access_key: "{{ aws_access_key }}"
