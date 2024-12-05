@@ -6,9 +6,6 @@
       session_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
 
-  collections:
-    - amazon.aws
-
   vars:
     s3_bucket_name: "{{ resource_prefix }}-bucket"
     s3_bucket_object: "{{ resource_prefix }}-obj-1"

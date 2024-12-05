@@ -9,9 +9,6 @@
   no_log: true
 
 - name: aws_ssm lookup plugin integration tests
-  collections:
-    - amazon.aws
-    - community.aws
   module_defaults:
     group/aws:
       access_key: "{{ aws_access_key }}"
@@ -139,7 +136,7 @@
         value: "{{ path_value_c }}"
 
     - name: Create nested key/value pair in aws parameter store (4)
-      ssm_parameter:
+      community.aws.ssm_parameter:
         name: '{{ path_name_d }}'
         description: '{{ path_description }}'
         value: '{{ path_value_d }}'

@@ -29,6 +29,9 @@ export ANSIBLE_INVENTORY=test.aws_ec2.yml
 # test empty inventory config
 ansible-playbook playbooks/test_invalid_aws_ec2_inventory_config.yml "$@"
 
+# We're not supposed to have symlinks committed to the repo, add the symlink to make life easier
+ln -s ../tasks playbooks/tasks
+
 # create minimal config for tests
 ansible-playbook playbooks/manage_ec2_instances.yml -e "task=setup" "$@"
 

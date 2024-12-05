@@ -8,10 +8,6 @@
 
   hosts: localhost
 
-  collections:
-    - amazon.aws
-    - community.aws
-
   vars:
     vpc_name: "{{ resource_prefix }}-vpc"
     vpc_seed: "{{ resource_prefix }}"

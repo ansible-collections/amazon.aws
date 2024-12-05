@@ -217,7 +217,7 @@
       - create_result.changed == False
 
   - name: Test success with filter
-    community.aws.ec2_transit_gateway_info:
+    amazon.aws.ec2_transit_gateway_info:
       filters:
         options.multicast-support: enable
     register: result
@@ -229,7 +229,7 @@
 
   # ==== Combine ec2_transit_gateway_info ======================
   - name: Test success with no parameters
-    community.aws.ec2_transit_gateway_info:
+    amazon.aws.ec2_transit_gateway_info:
     register: result
   - name: Assert success with no parameters
     ansible.builtin.assert:
@@ -238,7 +238,7 @@
       - result.transit_gateways != []
 
   - name: Test success with single filter
-    community.aws.ec2_transit_gateway_info:
+    amazon.aws.ec2_transit_gateway_info:
       filters:
         transit-gateway-id: '{{ create_result.transit_gateway.transit_gateway_id }}'
     register: result
@@ -250,7 +250,7 @@
       - result.transit_gateways != []
 
   - name: Test empty result set for non-existent tgw id via filter
-    community.aws.ec2_transit_gateway_info:
+    amazon.aws.ec2_transit_gateway_info:
       filters:
         transit-gateway-id: tgw-00000011111111122
     register: result
@@ -262,7 +262,7 @@
       - result.transit_gateways == []
 
   - name: Test NotFound exception caught and returned empty result set
-    community.aws.ec2_transit_gateway_info:
+    amazon.aws.ec2_transit_gateway_info:
       transit_gateway_id: tgw-00000011111111122
     register: result
 
@@ -273,7 +273,7 @@
       - result.transit_gateways == []
 
   - name: Test success with multiple filters
-    community.aws.ec2_transit_gateway_info:
+    amazon.aws.ec2_transit_gateway_info:
       filters:
         options.dns-support: enable
         options.vpn-ecmp-support: enable

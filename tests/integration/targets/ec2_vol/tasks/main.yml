@@ -6,10 +6,6 @@
       session_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
 
-  collections:
-    - amazon.aws
-    - community.aws
-
   block:
     - name: Create a test VPC
       amazon.aws.ec2_vpc_net:

@@ -57,7 +57,7 @@
     - "{{ resource_prefix }}-lc-2"
 
 - name: delete launch template
-  community.aws.ec2_launch_template:
+  amazon.aws.ec2_launch_template:
     name: "{{ resource_prefix }}-lt"
     state: absent
   register: del_lt

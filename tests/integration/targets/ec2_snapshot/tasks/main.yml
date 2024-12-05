@@ -17,10 +17,6 @@
       session_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
 
-  collections:
-    - amazon.aws
-    - community.aws
-
   block:
     - name: Gather availability zones
       amazon.aws.aws_az_info:

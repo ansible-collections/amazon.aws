@@ -19,7 +19,7 @@
     register: vpc_result
 
   - name: Create an EC2 VPC gateway and attach it to VPC
-    community.aws.ec2_vpc_vgw:
+    amazon.aws.ec2_vpc_vgw:
       state: present
       vpc_id: '{{ vpc_result.vpc.id }}'
       name: '{{ resource_prefix }}-vgw'
@@ -33,7 +33,7 @@
     register: cgw
 
   - name: Create transit gateway
-    community.aws.ec2_transit_gateway:
+    amazon.aws.ec2_transit_gateway:
       description: Transit Gateway for vpn attachment
       wait: true
     register: tgw
@@ -205,7 +205,7 @@
     ignore_errors: true
 
   - name: Delete VPN gateway
-    community.aws.ec2_vpc_vgw:
+    amazon.aws.ec2_vpc_vgw:
       state: absent
       vpn_gateway_id: '{{ vgw.vgw.id }}'
     register: result
@@ -226,7 +226,7 @@
     ignore_errors: true
 
   - name: Delete transit gateway
-    community.aws.ec2_transit_gateway:
+    amazon.aws.ec2_transit_gateway:
       transit_gateway_id: '{{ tgw.transit_gateway.transit_gateway_id }}'
       state: absent
     ignore_errors: true

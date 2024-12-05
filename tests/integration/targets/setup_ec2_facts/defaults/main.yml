@@ -1,5 +1,6 @@
 ---
-ec2_ami_name: Fedora-Cloud-Base-*.x86_64*
+# We don't want to pick up ELN/Rawhide
+ec2_ami_name: Fedora-Cloud-Base-*.x86_64-4*
 # CentOS Community Platform Engineering (CPE)
 ec2_ami_owner_id: "125523088429"
 ec2_ami_ssh_user: fedora

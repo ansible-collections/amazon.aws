@@ -151,7 +151,7 @@
       register: transit_gateway
 
     - name: Create VPC attachment
-      community.aws.ec2_transit_gateway_vpc_attachment:
+      amazon.aws.ec2_transit_gateway_vpc_attachment:
         state: present
         name: "{{ resource_prefix }}_vpc_attachment"
         transit_gateway: "{{ transit_gateway.transit_gateway.transit_gateway_id }}"
@@ -1355,7 +1355,7 @@
     # ------------------------------------------------------------------------------------------
 
     - name: Create vgw for gateway route table
-      community.aws.ec2_vpc_vgw:
+      amazon.aws.ec2_vpc_vgw:
         state: present
         vpc_id: "{{ vpc.vpc.id }}"
         type: ipsec.1
@@ -1560,14 +1560,14 @@
         state: absent
       ignore_errors: true
     - name: Destroy VGW
-      community.aws.ec2_vpc_vgw:
+      amazon.aws.ec2_vpc_vgw:
         state: absent
         type: ipsec.1
         name: "{{ resource_prefix }}_vpc"
         vpc_id: "{{ vpc.vpc.id }}"
       ignore_errors: true
     - name: Delete VPC attachment
-      community.aws.ec2_transit_gateway_vpc_attachment:
+      amazon.aws.ec2_transit_gateway_vpc_attachment:
         state: absent
         id: "{{ vpc_attachment.attachments[0].transit_gateway_attachment_id }}"
         wait: true
