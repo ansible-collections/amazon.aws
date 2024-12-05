@@ -64,8 +64,6 @@ extends_documentation_fragment:
     - amazon.aws.common.modules
     - amazon.aws.region.modules
     - amazon.aws.boto3
-notes:
-    - This module does not support check_mode.
 author:
     - Alina Buzachis (@alinabuzachis)
 """
@@ -80,7 +78,7 @@ EXAMPLES = r"""
     status: "INACTIVE"
     state: present
 
-- name: Activate KSK
+- name: Activate a Key Signing Key Request
   amazon.aws.route53_ksk:
     name: "{{ resource_prefix }}-ksk"
     hosted_zone_id: "{{ _hosted_zone.zone_id }}"
@@ -89,7 +87,7 @@ EXAMPLES = r"""
     status: "ACTIVE"
     state: present
 
-- name: Delete KSK and deactivate it
+- name: Delete a Key Signing Key Request and deactivate it
   amazon.aws.route53_ksk:
     name: "{{ resource_prefix }}-ksk"
     hosted_zone_id: "{{ _hosted_zone.zone_id }}"
@@ -99,8 +97,8 @@ EXAMPLES = r"""
 
 RETURN = r"""
 change_info:
-    description: A dictionary that escribes change information about changes made to your hosted zone.
-    returned: when the Key Signing Request to be deleted exists
+    description: A dictionary that describes change information about changes made to the hosted zone.
+    returned: when the Key Signing Request is created or updated
     type: dict
     contains:
         id:
@@ -122,12 +120,12 @@ change_info:
     }
 location:
     description: The unique URL representing the new key-signing key (KSK).
-    returned: when O(state=present)
+    returned: when only a new Key Signing Key is created
     type: str
     sample: "https://route53.amazonaws.com/2013-04-01/keysigningkey/xxx/ansible-test-ksk"
 key_signing_key:
     description: The key-signing key (KSK) that the request creates.
-    returned: only when a new Key Signing Request is created
+    returned: always
     type: dict
     contains:
         name:
@@ -197,7 +195,6 @@ key_signing_key:
     }
 """
 
-import datetime
 
 try:
     import botocore
@@ -206,7 +203,6 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.exceptions import AnsibleAWSError
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
@@ -224,6 +220,23 @@ def get_change(client, change_id):
     return client.get_change(Id=change_id)
 
 
+def get_hosted_zone(client, hosted_zone_id):
+    return client.get_hosted_zone(Id=hosted_zone_id)
+
+
+def get_dnssec(client, hosted_zone_id):
+    return client.get_dnssec(HostedZoneId=hosted_zone_id)
+
+
+def find_ksk(client, module):
+    hosted_zone_dnssec = get_dnssec(client, module.params.get("hosted_zone_id"))
+    if hosted_zone_dnssec["KeySigningKeys"] != []:
+        for ksk in hosted_zone_dnssec["KeySigningKeys"]:
+            if ksk["Name"] == module.params.get("name"):
+                return ksk
+    return None
+
+
 def wait(client, module, change_id):
     try:
         waiter = get_waiter(client, "resource_record_sets_changed")
@@ -238,73 +251,63 @@ def wait(client, module, change_id):
         module.fail_json_aws(e, msg="Timeout waiting for changes to be applied")
 
 
-def create(client, module: AnsibleAWSModule):
-    # The API does not raise KeySigningKeyAlreadyExists when a request with the same name and
-    # KMS arn already exist. It will always try to create a new KSK request.
-    changed: bool = True
+def create_or_update(client, module: AnsibleAWSModule, ksk):
+    changed: bool = False
     zone_id = module.params.get("hosted_zone_id")
     name = module.params.get("name")
     status = module.params.get("status")
-    request_time = datetime.datetime.utcnow()
 
-    response = client.create_key_signing_key(
-        CallerReference=module.params.get("caller_reference"),
-        KeyManagementServiceArn=module.params.get("key_management_service_arn"),
-        HostedZoneId=zone_id,
-        Name=name,
-        Status=status,
-    )
+    if ksk is not None:
+        response = {"KeySigningKey": ksk}
+        if ksk["Status"] != status:
+            changed = True
 
-    if response and response.get("ChangeInfo", {}):
-        submitted_at = response["ChangeInfo"].get("SubmittedAt").replace(tzinfo=None)
-        if submitted_at < request_time:
-            # A KSK request already exists.
-            if response["KeySigningKey"]["Status"] != status:
-                # Wait before activating or deactivating to reach INSYNC state
-                change_id = response["ChangeInfo"]["Id"]
-                wait(client, module, change_id)
+            if module.check_mode:
+                module.exit_json(
+                    changed=changed,
+                    msg=f"Would have updated the Key Signing Key status to {status} if not in check_mode.",
+                )
 
-                if module.params.get("status") == "ACTIVE":
-                    response = activate(client, zone_id, name)
-                elif module.params.get("status") == "INACTIVE":
-                    response = deactivate(client, zone_id, name)
-                else:
-                    changed = False
+            if status == "ACTIVE":
+                response.update(activate(client, zone_id, name))
+            elif status == "INACTIVE":
+                response.update(deactivate(client, zone_id, name))
+    else:
+        changed = True
+        if module.check_mode:
+            module.exit_json(changed=changed, msg="Would have created the Key Signing Key if not in check_mode.")
 
-                if module.params.get("wait"):
-                    change_id = response["ChangeInfo"]["Id"]
-                    wait(client, module, change_id)
-                    response["ChangeInfo"] = get_change(client, change_id)
-            else:
-                changed = False
+        response = client.create_key_signing_key(
+            CallerReference=module.params.get("caller_reference"),
+            KeyManagementServiceArn=module.params.get("key_management_service_arn"),
+            HostedZoneId=zone_id,
+            Name=name,
+            Status=status,
+        )
+
+        del response["ResponseMetadata"]
 
     return changed, response
 
 
-def delete(client, module: AnsibleAWSModule):
+def delete(client, module: AnsibleAWSModule, ksk):
     changed: bool = False
     zone_id = module.params.get("hosted_zone_id")
     name = module.params.get("name")
+    response = {"KeySigningRequest": {}}
 
-    if module.params.get("status") == "INACTIVE":
-        try:
-            # Deactivate the Key Signing Request before deleting
-            result = deactivate(client, zone_id, name)
-        except is_boto3_error_code("NoSuchKeySigningKey"):
-            return changed, {}
-
-        change_id = result["ChangeInfo"]["Id"]
-        wait(client, module, change_id)
-    try:
-        response = client.delete_key_signing_key(HostedZoneId=zone_id, Name=name)
+    if ksk is not None:
         changed = True
+        response["KeySigningRequest"] = ksk
+        if module.check_mode:
+            module.exit_json(changed=changed, msg="Would have deleted the Key Signing Key if not in check_mode.")
 
-        if module.params.get("wait"):
-            change_id = response["ChangeInfo"]["Id"]
+        if module.params.get("status") == "INACTIVE":
+            result = deactivate(client, zone_id, name)
+            change_id = result["ChangeInfo"]["Id"]
             wait(client, module, change_id)
-            response["ChangeInfo"] = get_change(client, change_id)
-    except is_boto3_error_code("NoSuchKeySigningKey"):
-        return changed, {}
+
+        response = client.delete_key_signing_key(HostedZoneId=zone_id, Name=name)
 
     return changed, response
 
@@ -323,6 +326,7 @@ def main() -> None:
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
+        supports_check_mode=True,
         required_if=[["state", "present", ["caller_reference", "key_management_service_arn"]]],
     )
 
@@ -335,15 +339,19 @@ def main() -> None:
     state = module.params.get("state")
 
     try:
+        ksk = find_ksk(client, module)
         if state == "present":
-            changed, result = create(client, module)
+            changed, result = create_or_update(client, module, ksk)
         else:
-            changed, result = delete(client, module)
+            changed, result = delete(client, module, ksk)
+
+        if module.params.get("wait") and result.get("ChangeInfo"):
+            change_id = result["ChangeInfo"]["Id"]
+            wait(client, module, change_id)
+            result["ChangeInfo"] = get_change(client, change_id)
+
     except AnsibleAWSError as e:
         module.fail_json_aws_error(e)
-
-    if "ResponseMetadata" in result:
-        del result["ResponseMetadata"]
 
     module.exit_json(changed=changed, **camel_dict_to_snake_dict(result))
 

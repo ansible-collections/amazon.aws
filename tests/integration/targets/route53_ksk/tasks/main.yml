@@ -28,6 +28,25 @@
         state: present
       register: _hosted_zone
 
+    - name: Create a Key Signing Key request (check_mode)
+      amazon.aws.route53_ksk:
+        name: "{{ resource_prefix }}-ksk"
+        hosted_zone_id: "{{ _hosted_zone.zone_id }}"
+        key_management_service_arn: "{{ kms_key.key_arn }}"
+        caller_reference: "{{ aws_caller_info.arn }}"
+        status: "INACTIVE"
+        state: present
+      check_mode: true
+      register: _ksk_request
+
+    - name: Assert success
+      ansible.builtin.assert:
+        that:
+          - _ksk_request is successful
+          - _ksk_request.changed
+          - '"msg" in _ksk_request'
+          - '"Would have created the Key Signing Key if not in check_mode." in _ksk_request.msg'
+
     - name: Create a Key Signing Key request
       amazon.aws.route53_ksk:
         name: "{{ resource_prefix }}-ksk"
@@ -60,9 +79,27 @@
       ansible.builtin.assert:
         that:
           - _ksk_request is successful
-          - '"change_info" in _ksk_request'
           - not _ksk_request.changed
           - '"key_signing_key" in _ksk_request'
+
+    - name: Activate the Key Signing Key request (check_mode)
+      amazon.aws.route53_ksk:
+        name: "{{ resource_prefix }}-ksk"
+        hosted_zone_id: "{{ _hosted_zone.zone_id }}"
+        key_management_service_arn: "{{ kms_key.key_arn }}"
+        caller_reference: "{{ aws_caller_info.arn }}"
+        status: "ACTIVE"
+        state: present
+      check_mode: true
+      register: _ksk_request
+
+    - name: Assert success
+      ansible.builtin.assert:
+        that:
+          - _ksk_request is successful
+          - _ksk_request.changed
+          - '"msg" in _ksk_request'
+          - '"Would have updated the Key Signing Key status to ACTIVE if not in check_mode." in _ksk_request.msg'
 
     - name: Activate the Key Signing Key request
       amazon.aws.route53_ksk:
@@ -82,7 +119,7 @@
           - '"change_info" in _ksk_request'
           - _ksk_request.changed
 
-    - name: Activate KSK (idempotency)
+    - name: Activate the Key Signing Key request (idempotency)
       amazon.aws.route53_ksk:
         name: "{{ resource_prefix }}-ksk"
         hosted_zone_id: "{{ _hosted_zone.zone_id }}"
@@ -96,7 +133,6 @@
       ansible.builtin.assert:
         that:
           - _ksk_request is successful
-          - '"change_info" in _ksk_request'
           - not _ksk_request.changed
 
     - name: Enable DNSSEC for Route53 public zone (check_mode)
@@ -198,8 +234,22 @@
       ansible.builtin.assert:
         that:
           - _ksk_request is successful
-          - '"change_info" in _ksk_request'
           - not _ksk_request.changed
+
+    - name: Delete the Key Signing Key request (check_mode)
+      amazon.aws.route53_ksk:
+        name: "{{ resource_prefix }}-ksk"
+        hosted_zone_id: "{{ _hosted_zone.zone_id }}"
+        status: "INACTIVE"
+        state: absent
+      check_mode: true
+      register: _ksk_request
+
+    - name: Assert success
+      ansible.builtin.assert:
+        that:
+          - _ksk_request is successful
+          - _ksk_request.changed
 
     - name: Delete the Key Signing Key request
       amazon.aws.route53_ksk:
@@ -215,6 +265,8 @@
           - _ksk_request is successful
           - '"change_info" in _ksk_request'
           - _ksk_request.changed
+          - '"msg" in _ksk_request'
+          - '"Would have deteled the Key Signing Key if not in check_mode." in _ksk_request.msg'
 
     - name: Delete the Key Signing Key request (idempotency)
       amazon.aws.route53_ksk:
@@ -245,6 +297,13 @@
           - not _ksk_request.changed
 
   always:
+    - name: Disable DNSSEC for Route53 public zone
+      amazon.aws.route53_zone:
+        zone: "{{ resource_prefix }}.public"
+        state: present
+        dnssec: false
+      ignore_errors: true
+
     - name: Delete the Key Signing Key Request
       amazon.aws.route53_ksk:
         name: "{{ resource_prefix }}-ksk"
