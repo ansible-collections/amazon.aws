@@ -1,2 +1,0 @@
-bugfixes:
-  - elbv2 - Fix load balancer listener comparison when DefaultActions contain any action other than forward (https://github.com/ansible-collections/amazon.aws/issues/2377).

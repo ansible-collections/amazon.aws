@@ -1,3 +1,0 @@
----
-minor_changes:
-  - ec2_instance - Fix the issue when trying to run instances using launch template in an AWS environment where no default subnet is defined(https://github.com/ansible-collections/amazon.aws/issues/2321).
