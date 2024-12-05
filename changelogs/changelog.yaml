@@ -3535,4 +3535,4 @@ releases:
     - description: Describes the RDS parameter group.
       name: rds_instance_param_group_info
       namespace: ''
-    release_date: '2024-12-04'
+    release_date: '2024-12-05'
