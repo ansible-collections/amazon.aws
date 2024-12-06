@@ -1,2 +1,0 @@
-minor_changes:
-  - ec2_metadata_facts - add ``ansible_ec2_instance_tags`` to return values (https://github.com/ansible-collections/amazon.aws/pull/2398).
