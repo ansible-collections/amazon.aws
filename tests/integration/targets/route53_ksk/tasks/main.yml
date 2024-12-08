@@ -250,6 +250,8 @@
         that:
           - _ksk_request is successful
           - _ksk_request.changed
+          - '"msg" in _ksk_request'
+          - '"Would have deleted the Key Signing Key if not in check_mode." in _ksk_request.msg'
 
     - name: Delete the Key Signing Key request
       amazon.aws.route53_ksk:
@@ -265,8 +267,6 @@
           - _ksk_request is successful
           - '"change_info" in _ksk_request'
           - _ksk_request.changed
-          - '"msg" in _ksk_request'
-          - '"Would have deteled the Key Signing Key if not in check_mode." in _ksk_request.msg'
 
     - name: Delete the Key Signing Key request (idempotency)
       amazon.aws.route53_ksk:
