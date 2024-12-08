@@ -186,7 +186,7 @@ delegation_set_id:
     sample: "A1BCDEF2GHIJKL"
 dnssec:
     description: Information about DNSSEC for a specific hosted zone.
-    returned: when O(state=present)
+    returned: when O(state=present) and the hosted zone is public
     version_added: 9.2.0
     type: dict
     contains:
@@ -400,12 +400,13 @@ def create(matching_zones):
     zone_id = result.get("zone_id")
 
     if zone_id:
-        # Enable/Disable DNSSEC
-        changed |= ensure_dnssec(client, module, zone_id)
+        if not private_zone:
+            # Enable/Disable DNSSEC
+            changed |= ensure_dnssec(client, module, zone_id)
 
-        # Update result with information about DNSSEC
-        result["dnssec"] = camel_dict_to_snake_dict(get_dnssec(client, module, zone_id))
-        del result["dnssec"]["response_metadata"]
+            # Update result with information about DNSSEC
+            result["dnssec"] = camel_dict_to_snake_dict(get_dnssec(client, module, zone_id))
+            del result["dnssec"]["response_metadata"]
 
         # Handle Tags
         if tags is not None:
