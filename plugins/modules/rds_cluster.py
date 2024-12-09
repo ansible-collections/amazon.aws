@@ -1066,14 +1066,18 @@ def changing_cluster_options(modify_params, current_cluster):
         provided_cloudwatch_logs = set(enable_cloudwatch_logs_export)
         current_cloudwatch_logs_export = set(current_cluster["EnabledCloudwatchLogsExports"])
 
-        desired_cloudwatch_logs_configuration["EnableLogTypes"] = list(
-            provided_cloudwatch_logs.difference(current_cloudwatch_logs_export)
+        desired_cloudwatch_logs_configuration["EnableLogTypes"] = sorted(
+            list(provided_cloudwatch_logs.difference(current_cloudwatch_logs_export))
         )
         if module.params["purge_cloudwatch_logs_exports"]:
-            desired_cloudwatch_logs_configuration["DisableLogTypes"] = list(
-                current_cloudwatch_logs_export.difference(provided_cloudwatch_logs)
+            desired_cloudwatch_logs_configuration["DisableLogTypes"] = sorted(
+                list(current_cloudwatch_logs_export.difference(provided_cloudwatch_logs))
             )
-        changing_params["CloudwatchLogsExportConfiguration"] = desired_cloudwatch_logs_configuration
+        if (
+            desired_cloudwatch_logs_configuration["EnableLogTypes"]
+            or desired_cloudwatch_logs_configuration["DisableLogTypes"]
+        ):
+            changing_params["CloudwatchLogsExportConfiguration"] = desired_cloudwatch_logs_configuration
 
     password = modify_params.pop("MasterUserPassword", None)
     if password:
@@ -1095,10 +1099,10 @@ def changing_cluster_options(modify_params, current_cluster):
         provided_vpc_sgs = set(vpc_sgs)
         current_vpc_sgs = set([sg["VpcSecurityGroupId"] for sg in current_cluster["VpcSecurityGroups"]])
         if module.params["purge_security_groups"]:
-            desired_vpc_sgs = vpc_sgs
+            desired_vpc_sgs = sorted(list(provided_vpc_sgs))
         else:
             if provided_vpc_sgs - current_vpc_sgs:
-                desired_vpc_sgs = list(provided_vpc_sgs | current_vpc_sgs)
+                desired_vpc_sgs = sorted(list(provided_vpc_sgs | current_vpc_sgs))
 
         if desired_vpc_sgs:
             changing_params["VpcSecurityGroupIds"] = desired_vpc_sgs
@@ -1112,6 +1116,24 @@ def changing_cluster_options(modify_params, current_cluster):
         # describe_db_clusters does not return StorageType for clusters with storage config as "aurora standard"
         if param == "StorageType":
             changing_params[param] = modify_params[param]
+            continue
+        # describe_db_clusters returns the Domain member ship information as follow
+        # 'DomainMemberships': [
+        #     {
+        #         'Domain': 'string',
+        #         'Status': 'string',
+        #         'FQDN': 'string',
+        #         'IAMRoleName': 'string'
+        #     },
+        # ]
+        if param in ("Domain", "DomainIAMRoleName"):
+            n_domain = modify_params.get("Domain")
+            n_domain_iam_role_name = modify_params.get("DomainIAMRoleName")
+            if not any(
+                n_domain == d.get("Domain") and n_domain_iam_role_name == d.get("IAMRoleName")
+                for d in current_cluster.get("DomainMemberships", [])
+            ):
+                changing_params[param] = modify_params[param]
             continue
         if modify_params[param] != current_cluster[param]:
             changing_params[param] = modify_params[param]
