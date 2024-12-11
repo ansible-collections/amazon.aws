@@ -482,7 +482,7 @@ def delete_nat_gateway(client, nat_gateway_id: str) -> bool:
 
 
 @EC2NatGatewayErrorHandler.common_error_handler("create nat gateway")
-@AWSRetry.jittered_backoff()
+@AWSRetry.jittered_backoff(catch_extra_error_codes=["InvalidElasticIpID.NotFound"])
 def create_nat_gateway(
     client, **params: Dict[str, Union[str, bool, int, EC2TagSpecifications, List[str]]]
 ) -> Dict[str, Any]:
