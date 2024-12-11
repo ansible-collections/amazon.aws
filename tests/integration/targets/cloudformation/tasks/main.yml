@@ -1,11 +1,11 @@
 ---
 - name: Wrap up all tests and setup AWS credentials
   module_defaults:
-  group/aws:
-    access_key: "{{ aws_access_key }}"
-    secret_key: "{{ aws_secret_key }}"
-    session_token: "{{ security_token | default(omit) }}"
-    region: "{{ aws_region }}"
+    group/aws:
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
 
   block:
     # ==== Env setup ==========================================================
