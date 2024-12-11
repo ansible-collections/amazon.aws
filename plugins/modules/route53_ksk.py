@@ -26,8 +26,8 @@ options:
     caller_reference:
         description:
             - A unique string that identifies the request.
+            - Required when O(state=present).
         type: str
-        required: true
     hosted_zone_id:
         description:
             - The unique string (ID) used to identify a hosted zone.
@@ -315,7 +315,7 @@ def delete(client, module: AnsibleAWSModule, ksk):
 
 def main() -> None:
     argument_spec = dict(
-        caller_reference=dict(type="str", required=True),
+        caller_reference=dict(type="str"),
         hosted_zone_id=dict(type="str", aliases=["zone_id"], required=True),
         key_management_service_arn=dict(type="str", aliases=["kms_arn"], no_log=False),
         name=dict(type="str", required=True),
