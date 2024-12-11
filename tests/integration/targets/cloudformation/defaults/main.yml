@@ -2,6 +2,7 @@
 stack_name: "{{ resource_prefix }}"
 stack_name_disable_rollback_true: "{{ resource_prefix }}-drb-true"
 stack_name_disable_rollback_false: "{{ resource_prefix }}-drb-false"
+stack_name_update_termination_protection: "{{ resource_prefix }}-update-tp"
 
 availability_zone: "{{ ec2_availability_zone_names[0] }}"
 
