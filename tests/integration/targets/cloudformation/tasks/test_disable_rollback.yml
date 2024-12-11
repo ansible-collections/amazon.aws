@@ -2,7 +2,7 @@
 - name: Run cloudformation tests for `disable_rollback` parameter
   block:
     # disable rollback to true
-    - name: create a cloudformation stack (disable_rollback=true) (check mode)
+    - name: Create a cloudformation stack (disable_rollback=true) (check mode)
       amazon.aws.cloudformation:
         stack_name: "{{ stack_name_disable_rollback_true }}"
         state: present
@@ -15,13 +15,13 @@
       register: cf_stack
       check_mode: true
 
-    - name: check task return attributes
+    - name: Check task return attributes
       ansible.builtin.assert:
         that:
           - cf_stack.changed
           - "'msg' in cf_stack and 'New stack would be created' in cf_stack.msg"
 
-    - name: create a cloudformation stack (disable_rollback=true)
+    - name: Create a cloudformation stack (disable_rollback=true)
       amazon.aws.cloudformation:
         stack_name: "{{ stack_name_disable_rollback_true }}"
         state: present
@@ -33,12 +33,12 @@
           SubnetId: "{{ testing_subnet.subnet.id }}"
       register: cf_stack
 
-    - name: get stack details
+    - name: Get stack details
       amazon.aws.cloudformation_info:
         stack_name: "{{ stack_name_disable_rollback_true }}"
       register: stack_info
 
-    - name: assert stack info
+    - name: Assert stack info
       ansible.builtin.assert:
         that:
           - "'cloudformation' in stack_info"
@@ -46,7 +46,7 @@
           - stack_info.cloudformation[stack_name_disable_rollback_true].stack_description.disable_rollback == true
 
     # disable rollback to false
-    - name: create a cloudformation stack (disable_rollback=false) (check mode)
+    - name: Create a cloudformation stack (disable_rollback=false) (check mode)
       amazon.aws.cloudformation:
         stack_name: "{{ stack_name_disable_rollback_false }}"
         state: present
@@ -59,13 +59,13 @@
       register: cf_stack
       check_mode: true
 
-    - name: check task return attributes
+    - name: Check task return attributes
       ansible.builtin.assert:
         that:
           - cf_stack.changed
           - "'msg' in cf_stack and 'New stack would be created' in cf_stack.msg"
 
-    - name: create a cloudformation stack (disable_rollback=false)
+    - name: Create a cloudformation stack (disable_rollback=false)
       amazon.aws.cloudformation:
         stack_name: "{{ stack_name_disable_rollback_false }}"
         state: present
@@ -77,12 +77,12 @@
           SubnetId: "{{ testing_subnet.subnet.id }}"
       register: cf_stack
 
-    - name: get stack details
+    - name: Get stack details
       amazon.aws.cloudformation_info:
         stack_name: "{{ stack_name_disable_rollback_false }}"
       register: stack_info
 
-    - name: assert stack info
+    - name: Assert stack info
       ansible.builtin.assert:
         that:
           - "'cloudformation' in stack_info"
@@ -90,7 +90,7 @@
           - stack_info.cloudformation[stack_name_disable_rollback_false].stack_description.disable_rollback == false
 
     # disable rollback not set
-    - name: create a cloudformation stack (disable_rollback not set) (check mode)
+    - name: Create a cloudformation stack (disable_rollback not set) (check mode)
       amazon.aws.cloudformation:
         stack_name: "{{ stack_name }}"
         state: present
@@ -102,13 +102,13 @@
       register: cf_stack
       check_mode: true
 
-    - name: check task return attributes
+    - name: Check task return attributes
       ansible.builtin.assert:
         that:
           - cf_stack.changed
           - "'msg' in cf_stack and 'New stack would be created' in cf_stack.msg"
 
-    - name: create a cloudformation stack (disable_rollback not set)
+    - name: Create a cloudformation stack (disable_rollback not set)
       amazon.aws.cloudformation:
         stack_name: "{{ stack_name }}"
         state: present
@@ -119,12 +119,12 @@
           SubnetId: "{{ testing_subnet.subnet.id }}"
       register: cf_stack
 
-    - name: get stack details
+    - name: Get stack details
       amazon.aws.cloudformation_info:
         stack_name: "{{ stack_name }}"
       register: stack_info
 
-    - name: assert stack info
+    - name: Assert stack info
       ansible.builtin.assert:
         that:
           - "'cloudformation' in stack_info"
@@ -191,7 +191,7 @@
           SubnetId: "{{ testing_subnet.subnet.id }}"
       register: cf_stack
 
-    - name: get stack details
+    - name: Get stack details
       amazon.aws.cloudformation_info:
         stack_name: "{{ stack_name }}-failtest"
       register: stack_info

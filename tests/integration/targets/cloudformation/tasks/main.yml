@@ -26,8 +26,13 @@
 
     # ==== Cloudformation tests with disable_rollback ====================
 
-    - ansible.builtin.import_tasks: test_disable_rollback.yml
-    - name: create a cloudformation stack (check mode)
+    - name: Run tests for testing update stack termination protection
+      ansible.builtin.import_tasks: test_update_termination_protection.yml
+
+    - name: Run tests for testing stack disable rollback
+      ansible.builtin.import_tasks: test_disable_rollback.yml
+
+    - name: Create a cloudformation stack (Check mode)
       amazon.aws.cloudformation:
         stack_name: "{{ stack_name }}"
         template_body: "{{ lookup('file','cf_template.json') }}"
@@ -41,13 +46,13 @@
       register: cf_stack
       check_mode: true
 
-    - name: check task return attributes
+    - name: Check task return attributes
       ansible.builtin.assert:
         that:
           - cf_stack.changed
           - "'msg' in cf_stack and 'New stack would be created' in cf_stack.msg"
 
-    - name: create a cloudformation stack
+    - name: Create a cloudformation stack
       amazon.aws.cloudformation:
         stack_name: "{{ stack_name }}"
         template_body: "{{ lookup('file','cf_template.json') }}"
@@ -60,7 +65,7 @@
           test: "{{ resource_prefix }}"
       register: cf_stack
 
-    - name: check task return attributes
+    - name: Check task return attributes
       ansible.builtin.assert:
         that:
           - cf_stack.changed
@@ -69,7 +74,7 @@
           - "'stack_outputs' in cf_stack and 'InstanceId' in cf_stack.stack_outputs"
           - "'stack_resources' in cf_stack"
 
-    - name: create a cloudformation stack (check mode) (idempotent)
+    - name: Create a cloudformation stack (Check mode) (idempotent)
       amazon.aws.cloudformation:
         stack_name: "{{ stack_name }}"
         template_body: "{{ lookup('file','cf_template.json') }}"
@@ -83,12 +88,12 @@
       register: cf_stack
       check_mode: true
 
-    - name: check task return attributes
+    - name: Check task return attributes
       ansible.builtin.assert:
         that:
           - not cf_stack.changed
 
-    - name: create a cloudformation stack (idempotent)
+    - name: Create a cloudformation stack (idempotent)
       amazon.aws.cloudformation:
         stack_name: "{{ stack_name }}"
         template_body: "{{ lookup('file','cf_template.json') }}"
@@ -101,7 +106,7 @@
           test: "{{ resource_prefix }}"
       register: cf_stack
 
-    - name: check task return attributes
+    - name: Check task return attributes
       ansible.builtin.assert:
         that:
           - not cf_stack.changed
@@ -109,21 +114,21 @@
           - "'stack_outputs' in cf_stack and 'InstanceId' in cf_stack.stack_outputs"
           - "'stack_resources' in cf_stack"
 
-    - name: get all stacks details
+    - name: Get all stacks details
       amazon.aws.cloudformation_info:
       register: all_stacks_info
 
-    - name: assert all stacks info
+    - name: Assert all stacks info
       ansible.builtin.assert:
         that:
           - all_stacks_info | length > 0
 
-    - name: get stack details
+    - name: Get stack details
       amazon.aws.cloudformation_info:
         stack_name: "{{ stack_name }}"
       register: stack_info
 
-    - name: assert stack info
+    - name: Assert stack info
       ansible.builtin.assert:
         that:
           - "'cloudformation' in stack_info"
@@ -135,13 +140,13 @@
           - "'stack_tags' in stack_info.cloudformation[stack_name]"
           - stack_info.cloudformation[stack_name].stack_tags.Stack == stack_name
 
-    - name: get stack details (checkmode)
+    - name: Get stack details (checkmode)
       amazon.aws.cloudformation_info:
         stack_name: "{{ stack_name }}"
       register: stack_info
       check_mode: true
 
-    - name: assert stack info
+    - name: Assert stack info
       ansible.builtin.assert:
         that:
           - "'cloudformation' in stack_info"
@@ -153,13 +158,13 @@
           - "'stack_tags' in stack_info.cloudformation[stack_name]"
           - stack_info.cloudformation[stack_name].stack_tags.Stack == stack_name
 
-    - name: get stack details (all_facts)
+    - name: Get stack details (all_facts)
       amazon.aws.cloudformation_info:
         stack_name: "{{ stack_name }}"
         all_facts: true
       register: stack_info
 
-    - name: assert stack info
+    - name: Assert stack info
       ansible.builtin.assert:
         that:
           - "'stack_events' in stack_info.cloudformation[stack_name]"
@@ -168,14 +173,14 @@
           - "'stack_resources' in stack_info.cloudformation[stack_name]"
           - "'stack_template' in stack_info.cloudformation[stack_name]"
 
-    - name: get stack details (all_facts) (checkmode)
+    - name: Get stack details (all_facts) (checkmode)
       amazon.aws.cloudformation_info:
         stack_name: "{{ stack_name }}"
         all_facts: true
       register: stack_info
       check_mode: true
 
-    - name: assert stack info
+    - name: Assert stack info
       ansible.builtin.assert:
         that:
           - "'stack_events' in stack_info.cloudformation[stack_name]"
@@ -184,10 +189,10 @@
           - "'stack_resources' in stack_info.cloudformation[stack_name]"
           - "'stack_template' in stack_info.cloudformation[stack_name]"
 
-    # ==== Cloudformation tests (create changeset) ============================
+    # ==== Cloudformation tests (Create changeset) ============================
 
-    # try to create a changeset by changing instance type
-    - name: create a changeset
+    # try to Create a changeset by changing instance type
+    - name: Create a changeset
       amazon.aws.cloudformation:
         stack_name: "{{ stack_name }}"
         create_changeset: true
@@ -202,38 +207,38 @@
           test: "{{ resource_prefix }}"
       register: create_changeset_result
 
-    - name: assert changeset created
+    - name: Assert changeset created
       ansible.builtin.assert:
         that:
           - create_changeset_result.changed
           - "'change_set_id' in create_changeset_result"
           - "'Stack CREATE_CHANGESET complete' in create_changeset_result.output"
 
-    - name: get stack details with changesets
+    - name: Get stack details with changesets
       amazon.aws.cloudformation_info:
         stack_name: "{{ stack_name }}"
         stack_change_sets: true
       register: stack_info
 
-    - name: assert changesets in info
+    - name: Assert changesets in info
       ansible.builtin.assert:
         that:
           - "'stack_change_sets' in stack_info.cloudformation[stack_name]"
 
-    - name: get stack details with changesets (checkmode)
+    - name: Get stack details with changesets (checkmode)
       amazon.aws.cloudformation_info:
         stack_name: "{{ stack_name }}"
         stack_change_sets: true
       register: stack_info
       check_mode: true
 
-    - name: assert changesets in info
+    - name: Assert changesets in info
       ansible.builtin.assert:
         that:
           - "'stack_change_sets' in stack_info.cloudformation[stack_name]"
 
-    # try to create an empty changeset by passing in unchanged template
-    - name: create a changeset
+    # try to Create an empty changeset by passing in unchanged template
+    - name: Create a changeset
       amazon.aws.cloudformation:
         stack_name: "{{ stack_name }}"
         create_changeset: true
@@ -247,7 +252,7 @@
           test: "{{ resource_prefix }}"
       register: create_changeset_result
 
-    - name: assert changeset created
+    - name: Assert changeset created
       ansible.builtin.assert:
         that:
           - not create_changeset_result.changed
@@ -255,7 +260,7 @@
 
     # ==== Cloudformation tests (termination_protection) ======================
 
-    - name: set termination protection to true
+    - name: Set termination protection to true
       amazon.aws.cloudformation:
         stack_name: "{{ stack_name }}"
         termination_protection: true
@@ -275,28 +280,28 @@
     #        that:
     #          - cf_stack.changed
 
-    - name: get stack details
+    - name: Get stack details
       amazon.aws.cloudformation_info:
         stack_name: "{{ stack_name }}"
       register: stack_info
 
-    - name: assert stack info
+    - name: Assert stack info
       ansible.builtin.assert:
         that:
           - stack_info.cloudformation[stack_name].stack_description.enable_termination_protection
 
-    - name: get stack details (checkmode)
+    - name: Get stack details (checkmode)
       amazon.aws.cloudformation_info:
         stack_name: "{{ stack_name }}"
       register: stack_info
       check_mode: true
 
-    - name: assert stack info
+    - name: Assert stack info
       ansible.builtin.assert:
         that:
           - stack_info.cloudformation[stack_name].stack_description.enable_termination_protection
 
-    - name: set termination protection to false
+    - name: Set termination protection to false
       amazon.aws.cloudformation:
         stack_name: "{{ stack_name }}"
         termination_protection: false
@@ -316,30 +321,30 @@
     #        that:
     #          - cf_stack.changed
 
-    - name: get stack details
+    - name: Get stack details
       amazon.aws.cloudformation_info:
         stack_name: "{{ stack_name }}"
       register: stack_info
 
-    - name: assert stack info
+    - name: Assert stack info
       ansible.builtin.assert:
         that:
           - not stack_info.cloudformation[stack_name].stack_description.enable_termination_protection
 
-    - name: get stack details (checkmode)
+    - name: Get stack details (checkmode)
       amazon.aws.cloudformation_info:
         stack_name: "{{ stack_name }}"
       register: stack_info
       check_mode: true
 
-    - name: assert stack info
+    - name: Assert stack info
       ansible.builtin.assert:
         that:
           - not stack_info.cloudformation[stack_name].stack_description.enable_termination_protection
 
     # ==== Cloudformation tests (update_policy) ======================
 
-    - name: setting an stack policy with json body
+    - name: Setting an stack policy with json body
       amazon.aws.cloudformation:
         stack_name: "{{ stack_name }}"
         stack_policy_body: "{{ lookup('file','update_policy.json') }}"
@@ -353,12 +358,12 @@
           test: "{{ resource_prefix }}"
       register: cf_stack
 
-    - name: get stack details
+    - name: Get stack details
       amazon.aws.cloudformation_info:
         stack_name: "{{ stack_name }}"
       register: stack_info
 
-    - name: setting an stack policy on update
+    - name: Setting an stack policy on update
       amazon.aws.cloudformation:
         stack_name: "{{ stack_name }}"
         stack_policy_on_update_body: "{{ lookup('file','update_policy.json') }}"
@@ -372,46 +377,46 @@
           test: "{{ resource_prefix }}"
       register: cf_stack
 
-    - name: get stack details
+    - name: Get stack details
       amazon.aws.cloudformation_info:
         stack_name: "{{ stack_name }}"
       register: stack_info
 
     # ==== Cloudformation tests (delete stack tests) ==========================
 
-    - name: delete cloudformation stack (check mode)
+    - name: Delete cloudformation stack (Check mode)
       amazon.aws.cloudformation:
         stack_name: "{{ stack_name }}"
         state: absent
       check_mode: true
       register: cf_stack
 
-    - name: check task return attributes
+    - name: Check task return attributes
       ansible.builtin.assert:
         that:
           - cf_stack.changed
           - "'msg' in cf_stack and 'Stack would be deleted' in cf_stack.msg"
 
-    - name: delete cloudformation stack
+    - name: Delete cloudformation stack
       amazon.aws.cloudformation:
         stack_name: "{{ stack_name }}"
         state: absent
       register: cf_stack
 
-    - name: check task return attributes
+    - name: Check task return attributes
       ansible.builtin.assert:
         that:
           - cf_stack.changed
           - "'output' in cf_stack and 'Stack Deleted' in cf_stack.output"
 
-    - name: delete cloudformation stack (check mode) (idempotent)
+    - name: Delete cloudformation stack (Check mode) (idempotent)
       amazon.aws.cloudformation:
         stack_name: "{{ stack_name }}"
         state: absent
       check_mode: true
       register: cf_stack
 
-    - name: check task return attributes
+    - name: Check task return attributes
       ansible.builtin.assert:
         that:
           - not cf_stack.changed
@@ -419,35 +424,35 @@
           - >-
             "Stack doesn't exist" in cf_stack.msg
 
-    - name: delete cloudformation stack (idempotent)
+    - name: Delete cloudformation stack (idempotent)
       amazon.aws.cloudformation:
         stack_name: "{{ stack_name }}"
         state: absent
       register: cf_stack
 
-    - name: check task return attributes
+    - name: Check task return attributes
       ansible.builtin.assert:
         that:
           - not cf_stack.changed
           - "'output' in cf_stack and 'Stack not found.' in cf_stack.output"
 
-    - name: get stack details
+    - name: Get stack details
       amazon.aws.cloudformation_info:
         stack_name: "{{ stack_name }}"
       register: stack_info
 
-    - name: assert stack info
+    - name: Assert stack info
       ansible.builtin.assert:
         that:
           - not stack_info.cloudformation
 
-    - name: get stack details (checkmode)
+    - name: Get stack details (checkmode)
       amazon.aws.cloudformation_info:
         stack_name: "{{ stack_name }}"
       register: stack_info
       check_mode: true
 
-    - name: assert stack info
+    - name: Assert stack info
       ansible.builtin.assert:
         that:
           - not stack_info.cloudformation
@@ -455,7 +460,7 @@
   # ==== Cleanup ============================================================
 
   always:
-    - name: delete stack
+    - name: Delete stack
       amazon.aws.cloudformation:
         stack_name: "{{ stack_name }}"
         state: absent

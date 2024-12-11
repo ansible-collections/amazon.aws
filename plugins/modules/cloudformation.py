@@ -514,6 +514,7 @@ def update_stack(module, stack_params, cfn, events_limit):
 
 def update_termination_protection(module, cfn, stack_name, desired_termination_protection_state):
     """updates termination protection of a stack"""
+    changed = False
     stack = get_stack_facts(module, cfn, stack_name)
     if stack:
         if stack["EnableTerminationProtection"] is not desired_termination_protection_state:
@@ -523,9 +524,10 @@ def update_termination_protection(module, cfn, stack_name, desired_termination_p
                     EnableTerminationProtection=desired_termination_protection_state,
                     StackName=stack_name,
                 )
+                changed = True
             except botocore.exceptions.ClientError as e:
                 module.fail_json_aws(e)
-
+    return changed
 
 def stack_operation(module, cfn, stack_name, operation, events_limit, op_token=None):
     """gets the status of a stack while it is created/updated/deleted"""
@@ -785,7 +787,7 @@ def main():
                 result = create_changeset(module, stack_params, cfn, module.params.get("events_limit"))
                 changeset_updated = True
             if module.params.get("termination_protection") is not None:
-                update_termination_protection(
+                result['changed'] = update_termination_protection(
                     module, cfn, stack_params["StackName"], bool(module.params.get("termination_protection"))
                 )
             if not changeset_updated:
