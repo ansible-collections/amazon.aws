@@ -529,6 +529,7 @@ def update_termination_protection(module, cfn, stack_name, desired_termination_p
                 module.fail_json_aws(e)
     return changed
 
+
 def stack_operation(module, cfn, stack_name, operation, events_limit, op_token=None):
     """gets the status of a stack while it is created/updated/deleted"""
     existed = []
@@ -787,7 +788,7 @@ def main():
                 result = create_changeset(module, stack_params, cfn, module.params.get("events_limit"))
                 changeset_updated = True
             if module.params.get("termination_protection") is not None:
-                result['changed'] = update_termination_protection(
+                result["changed"] = update_termination_protection(
                     module, cfn, stack_params["StackName"], bool(module.params.get("termination_protection"))
                 )
             if not changeset_updated:

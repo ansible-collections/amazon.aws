@@ -204,7 +204,7 @@
           - stack_info.cloudformation[stack_name+"-failtest"].stack_description.stack_status == "UPDATE_COMPLETE"
 
   always:
-    - name: delete stack
+    - name: Delete stack
       amazon.aws.cloudformation:
         stack_name: "{{ item }}"
         state: absent

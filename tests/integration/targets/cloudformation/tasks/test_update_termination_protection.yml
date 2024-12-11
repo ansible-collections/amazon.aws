@@ -91,7 +91,7 @@
           - stack_info.cloudformation[stack_name_update_termination_protection].stack_description.enable_termination_protection == true
           - stack_info.cloudformation[stack_name_update_termination_protection].stack_change_sets is defined
 
-    - name: Update cloudformation stack `termination_protection=fale` (create_changeset=true) #required to delete stack
+    - name: Update cloudformation stack `termination_protection=fale` (create_changeset=true) # required to delete stack
       amazon.aws.cloudformation:
         stack_name: "{{ stack_name_update_termination_protection }}"
         state: present
