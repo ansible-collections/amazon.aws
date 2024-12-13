@@ -35,6 +35,7 @@ options:
     key_management_service_arn:
         description:
             - The Amazon resource name (ARN) for a customer managed key in Key Management Service (KMS).
+            - Required when O(state=present).
         type: str
         aliases: ["kms_arn"]
     name:
@@ -45,7 +46,7 @@ options:
     status:
         description:
             - A string specifying the initial status of the key-signing key (KSK).
-              You can set the value to V(ACTIVE) or V(INACTIVE).
+            - When O(state=presnent), you can set the value to V(ACTIVE) or V(INACTIVE).
         type: str
         default: "ACTIVE"
         choices: ["ACTIVE", "INACTIVE"]
@@ -90,14 +91,13 @@ EXAMPLES = r"""
   amazon.aws.route53_ksk:
     name: "{{ resource_prefix }}-ksk"
     hosted_zone_id: "{{ _hosted_zone.zone_id }}"
-    status: "INACTIVE"
     state: absent
 """
 
 RETURN = r"""
 change_info:
     description: A dictionary that describes change information about changes made to the hosted zone.
-    returned: when the Key Signing Request is created or updated
+    returned: when a Key Signing Key is created or it exists and is updated/deleted
     type: dict
     contains:
         id:
@@ -284,8 +284,6 @@ def create_or_update(client, module: AnsibleAWSModule, ksk):
             Status=status,
         )
 
-        del response["ResponseMetadata"]
-
     return changed, response
 
 
@@ -293,11 +291,10 @@ def delete(client, module: AnsibleAWSModule, ksk):
     changed: bool = False
     zone_id = module.params.get("hosted_zone_id")
     name = module.params.get("name")
-    response = {"KeySigningRequest": {}}
+    response = {"KeySigningRequest": {}, "ChangeInfo": {}}
 
     if ksk is not None:
         changed = True
-        response["KeySigningRequest"] = ksk
         if module.check_mode:
             module.exit_json(changed=changed, msg="Would have deleted the Key Signing Key if not in check_mode.")
 
@@ -305,7 +302,7 @@ def delete(client, module: AnsibleAWSModule, ksk):
         change_id = result["ChangeInfo"]["Id"]
         wait(client, module, change_id)
 
-        response["ChangeInfo"] = client.delete_key_signing_key(HostedZoneId=zone_id, Name=name)
+        response.update(client.delete_key_signing_key(HostedZoneId=zone_id, Name=name))
 
     return changed, response
 
@@ -346,7 +343,10 @@ def main() -> None:
         if module.params.get("wait") and result.get("ChangeInfo"):
             change_id = result["ChangeInfo"]["Id"]
             wait(client, module, change_id)
-            result["ChangeInfo"] = get_change(client, change_id)
+            result.update(get_change(client, change_id))
+
+        if "ResponseMetadata" in result:
+            del result["ResponseMetadata"]
 
     except AnsibleAWSError as e:
         module.fail_json_aws_error(e)
