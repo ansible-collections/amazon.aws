@@ -11,9 +11,7 @@ version_added: 9.2.0
 description:
     - Creates a new key-signing key (KSK) associated with a hosted zone.
       You can only have two KSKs per hosted zone.
-    - Deletes a key-signing key (KSK). Before you can delete a KSK, you must deactivate it.
-      The KSK must be deactivated before you can delete it regardless of whether the hosted
-      zone is enabled for DNSSEC signing.
+    - When O(state=absent), it deactivates and deletes a key-signing key (KSK).
     - Activates a key-signing key (KSK) so that it can be used for signing by DNSSEC.
     - Deactivates a key-signing key (KSK) so that it will not be used for signing by DNSSEC.
 options:
@@ -303,12 +301,11 @@ def delete(client, module: AnsibleAWSModule, ksk):
         if module.check_mode:
             module.exit_json(changed=changed, msg="Would have deleted the Key Signing Key if not in check_mode.")
 
-        if module.params.get("status") == "INACTIVE":
-            result = deactivate(client, zone_id, name)
-            change_id = result["ChangeInfo"]["Id"]
-            wait(client, module, change_id)
+        result = deactivate(client, zone_id, name)
+        change_id = result["ChangeInfo"]["Id"]
+        wait(client, module, change_id)
 
-        response = client.delete_key_signing_key(HostedZoneId=zone_id, Name=name)
+        response["ChangeInfo"] = client.delete_key_signing_key(HostedZoneId=zone_id, Name=name)
 
     return changed, response
 
