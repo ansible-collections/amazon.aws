@@ -64,6 +64,8 @@
           - '"change_info" in _ksk_request'
           - _ksk_request.changed
           - '"key_signing_key" in _ksk_request'
+          - _ksk_request.key_signing_key.status == "INACTIVE"
+          - _ksk_request.change_info.status == "PENDING"
 
     - name: Create a Key Signing Key request (idempotency)
       amazon.aws.route53_ksk:
@@ -81,6 +83,7 @@
           - _ksk_request is successful
           - not _ksk_request.changed
           - '"key_signing_key" in _ksk_request'
+          - _ksk_request.key_signing_key.status == "INACTIVE"
 
     - name: Activate the Key Signing Key request (check_mode)
       amazon.aws.route53_ksk:
@@ -118,6 +121,7 @@
           - _ksk_request is successful
           - '"change_info" in _ksk_request'
           - _ksk_request.changed
+          - _ksk_request.change_info.status == "INSYNC"
 
     - name: Activate the Key Signing Key request (idempotency)
       amazon.aws.route53_ksk:
@@ -143,6 +147,7 @@
         caller_reference: "{{ aws_caller_info.arn }}"
         status: "INACTIVE"
         state: present
+        wait: true
       register: _ksk_request
 
     - name: Assert success
@@ -151,6 +156,7 @@
           - _ksk_request is successful
           - '"change_info" in _ksk_request'
           - _ksk_request.changed
+          - _ksk_request.change_info.status == "INSYNC"
 
     - name: Deactivate the Key Signing Key request (idempotency)
       amazon.aws.route53_ksk:
@@ -172,7 +178,6 @@
       amazon.aws.route53_ksk:
         name: "{{ resource_prefix }}-ksk"
         hosted_zone_id: "{{ _hosted_zone.zone_id }}"
-        status: "INACTIVE"
         state: absent
       check_mode: true
       register: _ksk_request
@@ -189,7 +194,6 @@
       amazon.aws.route53_ksk:
         name: "{{ resource_prefix }}-ksk"
         hosted_zone_id: "{{ _hosted_zone.zone_id }}"
-        status: "INACTIVE"
         state: absent
       register: _ksk_request
 
@@ -199,12 +203,12 @@
           - _ksk_request is successful
           - '"change_info" in _ksk_request'
           - _ksk_request.changed
+          - _ksk_request.change_info.status == "PENDING"
 
     - name: Delete the Key Signing Key request (idempotency)
       amazon.aws.route53_ksk:
         name: "{{ resource_prefix }}-ksk"
         hosted_zone_id: "{{ _hosted_zone.zone_id }}"
-        status: "INACTIVE"
         state: absent
       register: _ksk_request
 
@@ -218,7 +222,6 @@
       amazon.aws.route53_ksk:
         name: "not existing ksk"
         hosted_zone_id: "{{ _hosted_zone.zone_id }}"
-        status: "INACTIVE"
         state: absent
       register: _ksk_request
 
@@ -229,18 +232,10 @@
           - not _ksk_request.changed
 
   always:
-    - name: Disable DNSSEC for Route53 public zone
-      amazon.aws.route53_zone:
-        zone: "{{ resource_prefix }}.public"
-        state: present
-        dnssec: false
-      ignore_errors: true
-
     - name: Delete the Key Signing Key Request
       amazon.aws.route53_ksk:
         name: "{{ resource_prefix }}-ksk"
         hosted_zone_id: "{{ _hosted_zone.zone_id }}"
-        status: "INACTIVE"
         state: absent
       ignore_errors: true
 
