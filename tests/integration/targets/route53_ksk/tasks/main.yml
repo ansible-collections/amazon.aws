@@ -121,6 +121,7 @@
           - _ksk_request is successful
           - '"change_info" in _ksk_request'
           - _ksk_request.changed
+          - _ksk_request.key_signing_key.status == "ACTIVE"
           - _ksk_request.change_info.status == "INSYNC"
 
     - name: Activate the Key Signing Key request (idempotency)
@@ -138,6 +139,7 @@
         that:
           - _ksk_request is successful
           - not _ksk_request.changed
+          - _ksk_request.key_signing_key.status == "ACTIVE"
 
     - name: Deactivate the Key Signing Key request
       amazon.aws.route53_ksk:
@@ -156,6 +158,7 @@
           - _ksk_request is successful
           - '"change_info" in _ksk_request'
           - _ksk_request.changed
+          - _ksk_request.key_signing_key.status == "INACTIVE"
           - _ksk_request.change_info.status == "INSYNC"
 
     - name: Deactivate the Key Signing Key request (idempotency)
@@ -173,6 +176,7 @@
         that:
           - _ksk_request is successful
           - not _ksk_request.changed
+          - _ksk_request.key_signing_key.status == "INACTIVE"
 
     - name: Delete the Key Signing Key request (check_mode)
       amazon.aws.route53_ksk:

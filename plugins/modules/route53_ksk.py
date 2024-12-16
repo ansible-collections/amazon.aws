@@ -233,7 +233,7 @@ def find_ksk(client, module):
         for ksk in hosted_zone_dnssec["KeySigningKeys"]:
             if ksk["Name"] == module.params.get("name"):
                 return ksk
-    return None
+    return {}
 
 
 def wait(client, module, change_id):
@@ -255,9 +255,9 @@ def create_or_update(client, module: AnsibleAWSModule, ksk):
     zone_id = module.params.get("hosted_zone_id")
     name = module.params.get("name")
     status = module.params.get("status")
+    response = {}
 
-    if ksk is not None:
-        response = {"KeySigningKey": ksk}
+    if ksk:
         if ksk["Status"] != status:
             changed = True
 
@@ -291,9 +291,9 @@ def delete(client, module: AnsibleAWSModule, ksk):
     changed: bool = False
     zone_id = module.params.get("hosted_zone_id")
     name = module.params.get("name")
-    response = {"KeySigningRequest": {}, "ChangeInfo": {}}
+    response = {}
 
-    if ksk is not None:
+    if ksk:
         changed = True
         if module.check_mode:
             module.exit_json(changed=changed, msg="Would have deleted the Key Signing Key if not in check_mode.")
@@ -344,6 +344,9 @@ def main() -> None:
             change_id = result["ChangeInfo"]["Id"]
             wait(client, module, change_id)
             result.update(get_change(client, change_id))
+
+        # Get updated information about KSK
+        result["KeySigningKey"] = find_ksk(client, module)
 
         if "ResponseMetadata" in result:
             del result["ResponseMetadata"]
