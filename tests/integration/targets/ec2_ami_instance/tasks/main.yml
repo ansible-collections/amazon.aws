@@ -90,10 +90,10 @@
       amazon.aws.ec2_ami:
         instance_id: "{{ ec2_instance_id }}"
         state: present
-        name: "{{ ec2_ami_name }}_ami"
+        name: "{{ ec2_ami_name }}_ami_check"
         description: "{{ ec2_ami_description }}"
         tags:
-          Name: "{{ ec2_ami_name }}_ami"
+          Name: "{{ ec2_ami_name }}_ami_check"
         wait: true
         root_device_name: "{{ ec2_ami_root_disk }}"
       check_mode: true
@@ -108,10 +108,10 @@
       amazon.aws.ec2_ami:
         instance_id: "{{ ec2_instance_id }}"
         state: present
-        name: "{{ ec2_ami_name }}_ami"
+        name: "{{ ec2_ami_name }}_ami_instance"
         description: "{{ ec2_ami_description }}"
         tags:
-          Name: "{{ ec2_ami_name }}_ami"
+          Name: "{{ ec2_ami_name }}_ami_instance"
         wait: true
         root_device_name: "{{ ec2_ami_root_disk }}"
       register: result
@@ -125,7 +125,7 @@
         that:
           - result.changed
           - result.image_id.startswith('ami-')
-          - "'Name' in result.tags and result.tags.Name == ec2_ami_name + '_ami'"
+          - "'Name' in result.tags and result.tags.Name == ec2_ami_name + '_ami_instance'"
 
     - name: get related snapshot info and ensure the tags have been propagated
       amazon.aws.ec2_snapshot_info:
@@ -137,7 +137,7 @@
       ansible.builtin.assert:
         that:
           - "'tags' in snapshot_result.snapshots[0]"
-          - "'Name' in snapshot_result.snapshots[0].tags and snapshot_result.snapshots[0].tags.Name == ec2_ami_name + '_ami'"
+          - "'Name' in snapshot_result.snapshots[0].tags and snapshot_result.snapshots[0].tags.Name == ec2_ami_name + '_ami_instance'"
 
     # ============================================================
 
@@ -345,6 +345,34 @@
           - result.failed
           - "result.msg == 'state is absent but all of the following are missing: image_id'"
 
+    # ==============================================================
+
+    - name: Create image with imdsv2 enabled
+      amazon.aws.ec2_ami:
+        state: present
+        instance_id: "{{ ec2_instance_id }}"
+        name: "{{ ec2_ami_name }}_imdsv2"
+        imdsv2_enable: true
+        wait: true
+        tags:
+          Name: "{{ ec2_ami_name }}_imdsv2"
+      register: imdsv2_image
+
+    - name: Get ami info
+      amazon.aws.ec2_ami_info:
+        image_ids: "{{ imdsv2_image.image_id }}"
+        describe_image_attributes: true
+      register: imdsv2_info
+
+    - name: Assert ami IMDSV2 is set
+      ansible.builtin.assert:
+        that:
+          - imdsv2_info.images[0].imdsv2_enabled
+
+    - name: set image id fact for deletion later
+      ansible.builtin.set_fact:
+        ec2_ami_image_id_imdsv2: "{{ imdsv2_image.image_id }}"
+
   always:
     # ============================================================
 
@@ -374,6 +402,14 @@
         state: absent
         image_id: "{{ ec2_ami_image_id_simple }}"
         name: "{{ ec2_ami_name }}_ami"
+        wait: true
+      ignore_errors: true
+
+    - name: delete imdsv2 ami
+      amazon.aws.ec2_ami:
+        state: absent
+        image_id: "{{ ec2_ami_image_id_imdsv2 }}"
+        name: "{{ ec2_ami_name }}_imdsv2"
         wait: true
       ignore_errors: true
 
