@@ -264,6 +264,7 @@ def create_or_update(client, module: AnsibleAWSModule, ksk):
             if module.check_mode:
                 module.exit_json(
                     changed=changed,
+                    key_signing_key=camel_dict_to_snake_dict(ksk),
                     msg=f"Would have updated the Key Signing Key status to {status} if not in check_mode.",
                 )
 
@@ -296,7 +297,11 @@ def delete(client, module: AnsibleAWSModule, ksk):
     if ksk:
         changed = True
         if module.check_mode:
-            module.exit_json(changed=changed, msg="Would have deleted the Key Signing Key if not in check_mode.")
+            module.exit_json(
+                changed=changed,
+                key_signing_key=camel_dict_to_snake_dict(ksk),
+                msg="Would have deleted the Key Signing Key if not in check_mode.",
+            )
 
         result = deactivate(client, zone_id, name)
         change_id = result["ChangeInfo"]["Id"]
