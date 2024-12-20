@@ -81,6 +81,18 @@ ansible-playbook playbooks/test_inventory_cache.yml "$@"
 ansible-playbook playbooks/create_inventory_config.yml -e "template='inventory_with_ssm.yml.j2'" "$@"
 ansible-playbook playbooks/test_inventory_ssm.yml "$@"
 
+# generate inventory config with hostnames containing multiple tags and jinja2 filters (allow_duplicated_hosts=False)
+ansible-playbook playbooks/create_inventory_config.yml -e "template='inventory_with_hostnames_with_jinja2_filters.yml.j2'" -e "search_multiple_tags=true" "$@"
+ansible-playbook playbooks/test_populating_inventory_with_hostnames_with_jinja2_filters.yml -e "search_multiple_tags=true" "$@"
+
+# generate inventory config with hostnames containing multiple tags and jinja2 filters (allow_duplicated_hosts=True)
+ansible-playbook playbooks/create_inventory_config.yml -e "template='inventory_with_hostnames_with_jinja2_filters.yml.j2'" -e "allow_duplicated_hosts=true" -e "search_multiple_tags=true" "$@"
+ansible-playbook playbooks/test_populating_inventory_with_hostnames_with_jinja2_filters.yml -e "allow_duplicated_hosts=true" -e "search_multiple_tags=true" "$@"
+
+# generate inventory config with hostnames containing single tag and jinja2 filters
+ansible-playbook playbooks/create_inventory_config.yml -e "template='inventory_with_hostnames_with_jinja2_filters.yml.j2'" "$@"
+ansible-playbook playbooks/test_populating_inventory_with_hostnames_with_jinja2_filters.yml "$@"
+
 # remove inventory cache
 rm -r aws_ec2_cache_dir/
 
