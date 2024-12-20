@@ -37,6 +37,7 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 import traceback
 import typing
 from typing import Any
@@ -60,10 +61,13 @@ except ImportError:
     HAS_BOTO3 = False
 
 if typing.TYPE_CHECKING:
-    ClientType = botocore.client.BaseClient
-    ResourceType = boto3.resources.base.ServiceResource
-    BotoConn = Union[ClientType, ResourceType, Tuple[ClientType, ResourceType]]
+    from typing_extensions import TypeAlias
+
     from .modules import AnsibleAWSModule
+
+    ClientType: TypeAlias = botocore.client.BaseClient
+    ResourceType: TypeAlias = boto3.resources.base.ServiceResource
+    BotoConn = Union[ClientType, ResourceType, Tuple[ClientType, ResourceType]]
 
 try:
     from packaging.version import Version
@@ -114,8 +118,8 @@ def boto3_conn(
         return _boto3_conn(conn_type=conn_type, resource=resource, region=region, endpoint=endpoint, **params)
     except botocore.exceptions.NoRegionError:
         module.fail_json(
-            msg=f"The {module._name} module requires a region and none was found in configuration, "
-            "environment variables or module parameters",
+            msg=f"The {module._name} module requires a region and none was "  # pylint: disable=protected-access
+            "found in configuration, environment variables or module parameters",
         )
     except (ValueError, botocore.exceptions.BotoCoreError) as e:
         if hasattr(module, "fail_json_aws"):
@@ -226,10 +230,10 @@ def _aws_region(params: Dict) -> Optional[str]:
         return None
 
 
-def get_aws_region(
+def get_aws_region(  # pylint: disable=redefined-outer-name
     module: AnsibleAWSModule,
     boto3: Optional[bool] = None,
-) -> Optional[str]:  # pylint: disable=redefined-outer-name
+) -> Optional[str]:
     if boto3 is not None:
         module.deprecate(
             "get_aws_region(): the boto3 parameter will be removed in a release after 2025-05-01. "
@@ -300,10 +304,10 @@ def _aws_connection_info(params: Dict) -> Tuple[Optional[str], Optional[str], Di
     return region, endpoint_url, boto_params
 
 
-def get_aws_connection_info(
+def get_aws_connection_info(  # pylint: disable=redefined-outer-name
     module: AnsibleAWSModule,
     boto3: Optional[bool] = None,
-) -> Tuple[Optional[str], Optional[str], Dict]:  # pylint: disable=redefined-outer-name
+) -> Tuple[Optional[str], Optional[str], Dict]:
     if boto3 is not None:
         module.deprecate(
             "get_aws_connection_info(): the boto3 parameter will be removed in a release after 2025-05-01. "
@@ -385,12 +389,10 @@ def is_boto3_error_code(
     except botocore.exceptions.ClientError as e:
         # handle the generic error case for all other codes
     """
-    from botocore.exceptions import ClientError
+    from botocore.exceptions import ClientError  # pylint: disable=import-outside-toplevel
 
     if e is None:
-        import sys
-
-        dummy, e, dummy = sys.exc_info()
+        e = sys.exc_info()[1]
     if not isinstance(code, (list, tuple, set)):
         code = [code]
     if isinstance(e, ClientError) and e.response["Error"]["Code"] in code:
@@ -414,12 +416,10 @@ def is_boto3_error_message(
     except botocore.exceptions.ClientError as e:
         # handle the generic error case for all other codes
     """
-    from botocore.exceptions import ClientError
+    from botocore.exceptions import ClientError  # pylint: disable=import-outside-toplevel
 
     if e is None:
-        import sys
-
-        dummy, e, dummy = sys.exc_info()
+        e = sys.exc_info()[1]
     if isinstance(e, ClientError) and msg in e.response["Error"]["Message"]:
         return ClientError
     return type("NeverEverRaisedException", (Exception,), {})
@@ -431,7 +431,7 @@ def get_boto3_client_method_parameters(
     required=False,
 ) -> List:
     op = client.meta.method_to_api_mapping.get(method_name)
-    input_shape = client._service_model.operation_model(op).input_shape
+    input_shape = client._service_model.operation_model(op).input_shape  # pylint: disable=protected-access
     if not input_shape:
         parameters = []
     elif required:
@@ -467,22 +467,22 @@ def enable_placebo(session: boto3.session.Session) -> None:
     Helper to record or replay offline modules for testing purpose.
     """
     if "_ANSIBLE_PLACEBO_RECORD" in os.environ:
-        import placebo
+        import placebo  # pylint: disable=import-outside-toplevel
 
-        existing_entries = os.listdir(os.environ["_ANSIBLE_PLACEBO_RECORD"])
-        idx = len(existing_entries)
+        recorded_entries = os.listdir(os.environ["_ANSIBLE_PLACEBO_RECORD"])
+        idx = len(recorded_entries)
         data_path = f"{os.environ['_ANSIBLE_PLACEBO_RECORD']}/{idx}"
         os.mkdir(data_path)
         pill = placebo.attach(session, data_path=data_path)
         pill.record()
     if "_ANSIBLE_PLACEBO_REPLAY" in os.environ:
-        import shutil
+        import shutil  # pylint: disable=import-outside-toplevel
 
-        import placebo
+        import placebo  # pylint: disable=import-outside-toplevel
 
         existing_entries = sorted([int(i) for i in os.listdir(os.environ["_ANSIBLE_PLACEBO_REPLAY"])])
-        idx = str(existing_entries[0])
-        data_path = os.environ["_ANSIBLE_PLACEBO_REPLAY"] + "/" + idx
+        idx = existing_entries[0]
+        data_path = os.environ["_ANSIBLE_PLACEBO_REPLAY"] + "/" + str(idx)
         try:
             shutil.rmtree("_tmp")
         except FileNotFoundError:

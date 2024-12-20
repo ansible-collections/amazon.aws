@@ -98,13 +98,13 @@ class AnsibleAWSModule:
                 pass
             kwargs["argument_spec"] = argument_spec_full
 
-        self._module = AnsibleAWSModule.default_settings["module_class"](**kwargs)
+        self._module = AnsibleAWSModule.default_settings["module_class"](**kwargs)  # type: AnsibleModule
 
         if local_settings["check_boto3"]:
             try:
                 check_sdk_version_supported(warn=self.warn)
             except AnsibleBotocoreError as e:
-                self._module.fail_json(to_native(e))
+                self.fail_json(to_native(e))
 
         deprecated_vars = {"EC2_REGION", "EC2_SECURITY_TOKEN", "EC2_SECRET_KEY", "EC2_ACCESS_KEY", "EC2_URL", "S3_URL"}
         if deprecated_vars.intersection(set(os.environ.keys())):
@@ -160,10 +160,10 @@ class AnsibleAWSModule:
                 continue
             try:
                 found_operational_request = re.search(r"OperationModel\(name=.*?\)", ln)
-                operation_request = found_operational_request.group(0)[  # pyright: ignore[reportOptionalMemberAccess]
+                operation_request = found_operational_request.group(0)[
                     20:-1
                 ]
-                resource = re.search(r"https://.*?\.", ln).group(0)[8:-1]  # pyright: ignore[reportOptionalMemberAccess]
+                resource = re.search(r"https://.*?\.", ln).group(0)[8:-1]
                 actions.append(f"{resource}:{operation_request}")
             except AttributeError:
                 pass
@@ -222,7 +222,7 @@ class AnsibleAWSModule:
         # to_native is trusted to handle exceptions that str() could
         # convert to text.
         try:
-            except_msg = to_native(exception.message)  # pyright: ignore[reportAttributeAccessIssue]
+            except_msg = to_native(exception.message)
         except AttributeError:
             except_msg = to_native(exception)
 
@@ -232,7 +232,7 @@ class AnsibleAWSModule:
             message = except_msg
 
         try:
-            response = exception.response  # pyright: ignore[reportAttributeAccessIssue]
+            response = exception.response
         except AttributeError:
             response = None
 
@@ -273,7 +273,7 @@ class AnsibleAWSModule:
         :param reason why the version is required (optional)
         """
         if not self.boto3_at_least(desired):
-            self._module.fail_json(
+            self.fail_json(
                 msg=missing_required_lib(f"boto3>={desired}", **kwargs),
                 **self._gather_versions(),
             )
@@ -295,7 +295,7 @@ class AnsibleAWSModule:
         :param reason why the version is required (optional)
         """
         if not self.botocore_at_least(desired):
-            self._module.fail_json(
+            self.fail_json(
                 msg=missing_required_lib(f"botocore>={desired}", **kwargs),
                 **self._gather_versions(),
             )
