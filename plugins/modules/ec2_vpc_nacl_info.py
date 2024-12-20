@@ -166,8 +166,11 @@ def list_ec2_vpc_nacls(connection, module: AnsibleAWSModule) -> None:
 
     try:
         network_acls = describe_network_acls(connection, **params)
-        if not network_acls:
-            module.fail_json(msg="Unable to describe ACL. NetworkAcl does not exist")
+        if nacl_ids and not len(nacl_ids) == len(network_acls):
+            if len(nacl_ids) == 1:
+                module.fail_json(msg="Unable to describe ACL. NetworkAcl does not exist.")
+            else:
+                module.fail_json(msg="Unable to describe all ACLs. One or more NetworkAcls does not exist.")
     except AnsibleEC2Error as e:
         module.fail_json_aws_error(e)
 
