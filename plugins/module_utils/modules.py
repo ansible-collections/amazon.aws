@@ -160,9 +160,7 @@ class AnsibleAWSModule:
                 continue
             try:
                 found_operational_request = re.search(r"OperationModel\(name=.*?\)", ln)
-                operation_request = found_operational_request.group(0)[
-                    20:-1
-                ]
+                operation_request = found_operational_request.group(0)[20:-1]
                 resource = re.search(r"https://.*?\.", ln).group(0)[8:-1]
                 actions.append(f"{resource}:{operation_request}")
             except AttributeError:
