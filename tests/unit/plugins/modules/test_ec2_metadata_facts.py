@@ -99,3 +99,13 @@ packages: ['httpie']
 
     m_fetch_url.return_value = (io.BytesIO(user_data), {"status": 200})
     assert ec2_instance._fetch("http://169.254.169.254/latest/user-data") == user_data.decode("utf-8")
+
+
+@patch(module_name + ".fetch_url")
+def test__custom_uri(m_fetch_url, ec2_instance):
+    module = MagicMock()
+    module.params = {
+        "ec2_metadata_token_uri": "http://example.com/ec2_metadata_token_uri"
+    }
+    custom = ec2_metadata_facts.Ec2Metadata(module)
+    assert custom.ec2_metadata_token_uri == "http://example.com/ec2_metadata_token_uri"
