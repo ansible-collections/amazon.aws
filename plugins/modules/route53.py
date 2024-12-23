@@ -439,7 +439,7 @@ EXAMPLES = r"""
 
 - name: Add new.foo.com as an SSHFP record
   amazon.aws.route53:
-    state: absent
+    state: present
     zone: test-zone.com
     record: new.foo.com
     type: SSHFP
