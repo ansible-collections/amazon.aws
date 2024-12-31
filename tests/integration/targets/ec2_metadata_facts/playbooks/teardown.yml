@@ -1,5 +1,6 @@
 ---
-- module_defaults:
+- name: Cleanup after ec2_metadata_facts tests
+  module_defaults:
     group/aws:
       access_key: "{{ aws_access_key }}"
       secret_key: "{{ aws_secret_key }}"

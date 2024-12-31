@@ -4,7 +4,8 @@
 # '{{ inventory_hostname }}'.yml file in roles/s3_bucket/tasks/
 
 # VPC should get cleaned up once all hosts have run
-- hosts: all
+- name: Run s3_bucket tests in parallel
+  hosts: all
   gather_facts: false
   strategy: free
   # serial: 10

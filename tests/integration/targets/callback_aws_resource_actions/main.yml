@@ -1,5 +1,6 @@
 ---
-- hosts: localhost
+- name: Run simple test with AWS Resource Actions callback enabled
+  hosts: localhost
   gather_facts: false
   module_defaults:
     group/aws:

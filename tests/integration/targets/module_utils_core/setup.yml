@@ -1,5 +1,6 @@
 ---
-- hosts: localhost
+- name: Prepare environment for common credential/connection helper tests
+  hosts: localhost
   connection: local
   gather_facts: false
   tasks:

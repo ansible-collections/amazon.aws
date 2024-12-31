@@ -1,5 +1,6 @@
 ---
-- hosts: 127.0.0.1
+- name: Run tests using ec2_tag_keys compatible with the (old) contrib_script format
+  hosts: 127.0.0.1
   connection: local
   gather_facts: false
   environment: "{{ ansible_test.environment }}"

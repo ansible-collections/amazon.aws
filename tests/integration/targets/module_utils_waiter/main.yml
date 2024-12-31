@@ -1,5 +1,6 @@
 ---
-- hosts: all
+- name: Tests for common waiter helpers
+  hosts: all
   gather_facts: false
   roles:
   # Test the behaviour of module_utils.core.AnsibleAWSModule.client (boto3)

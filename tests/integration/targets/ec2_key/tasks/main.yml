@@ -2,7 +2,8 @@
 # TODO - name: test 'validate_certs' parameter
 # =============================================================
 
-- module_defaults:
+- name: Run ec2_key tests with credentials set
+  module_defaults:
     group/aws:
       region: "{{ aws_region }}"
       access_key: "{{ aws_access_key }}"

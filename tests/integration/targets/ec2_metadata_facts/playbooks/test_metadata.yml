@@ -1,5 +1,6 @@
 ---
-- hosts: testhost
+- name: Run ec2_metadata_facts tests
+  hosts: testhost
   tasks:
     - name: Wait for EC2 to be available
       ansible.builtin.wait_for_connection:
