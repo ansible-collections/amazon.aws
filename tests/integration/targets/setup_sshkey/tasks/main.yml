@@ -40,13 +40,16 @@
 
 # Because some older OSes don't like the Elliptic Curve keys we'll stick to 4096 bit RSA for now
 - name: Generate sshkey (4096 bit RSA)
-  ansible.builtin.shell: echo 'y' | ssh-keygen -t rsa -b 4096 -P '' -f '{{ sshkey }}'
+  ansible.builtin.command: ssh-keygen -t rsa -b 4096 -P '' -f '{{ sshkey }}'
+  args:
+    creates: '{{ sshkey }}'
   tags:
     - prepare
 
 # AWS uses a custom MD5 checksum for its RSA keys (rather than the modern default of a base64 encoded sha256 hash)
 - name: Record fingerprint
   ansible.builtin.command: "{{ sshkey_dir.path }}/ec2-fingerprint.py {{ sshkey_pub }}"
+  changed_when: false
   register: fingerprint
   tags:
     - prepare
@@ -54,14 +57,17 @@
 # With OpenSSH 9.5 the default changed to ED25519, to avoid confusing issues when running locally vs
 # in CI, we set the default
 - name: Generate another_sshkey (ED25519)
-  ansible.builtin.shell: echo 'y' | ssh-keygen -t ed25519 -P '' -f {{ another_sshkey }}
+  ansible.builtin.command: ssh-keygen -t ed25519 -P '' -f {{ another_sshkey }}
+  args:
+    creates: '{{ another_sshkey }}'
   tags:
     - prepare
 
 # When adding support for ED25519 Amazon stuck to the newer default of base64 encoded sha256 hashes, this means we can
 # ask ssh-keygen for the fingerprint, but we'll explicitly ask for the sha256 version just in case the default changes
 - name: Record another fingerprint
-  ansible.builtin.shell: "ssh-keygen -l -E sha256 -f {{ another_sshkey_pub }} | cut -c 12-54"
+  ansible.builtin.command: "ssh-keygen -l -E sha256 -f {{ another_sshkey_pub }}"
+  changed_when: false
   register: another_fingerprint
   tags:
     - prepare
@@ -77,6 +83,6 @@
     # - RSA: MD5sum based
     fingerprint: "{{ fingerprint.stdout }}"
     # - ED25519: AWS pad the base64 output (technically correct), ssh-keygen truncates the output
-    another_fingerprint: "{{ another_fingerprint.stdout }}="
+    another_fingerprint: "{{ another_fingerprint.stdout[11:54] }}="
   tags:
     - prepare

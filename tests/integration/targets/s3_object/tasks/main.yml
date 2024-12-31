@@ -379,7 +379,8 @@
           - result is not changed
 
     - name: Modify mtime for local file to past
-      ansible.builtin.command: touch -mt 197001010900.00 "{{ remote_tmp_dir }}/download.txt"
+      ansible.builtin.command: touch -mt 197001010900.00 "{{ remote_tmp_dir }}/download.txt"  # noqa: no-changed-when
+
     - name: Test get with overwrite=latest and files that mtimes are different
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
@@ -637,13 +638,17 @@
         - ansible_system == 'Linux' or ansible_distribution == 'MacOSX'
       block:
         - name: Make tempfile 4 GB for OSX
-          ansible.builtin.command:
-            _raw_params: dd if=/dev/zero of={{ remote_tmp_dir }}/largefile bs=1m count=4096
+          ansible.builtin.command: |
+            dd if=/dev/zero of={{ remote_tmp_dir }}/largefile bs=1m count=4096
+          args:
+            creates: "{{ remote_tmp_dir }}/largefile"
           when: ansible_distribution == 'MacOSX'
 
         - name: Make tempfile 4 GB for linux
-          ansible.builtin.command:
-            _raw_params: dd if=/dev/zero of={{ remote_tmp_dir }}/largefile bs=1M count=4096
+          ansible.builtin.command: |
+            dd if=/dev/zero of={{ remote_tmp_dir }}/largefile bs=1M count=4096
+          args:
+            creates: "{{ remote_tmp_dir }}/largefile"
           when: ansible_system == 'Linux'
 
         - name: Upload the file to the bucket
@@ -1080,7 +1085,7 @@
       ansible.builtin.file:
         state: absent
         path: "{{ remote_tmp_dir }}"
-      ignore_errors: true
+      ignore_errors: true  # noqa: ignore-errors
 
     - ansible.builtin.include_tasks: delete_bucket.yml
       with_items:

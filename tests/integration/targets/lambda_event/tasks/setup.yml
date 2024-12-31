@@ -19,6 +19,8 @@
     AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
     AWS_DEFAULT_REGION: "{{ aws_region }}"
   register: enable_stream_result
+  changed_when: true
+
 - name: Convert it to an object
   ansible.builtin.set_fact:
     enable_stream_result: "{{ enable_stream_result.stdout | from_json }}"
@@ -46,7 +48,6 @@
 - name: Wait 10 seconds for role to become available
   ansible.builtin.pause:
     seconds: 10
-  when: iam_role.changed
 
 - name: Move lambda into place for archive module
   ansible.builtin.copy:

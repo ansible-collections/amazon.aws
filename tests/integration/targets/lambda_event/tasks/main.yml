@@ -53,6 +53,7 @@
         AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
         AWS_DEFAULT_REGION: "{{ aws_region }}"
       register: lambda_function_details
+      changed_when: false
 
     - name: Convert it to an object
       ansible.builtin.set_fact:

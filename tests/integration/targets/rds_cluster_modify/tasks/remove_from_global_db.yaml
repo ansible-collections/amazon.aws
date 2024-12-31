@@ -47,6 +47,7 @@
         AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
         AWS_DEFAULT_REGION: "{{ test_primary_cluster_region }}"
       register: global_cluster_info_result
+      changed_when: false
 
     - name: Convert it to an object
       ansible.builtin.set_fact:
@@ -82,6 +83,7 @@
         AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
         AWS_DEFAULT_REGION: "{{ test_primary_cluster_region }}"
       register: global_cluster_info_result
+      changed_when: false
 
     - name: Convert it to an object
       ansible.builtin.set_fact:
@@ -143,6 +145,7 @@
         AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
         AWS_DEFAULT_REGION: "{{ test_primary_cluster_region }}"
       register: global_cluster_info_result
+      changed_when: false
 
     - name: Convert it to an object
       ansible.builtin.set_fact:
@@ -187,6 +190,7 @@
         AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
         AWS_DEFAULT_REGION: "{{ test_primary_cluster_region }}"
       register: global_cluster_info_result
+      changed_when: false
 
     - name: Convert it to an object
       ansible.builtin.set_fact:

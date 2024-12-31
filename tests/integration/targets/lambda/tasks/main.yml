@@ -24,7 +24,6 @@
     - name: Wait 10 seconds for role to become available
       ansible.builtin.pause:
         seconds: 10
-      when: iam_role.changed
     - name: Move lambda into place for archive module
       ansible.builtin.copy:
         src: mini_lambda.py
