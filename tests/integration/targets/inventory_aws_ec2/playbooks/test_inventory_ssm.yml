@@ -21,7 +21,7 @@
   tasks:
     - block:
         - ansible.builtin.include_role:
-            name: ../setup_ec2_facts
+            name: setup_ec2_facts
 
         # Create VPC, subnet, security group, and find image_id to create instance
         - ansible.builtin.include_tasks: tasks/setup.yml

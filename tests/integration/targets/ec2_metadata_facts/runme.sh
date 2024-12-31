@@ -6,6 +6,9 @@ export ANSIBLE_SSH_ARGS='-o UserKnownHostsFile=/dev/null'
 
 CMD_ARGS=("$@")
 
+ln -s $(pwd)/../ playbooks/roles
+ln -s ../templates playbooks/templates
+
 # Destroy Environment
 cleanup() {
     ansible-playbook playbooks/teardown.yml -i inventory -c local "${CMD_ARGS[@]}"

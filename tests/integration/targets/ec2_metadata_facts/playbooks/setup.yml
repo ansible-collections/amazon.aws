@@ -24,10 +24,10 @@
           session_token: "{{ security_token | default(omit) }}"
 
     - ansible.builtin.include_role:
-        name: ../setup_sshkey
+        name: setup_sshkey
 
     - ansible.builtin.include_role:
-        name: ../setup_ec2_facts
+        name: setup_ec2_facts
 
     - ansible.builtin.set_fact:
         availability_zone: "{{ ec2_availability_zone_names[0] }}"
@@ -166,7 +166,7 @@
 
     - name: Create inventory file
       ansible.builtin.template:
-        src: ../templates/inventory.j2
+        src: inventory.j2
         dest: ../inventory
 
     - ansible.builtin.wait_for:

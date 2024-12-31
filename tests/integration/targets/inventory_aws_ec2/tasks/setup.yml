@@ -1,6 +1,6 @@
 ---
 - ansible.builtin.include_role:
-    name: ../setup_ec2_facts
+    name: setup_ec2_facts
 
 - name: Set image id, vpc cidr and subnet cidr
   ansible.builtin.set_fact:
