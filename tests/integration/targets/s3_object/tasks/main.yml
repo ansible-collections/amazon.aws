@@ -66,6 +66,7 @@
       ansible.builtin.copy:
         content: "{{ content }}"
         dest: "{{ remote_tmp_dir }}/upload.txt"
+        mode: 644
 
     - name: Stat the file
       ansible.builtin.stat:
@@ -318,6 +319,7 @@
       ansible.builtin.copy:
         dest: "{{ remote_tmp_dir }}/download.txt"
         src: hello.txt
+        mode: 644
 
     - name: Test get with overwrite=never
       amazon.aws.s3_object:

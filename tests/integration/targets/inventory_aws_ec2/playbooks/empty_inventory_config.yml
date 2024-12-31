@@ -7,3 +7,4 @@
       ansible.builtin.copy:
         dest: ../test.aws_ec2.yml
         content: ""
+        mode: 644

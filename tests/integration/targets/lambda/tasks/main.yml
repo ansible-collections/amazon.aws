@@ -35,6 +35,7 @@
         format: zip
         path: "{{ output_dir }}/mini_lambda.py"
         dest: "{{ output_dir }}/mini_lambda.zip"
+        mode: 644
 
     # Parameter tests
     - name: Test with no parameters
@@ -678,6 +679,7 @@
       ansible.builtin.file:
         path: "{{ remote_tmp_dir }}/python"
         state: directory
+        mode: 755
 
     - name: Create lambda layer library
       ansible.builtin.copy:
@@ -686,12 +688,14 @@
             print("Hello from the ansible amazon.aws lambda layer")
             return 1
         dest: "{{ remote_tmp_dir }}/python/lambda_layer.py"
+        mode: 644
 
     - name: Create lambda layer archive
       community.general.archive:
         format: zip
         path: "{{ remote_tmp_dir }}"
         dest: "{{ remote_tmp_dir }}/lambda_layer.zip"
+        mode: 644
 
     - name: Create lambda layer
       amazon.aws.lambda_layer:

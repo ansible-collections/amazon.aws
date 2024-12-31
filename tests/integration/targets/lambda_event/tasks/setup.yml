@@ -60,6 +60,7 @@
     format: zip
     path: "{{ output_dir }}/mini_lambda.py"
     dest: "{{ output_dir }}/mini_lambda.zip"
+    mode: 644
 
 - name: Test state=present - upload the lambda
   amazon.aws.lambda:

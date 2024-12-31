@@ -22,6 +22,7 @@
         content: "{{ lambda_hander_content }}"
         dest: "{{ _dir.path }}/lambda_handler.py"
         remote_src: true
+        mode: 644
 
     - ansible.builtin.set_fact:
         zip_file_path: "{{ _dir.path }}/lambda_handler.zip"
@@ -31,6 +32,7 @@
         path: "{{ _dir.path }}/lambda_handler.py"
         dest: "{{ zip_file_path }}"
         format: zip
+        mode: 644
 
     - name: Create S3 bucket for testing
       amazon.aws.s3_bucket:

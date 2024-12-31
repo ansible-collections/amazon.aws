@@ -14,3 +14,4 @@
       ansible.builtin.copy:
         dest: ../test.aws_rds.yml
         content: "{{ lookup('template', template_name) }}"
+        mode: 644

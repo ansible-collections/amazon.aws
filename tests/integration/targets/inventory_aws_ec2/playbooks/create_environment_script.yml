@@ -7,3 +7,4 @@
       ansible.builtin.copy:
         dest: ../access_key.sh
         content: export MY_ACCESS_KEY="{{ aws_access_key }}"
+        mode: 644
