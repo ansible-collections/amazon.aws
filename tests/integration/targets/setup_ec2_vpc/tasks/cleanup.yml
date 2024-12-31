@@ -66,7 +66,7 @@
         rules: []
         rules_egress: []
       loop: "{{ remaining_groups.security_groups }}"
-      ignore_errors: true
+      ignore_errors: true  # noqa: ignore-errors
 
     - name: (VPC Cleanup) Delete remaining SGs
       amazon.aws.ec2_security_group:
@@ -75,7 +75,7 @@
       loop: "{{ remaining_groups.security_groups }}"
       when:
         - item.group_name != 'default'
-      ignore_errors: true
+      ignore_errors: true  # noqa: ignore-errors
 
     # ============================================================
 
@@ -89,7 +89,7 @@
       until: subnets_removed is not failed
       when:
         - (item.name | default("")) != 'default'
-      ignore_errors: true
+      ignore_errors: true  # noqa: ignore-errors
       retries: 10
 
     # ============================================================
@@ -116,7 +116,7 @@
       loop: "{{ remaining_rtbs.route_tables }}"
       when:
         - True not in main_associations
-      ignore_errors: true
+      ignore_errors: true  # noqa: ignore-errors
       vars:
         main_associations: "{{ item.associations | default([]) | map(attribute='main') | list }}"
 
@@ -128,7 +128,7 @@
         vpc_id: "{{ setup_ec2_vpc_id }}"
       register: vpc_removed
       until: vpc_removed is not failed
-      ignore_errors: true
+      ignore_errors: true  # noqa: ignore-errors
       retries: 10
 
     # ============================================================
@@ -141,4 +141,4 @@
         lookup: id
       register: rtbs_removed
       loop: "{{ remaining_rtbs.route_tables }}"
-      ignore_errors: true
+      ignore_errors: true  # noqa: ignore-errors

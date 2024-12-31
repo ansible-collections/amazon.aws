@@ -1,5 +1,6 @@
 ---
-- run_once: '{{ setup_run_once | default("no") | bool }}'
+- name: Setup common VPC components
+  run_once: '{{ setup_run_once | default("no") | bool }}'
   module_defaults:
     group/aws:
       access_key: "{{ aws_access_key }}"
