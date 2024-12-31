@@ -19,7 +19,7 @@
         wait: false
       register: _instances
 
-    - name: Gather {{ ec2_instance_name }} info
+    - name: Gather info about instance {{ ec2_instance_name }}
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ ec2_instance_name }}"

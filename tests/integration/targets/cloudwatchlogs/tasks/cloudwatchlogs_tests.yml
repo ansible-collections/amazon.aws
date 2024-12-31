@@ -215,7 +215,7 @@
         that:
           - out is changed
 
-    - name: Delete metric filter on '{{ log_group_name }}' which does not exist
+    - name: Delete metric filter on group which doesn't exist any more
       amazon.aws.cloudwatchlogs_log_group_metric_filter:
         log_group_name: "{{ log_group_name }}"
         filter_name: "{{ filter_name }}"

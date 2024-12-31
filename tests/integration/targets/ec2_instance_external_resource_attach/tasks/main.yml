@@ -49,7 +49,7 @@
         wait: false
       register: in_test_vpc
 
-    - name: Gather {{ resource_prefix }}-test-eni-vpc info
+    - name: Gather info about instance
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-test-eni-vpc"
@@ -80,7 +80,7 @@
         that:
           - add_interface_check_mode is changed
 
-    - name: Gather {{ resource_prefix }}-test-eni-vpc info
+    - name: Gather info about instance
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-test-eni-vpc"
@@ -113,7 +113,7 @@
       when: add_interface is successful
 
       block:
-        - name: Gather {{ resource_prefix }}-test-eni-vpc info
+        - name: Gather info about instance
           amazon.aws.ec2_instance_info:
             filters:
               tag:Name: "{{ resource_prefix }}-test-eni-vpc"
