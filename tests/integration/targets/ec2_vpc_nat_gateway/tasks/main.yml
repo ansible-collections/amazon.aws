@@ -1,5 +1,5 @@
 ---
-- name: Ec2_vpc_nat_gateway tests
+- name: Run ec2_vpc_nat_gateway tests
   module_defaults:
     group/aws:
       access_key: "{{ aws_access_key }}"
@@ -7,7 +7,7 @@
       session_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
   block:
-  # ============================================================
+    # ============================================================
     - name: Create a VPC
       amazon.aws.ec2_vpc_net:
         name: "{{ vpc_name }}"
@@ -410,7 +410,7 @@
         default_create: true
       register: _nat_gateway
 
-    - name:
+    - name: Assert changes
       ansible.builtin.assert:
         that:
           - _nat_gateway.changed
