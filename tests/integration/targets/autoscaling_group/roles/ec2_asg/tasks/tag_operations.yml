@@ -2,7 +2,7 @@
 - name: Running AutoScalingGroup Tag operations test
   block:
     #----------------------------------------------------------------------
-    - name: create a launch configuration
+    - name: Create a launch configuration
       community.aws.autoscaling_launch_config:
         name: "{{ resource_prefix }}-lc-tag-test"
         image_id: "{{ ec2_ami_id }}"
@@ -10,7 +10,7 @@
         instance_type: t2.micro
         assign_public_ip: true
       register: create_lc
-    - name: ensure that lc is created
+    - name: Ensure that lc is created
       ansible.builtin.assert:
         that:
           - create_lc is changed
@@ -18,7 +18,7 @@
           - '"autoscaling:CreateLaunchConfiguration" in create_lc.resource_actions'
 
     #----------------------------------------------------------------------
-    - name: create a AutoScalingGroup to be used for tag_operations test
+    - name: Create a AutoScalingGroup to be used for tag_operations test
       amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg-tag-test"
         launch_config_name: "{{ resource_prefix }}-lc-tag-test"
@@ -30,7 +30,7 @@
         desired_capacity: 1
         region: "{{ aws_region }}"
       register: create_asg
-    - name: ensure that AutoScalingGroup is created
+    - name: Ensure that AutoScalingGroup is created
       ansible.builtin.assert:
         that:
           - create_asg is changed
@@ -319,7 +319,7 @@
   #----------------------------------------------------------------------
 
   always:
-    - name: kill asg created in this test
+    - name: Kill asg created in this test
       amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg-tag-test"
         state: absent
@@ -327,7 +327,7 @@
       until: removed is not failed
       ignore_errors: true
       retries: 10
-    - name: remove launch config created in this test
+    - name: Remove launch config created in this test
       community.aws.autoscaling_launch_config:
         name: "{{ resource_prefix }}-lc-tag-test"
         state: absent

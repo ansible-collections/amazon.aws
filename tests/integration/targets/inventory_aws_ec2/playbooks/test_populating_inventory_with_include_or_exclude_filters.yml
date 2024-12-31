@@ -14,7 +14,7 @@
         # Create VPC, subnet, security group, and find image_id to create instance
 
         - ansible.builtin.include_tasks: tasks/setup.yml
-        - name: create a new host (1/3)
+        - name: Create a new host (1/3)
           amazon.aws.ec2_instance:
             image_id: "{{ image_id }}"
             name: "{{ resource_prefix }}_1"
@@ -25,7 +25,7 @@
             vpc_subnet_id: "{{ subnet_id }}"
             wait: false
 
-        - name: create a new host (2/3)
+        - name: Create a new host (2/3)
           amazon.aws.ec2_instance:
             image_id: "{{ image_id }}"
             name: "{{ resource_prefix }}_2"
@@ -36,7 +36,7 @@
             vpc_subnet_id: "{{ subnet_id }}"
             wait: false
 
-        - name: create a new host (3/3)
+        - name: Create a new host (3/3)
           amazon.aws.ec2_instance:
             image_id: "{{ image_id }}"
             name: "{{ resource_prefix }}_3"
@@ -48,7 +48,7 @@
             wait: false
 
         - ansible.builtin.meta: refresh_inventory
-        - name: assert the keyed groups and groups from constructed config were added to inventory and composite var added to hostvars
+        - name: Assert the keyed groups and groups from constructed config were added to inventory and composite var added to hostvars
           ansible.builtin.assert:
             that:
               # There are 9 groups: all, ungrouped, aws_ec2, sg keyed group, 3 tag keyed group (one per tag), arch keyed group, constructed group

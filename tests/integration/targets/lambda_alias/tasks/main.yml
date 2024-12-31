@@ -1,5 +1,5 @@
 ---
-- name: set connection information for AWS modules and run tests
+- name: Set connection information for AWS modules and run tests
   module_defaults:
     group/aws:
       access_key: "{{ aws_access_key }}"
@@ -9,7 +9,7 @@
   block:
   # ==============================================================
   # Preparation
-    - name: create minimal lambda role
+    - name: Create minimal lambda role
       amazon.aws.iam_role:
         name: "{{ lambda_role_name }}"
         assume_role_policy_document: '{{ lookup("file", "minimal_trust_policy.json") }}'
@@ -17,16 +17,16 @@
         managed_policies:
           - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
       register: iam_role
-    - name: wait 10 seconds for role to become available
+    - name: Wait 10 seconds for role to become available
       ansible.builtin.pause:
         seconds: 10
       when: iam_role.changed
-    - name: move lambda into place for archive module
+    - name: Move lambda into place for archive module
       ansible.builtin.copy:
         src: mini_lambda.py
         dest: "{{ output_dir }}/mini_lambda.py"
         mode: preserve
-    - name: bundle lambda into a zip
+    - name: Bundle lambda into a zip
       register: zip_res
       community.general.archive:
         format: zip
@@ -41,7 +41,7 @@
         role: "{{ lambda_role_name }}"
         zip_file: "{{ zip_res.dest }}"
       register: lambda_a
-    - name: assert lambda upload succeeded
+    - name: Assert lambda upload succeeded
       ansible.builtin.assert:
         that:
           - lambda_a is changed
@@ -53,7 +53,7 @@
         handler: mini_lambda.handler
         role: "{{ lambda_role_name }}"
       register: lambda_b
-    - name: assert that update succeeded
+    - name: Assert that update succeeded
       ansible.builtin.assert:
         that:
           - lambda_b is changed
@@ -65,7 +65,7 @@
         handler: mini_lambda.handler
         role: "{{ lambda_role_name }}"
       register: lambda_c
-    - name: assert that update succeeded
+    - name: Assert that update succeeded
       ansible.builtin.assert:
         that:
           - lambda_c is changed
@@ -608,12 +608,12 @@
   # ==============================================================
   # Cleanup
   always:
-    - name: ensure function is absent at end of test
+    - name: Ensure function is absent at end of test
       amazon.aws.lambda:
-        name: "{{lambda_function_name}}"
+        name: "{{ lambda_function_name }}"
         state: absent
       ignore_errors: true
-    - name: ensure role has been removed at end of test
+    - name: Ensure role has been removed at end of test
       amazon.aws.iam_role:
         name: "{{ lambda_role_name }}"
         state: absent

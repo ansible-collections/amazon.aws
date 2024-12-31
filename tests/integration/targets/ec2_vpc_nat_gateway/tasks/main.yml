@@ -1,5 +1,5 @@
 ---
-- name: ec2_vpc_nat_gateway tests
+- name: Ec2_vpc_nat_gateway tests
   module_defaults:
     group/aws:
       access_key: "{{ aws_access_key }}"
@@ -48,7 +48,7 @@
           - eip_result.allocation_id.startswith("eipalloc-")
           - '"public_ip" in eip_result'
 
-    - name: "set fact: EIP allocation ID and EIP public IP"
+    - name: "Set fact: EIP allocation ID and EIP public IP"
       ansible.builtin.set_fact:
         eip_address: "{{ eip_result.public_ip }}"
         allocation_id: "{{ eip_result.allocation_id }}"
@@ -75,7 +75,7 @@
           - '"tags" in subnet_result.subnet'
           - subnet_result.subnet.vpc_id == vpc_id
 
-    - name: "set fact: VPC subnet ID"
+    - name: "Set fact: VPC subnet ID"
       ansible.builtin.set_fact:
         subnet_id: "{{ subnet_result.subnet.id }}"
 
@@ -159,7 +159,7 @@
           - '"vpc_id" in create_ngw'
           - create_ngw.vpc_id == vpc_id
 
-    - name: "set facts: NAT gateway ID"
+    - name: "Set facts: NAT gateway ID"
       ansible.builtin.set_fact:
         nat_gateway_id: "{{ create_ngw.nat_gateway_id }}"
         network_interface_id: "{{ create_ngw.nat_gateway_addresses[0].network_interface_id }}"
@@ -807,7 +807,7 @@
       register: delete_tags_ngw
       check_mode: true
 
-    - name: assert tags would be removed - CHECK_MODE
+    - name: Assert tags would be removed - CHECK_MODE
       ansible.builtin.assert:
         that:
           - delete_tags_ngw.changed
@@ -938,7 +938,7 @@
           - '"create_time" in create_ngw'
           - '"allocation_id" not in create_ngw.nat_gateway_addresses[0]'
 
-    - name: "set facts: NAT gateway ID"
+    - name: "Set facts: NAT gateway ID"
       ansible.builtin.set_fact:
         nat_gateway_id: "{{ create_ngw.nat_gateway_id }}"
         network_interface_id: "{{ create_ngw.nat_gateway_addresses[0].network_interface_id }}"

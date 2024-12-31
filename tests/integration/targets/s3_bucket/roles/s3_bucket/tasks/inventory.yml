@@ -7,9 +7,9 @@
       region: "{{ aws_region }}"
   block:
     - ansible.builtin.set_fact:
-        local_bucket_name: "{{ bucket_name | hash('md5')}}-inventory-source"
-        local_dest_bucket_name: "{{ bucket_name | hash('md5')}}-inventory-target"
-    - name: Create a simple bucket to be inventory destination 
+        local_bucket_name: "{{ bucket_name | hash('md5') }}-inventory-source"
+        local_dest_bucket_name: "{{ bucket_name | hash('md5') }}-inventory-target"
+    - name: Create a simple bucket to be inventory destination
       amazon.aws.s3_bucket:
         name: "{{ local_dest_bucket_name }}"
         state: present
@@ -24,14 +24,14 @@
         name: "{{ local_bucket_name }}"
         state: present
         inventory:
-        - id: "{{ local_dest_bucket_name }}"
-          destination:
-            bucket: "arn:aws:s3:::{{ local_dest_bucket_name }}"
-            format: "CSV"
-          optional_fields:
-            - "Size"
-          included_object_versions: "All"
-          schedule: "Weekly"
+          - id: "{{ local_dest_bucket_name }}"
+            destination:
+              bucket: "arn:aws:s3:::{{ local_dest_bucket_name }}"
+              format: "CSV"
+            optional_fields:
+              - "Size"
+            included_object_versions: "All"
+            schedule: "Weekly"
       register: output
 
     - ansible.builtin.assert:
@@ -44,14 +44,14 @@
         name: "{{ local_bucket_name }}"
         state: present
         inventory:
-        - id: "{{ local_dest_bucket_name }}"
-          destination:
-            bucket: "arn:aws:s3:::{{ local_dest_bucket_name }}"
-            format: "CSV"
-          optional_fields:
-            - "Size"
-          schedule: "Daily"
-          included_object_versions: "All"
+          - id: "{{ local_dest_bucket_name }}"
+            destination:
+              bucket: "arn:aws:s3:::{{ local_dest_bucket_name }}"
+              format: "CSV"
+            optional_fields:
+              - "Size"
+            schedule: "Daily"
+            included_object_versions: "All"
       register: output
 
     - ansible.builtin.assert:
@@ -64,21 +64,20 @@
         name: "{{ local_bucket_name }}"
         state: present
         inventory:
-        - id: "{{ local_dest_bucket_name }}"
-          destination:
-            bucket: "arn:aws:s3:::{{ local_dest_bucket_name }}"
-            format: "CSV"
-          optional_fields:
-            - "Size"
-          schedule: "Daily"
-          included_object_versions: "All"
+          - id: "{{ local_dest_bucket_name }}"
+            destination:
+              bucket: "arn:aws:s3:::{{ local_dest_bucket_name }}"
+              format: "CSV"
+            optional_fields:
+              - "Size"
+            schedule: "Daily"
+            included_object_versions: "All"
       register: output
 
     - ansible.builtin.assert:
         that:
           - output is not changed
           - output.bucket_inventory
-
 
     - name: Delete inventory configuration
       amazon.aws.s3_bucket:
@@ -116,7 +115,6 @@
         that:
           - output.changed
 
-
     - name: Delete testing inventory s3 bucket
       amazon.aws.s3_bucket:
         name: "{{ local_dest_bucket_name }}"
@@ -126,7 +124,6 @@
     - ansible.builtin.assert:
         that:
           - output.changed
-
 
   # ============================================================
   always:

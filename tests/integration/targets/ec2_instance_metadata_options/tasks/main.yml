@@ -1,5 +1,5 @@
 ---
-- name: test with boto3 version that supports instance_metadata_tags
+- name: Test with boto3 version that supports instance_metadata_tags
   module_defaults:
     group/aws:
       access_key: "{{ aws_access_key }}"
@@ -7,7 +7,6 @@
       session_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
   block:
-
     - name: Create a new instance
       amazon.aws.ec2_instance:
         state: running
@@ -24,7 +23,7 @@
         wait: true
       register: instance_creation
 
-    - name: instance with metadata_options created with the right options
+    - name: Instance with metadata_options created with the right options
       ansible.builtin.assert:
         that:
           - instance_creation is success
@@ -34,7 +33,7 @@
           - instance_creation.spec.MetadataOptions.InstanceMetadataTags == 'enabled'
           - instance_creation.spec.MetadataOptions.HttpPutResponseHopLimit == 2
 
-    - name: modify metadata_options on existing instance
+    - name: Modify metadata_options on existing instance
       amazon.aws.ec2_instance:
         state: present
         name: "{{ resource_prefix }}-test-t3nano-enabled-required"
@@ -50,7 +49,7 @@
         wait: false
       register: metadata_options_update
 
-    - name: fact presented ec2 instance
+    - name: Fact presented ec2 instance
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-test-t3nano-enabled-required"

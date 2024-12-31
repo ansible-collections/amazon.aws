@@ -35,45 +35,45 @@
   block:
   ###
 
-    - name: test adding tags to lambda (check mode)
+    - name: Test adding tags to lambda (check mode)
       amazon.aws.lambda:
         name: "{{ lambda_function_name }}"
         tags: "{{ first_tags }}"
       register: update_result
       check_mode: true
-    - name: assert that update succeeded
+    - name: Assert that update succeeded
       ansible.builtin.assert:
         that:
           - update_result is changed
 
-    - name: test adding tags to lambda
+    - name: Test adding tags to lambda
       amazon.aws.lambda:
         name: "{{ lambda_function_name }}"
         tags: "{{ first_tags }}"
       register: update_result
-    - name: assert that update succeeded
+    - name: Assert that update succeeded
       ansible.builtin.assert:
         that:
           - update_result is changed
           - update_result.tags == first_tags
 
-    - name: test adding tags to lambda - idempotency (check mode)
+    - name: Test adding tags to lambda - idempotency (check mode)
       amazon.aws.lambda:
         name: "{{ lambda_function_name }}"
         tags: "{{ first_tags }}"
       register: update_result
       check_mode: true
-    - name: assert that update succeeded
+    - name: Assert that update succeeded
       ansible.builtin.assert:
         that:
           - update_result is not changed
 
-    - name: test adding tags to lambda - idempotency
+    - name: Test adding tags to lambda - idempotency
       amazon.aws.lambda:
         name: "{{ lambda_function_name }}"
         tags: "{{ first_tags }}"
       register: update_result
-    - name: assert that update succeeded
+    - name: Assert that update succeeded
       ansible.builtin.assert:
         that:
           - update_result is not changed
@@ -81,45 +81,45 @@
 
     ###
 
-    - name: test updating tags with purge on lambda (check mode)
+    - name: Test updating tags with purge on lambda (check mode)
       amazon.aws.lambda:
         name: "{{ lambda_function_name }}"
         tags: "{{ second_tags }}"
       register: update_result
       check_mode: true
-    - name: assert that update succeeded
+    - name: Assert that update succeeded
       ansible.builtin.assert:
         that:
           - update_result is changed
 
-    - name: test updating tags with purge on lambda
+    - name: Test updating tags with purge on lambda
       amazon.aws.lambda:
         name: "{{ lambda_function_name }}"
         tags: "{{ second_tags }}"
       register: update_result
-    - name: assert that update succeeded
+    - name: Assert that update succeeded
       ansible.builtin.assert:
         that:
           - update_result is changed
           - update_result.tags == second_tags
 
-    - name: test updating tags with purge on lambda - idempotency (check mode)
+    - name: Test updating tags with purge on lambda - idempotency (check mode)
       amazon.aws.lambda:
         name: "{{ lambda_function_name }}"
         tags: "{{ second_tags }}"
       register: update_result
       check_mode: true
-    - name: assert that update succeeded
+    - name: Assert that update succeeded
       ansible.builtin.assert:
         that:
           - update_result is not changed
 
-    - name: test updating tags with purge on lambda - idempotency
+    - name: Test updating tags with purge on lambda - idempotency
       amazon.aws.lambda:
         name: "{{ lambda_function_name }}"
         tags: "{{ second_tags }}"
       register: update_result
-    - name: assert that update succeeded
+    - name: Assert that update succeeded
       ansible.builtin.assert:
         that:
           - update_result is not changed
@@ -127,49 +127,49 @@
 
     ###
 
-    - name: test updating tags without purge on lambda (check mode)
+    - name: Test updating tags without purge on lambda (check mode)
       amazon.aws.lambda:
         name: "{{ lambda_function_name }}"
         tags: "{{ third_tags }}"
         purge_tags: false
       register: update_result
       check_mode: true
-    - name: assert that update succeeded
+    - name: Assert that update succeeded
       ansible.builtin.assert:
         that:
           - update_result is changed
 
-    - name: test updating tags without purge on lambda
+    - name: Test updating tags without purge on lambda
       amazon.aws.lambda:
         name: "{{ lambda_function_name }}"
         tags: "{{ third_tags }}"
         purge_tags: false
       register: update_result
-    - name: assert that update succeeded
+    - name: Assert that update succeeded
       ansible.builtin.assert:
         that:
           - update_result is changed
           - update_result.tags == final_tags
 
-    - name: test updating tags without purge on lambda - idempotency (check mode)
+    - name: Test updating tags without purge on lambda - idempotency (check mode)
       amazon.aws.lambda:
         name: "{{ lambda_function_name }}"
         tags: "{{ third_tags }}"
         purge_tags: false
       register: update_result
       check_mode: true
-    - name: assert that update succeeded
+    - name: Assert that update succeeded
       ansible.builtin.assert:
         that:
           - update_result is not changed
 
-    - name: test updating tags without purge on lambda - idempotency
+    - name: Test updating tags without purge on lambda - idempotency
       amazon.aws.lambda:
         name: "{{ lambda_function_name }}"
         tags: "{{ third_tags }}"
         purge_tags: false
       register: update_result
-    - name: assert that update succeeded
+    - name: Assert that update succeeded
       ansible.builtin.assert:
         that:
           - update_result is not changed
@@ -177,22 +177,22 @@
 
     ###
 
-    - name: test no tags param lambda (check mode)
+    - name: Test no tags param lambda (check mode)
       amazon.aws.lambda:
         name: "{{ lambda_function_name }}"
       register: update_result
       check_mode: true
-    - name: assert no change
+    - name: Assert no change
       ansible.builtin.assert:
         that:
           - update_result is not changed
           - update_result.tags == final_tags
 
-    - name: test no tags param lambda
+    - name: Test no tags param lambda
       amazon.aws.lambda:
         name: "{{ lambda_function_name }}"
       register: update_result
-    - name: assert no change
+    - name: Assert no change
       ansible.builtin.assert:
         that:
           - update_result is not changed
@@ -200,45 +200,45 @@
 
     ###
 
-    - name: test removing tags from lambda (check mode)
+    - name: Test removing tags from lambda (check mode)
       amazon.aws.lambda:
         name: "{{ lambda_function_name }}"
         tags: {}
       register: update_result
       check_mode: true
-    - name: assert that update succeeded
+    - name: Assert that update succeeded
       ansible.builtin.assert:
         that:
           - update_result is changed
 
-    - name: test removing tags from lambda
+    - name: Test removing tags from lambda
       amazon.aws.lambda:
         name: "{{ lambda_function_name }}"
         tags: {}
       register: update_result
-    - name: assert that update succeeded
+    - name: Assert that update succeeded
       ansible.builtin.assert:
         that:
           - update_result is changed
           - update_result.tags == {}
 
-    - name: test removing tags from lambda - idempotency (check mode)
+    - name: Test removing tags from lambda - idempotency (check mode)
       amazon.aws.lambda:
         name: "{{ lambda_function_name }}"
         tags: {}
       register: update_result
       check_mode: true
-    - name: assert that update succeeded
+    - name: Assert that update succeeded
       ansible.builtin.assert:
         that:
           - update_result is not changed
 
-    - name: test removing tags from lambda - idempotency
+    - name: Test removing tags from lambda - idempotency
       amazon.aws.lambda:
         name: "{{ lambda_function_name }}"
         tags: {}
       register: update_result
-    - name: assert that update succeeded
+    - name: Assert that update succeeded
       ansible.builtin.assert:
         that:
           - update_result is not changed

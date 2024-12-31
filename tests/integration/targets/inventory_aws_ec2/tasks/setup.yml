@@ -8,7 +8,7 @@
     vpc_cidr: 10.{{ 256 | random(seed=resource_prefix) }}.0.0/16
     subnet_cidr: 10.{{ 256 | random(seed=resource_prefix) }}.0.0/24
 
-- name: create a VPC to work in
+- name: Create a VPC to work in
   amazon.aws.ec2_vpc_net:
     cidr_block: "{{ vpc_cidr }}"
     state: present
@@ -21,7 +21,7 @@
   ansible.builtin.set_fact:
     vpc_id: "{{ setup_vpc.vpc.id }}"
 
-- name: create a subnet to use for creating an ec2 instance
+- name: Create a subnet to use for creating an ec2 instance
   amazon.aws.ec2_vpc_subnet:
     az: "{{ aws_region }}a"
     vpc_id: "{{ setup_vpc.vpc.id }}"
@@ -35,7 +35,7 @@
   ansible.builtin.set_fact:
     subnet_id: "{{ setup_subnet.subnet.id }}"
 
-- name: create a security group to use for creating an ec2 instance
+- name: Create a security group to use for creating an ec2 instance
   amazon.aws.ec2_security_group:
     name: "{{ resource_prefix }}_setup"
     description: created by Ansible integration tests

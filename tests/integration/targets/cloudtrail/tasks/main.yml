@@ -173,7 +173,7 @@
           - arn:aws:iam::aws:policy/AWSCloudTrail_FullAccess
       register: output_cloudwatch_no_kms_role
 
-    - name: pause to ensure role exists before attaching policy
+    - name: Pause to ensure role exists before attaching policy
       ansible.builtin.pause:
         seconds: 15
 

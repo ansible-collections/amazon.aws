@@ -1,5 +1,5 @@
 ---
-- name: rds_instance / modify integration tests
+- name: Rds_instance / modify integration tests
 
   module_defaults:
     group/aws:
@@ -296,9 +296,9 @@
           - result is not changed
           - result is not failed
           - db_info.instances[0].ca_certificate_identifier == "rds-ca-ecc384-g1"
-  # Test modifying CA certificate identifier Complete-------------------------------------------
+    # Test modifying CA certificate identifier Complete-------------------------------------------
 
-  # Test modifying cloudwatch log exports -------------------------------------------
+    # Test modifying cloudwatch log exports -------------------------------------------
     - name: Enable all cloudwatch log exports - check_mode
       amazon.aws.rds_instance:
         state: present

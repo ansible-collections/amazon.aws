@@ -1,14 +1,15 @@
 ---
 # Tests for changes to the cloudwatchlogs_log_group and cloudwatchlogs_log_group_metric_filter
 
-- block:
-    - name: create cloudwatch log group for integration test
+- ignore_errors: true
+  block:
+    - name: Create cloudwatch log group for integration test
       amazon.aws.cloudwatchlogs_log_group:
         state: present
         log_group_name: "{{ log_group_name }}"
         retention: 1
 
-    - name: check_mode set metric filter on '{{ log_group_name }}'
+    - name: Check_mode set metric filter on '{{ log_group_name }}'
       amazon.aws.cloudwatchlogs_log_group_metric_filter:
         log_group_name: "{{ log_group_name }}"
         filter_name: "{{ filter_name }}"
@@ -21,13 +22,13 @@
       check_mode: true
       register: out
 
-    - name: check_mode state must be changed
+    - name: Check_mode state must be changed
       ansible.builtin.assert:
         that:
           - out is changed
           - out.metric_filters | count == 1
 
-    - name: set metric filter on '{{ log_group_name }}'
+    - name: Set metric filter on '{{ log_group_name }}'
       amazon.aws.cloudwatchlogs_log_group_metric_filter:
         log_group_name: "{{ log_group_name }}"
         filter_name: "{{ filter_name }}"
@@ -39,13 +40,13 @@
           metric_value: $.value
       register: out
 
-    - name: create metric filter
+    - name: Create metric filter
       ansible.builtin.assert:
         that:
           - out is changed
           - out.metric_filters | count == 1
 
-    - name: re-set metric filter on '{{ log_group_name }}'
+    - name: Re-set metric filter on '{{ log_group_name }}'
       amazon.aws.cloudwatchlogs_log_group_metric_filter:
         log_group_name: "{{ log_group_name }}"
         filter_name: "{{ filter_name }}"
@@ -57,12 +58,12 @@
           metric_value: $.value
       register: out
 
-    - name: metric filter must not change
+    - name: Metric filter must not change
       ansible.builtin.assert:
         that:
           - out is not changed
 
-    - name: update metric transformation on '{{ log_group_name }}'
+    - name: Update metric transformation on '{{ log_group_name }}'
       amazon.aws.cloudwatchlogs_log_group_metric_filter:
         log_group_name: "{{ log_group_name }}"
         filter_name: "{{ filter_name }}"
@@ -75,14 +76,14 @@
           default_value: 3.1415
       register: out
 
-    - name: update metric filter
+    - name: Update metric filter
       ansible.builtin.assert:
         that:
           - out is changed
           - out.metric_filters[0].metric_namespace == "made_with_ansible"
           - out.metric_filters[0].default_value == 3.1415
 
-    - name: update filter_pattern on '{{ log_group_name }}'
+    - name: Update filter_pattern on '{{ log_group_name }}'
       amazon.aws.cloudwatchlogs_log_group_metric_filter:
         log_group_name: "{{ log_group_name }}"
         filter_name: "{{ filter_name }}"
@@ -94,7 +95,7 @@
           metric_value: $.value
       register: out
 
-    - name: update metric filter
+    - name: Update metric filter
       ansible.builtin.assert:
         that:
           - out is changed
@@ -189,7 +190,7 @@
           - out is failed
           - out.msg == "default_value and dimensions are mutually exclusive."
 
-    - name: checkmode delete metric filter on '{{ log_group_name }}'
+    - name: Checkmode delete metric filter on '{{ log_group_name }}'
       amazon.aws.cloudwatchlogs_log_group_metric_filter:
         log_group_name: "{{ log_group_name }}"
         filter_name: "{{ filter_name }}"
@@ -197,44 +198,43 @@
       check_mode: true
       register: out
 
-    - name: check_mode state must be changed
+    - name: Check_mode state must be changed
       ansible.builtin.assert:
         that:
           - out is changed
 
-    - name: delete metric filter on '{{ log_group_name }}'
+    - name: Delete metric filter on '{{ log_group_name }}'
       amazon.aws.cloudwatchlogs_log_group_metric_filter:
         log_group_name: "{{ log_group_name }}"
         filter_name: "{{ filter_name }}"
         state: absent
       register: out
 
-    - name: delete metric filter
+    - name: Delete metric filter
       ansible.builtin.assert:
         that:
           - out is changed
 
-    - name: delete metric filter on '{{ log_group_name }}' which does not exist
+    - name: Delete metric filter on '{{ log_group_name }}' which does not exist
       amazon.aws.cloudwatchlogs_log_group_metric_filter:
         log_group_name: "{{ log_group_name }}"
         filter_name: "{{ filter_name }}"
         state: absent
       register: out
 
-    - name: delete metric filter
+    - name: Delete metric filter
       ansible.builtin.assert:
         that:
           - out is not changed
 
   always:
-    - name: delete metric filter
+    - name: Delete metric filter
       amazon.aws.cloudwatchlogs_log_group_metric_filter:
         log_group_name: "{{ log_group_name }}"
         filter_name: "{{ filter_name }}"
         state: absent
 
-    - name: delete cloudwatch log group for integration test
+    - name: Delete cloudwatch log group for integration test
       amazon.aws.cloudwatchlogs_log_group:
         state: absent
         log_group_name: "{{ log_group_name }}"
-  ignore_errors: true

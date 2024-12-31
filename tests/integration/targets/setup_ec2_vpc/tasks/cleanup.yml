@@ -5,7 +5,7 @@
     group/aws:
       access_key: "{{ aws_access_key }}"
       secret_key: "{{ aws_secret_key }}"
-      session_token: "{{ security_token | default(omit)}}"
+      session_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
   block:
     # ============================================================
@@ -118,7 +118,7 @@
         - True not in main_associations
       ignore_errors: true
       vars:
-        main_associations: "{{ item.associations | default([]) | map(attribute='main') | list}}"
+        main_associations: "{{ item.associations | default([]) | map(attribute='main') | list }}"
 
     # ============================================================
 

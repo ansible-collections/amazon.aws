@@ -1,5 +1,5 @@
 ---
-- name: rds_instance / aurora integration tests
+- name: Rds_instance / aurora integration tests
 
   module_defaults:
     group/aws:

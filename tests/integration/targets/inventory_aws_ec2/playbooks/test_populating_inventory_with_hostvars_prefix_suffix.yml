@@ -14,7 +14,7 @@
         # Create VPC, subnet, security group, and find image_id to create instance
 
         - ansible.builtin.include_tasks: tasks/setup.yml
-        - name: create a new host
+        - name: Create a new host
           amazon.aws.ec2_instance:
             image_id: "{{ image_id }}"
             name: "{{ resource_prefix }}_1"
@@ -28,7 +28,7 @@
           register: setup_instance_1
 
         - ansible.builtin.meta: refresh_inventory
-        - name: assert the hostvars are defined with prefix and/or suffix
+        - name: Assert the hostvars are defined with prefix and/or suffix
           ansible.builtin.assert:
             that:
               - hostvars[resource_prefix+'_1'][vars_prefix+'instance_type'+vars_suffix] == 't2.micro'

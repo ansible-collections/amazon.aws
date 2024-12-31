@@ -6,7 +6,7 @@
       session_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
   block:
-    - name: create a key
+    - name: Create a key
       amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
         state: present
@@ -251,7 +251,7 @@
         state: absent
       ignore_errors: true
 
-    - name: finish off by deleting keys
+    - name: Finish off by deleting keys
       amazon.aws.kms_key:
         state: absent
         alias: "{{ kms_key_alias }}"

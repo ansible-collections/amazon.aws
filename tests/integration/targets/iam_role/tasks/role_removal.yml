@@ -10,7 +10,7 @@
     that:
       - iam_role is changed
 
-- name: iam_role_info after deleting role in check mode
+- name: Iam_role_info after deleting role in check mode
   amazon.aws.iam_role_info:
     name: "{{ test_role }}"
   register: role_info
@@ -29,7 +29,7 @@
     that:
       - iam_role is changed
 
-- name: iam_role_info after deleting role
+- name: Iam_role_info after deleting role
   amazon.aws.iam_role_info:
     name: "{{ test_role }}"
   register: role_info

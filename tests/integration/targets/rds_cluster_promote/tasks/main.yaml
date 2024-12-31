@@ -10,7 +10,7 @@
       amazon.aws.rds_cluster:
         id: "{{ cluster_id }}"
         state: absent
-        engine: "{{ engine}}"
+        engine: "{{ engine }}"
         username: "{{ username }}"
         password: "{{ password }}"
         skip_final_snapshot: true
@@ -30,7 +30,7 @@
       amazon.aws.rds_cluster:
         cluster_id: "{{ cluster_id }}"
         state: present
-        engine: "{{ engine}}"
+        engine: "{{ engine }}"
         username: "{{ username }}"
         password: "{{ password }}"
         region: "{{ region_src }}"
@@ -79,14 +79,14 @@
 
     - name: Set the ARN of the source DB cluster
       ansible.builtin.set_fact:
-        src_db_cluster_arn: "{{ _result_cluster_info.clusters[0].db_cluster_arn}}"
+        src_db_cluster_arn: "{{ _result_cluster_info.clusters[0].db_cluster_arn }}"
 
     - name: Create a DB cluster read replica in a different region
       amazon.aws.rds_cluster:
         id: "{{ cluster_id }}-replica"
         state: present
         replication_source_identifier: "{{ src_db_cluster_arn }}"
-        engine: "{{ engine}}"
+        engine: "{{ engine }}"
         region: "{{ region_dest }}"
         tags:
           Name: "{{ cluster_id }}"
@@ -128,7 +128,7 @@
         id: "{{ cluster_id }}-replica"
         state: present
         replication_source_identifier: "{{ src_db_cluster_arn }}"
-        engine: "{{ engine}}"
+        engine: "{{ engine }}"
         region: "{{ region_dest }}"
         tags:
           Name: "{{ cluster_id }}"

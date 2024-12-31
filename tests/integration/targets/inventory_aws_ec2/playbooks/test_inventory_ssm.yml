@@ -62,7 +62,7 @@
           retries: 18
           delay: 10
 
-        - name: validate EC2 ssm-configured instance
+        - name: Validate EC2 ssm-configured instance
           ansible.builtin.assert:
             that:
               - result.ssm_inventory != {}
@@ -82,8 +82,9 @@
 
         # refresh inventory
         - ansible.builtin.meta: refresh_inventory
-        - ansible.builtin.debug: var=hostvars
-        - name: assert hostvars was populated with ssm_inventory information
+        - ansible.builtin.debug:
+            var: hostvars
+        - name: Assert hostvars was populated with ssm_inventory information
           ansible.builtin.assert:
             that:
               - ssm_hostname in hostvars

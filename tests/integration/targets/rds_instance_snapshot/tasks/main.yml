@@ -11,7 +11,7 @@
       amazon.aws.rds_instance:
         id: "{{ instance_id }}"
         state: present
-        engine: "{{ engine}}"
+        engine: "{{ engine }}"
         engine_version: "{{ mariadb_engine_version }}"
         allow_major_version_upgrade: true
         username: "{{ username }}"

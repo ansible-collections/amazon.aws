@@ -33,13 +33,13 @@
           TestTag: Some Value
       check_mode: true
 
-    - name: fact presented ec2 instance
+    - name: Fact presented ec2 instance
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-checkmode-comparison"
       register: presented_instance_fact
 
-    - name: fact checkmode ec2 instance
+    - name: Fact checkmode ec2 instance
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-checkmode-comparison-checkmode"
@@ -61,7 +61,7 @@
           TestTag: Some Value
       check_mode: true
 
-    - name: fact ec2 instance
+    - name: Fact ec2 instance
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-checkmode-comparison"
@@ -83,7 +83,7 @@
         wait: true
       register: instance_stop
 
-    - name: fact stopped ec2 instance
+    - name: Fact stopped ec2 instance
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-checkmode-comparison"
@@ -104,7 +104,7 @@
           TestTag: Some Value
       check_mode: true
 
-    - name: fact ec2 instance
+    - name: Fact ec2 instance
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-checkmode-comparison"
@@ -124,7 +124,7 @@
           TestId: "{{ ec2_instance_tag_TestId }}"
           TestTag: Some Value
 
-    - name: fact ec2 instance.
+    - name: Fact ec2 instance.
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-checkmode-comparison"
@@ -145,7 +145,7 @@
           TestTag: Some Other Value
       check_mode: true
 
-    - name: fact ec2 instance.
+    - name: Fact ec2 instance.
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-checkmode-comparison"
@@ -167,7 +167,7 @@
         wait: true
       check_mode: true
 
-    - name: fact ec2 instance
+    - name: Fact ec2 instance
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-checkmode-comparison"
@@ -188,7 +188,7 @@
           TestTag: Some Value
         wait: true
 
-    - name: fact ec2 instance
+    - name: Fact ec2 instance
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-checkmode-comparison"

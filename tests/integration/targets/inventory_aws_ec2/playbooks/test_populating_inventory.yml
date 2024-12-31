@@ -4,7 +4,7 @@
   gather_facts: false
   environment: "{{ ansible_test.environment }}"
   tasks:
-    - name: assert group was populated with inventory and is no longer empty
+    - name: Assert group was populated with inventory and is no longer empty
       ansible.builtin.assert:
         that:
           - "'aws_ec2' in groups"

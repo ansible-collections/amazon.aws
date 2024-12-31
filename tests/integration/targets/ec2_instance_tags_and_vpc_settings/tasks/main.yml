@@ -68,20 +68,20 @@
     - name: Remaking the same instance resulted in no changes
       ansible.builtin.assert:
         that: not remake_in_test_vpc.changed
-    - name: check that instance IDs match anyway
+    - name: Check that instance IDs match anyway
       ansible.builtin.assert:
         that: remake_in_test_vpc.instance_ids[0] == in_test_vpc.instance_ids[0]
-    - name: check that source_dest_check was set to false
+    - name: Check that source_dest_check was set to false
       ansible.builtin.assert:
         that: not remake_in_test_vpc.instances[0].source_dest_check
 
-    - name: fact presented ec2 instance
+    - name: Fact presented ec2 instance
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-test-basic-vpc-create"
       register: presented_instance_fact
 
-    - name: fact checkmode ec2 instance
+    - name: Fact checkmode ec2 instance
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-test-basic-vpc-create-checkmode"
@@ -137,13 +137,13 @@
         that:
           - "'Something' not in check_tags.instances[0].tags"
 
-    - name: check that subnet-default public IP rule was followed
+    - name: Check that subnet-default public IP rule was followed
       ansible.builtin.assert:
         that:
           - check_tags.instances[0].public_dns_name == ""
           - check_tags.instances[0].private_ip_address.startswith(subnet_b_startswith)
           - check_tags.instances[0].subnet_id == testing_subnet_b.subnet.id
-    - name: check that tags were applied
+    - name: Check that tags were applied
       ansible.builtin.assert:
         that:
           - check_tags.instances[0].tags.Name.startswith(resource_prefix)
@@ -217,7 +217,7 @@
         instance_type: "{{ ec2_instance_type }}"
       register: update_source_dest_check
 
-    - name: fact presented ec2 instance
+    - name: Fact presented ec2 instance
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-test-basic-vpc-create"

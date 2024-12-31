@@ -1,7 +1,7 @@
 ---
 # ===========================================================
 
-- name: update idle connection timeout on ELB (check_mode)
+- name: Update idle connection timeout on ELB (check_mode)
   amazon.aws.elb_classic_lb:
     name: "{{ elb_name }}"
     state: present
@@ -13,7 +13,7 @@
     that:
       - result is changed
 
-- name: update idle connection timeout on ELB
+- name: Update idle connection timeout on ELB
   amazon.aws.elb_classic_lb:
     name: "{{ elb_name }}"
     state: present
@@ -25,7 +25,7 @@
       - result is changed
       - result.elb.idle_timeout == updated_idle_timeout
 
-- name: update idle connection timeout on ELB - idempotency (check_mode)
+- name: Update idle connection timeout on ELB - idempotency (check_mode)
   amazon.aws.elb_classic_lb:
     name: "{{ elb_name }}"
     state: present
@@ -37,7 +37,7 @@
     that:
       - result is not changed
 
-- name: update idle connection timeout on ELB - idempotency
+- name: Update idle connection timeout on ELB - idempotency
   amazon.aws.elb_classic_lb:
     name: "{{ elb_name }}"
     state: present

@@ -12,13 +12,12 @@
   #   import_tasks: remove_from_global_db.yaml
 
     - name: Run tests for testing serverless v2 scaling configuration
-      import_tasks: create_update_cluster_serverless_v2_scaling_configuration.yaml
-
+      ansible.builtin.import_tasks: create_update_cluster_serverless_v2_scaling_configuration.yaml
     - name: Ensure the resource doesn't exist
       amazon.aws.rds_cluster:
         id: "{{ cluster_id }}"
         state: absent
-        engine: "{{ engine}}"
+        engine: "{{ engine }}"
         username: "{{ username }}"
         password: "{{ password }}"
         skip_final_snapshot: true

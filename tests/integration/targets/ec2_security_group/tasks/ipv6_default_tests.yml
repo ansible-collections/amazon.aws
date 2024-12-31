@@ -1,9 +1,9 @@
 ---
 # ============================================================
-- name: test state=present for ipv6 (expected changed=true) (CHECK MODE)
+- name: Test state=present for ipv6 (expected changed=true) (CHECK MODE)
   amazon.aws.ec2_security_group:
-    name: "{{ec2_group_name}}"
-    description: "{{ec2_group_description}}"
+    name: "{{ ec2_group_name }}"
+    description: "{{ ec2_group_description }}"
     state: present
     rules:
       - proto: tcp
@@ -13,16 +13,16 @@
   check_mode: true
   register: result
 
-- name: assert state=present (expected changed=true)
+- name: Assert state=present (expected changed=true)
   ansible.builtin.assert:
     that:
       - result.changed
 
 # ============================================================
-- name: test state=present for ipv6 (expected changed=true)
+- name: Test state=present for ipv6 (expected changed=true)
   amazon.aws.ec2_security_group:
-    name: "{{ec2_group_name}}"
-    description: "{{ec2_group_description}}"
+    name: "{{ ec2_group_name }}"
+    description: "{{ ec2_group_description }}"
     state: present
     rules:
       - proto: tcp
@@ -31,17 +31,17 @@
         cidr_ipv6: 64:ff9b::/96
   register: result
 
-- name: assert state=present (expected changed=true)
+- name: Assert state=present (expected changed=true)
   ansible.builtin.assert:
     that:
       - result.changed
       - result.group_id.startswith("sg-")
 
 # ============================================================
-- name: test rules_egress state=present for ipv6 (expected changed=true) (CHECK MODE)
+- name: Test rules_egress state=present for ipv6 (expected changed=true) (CHECK MODE)
   amazon.aws.ec2_security_group:
-    name: "{{ec2_group_name}}"
-    description: "{{ec2_group_description}}"
+    name: "{{ ec2_group_name }}"
+    description: "{{ ec2_group_description }}"
     state: present
     rules:
       - proto: tcp
@@ -56,16 +56,16 @@
   check_mode: true
   register: result
 
-- name: assert state=present (expected changed=true)
+- name: Assert state=present (expected changed=true)
   ansible.builtin.assert:
     that:
       - result.changed
 
 # ============================================================
-- name: test rules_egress state=present for ipv6 (expected changed=true)
+- name: Test rules_egress state=present for ipv6 (expected changed=true)
   amazon.aws.ec2_security_group:
-    name: "{{ec2_group_name}}"
-    description: "{{ec2_group_description}}"
+    name: "{{ ec2_group_name }}"
+    description: "{{ ec2_group_description }}"
     state: present
     rules:
       - proto: tcp
@@ -79,12 +79,12 @@
         cidr_ipv6: 64:ff9b::/96
   register: result
 
-- name: assert state=present (expected changed=true)
+- name: Assert state=present (expected changed=true)
   ansible.builtin.assert:
     that:
       - result.changed
       - result.group_id.startswith("sg-")
-- name: delete it
+- name: Delete it
   amazon.aws.ec2_security_group:
-    name: "{{ec2_group_name}}"
+    name: "{{ ec2_group_name }}"
     state: absent

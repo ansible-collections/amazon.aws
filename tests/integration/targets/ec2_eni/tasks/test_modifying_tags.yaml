@@ -1,6 +1,6 @@
 ---
 # ============================================================
-- name: verify there are no tags associated with the network interface
+- name: Verify there are no tags associated with the network interface
   amazon.aws.ec2_eni:
     eni_id: "{{ eni_id_1 }}"
     state: present
@@ -14,7 +14,7 @@
       - result.interface.name is undefined
 
 # ============================================================
-- name: add tags to the network interface (check mode)
+- name: Add tags to the network interface (check mode)
   amazon.aws.ec2_eni:
     eni_id: "{{ eni_id_1 }}"
     state: present
@@ -28,7 +28,7 @@
     that:
       - result_check_mode.changed
 
-- name: add tags to the network interface
+- name: Add tags to the network interface
   amazon.aws.ec2_eni:
     eni_id: "{{ eni_id_1 }}"
     state: present
@@ -59,7 +59,7 @@
     _interface_0: "{{ eni_info.network_interfaces[0] }}"
 
 # ============================================================
-- name: test idempotence by using the Name tag and the subnet (check mode)
+- name: Test idempotence by using the Name tag and the subnet (check mode)
   amazon.aws.ec2_eni:
     name: "{{ resource_prefix }}"
     state: present
@@ -71,7 +71,7 @@
     that:
       - not result_check_mode.changed
 
-- name: test idempotence by using the Name tag and the subnet
+- name: Test idempotence by using the Name tag and the subnet
   amazon.aws.ec2_eni:
     name: "{{ resource_prefix }}"
     state: present
@@ -84,7 +84,7 @@
       - result.interface.id == eni_id_1
 
 # ============================================================
-- name: test tags are not purged if tags are null even if name is provided (check mode)
+- name: Test tags are not purged if tags are null even if name is provided (check mode)
   amazon.aws.ec2_eni:
     name: "{{ resource_prefix }}"
     state: present
@@ -96,7 +96,7 @@
     that:
       - not result_check_mode.changed
 
-- name: test tags are not purged if tags are null even if name is provided
+- name: Test tags are not purged if tags are null even if name is provided
   amazon.aws.ec2_eni:
     name: "{{ resource_prefix }}"
     state: present
@@ -122,7 +122,7 @@
     _interface_0: "{{ eni_info.network_interfaces[0] }}"
 
 # ============================================================
-- name: test setting purge tags to false
+- name: Test setting purge tags to false
   amazon.aws.ec2_eni:
     eni_id: "{{ eni_id_1 }}"
     state: present
@@ -148,7 +148,7 @@
     _interface_0: "{{ eni_info.network_interfaces[0] }}"
 
 # ============================================================
-- name: test adding a new tag without removing any others
+- name: Test adding a new tag without removing any others
   amazon.aws.ec2_eni:
     eni_id: "{{ eni_id_1 }}"
     state: present
@@ -177,7 +177,7 @@
     _interface_0: "{{ eni_info.network_interfaces[0] }}"
 
 # ============================================================
-- name: test purging tags and adding a new one
+- name: Test purging tags and adding a new one
   amazon.aws.ec2_eni:
     name: "{{ resource_prefix }}"
     state: present
@@ -204,7 +204,7 @@
   vars:
     _interface_0: "{{ eni_info.network_interfaces[0] }}"
 
-- name: test purging tags and adding a new one is idempotent
+- name: Test purging tags and adding a new one is idempotent
   amazon.aws.ec2_eni:
     name: "{{ resource_prefix }}"
     state: present
@@ -232,7 +232,7 @@
     _interface_0: "{{ eni_info.network_interfaces[0] }}"
 
 # ============================================================
-- name: test purging all tags
+- name: Test purging all tags
   amazon.aws.ec2_eni:
     eni_id: "{{ eni_id_1 }}"
     state: present

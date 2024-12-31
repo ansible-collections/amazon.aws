@@ -1,3 +1,4 @@
+---
 - name: Test deletion of launch template
   vars:
     deletion_launch_template_name: "{{ resource_prefix }}-deletion"
@@ -28,7 +29,7 @@
           - _templates.launch_templates[0].versions | length == 5
           - _templates.launch_templates[0].latest_version_number == 5
           - _templates.launch_templates[0].default_version_number == 5
-  
+
     #====================================================================
     # Validate deletion errors
     #====================================================================
@@ -40,7 +41,7 @@
       ignore_errors: true
 
     - name: Ensure module did not failed while trying to delete non-existent template
-      assert:
+      ansible.builtin.assert:
         that:
           - delete_fake_template is not failed
 

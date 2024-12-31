@@ -29,13 +29,13 @@
         instance_type: "{{ ec2_instance_type }}"
       check_mode: true
 
-    - name: fact presented ec2 instance
+    - name: Fact presented ec2 instance
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-test-default-vpc"
       register: presented_instance_fact
 
-    - name: fact checkmode ec2 instance
+    - name: Fact checkmode ec2 instance
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-test-default-vpc-checkmode"

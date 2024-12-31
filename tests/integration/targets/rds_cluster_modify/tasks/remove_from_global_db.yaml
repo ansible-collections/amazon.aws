@@ -48,7 +48,7 @@
         AWS_DEFAULT_REGION: "{{ test_primary_cluster_region }}"
       register: global_cluster_info_result
 
-    - name: convert it to an object
+    - name: Convert it to an object
       ansible.builtin.set_fact:
         global_cluster_info: "{{ global_cluster_info_result.stdout | from_json }}"
 
@@ -83,7 +83,7 @@
         AWS_DEFAULT_REGION: "{{ test_primary_cluster_region }}"
       register: global_cluster_info_result
 
-    - name: convert it to an object
+    - name: Convert it to an object
       ansible.builtin.set_fact:
         global_cluster_info: "{{ global_cluster_info_result.stdout | from_json }}"
 
@@ -144,7 +144,7 @@
         AWS_DEFAULT_REGION: "{{ test_primary_cluster_region }}"
       register: global_cluster_info_result
 
-    - name: convert it to an object
+    - name: Convert it to an object
       ansible.builtin.set_fact:
         global_cluster_info: "{{ global_cluster_info_result.stdout | from_json }}"
 
@@ -188,7 +188,7 @@
         AWS_DEFAULT_REGION: "{{ test_primary_cluster_region }}"
       register: global_cluster_info_result
 
-    - name: convert it to an object
+    - name: Convert it to an object
       ansible.builtin.set_fact:
         global_cluster_info: "{{ global_cluster_info_result.stdout | from_json }}"
 

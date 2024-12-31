@@ -16,14 +16,14 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 
-- name: create a temp dir
+- name: Create a temp dir
   ansible.builtin.tempfile:
     state: directory
   register: sshkey_dir
   tags:
     - prepare
 
-- name: ensure script is available
+- name: Ensure script is available
   ansible.builtin.copy:
     src: ec2-fingerprint.py
     dest: "{{ sshkey_dir.path }}/ec2-fingerprint.py"
@@ -39,34 +39,34 @@
     another_sshkey_pub: "{{ sshkey_dir.path }}/key_two.pub"
 
 # Because some older OSes don't like the Elliptic Curve keys we'll stick to 4096 bit RSA for now
-- name: generate sshkey (4096 bit RSA)
+- name: Generate sshkey (4096 bit RSA)
   ansible.builtin.shell: echo 'y' | ssh-keygen -t rsa -b 4096 -P '' -f '{{ sshkey }}'
   tags:
     - prepare
 
 # AWS uses a custom MD5 checksum for its RSA keys (rather than the modern default of a base64 encoded sha256 hash)
-- name: record fingerprint
-  ansible.builtin.shell: "{{ sshkey_dir.path }}/ec2-fingerprint.py {{ sshkey_pub }}"
+- name: Record fingerprint
+  ansible.builtin.command: "{{ sshkey_dir.path }}/ec2-fingerprint.py {{ sshkey_pub }}"
   register: fingerprint
   tags:
     - prepare
 
 # With OpenSSH 9.5 the default changed to ED25519, to avoid confusing issues when running locally vs
 # in CI, we set the default
-- name: generate another_sshkey (ED25519)
+- name: Generate another_sshkey (ED25519)
   ansible.builtin.shell: echo 'y' | ssh-keygen -t ed25519 -P '' -f {{ another_sshkey }}
   tags:
     - prepare
 
 # When adding support for ED25519 Amazon stuck to the newer default of base64 encoded sha256 hashes, this means we can
 # ask ssh-keygen for the fingerprint, but we'll explicitly ask for the sha256 version just in case the default changes
-- name: record another fingerprint
+- name: Record another fingerprint
   ansible.builtin.shell: "ssh-keygen -l -E sha256 -f {{ another_sshkey_pub }} | cut -c 12-54"
   register: another_fingerprint
   tags:
     - prepare
 
-- name: set facts for future roles
+- name: Set facts for future roles
   ansible.builtin.set_fact:
     # Public SSH keys (OpenSSH format)
     # - 4096 bit RSA (broad support)

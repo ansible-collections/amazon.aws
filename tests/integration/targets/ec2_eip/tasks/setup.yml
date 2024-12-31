@@ -1,3 +1,4 @@
+---
 - name: Get the current caller identity facts
   amazon.aws.aws_caller_info:
   register: caller_info

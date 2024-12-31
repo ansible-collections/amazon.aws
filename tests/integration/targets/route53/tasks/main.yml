@@ -18,7 +18,7 @@
       # Route53 is explicitly a global service
       region:
   block:
-    - name: create VPC
+    - name: Create VPC
       amazon.aws.ec2_vpc_net:
         cidr_block: 192.0.2.0/24
         name: "{{ resource_prefix }}_vpc"
@@ -240,7 +240,7 @@
           - mv_a_record is not changed
 
     # Get resulting A record and ensure max_items is applied
-    - name: get Route53 A record information
+    - name: Get Route53 A record information
       amazon.aws.route53_info:
         type: A
         query: record_sets
@@ -289,7 +289,7 @@
           - del_a_record is not failed
           - del_a_record is changed
 
-    - name: get Route53 zone A record information
+    - name: Get Route53 zone A record information
       amazon.aws.route53_info:
         type: A
         query: record_sets
@@ -443,7 +443,7 @@
           - wc_a_record is changed
           - wc_a_record.diff.after == {}
 
-    - name: create a record with different TTL
+    - name: Create a record with different TTL
       amazon.aws.route53:
         state: present
         zone: "{{ zone_one }}"
@@ -452,32 +452,32 @@
         value: 127.0.0.1
         ttl: 30
       register: ttl30
-    - name: check return values
+    - name: Check return values
       ansible.builtin.assert:
         that:
           - ttl30.resource_record_sets[0].ttl == "30"
           - ttl30 is changed
 
-    - name: delete previous record without mention ttl and value
+    - name: Delete previous record without mention ttl and value
       amazon.aws.route53:
         state: absent
         zone: "{{ zone_one }}"
         record: localhost.{{ zone_one }}
         type: A
       register: ttl30
-    - name: check if record is deleted
+    - name: Check if record is deleted
       ansible.builtin.assert:
         that:
           - ttl30 is changed
 
-    - name: immutable delete previous record without mention ttl and value
+    - name: Immutable delete previous record without mention ttl and value
       amazon.aws.route53:
         state: absent
         zone: "{{ zone_one }}"
         record: localhost.{{ zone_one }}
         type: A
       register: ttl30
-    - name: check if record was deleted
+    - name: Check if record was deleted
       ansible.builtin.assert:
         that:
           - ttl30 is not changed
@@ -725,7 +725,7 @@
           continent_code: NA
       register: create_geo_continent
     # Get resulting A record and geo_location parameters are applied
-    - name: get Route53 A record information
+    - name: Get Route53 A record information
       amazon.aws.route53_info:
         type: A
         query: record_sets
@@ -812,7 +812,7 @@
           country_code: US
       register: create_geo_country
     # Get resulting A record and geo_location parameters are applied
-    - name: get Route53 A record information
+    - name: Get Route53 A record information
       amazon.aws.route53_info:
         type: A
         query: record_sets
@@ -900,7 +900,7 @@
           subdivision_code: TX
       register: create_geo_subdivision
     # Get resulting A record and geo_location parameters are applied
-    - name: get Route53 A record information
+    - name: Get Route53 A record information
       amazon.aws.route53_info:
         type: A
         query: record_sets
@@ -959,7 +959,7 @@
   #Cleanup------------------------------------------------------
 
   always:
-    - name: delete a record with geo_location - continent_code
+    - name: Delete a record with geo_location - continent_code
       amazon.aws.route53:
         state: absent
         zone: "{{ zone_one }}"
@@ -972,7 +972,7 @@
           continent_code: NA
       ignore_errors: true
 
-    - name: delete a record with geo_location - country_code
+    - name: Delete a record with geo_location - country_code
       amazon.aws.route53:
         state: absent
         zone: "{{ zone_one }}"
@@ -985,7 +985,7 @@
           country_code: US
       ignore_errors: true
 
-    - name: delete a record with geo_location - subdivision_code
+    - name: Delete a record with geo_location - subdivision_code
       amazon.aws.route53:
         state: absent
         zone: "{{ zone_one }}"
@@ -1113,7 +1113,7 @@
       retries: 10
       until: delete_two is not failed
 
-    - name: destroy VPC
+    - name: Destroy VPC
       amazon.aws.ec2_vpc_net:
         cidr_block: 192.0.2.0/24
         name: "{{ resource_prefix }}_vpc"

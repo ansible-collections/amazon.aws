@@ -60,7 +60,7 @@
         AWS_DEFAULT_REGION: "{{ aws_region }}"
       register: instance_termination_check
 
-    - name: convert it to an object
+    - name: Convert it to an object
       ansible.builtin.set_fact:
         instance_termination_status: "{{ instance_termination_check.stdout | from_json }}"
 
@@ -143,7 +143,7 @@
         AWS_DEFAULT_REGION: "{{ aws_region }}"
       register: instance_termination_check
 
-    - name: convert it to an object
+    - name: Convert it to an object
       ansible.builtin.set_fact:
         instance_termination_status: "{{ instance_termination_check.stdout | from_json }}"
 
@@ -176,7 +176,7 @@
         AWS_DEFAULT_REGION: "{{ aws_region }}"
       register: instance_termination_check
 
-    - name: convert it to an object
+    - name: Convert it to an object
       ansible.builtin.set_fact:
         instance_termination_status: "{{ instance_termination_check.stdout | from_json }}"
 

@@ -37,45 +37,45 @@
   block:
   ###
 
-    - name: test adding tags to cloudtrail (check mode)
+    - name: Test adding tags to cloudtrail (check mode)
       amazon.aws.cloudtrail:
         tags: "{{ first_tags }}"
         purge_tags: true
       register: update_result
       check_mode: true
-    - name: assert that update succeeded
+    - name: Assert that update succeeded
       ansible.builtin.assert:
         that:
           - update_result is changed
 
-    - name: test adding tags to cloudtrail
+    - name: Test adding tags to cloudtrail
       amazon.aws.cloudtrail:
         tags: "{{ first_tags }}"
         purge_tags: true
       register: update_result
-    - name: assert that update succeeded
+    - name: Assert that update succeeded
       ansible.builtin.assert:
         that:
           - update_result is changed
           - update_result.trail.tags == first_tags
 
-    - name: test adding tags to cloudtrail - idempotency (check mode)
+    - name: Test adding tags to cloudtrail - idempotency (check mode)
       amazon.aws.cloudtrail:
         tags: "{{ first_tags }}"
         purge_tags: true
       register: update_result
       check_mode: true
-    - name: assert that update succeeded
+    - name: Assert that update succeeded
       ansible.builtin.assert:
         that:
           - update_result is not changed
 
-    - name: test adding tags to cloudtrail - idempotency
+    - name: Test adding tags to cloudtrail - idempotency
       amazon.aws.cloudtrail:
         tags: "{{ first_tags }}"
         purge_tags: true
       register: update_result
-    - name: assert that update succeeded
+    - name: Assert that update succeeded
       ansible.builtin.assert:
         that:
           - update_result is not changed
@@ -83,45 +83,45 @@
 
     ###
 
-    - name: test updating tags with purge on cloudtrail (check mode)
+    - name: Test updating tags with purge on cloudtrail (check mode)
       amazon.aws.cloudtrail:
         tags: "{{ second_tags }}"
         purge_tags: true
       register: update_result
       check_mode: true
-    - name: assert that update succeeded
+    - name: Assert that update succeeded
       ansible.builtin.assert:
         that:
           - update_result is changed
 
-    - name: test updating tags with purge on cloudtrail
+    - name: Test updating tags with purge on cloudtrail
       amazon.aws.cloudtrail:
         tags: "{{ second_tags }}"
         purge_tags: true
       register: update_result
-    - name: assert that update succeeded
+    - name: Assert that update succeeded
       ansible.builtin.assert:
         that:
           - update_result is changed
           - update_result.trail.tags == second_tags
 
-    - name: test updating tags with purge on cloudtrail - idempotency (check mode)
+    - name: Test updating tags with purge on cloudtrail - idempotency (check mode)
       amazon.aws.cloudtrail:
         tags: "{{ second_tags }}"
         purge_tags: true
       register: update_result
       check_mode: true
-    - name: assert that update succeeded
+    - name: Assert that update succeeded
       ansible.builtin.assert:
         that:
           - update_result is not changed
 
-    - name: test updating tags with purge on cloudtrail - idempotency
+    - name: Test updating tags with purge on cloudtrail - idempotency
       amazon.aws.cloudtrail:
         tags: "{{ second_tags }}"
         purge_tags: true
       register: update_result
-    - name: assert that update succeeded
+    - name: Assert that update succeeded
       ansible.builtin.assert:
         that:
           - update_result is not changed
@@ -129,45 +129,45 @@
 
     ###
 
-    - name: test updating tags without purge on cloudtrail (check mode)
+    - name: Test updating tags without purge on cloudtrail (check mode)
       amazon.aws.cloudtrail:
         tags: "{{ third_tags }}"
         purge_tags: false
       register: update_result
       check_mode: true
-    - name: assert that update succeeded
+    - name: Assert that update succeeded
       ansible.builtin.assert:
         that:
           - update_result is changed
 
-    - name: test updating tags without purge on cloudtrail
+    - name: Test updating tags without purge on cloudtrail
       amazon.aws.cloudtrail:
         tags: "{{ third_tags }}"
         purge_tags: false
       register: update_result
-    - name: assert that update succeeded
+    - name: Assert that update succeeded
       ansible.builtin.assert:
         that:
           - update_result is changed
           - update_result.trail.tags == final_tags
 
-    - name: test updating tags without purge on cloudtrail - idempotency (check mode)
+    - name: Test updating tags without purge on cloudtrail - idempotency (check mode)
       amazon.aws.cloudtrail:
         tags: "{{ third_tags }}"
         purge_tags: false
       register: update_result
       check_mode: true
-    - name: assert that update succeeded
+    - name: Assert that update succeeded
       ansible.builtin.assert:
         that:
           - update_result is not changed
 
-    - name: test updating tags without purge on cloudtrail - idempotency
+    - name: Test updating tags without purge on cloudtrail - idempotency
       amazon.aws.cloudtrail:
         tags: "{{ third_tags }}"
         purge_tags: false
       register: update_result
-    - name: assert that update succeeded
+    - name: Assert that update succeeded
       ansible.builtin.assert:
         that:
           - update_result is not changed
@@ -185,20 +185,20 @@
     #
     #  ###
 
-    - name: test no tags param cloudtrail (check mode)
+    - name: Test no tags param cloudtrail (check mode)
       amazon.aws.cloudtrail: {}
       register: update_result
       check_mode: true
-    - name: assert no change
+    - name: Assert no change
       ansible.builtin.assert:
         that:
           - update_result is not changed
           - update_result.trail.tags == final_tags
 
-    - name: test no tags param cloudtrail
+    - name: Test no tags param cloudtrail
       amazon.aws.cloudtrail: {}
       register: update_result
-    - name: assert no change
+    - name: Assert no change
       ansible.builtin.assert:
         that:
           - update_result is not changed
@@ -206,45 +206,45 @@
 
     ###
 
-    - name: test removing tags from cloudtrail (check mode)
+    - name: Test removing tags from cloudtrail (check mode)
       amazon.aws.cloudtrail:
         tags: {}
         purge_tags: true
       register: update_result
       check_mode: true
-    - name: assert that update succeeded
+    - name: Assert that update succeeded
       ansible.builtin.assert:
         that:
           - update_result is changed
 
-    - name: test removing tags from cloudtrail
+    - name: Test removing tags from cloudtrail
       amazon.aws.cloudtrail:
         tags: {}
         purge_tags: true
       register: update_result
-    - name: assert that update succeeded
+    - name: Assert that update succeeded
       ansible.builtin.assert:
         that:
           - update_result is changed
           - update_result.trail.tags == {}
 
-    - name: test removing tags from cloudtrail - idempotency (check mode)
+    - name: Test removing tags from cloudtrail - idempotency (check mode)
       amazon.aws.cloudtrail:
         tags: {}
         purge_tags: true
       register: update_result
       check_mode: true
-    - name: assert that update succeeded
+    - name: Assert that update succeeded
       ansible.builtin.assert:
         that:
           - update_result is not changed
 
-    - name: test removing tags from cloudtrail - idempotency
+    - name: Test removing tags from cloudtrail - idempotency
       amazon.aws.cloudtrail:
         tags: {}
         purge_tags: true
       register: update_result
-    - name: assert that update succeeded
+    - name: Assert that update succeeded
       ansible.builtin.assert:
         that:
           - update_result is not changed

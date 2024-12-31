@@ -1,5 +1,5 @@
 ---
-- name: test invalid cancelation - V1 - (pre-refresh)
+- name: Test invalid cancelation - V1 - (pre-refresh)
   amazon.aws.autoscaling_instance_refresh:
     name: "{{ asg_name }}"
     state: "cancelled"
@@ -9,7 +9,8 @@
 - name: Assert that module failed with proper message
   ansible.builtin.assert:
     that:
-      - "'An error occurred (ActiveInstanceRefreshNotFound) when calling the CancelInstanceRefresh operation: No in progress or pending Instance Refresh found for Auto Scaling group ' ~ resource_prefix ~ '-asg' in result.msg"
+      - "'An error occurred (ActiveInstanceRefreshNotFound) when calling the CancelInstanceRefresh operation: No in progress or pending Instance Refresh found for
+        Auto Scaling group ' ~ resource_prefix ~ '-asg' in result.msg"
 
 - name: Test starting a refresh with a valid ASG name - check_mode
   amazon.aws.autoscaling_instance_refresh:
@@ -46,7 +47,8 @@
   ansible.builtin.assert:
     that:
       - output is not changed
-      - '"Failed to start InstanceRefresh: An error occurred (InstanceRefreshInProgress) when calling the StartInstanceRefresh operation: An Instance Refresh is already in progress and blocks the execution of this Instance Refresh." in output.msg'
+      - '"Failed to start InstanceRefresh: An error occurred (InstanceRefreshInProgress) when calling the StartInstanceRefresh operation: An Instance Refresh is already
+        in progress and blocks the execution of this Instance Refresh." in output.msg'
 
 - name: Test starting a refresh with a valid ASG name - Idempotent (check_mode)
   amazon.aws.autoscaling_instance_refresh:
@@ -71,7 +73,8 @@
 - name: Assert that module failed with proper message
   ansible.builtin.assert:
     that:
-      - "'Failed to start InstanceRefresh: An error occurred (ValidationError) when calling the StartInstanceRefresh operation: AutoScalingGroup name not found' in result.msg"
+      - "'Failed to start InstanceRefresh: An error occurred (ValidationError) when calling the StartInstanceRefresh operation: AutoScalingGroup name not found' in
+        result.msg"
 
 - name: Test canceling a refresh with an ASG name - check_mode
   amazon.aws.autoscaling_instance_refresh:

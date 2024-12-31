@@ -6,8 +6,8 @@
       session_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
   block:
-    - include_tasks: template_data.yml
-    - include_tasks: tagging.yml
-    - include_tasks: iam_instance_role.yml
-    - include_tasks: versions.yml
-    - include_tasks: deletion.yml
+    - ansible.builtin.include_tasks: template_data.yml
+    - ansible.builtin.include_tasks: tagging.yml
+    - ansible.builtin.include_tasks: iam_instance_role.yml
+    - ansible.builtin.include_tasks: versions.yml
+    - ansible.builtin.include_tasks: deletion.yml

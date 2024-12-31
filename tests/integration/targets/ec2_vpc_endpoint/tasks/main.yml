@@ -1,5 +1,5 @@
 ---
-- name: ec2_vpc_endpoint tests
+- name: Ec2_vpc_endpoint tests
   module_defaults:
     group/aws:
       access_key: "{{ aws_access_key }}"
@@ -9,7 +9,7 @@
   block:
   # ============================================================
   # BEGIN PRE-TEST SETUP
-    - name: create a VPC
+    - name: Create a VPC
       amazon.aws.ec2_vpc_net:
         state: present
         name: "{{ vpc_name }}"
@@ -716,7 +716,7 @@
       amazon.aws.ec2_vpc_subnet:
         state: present
         vpc_id: "{{ vpc_id }}"
-        az: "{{ aws_region}}a"
+        az: "{{ aws_region }}a"
         cidr: "{{ vpc_cidr }}"
       register: interface_endpoint_create_subnet_check
 

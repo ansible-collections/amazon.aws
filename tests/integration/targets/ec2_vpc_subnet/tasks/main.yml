@@ -7,7 +7,7 @@
       region: "{{ aws_region }}"
   block:
     # ============================================================
-    - name: create a VPC
+    - name: Create a VPC
       amazon.aws.ec2_vpc_net:
         name: "{{ resource_prefix }}-vpc"
         state: present
@@ -25,10 +25,10 @@
         subnet_ipv6_cidr: "{{ vpc_ipv6_cidr | regex_replace('::/.*', '::/64') }}"
 
     # ============================================================
-    - name: check subnet does not exist
+    - name: Check subnet does not exist
       amazon.aws.ec2_vpc_subnet_info:
         filters:
-          tag:Name: "{{ec2_vpc_subnet_name}}"
+          tag:Name: "{{ ec2_vpc_subnet_name }}"
       register: vpc_subnet_info
 
     - name: Assert info result is zero
@@ -36,35 +36,35 @@
         that:
           - (vpc_subnet_info.subnets|length) == 0
 
-    - name: create subnet (expected changed=true) (CHECK MODE)
+    - name: Create subnet (expected changed=true) (CHECK MODE)
       amazon.aws.ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
         az: "{{ availability_zone }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         tags:
-          Name: "{{ec2_vpc_subnet_name}}"
-          Description: "{{ec2_vpc_subnet_description}}"
+          Name: "{{ ec2_vpc_subnet_name }}"
+          Description: "{{ ec2_vpc_subnet_description }}"
         state: present
       check_mode: true
       register: vpc_subnet_create
 
-    - name: assert creation would happen
+    - name: Assert creation would happen
       ansible.builtin.assert:
         that:
           - vpc_subnet_create is changed
 
-    - name: create subnet (expected changed=true)
+    - name: Create subnet (expected changed=true)
       amazon.aws.ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
         az: "{{ availability_zone }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         tags:
-          Name: "{{ec2_vpc_subnet_name}}"
-          Description: "{{ec2_vpc_subnet_description}}"
+          Name: "{{ ec2_vpc_subnet_name }}"
+          Description: "{{ ec2_vpc_subnet_description }}"
         state: present
       register: vpc_subnet_create
 
-    - name: assert creation happened (expected changed=true)
+    - name: Assert creation happened (expected changed=true)
       ansible.builtin.assert:
         that:
           - vpc_subnet_create
@@ -74,7 +74,7 @@
           - '"Name" in vpc_subnet_create.subnet.tags and vpc_subnet_create.subnet.tags["Name"] == ec2_vpc_subnet_name'
           - '"Description" in vpc_subnet_create.subnet.tags and vpc_subnet_create.subnet.tags["Description"] == ec2_vpc_subnet_description'
 
-    - name: get info about the subnet
+    - name: Get info about the subnet
       amazon.aws.ec2_vpc_subnet_info:
         subnet_ids: "{{ vpc_subnet_create.subnet.id }}"
       register: vpc_subnet_info
@@ -107,129 +107,129 @@
         subnet_info: "{{ vpc_subnet_info.subnets[0] }}"
 
     # ============================================================
-    - name: recreate subnet (expected changed=false) (CHECK MODE)
+    - name: Recreate subnet (expected changed=false) (CHECK MODE)
       amazon.aws.ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
         az: "{{ availability_zone }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         tags:
-          Name: "{{ec2_vpc_subnet_name}}"
-          Description: "{{ec2_vpc_subnet_description}}"
+          Name: "{{ ec2_vpc_subnet_name }}"
+          Description: "{{ ec2_vpc_subnet_description }}"
         state: present
       check_mode: true
       register: vpc_subnet_recreate
 
-    - name: assert recreation changed nothing (expected changed=false)
+    - name: Assert recreation changed nothing (expected changed=false)
       ansible.builtin.assert:
         that:
           - vpc_subnet_recreate is not changed
 
-    - name: recreate subnet (expected changed=false)
+    - name: Recreate subnet (expected changed=false)
       amazon.aws.ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
         az: "{{ availability_zone }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         tags:
-          Name: "{{ec2_vpc_subnet_name}}"
-          Description: "{{ec2_vpc_subnet_description}}"
+          Name: "{{ ec2_vpc_subnet_name }}"
+          Description: "{{ ec2_vpc_subnet_description }}"
         state: present
       register: vpc_subnet_recreate
 
-    - name: assert recreation changed nothing (expected changed=false)
+    - name: Assert recreation changed nothing (expected changed=false)
       ansible.builtin.assert:
         that:
           - vpc_subnet_recreate is not changed
           - vpc_subnet_recreate.subnet == vpc_subnet_create.subnet
 
     # ============================================================
-    - name: update subnet so instances launched in it are assigned an IP (CHECK MODE)
+    - name: Update subnet so instances launched in it are assigned an IP (CHECK MODE)
       amazon.aws.ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
         az: "{{ availability_zone }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         tags:
-          Name: "{{ec2_vpc_subnet_name}}"
-          Description: "{{ec2_vpc_subnet_description}}"
+          Name: "{{ ec2_vpc_subnet_name }}"
+          Description: "{{ ec2_vpc_subnet_description }}"
         state: present
         map_public: true
       check_mode: true
       register: vpc_subnet_modify
 
-    - name: assert subnet changed
+    - name: Assert subnet changed
       ansible.builtin.assert:
         that:
           - vpc_subnet_modify is changed
 
-    - name: update subnet so instances launched in it are assigned an IP
+    - name: Update subnet so instances launched in it are assigned an IP
       amazon.aws.ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
         az: "{{ availability_zone }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         tags:
-          Name: "{{ec2_vpc_subnet_name}}"
-          Description: "{{ec2_vpc_subnet_description}}"
+          Name: "{{ ec2_vpc_subnet_name }}"
+          Description: "{{ ec2_vpc_subnet_description }}"
         state: present
         map_public: true
       register: vpc_subnet_modify
 
-    - name: assert subnet changed
+    - name: Assert subnet changed
       ansible.builtin.assert:
         that:
           - vpc_subnet_modify is changed
           - vpc_subnet_modify.subnet.map_public_ip_on_launch
 
     # ============================================================
-    - name: add invalid ipv6 block to subnet (expected failed)
+    - name: Add invalid ipv6 block to subnet (expected failed)
       amazon.aws.ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
         az: "{{ availability_zone }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         ipv6_cidr: 2001:db8::/64
         tags:
-          Name: "{{ec2_vpc_subnet_name}}"
-          Description: "{{ec2_vpc_subnet_description}}"
+          Name: "{{ ec2_vpc_subnet_name }}"
+          Description: "{{ ec2_vpc_subnet_description }}"
         state: present
       register: vpc_subnet_ipv6_failed
       ignore_errors: true
 
-    - name: assert failure happened (expected failed)
+    - name: Assert failure happened (expected failed)
       ansible.builtin.assert:
         that:
           - vpc_subnet_ipv6_failed is failed
           - "'Couldn\\'t associate ipv6 cidr' in vpc_subnet_ipv6_failed.msg"
 
     # ============================================================
-    - name: add a tag (expected changed=true) (CHECK MODE)
+    - name: Add a tag (expected changed=true) (CHECK MODE)
       amazon.aws.ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
         az: "{{ availability_zone }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         tags:
-          Name: "{{ec2_vpc_subnet_name}}"
-          Description: "{{ec2_vpc_subnet_description}}"
+          Name: "{{ ec2_vpc_subnet_name }}"
+          Description: "{{ ec2_vpc_subnet_description }}"
           AnotherTag: SomeValue
         state: present
       check_mode: true
       register: vpc_subnet_add_a_tag
 
-    - name: assert tag addition happened (expected changed=true)
+    - name: Assert tag addition happened (expected changed=true)
       ansible.builtin.assert:
         that:
           - vpc_subnet_add_a_tag is changed
 
-    - name: add a tag (expected changed=true)
+    - name: Add a tag (expected changed=true)
       amazon.aws.ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
         az: "{{ availability_zone }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         tags:
-          Name: "{{ec2_vpc_subnet_name}}"
-          Description: "{{ec2_vpc_subnet_description}}"
+          Name: "{{ ec2_vpc_subnet_name }}"
+          Description: "{{ ec2_vpc_subnet_description }}"
           AnotherTag: SomeValue
         state: present
       register: vpc_subnet_add_a_tag
 
-    - name: assert tag addition happened (expected changed=true)
+    - name: Assert tag addition happened (expected changed=true)
       ansible.builtin.assert:
         that:
           - vpc_subnet_add_a_tag is changed
@@ -240,10 +240,10 @@
     - name: Get info by tag
       amazon.aws.ec2_vpc_subnet_info:
         filters:
-          tag:Name: "{{ec2_vpc_subnet_name}}"
+          tag:Name: "{{ ec2_vpc_subnet_name }}"
       register: vpc_subnet_info_by_tag
 
-    - name: assert info matches expected output
+    - name: Assert info matches expected output
       ansible.builtin.assert:
         that:
           - vpc_subnet_info_by_tag.subnets[0].id == vpc_subnet_add_a_tag.subnet.id
@@ -252,7 +252,7 @@
           - '"AnotherTag" in vpc_subnet_info_by_tag.subnets[0].tags and vpc_subnet_info_by_tag.subnets[0].tags["AnotherTag"] == "SomeValue"'
 
     # ============================================================
-    - name: remove tags with default purge_tags=true (expected changed=true) (CHECK MODE)
+    - name: Remove tags with default purge_tags=true (expected changed=true) (CHECK MODE)
       amazon.aws.ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
         az: "{{ availability_zone }}"
@@ -263,12 +263,12 @@
       check_mode: true
       register: vpc_subnet_remove_tags
 
-    - name: assert tag removal happened (expected changed=true)
+    - name: Assert tag removal happened (expected changed=true)
       ansible.builtin.assert:
         that:
           - vpc_subnet_remove_tags is changed
 
-    - name: remove tags with default purge_tags=true (expected changed=true)
+    - name: Remove tags with default purge_tags=true (expected changed=true)
       amazon.aws.ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
         az: "{{ availability_zone }}"
@@ -278,7 +278,7 @@
         state: present
       register: vpc_subnet_remove_tags
 
-    - name: assert tag removal happened (expected changed=true)
+    - name: Assert tag removal happened (expected changed=true)
       ansible.builtin.assert:
         that:
           - vpc_subnet_remove_tags is changed
@@ -291,7 +291,7 @@
         subnet_id: "{{ vpc_subnet_remove_tags.subnet.id }}"
       register: vpc_subnet_info_removed_tags
 
-    - name: assert info matches expected output
+    - name: Assert info matches expected output
       ansible.builtin.assert:
         that:
           - '"Name" not in vpc_subnet_info_removed_tags.subnets[0].tags'
@@ -299,37 +299,37 @@
           - '"AnotherTag" in vpc_subnet_info_removed_tags.subnets[0].tags and vpc_subnet_info_removed_tags.subnets[0].tags["AnotherTag"] == "SomeValue"'
 
     # ============================================================
-    - name: change tags with purge_tags=false (expected changed=true) (CHECK MODE)
+    - name: Change tags with purge_tags=false (expected changed=true) (CHECK MODE)
       amazon.aws.ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
         az: "{{ availability_zone }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         tags:
-          Name: "{{ec2_vpc_subnet_name}}"
-          Description: "{{ec2_vpc_subnet_description}}"
+          Name: "{{ ec2_vpc_subnet_name }}"
+          Description: "{{ ec2_vpc_subnet_description }}"
         state: present
         purge_tags: false
       check_mode: true
       register: vpc_subnet_change_tags
 
-    - name: assert tag addition happened (expected changed=true)
+    - name: Assert tag addition happened (expected changed=true)
       ansible.builtin.assert:
         that:
           - vpc_subnet_change_tags is changed
 
-    - name: change tags with purge_tags=false (expected changed=true)
+    - name: Change tags with purge_tags=false (expected changed=true)
       amazon.aws.ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
         az: "{{ availability_zone }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         tags:
-          Name: "{{ec2_vpc_subnet_name}}"
-          Description: "{{ec2_vpc_subnet_description}}"
+          Name: "{{ ec2_vpc_subnet_name }}"
+          Description: "{{ ec2_vpc_subnet_description }}"
         state: present
         purge_tags: false
       register: vpc_subnet_change_tags
 
-    - name: assert tag addition happened (expected changed=true)
+    - name: Assert tag addition happened (expected changed=true)
       ansible.builtin.assert:
         that:
           - vpc_subnet_change_tags is changed
@@ -338,7 +338,7 @@
           - '"AnotherTag" in vpc_subnet_change_tags.subnet.tags and vpc_subnet_change_tags.subnet.tags["AnotherTag"] == "SomeValue"'
 
     # ============================================================
-    - name: test state=absent (expected changed=true) (CHECK MODE)
+    - name: Test state=absent (expected changed=true) (CHECK MODE)
       amazon.aws.ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -346,25 +346,25 @@
       check_mode: true
       register: result
 
-    - name: assert state=absent (expected changed=true)
+    - name: Assert state=absent (expected changed=true)
       ansible.builtin.assert:
         that:
           - result is changed
 
-    - name: test state=absent (expected changed=true)
+    - name: Test state=absent (expected changed=true)
       amazon.aws.ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         state: absent
       register: result
 
-    - name: assert state=absent (expected changed=true)
+    - name: Assert state=absent (expected changed=true)
       ansible.builtin.assert:
         that:
           - result is changed
 
     # ============================================================
-    - name: test state=absent (expected changed=false) (CHECK MODE)
+    - name: Test state=absent (expected changed=false) (CHECK MODE)
       amazon.aws.ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -372,25 +372,25 @@
       check_mode: true
       register: result
 
-    - name: assert state=absent (expected changed=false)
+    - name: Assert state=absent (expected changed=false)
       ansible.builtin.assert:
         that:
           - result is not changed
 
-    - name: test state=absent (expected changed=false)
+    - name: Test state=absent (expected changed=false)
       amazon.aws.ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         state: absent
       register: result
 
-    - name: assert state=absent (expected changed=false)
+    - name: Assert state=absent (expected changed=false)
       ansible.builtin.assert:
         that:
           - result is not changed
 
     # ============================================================
-    - name: create subnet without AZ (CHECK MODE)
+    - name: Create subnet without AZ (CHECK MODE)
       amazon.aws.ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -398,25 +398,25 @@
       check_mode: true
       register: subnet_without_az
 
-    - name: check that subnet without AZ works fine
+    - name: Check that subnet without AZ works fine
       ansible.builtin.assert:
         that:
           - subnet_without_az is changed
 
-    - name: create subnet without AZ
+    - name: Create subnet without AZ
       amazon.aws.ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         state: present
       register: subnet_without_az
 
-    - name: check that subnet without AZ works fine
+    - name: Check that subnet without AZ works fine
       ansible.builtin.assert:
         that:
           - subnet_without_az is changed
 
     # ============================================================
-    - name: remove subnet without AZ (CHECK MODE)
+    - name: Remove subnet without AZ (CHECK MODE)
       amazon.aws.ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -424,25 +424,25 @@
       check_mode: true
       register: result
 
-    - name: assert state=absent (expected changed=true)
+    - name: Assert state=absent (expected changed=true)
       ansible.builtin.assert:
         that:
           - result is changed
 
-    - name: remove subnet without AZ
+    - name: Remove subnet without AZ
       amazon.aws.ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         state: absent
       register: result
 
-    - name: assert state=absent (expected changed=true)
+    - name: Assert state=absent (expected changed=true)
       ansible.builtin.assert:
         that:
           - result is changed
 
     # ============================================================
-    - name: create subnet with IPv6 (expected changed=true) (CHECK MODE)
+    - name: Create subnet with IPv6 (expected changed=true) (CHECK MODE)
       amazon.aws.ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -450,17 +450,17 @@
         assign_instances_ipv6: true
         state: present
         tags:
-          Name: "{{ec2_vpc_subnet_name}}"
-          Description: "{{ec2_vpc_subnet_description}}"
+          Name: "{{ ec2_vpc_subnet_name }}"
+          Description: "{{ ec2_vpc_subnet_description }}"
       check_mode: true
       register: vpc_subnet_ipv6_create
 
-    - name: assert creation with IPv6 happened (expected changed=true)
+    - name: Assert creation with IPv6 happened (expected changed=true)
       ansible.builtin.assert:
         that:
           - vpc_subnet_ipv6_create is changed
 
-    - name: create subnet with IPv6 (expected changed=true)
+    - name: Create subnet with IPv6 (expected changed=true)
       amazon.aws.ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -468,11 +468,11 @@
         assign_instances_ipv6: true
         state: present
         tags:
-          Name: "{{ec2_vpc_subnet_name}}"
-          Description: "{{ec2_vpc_subnet_description}}"
+          Name: "{{ ec2_vpc_subnet_name }}"
+          Description: "{{ ec2_vpc_subnet_description }}"
       register: vpc_subnet_ipv6_create
 
-    - name: assert creation with IPv6 happened (expected changed=true)
+    - name: Assert creation with IPv6 happened (expected changed=true)
       ansible.builtin.assert:
         that:
           - vpc_subnet_ipv6_create is changed
@@ -483,7 +483,7 @@
           - vpc_subnet_ipv6_create.subnet.assign_ipv6_address_on_creation
 
     # ============================================================
-    - name: recreate subnet (expected changed=false) (CHECK MODE)
+    - name: Recreate subnet (expected changed=false) (CHECK MODE)
       amazon.aws.ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -491,17 +491,17 @@
         assign_instances_ipv6: true
         state: present
         tags:
-          Name: "{{ec2_vpc_subnet_name}}"
-          Description: "{{ec2_vpc_subnet_description}}"
+          Name: "{{ ec2_vpc_subnet_name }}"
+          Description: "{{ ec2_vpc_subnet_description }}"
       check_mode: true
       register: vpc_subnet_ipv6_recreate
 
-    - name: assert recreation changed nothing (expected changed=false)
+    - name: Assert recreation changed nothing (expected changed=false)
       ansible.builtin.assert:
         that:
           - vpc_subnet_ipv6_recreate is not changed
 
-    - name: recreate subnet (expected changed=false)
+    - name: Recreate subnet (expected changed=false)
       amazon.aws.ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -509,18 +509,18 @@
         assign_instances_ipv6: true
         state: present
         tags:
-          Name: "{{ec2_vpc_subnet_name}}"
-          Description: "{{ec2_vpc_subnet_description}}"
+          Name: "{{ ec2_vpc_subnet_name }}"
+          Description: "{{ ec2_vpc_subnet_description }}"
       register: vpc_subnet_ipv6_recreate
 
-    - name: assert recreation changed nothing (expected changed=false)
+    - name: Assert recreation changed nothing (expected changed=false)
       ansible.builtin.assert:
         that:
           - vpc_subnet_ipv6_recreate is not changed
           - vpc_subnet_ipv6_recreate.subnet == vpc_subnet_ipv6_create.subnet
 
     # ============================================================
-    - name: change subnet assign_instances_ipv6 attribute (expected changed=true) (CHECK MODE)
+    - name: Change subnet assign_instances_ipv6 attribute (expected changed=true) (CHECK MODE)
       amazon.aws.ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -531,12 +531,12 @@
       check_mode: true
       register: vpc_change_attribute
 
-    - name: assert assign_instances_ipv6 attribute changed (expected changed=true)
+    - name: Assert assign_instances_ipv6 attribute changed (expected changed=true)
       ansible.builtin.assert:
         that:
           - vpc_change_attribute is changed
 
-    - name: change subnet assign_instances_ipv6 attribute (expected changed=true)
+    - name: Change subnet assign_instances_ipv6 attribute (expected changed=true)
       amazon.aws.ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -546,14 +546,14 @@
         purge_tags: false
       register: vpc_change_attribute
 
-    - name: assert assign_instances_ipv6 attribute changed (expected changed=true)
+    - name: Assert assign_instances_ipv6 attribute changed (expected changed=true)
       ansible.builtin.assert:
         that:
           - vpc_change_attribute is changed
           - not vpc_change_attribute.subnet.assign_ipv6_address_on_creation
 
     # ============================================================
-    - name: add second subnet with duplicate ipv6 cidr (expected failure)
+    - name: Add second subnet with duplicate ipv6 cidr (expected failure)
       amazon.aws.ec2_vpc_subnet:
         cidr: "{{ subnet_cidr_b }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -563,7 +563,7 @@
       register: vpc_add_duplicate_ipv6
       ignore_errors: true
 
-    - name: assert graceful failure (expected failed)
+    - name: Assert graceful failure (expected failed)
       ansible.builtin.assert:
         that:
           - vpc_add_duplicate_ipv6 is failed
@@ -572,7 +572,7 @@
         testChar: "'"
 
     # ============================================================
-    - name: remove subnet ipv6 cidr (expected changed=true) (CHECK MODE)
+    - name: Remove subnet ipv6 cidr (expected changed=true) (CHECK MODE)
       amazon.aws.ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -581,12 +581,12 @@
       check_mode: true
       register: vpc_remove_ipv6_cidr
 
-    - name: assert subnet ipv6 cidr removed (expected changed=true)
+    - name: Assert subnet ipv6 cidr removed (expected changed=true)
       ansible.builtin.assert:
         that:
           - vpc_remove_ipv6_cidr is changed
 
-    - name: remove subnet ipv6 cidr (expected changed=true)
+    - name: Remove subnet ipv6 cidr (expected changed=true)
       amazon.aws.ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -594,7 +594,7 @@
         purge_tags: false
       register: vpc_remove_ipv6_cidr
 
-    - name: assert subnet ipv6 cidr removed (expected changed=true)
+    - name: Assert subnet ipv6 cidr removed (expected changed=true)
       ansible.builtin.assert:
         that:
           - vpc_remove_ipv6_cidr is changed
@@ -602,7 +602,7 @@
           - not vpc_remove_ipv6_cidr.subnet.assign_ipv6_address_on_creation
 
     # ============================================================
-    - name: test adding a tag that looks like a boolean to the subnet (CHECK MODE)
+    - name: Test adding a tag that looks like a boolean to the subnet (CHECK MODE)
       amazon.aws.ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -613,12 +613,12 @@
       check_mode: true
       register: vpc_subnet_info
 
-    - name: assert a tag was added
+    - name: Assert a tag was added
       ansible.builtin.assert:
         that:
           - vpc_subnet_info is changed
 
-    - name: test adding a tag that looks like a boolean to the subnet
+    - name: Test adding a tag that looks like a boolean to the subnet
       amazon.aws.ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -628,14 +628,14 @@
           looks_like_boolean: true
       register: vpc_subnet_info
 
-    - name: assert a tag was added
+    - name: Assert a tag was added
       ansible.builtin.assert:
         that:
           - vpc_subnet_info is changed
           - vpc_subnet_info.subnet.tags.looks_like_boolean == "True"
 
     # ============================================================
-    - name: test idempotence adding a tag that looks like a boolean (CHECK MODE)
+    - name: Test idempotence adding a tag that looks like a boolean (CHECK MODE)
       amazon.aws.ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -646,12 +646,12 @@
       check_mode: true
       register: vpc_subnet_info
 
-    - name: assert tags haven't changed
+    - name: Assert tags haven't changed
       ansible.builtin.assert:
         that:
           - vpc_subnet_info is not changed
 
-    - name: test idempotence adding a tag that looks like a boolean
+    - name: Test idempotence adding a tag that looks like a boolean
       amazon.aws.ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -661,7 +661,7 @@
           looks_like_boolean: true
       register: vpc_subnet_info
 
-    - name: assert tags haven't changed
+    - name: Assert tags haven't changed
       ansible.builtin.assert:
         that:
           - vpc_subnet_info is not changed
@@ -671,13 +671,13 @@
     # TEARDOWN STARTS HERE
     ################################################
 
-    - name: tidy up subnet
+    - name: Tidy up subnet
       amazon.aws.ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         state: absent
 
-    - name: tidy up VPC
+    - name: Tidy up VPC
       amazon.aws.ec2_vpc_net:
         name: "{{ resource_prefix }}-vpc"
         state: absent

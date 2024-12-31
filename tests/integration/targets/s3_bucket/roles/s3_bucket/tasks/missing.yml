@@ -2,7 +2,7 @@
 - name: Attempt to delete non-existent buckets
   block:
     - ansible.builtin.set_fact:
-        local_bucket_name: "{{ bucket_name | hash('md5')}}-missing"
+        local_bucket_name: "{{ bucket_name | hash('md5') }}-missing"
     # ============================================================
     #
     # While in theory the 'simple' test case covers this there are

@@ -1,5 +1,5 @@
 ---
-- name: test copying objects to bucket with ACL disabled
+- name: Test copying objects to bucket with ACL disabled
   block:
     - name: Create a bucket with ACL disabled for the test
       amazon.aws.s3_bucket:

@@ -110,6 +110,8 @@
       retries: 10
 
     - name: Validate that the instance has now 2 interfaces attached
+      when: add_interface is successful
+
       block:
         - name: Gather {{ resource_prefix }}-test-eni-vpc info
           amazon.aws.ec2_instance_info:
@@ -122,8 +124,6 @@
             that:
               - in_test_vpc_instance.instances.0.key_name == resource_prefix+"_test_key"
               - (in_test_vpc_instance.instances.0.network_interfaces | length) == 2
-
-      when: add_interface is successful
 
     - name: Make instance in the testing subnet created in the test VPC(check mode)
       amazon.aws.ec2_instance:
@@ -139,13 +139,13 @@
         instance_type: "{{ ec2_instance_type }}"
       check_mode: true
 
-    - name: fact presented ec2 instance
+    - name: Fact presented ec2 instance
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-test-eni-vpc"
       register: presented_instance_fact
 
-    - name: fact checkmode ec2 instance
+    - name: Fact checkmode ec2 instance
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-test-eni-vpc-checkmode"

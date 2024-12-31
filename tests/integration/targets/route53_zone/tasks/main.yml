@@ -1,5 +1,5 @@
 ---
-- name: route53_zone integration tests
+- name: Route53_zone integration tests
 
   module_defaults:
     group/aws:
@@ -558,7 +558,7 @@
     - name: Delete zone using attribute hosted_zone_id (CHECK MODE)
       amazon.aws.route53_zone:
         zone: "{{ resource_prefix }}.public2"
-        hosted_zone_id: "{{new_zone.zone_id}}"
+        hosted_zone_id: "{{ new_zone.zone_id }}"
         state: absent
       register: output
       check_mode: true
@@ -571,7 +571,7 @@
     - name: Delete zone using attribute hosted_zone_id
       amazon.aws.route53_zone:
         zone: "{{ resource_prefix }}.public2"
-        hosted_zone_id: "{{new_zone.zone_id}}"
+        hosted_zone_id: "{{ new_zone.zone_id }}"
         state: absent
       register: output
 
@@ -605,7 +605,7 @@
       ignore_errors: true
       retries: 10
 
-    - name: remove the VPC
+    - name: Remove the VPC
       amazon.aws.ec2_vpc_net:
         name: "{{ resource_prefix }}-vpc"
         cidr_block: 10.22.32.0/23

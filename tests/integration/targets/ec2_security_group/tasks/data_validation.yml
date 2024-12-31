@@ -2,14 +2,14 @@
 - block:
     - name: Create a group with only the default rule
       amazon.aws.ec2_security_group:
-        name: "{{ec2_group_name}}-input-tests"
+        name: "{{ ec2_group_name }}-input-tests"
         vpc_id: "{{ vpc_result.vpc.id }}"
-        description: "{{ec2_group_description}}"
+        description: "{{ ec2_group_description }}"
 
     - name: Run through some common weird port specs
       amazon.aws.ec2_security_group:
-        name: "{{ec2_group_name}}-input-tests"
-        description: "{{ec2_group_description}}"
+        name: "{{ ec2_group_name }}-input-tests"
+        description: "{{ ec2_group_description }}"
         rules:
           - "{{ item }}"
       with_items:
@@ -25,9 +25,9 @@
             - 9002-9005
           cidr_ip: 10.2.3.0/24
   always:
-    - name: tidy up input testing group
+    - name: Tidy up input testing group
       amazon.aws.ec2_security_group:
-        name: "{{ec2_group_name}}-input-tests"
+        name: "{{ ec2_group_name }}-input-tests"
         vpc_id: "{{ vpc_result.vpc.id }}"
         state: absent
       ignore_errors: true

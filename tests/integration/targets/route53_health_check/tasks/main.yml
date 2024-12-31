@@ -1814,7 +1814,7 @@
         request_interval: "{{ request_interval }}"
       ignore_errors: true
 
-    - name: release EIP
+    - name: Release EIP
       amazon.aws.ec2_eip:
         state: absent
         public_ip: "{{ ip_address }}"

@@ -7,7 +7,7 @@
       region: "{{ aws_region }}"
   block:
     - ansible.builtin.set_fact:
-        local_bucket_name: "{{ bucket_name | hash('md5')}}e-kms"
+        local_bucket_name: "{{ bucket_name | hash('md5') }}e-kms"
     # ============================================================
 
     - name: Create a simple bucket

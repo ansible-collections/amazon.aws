@@ -10,7 +10,7 @@
       amazon.aws.rds_cluster:
         id: "{{ cluster_id }}"
         state: absent
-        engine: "{{ engine}}"
+        engine: "{{ engine }}"
         username: "{{ username }}"
         password: "{{ password }}"
         skip_final_snapshot: true
@@ -129,7 +129,7 @@
         storage_type: aurora-iopt1
       register: _result_create_db_cluster_io_optimized
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - _result_create_db_cluster_io_optimized.changed
           # as of 5/2024, API does not return the value of storage_type when storage_type not set or set to "aurora"
@@ -150,7 +150,7 @@
       register: _result_create_db_cluster_io_optimized
       ignore_errors: true
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - not _result_create_db_cluster_io_optimized.changed
           - _result_create_db_cluster_io_optimized.failed

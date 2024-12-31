@@ -4,7 +4,7 @@
   gather_facts: false
   environment: "{{ ansible_test.environment }}"
   tasks:
-    - name: assert group was populated with inventory but is empty
+    - name: Assert group was populated with inventory but is empty
       ansible.builtin.assert:
         that:
           - "'aws_rds' in groups"

@@ -9,7 +9,7 @@
     - vars/main.yml
 
   tasks:
-    - name: assert aws_rds inventory group contains RDS instance created by previous playbook
+    - name: Assert aws_rds inventory group contains RDS instance created by previous playbook
       ansible.builtin.assert:
         that:
           - "'aws_rds' in groups"

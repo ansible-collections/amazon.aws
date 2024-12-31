@@ -11,7 +11,7 @@
       amazon.aws.rds_cluster:
         id: "{{ cluster_id }}"
         state: present
-        engine: "{{ engine}}"
+        engine: "{{ engine }}"
         backup_retention_period: 1
         username: "{{ username }}"
         password: "{{ password }}"
@@ -125,7 +125,7 @@
       amazon.aws.rds_cluster:
         id: "{{ cluster_id }}-b"
         state: present
-        engine: "{{ engine}}"
+        engine: "{{ engine }}"
         backup_retention_period: 1
         username: "{{ username }}"
         password: "{{ password }}"

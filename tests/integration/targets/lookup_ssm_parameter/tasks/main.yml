@@ -8,7 +8,7 @@
       session_token: "{{ security_token | default(omit) }}"
   no_log: true
 
-- name: aws_ssm lookup plugin integration tests
+- name: Aws_ssm lookup plugin integration tests
   module_defaults:
     group/aws:
       access_key: "{{ aws_access_key }}"
@@ -44,7 +44,7 @@
   block:
   # ============================================================
   # Simple key/value
-    - name: lookup a missing key (error)
+    - name: Lookup a missing key (error)
       ansible.builtin.set_fact:
         lookup_value: "{{ lookup('amazon.aws.aws_ssm', simple_name, **connection_args) }}"
       ignore_errors: true
@@ -53,7 +53,7 @@
         that:
           - lookup_missing is failed
 
-    - name: lookup a missing key (warn)
+    - name: Lookup a missing key (warn)
       ansible.builtin.set_fact:
         lookup_value: "{{ lookup('amazon.aws.aws_ssm', simple_name, on_missing=warn, **connection_args) }}"
       register: lookup_missing
@@ -61,7 +61,7 @@
         that:
           - lookup_value | list | length == 0
 
-    - name: lookup a single missing key (skip)
+    - name: Lookup a single missing key (skip)
       ansible.builtin.set_fact:
         lookup_value: "{{ lookup('amazon.aws.aws_ssm', simple_name, on_missing=skip, **connection_args) }}"
       register: lookup_missing
@@ -137,15 +137,15 @@
 
     - name: Create nested key/value pair in aws parameter store (4)
       community.aws.ssm_parameter:
-        name: '{{ path_name_d }}'
-        description: '{{ path_description }}'
-        value: '{{ path_value_d }}'
+        name: "{{ path_name_d }}"
+        description: "{{ path_description }}"
+        value: "{{ path_value_d }}"
 
     # ============================================================
 
     - name: Lookup a keys using bypath
       ansible.builtin.set_fact:
-        lookup_value: "{{ lookup('amazon.aws.aws_ssm', path_name, bypath=True, wantlist=True, **connection_args ) | first }}"
+        lookup_value: "{{ lookup('amazon.aws.aws_ssm', path_name, bypath=True, wantlist=True, **connection_args) | first }}"
     - ansible.builtin.assert:
         that:
           - path_name_a in lookup_value
@@ -156,7 +156,7 @@
 
     - name: Lookup a keys using bypath and recursive
       ansible.builtin.set_fact:
-        lookup_value: "{{ lookup('amazon.aws.aws_ssm', path_name, bypath=True, recursive=True, wantlist=True, **connection_args ) | first }}"
+        lookup_value: "{{ lookup('amazon.aws.aws_ssm', path_name, bypath=True, recursive=True, wantlist=True, **connection_args) | first }}"
     - ansible.builtin.assert:
         that:
           - path_name_a in lookup_value
@@ -171,7 +171,7 @@
 
     - name: Lookup a keys using bypath and shortname
       ansible.builtin.set_fact:
-        lookup_value: "{{ lookup('amazon.aws.aws_ssm', path_name, bypath=True, shortnames=True, wantlist=True, **connection_args ) | first }}"
+        lookup_value: "{{ lookup('amazon.aws.aws_ssm', path_name, bypath=True, shortnames=True, wantlist=True, **connection_args) | first }}"
     - ansible.builtin.assert:
         that:
           - path_shortname_a in lookup_value
@@ -182,7 +182,7 @@
 
     - name: Lookup a keys using bypath and recursive and shortname
       ansible.builtin.set_fact:
-        lookup_value: "{{ lookup('amazon.aws.aws_ssm', path_name, bypath=True, recursive=True, shortnames=True, wantlist=True, **connection_args ) | first }}"
+        lookup_value: "{{ lookup('amazon.aws.aws_ssm', path_name, bypath=True, recursive=True, shortnames=True, wantlist=True, **connection_args) | first }}"
     - ansible.builtin.assert:
         that:
           - path_shortname_a in lookup_value
@@ -195,7 +195,7 @@
 
     - name: Lookup a keys using bypath and recursive and droppath
       ansible.builtin.set_fact:
-        lookup_value: "{{ lookup('amazon.aws.aws_ssm', path_name, bypath=True, recursive=True, droppath=True, wantlist=True, **connection_args ) | first }}"
+        lookup_value: "{{ lookup('amazon.aws.aws_ssm', path_name, bypath=True, recursive=True, droppath=True, wantlist=True, **connection_args) | first }}"
     - ansible.builtin.assert:
         that:
           - path_droppath_name_a in lookup_value
@@ -295,7 +295,7 @@
   # ============================================================
     - name: Delete remaining key/value pairs in aws parameter store
       community.aws.ssm_parameter:
-        name: "{{item}}"
+        name: "{{ item }}"
         state: absent
       ignore_errors: true
       with_items:

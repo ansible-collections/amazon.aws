@@ -1,5 +1,5 @@
 ---
-- name: ec2_vpc_route_table integration tests
+- name: Ec2_vpc_route_table integration tests
   module_defaults:
     group/aws:
       access_key: "{{ aws_access_key }}"
@@ -71,7 +71,7 @@
         cidr: "{{ item.cidr }}"
         az: "{{ item.zone }}"
         assign_instances_ipv6: "{{ item.assign_instances_ipv6 }}"
-        ipv6_cidr: "{{ item.ipv6_cidr  }}"
+        ipv6_cidr: "{{ item.ipv6_cidr }}"
         vpc_id: "{{ vpc.vpc.id }}"
         state: present
         tags:
@@ -147,7 +147,7 @@
         asn: 4200000000
         wait: true
         tags:
-            "team": "cloud"
+          "team": "cloud"
       register: transit_gateway
 
     - name: Create VPC attachment
@@ -159,7 +159,7 @@
         tags:
           "team": "cloud"
         wait: true
-        purge_subnets: False
+        purge_subnets: false
       register: vpc_attachment
 
     - name: CHECK MODE - route table should be created
@@ -373,7 +373,7 @@
         that:
           - not check_mode_results.changed
 
-    - name: rerun with purge_routes set to false
+    - name: Rerun with purge_routes set to false
       amazon.aws.ec2_vpc_route_table:
         vpc_id: "{{ vpc.vpc.id }}"
         tags:
@@ -390,7 +390,7 @@
           - no_purge_routes.route_table.routes | length == 4
           - no_purge_routes.route_table.associations | length == 3
 
-    - name: rerun with purge_subnets set to false
+    - name: Rerun with purge_subnets set to false
       amazon.aws.ec2_vpc_route_table:
         vpc_id: "{{ vpc.vpc.id }}"
         tags:
@@ -409,7 +409,7 @@
           - no_purge_subnets.route_table.routes | length == 4
           - no_purge_subnets.route_table.associations | length == 3
 
-    - name: rerun with purge_tags not set (implicitly false)
+    - name: Rerun with purge_tags not set (implicitly false)
       amazon.aws.ec2_vpc_route_table:
         vpc_id: "{{ vpc.vpc.id }}"
         routes:
@@ -475,7 +475,7 @@
         that:
           - check_mode_results.changed
 
-    - name: add subnets by cidr to public route table
+    - name: Add subnets by cidr to public route table
       amazon.aws.ec2_vpc_route_table:
         vpc_id: "{{ vpc.vpc.id }}"
         routes:
@@ -507,7 +507,7 @@
           - purge_subnets_cidr.changed
           - purge_subnets_cidr.route_table.associations | length == 0
 
-    - name: add subnets by name to public route table
+    - name: Add subnets by name to public route table
       amazon.aws.ec2_vpc_route_table:
         vpc_id: "{{ vpc.vpc.id }}"
         routes:
@@ -570,7 +570,7 @@
         that:
           - check_mode_results.changed
 
-    - name: update tags
+    - name: Update tags
       amazon.aws.ec2_vpc_route_table:
         vpc_id: "{{ vpc.vpc.id }}"
         route_table_id: "{{ create_public_table.route_table.id }}"
@@ -666,7 +666,7 @@
         that:
           - not check_mode_results.changed
 
-    - name: redestroy public route table
+    - name: Redestroy public route table
       amazon.aws.ec2_vpc_route_table:
         route_table_id: "{{ create_public_table.route_table.id }}"
         lookup: id
@@ -686,7 +686,7 @@
         subnet_id: "{{ subnets.results[0].subnet.id }}"
         nat_gateway_id: "{{ nat_gateway.nat_gateway_id }}"
       register: nat_gateway
-    - name: show route table info, get table using route-table-id
+    - name: Show route table info, get table using route-table-id
       amazon.aws.ec2_vpc_route_table_info:
         filters:
           route-table-id: "{{ create_private_table.route_table.id }}"
@@ -704,7 +704,7 @@
           - route_table_info.route_tables[0].id == create_private_table.route_table.id
           - '"propagating_vgws" in route_table_info.route_tables[0]'
 
-    - name: show route table info, get table using tags
+    - name: Show route table info, get table using tags
       amazon.aws.ec2_vpc_route_table_info:
         filters:
           tag:Public: "false"
@@ -1426,7 +1426,7 @@
         gateway_id: "{{ vgw.vgw.id }}"
         purge_routes: false
       register: create_gateway_table
- 
+
     - name: Assert that there is no change
       ansible.builtin.assert:
         that:
@@ -1575,7 +1575,7 @@
     - name: Delete transit gateway
       amazon.aws.ec2_transit_gateway:
         state: absent
-        transit_gateway_id: '{{ transit_gateway.transit_gateway.transit_gateway_id }}'
+        transit_gateway_id: "{{ transit_gateway.transit_gateway.transit_gateway_id }}"
         wait: true
       ignore_errors: true
     - name: Destroy ENI

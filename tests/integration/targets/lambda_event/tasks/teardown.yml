@@ -1,5 +1,6 @@
 ---
-- ansible.builtin.debug: msg="Starting test Teardown......"
+- ansible.builtin.debug:
+    msg: "Starting test Teardown......"
 - name: Delete DynamoDB stream event mapping (trigger)
   amazon.aws.lambda_event:
     state: absent
@@ -28,5 +29,5 @@
 - name: Delete the role
   amazon.aws.iam_role:
     name: "{{ lambda_role_name }}"
-    assume_role_policy_document: '{{ lookup("file", "minimal_trust_policy.json")}}'
+    assume_role_policy_document: '{{ lookup("file", "minimal_trust_policy.json") }}'
     state: absent

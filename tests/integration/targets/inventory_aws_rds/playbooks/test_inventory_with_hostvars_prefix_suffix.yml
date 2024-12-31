@@ -16,7 +16,7 @@
       region: "{{ aws_region }}"
 
   tasks:
-    - name: assert the hostvars are defined with prefix and/or suffix
+    - name: Assert the hostvars are defined with prefix and/or suffix
       ansible.builtin.assert:
         that:
           - hostvars[instance_id][vars_prefix+"db_instance_class"+vars_suffix] == 'db.t3.micro'

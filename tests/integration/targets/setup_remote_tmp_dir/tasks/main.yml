@@ -1,5 +1,5 @@
 ---
-- name: make sure we have the ansible_os_family and ansible_distribution_version facts
+- name: Make sure we have the ansible_os_family and ansible_distribution_version facts
   ansible.builtin.setup:
     gather_subset: distribution
   when: ansible_facts == {}

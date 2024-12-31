@@ -23,10 +23,10 @@
       when: (lookup('env', 'HOME'))
 
     - ansible.builtin.debug:
-        msg: "{{ inventory_hostname }} start: {{ lookup('pipe','date') }}"
+        msg: "{{ inventory_hostname }} start: {{ lookup('pipe', 'date') }}"
     - ansible.builtin.include_tasks: "{{ inventory_hostname }}.yml"
     - ansible.builtin.debug:
-        msg: "{{ inventory_hostname }} finish: {{ lookup('pipe','date') }}"
+        msg: "{{ inventory_hostname }} finish: {{ lookup('pipe', 'date') }}"
   always:
     - ansible.builtin.set_fact:
         _role_complete: true

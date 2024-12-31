@@ -37,7 +37,7 @@
         name: "{{ s3_bucket_name }}"
         state: present
 
-    - name: add object into bucket
+    - name: Add object into bucket
       amazon.aws.s3_object:
         bucket: "{{ s3_bucket_name }}"
         mode: put

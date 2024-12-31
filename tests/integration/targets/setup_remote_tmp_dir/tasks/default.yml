@@ -1,5 +1,5 @@
 ---
-- name: create temporary directory
+- name: Create temporary directory
   ansible.builtin.tempfile:
     path: /var/tmp
     state: directory
@@ -8,6 +8,6 @@
   notify:
     - delete temporary directory
 
-- name: record temporary directory
+- name: Record temporary directory
   ansible.builtin.set_fact:
     remote_tmp_dir: "{{ remote_tmp_dir.path }}"

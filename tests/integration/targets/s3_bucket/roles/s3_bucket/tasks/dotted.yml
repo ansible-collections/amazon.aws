@@ -2,7 +2,7 @@
 - block:
     - name: Ensure bucket_name contains a .
       ansible.builtin.set_fact:
-        local_bucket_name: "{{ bucket_name | hash('md5')}}.dotted"
+        local_bucket_name: "{{ bucket_name | hash('md5') }}.dotted"
 
     # ============================================================
     #

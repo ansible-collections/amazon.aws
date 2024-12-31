@@ -10,7 +10,7 @@
     - vars/main.yml
 
   tasks:
-    - name: write inventory config file
+    - name: Write inventory config file
       ansible.builtin.copy:
         dest: ../test.aws_rds.yml
         content: "{{ lookup('template', template_name) }}"

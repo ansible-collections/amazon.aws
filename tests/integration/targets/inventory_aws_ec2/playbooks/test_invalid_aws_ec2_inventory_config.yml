@@ -3,7 +3,7 @@
   connection: local
   gather_facts: false
   tasks:
-    - name: assert inventory was not populated by aws_ec2 inventory plugin
+    - name: Assert inventory was not populated by aws_ec2 inventory plugin
       ansible.builtin.assert:
         that:
           - "'aws_ec2' not in groups"

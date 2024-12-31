@@ -1582,7 +1582,6 @@
           - result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block | ansible.utils.ipv6
           - result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block_state.state in ["disassociated"]
 
-
     - name: Retry to remove IPv6 CIDR association from VPC
       amazon.aws.ec2_vpc_net:
         state: present

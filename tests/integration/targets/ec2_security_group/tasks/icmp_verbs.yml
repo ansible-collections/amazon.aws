@@ -3,9 +3,9 @@
     # ============================================================
     - name: Create simple rule using icmp verbs
       amazon.aws.ec2_security_group:
-        name: "{{ec2_group_name}}-icmp-1"
+        name: "{{ ec2_group_name }}-icmp-1"
         vpc_id: "{{ vpc_result.vpc.id }}"
-        description: "{{ec2_group_description}}"
+        description: "{{ ec2_group_description }}"
         rules:
           - proto: icmp
             icmp_type: 3
@@ -31,9 +31,9 @@
 
     - name: Create ipv6 rule using icmp verbs
       amazon.aws.ec2_security_group:
-        name: "{{ec2_group_name}}-icmp-2"
+        name: "{{ ec2_group_name }}-icmp-2"
         vpc_id: "{{ vpc_result.vpc.id }}"
-        description: "{{ec2_group_description}}"
+        description: "{{ ec2_group_description }}"
         rules:
           - proto: icmpv6
             icmp_type: 1
@@ -57,14 +57,14 @@
 
     - name: Create rule using security group referencing
       amazon.aws.ec2_security_group:
-        name: "{{ec2_group_name}}-icmp-3"
+        name: "{{ ec2_group_name }}-icmp-3"
         vpc_id: "{{ vpc_result.vpc.id }}"
-        description: "{{ec2_group_description}}"
+        description: "{{ ec2_group_description }}"
         rules:
           - proto: icmp
             icmp_type: 5
             icmp_code: 1
-            group_name: "{{ec2_group_name}}-auto-create-2"
+            group_name: "{{ ec2_group_name }}-auto-create-2"
             group_desc: sg-group-referencing
         state: present
       register: result
@@ -82,9 +82,9 @@
 
     - name: Create list rule using 0 as icmp_type
       amazon.aws.ec2_security_group:
-        name: "{{ec2_group_name}}-icmp-4"
+        name: "{{ ec2_group_name }}-icmp-4"
         vpc_id: "{{ vpc_result.vpc.id }}"
-        description: "{{ec2_group_description}}"
+        description: "{{ ec2_group_description }}"
         rules:
           - proto: icmp
             icmp_type: 0
@@ -114,9 +114,9 @@
     # ============================================================
     - name: Create a group with non-ICMP protocol
       amazon.aws.ec2_security_group:
-        name: "{{ec2_group_name}}-icmp-4"
+        name: "{{ ec2_group_name }}-icmp-4"
         vpc_id: "{{ vpc_result.vpc.id }}"
-        description: "{{ec2_group_description}}"
+        description: "{{ ec2_group_description }}"
         rules:
           - proto: tcp
             icmp_type: 0
@@ -128,16 +128,16 @@
       register: result
       ignore_errors: true
 
-    - name: assert that group creation fails when proto != icmp with icmp parameters
+    - name: Assert that group creation fails when proto != icmp with icmp parameters
       ansible.builtin.assert:
         that:
           - result is failed
 
     - name: Create a group with conflicting parameters
       amazon.aws.ec2_security_group:
-        name: "{{ec2_group_name}}-icmp-4"
+        name: "{{ ec2_group_name }}-icmp-4"
         vpc_id: "{{ vpc_result.vpc.id }}"
-        description: "{{ec2_group_description}}"
+        description: "{{ ec2_group_description }}"
         rules:
           - proto: icmp
             from_port: 5
@@ -151,16 +151,16 @@
       register: result
       ignore_errors: true
 
-    - name: assert that group creation fails when using conflicting parameters
+    - name: Assert that group creation fails when using conflicting parameters
       ansible.builtin.assert:
         that:
           - result is failed
 
     - name: Create a group with missing icmp parameters
       amazon.aws.ec2_security_group:
-        name: "{{ec2_group_name}}-icmp-4"
+        name: "{{ ec2_group_name }}-icmp-4"
         vpc_id: "{{ vpc_result.vpc.id }}"
-        description: "{{ec2_group_description}}"
+        description: "{{ ec2_group_description }}"
         rules:
           - proto: tcp
             icmp_type: 0
@@ -171,25 +171,25 @@
       register: result
       ignore_errors: true
 
-    - name: assert that group creation fails when missing icmp parameters
+    - name: Assert that group creation fails when missing icmp parameters
       ansible.builtin.assert:
         that:
           - result is failed
 
   always:
-    - name: tidy up egress rule test security group rules
+    - name: Tidy up egress rule test security group rules
       amazon.aws.ec2_security_group:
-        name: "{{ec2_group_name}}-auto-create-2"
+        name: "{{ ec2_group_name }}-auto-create-2"
         description: sg-group-referencing
         vpc_id: "{{ vpc_result.vpc.id }}"
         rules: []
         rules_egress: []
       ignore_errors: true
 
-    - name: tidy up egress rule test security group rules
+    - name: Tidy up egress rule test security group rules
       amazon.aws.ec2_security_group:
-        name: "{{ec2_group_name}}-icmp-{{ item }}"
-        description: "{{ec2_group_description}}"
+        name: "{{ ec2_group_name }}-icmp-{{ item }}"
+        description: "{{ ec2_group_description }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         rules: []
         rules_egress: []
@@ -200,16 +200,16 @@
         - 3
         - 4
 
-    - name: tidy up egress rule test security group rules
+    - name: Tidy up egress rule test security group rules
       amazon.aws.ec2_security_group:
-        name: "{{ec2_group_name}}-auto-create-2"
+        name: "{{ ec2_group_name }}-auto-create-2"
         state: absent
         vpc_id: "{{ vpc_result.vpc.id }}"
       ignore_errors: true
 
-    - name: tidy up egress rule test security group
+    - name: Tidy up egress rule test security group
       amazon.aws.ec2_security_group:
-        name: "{{ec2_group_name}}-icmp-{{ item }}"
+        name: "{{ ec2_group_name }}-icmp-{{ item }}"
         state: absent
         vpc_id: "{{ vpc_result.vpc.id }}"
       ignore_errors: true

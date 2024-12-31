@@ -1,7 +1,7 @@
 ---
 # ============================================================
 
-- name: create a group with a rule (CHECK MODE + DIFF)
+- name: Create a group with a rule (CHECK MODE + DIFF)
   amazon.aws.ec2_security_group:
     name: "{{ ec2_group_name }}"
     description: "{{ ec2_group_description }}"
@@ -22,7 +22,7 @@
     that:
       - check_mode_result.changed
 
-- name: create a group with a rule (DIFF)
+- name: Create a group with a rule (DIFF)
   amazon.aws.ec2_security_group:
     name: "{{ ec2_group_name }}"
     description: "{{ ec2_group_description }}"
@@ -44,7 +44,7 @@
       - result.diff.0.after.ip_permissions == check_mode_result.diff.0.after.ip_permissions
       - result.diff.0.after.ip_permissions_egress == check_mode_result.diff.0.after.ip_permissions_egress
 
-- name: add rules to make sorting occur (CHECK MODE + DIFF)
+- name: Add rules to make sorting occur (CHECK MODE + DIFF)
   amazon.aws.ec2_security_group:
     name: "{{ ec2_group_name }}"
     description: "{{ ec2_group_description }}"
@@ -73,7 +73,7 @@
     that:
       - check_mode_result.changed
 
-- name: add rules in a different order to test sorting consistency (DIFF)
+- name: Add rules in a different order to test sorting consistency (DIFF)
   amazon.aws.ec2_security_group:
     name: "{{ ec2_group_name }}"
     description: "{{ ec2_group_description }}"
@@ -103,7 +103,7 @@
       - result.diff.0.after.ip_permissions == check_mode_result.diff.0.after.ip_permissions
       - result.diff.0.after.ip_permissions_egress == check_mode_result.diff.0.after.ip_permissions_egress
 
-- name: purge rules (CHECK MODE + DIFF)
+- name: Purge rules (CHECK MODE + DIFF)
   amazon.aws.ec2_security_group:
     name: "{{ ec2_group_name }}"
     description: "{{ ec2_group_description }}"
@@ -122,7 +122,7 @@
     that:
       - check_mode_result.changed
 
-- name: purge rules (DIFF)
+- name: Purge rules (DIFF)
   amazon.aws.ec2_security_group:
     name: "{{ ec2_group_name }}"
     description: "{{ ec2_group_description }}"
@@ -142,7 +142,7 @@
       - result.diff.0.after.ip_permissions == check_mode_result.diff.0.after.ip_permissions
       - result.diff.0.after.ip_permissions_egress == check_mode_result.diff.0.after.ip_permissions_egress
 
-- name: delete the security group (CHECK MODE + DIFF)
+- name: Delete the security group (CHECK MODE + DIFF)
   amazon.aws.ec2_security_group:
     name: "{{ ec2_group_name }}"
     state: absent
@@ -154,7 +154,7 @@
     that:
       - check_mode_result.changed
 
-- name: delete the security group (DIFF)
+- name: Delete the security group (DIFF)
   amazon.aws.ec2_security_group:
     name: "{{ ec2_group_name }}"
     state: absent

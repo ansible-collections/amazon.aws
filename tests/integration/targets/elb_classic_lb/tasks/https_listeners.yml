@@ -25,11 +25,11 @@
     selfsigned_digest: sha256
   register: cert_create_result
 
-- name: upload certificates first time
+- name: Upload certificates first time
   community.aws.acm_certificate:
     name_tag: "{{ item.name }}"
-    certificate: "{{ lookup('file', item.cert ) }}"
-    private_key: "{{ lookup('file', item.priv_key ) }}"
+    certificate: "{{ lookup('file', item.cert) }}"
+    private_key: "{{ lookup('file', item.priv_key) }}"
     state: present
     tags:
       Application: search
