@@ -91,19 +91,19 @@
     # check ports, would be cool, but we are at the mercy of AWS
     # to start things in a timely manner
 
-    #- name: check to make sure 80 is listening
-    #  wait_for: host={{ info.elb.dns_name }} port=80 timeout=600
-    #  register: result
+    # - name: check to make sure 80 is listening
+    #   wait_for: host={{ info.elb.dns_name }} port=80 timeout=600
+    #   register: result
 
-    #- name: assert can connect to port#
-    #  assert: 'result.state == "started"'
+    # - name: assert can connect to port#
+    #   assert: 'result.state == "started"'
 
-    #- name: check to make sure 443 is listening
-    #  wait_for: host={{ info.elb.dns_name }} port=443 timeout=600
-    #  register: result
+    # - name: check to make sure 443 is listening
+    #   wait_for: host={{ info.elb.dns_name }} port=443 timeout=600
+    #   register: result
 
-    #- name: assert can connect to port#
-    #  assert: 'result.state == "started"'
+    # - name: assert can connect to port#
+    #   assert: 'result.state == "started"'
 
     # ============================================================
 

@@ -9,7 +9,7 @@
       region: "{{ aws_region }}"
 
   block:
-  #TODO: test availability_zone and multi_az
+    # TODO: test availability_zone and multi_az
     - name: Ensure the resource doesn't exist
       amazon.aws.rds_instance:
         id: "{{ instance_id }}"

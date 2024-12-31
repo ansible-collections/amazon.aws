@@ -7,6 +7,6 @@
 - hosts: all
   gather_facts: false
   strategy: free
-  #serial: 10
+  # serial: 10
   roles:
     - s3_bucket

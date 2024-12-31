@@ -1,7 +1,7 @@
 ---
 - name: Running instance detach tests
   block:
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     - name: Create a launch configuration
       community.aws.autoscaling_launch_config:
         name: "{{ resource_prefix }}-lc-detach-test"
@@ -17,7 +17,7 @@
           - create_lc.failed is false
           - '"autoscaling:CreateLaunchConfiguration" in create_lc.resource_actions'
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
 
     - name: Create a AutoScalingGroup to be used for instance_detach test - check_mode
       amazon.aws.autoscaling_group:
@@ -82,7 +82,7 @@
           - instances_info.instances[1].state.name == "running"
           - instances_info.instances[2].state.name == "running"
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
 
     - name: Detach 2 instance from the asg and replace with other instances - check_mode
       amazon.aws.autoscaling_group:
@@ -147,7 +147,7 @@
           - detached_instances_info.instances[0].state.name == 'running'
           - detached_instances_info.instances[1].state.name == 'running'
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
 
     # detach 2 instances from the asg and reduce the desired capacity from 3 to 1
     - name: Detach 2 instance from the asg and reduce the desired capacity from 3 to 1
@@ -191,7 +191,7 @@
           - detached_instances_info.instances[1].state.name == 'running'
           - instance_replace_3 == instance_detach_decrement
 
-  #----------------------------------------------------------------------
+  # ----------------------------------------------------------------------
 
   always:
     - name: Terminate any instances created during this test

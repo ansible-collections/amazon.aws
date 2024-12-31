@@ -3,4 +3,4 @@
 ec2_instance_type: t3.micro
 ec2_instance_tag_TestId: "{{ resource_prefix }}-placement-group"
 ec2_tenancy: dedicated
-ec2_placement_group_name: "{{ resource_prefix}}-placement-group"
+ec2_placement_group_name: "{{ resource_prefix }}-placement-group"

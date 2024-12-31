@@ -63,7 +63,7 @@
     - ansible.builtin.assert:
         that: instance_info_result.instances[0].state.name == 'running'
 
-    #==========================================================================
+    # ==========================================================================
 
     # Spot instance request creation
     - name: Simple Spot Request Creation

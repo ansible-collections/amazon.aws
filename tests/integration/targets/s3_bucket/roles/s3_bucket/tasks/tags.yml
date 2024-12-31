@@ -83,10 +83,10 @@
 
     ## ============================================================
 
-    #- name: 'Pause to help with s3 bucket eventual consistency'
-    #  wait_for:
-    #    timeout: 10
-    #  delegate_to: localhost
+    # - name: 'Pause to help with s3 bucket eventual consistency'
+    #   wait_for:
+    #     timeout: 10
+    #   delegate_to: localhost
 
     ## ============================================================
 
@@ -124,10 +124,10 @@
 
     ## ============================================================
 
-    #- name: 'Pause to help with s3 bucket eventual consistency'
-    #  wait_for:
-    #    timeout: 10
-    #  delegate_to: localhost
+    # - name: 'Pause to help with s3 bucket eventual consistency'
+    #   wait_for:
+    #     timeout: 10
+    #   delegate_to: localhost
 
     ## ============================================================
 
@@ -165,10 +165,10 @@
 
     ## ============================================================
 
-    #- name: 'Pause to help with s3 bucket eventual consistency'
-    #  wait_for:
-    #    timeout: 10
-    #  delegate_to: localhost
+    # - name: 'Pause to help with s3 bucket eventual consistency'
+    #   wait_for:
+    #     timeout: 10
+    #   delegate_to: localhost
 
     ## ============================================================
 
@@ -189,10 +189,10 @@
 
     ## ============================================================
 
-    #- name: 'Pause to help with s3 bucket eventual consistency'
-    #  wait_for:
-    #    timeout: 10
-    #  delegate_to: localhost
+    # - name: 'Pause to help with s3 bucket eventual consistency'
+    #   wait_for:
+    #     timeout: 10
+    #   delegate_to: localhost
 
     ## ============================================================
 

@@ -344,8 +344,8 @@
         state: present
         function_name: "{{ lambda_function_name }}"
         name: Testing
-      # docs state that when not defined defaults to LATEST
-      #function_version: 1
+      # # docs state that when not defined defaults to LATEST
+      # function_version: 1
       check_mode: true
       register: update_alias_version
     - name: Check changed
@@ -358,8 +358,8 @@
         state: present
         function_name: "{{ lambda_function_name }}"
         name: Testing
-      # docs state that when not defined defaults to LATEST
-      #function_version: 1
+      # # docs state that when not defined defaults to LATEST
+      # function_version: 1
       register: update_alias_version
     - name: Check changed and returned values
       ansible.builtin.assert:

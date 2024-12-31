@@ -13,7 +13,7 @@
   ansible.builtin.set_fact:
     instance_id_3: "{{ ec2_instances.instances[0].instance_id }}"
 
-#=================================================================
+# =================================================================
 
 - name: Create and attach another interface to above instance - check_mode
   amazon.aws.ec2_eni:
@@ -102,7 +102,7 @@
       - "'ec2:CreateNetworkInterface' not in result.resource_actions"
       - "'ec2:ModifyNetworkInterfaceAttribute' not in result.resource_actions"
 
-#=================================================================
+# =================================================================
 
 - name: Remove the network interface created in this test
   amazon.aws.ec2_eni:

@@ -3,9 +3,9 @@
   vars:
     test_launch_template_name: "{{ resource_prefix }}-versioning"
   block:
-  #=====================================================================
-  # Create the launch template
-  #=====================================================================
+    # =====================================================================
+    # Create the launch template
+    # =====================================================================
     - name: Create a launch template (check mode)
       amazon.aws.ec2_launch_template:
         name: "{{ test_launch_template_name }}"
@@ -86,9 +86,9 @@
           - _template_info.launch_templates[0].versions.0.launch_template_data.image_id == ec2_ami_id
           - _template_info.launch_templates[0].versions.0.launch_template_data.instance_type == "c4.large"
 
-    #=====================================================================
+    # =====================================================================
     # Create a new version of the launch template (set first version as default)
-    #=====================================================================
+    # =====================================================================
     - name: Create a new version of the launch template (check mode)
       amazon.aws.ec2_launch_template:
         name: "{{ test_launch_template_name }}"
@@ -173,9 +173,9 @@
           - _template_info.launch_templates[0].latest_version_number == 2
           - _template_info.launch_templates[0].versions | length == 2
 
-    #=====================================================================
+    # =====================================================================
     # Set the latest version of the launch template as default
-    #=====================================================================
+    # =====================================================================
     - name: Set the latest version of the launch template as default (check mode)
       amazon.aws.ec2_launch_template:
         name: "{{ test_launch_template_name }}"
@@ -259,9 +259,9 @@
           - _template_info.launch_templates[0].latest_version_number == 2
           - _template_info.launch_templates[0].versions | length == 2
 
-    #=====================================================================
-    # Create another version 
-    #=====================================================================
+    # =====================================================================
+    # Create another version
+    # =====================================================================
     - name: Create a new launch template version (check mode)
       amazon.aws.ec2_launch_template:
         name: "{{ test_launch_template_name }}"
@@ -343,9 +343,9 @@
           - _template_info.launch_templates[0].latest_version_number == 3
           - _template_info.launch_templates[0].versions | length == 3
 
-    #=====================================================================
+    # =====================================================================
     # Create another version based on an old version
-    #=====================================================================
+    # =====================================================================
     - name: Create new template version based on an old version (check mode)
       amazon.aws.ec2_launch_template:
         name: "{{ test_launch_template_name }}"
@@ -403,9 +403,9 @@
       vars:
         created_template: "{{ _template_info.launch_templates[0].versions | selectattr('version_number', 'equalto', 4) | first }}"
 
-    #=====================================================================
+    # =====================================================================
     # Create another version with updated description
-    #=====================================================================
+    # =====================================================================
     - name: Create a launch template version with another description (check mode)
       amazon.aws.ec2_launch_template:
         name: "{{ test_launch_template_name }}"

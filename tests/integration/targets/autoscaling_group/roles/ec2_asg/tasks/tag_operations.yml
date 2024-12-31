@@ -1,7 +1,7 @@
 ---
 - name: Running AutoScalingGroup Tag operations test
   block:
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     - name: Create a launch configuration
       community.aws.autoscaling_launch_config:
         name: "{{ resource_prefix }}-lc-tag-test"
@@ -17,7 +17,7 @@
           - create_lc.failed is false
           - '"autoscaling:CreateLaunchConfiguration" in create_lc.resource_actions'
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     - name: Create a AutoScalingGroup to be used for tag_operations test
       amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg-tag-test"
@@ -37,7 +37,7 @@
           - create_asg.failed is false
           - '"autoscaling:CreateAutoScalingGroup" in create_asg.resource_actions'
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
 
     - name: Get asg info
       amazon.aws.autoscaling_group_info:
@@ -316,7 +316,7 @@
           - '"autoscaling:CreateOrUpdateTags" not in add_empty.resource_actions'
           - '"autoscaling:DeleteTags" in add_empty.resource_actions'
 
-  #----------------------------------------------------------------------
+  # ----------------------------------------------------------------------
 
   always:
     - name: Kill asg created in this test

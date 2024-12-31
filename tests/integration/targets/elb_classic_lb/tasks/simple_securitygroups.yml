@@ -51,7 +51,7 @@
       - sg_b in result.elb.security_group_ids
       - sg_c not in result.elb.security_group_ids
 
-#=====================================================================
+# =====================================================================
 
 - name: Assign Security Groups to ELB by name (check_mode)
   amazon.aws.elb_classic_lb:

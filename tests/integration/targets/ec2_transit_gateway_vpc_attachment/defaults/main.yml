@@ -1,6 +1,6 @@
 ---
 _resource_prefix: AnsibleTest
-#_resource_prefix: 'AnsibleTest-{{ tiny_prefix }}-TGW-Attach'
+# _resource_prefix: 'AnsibleTest-{{ tiny_prefix }}-TGW-Attach'
 cidr_prefix: 10.{{ 255 | random(seed=_resource_prefix) }}
 tgw_name: "{{ _resource_prefix }}"
 tgw_name_2: "{{ _resource_prefix }}-2"
