@@ -31,7 +31,7 @@
         format: zip
         path: "{{ output_dir }}/mini_lambda.py"
         dest: "{{ output_dir }}/mini_lambda.zip"
-        mode: 644
+        mode: "0644"
 
     - name: Upload test lambda (version 1)
       amazon.aws.lambda:

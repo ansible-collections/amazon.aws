@@ -7,4 +7,4 @@
       ansible.builtin.copy:
         dest: ../test.aws_rds.yml
         content: ""
-        mode: 644
+        mode: "0644"

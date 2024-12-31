@@ -44,7 +44,7 @@
         format: zip
         path: "{{ output_dir }}/mini_http_lambda.py"
         dest: "{{ output_dir }}/mini_http_lambda.zip"
-        mode: 644
+        mode: "0644"
     - name: Create minimal lambda role
       amazon.aws.iam_role:
         name: ansible_lambda_role
@@ -73,7 +73,7 @@
       ansible.builtin.template:
         src: endpoint-test-swagger-api.yml.j2
         dest: "{{ output_dir }}/endpoint-test-swagger-api.yml.j2"
-        mode: 644
+        mode: "0644"
     - name: Deploy new API
       community.aws.api_gateway:
         api_file: "{{ output_dir }}/endpoint-test-swagger-api.yml.j2"

@@ -35,7 +35,7 @@
         format: zip
         path: "{{ output_dir }}/mini_lambda.py"
         dest: "{{ output_dir }}/mini_lambda.zip"
-        mode: 644
+        mode: "0644"
 
     # Parameter tests
     - name: Test with no parameters
@@ -327,12 +327,12 @@
           - result.configuration.tracing_config.mode == 'PassThrough'
 
     # Test lambda_info
-    - name: lambda_info | Gather all infos for all lambda functions
+    - name: Gather all infos for all lambda functions
       amazon.aws.lambda_info:
         query: all
       register: lambda_infos_all
       check_mode: true
-    - name: lambda_info | Assert successfull retrieval of all information 1
+    - name: Assert successfull retrieval of all information 1
       vars:
         lambda_info: "{{ lambda_infos_all.functions | selectattr('function_name', 'eq', lambda_function_name) | first }}"
       ansible.builtin.assert:
@@ -351,11 +351,11 @@
           - lambda_info.tags is defined
           - lambda_info.architectures == ['arm64']
 
-    - name: lambda_info | Ensure default query value is 'config' when function name omitted
+    - name: Ensure default query value is 'config' when function name omitted
       amazon.aws.lambda_info:
       register: lambda_infos_query_config
       check_mode: true
-    - name: lambda_info | Assert successfull retrieval of all information 2
+    - name: Assert successfull retrieval of all information 2
       vars:
         lambda_info: "{{ lambda_infos_query_config.functions | selectattr('function_name', 'eq', lambda_function_name) | first }}"
       ansible.builtin.assert:
@@ -373,11 +373,11 @@
           - lambda_info.mappings is not defined
           - lambda_info.tags is not defined
 
-    - name: lambda_info | Ensure default query value is 'all' when function name specified
+    - name: Ensure default query value is 'all' when function name specified
       amazon.aws.lambda_info:
         name: "{{ lambda_function_name }}"
       register: lambda_infos_query_all
-    - name: lambda_info | Assert successfull retrieval of all information 3
+    - name: Assert successfull retrieval of all information 3
       ansible.builtin.assert:
         that:
           - lambda_infos_query_all is not failed
@@ -389,12 +389,12 @@
           - lambda_infos_query_all.functions[0].mappings is defined
           - lambda_infos_query_all.functions[0].tags is defined
 
-    - name: lambda_info | Gather version infos for given lambda function
+    - name: Gather version infos for given lambda function
       amazon.aws.lambda_info:
         name: "{{ lambda_function_name }}"
         query: versions
       register: lambda_infos_versions
-    - name: lambda_info | Assert successfull retrieval of versions information
+    - name: Assert successfull retrieval of versions information
       ansible.builtin.assert:
         that:
           - lambda_infos_versions is not failed
@@ -406,12 +406,12 @@
           - lambda_infos_versions.functions[0].mappings is undefined
           - lambda_infos_versions.functions[0].tags is undefined
 
-    - name: lambda_info | Gather config infos for given lambda function
+    - name: Gather config infos for given lambda function
       amazon.aws.lambda_info:
         name: "{{ lambda_function_name }}"
         query: config
       register: lambda_infos_config
-    - name: lambda_info | Assert successfull retrieval of config information
+    - name: Assert successfull retrieval of config information
       ansible.builtin.assert:
         that:
           - lambda_infos_config is not failed
@@ -424,12 +424,12 @@
           - lambda_infos_config.functions[0].mappings is undefined
           - lambda_infos_config.functions[0].tags is undefined
 
-    - name: lambda_info | Gather policy infos for given lambda function
+    - name: Gather policy infos for given lambda function
       amazon.aws.lambda_info:
         name: "{{ lambda_function_name }}"
         query: policy
       register: lambda_infos_policy
-    - name: lambda_info | Assert successfull retrieval of policy information
+    - name: Assert successfull retrieval of policy information
       ansible.builtin.assert:
         that:
           - lambda_infos_policy is not failed
@@ -441,12 +441,12 @@
           - lambda_infos_policy.functions[0].mappings is undefined
           - lambda_infos_policy.functions[0].tags is undefined
 
-    - name: lambda_info | Gather aliases infos for given lambda function
+    - name: Gather aliases infos for given lambda function
       amazon.aws.lambda_info:
         name: "{{ lambda_function_name }}"
         query: aliases
       register: lambda_infos_aliases
-    - name: lambda_info | Assert successfull retrieval of aliases information
+    - name: Assert successfull retrieval of aliases information
       ansible.builtin.assert:
         that:
           - lambda_infos_aliases is not failed
@@ -458,12 +458,12 @@
           - lambda_infos_aliases.functions[0].mappings is undefined
           - lambda_infos_aliases.functions[0].tags is undefined
 
-    - name: lambda_info | Gather mappings infos for given lambda function
+    - name: Gather mappings infos for given lambda function
       amazon.aws.lambda_info:
         name: "{{ lambda_function_name }}"
         query: mappings
       register: lambda_infos_mappings
-    - name: lambda_info | Assert successfull retrieval of mappings information
+    - name: Assert successfull retrieval of mappings information
       ansible.builtin.assert:
         that:
           - lambda_infos_mappings is not failed
@@ -679,7 +679,7 @@
       ansible.builtin.file:
         path: "{{ remote_tmp_dir }}/python"
         state: directory
-        mode: 755
+        mode: "0755"
 
     - name: Create lambda layer library
       ansible.builtin.copy:
@@ -688,14 +688,14 @@
             print("Hello from the ansible amazon.aws lambda layer")
             return 1
         dest: "{{ remote_tmp_dir }}/python/lambda_layer.py"
-        mode: 644
+        mode: "0644"
 
     - name: Create lambda layer archive
       community.general.archive:
         format: zip
         path: "{{ remote_tmp_dir }}"
         dest: "{{ remote_tmp_dir }}/lambda_layer.zip"
-        mode: 644
+        mode: "0644"
 
     - name: Create lambda layer
       amazon.aws.lambda_layer:

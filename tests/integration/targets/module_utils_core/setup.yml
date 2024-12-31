@@ -33,10 +33,10 @@
       ansible.builtin.template:
         dest: ./session_credentials.yml
         src: session_credentials.yml.j2
-        mode: 600
+        mode: "0600"
 
     - name: Write out boto config file
       ansible.builtin.template:
         dest: ./boto3_config
         src: boto_config.j2
-        mode: 644
+        mode: "0644"

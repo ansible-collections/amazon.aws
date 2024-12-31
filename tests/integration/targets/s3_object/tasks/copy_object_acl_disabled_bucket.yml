@@ -23,7 +23,7 @@
       ansible.builtin.copy:
         content: "{{ content }}"
         dest: "{{ remote_tmp_dir }}/acl_disabled_upload_test.txt"
-        mode: 644
+        mode: "0644"
 
     - name: Upload a file to the bucket (check_mode)
       amazon.aws.s3_object:

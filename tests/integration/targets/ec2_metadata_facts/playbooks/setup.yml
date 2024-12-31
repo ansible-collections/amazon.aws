@@ -168,7 +168,7 @@
       ansible.builtin.template:
         src: inventory.j2
         dest: ../inventory
-        mode: 644
+        mode: "0644"
 
     - ansible.builtin.wait_for:
         port: 22
