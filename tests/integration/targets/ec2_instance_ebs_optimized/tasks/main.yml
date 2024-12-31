@@ -12,7 +12,7 @@
         name: "{{ resource_prefix }}-test-ebs-optimized-instance-in-vpc"
         image_id: "{{ ec2_ami_id }}"
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
         security_groups: "{{ sg.group_id }}"
         vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
         ebs_optimized: true

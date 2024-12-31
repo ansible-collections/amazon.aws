@@ -8,7 +8,7 @@
   block:
     - name: Set facts for encryption_bucket_key test
       ansible.builtin.set_fact:
-        local_bucket_name: "{{ bucket_name | hash('md5') }}-bucket-key"
+        local_bucket_name: "{{ s3_bucket_name | hash('md5') }}-bucket-key"
     # ============================================================
 
     - name: Create a simple bucket

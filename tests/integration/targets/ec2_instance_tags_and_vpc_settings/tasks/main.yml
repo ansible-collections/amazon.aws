@@ -16,7 +16,7 @@
           package_upgrade: true
           package_update: true
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
           Something: else
         security_groups: "{{ sg.group_id }}"
         network_interfaces:
@@ -38,7 +38,7 @@
           package_upgrade: true
           package_update: true
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
           Something: else
         security_groups: "{{ sg.group_id }}"
         network_interfaces:
@@ -59,7 +59,7 @@
           package_upgrade: true
           package_update: true
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
           Something: else
         security_groups: "{{ sg.group_id }}"
         vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
@@ -99,7 +99,7 @@
         name: "{{ resource_prefix }}-test-basic-vpc-create"
         image_id: "{{ ec2_ami_id }}"
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
           Another: thing
         purge_tags: false
         security_groups: "{{ sg.group_id }}"
@@ -122,7 +122,7 @@
         name: "{{ resource_prefix }}-test-basic-vpc-create"
         image_id: "{{ ec2_ami_id }}"
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
           Another: thing
         security_groups: "{{ sg.group_id }}"
         vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
@@ -189,7 +189,7 @@
         name: "{{ resource_prefix }}-test-basic-vpc-create"
         image_id: "{{ ec2_ami_id }}"
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
           Something: else
         security_groups: "{{ sg.group_id }}"
         source_dest_check: true
@@ -209,7 +209,7 @@
         name: "{{ resource_prefix }}-test-basic-vpc-create"
         image_id: "{{ ec2_ami_id }}"
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
           Something: else
         security_groups: "{{ sg.group_id }}"
         source_dest_check: true
@@ -235,7 +235,7 @@
         name: "{{ resource_prefix }}-test-basic-vpc-create"
         image_id: "{{ ec2_ami_id }}"
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
           Something: else
         security_groups: "{{ sg.group_id }}"
         source_dest_check: true

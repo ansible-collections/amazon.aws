@@ -13,7 +13,7 @@
         region: "{{ aws_region }}"
         image_id: "{{ ec2_ami_id }}"
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
         vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         instance_type: t3.nano
         wait: true

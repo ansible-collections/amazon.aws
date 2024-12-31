@@ -17,7 +17,7 @@
         name: "{{ resource_prefix }}-test-state-param-changes"
         image_id: "{{ ec2_ami_id }}"
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
         security_groups: "{{ sg.group_id }}"
         vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
         termination_protection: false
@@ -42,7 +42,7 @@
         name: "{{ resource_prefix }}-test-state-param-changes"
         image_id: "{{ ec2_ami_id }}"
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
         security_groups: "{{ sg2.group_id }}"
         vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
         termination_protection: true
@@ -74,7 +74,7 @@
         name: "{{ resource_prefix }}-test-state-param-changes"
         image_id: "{{ ec2_ami_id }}"
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
         security_groups: "{{ sg.group_id }}"
         vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
         termination_protection: false
@@ -100,7 +100,7 @@
         name: "{{ resource_prefix }}-test-state-param-changes"
         image_id: "{{ ec2_ami_id }}"
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
         security_groups: "{{ sg2.group_id }}"
         vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
         termination_protection: true
@@ -124,7 +124,7 @@
         name: "{{ resource_prefix }}-test-state-param-changes"
         image_id: "{{ ec2_ami_id }}"
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
         security_groups: "{{ sg.group_id }}"
         vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
         termination_protection: false

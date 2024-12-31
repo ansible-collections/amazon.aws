@@ -787,4 +787,4 @@
         name: setup_ec2_vpc
         tasks_from: cleanup.yml
       vars:
-        vpc_id: "{{ vpc_creation.vpc.id }}"
+        setup_ec2_vpc_id: "{{ vpc_creation.vpc.id }}"

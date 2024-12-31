@@ -21,7 +21,7 @@
 
 - name: Remove the load balancer
   amazon.aws.elb_classic_lb:
-    name: "{{ load_balancer_name }}"
+    name: "{{ ec2_asg_load_balancer_name }}"
     state: absent
     security_group_ids:
       - "{{ sg.group_id }}"

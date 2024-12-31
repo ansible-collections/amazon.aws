@@ -7,7 +7,7 @@
       region: "{{ aws_region }}"
   block:
     - ansible.builtin.set_fact:
-        local_bucket_name: "{{ bucket_name | hash('md5') }}ownership"
+        local_bucket_name: "{{ s3_bucket_name | hash('md5') }}ownership"
 
     - name: Create a simple bucket bad value for ownership controls
       amazon.aws.s3_bucket:

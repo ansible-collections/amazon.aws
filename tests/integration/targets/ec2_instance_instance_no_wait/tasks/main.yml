@@ -13,7 +13,7 @@
         image_id: "{{ ec2_ami_id }}"
         vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
         wait: false
         instance_type: "{{ ec2_instance_type }}"
       register: in_test_vpc
@@ -33,7 +33,7 @@
         image_id: "{{ ec2_ami_id }}"
         vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
         wait: false
         instance_type: "{{ ec2_instance_type }}"
       check_mode: true

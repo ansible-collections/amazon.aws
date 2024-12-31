@@ -44,7 +44,7 @@
         image_id: "{{ ec2_ami_id }}"
         availability_zone: "{{ subnet_b_az }}"
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
         instance_type: "{{ ec2_instance_type }}"
         wait: false
       register: in_test_vpc
@@ -69,7 +69,7 @@
           - id: "{{ eni_b.interface.id }}"
         image_id: "{{ ec2_ami_id }}"
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
         instance_type: "{{ ec2_instance_type }}"
         wait: false
       register: add_interface_check_mode
@@ -101,7 +101,7 @@
           - id: "{{ eni_b.interface.id }}"
         image_id: "{{ ec2_ami_id }}"
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
         instance_type: "{{ ec2_instance_type }}"
         wait: false
       register: add_interface
@@ -135,7 +135,7 @@
         image_id: "{{ ec2_ami_id }}"
         availability_zone: "{{ subnet_b_az }}"
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
         instance_type: "{{ ec2_instance_type }}"
       check_mode: true
 

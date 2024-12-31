@@ -648,11 +648,11 @@
         tags:
           Updated: new_tag
           Name: Public route table
-      register: Destroy_table
+      register: destroy_table
     - name: Assert Destroy table worked
       ansible.builtin.assert:
         that:
-          - Destroy_table.changed
+          - destroy_table.changed
 
     - name: CHECK MODE - redestroy public route table
       amazon.aws.ec2_vpc_route_table:

@@ -12,7 +12,7 @@
         name: "{{ resource_prefix }}-test-default-vpc"
         image_id: "{{ ec2_ami_id }}"
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
         security_group: default
         instance_type: "{{ ec2_instance_type }}"
         wait: false
@@ -24,7 +24,7 @@
         name: "{{ resource_prefix }}-test-default-vpc-checkmode"
         image_id: "{{ ec2_ami_id }}"
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
         security_group: default
         instance_type: "{{ ec2_instance_type }}"
       check_mode: true
@@ -52,13 +52,13 @@
         state: absent
         instance_ids: "{{ in_default_vpc.instance_ids }}"
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
 
   always:
     - name: Terminate vpc_tests instances
       amazon.aws.ec2_instance:
         state: absent
         filters:
-          tag:TestId: "{{ ec2_instance_tag_TestId }}"
+          tag:TestId: "{{ ec2_instance_tag_testid }}"
         wait: true
       ignore_errors: true

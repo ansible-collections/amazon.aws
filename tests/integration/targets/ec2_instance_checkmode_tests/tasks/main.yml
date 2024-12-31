@@ -16,7 +16,7 @@
         vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         wait: false
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
           TestTag: Some Value
       register: basic_instance
 
@@ -29,7 +29,7 @@
         instance_type: "{{ ec2_instance_type }}"
         vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
           TestTag: Some Value
       check_mode: true
 
@@ -57,7 +57,7 @@
         name: "{{ resource_prefix }}-checkmode-comparison"
         vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
           TestTag: Some Value
       check_mode: true
 
@@ -78,7 +78,7 @@
         name: "{{ resource_prefix }}-checkmode-comparison"
         vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
           TestTag: Some Value
         wait: true
       register: instance_stop
@@ -100,7 +100,7 @@
         name: "{{ resource_prefix }}-checkmode-comparison"
         vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
           TestTag: Some Value
       check_mode: true
 
@@ -121,7 +121,7 @@
         name: "{{ resource_prefix }}-checkmode-comparison"
         vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
           TestTag: Some Value
 
     - name: Fact ec2 instance.
@@ -141,7 +141,7 @@
         name: "{{ resource_prefix }}-checkmode-comparison"
         vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
           TestTag: Some Other Value
       check_mode: true
 
@@ -162,7 +162,7 @@
         name: "{{ resource_prefix }}-checkmode-comparison"
         vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
           TestTag: Some Value
         wait: true
       check_mode: true
@@ -184,7 +184,7 @@
         name: "{{ resource_prefix }}-checkmode-comparison"
         vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
           TestTag: Some Value
         wait: true
 
@@ -204,6 +204,6 @@
       amazon.aws.ec2_instance:
         state: absent
         filters:
-          tag:TestId: "{{ ec2_instance_tag_TestId }}"
+          tag:TestId: "{{ ec2_instance_tag_testid }}"
         wait: true
       ignore_errors: true

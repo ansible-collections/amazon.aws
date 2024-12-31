@@ -1333,16 +1333,16 @@
         role_arn: "{{ output_cloudwatch_no_kms_role.iam_role.arn }}"
         role_session_name: cloudtrailNoKms
         region: "{{ aws_region }}"
-      register: noKms_assumed_role
+      register: no_kms_assumed_role
 
     - name: Enable logging encryption w/ alias (no change, no kms permmissions, check mode)
       amazon.aws.cloudtrail:
         state: present
         name: "{{ cloudtrail_name }}"
         kms_key_id: alias/{{ kms_alias }}
-        access_key: "{{ noKms_assumed_role.sts_creds.access_key }}"
-        secret_key: "{{ noKms_assumed_role.sts_creds.secret_key }}"
-        session_token: "{{ noKms_assumed_role.sts_creds.session_token }}"
+        access_key: "{{ no_kms_assumed_role.sts_creds.access_key }}"
+        secret_key: "{{ no_kms_assumed_role.sts_creds.secret_key }}"
+        session_token: "{{ no_kms_assumed_role.sts_creds.session_token }}"
       check_mode: true
       register: output
     - ansible.builtin.assert:

@@ -1,7 +1,7 @@
 ---
 - block:
     - ansible.builtin.set_fact:
-        local_bucket_name: "{{ bucket_name | hash('md5') }}complex"
+        local_bucket_name: "{{ s3_bucket_name | hash('md5') }}complex"
     - name: Create more complex s3_bucket
       amazon.aws.s3_bucket:
         name: "{{ local_bucket_name }}"

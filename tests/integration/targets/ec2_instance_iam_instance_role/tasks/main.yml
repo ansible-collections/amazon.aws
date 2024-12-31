@@ -41,7 +41,7 @@
         instance_role: "{{ first_iam_role }}"
         vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
       register: instance_with_role
 
     - ansible.builtin.assert:
@@ -58,7 +58,7 @@
         instance_role: "{{ iam_role.iam_role.arn.replace(':role/', ':instance-profile/') }}"
         vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
       check_mode: true
 
     - name: Fact presented ec2 instance
@@ -89,7 +89,7 @@
         instance_role: "{{ iam_role_2.iam_role.arn.replace(':role/', ':instance-profile/') }}"
         vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
       register: instance_with_updated_role
 
     - name: Wait 10 seconds for role update to complete
@@ -114,7 +114,7 @@
       amazon.aws.ec2_instance:
         state: absent
         filters:
-          tag:TestId: "{{ ec2_instance_tag_TestId }}"
+          tag:TestId: "{{ ec2_instance_tag_testid }}"
         wait: true
       ignore_errors: true
 

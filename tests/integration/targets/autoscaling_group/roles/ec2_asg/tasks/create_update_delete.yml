@@ -167,7 +167,7 @@
       async: 400
     - name: Launch load balancer
       amazon.aws.elb_classic_lb:
-        name: "{{ load_balancer_name }}"
+        name: "{{ ec2_asg_load_balancer_name }}"
         state: present
         security_group_ids:
           - "{{ sg.group_id }}"
@@ -196,7 +196,7 @@
         max_size: 1
         health_check_period: 300
         vpc_zone_identifier: "{{ testing_subnet.subnet.id }}"
-        load_balancers: "{{ load_balancer_name }}"
+        load_balancers: "{{ ec2_asg_load_balancer_name }}"
         wait_for_instances: true
         wait_timeout: 900
         state: present
@@ -218,7 +218,7 @@
         max_size: 5
         health_check_period: 600
         vpc_zone_identifier: "{{ testing_subnet.subnet.id }}"
-        load_balancers: "{{ load_balancer_name }}"
+        load_balancers: "{{ ec2_asg_load_balancer_name }}"
         wait_for_instances: true
         wait_timeout: 1200
         state: present
@@ -272,7 +272,7 @@
         min_size: 1
         max_size: 5
         health_check_period: 900
-        load_balancers: "{{ load_balancer_name }}"
+        load_balancers: "{{ ec2_asg_load_balancer_name }}"
         vpc_zone_identifier: "{{ testing_subnet.subnet.id }}"
         wait_for_instances: true
         replace_all_instances: true

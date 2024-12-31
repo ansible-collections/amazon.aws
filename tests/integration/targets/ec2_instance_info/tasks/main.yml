@@ -13,7 +13,7 @@
         image_id: "{{ ec2_ami_id }}"
         availability_zone: "{{ subnet_b_az }}"
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
         user_data: "{{ ec2_instance_user_data }}"
         instance_type: "{{ ec2_instance_type }}"
         wait: false

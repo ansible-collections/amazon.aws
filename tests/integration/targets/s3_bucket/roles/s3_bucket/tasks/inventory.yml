@@ -7,8 +7,8 @@
       region: "{{ aws_region }}"
   block:
     - ansible.builtin.set_fact:
-        local_bucket_name: "{{ bucket_name | hash('md5') }}-inventory-source"
-        local_dest_bucket_name: "{{ bucket_name | hash('md5') }}-inventory-target"
+        local_bucket_name: "{{ s3_bucket_name | hash('md5') }}-inventory-source"
+        local_dest_bucket_name: "{{ s3_bucket_name | hash('md5') }}-inventory-target"
     - name: Create a simple bucket to be inventory destination
       amazon.aws.s3_bucket:
         name: "{{ local_dest_bucket_name }}"
