@@ -44,7 +44,7 @@
       amazon.aws.route53_health_check:
         state: present
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type }}"
       register: create_check
       check_mode: true
@@ -59,7 +59,7 @@
       amazon.aws.route53_health_check:
         state: present
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type }}"
       register: create_check
 
@@ -89,7 +89,7 @@
           - _check_config.failure_threshold == 3
           - _check_config.request_interval == 30
           - _check_config.ip_address == ip_address
-          - _check_config.port == port
+          - _check_config.port == check_port
       vars:
         _health_check: "{{ create_check.health_check }}"
         _check_config: "{{ _health_check.health_check_config }}"
@@ -101,7 +101,7 @@
       amazon.aws.route53_health_check:
         state: present
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type }}"
       register: create_check
       check_mode: true
@@ -116,7 +116,7 @@
       amazon.aws.route53_health_check:
         state: present
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type }}"
       register: create_check
 
@@ -148,7 +148,7 @@
           - _check_config.request_interval == 30
           - _check_config.failure_threshold == 3
           - _check_config.ip_address == ip_address
-          - _check_config.port == port
+          - _check_config.port == check_port
       vars:
         _health_check: "{{ create_check.health_check }}"
         _check_config: "{{ _health_check.health_check_config }}"
@@ -158,7 +158,7 @@
       amazon.aws.route53_health_check:
         state: present
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type }}"
         failure_threshold: "{{ failure_threshold_updated }}"
       register: update_threshold
@@ -174,7 +174,7 @@
       amazon.aws.route53_health_check:
         state: present
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type }}"
         failure_threshold: "{{ failure_threshold_updated }}"
       register: update_threshold
@@ -206,7 +206,7 @@
           - _check_config.request_interval == 30
           - _check_config.failure_threshold == failure_threshold_updated
           - _check_config.ip_address == ip_address
-          - _check_config.port == port
+          - _check_config.port == check_port
       vars:
         _health_check: "{{ update_threshold.health_check }}"
         _check_config: "{{ _health_check.health_check_config }}"
@@ -215,7 +215,7 @@
       amazon.aws.route53_health_check:
         state: present
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type }}"
         failure_threshold: "{{ failure_threshold_updated }}"
       register: update_threshold
@@ -231,7 +231,7 @@
       amazon.aws.route53_health_check:
         state: present
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type }}"
         failure_threshold: "{{ failure_threshold_updated }}"
       register: update_threshold
@@ -263,7 +263,7 @@
           - _check_config.request_interval == 30
           - _check_config.failure_threshold == failure_threshold_updated
           - _check_config.ip_address == ip_address
-          - _check_config.port == port
+          - _check_config.port == check_port
       vars:
         _health_check: "{{ update_threshold.health_check }}"
         _check_config: "{{ _health_check.health_check_config }}"
@@ -272,7 +272,7 @@
       amazon.aws.route53_health_check:
         state: present
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type }}"
         disabled: true
       register: update_disabled
@@ -288,7 +288,7 @@
       amazon.aws.route53_health_check:
         state: present
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type }}"
         disabled: true
       register: update_disabled
@@ -320,7 +320,7 @@
           - _check_config.request_interval == 30
           - _check_config.failure_threshold == failure_threshold_updated
           - _check_config.ip_address == ip_address
-          - _check_config.port == port
+          - _check_config.port == check_port
       vars:
         _health_check: "{{ update_disabled.health_check }}"
         _check_config: "{{ _health_check.health_check_config }}"
@@ -329,7 +329,7 @@
       amazon.aws.route53_health_check:
         state: present
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type }}"
         disabled: true
       register: update_disabled
@@ -345,7 +345,7 @@
       amazon.aws.route53_health_check:
         state: present
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type }}"
         disabled: true
       register: update_disabled
@@ -377,7 +377,7 @@
           - _check_config.request_interval == 30
           - _check_config.failure_threshold == failure_threshold_updated
           - _check_config.ip_address == ip_address
-          - _check_config.port == port
+          - _check_config.port == check_port
       vars:
         _health_check: "{{ update_disabled.health_check }}"
         _check_config: "{{ _health_check.health_check_config }}"
@@ -386,7 +386,7 @@
       amazon.aws.route53_health_check:
         state: present
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type }}"
         tags:
           CamelCase: CamelCaseValue
@@ -406,7 +406,7 @@
       amazon.aws.route53_health_check:
         state: present
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type }}"
         tags:
           CamelCase: CamelCaseValue
@@ -448,7 +448,7 @@
           - _check_config.request_interval == 30
           - _check_config.failure_threshold == failure_threshold_updated
           - _check_config.ip_address == ip_address
-          - _check_config.port == port
+          - _check_config.port == check_port
       vars:
         _health_check: "{{ update_tags.health_check }}"
         _check_config: "{{ _health_check.health_check_config }}"
@@ -457,7 +457,7 @@
       amazon.aws.route53_health_check:
         state: present
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type }}"
         tags:
           CamelCase: CamelCaseValue
@@ -477,7 +477,7 @@
       amazon.aws.route53_health_check:
         state: present
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type }}"
         tags:
           CamelCase: CamelCaseValue
@@ -519,7 +519,7 @@
           - _check_config.request_interval == 30
           - _check_config.failure_threshold == failure_threshold_updated
           - _check_config.ip_address == ip_address
-          - _check_config.port == port
+          - _check_config.port == check_port
       vars:
         _health_check: "{{ update_tags.health_check }}"
         _check_config: "{{ _health_check.health_check_config }}"
@@ -528,7 +528,7 @@
       amazon.aws.route53_health_check:
         state: present
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type }}"
         tags:
           anotherTag: anotherValue
@@ -546,7 +546,7 @@
       amazon.aws.route53_health_check:
         state: present
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type }}"
         tags:
           anotherTag: anotherValue
@@ -588,7 +588,7 @@
           - _check_config.request_interval == 30
           - _check_config.failure_threshold == failure_threshold_updated
           - _check_config.ip_address == ip_address
-          - _check_config.port == port
+          - _check_config.port == check_port
       vars:
         _health_check: "{{ add_tags.health_check }}"
         _check_config: "{{ _health_check.health_check_config }}"
@@ -597,7 +597,7 @@
       amazon.aws.route53_health_check:
         state: present
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type }}"
         tags:
           anotherTag: anotherValue
@@ -615,7 +615,7 @@
       amazon.aws.route53_health_check:
         state: present
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type }}"
         tags:
           anotherTag: anotherValue
@@ -657,7 +657,7 @@
           - _check_config.request_interval == 30
           - _check_config.failure_threshold == failure_threshold_updated
           - _check_config.ip_address == ip_address
-          - _check_config.port == port
+          - _check_config.port == check_port
       vars:
         _health_check: "{{ add_tags.health_check }}"
         _check_config: "{{ _health_check.health_check_config }}"
@@ -666,7 +666,7 @@
       amazon.aws.route53_health_check:
         state: present
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type }}"
         tags:
           anotherTag: anotherValue
@@ -684,7 +684,7 @@
       amazon.aws.route53_health_check:
         state: present
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type }}"
         tags:
           anotherTag: anotherValue
@@ -723,7 +723,7 @@
           - _check_config.request_interval == 30
           - _check_config.failure_threshold == failure_threshold_updated
           - _check_config.ip_address == ip_address
-          - _check_config.port == port
+          - _check_config.port == check_port
       vars:
         _health_check: "{{ purge_tags.health_check }}"
         _check_config: "{{ _health_check.health_check_config }}"
@@ -732,7 +732,7 @@
       amazon.aws.route53_health_check:
         state: present
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type }}"
         tags:
           anotherTag: anotherValue
@@ -750,7 +750,7 @@
       amazon.aws.route53_health_check:
         state: present
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type }}"
         tags:
           anotherTag: anotherValue
@@ -789,7 +789,7 @@
           - _check_config.request_interval == 30
           - _check_config.failure_threshold == failure_threshold_updated
           - _check_config.ip_address == ip_address
-          - _check_config.port == port
+          - _check_config.port == check_port
       vars:
         _health_check: "{{ purge_tags.health_check }}"
         _check_config: "{{ _health_check.health_check_config }}"
@@ -799,7 +799,7 @@
       amazon.aws.route53_health_check:
         state: absent
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type }}"
       register: delete_tcp
       check_mode: true
@@ -814,7 +814,7 @@
       amazon.aws.route53_health_check:
         state: absent
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type }}"
       register: delete_tcp
 
@@ -828,7 +828,7 @@
       amazon.aws.route53_health_check:
         state: absent
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type }}"
       register: delete_tcp
       check_mode: true
@@ -843,7 +843,7 @@
       amazon.aws.route53_health_check:
         state: absent
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type }}"
       register: delete_tcp
 
@@ -858,7 +858,7 @@
       amazon.aws.route53_health_check:
         state: present
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type_https_match }}"
         fqdn: "{{ fqdn }}"
         request_interval: "{{ request_interval }}"
@@ -876,7 +876,7 @@
       amazon.aws.route53_health_check:
         state: present
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type_https_match }}"
         fqdn: "{{ fqdn }}"
         request_interval: "{{ request_interval }}"
@@ -911,7 +911,7 @@
           - _check_config.failure_threshold == 3
           - _check_config.fully_qualified_domain_name == fqdn
           - _check_config.ip_address == ip_address
-          - _check_config.port == port
+          - _check_config.port == check_port
           - _check_config.search_string == string_match
       vars:
         _health_check: "{{ create_match.health_check }}"
@@ -924,7 +924,7 @@
       amazon.aws.route53_health_check:
         state: present
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type_https_match }}"
         fqdn: "{{ fqdn }}"
         request_interval: "{{ request_interval }}"
@@ -942,7 +942,7 @@
       amazon.aws.route53_health_check:
         state: present
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type_https_match }}"
         fqdn: "{{ fqdn }}"
         request_interval: "{{ request_interval }}"
@@ -977,7 +977,7 @@
           - _check_config.failure_threshold == 3
           - _check_config.fully_qualified_domain_name == fqdn
           - _check_config.ip_address == ip_address
-          - _check_config.port == port
+          - _check_config.port == check_port
           - _check_config.search_string == string_match
       vars:
         _health_check: "{{ create_match.health_check }}"
@@ -987,7 +987,7 @@
       amazon.aws.route53_health_check:
         state: present
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type_https_match }}"
         fqdn: "{{ fqdn }}"
         request_interval: "{{ request_interval }}"
@@ -1005,7 +1005,7 @@
       amazon.aws.route53_health_check:
         state: present
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type_https_match }}"
         fqdn: "{{ fqdn }}"
         request_interval: "{{ request_interval }}"
@@ -1040,7 +1040,7 @@
           - _check_config.failure_threshold == 3
           - _check_config.fully_qualified_domain_name == fqdn
           - _check_config.ip_address == ip_address
-          - _check_config.port == port
+          - _check_config.port == check_port
           - _check_config.resource_path == resource_path
           - _check_config.search_string == string_match
       vars:
@@ -1051,7 +1051,7 @@
       amazon.aws.route53_health_check:
         state: present
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type_https_match }}"
         fqdn: "{{ fqdn }}"
         request_interval: "{{ request_interval }}"
@@ -1069,7 +1069,7 @@
       amazon.aws.route53_health_check:
         state: present
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type_https_match }}"
         fqdn: "{{ fqdn }}"
         request_interval: "{{ request_interval }}"
@@ -1104,7 +1104,7 @@
           - _check_config.failure_threshold == 3
           - _check_config.fully_qualified_domain_name == fqdn
           - _check_config.ip_address == ip_address
-          - _check_config.port == port
+          - _check_config.port == check_port
           - _check_config.resource_path == resource_path
           - _check_config.search_string == string_match
       vars:
@@ -1115,7 +1115,7 @@
       amazon.aws.route53_health_check:
         state: present
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type_https_match }}"
         fqdn: "{{ fqdn }}"
         request_interval: "{{ request_interval }}"
@@ -1133,7 +1133,7 @@
       amazon.aws.route53_health_check:
         state: present
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type_https_match }}"
         fqdn: "{{ fqdn }}"
         request_interval: "{{ request_interval }}"
@@ -1168,7 +1168,7 @@
           - _check_config.failure_threshold == 3
           - _check_config.fully_qualified_domain_name == fqdn
           - _check_config.ip_address == ip_address
-          - _check_config.port == port
+          - _check_config.port == check_port
           - _check_config.resource_path == resource_path
           - _check_config.search_string == string_match_updated
       vars:
@@ -1179,7 +1179,7 @@
       amazon.aws.route53_health_check:
         state: present
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type_https_match }}"
         fqdn: "{{ fqdn }}"
         request_interval: "{{ request_interval }}"
@@ -1197,7 +1197,7 @@
       amazon.aws.route53_health_check:
         state: present
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type_https_match }}"
         fqdn: "{{ fqdn }}"
         request_interval: "{{ request_interval }}"
@@ -1232,7 +1232,7 @@
           - _check_config.failure_threshold == 3
           - _check_config.fully_qualified_domain_name == fqdn
           - _check_config.ip_address == ip_address
-          - _check_config.port == port
+          - _check_config.port == check_port
           - _check_config.resource_path == resource_path
           - _check_config.search_string == string_match_updated
       vars:
@@ -1244,7 +1244,7 @@
       amazon.aws.route53_health_check:
         state: absent
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type_https_match }}"
         fqdn: "{{ fqdn }}"
         request_interval: "{{ request_interval }}"
@@ -1261,7 +1261,7 @@
       amazon.aws.route53_health_check:
         state: absent
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type_https_match }}"
         fqdn: "{{ fqdn }}"
         request_interval: "{{ request_interval }}"
@@ -1277,7 +1277,7 @@
       amazon.aws.route53_health_check:
         state: absent
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type_https_match }}"
         fqdn: "{{ fqdn }}"
         request_interval: "{{ request_interval }}"
@@ -1294,7 +1294,7 @@
       amazon.aws.route53_health_check:
         state: absent
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type_https_match }}"
         fqdn: "{{ fqdn }}"
         request_interval: "{{ request_interval }}"
@@ -1311,7 +1311,7 @@
       amazon.aws.route53_health_check:
         state: present
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type_http_match }}"
         fqdn: "{{ fqdn }}"
         request_interval: "{{ request_interval }}"
@@ -1337,7 +1337,7 @@
       amazon.aws.route53_health_check:
         state: present
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type_http_match }}"
         fqdn: "{{ fqdn }}"
         request_interval: "{{ request_interval }}"
@@ -1387,7 +1387,7 @@
           - _check_config.failure_threshold == failure_threshold
           - _check_config.fully_qualified_domain_name == fqdn
           - _check_config.ip_address == ip_address
-          - _check_config.port == port
+          - _check_config.port == check_port
           - _check_config.resource_path == resource_path
           - _check_config.search_string == string_match
       vars:
@@ -1401,7 +1401,7 @@
       amazon.aws.route53_health_check:
         state: present
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type_http_match }}"
         fqdn: "{{ fqdn }}"
         request_interval: "{{ request_interval }}"
@@ -1427,7 +1427,7 @@
       amazon.aws.route53_health_check:
         state: present
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type_http_match }}"
         fqdn: "{{ fqdn }}"
         request_interval: "{{ request_interval }}"
@@ -1476,7 +1476,7 @@
           - _check_config.failure_threshold == failure_threshold
           - _check_config.fully_qualified_domain_name == fqdn
           - _check_config.ip_address == ip_address
-          - _check_config.port == port
+          - _check_config.port == check_port
           - _check_config.resource_path == resource_path
           - _check_config.search_string == string_match
       vars:
@@ -1487,7 +1487,7 @@
       amazon.aws.route53_health_check:
         state: present
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type_http_match }}"
         fqdn: "{{ fqdn }}"
         request_interval: "{{ request_interval }}"
@@ -1507,7 +1507,7 @@
       amazon.aws.route53_health_check:
         state: present
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type_http_match }}"
         fqdn: "{{ fqdn }}"
         request_interval: "{{ request_interval }}"
@@ -1550,7 +1550,7 @@
           - _check_config.failure_threshold == failure_threshold_updated
           - _check_config.fully_qualified_domain_name == fqdn
           - _check_config.ip_address == ip_address
-          - _check_config.port == port
+          - _check_config.port == check_port
           - _check_config.resource_path == resource_path_updated
           - _check_config.search_string == string_match_updated
       vars:
@@ -1561,7 +1561,7 @@
       amazon.aws.route53_health_check:
         state: present
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type_http_match }}"
         fqdn: "{{ fqdn }}"
         request_interval: "{{ request_interval }}"
@@ -1581,7 +1581,7 @@
       amazon.aws.route53_health_check:
         state: present
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type_http_match }}"
         fqdn: "{{ fqdn }}"
         request_interval: "{{ request_interval }}"
@@ -1624,7 +1624,7 @@
           - _check_config.failure_threshold == failure_threshold_updated
           - _check_config.fully_qualified_domain_name == fqdn
           - _check_config.ip_address == ip_address
-          - _check_config.port == port
+          - _check_config.port == check_port
           - _check_config.resource_path == resource_path_updated
           - _check_config.search_string == string_match_updated
       vars:
@@ -1635,7 +1635,7 @@
       amazon.aws.route53_health_check:
         state: absent
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type_http_match }}"
         fqdn: "{{ fqdn }}"
         request_interval: "{{ request_interval }}"
@@ -1652,7 +1652,7 @@
       amazon.aws.route53_health_check:
         state: absent
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type_http_match }}"
         fqdn: "{{ fqdn }}"
         request_interval: "{{ request_interval }}"
@@ -1668,7 +1668,7 @@
       amazon.aws.route53_health_check:
         state: absent
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type_http_match }}"
         fqdn: "{{ fqdn }}"
         request_interval: "{{ request_interval }}"
@@ -1685,7 +1685,7 @@
       amazon.aws.route53_health_check:
         state: absent
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type_http_match }}"
         fqdn: "{{ fqdn }}"
         request_interval: "{{ request_interval }}"
@@ -1704,7 +1704,7 @@
         health_check_name: "{{ tiny_prefix }}-hc-latency-graph"
         use_unique_names: true
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type }}"
         measure_latency: true
       register: create_check
@@ -1758,7 +1758,7 @@
         health_check_name: "{{ tiny_prefix }}-hc-latency-graph"
         use_unique_names: true
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type }}"
         measure_latency: false
       register: update_check
@@ -1781,7 +1781,7 @@
         health_check_name: "{{ tiny_prefix }}-hc-latency-graph"
         use_unique_names: true
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type }}"
         measure_latency: true
       ignore_errors: true
@@ -1790,7 +1790,7 @@
       amazon.aws.route53_health_check:
         state: absent
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type }}"
       ignore_errors: true
 
@@ -1798,7 +1798,7 @@
       amazon.aws.route53_health_check:
         state: absent
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type_https_match }}"
         fqdn: "{{ fqdn }}"
         request_interval: "{{ request_interval }}"
@@ -1808,7 +1808,7 @@
       amazon.aws.route53_health_check:
         state: absent
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type_http_match }}"
         fqdn: "{{ fqdn }}"
         request_interval: "{{ request_interval }}"
