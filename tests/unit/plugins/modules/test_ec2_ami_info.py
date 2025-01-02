@@ -16,8 +16,8 @@ from ansible_collections.amazon.aws.plugins.modules import ec2_ami_info
 module_name = "ansible_collections.amazon.aws.plugins.modules.ec2_ami_info"
 
 
-@pytest.fixture
-def ec2_client():
+@pytest.fixture(name="ec2_client")
+def fixture_ec2_client():
     return MagicMock()
 
 
@@ -80,14 +80,14 @@ def test_get_images(m_describe_images):
     ec2_client = MagicMock()
     get_images_result = ec2_ami_info.get_images(ec2_client, request_args)
 
-    m_describe_images.call_count == 2
+    assert m_describe_images.call_count >= 1
     m_describe_images.assert_called_with(ec2_client, **request_args)
     assert get_images_result == m_describe_images.return_value
 
 
 @patch(module_name + ".describe_image_attribute")
 @patch(module_name + ".get_images")
-def test_list_ec2_images(m_get_images, m_describe_image_attribute):
+def test_list_ec2_images(m_get_images, m_describe_image_attribute, ec2_client):
     module = MagicMock()
 
     m_get_images.return_value = [
@@ -187,7 +187,7 @@ def a_ami_info_exception():
 
 
 @patch(module_name + ".describe_images")
-def test_api_failure_get_images(m_describe_images):
+def test_api_failure_get_images(m_describe_images, ec2_client):
     request_args = {}
     m_describe_images.side_effect = a_ami_info_exception()
 

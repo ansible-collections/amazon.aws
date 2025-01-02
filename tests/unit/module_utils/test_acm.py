@@ -24,8 +24,8 @@ from ansible_collections.amazon.aws.plugins.module_utils.acm import acm_catch_bo
 MODULE_NAME = "ansible_collections.amazon.aws.plugins.module_utils.acm"
 
 
-@pytest.fixture()
-def acm_service_mgr():
+@pytest.fixture(name="acm_service_mgr")
+def fixture_acm_service_mgr():
     module = MagicMock()
     module.fail_json_aws.side_effect = SystemExit(2)
     module.fail_json.side_effect = SystemExit(1)

@@ -11,8 +11,8 @@ import pytest
 import ansible_collections.amazon.aws.plugins.modules.ec2_instance as ec2_instance_module
 
 
-@pytest.fixture
-def ansible_aws_module():
+@pytest.fixture(name="ansible_aws_module")
+def fixture_ansible_aws_module():
     module = MagicMock()
     module.params = {
         "iam_instance_profile": None,
@@ -24,8 +24,8 @@ def ansible_aws_module():
     return module
 
 
-@pytest.fixture
-def ec2_instance(monkeypatch):
+@pytest.fixture(name="ec2_instance")
+def fixture_ec2_instance(monkeypatch):
     # monkey patches various ec2_instance module functions, we'll separately test the operation of
     # these functions, we just care that it's passing the results into the right place in the
     # instance spec.
@@ -65,11 +65,11 @@ def _assert_defaults(instance_spec, to_skip=None):
 
     if "MinCount" not in to_skip:
         assert "MinCount" in instance_spec
-        instance_spec["MinCount"] == 1
+        assert instance_spec["MinCount"] == 1
 
     if "MaxCount" not in to_skip:
         assert "MaxCount" in instance_spec
-        instance_spec["MaxCount"] == 1
+        assert instance_spec["MaxCount"] == 1
 
     if "TOP_LEVEL_OPTIONS" not in to_skip:
         assert "TOP_LEVEL_OPTIONS" in instance_spec
@@ -77,7 +77,7 @@ def _assert_defaults(instance_spec, to_skip=None):
 
     if "InstanceType" not in to_skip:
         assert "InstanceType" in instance_spec
-        instance_spec["InstanceType"] == sentinel.INSTANCE_TYPE
+        assert instance_spec["InstanceType"] == sentinel.INSTANCE_TYPE
 
 
 def test_build_run_instance_spec_defaults(ansible_aws_module, ec2_instance):

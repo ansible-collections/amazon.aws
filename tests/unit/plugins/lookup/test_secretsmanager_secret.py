@@ -18,8 +18,8 @@ from ansible.errors import AnsibleLookupError
 from ansible_collections.amazon.aws.plugins.lookup.secretsmanager_secret import LookupModule
 
 
-@pytest.fixture
-def lookup_plugin():
+@pytest.fixture(name="lookup_plugin")
+def fixture_lookup_plugin():
     lookup = LookupModule()
     lookup.params = {}
 

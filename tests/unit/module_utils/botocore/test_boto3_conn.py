@@ -21,16 +21,16 @@ class FailException(Exception):
     pass
 
 
-@pytest.fixture
-def aws_module(monkeypatch):
+@pytest.fixture(name="aws_module")
+def fixture_aws_module(monkeypatch):
     aws_module = MagicMock()
     aws_module.fail_json.side_effect = FailException()
     monkeypatch.setattr(aws_module, "_name", sentinel.MODULE_NAME)
     return aws_module
 
 
-@pytest.fixture
-def botocore_utils(monkeypatch):
+@pytest.fixture(name="botocore_utils")
+def fixture_botocore_utils(monkeypatch):
     return utils_botocore
 
 

@@ -11,8 +11,8 @@ import pytest
 from ansible_collections.amazon.aws.plugins.module_utils import elbv2
 
 
-@pytest.fixture
-def elb_listener_rules(mocker):
+@pytest.fixture(name="elb_listener_rules")
+def fixture_elb_listener_rules(mocker):
     module = MagicMock()
     connection = MagicMock()
     rules = MagicMock()

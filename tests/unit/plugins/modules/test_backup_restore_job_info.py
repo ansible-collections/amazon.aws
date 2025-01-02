@@ -67,7 +67,7 @@ def test__describe_restore_job():
 
     assert result == [camel_dict_to_snake_dict(restore_job_info)]
     connection.describe_restore_job.assert_called_with(RestoreJobId=restore_job_id)
-    connection.describe_restore_job.call_count == 1
+    assert connection.describe_restore_job.call_count == 1
 
 
 def test__list_restore_jobs():

@@ -47,7 +47,7 @@ def test_get_network_interfaces(m_describe_network_interfaces):
 
     network_interfaces_result = ec2_eni_info.get_network_interfaces(connection, module, request_args)
 
-    m_describe_network_interfaces.call_count == 1
+    assert m_describe_network_interfaces.call_count == 1
     m_describe_network_interfaces.assert_called_with(connection, **request_args)
     assert len(network_interfaces_result["NetworkInterfaces"]) == 1
 
@@ -90,7 +90,7 @@ def test_list_eni(m_get_network_interfaces):
 
     camel_network_interfaces = ec2_eni_info.list_eni(connection, module, request_args)
 
-    m_get_network_interfaces.call_count == 1
+    assert m_get_network_interfaces.call_count == 1
     m_get_network_interfaces.assert_has_calls(
         [
             call(connection, module, request_args),

@@ -15,8 +15,8 @@ class FailJsonException(Exception):
         pass
 
 
-@pytest.fixture
-def ansible_module():
+@pytest.fixture(name="ansible_module")
+def fixture_ansible_module():
     module = MagicMock()
     module.fail_json.side_effect = FailJsonException()
     module.fail_json_aws.side_effect = FailJsonException()

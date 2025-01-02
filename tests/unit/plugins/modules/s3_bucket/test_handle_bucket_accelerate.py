@@ -17,8 +17,8 @@ def a_botocore_exception(message):
     return botocore.exceptions.ClientError({"Error": {"Code": message}}, sentinel.BOTOCORE_ACTION)
 
 
-@pytest.fixture
-def ansible_module():
+@pytest.fixture(name="ansible_module")
+def fixure_ansible_module():
     mock = MagicMock()
     mock.params = {"accelerate_enabled": sentinel.ACCELERATE_ENABLED}
     mock.fail_json_aws.side_effect = SystemExit(1)

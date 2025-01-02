@@ -20,8 +20,8 @@ mock_get_qualifier = "ansible_collections.amazon.aws.plugins.modules.lambda_even
 mock_camel_dict_to_snake_dict = "ansible_collections.amazon.aws.plugins.modules.lambda_event.camel_dict_to_snake_dict"
 
 
-@pytest.fixture
-def ansible_aws_module():
+@pytest.fixture(name="ansible_aws_module")
+def fixture_ansible_aws_module():
     module = MagicMock()
     module.check_mode = False
     module.params = {

@@ -17,8 +17,8 @@ class FailJson(Exception):
     pass
 
 
-@pytest.fixture()
-def ec2_instance():
+@pytest.fixture(name="ec2_instance")
+def fixture_ec2_instance():
     module = MagicMock()
     return ec2_metadata_facts.Ec2Metadata(module)
 

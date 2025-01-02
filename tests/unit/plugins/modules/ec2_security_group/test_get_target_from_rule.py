@@ -11,14 +11,13 @@ import pytest
 import ansible_collections.amazon.aws.plugins.modules.ec2_security_group as ec2_security_group_module
 
 
-@pytest.fixture
-def ec2_security_group(monkeypatch):
+@pytest.fixture(name="ec2_security_group")
+def fixture_ec2_security_group(monkeypatch):
     # monkey patches various ec2_security_group module functions, we'll separately test the operation of
     # these functions, we just care that it's passing the results into the right place in the
     # instance spec.
     monkeypatch.setattr(ec2_security_group_module, "current_account_id", sentinel.CURRENT_ACCOUNT_ID)
     return ec2_security_group_module
-
 
 def test_target_from_rule_with_group_id_local_group(ec2_security_group):
     groups = dict()
