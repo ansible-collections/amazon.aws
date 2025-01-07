@@ -3,7 +3,6 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-import sys
 from unittest.mock import sentinel
 
 import pytest
@@ -187,10 +186,6 @@ def test_expand_ports_list(rule, expected):
     assert ec2_security_group_module.expand_ports_list(rule) == expected
 
 
-@pytest.mark.skipif(
-    sys.version_info < (3, 7),
-    reason="requires Python 3.7 or higher - sentinel doesn't behave well with deepcopy in Python 3.6",
-)
 @pytest.mark.parametrize("source_type", sorted(ec2_security_group_module.SOURCE_TYPES_ALL))
 def test_strip_rule_source(source_type):
     rule = {source_type: sentinel.SOURCE_VALUE}
@@ -202,10 +197,6 @@ def test_strip_rule_source(source_type):
     assert rule == {source_type: sentinel.SOURCE_VALUE, "sentinel": sentinel.SENTINEL_VALUE}
 
 
-@pytest.mark.skipif(
-    sys.version_info < (3, 7),
-    reason="requires Python 3.7 or higher - sentinel doesn't behave well with deepcopy in Python 3.6",
-)
 @pytest.mark.parametrize("port_type", sorted(ec2_security_group_module.PORT_TYPES_ALL))
 def test_strip_rule_port(port_type):
     rule = {port_type: sentinel.PORT_VALUE}
@@ -217,10 +208,6 @@ def test_strip_rule_port(port_type):
     assert rule == {port_type: sentinel.PORT_VALUE, "sentinel": sentinel.SENTINEL_VALUE}
 
 
-@pytest.mark.skipif(
-    sys.version_info < (3, 7),
-    reason="requires Python 3.7 or higher - sentinel doesn't behave well with deepcopy in Python 3.6",
-)
 @pytest.mark.parametrize("rule, expected", RULE_EXPANSION)
 def test_rule_expand(rule, expected):
     assert ec2_security_group_module.expand_rule(rule) == expected
