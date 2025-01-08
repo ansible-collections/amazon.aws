@@ -1,0 +1,130 @@
+---
+- name: Run cloudformation tests for upating `termination_protection` parameter when `create_changeset=true`
+  block:
+    - name: Create a cloudformation stack (termination_protection=true and create_changeset=true)
+      amazon.aws.cloudformation:
+        stack_name: "{{ stack_name_update_termination_protection }}"
+        state: present
+        disable_rollback: true
+        template_body: "{{ lookup('file','cf_template.json') }}"
+        create_changeset: true
+        termination_protection: true
+        template_parameters:
+          InstanceType: t3.nano
+          ImageId: "{{ ec2_ami_id }}"
+          SubnetId: "{{ testing_subnet.subnet.id }}"
+      register: cf_stack
+
+    - name: Get stack details
+      amazon.aws.cloudformation_info:
+        stack_name: "{{ stack_name_update_termination_protection }}"
+        all_facts: true
+      register: stack_info
+
+    - name: Assert stack info
+      ansible.builtin.assert:
+        that:
+          - cf_stack is changed
+          - cf_stack is not failed
+          - "'cloudformation' in stack_info"
+          - stack_info.cloudformation | length == 1
+          - stack_info.cloudformation[stack_name_update_termination_protection].stack_description.enable_termination_protection == true
+          - stack_info.cloudformation[stack_name_update_termination_protection].stack_change_sets is defined
+
+    - name: Update cloudformation stack `termination_protection=false` (create_changeset=true)
+      amazon.aws.cloudformation:
+        stack_name: "{{ stack_name_update_termination_protection }}"
+        state: present
+        disable_rollback: true
+        template_body: "{{ lookup('file','cf_template.json') }}"
+        create_changeset: true
+        termination_protection: false
+        template_parameters:
+          InstanceType: t3.nano
+          ImageId: "{{ ec2_ami_id }}"
+          SubnetId: "{{ testing_subnet.subnet.id }}"
+      register: cf_stack
+
+    - name: Get stack details
+      amazon.aws.cloudformation_info:
+        stack_name: "{{ stack_name_update_termination_protection }}"
+        all_facts: true
+      register: stack_info
+
+    - name: Assert stack info
+      ansible.builtin.assert:
+        that:
+          - cf_stack is changed
+          - cf_stack is not failed
+          - "'cloudformation' in stack_info"
+          - stack_info.cloudformation | length == 1
+          - stack_info.cloudformation[stack_name_update_termination_protection].stack_description.enable_termination_protection == false
+          - stack_info.cloudformation[stack_name_update_termination_protection].stack_change_sets is defined
+
+    - name: Update cloudformation stack `termination_protection=true` (create_changeset=true)
+      amazon.aws.cloudformation:
+        stack_name: "{{ stack_name_update_termination_protection }}"
+        state: present
+        disable_rollback: true
+        template_body: "{{ lookup('file','cf_template.json') }}"
+        create_changeset: true
+        termination_protection: true
+        template_parameters:
+          InstanceType: t3.nano
+          ImageId: "{{ ec2_ami_id }}"
+          SubnetId: "{{ testing_subnet.subnet.id }}"
+      register: cf_stack
+
+    - name: Get stack details
+      amazon.aws.cloudformation_info:
+        stack_name: "{{ stack_name_update_termination_protection }}"
+        all_facts: true
+      register: stack_info
+
+    - name: Assert stack info
+      ansible.builtin.assert:
+        that:
+          - cf_stack is changed
+          - cf_stack is not failed
+          - "'cloudformation' in stack_info"
+          - stack_info.cloudformation | length == 1
+          - stack_info.cloudformation[stack_name_update_termination_protection].stack_description.enable_termination_protection == true
+          - stack_info.cloudformation[stack_name_update_termination_protection].stack_change_sets is defined
+
+    - name: Update cloudformation stack `termination_protection=fale` (create_changeset=true) # required to delete stack
+      amazon.aws.cloudformation:
+        stack_name: "{{ stack_name_update_termination_protection }}"
+        state: present
+        disable_rollback: true
+        template_body: "{{ lookup('file','cf_template.json') }}"
+        create_changeset: true
+        termination_protection: false
+        template_parameters:
+          InstanceType: t3.nano
+          ImageId: "{{ ec2_ami_id }}"
+          SubnetId: "{{ testing_subnet.subnet.id }}"
+      register: cf_stack
+
+    - name: Get stack details
+      amazon.aws.cloudformation_info:
+        stack_name: "{{ stack_name_update_termination_protection }}"
+        all_facts: true
+      register: stack_info
+
+    - name: Assert stack info
+      ansible.builtin.assert:
+        that:
+          - cf_stack is changed
+          - cf_stack is not failed
+          - "'cloudformation' in stack_info"
+          - stack_info.cloudformation | length == 1
+          - stack_info.cloudformation[stack_name_update_termination_protection].stack_description.enable_termination_protection == false
+          - stack_info.cloudformation[stack_name_update_termination_protection].stack_change_sets is defined
+  always:
+    - name: Delete stack
+      amazon.aws.cloudformation:
+        stack_name: "{{ item }}"
+        state: absent
+      ignore_errors: true
+      with_items:
+        - "{{ stack_name_update_termination_protection }}"
