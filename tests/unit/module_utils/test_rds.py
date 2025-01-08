@@ -705,7 +705,9 @@ def test__handle_errors(method_name, exception, expected):
         (
             "create_db_cluster",
             build_exception("create_db_cluster", code="InvalidParameterValue"),
-            *helper_expected("DB engine fake_engine should be one of ['aurora', 'aurora-mysql', 'aurora-postgresql', 'mysql', 'postgres']"),
+            *helper_expected(
+                "DB engine fake_engine should be one of ['aurora', 'aurora-mysql', 'aurora-postgresql', 'mysql', 'postgres']"
+            ),
         ),
     ],
 )

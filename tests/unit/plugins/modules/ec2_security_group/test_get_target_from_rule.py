@@ -19,6 +19,7 @@ def fixture_ec2_security_group(monkeypatch):
     monkeypatch.setattr(ec2_security_group_module, "current_account_id", sentinel.CURRENT_ACCOUNT_ID)
     return ec2_security_group_module
 
+
 def test_target_from_rule_with_group_id_local_group(ec2_security_group):
     groups = dict()
     original_groups = deepcopy(groups)

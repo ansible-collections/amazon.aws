@@ -10,16 +10,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.retries import RetryingBotoClientWrapper
 from ansible_collections.amazon.aws.plugins.modules import cloudformation as cfn_module
 
-# isort: off
-# Magic...
-# pylint: disable-next=unused-import
-from ansible_collections.amazon.aws.tests.unit.utils.amazon_placebo_fixtures import maybe_sleep
-
-# pylint: disable-next=unused-import
-from ansible_collections.amazon.aws.tests.unit.utils.amazon_placebo_fixtures import placeboify
-
-# isort: on
-
 basic_yaml_tpl = """
 ---
 AWSTemplateFormatVersion: '2010-09-09'

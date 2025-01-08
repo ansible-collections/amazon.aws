@@ -17,7 +17,6 @@ except ImportError:
     # Handled by HAS_BOTO3
     pass
 
-
 from ansible_collections.amazon.aws.plugins.module_utils.acm import ACMServiceManager
 from ansible_collections.amazon.aws.plugins.module_utils.acm import acm_catch_boto_exception
 
@@ -122,7 +121,7 @@ def test_acm_service_manager_get_domain_of_cert_failure(acm_service_mgr):
     acm_service_mgr.module.fail.assert_not_called()
 
 
-def test_acm_service_manager_get_domain_of_cert_with_retry_and_success(acm_service_mgr):
+def test_acm_service_manager_get_domain_of_cert_with_retry_and_success(maybe_sleep, acm_service_mgr):
     arn = "arn:aws:acm:us-west-01:123456789012:certificate/12345678-1234-1234-1234-123456789012"
     boto_err = raise_botocore_error(code="ResourceNotFoundException")
     certificate = {"Certificate": {"DomainName": MagicMock()}, "ResponseMetaData": {"code": 200}}
@@ -130,7 +129,7 @@ def test_acm_service_manager_get_domain_of_cert_with_retry_and_success(acm_servi
     assert acm_service_mgr.get_domain_of_cert(arn=arn) == certificate["Certificate"]["DomainName"]
 
 
-def test_acm_service_manager_get_domain_of_cert_with_retry_and_failure(acm_service_mgr):
+def test_acm_service_manager_get_domain_of_cert_with_retry_and_failure(maybe_sleep, acm_service_mgr):
     arn = "arn:aws:acm:us-west-01:123456789012:certificate/12345678-1234-1234-1234-123456789012"
     boto_err = raise_botocore_error(code="ResourceNotFoundException")
 
