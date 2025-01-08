@@ -1208,9 +1208,9 @@ def handle_bucket_inventory(s3_client, module: AnsibleAWSModule, name: str) -> T
 
         results.append(declared_inventory_api)
 
-    for id in present_inventories.keys():
+    for inventory_id in present_inventories.keys():
         try:
-            delete_bucket_inventory(s3_client, name, id)
+            delete_bucket_inventory(s3_client, name, inventory_id)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             module.fail_json_aws(e, msg="Failed to delete bucket inventory")
         bucket_changed = True
@@ -1477,7 +1477,7 @@ def put_bucket_tagging(s3_client, bucket_name: str, tags: dict):
 
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def delete_bucket_inventory(s3_client, bucket_name: str, id: str) -> None:
+def delete_bucket_inventory(s3_client, bucket_name: str, inventory_id: str) -> None:
     """
     Delete the inventory settings for an S3 bucket.
     Parameters:
@@ -1487,7 +1487,7 @@ def delete_bucket_inventory(s3_client, bucket_name: str, id: str) -> None:
     Returns:
         None
     """
-    s3_client.delete_bucket_inventory_configuration(Bucket=bucket_name, Id=id)
+    s3_client.delete_bucket_inventory_configuration(Bucket=bucket_name, Id=inventory_id)
 
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])

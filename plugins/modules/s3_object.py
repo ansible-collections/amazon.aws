@@ -500,13 +500,13 @@ def etag_compare(module, s3, bucket, obj, version=None, local_file=None, content
 def _head_object(s3, bucket, obj, version=None):
     try:
         if version:
-            key_check = s3.head_object(aws_retry=True, Bucket=bucket, Key=obj, VersionId=version)
+            obj_head = s3.head_object(aws_retry=True, Bucket=bucket, Key=obj, VersionId=version)
         else:
-            key_check = s3.head_object(aws_retry=True, Bucket=bucket, Key=obj)
-        if not key_check:
+            obj_head = s3.head_object(aws_retry=True, Bucket=bucket, Key=obj)
+        if not obj_head:
             return {}
-        key_check.pop("ResponseMetadata")
-        return key_check
+        obj_head.pop("ResponseMetadata")
+        return obj_head
     except is_boto3_error_code("404"):
         return {}
 

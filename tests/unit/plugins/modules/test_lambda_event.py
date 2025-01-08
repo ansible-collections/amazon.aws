@@ -169,7 +169,7 @@ EventSourceMappings = [
 )
 @patch(mock_camel_dict_to_snake_dict)
 def test_lambda_event_stream_with_state_absent(
-    mock_camel_dict_to_snake_dict, ansible_aws_module, check_mode, existing_event_source
+    m_camel_dict_to_snake_dict, ansible_aws_module, check_mode, existing_event_source
 ):
     function_name = "sqs_consumer"
     ansible_aws_module.params.update({"lambda_function_arn": function_name, "state": "absent"})
@@ -184,7 +184,7 @@ def test_lambda_event_stream_with_state_absent(
     client.delete_event_source_mapping = MagicMock()
     event_source_deleted = {"msg": "event source successfully deleted."}
     client.delete_event_source_mapping.return_value = event_source_deleted
-    mock_camel_dict_to_snake_dict.side_effect = lambda x: x
+    m_camel_dict_to_snake_dict.side_effect = lambda x: x
 
     events = []
     changed = False
@@ -307,7 +307,7 @@ def test_lambda_event_stream_create_event_missing_starting_position(ansible_aws_
 )
 @patch(mock_camel_dict_to_snake_dict)
 def test_lambda_event_stream_create_event(
-    mock_camel_dict_to_snake_dict, ansible_aws_module, check_mode, module_params, api_params
+    m_camel_dict_to_snake_dict, ansible_aws_module, check_mode, module_params, api_params
 ):
     ansible_aws_module.params = module_params
     ansible_aws_module.check_mode = check_mode
@@ -319,7 +319,7 @@ def test_lambda_event_stream_create_event(
     client.create_event_source_mapping = MagicMock()
     event_source_created = {"msg": "event source successfully created."}
     client.create_event_source_mapping.return_value = event_source_created
-    mock_camel_dict_to_snake_dict.side_effect = lambda x: x
+    m_camel_dict_to_snake_dict.side_effect = lambda x: x
 
     result = lambda_event_stream(ansible_aws_module, client)
 
@@ -355,7 +355,7 @@ def test_lambda_event_stream_create_event(
 )
 @patch(mock_camel_dict_to_snake_dict)
 def test_lambda_event_stream_update_event(
-    mock_camel_dict_to_snake_dict, ansible_aws_module, check_mode, module_source_params, current_mapping, api_params
+    m_camel_dict_to_snake_dict, ansible_aws_module, check_mode, module_source_params, current_mapping, api_params
 ):
     function_name = "ansible-test-update-event-function"
     ansible_aws_module.params.update({"lambda_function_arn": function_name})
@@ -371,7 +371,7 @@ def test_lambda_event_stream_update_event(
     client.update_event_source_mapping = MagicMock()
     event_source_updated = {"msg": "event source successfully updated."}
     client.update_event_source_mapping.return_value = event_source_updated
-    mock_camel_dict_to_snake_dict.side_effect = lambda x: x
+    m_camel_dict_to_snake_dict.side_effect = lambda x: x
 
     result = lambda_event_stream(ansible_aws_module, client)
     if not api_params:
