@@ -565,9 +565,9 @@ def create_filter(module, provided_filters: Dict[str, Any]) -> List[Dict[str, An
                 flat_filter_dict[param] = [str(provided_filters[param])]
 
     # if customer_gateway, vpn_gateway, or vpn_connection was specified in the task but not the filter, add it
-    for param in param_to_filter:
-        if param_to_filter[param] not in flat_filter_dict and module.params.get(param):
-            flat_filter_dict[param_to_filter[param]] = [module.params.get(param)]
+    for param, param_value in param_to_filter.items():
+        if param_value not in flat_filter_dict and module.params.get(param):
+            flat_filter_dict[param_value] = [module.params.get(param)]
 
     # change the flat dict into something boto3 will understand
     formatted_filter = [{"Name": key, "Values": value} for key, value in flat_filter_dict.items()]
