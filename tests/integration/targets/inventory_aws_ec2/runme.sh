@@ -14,7 +14,7 @@ function cleanup() {
     exit 1
 }
 
-ln -s $(pwd)/../ playbooks/roles
+ln -s "$(pwd)/../" playbooks/roles
 
 trap 'cleanup "${@}"'  ERR
 
