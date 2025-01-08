@@ -710,7 +710,7 @@ def check_for_routes_update(client, module: AnsibleAWSModule, vpn_connection_id:
     for attribute in current_attrs:
         if attribute in ("tags", "routes", "state"):
             continue
-        elif attribute == "options":
+        if attribute == "options":
             will_be = module.params.get("static_only")
             is_now = bool(current_attrs[attribute]["static_routes_only"])
             attribute = "static_only"
