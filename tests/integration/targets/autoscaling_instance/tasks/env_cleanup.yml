@@ -47,5 +47,5 @@
 - ansible.builtin.include_role:
     name: setup_ec2_vpc
     tasks_from: cleanup.yml
-    vars:
-      setup_ec2_vpc_id: "{{ vpc_id }}"
+  vars:
+    setup_ec2_vpc_id: "{{ vpc_id }}"

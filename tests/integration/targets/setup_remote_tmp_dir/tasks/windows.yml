@@ -2,7 +2,7 @@
 - name: Create temporary directory
   register: remote_tmp_dir
   notify:
-    - delete temporary directory (windows)
+    - Delete temporary directory (windows)
   ansible.windows.win_tempfile:
     state: directory
     suffix: .test
