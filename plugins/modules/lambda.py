@@ -808,6 +808,9 @@ def main():
             module.fail_json(msg="Unable to get function information after updating")
         response = format_response(response)
         # We're done
+        # "ZipFile" attribute contains non UTF-8 data. Ansible considers it an error
+        # starting with version 2.18. Removing it from the output avoids the error.
+        code_kwargs.pop("ZipFile", None)
         module.exit_json(changed=changed, code_kwargs=code_kwargs, func_kwargs=func_kwargs, **response)
 
     # Function doesn't exist, create new Lambda function
