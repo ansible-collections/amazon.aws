@@ -1,0 +1,3 @@
+---
+bugfixes:
+  - ec2_vpc_net - handle ipv6_cidr ``false`` and no Ipv6CidrBlockAssociationSet in vpc (https://github.com/ansible-collections/amazon.aws/pull/2374).
