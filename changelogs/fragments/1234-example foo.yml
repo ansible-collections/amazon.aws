@@ -1,0 +1,5 @@
+---
+minor_changes:
+  - foo
+breaking_changes:
+  - I'm mean.  Honest
