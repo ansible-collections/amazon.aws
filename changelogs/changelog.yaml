@@ -3563,4 +3563,4 @@ releases:
     - 9.1.1.yml
     - handle_vpc_ipv6_false.yml
     - tests-fqcn.yml
-    release_date: '2025-01-09'
+    release_date: '2025-01-10'
