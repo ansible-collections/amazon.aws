@@ -168,7 +168,7 @@ route_tables:
           returned: when the route is via a Transit gateway.
           type: str
           sample: tgw-123456789012
-          version_added: 8.3.0
+          version_added: 9.0.0
         origin:
           description: mechanism through which the route is in the table.
           returned: always

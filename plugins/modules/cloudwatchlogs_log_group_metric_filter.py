@@ -63,7 +63,7 @@ options:
             - The unit of the value.
             - The various options are available `here <https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_MetricDatum.html>`.
           type: str
-          version_added: 8.3.0
+          version_added: 9.0.0
         dimensions:
           description:
             - A dimension is a name/value pair that is a part of the identity of a metric.
@@ -71,7 +71,7 @@ options:
             - Dimensions are only supported for JSON or space-delimited metric filters.
             - The I(default_value) and I(dimensions) options are mutually exclusive.
           type: dict
-          version_added: 8.3.0
+          version_added: 9.0.0
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
