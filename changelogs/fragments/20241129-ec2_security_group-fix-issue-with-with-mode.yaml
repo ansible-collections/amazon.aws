@@ -1,3 +1,0 @@
----
-minor_changes:
-  - ec2_security_group - Fix the diff mode issue when creating a security group containing a rule with a managed prefix list (https://github.com/ansible-collections/amazon.aws/issues/2373).
