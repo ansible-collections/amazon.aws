@@ -36,6 +36,7 @@ options:
       - Can be one of the options specified in U(http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options).
       - If value provided does not exist in the above options, it will be used as a literal string.
       - To use tags as hostnames use the syntax tag:Name=Value to use the hostname Name_Value, or tag:Name to use the value of the Name tag.
+      - Jinja2 filters can be added to the hostnames string. Added in version 9.2.0.
     type: list
     elements: raw
     default: []
@@ -275,6 +276,15 @@ regions:
   - us-east-1
 hostvars_prefix: 'aws_'
 hostvars_suffix: '_ec2'
+
+---
+
+# Define hostnames variables with jinja2 filters.
+plugin: amazon.aws.aws_ec2
+regions:
+  - us-east-1
+hostnames:
+  - "tag:Name | replace('test', 'prod')"
 """
 
 import re
@@ -556,6 +566,26 @@ class InventoryModule(AWSInventoryBase):
         else:
             return to_text(hostname)
 
+    def _get_hostname_with_jinja2_filter(self, instance, preference, return_single_hostname=False):
+        jinja2_filter = None
+        is_template = False
+        if "|" in preference:
+            preference, jinja2_filter = preference.split("|", maxsplit=1)
+            preference = preference.rstrip()
+            is_template = True
+        if preference.startswith("tag:"):
+            hostname = _get_tag_hostname(preference, instance)
+        else:
+            hostname = _get_boto_attr_chain(preference, instance)
+        if is_template:
+            template_var = "{{'%s'|%s}}" % (hostname, jinja2_filter)
+            if isinstance(hostname, list):
+                template_var = "{{%s|%s}}" % (hostname, jinja2_filter)
+            hostname = self.templar.template(variable=template_var, disable_lookups=False)
+        if isinstance(hostname, list) and return_single_hostname:
+            hostname = hostname[0] if hostname else None
+        return hostname
+
     def _get_preferred_hostname(self, instance, hostnames):
         """
         :param instance: an instance dict returned by boto3 ec2 describe_instances()
@@ -577,11 +607,8 @@ class InventoryModule(AWSInventoryBase):
                 separator = preference.get("separator", "_")
                 if hostname and hostname_from_prefix and "prefix" in preference:
                     hostname = hostname_from_prefix + separator + hostname
-            elif preference.startswith("tag:"):
-                tags = _get_tag_hostname(preference, instance)
-                hostname = tags[0] if tags else None
             else:
-                hostname = _get_boto_attr_chain(preference, instance)
+                hostname = self._get_hostname_with_jinja2_filter(instance, preference, return_single_hostname=True)
             if hostname:
                 break
         if hostname:
@@ -609,10 +636,8 @@ class InventoryModule(AWSInventoryBase):
                 separator = preference.get("separator", "_")
                 if hostname and hostname_from_prefix and "prefix" in preference:
                     hostname = hostname_from_prefix[0] + separator + hostname[0]
-            elif preference.startswith("tag:"):
-                hostname = _get_tag_hostname(preference, instance)
             else:
-                hostname = _get_boto_attr_chain(preference, instance)
+                hostname = self._get_hostname_with_jinja2_filter(instance, preference)
 
             if hostname:
                 if isinstance(hostname, list):
