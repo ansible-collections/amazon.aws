@@ -1,0 +1,17 @@
+plugin: amazon.aws.aws_ec2
+access_key: '{{ aws_access_key }}'
+secret_key: '{{ aws_secret_key }}'
+{% if security_token | default(false) %}
+session_token: '{{ security_token }}'
+{% endif %}
+{% if allow_duplicated_hosts | default(false) %}
+allow_duplicated_hosts: True
+{% endif %}
+regions:
+- '{{ aws_region }}'
+hostnames:
+{% if search_multiple_tags | default(false) %}
+- "tag:Tag1,Tag2 | replace('test', 'prod') | title()"
+{% else %}
+- "tag:Tag1 | replace('test', 'prod') | upper()"
+{% endif %}
