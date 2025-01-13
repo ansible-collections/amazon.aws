@@ -1,0 +1,65 @@
+---
+- hosts: 127.0.0.1
+  connection: local
+  gather_facts: false
+  environment: "{{ ansible_test.environment }}"
+  tasks:
+    - module_defaults:
+        group/aws:
+          access_key: "{{ aws_access_key }}"
+          secret_key: "{{ aws_secret_key }}"
+          session_token: "{{ security_token | default(omit) }}"
+          region: "{{ aws_region }}"
+      block:
+        # Create VPC, subnet, security group, and find image_id to create instance
+        - name: Setup EC2 network
+          ansible.builtin.include_tasks: tasks/setup.yml
+
+        - name: Create a new host
+          amazon.aws.ec2_instance:
+            image_id: "{{ image_id }}"
+            name: "{{ resource_prefix }}"
+            tags:
+              Tag1: tag1.test-ansible
+              Tag2: tag2.test-ansible
+            purge_tags: true
+            instance_type: t2.micro
+            security_groups: "{{ sg_id }}"
+            vpc_subnet_id: "{{ subnet_id }}"
+            wait: false
+          register: setup_instance
+
+        # refresh inventory
+        - ansible.builtin.meta: refresh_inventory
+
+        - name: Display ansible hostvars variable
+          ansible.builtin.debug:
+            var: hostvars
+
+        - name: Assert that hostvars contain multiple hostnames (hostnames with multiple tags and allow_duplicated_hosts=true)
+          ansible.builtin.assert:
+            that:
+              - hostvars.keys() | length == 2
+              - '"tag1.prod-Ansible" in hostvars'
+              - '"tag2.prod-Ansible" in hostvars'
+          when:
+            - search_multiple_tags | default(false) | bool 
+            - (allow_duplicated_hosts | default(false) | bool)
+
+        - name: Assert that hostvars contain only 1 hostname (hostnames with multiple tags and allow_duplicated_hosts=false)
+          ansible.builtin.assert:
+            that:
+              - hostvars.keys() | length == 1
+              - '"tag1.prod-Ansible" in hostvars'
+          when:
+            - search_multiple_tags | default(false) | bool 
+            - not (allow_duplicated_hosts | default(false) | bool)
+
+        - name: Assert that hostvars contain only 1 hostname (hostnames with single tag)
+          ansible.builtin.assert:
+            that:
+              - hostvars.keys() | length == 1
+              - '"TAG1.PROD-ANSIBLE" in hostvars'
+          when:
+            - not (search_multiple_tags | default(false) | bool)
+            - not (allow_duplicated_hosts | default(false) | bool)
