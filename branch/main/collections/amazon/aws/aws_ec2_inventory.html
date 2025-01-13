@@ -409,6 +409,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <p>Can be one of the options specified in <a class="reference external" href="http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options">http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options</a>.</p>
 <p>If value provided does not exist in the above options, it will be used as a literal string.</p>
 <p>To use tags as hostnames use the syntax <a class="reference external" href="tag:Name=Value">tag:Name=Value</a> to use the hostname Name_Value, or <a class="reference external" href="tag:Name">tag:Name</a> to use the value of the Name tag.</p>
+<p>Jinja2 filters can be added to the hostnames string. Added in version 9.2.0.</p>
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[]</span></code></p>
 </div></td>
 </tr>
@@ -880,6 +881,15 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-1</span>
 <span class="nt">hostvars_prefix</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;aws_&#39;</span>
 <span class="nt">hostvars_suffix</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;_ec2&#39;</span>
+
+<span class="nn">---</span>
+
+<span class="c1"># Define hostnames variables with jinja2 filters.</span>
+<span class="nt">plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">amazon.aws.aws_ec2</span>
+<span class="nt">regions</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-1</span>
+<span class="nt">hostnames</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;tag:Name</span><span class="nv"> </span><span class="s">|</span><span class="nv"> </span><span class="s">replace(&#39;test&#39;,</span><span class="nv"> </span><span class="s">&#39;prod&#39;)&quot;</span>
 </pre></div>
 </div>
 <section id="authors">
