@@ -223,7 +223,7 @@ def test_retry_wrapper_no_retry_args(fake_client, quick_backoff):
     assert fake_client.successful.call_args_list == [call_args]
 
 
-def test_retry_wrapper_retry_no_args(fake_client, quick_backoff):
+def test_retry_wrapper_retry_args(fake_client, quick_backoff):
     # Minimal test: not testing the aws_retry=True behaviour
     # (In general) callables should be wrapped
     wrapped_client = util_retries.RetryingBotoClientWrapper(fake_client, quick_backoff)
