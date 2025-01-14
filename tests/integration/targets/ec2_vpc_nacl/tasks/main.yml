@@ -42,7 +42,33 @@
         that:
           - nacl_facts is failed
           - '"does not exist" in nacl_facts.msg'
+          - '"One or more" not in nacl_facts.msg'
 
+    - name: Get network multiple ACLs info with invalid ID
+      amazon.aws.ec2_vpc_nacl_info:
+        nacl_ids:
+        - 'acl-000000000000'
+        - 'acl-000000000001'
+      register: nacl_facts
+      ignore_errors: true
+
+    - name: Assert message mentions missing ACLs
+      assert:
+        that:
+          - nacl_facts is failed
+          - '"does not exist" in nacl_facts.msg'
+          - '"One or more" in nacl_facts.msg'
+
+    - name: Get network ACL info with filters
+      amazon.aws.ec2_vpc_nacl_info:
+        filters:
+          default: false
+      register: nacl_facts
+
+    - name: Assert error is not returned
+      ansible.builtin.assert:
+        that:
+          - nacl_facts is succeeded
     # ============================================================
 
     - name: Fetch AZ availability
