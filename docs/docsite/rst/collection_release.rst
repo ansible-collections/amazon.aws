@@ -91,12 +91,6 @@ Ensure that your local copy of the ``main`` branch is up to date and contains al
 Preparing a new stable branch
 -----------------------------
 
-.. warning::
-  Zuul will need updating here too.
-
-  As part of the next release cycle please add an entry here about configuring the Zuul sanity jobs
-  for the new stable-6 branch.
-
 Create and push a new ``stable-<major-version>`` branch (for example ``stable-6`` for release
 ``6.0.0``):
 
@@ -107,6 +101,14 @@ Create and push a new ``stable-<major-version>`` branch (for example ``stable-6`
   git reset --hard origin/main
   git checkout -b stable-6
   git push --set-upstream origin stable-6
+
+Create a new label ``backport-<major-version>`` (for example ``backport-6`` for release ``6.0.0``).
+This can either be done through the `GitHub UI <https://github.com/ansible-collections/amazon.aws/labels>`_
+or using the GH CLI if you have it installed and configured:
+
+.. code-block:: bash
+
+  gh label create backport-6 -c FFAA22 --description "PR should be backported to the stable-6 branch" -R ansible-collections/amazon.aws
 
 Create a pull request against the new branch updating any documentation links from ``main`` to the
 new ``stable-<major-version>`` branch.
@@ -121,6 +123,25 @@ Now that our new major release has been branched, we update the ``main`` branch 
 configured as the pre-release development version for the **next** release (for example
 ``7.0.0-dev0`` if you're preparing ``6.0.0``).
 
+Create a pull request against the ``main`` branch that updates the
+`backport-labeller workflow <https://github.com/ansible-collections/amazon.aws/tree/main/.github/workflows/backports.yml>`_
+so that non-breaking changes will automatically be backported to the new branch:
+
+.. code-block:: yaml
+
+  ---
+  name: mergeit-backport
+
+  ...
+
+  jobs:
+    changelog-labeller:
+      uses: ansible-network/github_actions/.github/workflows/backport-labeller.yml@main
+      with:
+        label_minor_release: backport-6
+        label_bugfix_release: backport-5
+
+
 Create a pull request against the ``main`` branch updating the
 `galaxy.yml <https://github.com/ansible-collections/amazon.aws/blob/main/galaxy.yml>`_ version
 information and the  `plugins/module_utils/common.py
@@ -128,11 +149,14 @@ information and the  `plugins/module_utils/common.py
 version information to a ``dev0`` prerelease of the next major release.  This may result in deprecation
 errors from the sanity tests.  Create issues and add entries to the relevant
 `sanity test ignore files <https://github.com/ansible-collections/amazon.aws/tree/main/tests/sanity>`_.
-(including a link to the issue)
+(including a link to the issue).
 
 For an example pull request see
 `ansible-collections/amazon.aws#1108 <https://github.com/ansible-collections/amazon.aws/pull/1108>`_
 
+(In theory both steps can be done with a single PR.  However, the bot performing our automatic
+merges will refuse to merge PRs which make changes to the contents of .github.  Splitting the PRs up
+reduces the scope of the manually merged PR.)
 
 Next steps
 ----------
