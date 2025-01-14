@@ -1,0 +1,2 @@
+---
+trivial: Revert backports that ended up being released in 9.0.0. (https://github.com/ansible-collections/amazon.aws/pull/2462)
