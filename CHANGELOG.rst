@@ -4,6 +4,26 @@ amazon.aws Release Notes
 
 .. contents:: Topics
 
+v8.2.2
+======
+
+Release Summary
+---------------
+
+This release includes bugfixes for the aws_ec2 inventory plugin and the cloudformation, ec2_security_group, ec2_vol, ec2_vpc_net, lambda, rds_cluster, and s3_bucket modules.
+
+Bugfixes
+--------
+
+- aws_ec2 - fix SSM inventory collection for multiple (>40) hosts  (https://github.com/ansible-collections/amazon.aws/pull/2227).
+- cloudformation - Fix bug where termination protection is not updated when create_changeset=true is used for stack updates (https://github.com/ansible-collections/amazon.aws/pull/2391).
+- ec2_security_group - Fix the diff mode issue when creating a security group containing a rule with a managed prefix list (https://github.com/ansible-collections/amazon.aws/issues/2373).
+- ec2_vol - output volume informations when volume exists in check mode (https://github.com/ansible-collections/amazon.aws/pull/2133).
+- ec2_vpc_net - handle ipv6_cidr ``false`` and no Ipv6CidrBlockAssociationSet in vpc (https://github.com/ansible-collections/amazon.aws/pull/2374).
+- lambda - Remove non UTF-8 data (contents of Lambda ZIP file) from the module output to avoid Ansible error (https://github.com/ansible-collections/amazon.aws/issues/2386).
+- rds_cluster - Fix issue occurring when updating RDS cluster domain (https://github.com/ansible-collections/amazon.aws/issues/2390).
+- s3_bucket - Fixes Python 3.7 compilation issue due to addition of typing information (https://github.com/ansible-collections/amazon.aws/issues/2287).
+
 v8.2.1
 ======
 

@@ -4,8 +4,7 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 AMAZON_AWS_COLLECTION_NAME = "amazon.aws"
-AMAZON_AWS_COLLECTION_VERSION = "8.2.1"
-
+AMAZON_AWS_COLLECTION_VERSION = "8.2.2"
 
 _collection_info_context = {
     "name": AMAZON_AWS_COLLECTION_NAME,
