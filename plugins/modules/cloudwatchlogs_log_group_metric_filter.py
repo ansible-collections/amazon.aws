@@ -56,22 +56,7 @@ options:
         default_value:
           description:
             - The value to emit when a filter pattern does not match a log event.
-            - The I(default_value) and I(dimensions) options are mutually exclusive.
           type: float
-        unit:
-          description:
-            - The unit of the value.
-            - The various options are available `here <https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_MetricDatum.html>`.
-          type: str
-          version_added: 8.3.0
-        dimensions:
-          description:
-            - A dimension is a name/value pair that is a part of the identity of a metric.
-            - You can assign up to 3 dimensions to a metric.
-            - Dimensions are only supported for JSON or space-delimited metric filters.
-            - The I(default_value) and I(dimensions) options are mutually exclusive.
-          type: dict
-          version_added: 8.3.0
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
@@ -89,26 +74,12 @@ EXAMPLES = r"""
       metric_name: box_free_space
       metric_namespace: fluentd_metrics
       metric_value: "$.value"
-      unit: Bytes
 
 - name: delete metric filter on log group /fluentd/testcase
   amazon.aws.cloudwatchlogs_log_group_metric_filter:
     log_group_name: /fluentd/testcase
     filter_name: BoxFreeStorage
     state: absent
-
-- name: set metric filter on log group /fluentd/testcase with dimensions
-  amazon.aws.cloudwatchlogs_log_group_metric_filter:
-    log_group_name: /fluentd/testcase
-    filter_name: BoxFreeStorage
-    filter_pattern: '{($.value = *) && ($.hostname = *)}'
-    state: present
-    metric_transformation:
-      metric_name: box_free_space
-      metric_namespace: fluentd_metrics
-      metric_value: "$.value"
-      dimensions:
-        hostname: $.hostname
 """
 
 RETURN = r"""
@@ -121,11 +92,7 @@ metric_filters:
             "default_value": 3.1415,
             "metric_name": "box_free_space",
             "metric_namespace": "made_with_ansible",
-            "metric_value": "$.value",
-            "unit": "Bytes",
-            "dimensions": {
-              "hostname": "$.hostname"
-            }
+            "metric_value": "$.value"
         }
     ]
 """
@@ -139,32 +106,30 @@ def metricTransformationHandler(metricTransformations, originMetricTransformatio
     if originMetricTransformations:
         change = False
         originMetricTransformations = camel_dict_to_snake_dict(originMetricTransformations)
-        for item in ["default_value", "metric_name", "metric_namespace", "metric_value", "unit", "dimensions"]:
+        for item in ["default_value", "metric_name", "metric_namespace", "metric_value"]:
             if metricTransformations.get(item) != originMetricTransformations.get(item):
                 change = True
     else:
         change = True
 
-    retval = [
-        {
-            "metricName": metricTransformations.get("metric_name"),
-            "metricNamespace": metricTransformations.get("metric_namespace"),
-            "metricValue": metricTransformations.get("metric_value"),
-        }
-    ]
-
-    # Add optional values
     defaultValue = metricTransformations.get("default_value")
-    if defaultValue is not None:
-        retval[0]["defaultValue"] = defaultValue
-
-    dimensions = metricTransformations.get("dimensions")
-    if dimensions is not None:
-        retval[0]["dimensions"] = dimensions
-
-    unit = metricTransformations.get("unit")
-    if unit is not None:
-        retval[0]["unit"] = unit
+    if isinstance(defaultValue, int) or isinstance(defaultValue, float):
+        retval = [
+            {
+                "metricName": metricTransformations.get("metric_name"),
+                "metricNamespace": metricTransformations.get("metric_namespace"),
+                "metricValue": metricTransformations.get("metric_value"),
+                "defaultValue": defaultValue,
+            }
+        ]
+    else:
+        retval = [
+            {
+                "metricName": metricTransformations.get("metric_name"),
+                "metricNamespace": metricTransformations.get("metric_namespace"),
+                "metricValue": metricTransformations.get("metric_value"),
+            }
+        ]
 
     return retval, change
 
@@ -182,8 +147,6 @@ def main():
                 metric_namespace=dict(type="str"),
                 metric_value=dict(type="str"),
                 default_value=dict(type="float"),
-                unit=dict(type="str"),
-                dimensions=dict(type="dict"),
             ),
         ),
     )
@@ -221,12 +184,6 @@ def main():
         metricTransformation = [camel_dict_to_snake_dict(item) for item in [originMetricTransformations]]
 
     elif state == "present":
-        if (
-            metric_transformation.get("default_value") is not None
-            and metric_transformation.get("dimensions") is not None
-        ):
-            module.fail_json(msg="default_value and dimensions are mutually exclusive.")
-
         metricTransformation, change = metricTransformationHandler(
             metricTransformations=metric_transformation, originMetricTransformations=originMetricTransformations
         )
