@@ -498,7 +498,7 @@ def update_basic_role(module, client, role_name, role):
     # As of botocore 1.34.3, the APIs don't support updating the Name or Path
     if update_role_path(client, check_mode, role, path):
         module.warn(
-            "iam_role doesn't support updating the path: " f"current path '{role.get('Path')}', requested path '{path}'"
+            f"iam_role doesn't support updating the path: current path '{role.get('Path')}', requested path '{path}'"
         )
 
     changed = False

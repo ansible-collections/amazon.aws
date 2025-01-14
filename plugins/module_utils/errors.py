@@ -14,7 +14,6 @@ from .exceptions import AnsibleAWSError
 
 
 class AWSErrorHandler:
-
     """_CUSTOM_EXCEPTION can be overridden by subclasses to customize the exception raised"""
 
     _CUSTOM_EXCEPTION = AnsibleAWSError
