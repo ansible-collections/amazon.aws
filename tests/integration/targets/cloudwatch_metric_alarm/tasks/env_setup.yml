@@ -34,7 +34,7 @@
       Name: "{{ resource_prefix }}-subnet-b"
   register: testing_subnet_b
 
-- name: create routing rules
+- name: Create routing rules
   amazon.aws.ec2_vpc_route_table:
     vpc_id: "{{ testing_vpc.vpc.id }}"
     tags:
@@ -46,7 +46,7 @@
       - "{{ testing_subnet_a.subnet.id }}"
       - "{{ testing_subnet_b.subnet.id }}"
 
-- name: create a security group with the vpc
+- name: Create a security group with the vpc
   amazon.aws.ec2_security_group:
     name: "{{ resource_prefix }}-sg"
     description: a security group for ansible tests

@@ -12,7 +12,7 @@
 - name: Test using fake refresh ID
   amazon.aws.autoscaling_instance_refresh_info:
     name: "{{ asg_name }}"
-    ids: ['0e367f58-blabla-bla-bla-ca870dc5dbfe']
+    ids: ["0e367f58-blabla-bla-bla-ca870dc5dbfe"]
   register: output
 
 - name: Assert that no record is returned
@@ -23,7 +23,7 @@
 - name: Test using a real refresh ID
   amazon.aws.autoscaling_instance_refresh_info:
     name: "{{ asg_name }}"
-    ids: [ '{{ refreshout.instance_refreshes.instance_refresh_id }}' ]
+    ids: ["{{ refreshout.instance_refreshes.instance_refresh_id }}"]
   register: output
 
 - name: Assert that the correct record is returned
@@ -40,7 +40,8 @@
 - name: Assert that module failed to return record
   ansible.builtin.assert:
     that:
-      - "'Failed to describe InstanceRefreshes: An error occurred (ValidationError) when calling the DescribeInstanceRefreshes operation: AutoScalingGroup name not found - AutoScalingGroup n0n3x1stentname27b not found' in output.msg"
+      - "'Failed to describe InstanceRefreshes: An error occurred (ValidationError) when calling the DescribeInstanceRefreshes operation: AutoScalingGroup name not
+        found - AutoScalingGroup n0n3x1stentname27b not found' in output.msg"
 
 - name: Retrieve instance refresh info
   amazon.aws.autoscaling_instance_refresh_info:
@@ -62,7 +63,8 @@
 - name: Assert that valid message with fake-token is returned
   ansible.builtin.assert:
     that:
-      - '"Failed to describe InstanceRefreshes: An error occurred (InvalidNextToken) when calling the DescribeInstanceRefreshes operation: The token ''********'' is invalid." in output.msg'
+      - '"Failed to describe InstanceRefreshes: An error occurred (InvalidNextToken) when calling the DescribeInstanceRefreshes operation: The token ''********''
+        is invalid." in output.msg'
 
 - name: Retrieve instance refresh info using max_records
   amazon.aws.autoscaling_instance_refresh_info:

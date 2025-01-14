@@ -20,15 +20,15 @@
     timeout: 10
 
 # Set all to Healthy - no change
-- name: instance_ids - all Healthy (idempotency) - check_mode
+- name: Instance_ids - all Healthy (idempotency) - check_mode
   amazon.aws.autoscaling_instance:
     instance_ids: "{{ initial_instances }}"
     group_name: "{{ default_resource_name }}"
     state: present
     health: Healthy
-  diff: True
+  diff: true
   register: healthy_all
-  check_mode: True
+  check_mode: true
 
 - ansible.builtin.assert:
     that:
@@ -55,13 +55,13 @@
     specific_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[1]) | first }}"
     other_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[0]) | first }}"
 
-- name: instance_ids - all Healthy (idempotency)
+- name: Instance_ids - all Healthy (idempotency)
   amazon.aws.autoscaling_instance:
     instance_ids: "{{ initial_instances }}"
     group_name: "{{ default_resource_name }}"
     state: present
     health: Healthy
-  diff: True
+  diff: true
   register: healthy_all
 
 - ansible.builtin.assert:
@@ -90,15 +90,15 @@
     other_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[0]) | first }}"
 
 # Set all to UnHealthy
-- name: instance_ids - all Unhealthy - check_mode
+- name: Instance_ids - all Unhealthy - check_mode
   amazon.aws.autoscaling_instance:
     instance_ids: "{{ initial_instances }}"
     group_name: "{{ default_resource_name }}"
     state: present
     health: Unhealthy
-  diff: True
+  diff: true
   register: unhealthy_all
-  check_mode: True
+  check_mode: true
 
 - ansible.builtin.assert:
     that:
@@ -125,13 +125,13 @@
     specific_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[1]) | first }}"
     other_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[0]) | first }}"
 
-- name: instance_ids - all Unhealthy
+- name: Instance_ids - all Unhealthy
   amazon.aws.autoscaling_instance:
     instance_ids: "{{ initial_instances }}"
     group_name: "{{ default_resource_name }}"
     state: present
     health: Unhealthy
-  diff: True
+  diff: true
   register: unhealthy_all
 
 - ansible.builtin.assert:
@@ -159,15 +159,15 @@
     specific_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[1]) | first }}"
     other_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[0]) | first }}"
 
-- name: instance_ids - all Unhealthy (idempotency) - check_mode
+- name: Instance_ids - all Unhealthy (idempotency) - check_mode
   amazon.aws.autoscaling_instance:
     instance_ids: "{{ initial_instances }}"
     group_name: "{{ default_resource_name }}"
     state: present
     health: Unhealthy
-  diff: True
+  diff: true
   register: unhealthy_all
-  check_mode: True
+  check_mode: true
 
 - ansible.builtin.assert:
     that:
@@ -194,13 +194,13 @@
     specific_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[1]) | first }}"
     other_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[0]) | first }}"
 
-- name: instance_ids - all Unhealthy (idempotency)
+- name: Instance_ids - all Unhealthy (idempotency)
   amazon.aws.autoscaling_instance:
     instance_ids: "{{ initial_instances }}"
     group_name: "{{ default_resource_name }}"
     state: present
     health: Unhealthy
-  diff: True
+  diff: true
   register: unhealthy_all
 
 - ansible.builtin.assert:
@@ -229,15 +229,15 @@
     other_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[0]) | first }}"
 
 # Set all to Healthy again
-- name: instance_ids - all Healthy - check_mode
+- name: Instance_ids - all Healthy - check_mode
   amazon.aws.autoscaling_instance:
     instance_ids: "{{ initial_instances }}"
     group_name: "{{ default_resource_name }}"
     state: present
     health: Healthy
-  diff: True
+  diff: true
   register: healthy_all
-  check_mode: True
+  check_mode: true
 
 - ansible.builtin.assert:
     that:
@@ -264,13 +264,13 @@
     specific_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[1]) | first }}"
     other_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[0]) | first }}"
 
-- name: instance_ids - all Healthy
+- name: Instance_ids - all Healthy
   amazon.aws.autoscaling_instance:
     instance_ids: "{{ initial_instances }}"
     group_name: "{{ default_resource_name }}"
     state: present
     health: Healthy
-  diff: True
+  diff: true
   register: healthy_all
 
 - ansible.builtin.assert:
@@ -301,12 +301,12 @@
 # -- implicit instance list --
 
 # implicitly change all
-- name: no instance_ids - all Unhealthy
+- name: No instance_ids - all Unhealthy
   amazon.aws.autoscaling_instance:
     group_name: "{{ default_resource_name }}"
     state: present
     health: Unhealthy
-  diff: True
+  diff: true
   register: unhealthy_all
 
 - ansible.builtin.assert:
@@ -335,12 +335,12 @@
     other_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[0]) | first }}"
 
 # implicitly change all
-- name: no instance_ids - all Healthy
+- name: No instance_ids - all Healthy
   amazon.aws.autoscaling_instance:
     group_name: "{{ default_resource_name }}"
     state: present
     health: Healthy
-  diff: True
+  diff: true
   register: healthy_all
 
 - ansible.builtin.assert:
@@ -373,15 +373,15 @@
 # =====================================================
 
 # Set to Healthy - no change
-- name: instance_ids - one Healthy (idempotency) - check_mode
+- name: Instance_ids - one Healthy (idempotency) - check_mode
   amazon.aws.autoscaling_instance:
     instance_ids: "{{ initial_instances[1] }}"
     group_name: "{{ default_resource_name }}"
     state: present
     health: Healthy
-  diff: True
+  diff: true
   register: healthy_one
-  check_mode: True
+  check_mode: true
 
 - ansible.builtin.assert:
     that:
@@ -408,13 +408,13 @@
     specific_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[1]) | first }}"
     other_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[0]) | first }}"
 
-- name: instance_ids - one Healthy (idempotency)
+- name: Instance_ids - one Healthy (idempotency)
   amazon.aws.autoscaling_instance:
     instance_ids: "{{ initial_instances[1] }}"
     group_name: "{{ default_resource_name }}"
     state: present
     health: Healthy
-  diff: True
+  diff: true
   register: healthy_one
 
 - ansible.builtin.assert:
@@ -443,15 +443,15 @@
     other_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[0]) | first }}"
 
 # Set to UnHealthy
-- name: instance_ids - one Unhealthy - check_mode
+- name: Instance_ids - one Unhealthy - check_mode
   amazon.aws.autoscaling_instance:
     instance_ids: "{{ initial_instances[1] }}"
     group_name: "{{ default_resource_name }}"
     state: present
     health: Unhealthy
-  diff: True
+  diff: true
   register: unhealthy_one
-  check_mode: True
+  check_mode: true
 
 - ansible.builtin.assert:
     that:
@@ -478,13 +478,13 @@
     specific_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[1]) | first }}"
     other_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[0]) | first }}"
 
-- name: instance_ids - one Unhealthy
+- name: Instance_ids - one Unhealthy
   amazon.aws.autoscaling_instance:
     instance_ids: "{{ initial_instances[1] }}"
     group_name: "{{ default_resource_name }}"
     state: present
     health: Unhealthy
-  diff: True
+  diff: true
   register: unhealthy_one
 
 - ansible.builtin.assert:
@@ -512,15 +512,15 @@
     specific_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[1]) | first }}"
     other_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[0]) | first }}"
 
-- name: instance_ids - one Unhealthy (idempotency) - check_mode
+- name: Instance_ids - one Unhealthy (idempotency) - check_mode
   amazon.aws.autoscaling_instance:
     instance_ids: "{{ initial_instances[1] }}"
     group_name: "{{ default_resource_name }}"
     state: present
     health: Unhealthy
-  diff: True
+  diff: true
   register: unhealthy_one
-  check_mode: True
+  check_mode: true
 
 - ansible.builtin.assert:
     that:
@@ -547,13 +547,13 @@
     specific_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[1]) | first }}"
     other_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[0]) | first }}"
 
-- name: instance_ids - one Unhealthy (idempotency)
+- name: Instance_ids - one Unhealthy (idempotency)
   amazon.aws.autoscaling_instance:
     instance_ids: "{{ initial_instances[1] }}"
     group_name: "{{ default_resource_name }}"
     state: present
     health: Unhealthy
-  diff: True
+  diff: true
   register: unhealthy_one
 
 - ansible.builtin.assert:
@@ -582,15 +582,15 @@
     other_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[0]) | first }}"
 
 # Set to Healthy again
-- name: instance_ids - one Healthy - check_mode
+- name: Instance_ids - one Healthy - check_mode
   amazon.aws.autoscaling_instance:
     instance_ids: "{{ initial_instances[1] }}"
     group_name: "{{ default_resource_name }}"
     state: present
     health: Healthy
-  diff: True
+  diff: true
   register: healthy_one
-  check_mode: True
+  check_mode: true
 
 - ansible.builtin.assert:
     that:
@@ -617,13 +617,13 @@
     specific_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[1]) | first }}"
     other_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[0]) | first }}"
 
-- name: instance_ids - one Healthy
+- name: Instance_ids - one Healthy
   amazon.aws.autoscaling_instance:
     instance_ids: "{{ initial_instances[1] }}"
     group_name: "{{ default_resource_name }}"
     state: present
     health: Healthy
-  diff: True
+  diff: true
   register: healthy_one
 
 - ansible.builtin.assert:

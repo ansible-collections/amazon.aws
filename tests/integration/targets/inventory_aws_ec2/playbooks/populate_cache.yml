@@ -1,5 +1,6 @@
 ---
-- hosts: 127.0.0.1
+- name: Populate inventory cache and then remove the instance without updating cache
+  hosts: 127.0.0.1
   connection: local
   gather_facts: false
   environment: "{{ ansible_test.environment }}"

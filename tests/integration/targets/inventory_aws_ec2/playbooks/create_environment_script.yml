@@ -1,5 +1,6 @@
 ---
-- hosts: localhost
+- name: Prepare common credentials file
+  hosts: localhost
   connection: local
   gather_facts: false
   tasks:
@@ -7,3 +8,4 @@
       ansible.builtin.copy:
         dest: ../access_key.sh
         content: export MY_ACCESS_KEY="{{ aws_access_key }}"
+        mode: "0644"

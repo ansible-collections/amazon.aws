@@ -1,5 +1,5 @@
 ---
-- name: remove any instances in the test VPC
+- name: Remove any instances in the test VPC
   amazon.aws.ec2_instance:
     filters:
       vpc_id: "{{ testing_vpc.vpc.id }}"
@@ -9,13 +9,13 @@
   ignore_errors: true
   retries: 10
 
-- name: remove ENIs
+- name: Remove ENIs
   amazon.aws.ec2_eni_info:
     filters:
       vpc-id: "{{ testing_vpc.vpc.id }}"
   register: enis
 
-- name: delete all ENIs
+- name: Delete all ENIs
   amazon.aws.ec2_eni:
     eni_id: "{{ item.id }}"
     state: absent
@@ -24,7 +24,7 @@
   ignore_errors: true
   retries: 10
 
-- name: remove the security group
+- name: Remove the security group
   amazon.aws.ec2_security_group:
     name: "{{ resource_prefix }}-sg"
     description: a security group for ansible tests
@@ -35,7 +35,7 @@
   ignore_errors: true
   retries: 10
 
-- name: remove routing rules
+- name: Remove routing rules
   amazon.aws.ec2_vpc_route_table:
     state: absent
     vpc_id: "{{ testing_vpc.vpc.id }}"
@@ -52,7 +52,7 @@
   ignore_errors: true
   retries: 10
 
-- name: remove internet gateway
+- name: Remove internet gateway
   amazon.aws.ec2_vpc_igw:
     vpc_id: "{{ testing_vpc.vpc.id }}"
     state: absent
@@ -61,7 +61,7 @@
   ignore_errors: true
   retries: 10
 
-- name: remove subnet A
+- name: Remove subnet A
   amazon.aws.ec2_vpc_subnet:
     state: absent
     vpc_id: "{{ testing_vpc.vpc.id }}"
@@ -71,7 +71,7 @@
   ignore_errors: true
   retries: 10
 
-- name: remove subnet B
+- name: Remove subnet B
   amazon.aws.ec2_vpc_subnet:
     state: absent
     vpc_id: "{{ testing_vpc.vpc.id }}"
@@ -81,7 +81,7 @@
   ignore_errors: true
   retries: 10
 
-- name: remove the VPC
+- name: Remove the VPC
   amazon.aws.ec2_vpc_net:
     name: "{{ resource_prefix }}-vpc"
     cidr_block: 10.22.32.0/23

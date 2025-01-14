@@ -1,10 +1,11 @@
 ---
-- hosts: 127.0.0.1
+- name: Perform basic inventory tests
+  hosts: 127.0.0.1
   connection: local
   gather_facts: false
   environment: "{{ ansible_test.environment }}"
   tasks:
-    - name: assert group was populated with inventory and is no longer empty
+    - name: Assert group was populated with inventory and is no longer empty
       ansible.builtin.assert:
         that:
           - "'aws_ec2' in groups"

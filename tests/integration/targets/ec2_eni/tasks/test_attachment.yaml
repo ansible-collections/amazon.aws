@@ -9,7 +9,7 @@
       - "{{ instance_id_2 }}"
     wait: true
 
-- name: attach the network interface to instance 1 (check mode)
+- name: Attach the network interface to instance 1 (check mode)
   amazon.aws.ec2_eni:
     instance_id: "{{ instance_id_1 }}"
     device_index: 1
@@ -24,7 +24,7 @@
     that:
       - result_check_mode.changed
 
-- name: attach the network interface to instance 1
+- name: Attach the network interface to instance 1
   amazon.aws.ec2_eni:
     instance_id: "{{ instance_id_1 }}"
     device_index: 1
@@ -62,7 +62,7 @@
   vars:
     _interface_0: "{{ eni_info.network_interfaces[0] }}"
 
-- name: verify the eni is attached
+- name: Verify the eni is attached
   amazon.aws.ec2_eni:
     instance_id: "{{ instance_id_1 }}"
     device_index: 1
@@ -100,7 +100,7 @@
     _interface_0: "{{ eni_info.network_interfaces[0] }}"
 
 # ============================================================
-- name: test attaching the network interface to a different instance (check mode)
+- name: Test attaching the network interface to a different instance (check mode)
   amazon.aws.ec2_eni:
     instance_id: "{{ instance_id_2 }}"
     device_index: 1
@@ -115,7 +115,7 @@
     that:
       - result_check_mode.changed
 
-- name: test attaching the network interface to a different instance
+- name: Test attaching the network interface to a different instance
   amazon.aws.ec2_eni:
     instance_id: "{{ instance_id_2 }}"
     device_index: 1
@@ -140,7 +140,7 @@
     _interface_0: "{{ eni_info.network_interfaces[0] }}"
 
 # ============================================================
-- name: detach the network interface (check mode)
+- name: Detach the network interface (check mode)
   amazon.aws.ec2_eni:
     instance_id: "{{ instance_id_2 }}"
     device_index: 1
@@ -155,7 +155,7 @@
     that:
       - result_check_mode.changed
 
-- name: detach the network interface
+- name: Detach the network interface
   amazon.aws.ec2_eni:
     instance_id: "{{ instance_id_2 }}"
     device_index: 1
@@ -176,7 +176,7 @@
   vars:
     _interface_0: "{{ eni_info.network_interfaces[0] }}"
 
-- name: verify the network interface was detached
+- name: Verify the network interface was detached
   amazon.aws.ec2_eni:
     instance_id: "{{ instance_id_2 }}"
     device_index: 1
@@ -192,7 +192,7 @@
       - result.interface.attachment is undefined
 
 # ============================================================
-- name: reattach the network interface to test deleting it
+- name: Reattach the network interface to test deleting it
   amazon.aws.ec2_eni:
     instance_id: "{{ instance_id_2 }}"
     device_index: 1
@@ -208,7 +208,7 @@
       - result.interface.attachment is defined
       - result.interface.attachment.instance_id == instance_id_2
 
-- name: test that deleting the network interface while attached must be intentional
+- name: Test that deleting the network interface while attached must be intentional
   amazon.aws.ec2_eni:
     eni_id: "{{ eni_id_1 }}"
     state: absent
@@ -228,7 +228,7 @@
       - "{{ instance_id_2 }}"
     wait: true
 
-- name: delete an attached network interface with force_detach (check mode)
+- name: Delete an attached network interface with force_detach (check mode)
   amazon.aws.ec2_eni:
     force_detach: true
     eni_id: "{{ eni_id_1 }}"
@@ -241,7 +241,7 @@
     that:
       - result_check_mode.changed
 
-- name: delete an attached network interface with force_detach
+- name: Delete an attached network interface with force_detach
   amazon.aws.ec2_eni:
     force_detach: true
     eni_id: "{{ eni_id_1 }}"
@@ -254,7 +254,7 @@
       - result.changed
       - result.interface.attachment is undefined
 
-- name: test removing a network interface that does not exist
+- name: Test removing a network interface that does not exist
   amazon.aws.ec2_eni:
     force_detach: true
     eni_id: "{{ eni_id_1 }}"
@@ -267,7 +267,7 @@
       - result.interface.attachment is undefined
 
 # ============================================================
-- name: recreate the network interface
+- name: Recreate the network interface
   amazon.aws.ec2_eni:
     device_index: 1
     private_ip_address: "{{ ip_1 }}"

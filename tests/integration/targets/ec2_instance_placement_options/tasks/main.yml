@@ -22,7 +22,7 @@
           group_name: "{{ ec2_placement_group_name }}"
         tags:
           Name: "{{ resource_prefix }}-test-placement-group-name"
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
         security_group: default
         instance_type: "{{ ec2_instance_type }}"
         wait: true
@@ -33,7 +33,7 @@
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-test-placement-group-name"
-          tag:TestId: "{{ ec2_instance_tag_TestId }}"
+          tag:TestId: "{{ ec2_instance_tag_testid }}"
           instance-state-name: running
       ignore_errors: true
       register: instance_facts
@@ -55,7 +55,7 @@
         placement:
           tenancy: "{{ ec2_tenancy }}"
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
         security_group: default
         instance_type: "{{ ec2_instance_type }}"
         availability_zone: "{{ ec2_availability_zone }}"
@@ -67,7 +67,7 @@
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-test-dedicated-tenancy"
-          tag:TestId: "{{ ec2_instance_tag_TestId }}"
+          tag:TestId: "{{ ec2_instance_tag_testid }}"
           instance-state-name: running
       ignore_errors: true
       register: instance_facts

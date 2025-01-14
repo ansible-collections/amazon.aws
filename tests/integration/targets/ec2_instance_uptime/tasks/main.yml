@@ -6,19 +6,19 @@
       session_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
   block:
-    - name: create t3.nano instance
+    - name: Create t3.nano instance
       amazon.aws.ec2_instance:
         state: running
         name: "{{ resource_prefix }}-test-uptime"
         region: "{{ aws_region }}"
         image_id: "{{ ec2_ami_id }}"
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
         vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         instance_type: t3.nano
         wait: true
 
-    - name: check ec2 instance
+    - name: Check ec2 instance
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-test-uptime"
@@ -30,7 +30,7 @@
         that:
           - instance_facts.instances | length == 1
 
-    - name: check using uptime 100 hours - should find nothing
+    - name: Check using uptime 100 hours - should find nothing
       amazon.aws.ec2_instance_info:
         region: "{{ aws_region }}"
         uptime: 6000
@@ -49,7 +49,7 @@
         timeout: 61
       delegate_to: localhost
 
-    - name: check using uptime 1 minute
+    - name: Check using uptime 1 minute
       amazon.aws.ec2_instance_info:
         region: "{{ aws_region }}"
         uptime: 1

@@ -1,3 +1,4 @@
 ---
-- ansible.builtin.debug:
+- name: Load VPC cleanup role
+  ansible.builtin.debug:
     msg: VPC Cleanup module loaded

@@ -44,12 +44,12 @@
         image_id: "{{ ec2_ami_id }}"
         availability_zone: "{{ subnet_b_az }}"
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
         instance_type: "{{ ec2_instance_type }}"
         wait: false
       register: in_test_vpc
 
-    - name: Gather {{ resource_prefix }}-test-eni-vpc info
+    - name: Gather info about instance
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-test-eni-vpc"
@@ -69,7 +69,7 @@
           - id: "{{ eni_b.interface.id }}"
         image_id: "{{ ec2_ami_id }}"
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
         instance_type: "{{ ec2_instance_type }}"
         wait: false
       register: add_interface_check_mode
@@ -80,7 +80,7 @@
         that:
           - add_interface_check_mode is changed
 
-    - name: Gather {{ resource_prefix }}-test-eni-vpc info
+    - name: Gather info about instance
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-test-eni-vpc"
@@ -101,7 +101,7 @@
           - id: "{{ eni_b.interface.id }}"
         image_id: "{{ ec2_ami_id }}"
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
         instance_type: "{{ ec2_instance_type }}"
         wait: false
       register: add_interface
@@ -110,8 +110,10 @@
       retries: 10
 
     - name: Validate that the instance has now 2 interfaces attached
+      when: add_interface is successful
+
       block:
-        - name: Gather {{ resource_prefix }}-test-eni-vpc info
+        - name: Gather info about instance
           amazon.aws.ec2_instance_info:
             filters:
               tag:Name: "{{ resource_prefix }}-test-eni-vpc"
@@ -123,8 +125,6 @@
               - in_test_vpc_instance.instances.0.key_name == resource_prefix+"_test_key"
               - (in_test_vpc_instance.instances.0.network_interfaces | length) == 2
 
-      when: add_interface is successful
-
     - name: Make instance in the testing subnet created in the test VPC(check mode)
       amazon.aws.ec2_instance:
         state: present
@@ -135,17 +135,17 @@
         image_id: "{{ ec2_ami_id }}"
         availability_zone: "{{ subnet_b_az }}"
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
         instance_type: "{{ ec2_instance_type }}"
       check_mode: true
 
-    - name: fact presented ec2 instance
+    - name: Fact presented ec2 instance
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-test-eni-vpc"
       register: presented_instance_fact
 
-    - name: fact checkmode ec2 instance
+    - name: Fact checkmode ec2 instance
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-test-eni-vpc-checkmode"

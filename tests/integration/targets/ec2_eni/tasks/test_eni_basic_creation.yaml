@@ -1,6 +1,6 @@
 ---
 # ============================================================
-- name: create a network interface (check mode)
+- name: Create a network interface (check mode)
   amazon.aws.ec2_eni:
     device_index: 1
     private_ip_address: "{{ ip_1 }}"
@@ -13,7 +13,7 @@
     that:
       - result_check_mode.changed
 
-- name: create a network interface
+- name: Create a network interface
   amazon.aws.ec2_eni:
     device_index: 1
     private_ip_address: "{{ ip_1 }}"
@@ -90,7 +90,7 @@
       - '"vpc_id" in _interface_0'
       - _interface_0.vpc_id == vpc_id
 
-- name: test idempotence by using the same private_ip_address (check mode)
+- name: Test idempotence by using the same private_ip_address (check mode)
   amazon.aws.ec2_eni:
     device_index: 1
     private_ip_address: "{{ ip_1 }}"
@@ -103,7 +103,7 @@
     that:
       - not result_check_mode.changed
 
-- name: test idempotence by using the same private_ip_address
+- name: Test idempotence by using the same private_ip_address
   amazon.aws.ec2_eni:
     device_index: 1
     private_ip_address: "{{ ip_1 }}"
@@ -119,7 +119,7 @@
 
 # ============================================================
 
-- name: create a second network interface to test IP reassignment
+- name: Create a second network interface to test IP reassignment
   amazon.aws.ec2_eni:
     device_index: 1
     private_ip_address: "{{ ip_5 }}"
@@ -132,7 +132,7 @@
       - result.changed
       - result.interface.id != eni_id_1
 
-- name: save the second network interface ID for cleanup
+- name: Save the second network interface ID for cleanup
   ansible.builtin.set_fact:
     eni_id_2: "{{ result.interface.id }}"
 
@@ -246,7 +246,7 @@
 
 # =========================================================
 
-- name: create another network interface without private_ip_address
+- name: Create another network interface without private_ip_address
   amazon.aws.ec2_eni:
     device_index: 1
     subnet_id: "{{ vpc_subnet_id }}"
@@ -257,6 +257,6 @@
     that:
       - result_no_private_ip.changed
 
-- name: save the third network interface ID for cleanup
+- name: Save the third network interface ID for cleanup
   ansible.builtin.set_fact:
     eni_id_3: "{{ result_no_private_ip.interface.id }}"

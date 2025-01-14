@@ -1,3 +1,4 @@
+---
 - name: Test launch template data
   vars:
     test_launch_template_name: "{{ resource_prefix }}-template-data"
@@ -9,8 +10,8 @@
         image_id: "{{ ec2_ami_id }}"
         instance_type: c4.large
         cpu_options:
-            core_count: 1
-            threads_per_core: 1
+          core_count: 1
+          threads_per_core: 1
         network_interfaces:
           - device_index: 0
             associate_public_ip_address: false
@@ -45,8 +46,8 @@
         image_id: "{{ ec2_ami_id }}"
         instance_type: c4.large
         cpu_options:
-            core_count: 1
-            threads_per_core: 3
+          core_count: 1
+          threads_per_core: 3
         network_interfaces:
           - device_index: 0
             associate_public_ip_address: false
@@ -94,8 +95,8 @@
         image_id: "{{ ec2_ami_id }}"
         instance_type: c4.large
         cpu_options:
-            core_count: 1
-            threads_per_core: 3
+          core_count: 1
+          threads_per_core: 3
         network_interfaces:
           - device_index: 0
             associate_public_ip_address: false
@@ -138,7 +139,7 @@
           - _templates.launch_templates[0].versions[0].launch_template_data.network_interfaces[1].ipv6_address_count == 1
 
   always:
-    - name: delete the template
+    - name: Delete the template
       amazon.aws.ec2_launch_template:
         name: "{{ test_launch_template_name }}"
         state: absent

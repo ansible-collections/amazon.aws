@@ -1,6 +1,6 @@
 ---
 # ============================================================
-- name: test source_dest_check defaults to true (check mode)
+- name: Test source_dest_check defaults to true (check mode)
   amazon.aws.ec2_eni:
     eni_id: "{{ eni_id_1 }}"
     source_dest_check: true
@@ -12,7 +12,7 @@
     that:
       - not result_check_mode.changed
 
-- name: test source_dest_check defaults to true
+- name: Test source_dest_check defaults to true
   amazon.aws.ec2_eni:
     eni_id: "{{ eni_id_1 }}"
     source_dest_check: true
@@ -25,7 +25,7 @@
       - result.interface.source_dest_check == true
 
 # ============================================================
-- name: disable source_dest_check
+- name: Disable source_dest_check
   amazon.aws.ec2_eni:
     eni_id: "{{ eni_id_1 }}"
     source_dest_check: false
@@ -49,7 +49,7 @@
   vars:
     _interface_0: "{{ eni_info.network_interfaces[0] }}"
 
-- name: test idempotence disabling source_dest_check (check mode)
+- name: Test idempotence disabling source_dest_check (check mode)
   amazon.aws.ec2_eni:
     eni_id: "{{ eni_id_1 }}"
     source_dest_check: false
@@ -61,7 +61,7 @@
     that:
       - not result_check_mode.changed
 
-- name: test idempotence disabling source_dest_check
+- name: Test idempotence disabling source_dest_check
   amazon.aws.ec2_eni:
     eni_id: "{{ eni_id_1 }}"
     source_dest_check: false
@@ -74,7 +74,7 @@
       - result.interface.source_dest_check == false
 
 # ============================================================
-- name: enable source_dest_check
+- name: Enable source_dest_check
   amazon.aws.ec2_eni:
     eni_id: "{{ eni_id_1 }}"
     source_dest_check: true

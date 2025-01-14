@@ -4,7 +4,7 @@
     # ------------------------------------------------------------------------------------------
     # Reuse with tag - No match available
     # ------------------------------------------------------------------------------------------
-    - name: attempt reusing an existing EIP with a tag (No match available) - check_mode
+    - name: Attempt reusing an existing EIP with a tag (No match available) - check_mode
       amazon.aws.ec2_eip:
         state: present
         reuse_existing_ip_allowed: true
@@ -17,7 +17,7 @@
         that:
           - no_tagged_eip is changed
 
-    - name: attempt reusing an existing EIP with a tag (No match available)
+    - name: Attempt reusing an existing EIP with a tag (No match available)
       amazon.aws.ec2_eip:
         state: present
         reuse_existing_ip_allowed: true

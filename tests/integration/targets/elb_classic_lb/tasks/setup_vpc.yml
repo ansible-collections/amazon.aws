@@ -1,6 +1,6 @@
 ---
 # SETUP: vpc, subnet, security group
-- name: create a VPC to work in
+- name: Create a VPC to work in
   amazon.aws.ec2_vpc_net:
     cidr_block: "{{ vpc_cidr }}"
     state: present
@@ -9,7 +9,7 @@
       Name: "{{ resource_prefix }}"
   register: setup_vpc
 
-- name: create a subnet
+- name: Create a subnet
   amazon.aws.ec2_vpc_subnet:
     az: "{{ availability_zone_a }}"
     tags: "{{ resource_prefix }}"
@@ -20,7 +20,7 @@
       Name: "{{ resource_prefix }}-a"
   register: setup_subnet_1
 
-- name: create a subnet
+- name: Create a subnet
   amazon.aws.ec2_vpc_subnet:
     az: "{{ availability_zone_b }}"
     tags: "{{ resource_prefix }}"
@@ -31,7 +31,7 @@
       Name: "{{ resource_prefix }}-b"
   register: setup_subnet_2
 
-- name: create a subnet
+- name: Create a subnet
   amazon.aws.ec2_vpc_subnet:
     az: "{{ availability_zone_c }}"
     tags: "{{ resource_prefix }}"
@@ -42,7 +42,7 @@
       Name: "{{ resource_prefix }}-c"
   register: setup_subnet_3
 
-- name: create a subnet
+- name: Create a subnet
   amazon.aws.ec2_vpc_subnet:
     az: "{{ availability_zone_a }}"
     tags: "{{ resource_prefix }}"
@@ -53,7 +53,7 @@
       Name: "{{ resource_prefix }}-a2"
   register: setup_subnet_4
 
-- name: create a security group
+- name: Create a security group
   amazon.aws.ec2_security_group:
     name: "{{ resource_prefix }}-a"
     description: created by Ansible integration tests
@@ -66,7 +66,7 @@
         cidr_ip: "{{ vpc_cidr }}"
   register: setup_sg_1
 
-- name: create a security group
+- name: Create a security group
   amazon.aws.ec2_security_group:
     name: "{{ resource_prefix }}-b"
     description: created by Ansible integration tests
@@ -79,7 +79,7 @@
         cidr_ip: "{{ vpc_cidr }}"
   register: setup_sg_2
 
-- name: create a security group
+- name: Create a security group
   amazon.aws.ec2_security_group:
     name: "{{ resource_prefix }}-c"
     description: created by Ansible integration tests
@@ -92,7 +92,7 @@
         cidr_ip: "{{ vpc_cidr }}"
   register: setup_sg_3
 
-- name: store the IDs
+- name: Store the IDs
   ansible.builtin.set_fact:
     subnet_a: "{{ setup_subnet_1.subnet.id }}"
     subnet_b: "{{ setup_subnet_2.subnet.id }}"

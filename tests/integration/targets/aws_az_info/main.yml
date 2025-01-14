@@ -1,6 +1,0 @@
----
-- hosts: localhost
-  connection: local
-  environment: "{{ ansible_test.environment }}"
-  tasks:
-    - ansible.builtin.include_tasks: tasks/main.yml

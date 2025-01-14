@@ -6,7 +6,7 @@
       session_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
   block:
-    - name: set iam password policy
+    - name: Set iam password policy
       amazon.aws.iam_password_policy:
         state: present
         min_pw_length: 8
@@ -20,12 +20,12 @@
         pw_expire: false
       register: result
 
-    - name: assert that changes were made
+    - name: Assert that changes were made
       ansible.builtin.assert:
         that:
           - result.changed
 
-    - name: verify iam password policy has been created
+    - name: Verify iam password policy has been created
       amazon.aws.iam_password_policy:
         state: present
         min_pw_length: 8
@@ -39,12 +39,12 @@
         pw_expire: false
       register: result
 
-    - name: assert that no changes were made
+    - name: Assert that no changes were made
       ansible.builtin.assert:
         that:
           - not result.changed
 
-    - name: update iam password policy with different settings
+    - name: Update iam password policy with different settings
       amazon.aws.iam_password_policy:
         state: present
         min_pw_length: 15
@@ -58,13 +58,13 @@
         pw_expire: true
       register: result
 
-    - name: assert that updates were made
+    - name: Assert that updates were made
       ansible.builtin.assert:
         that:
           - result.changed
 
     # Test for regression of #59102
-    - name: update iam password policy without expiry
+    - name: Update iam password policy without expiry
       amazon.aws.iam_password_policy:
         state: present
         min_pw_length: 15
@@ -75,32 +75,32 @@
         allow_pw_change: true
       register: result
 
-    - name: assert that changes were made
+    - name: Assert that changes were made
       ansible.builtin.assert:
         that:
           - result.changed
 
-    - name: remove iam password policy
+    - name: Remove iam password policy
       amazon.aws.iam_password_policy:
         state: absent
       register: result
 
-    - name: assert password policy has been removed
+    - name: Assert password policy has been removed
       ansible.builtin.assert:
         that:
           - result.changed
 
-    - name: verify password policy has been removed
+    - name: Verify password policy has been removed
       amazon.aws.iam_password_policy:
         state: absent
       register: result
 
-    - name: assert no changes were made
+    - name: Assert no changes were made
       ansible.builtin.assert:
         that:
           - not result.changed
   always:
-    - name: remove iam password policy
+    - name: Remove iam password policy
       amazon.aws.iam_password_policy:
         state: absent
       register: result

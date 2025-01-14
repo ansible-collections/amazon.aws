@@ -11,19 +11,19 @@
   block:
     # Get some information about who we are before starting our tests
     # we'll need this as soon as we start working on the policies
-    - name: get ARN of calling user
+    - name: Get ARN of calling user
       amazon.aws.aws_caller_info:
       register: aws_caller_info
 
-    - name: register account id
+    - name: Register account id
       ansible.builtin.set_fact:
         aws_account: "{{ aws_caller_info.account }}"
 
     # ============================================================
-    - name: create test iam role
+    - name: Create test iam role
       amazon.aws.iam_role:
         name: "{{ iam_role_name }}"
-        assume_role_policy_document: "{{ lookup('template','policy.json.j2') }}"
+        assume_role_policy_document: "{{ lookup('template', 'policy.json.j2') }}"
         create_instance_profile: false
         managed_policy:
           - arn:aws:iam::aws:policy/IAMReadOnlyAccess
@@ -31,68 +31,68 @@
       register: test_role
 
     # ============================================================
-    - name: pause to ensure role exists before using
+    - name: Pause to ensure role exists before using
       ansible.builtin.pause:
         seconds: 30
 
     # ============================================================
-    - name: test with no parameters
-      community.aws.sts_assume_role:
+    - name: Test with no parameters
+      amazon.aws.sts_assume_role:
         access_key: "{{ omit }}"
         secret_key: "{{ omit }}"
         session_token: "{{ omit }}"
       register: result
       ignore_errors: true
 
-    - name: assert with no parameters
+    - name: Assert with no parameters
       ansible.builtin.assert:
         that:
           - result.failed
           - "'missing required arguments:' in result.msg"
 
     # ============================================================
-    - name: test with only 'role_arn' parameter
-      community.aws.sts_assume_role:
+    - name: Test with only 'role_arn' parameter
+      amazon.aws.sts_assume_role:
         role_arn: "{{ test_role.iam_role.arn }}"
       register: result
       ignore_errors: true
 
-    - name: assert with only 'role_arn' parameter
+    - name: Assert with only 'role_arn' parameter
       ansible.builtin.assert:
         that:
           - result.failed
           - "'missing required arguments: role_session_name' in result.msg"
 
     # ============================================================
-    - name: test with only 'role_session_name' parameter
-      community.aws.sts_assume_role:
+    - name: Test with only 'role_session_name' parameter
+      amazon.aws.sts_assume_role:
         role_session_name: AnsibleTest
       register: result
       ignore_errors: true
 
-    - name: assert with only 'role_session_name' parameter
+    - name: Assert with only 'role_session_name' parameter
       ansible.builtin.assert:
         that:
           - result.failed
           - "'missing required arguments: role_arn' in result.msg"
 
     # ============================================================
-    - name: test assume role with invalid policy
-      community.aws.sts_assume_role:
+    - name: Test assume role with invalid policy
+      amazon.aws.sts_assume_role:
         role_arn: "{{ test_role.iam_role.arn }}"
         role_session_name: AnsibleTest
         policy: invalid policy
       register: result
       ignore_errors: true
 
-    - name: assert assume role with invalid policy
+    - name: Assert assume role with invalid policy
       ansible.builtin.assert:
         that:
           - result.failed
           - "'The policy is not in the valid JSON format.' in result.msg"
       when: result.module_stderr is not defined
 
-    - name: assert assume role with invalid policy
+    - name: Assert assume role with invalid policy
       ansible.builtin.assert:
         that:
           - result.failed
@@ -100,15 +100,15 @@
       when: result.module_stderr is defined
 
     # ============================================================
-    - name: test assume role with invalid duration seconds
-      community.aws.sts_assume_role:
+    - name: Test assume role with invalid duration seconds
+      amazon.aws.sts_assume_role:
         role_arn: "{{ test_role.iam_role.arn }}"
         role_session_name: AnsibleTest
         duration_seconds: invalid duration
       register: result
       ignore_errors: true
 
-    - name: assert assume role with invalid duration seconds
+    - name: Assert assume role with invalid duration seconds
       ansible.builtin.assert:
         that:
           - result is failed
@@ -116,22 +116,22 @@
           - "'cannot be converted to an int' in result.msg"
 
     # ============================================================
-    - name: test assume role with invalid external id
-      community.aws.sts_assume_role:
+    - name: Test assume role with invalid external id
+      amazon.aws.sts_assume_role:
         role_arn: "{{ test_role.iam_role.arn }}"
         role_session_name: AnsibleTest
         external_id: invalid external id
       register: result
       ignore_errors: true
 
-    - name: assert assume role with invalid external id
+    - name: Assert assume role with invalid external id
       ansible.builtin.assert:
         that:
           - result.failed
           - "'Member must satisfy regular expression pattern:' in result.msg"
       when: result.module_stderr is not defined
 
-    - name: assert assume role with invalid external id
+    - name: Assert assume role with invalid external id
       ansible.builtin.assert:
         that:
           - result.failed
@@ -139,22 +139,22 @@
       when: result.module_stderr is defined
 
     # ============================================================
-    - name: test assume role with invalid mfa serial number
-      community.aws.sts_assume_role:
+    - name: Test assume role with invalid mfa serial number
+      amazon.aws.sts_assume_role:
         role_arn: "{{ test_role.iam_role.arn }}"
         role_session_name: AnsibleTest
         mfa_serial_number: invalid serial number
       register: result
       ignore_errors: true
 
-    - name: assert assume role with invalid mfa serial number
+    - name: Assert assume role with invalid mfa serial number
       ansible.builtin.assert:
         that:
           - result.failed
           - "'Member must satisfy regular expression pattern:' in result.msg"
       when: result.module_stderr is not defined
 
-    - name: assert assume role with invalid mfa serial number
+    - name: Assert assume role with invalid mfa serial number
       ansible.builtin.assert:
         that:
           - result.failed
@@ -162,22 +162,22 @@
       when: result.module_stderr is defined
 
     # ============================================================
-    - name: test assume role with invalid mfa token code
-      community.aws.sts_assume_role:
+    - name: Test assume role with invalid mfa token code
+      amazon.aws.sts_assume_role:
         role_arn: "{{ test_role.iam_role.arn }}"
         role_session_name: AnsibleTest
         mfa_token: invalid token code
       register: result
       ignore_errors: true
 
-    - name: assert assume role with invalid mfa token code
+    - name: Assert assume role with invalid mfa token code
       ansible.builtin.assert:
         that:
           - result.failed
           - "'Member must satisfy regular expression pattern:' in result.msg"
       when: result.module_stderr is not defined
 
-    - name: assert assume role with invalid mfa token code
+    - name: Assert assume role with invalid mfa token code
       ansible.builtin.assert:
         that:
           - result.failed
@@ -185,21 +185,21 @@
       when: result.module_stderr is defined
 
     # ============================================================
-    - name: test assume role with invalid role_arn
-      community.aws.sts_assume_role:
+    - name: Test assume role with invalid role_arn
+      amazon.aws.sts_assume_role:
         role_arn: invalid role arn
         role_session_name: AnsibleTest
       register: result
       ignore_errors: true
 
-    - name: assert assume role with invalid role_arn
+    - name: Assert assume role with invalid role_arn
       ansible.builtin.assert:
         that:
           - result.failed
           - "'Invalid length for parameter RoleArn' in result.msg"
       when: result.module_stderr is not defined
 
-    - name: assert assume role with invalid role_arn
+    - name: Assert assume role with invalid role_arn
       ansible.builtin.assert:
         that:
           - result.failed
@@ -207,21 +207,21 @@
       when: result.module_stderr is defined
 
     # ============================================================
-    - name: test assume not existing sts role
-      community.aws.sts_assume_role:
+    - name: Test assume not existing sts role
+      amazon.aws.sts_assume_role:
         role_arn: arn:aws:iam::123456789:role/non-existing-role
         role_session_name: AnsibleTest
       register: result
       ignore_errors: true
 
-    - name: assert assume not existing sts role
+    - name: Assert assume not existing sts role
       ansible.builtin.assert:
         that:
           - result.failed
           - "'is not authorized to perform: sts:AssumeRole' in result.msg"
       when: result.module_stderr is not defined
 
-    - name: assert assume not existing sts role
+    - name: Assert assume not existing sts role
       ansible.builtin.assert:
         that:
           - result.failed
@@ -229,13 +229,13 @@
       when: result.module_stderr is defined
 
     # ============================================================
-    - name: test assume role
-      community.aws.sts_assume_role:
+    - name: Test assume role
+      amazon.aws.sts_assume_role:
         role_arn: "{{ test_role.iam_role.arn }}"
         role_session_name: AnsibleTest
       register: assumed_role
 
-    - name: assert assume role
+    - name: Assert assume role
       ansible.builtin.assert:
         that:
           - not assumed_role.failed
@@ -245,18 +245,18 @@
           - "'session_token' in assumed_role.sts_creds"
 
     # ============================================================
-    - name: test that assumed credentials have IAM read-only access
+    - name: Test that assumed credentials have IAM read-only access
       amazon.aws.iam_role:
         access_key: "{{ assumed_role.sts_creds.access_key }}"
         secret_key: "{{ assumed_role.sts_creds.secret_key }}"
         session_token: "{{ assumed_role.sts_creds.session_token }}"
         name: "{{ iam_role_name }}"
-        assume_role_policy_document: "{{ lookup('template','policy.json.j2') }}"
+        assume_role_policy_document: "{{ lookup('template', 'policy.json.j2') }}"
         create_instance_profile: false
         state: present
       register: result
 
-    - name: assert assumed role with privileged action (expect changed=false)
+    - name: Assert assumed role with privileged action (expect changed=false)
       ansible.builtin.assert:
         that:
           - not result.failed
@@ -264,18 +264,18 @@
           - "'iam_role' in result"
 
     # ============================================================
-    - name: test assumed role with unprivileged action
+    - name: Test assumed role with unprivileged action
       amazon.aws.iam_role:
         access_key: "{{ assumed_role.sts_creds.access_key }}"
         secret_key: "{{ assumed_role.sts_creds.secret_key }}"
         session_token: "{{ assumed_role.sts_creds.session_token }}"
         name: "{{ iam_role_name }}-new"
-        assume_role_policy_document: "{{ lookup('template','policy.json.j2') }}"
+        assume_role_policy_document: "{{ lookup('template', 'policy.json.j2') }}"
         state: present
       register: result
       ignore_errors: true
 
-    - name: assert assumed role with unprivileged action (expect changed=false)
+    - name: Assert assumed role with unprivileged action (expect changed=false)
       ansible.builtin.assert:
         that:
           - result.failed
@@ -283,7 +283,7 @@
       # runs on Python2
       when: result.module_stderr is not defined
 
-    - name: assert assumed role with unprivileged action (expect changed=false)
+    - name: Assert assumed role with unprivileged action (expect changed=false)
       ansible.builtin.assert:
         that:
           - result.failed
@@ -293,10 +293,10 @@
 
   # ============================================================
   always:
-    - name: delete test iam role
+    - name: Delete test iam role
       amazon.aws.iam_role:
         name: "{{ iam_role_name }}"
-        assume_role_policy_document: "{{ lookup('template','policy.json.j2') }}"
+        assume_role_policy_document: "{{ lookup('template', 'policy.json.j2') }}"
         delete_instance_profile: true
         managed_policy:
           - arn:aws:iam::aws:policy/IAMReadOnlyAccess

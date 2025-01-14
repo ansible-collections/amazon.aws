@@ -1,5 +1,6 @@
 ---
-- hosts: 127.0.0.1
+- name: Run a test using jinja2 filters in the inventory configuration
+  hosts: 127.0.0.1
   connection: local
   gather_facts: false
   environment: "{{ ansible_test.environment }}"
@@ -43,7 +44,7 @@
               - '"tag1.prod-Ansible" in hostvars'
               - '"tag2.prod-Ansible" in hostvars'
           when:
-            - search_multiple_tags | default(false) | bool 
+            - search_multiple_tags | default(false) | bool
             - (allow_duplicated_hosts | default(false) | bool)
 
         - name: Assert that hostvars contain only 1 hostname (hostnames with multiple tags and allow_duplicated_hosts=false)
@@ -52,7 +53,7 @@
               - hostvars.keys() | length == 1
               - '"tag1.prod-Ansible" in hostvars'
           when:
-            - search_multiple_tags | default(false) | bool 
+            - search_multiple_tags | default(false) | bool
             - not (allow_duplicated_hosts | default(false) | bool)
 
         - name: Assert that hostvars contain only 1 hostname (hostnames with single tag)

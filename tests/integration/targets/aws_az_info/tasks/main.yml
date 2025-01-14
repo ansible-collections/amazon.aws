@@ -11,7 +11,7 @@
       amazon.aws.aws_az_info:
       register: region_azs
 
-    - name: check task return attributes
+    - name: Check task return attributes
       vars:
         first_az: "{{ region_azs.availability_zones[0] }}"
       ansible.builtin.assert:
@@ -33,7 +33,7 @@
       check_mode: true
       register: check_azs
 
-    - name: check task return attributes
+    - name: Check task return attributes
       vars:
         first_az: "{{ check_azs.availability_zones[0] }}"
       ansible.builtin.assert:

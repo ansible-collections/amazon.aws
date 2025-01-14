@@ -91,13 +91,13 @@
 
   always:
     # ========================= Cleanup =================================
-    - name: tidy up test security group 1
+    - name: Tidy up test security group 1
       amazon.aws.ec2_security_group:
         name: "{{ ec2_group_name }}-info-1"
         state: absent
       ignore_errors: true
 
-    - name: tidy up test security group 2
+    - name: Tidy up test security group 2
       amazon.aws.ec2_security_group:
         name: "{{ ec2_group_name }}-info-2"
         state: absent

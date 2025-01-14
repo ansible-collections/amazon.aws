@@ -1,5 +1,5 @@
 ---
-- name: rds_instance / complex integration tests
+- name: Rds_instance / complex integration tests
 
   module_defaults:
     group/aws:
@@ -9,7 +9,7 @@
       region: "{{ aws_region }}"
 
   block:
-  #TODO: test availability_zone and multi_az
+    # TODO: test availability_zone and multi_az
     - name: Ensure the resource doesn't exist
       amazon.aws.rds_instance:
         id: "{{ instance_id }}"
@@ -24,7 +24,7 @@
 
     - name: Create an enhanced monitoring role
       amazon.aws.iam_role:
-        assume_role_policy_document: "{{ lookup('file','files/enhanced_monitoring_assume_policy.json') }}"
+        assume_role_policy_document: "{{ lookup('file', 'files/enhanced_monitoring_assume_policy.json') }}"
         name: "{{ instance_id }}-role"
         state: present
         managed_policy: arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole
@@ -191,7 +191,7 @@
 
     - name: Remove enhanced monitoring role
       amazon.aws.iam_role:
-        assume_role_policy_document: "{{ lookup('file','files/enhanced_monitoring_assume_policy.json') }}"
+        assume_role_policy_document: "{{ lookup('file', 'files/enhanced_monitoring_assume_policy.json') }}"
         name: "{{ instance_id }}-role"
         state: absent
       ignore_errors: true

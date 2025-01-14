@@ -8,7 +8,8 @@
 # rather than hardcoding the IDs so we're not limited to specific Regions
 # - ec2_ami_id
 #
-- module_defaults:
+- name: Setup common facts about the AWS region
+  module_defaults:
     group/aws:
       access_key: "{{ aws_access_key }}"
       secret_key: "{{ aws_secret_key }}"

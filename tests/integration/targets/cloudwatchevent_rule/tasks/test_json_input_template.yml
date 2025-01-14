@@ -1,7 +1,6 @@
 ---
 - name: Run tests for json input_template
   block:
-
     - name: Create SNS topic
       community.aws.sns_topic:
         name: TestSNSTopic-Json

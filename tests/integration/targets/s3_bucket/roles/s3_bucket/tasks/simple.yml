@@ -2,7 +2,7 @@
 - name: Run simple tests
   block:
     - ansible.builtin.set_fact:
-        local_bucket_name: "{{ bucket_name | hash('md5')}}-simple"
+        local_bucket_name: "{{ s3_bucket_name | hash('md5') }}-simple"
     # Note: s3_bucket doesn't support check_mode
 
     # ============================================================

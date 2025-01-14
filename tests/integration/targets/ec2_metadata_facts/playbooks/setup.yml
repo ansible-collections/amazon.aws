@@ -1,5 +1,6 @@
 ---
-- module_defaults:
+- name: Prepare environment for the ec2_metadata_facts tests
+  module_defaults:
     group/aws:
       access_key: "{{ aws_access_key }}"
       secret_key: "{{ aws_secret_key }}"
@@ -24,16 +25,16 @@
           session_token: "{{ security_token | default(omit) }}"
 
     - ansible.builtin.include_role:
-        name: ../setup_sshkey
+        name: setup_sshkey
 
     - ansible.builtin.include_role:
-        name: ../setup_ec2_facts
+        name: setup_ec2_facts
 
     - ansible.builtin.set_fact:
         availability_zone: "{{ ec2_availability_zone_names[0] }}"
 
     # ============================================================
-    - name: create a VPC
+    - name: Create a VPC
       amazon.aws.ec2_vpc_net:
         name: "{{ resource_prefix }}-vpc"
         state: present
@@ -46,7 +47,7 @@
     - ansible.builtin.set_fact:
         vpc_id: "{{ vpc_result.vpc.id }}"
 
-    - name: create an internet gateway
+    - name: Create an internet gateway
       amazon.aws.ec2_vpc_igw:
         vpc_id: "{{ vpc_id }}"
         state: present
@@ -54,7 +55,7 @@
           Name: "{{ resource_prefix }}"
       register: igw_result
 
-    - name: create a subnet
+    - name: Create a subnet
       amazon.aws.ec2_vpc_subnet:
         cidr: "{{ vpc_cidr }}"
         az: "{{ availability_zone }}"
@@ -65,7 +66,7 @@
         state: present
       register: vpc_subnet_result
 
-    - name: create a public route table
+    - name: Create a public route table
       amazon.aws.ec2_vpc_route_table:
         vpc_id: "{{ vpc_id }}"
         tags:
@@ -77,7 +78,7 @@
             gateway_id: "{{ igw_result.gateway_id }}"
       register: public_route_table
 
-    - name: create a security group
+    - name: Create a security group
       amazon.aws.ec2_security_group:
         name: "{{ resource_prefix }}-sg"
         description: Created by {{ resource_prefix }}
@@ -166,8 +167,9 @@
 
     - name: Create inventory file
       ansible.builtin.template:
-        src: ../templates/inventory.j2
+        src: inventory.j2
         dest: ../inventory
+        mode: "0644"
 
     - ansible.builtin.wait_for:
         port: 22

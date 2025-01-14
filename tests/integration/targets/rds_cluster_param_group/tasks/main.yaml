@@ -202,7 +202,8 @@
           - "'parameter_value' not in auth_timeout_param"
       vars:
         array_nulls_param: "{{ initial_params.db_cluster_parameter_groups.0.db_parameters | selectattr('parameter_name', 'equalto', 'array_nulls') | first }}"
-        auth_timeout_param: "{{ initial_params.db_cluster_parameter_groups.0.db_parameters | selectattr('parameter_name', 'equalto', 'authentication_timeout') | first }}"
+        auth_timeout_param: "{{ initial_params.db_cluster_parameter_groups.0.db_parameters | selectattr('parameter_name', 'equalto', 'authentication_timeout') | first
+          }}"
 
     - name: Modify RDS cluster parameter group with new parameters
       amazon.aws.rds_cluster_param_group:
@@ -228,8 +229,10 @@
       ansible.builtin.assert:
         that:
           - update_parameters is changed
-          - cluster_params.db_cluster_parameter_groups.0.db_parameters | selectattr('parameter_name', 'equalto', 'array_nulls') | first | community.general.json_query('parameter_value') == "0"
-          - cluster_params.db_cluster_parameter_groups.0.db_parameters | selectattr('parameter_name', 'equalto', 'authentication_timeout') | first | community.general.json_query('parameter_value') == "50"
+          - cluster_params.db_cluster_parameter_groups.0.db_parameters | selectattr('parameter_name', 'equalto', 'array_nulls') | first | community.general.json_query('parameter_value')
+            == "0"
+          - cluster_params.db_cluster_parameter_groups.0.db_parameters | selectattr('parameter_name', 'equalto', 'authentication_timeout') | first | community.general.json_query('parameter_value')
+            == "50"
 
     # Test Modify parameters (idempotency)
     - name: Modify RDS cluster parameter group with new parameters (idempotency with check_mode)
@@ -284,7 +287,7 @@
       register: cluster_params
 
     - name: Validate that module execution reported change but the RDS cluster param group was not deleted
-      assert:
+      ansible.builtin.assert:
         that:
           - delete_cluster_param_checkmode is changed
           - cluster_params.db_cluster_parameter_groups | length == 1

@@ -3,26 +3,26 @@
 - block:
     # ============================================================
 
-    - name: test with no name
+    - name: Test with no name
       amazon.aws.elb_classic_lb:
         state: present
       register: result
       ignore_errors: true
 
-    - name: assert failure when called with no parameters
+    - name: Assert failure when called with no parameters
       ansible.builtin.assert:
         that:
           - result.failed
           - '"missing required arguments" in result.msg'
           - '"name" in result.msg'
 
-    - name: test with only name (state missing)
+    - name: Test with only name (state missing)
       amazon.aws.elb_classic_lb:
         name: "{{ elb_name }}"
       register: result
       ignore_errors: true
 
-    - name: assert failure when called with only name
+    - name: Assert failure when called with only name
       ansible.builtin.assert:
         that:
           - result.failed
@@ -40,7 +40,7 @@
       register: result
       ignore_errors: true
 
-    - name: assert failure when neither subnets nor AZs are provided on creation
+    - name: Assert failure when neither subnets nor AZs are provided on creation
       ansible.builtin.assert:
         that:
           - result.failed
@@ -55,7 +55,7 @@
       register: result
       ignore_errors: true
 
-    - name: assert failure when listeners not provided on creation
+    - name: Assert failure when listeners not provided on creation
       ansible.builtin.assert:
         that:
           - result.failed
@@ -73,7 +73,7 @@
       register: result
       ignore_errors: true
 
-    - name: assert failure when listeners contains invalid protocol
+    - name: Assert failure when listeners contains invalid protocol
       ansible.builtin.assert:
         that:
           - result.failed
@@ -93,7 +93,7 @@
       register: result
       ignore_errors: true
 
-    - name: assert failure when listeners contains invalid instance_protocol
+    - name: Assert failure when listeners contains invalid instance_protocol
       ansible.builtin.assert:
         that:
           - result.failed
@@ -119,7 +119,7 @@
       register: result
       ignore_errors: true
 
-    - name: assert failure when healthcheck ping_protocol is invalid
+    - name: Assert failure when healthcheck ping_protocol is invalid
       ansible.builtin.assert:
         that:
           - result.failed
@@ -145,7 +145,7 @@
       register: result
       ignore_errors: true
 
-    - name: assert failure when HTTP healthcheck missing a ping_path
+    - name: Assert failure when HTTP healthcheck missing a ping_path
       ansible.builtin.assert:
         that:
           - result.failed
@@ -165,7 +165,7 @@
       register: result
       ignore_errors: true
 
-    - name: assert failure when app stickiness policy missing cookie name
+    - name: Assert failure when app stickiness policy missing cookie name
       ansible.builtin.assert:
         that:
           - result.failed
@@ -185,7 +185,7 @@
       register: result
       ignore_errors: true
 
-    - name: assert failure when access log is missing a bucket
+    - name: Assert failure when access log is missing a bucket
       ansible.builtin.assert:
         that:
           - result.failed
@@ -193,7 +193,7 @@
 
   always:
     # ============================================================
-    - name: remove the test load balancer
+    - name: Remove the test load balancer
       amazon.aws.elb_classic_lb:
         name: "{{ elb_name }}"
         state: absent

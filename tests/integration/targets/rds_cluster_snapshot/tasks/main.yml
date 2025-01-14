@@ -11,7 +11,7 @@
       amazon.aws.rds_cluster:
         id: "{{ cluster_id }}"
         state: present
-        engine: "{{ engine}}"
+        engine: "{{ engine }}"
         backup_retention_period: 1
         username: "{{ username }}"
         password: "{{ password }}"
@@ -38,7 +38,7 @@
           - "'master_username' in _result_create_source_db_cluster"
           - _result_create_source_db_cluster.master_username == username
           - "'port' in _result_create_source_db_cluster"
-          - _result_create_source_db_cluster.port == port
+          - _result_create_source_db_cluster.port == db_port
           - "'status' in _result_create_source_db_cluster"
           - _result_create_source_db_cluster.status == "available"
           - "'tags' in _result_create_source_db_cluster"
@@ -125,7 +125,7 @@
       amazon.aws.rds_cluster:
         id: "{{ cluster_id }}-b"
         state: present
-        engine: "{{ engine}}"
+        engine: "{{ engine }}"
         backup_retention_period: 1
         username: "{{ username }}"
         password: "{{ password }}"
@@ -152,7 +152,7 @@
           - "'master_username' in _result_create_source_db_cluster"
           - _result_create_source_db_cluster.master_username == username
           - "'port' in _result_create_source_db_cluster"
-          - _result_create_source_db_cluster.port == port
+          - _result_create_source_db_cluster.port == db_port
           - "'status' in _result_create_source_db_cluster"
           - _result_create_source_db_cluster.status == "available"
           - "'tags' in _result_create_source_db_cluster"

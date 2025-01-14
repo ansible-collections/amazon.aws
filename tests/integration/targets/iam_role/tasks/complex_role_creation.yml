@@ -19,7 +19,7 @@
     that:
       - iam_role is changed
 
-- name: iam_role_info after Complex Role creation in check_mode
+- name: Iam_role_info after Complex Role creation in check_mode
   amazon.aws.iam_role_info:
     name: "{{ test_role }}"
   register: role_info
@@ -98,7 +98,7 @@
       - iam_role is not changed
       - iam_role.iam_role.role_name == test_role
 
-- name: iam_role_info after Role creation
+- name: Iam_role_info after Role creation
   amazon.aws.iam_role_info:
     name: "{{ test_role }}"
   register: role_info

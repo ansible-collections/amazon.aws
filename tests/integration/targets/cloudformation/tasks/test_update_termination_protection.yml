@@ -6,7 +6,7 @@
         stack_name: "{{ stack_name_update_termination_protection }}"
         state: present
         disable_rollback: true
-        template_body: "{{ lookup('file','cf_template.json') }}"
+        template_body: "{{ lookup('file', 'cf_template.json') }}"
         create_changeset: true
         termination_protection: true
         template_parameters:
@@ -36,7 +36,7 @@
         stack_name: "{{ stack_name_update_termination_protection }}"
         state: present
         disable_rollback: true
-        template_body: "{{ lookup('file','cf_template.json') }}"
+        template_body: "{{ lookup('file', 'cf_template.json') }}"
         create_changeset: true
         termination_protection: false
         template_parameters:
@@ -66,7 +66,7 @@
         stack_name: "{{ stack_name_update_termination_protection }}"
         state: present
         disable_rollback: true
-        template_body: "{{ lookup('file','cf_template.json') }}"
+        template_body: "{{ lookup('file', 'cf_template.json') }}"
         create_changeset: true
         termination_protection: true
         template_parameters:
@@ -96,7 +96,7 @@
         stack_name: "{{ stack_name_update_termination_protection }}"
         state: present
         disable_rollback: true
-        template_body: "{{ lookup('file','cf_template.json') }}"
+        template_body: "{{ lookup('file', 'cf_template.json') }}"
         create_changeset: true
         termination_protection: false
         template_parameters:

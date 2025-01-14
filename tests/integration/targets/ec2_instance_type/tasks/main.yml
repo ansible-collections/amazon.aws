@@ -6,7 +6,7 @@
       session_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
   block:
-    - include_tasks: single_instance.yml
+    - ansible.builtin.include_tasks: single_instance.yml
       vars:
         ec2_instance_name: "{{ resource_prefix }}-test-instance-type-single"
 
@@ -25,7 +25,7 @@
             exact_count: 2
 
         - name: Test upgrade instance type with various number of instances
-          include_tasks: update_instance_type.yml
+          ansible.builtin.include_tasks: update_instance_type.yml
           with_items:
             - new_instance_type: "{{ ec2_instance_type_updated }}"
               new_instance_count: 2

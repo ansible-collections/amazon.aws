@@ -5,7 +5,7 @@
     group/aws:
       access_key: "{{ aws_access_key }}"
       secret_key: "{{ aws_secret_key }}"
-      session_token: "{{ security_token | default(omit)}}"
+      session_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
   block:
     # ============================================================
@@ -14,31 +14,31 @@
     - name: (VPC Cleanup) Find all remaining ENIs
       amazon.aws.ec2_eni_info:
         filters:
-          vpc-id: "{{ vpc_id }}"
+          vpc-id: "{{ setup_ec2_vpc_id }}"
       register: remaining_enis
 
     - name: (VPC Cleanup) Retrieve security group info based on VPC ID
       amazon.aws.ec2_security_group_info:
         filters:
-          vpc-id: "{{ vpc_id }}"
+          vpc-id: "{{ setup_ec2_vpc_id }}"
       register: remaining_groups
 
     - name: (VPC Cleanup) Retrieve subnet info based on VPC ID
       amazon.aws.ec2_vpc_subnet_info:
         filters:
-          vpc-id: "{{ vpc_id }}"
+          vpc-id: "{{ setup_ec2_vpc_id }}"
       register: remaining_subnets
 
     - name: (VPC Cleanup) Retrieve route table info based on VPC ID
       amazon.aws.ec2_vpc_route_table_info:
         filters:
-          vpc-id: "{{ vpc_id }}"
+          vpc-id: "{{ setup_ec2_vpc_id }}"
       register: remaining_rtbs
 
     - name: (VPC Cleanup) Retrieve VPC info based on VPC ID
       amazon.aws.ec2_vpc_net_info:
         vpc_ids:
-          - "{{ vpc_id }}"
+          - "{{ setup_ec2_vpc_id }}"
       register: remaining_vpc
 
     # ============================================================
@@ -66,7 +66,7 @@
         rules: []
         rules_egress: []
       loop: "{{ remaining_groups.security_groups }}"
-      ignore_errors: true
+      ignore_errors: true  # noqa: ignore-errors
 
     - name: (VPC Cleanup) Delete remaining SGs
       amazon.aws.ec2_security_group:
@@ -75,21 +75,21 @@
       loop: "{{ remaining_groups.security_groups }}"
       when:
         - item.group_name != 'default'
-      ignore_errors: true
+      ignore_errors: true  # noqa: ignore-errors
 
     # ============================================================
 
     - name: (VPC Cleanup) Delete remaining subnets
       amazon.aws.ec2_vpc_subnet:
         state: absent
-        vpc_id: "{{ vpc_id }}"
+        vpc_id: "{{ setup_ec2_vpc_id }}"
         cidr: "{{ item.cidr_block }}"
       register: subnets_removed
       loop: "{{ remaining_subnets.subnets }}"
       until: subnets_removed is not failed
       when:
         - (item.name | default("")) != 'default'
-      ignore_errors: true
+      ignore_errors: true  # noqa: ignore-errors
       retries: 10
 
     # ============================================================
@@ -97,7 +97,7 @@
     - name: (VPC Cleanup) Delete IGW
       amazon.aws.ec2_vpc_igw:
         state: absent
-        vpc_id: "{{ vpc_id }}"
+        vpc_id: "{{ setup_ec2_vpc_id }}"
       register: igw_deletion
       retries: 10
       delay: 5
@@ -109,26 +109,26 @@
     - name: (VPC Cleanup) Delete route tables (excluding main table)
       amazon.aws.ec2_vpc_route_table:
         state: absent
-        vpc_id: "{{ vpc_id }}"
+        vpc_id: "{{ setup_ec2_vpc_id }}"
         route_table_id: "{{ item.id }}"
         lookup: id
       register: rtbs_removed
       loop: "{{ remaining_rtbs.route_tables }}"
       when:
         - True not in main_associations
-      ignore_errors: true
+      ignore_errors: true  # noqa: ignore-errors
       vars:
-        main_associations: "{{ item.associations | default([]) | map(attribute='main') | list}}"
+        main_associations: "{{ item.associations | default([]) | map(attribute='main') | list }}"
 
     # ============================================================
 
     - name: (VPC Cleanup) Remove the VPC
       amazon.aws.ec2_vpc_net:
         state: absent
-        vpc_id: "{{ vpc_id }}"
+        vpc_id: "{{ setup_ec2_vpc_id }}"
       register: vpc_removed
       until: vpc_removed is not failed
-      ignore_errors: true
+      ignore_errors: true  # noqa: ignore-errors
       retries: 10
 
     # ============================================================
@@ -136,9 +136,9 @@
     - name: (VPC Cleanup) (retry) Delete remaining route tables (including main table)
       amazon.aws.ec2_vpc_route_table:
         state: absent
-        vpc_id: "{{ vpc_id }}"
+        vpc_id: "{{ setup_ec2_vpc_id }}"
         route_table_id: "{{ item.id }}"
         lookup: id
       register: rtbs_removed
       loop: "{{ remaining_rtbs.route_tables }}"
-      ignore_errors: true
+      ignore_errors: true  # noqa: ignore-errors

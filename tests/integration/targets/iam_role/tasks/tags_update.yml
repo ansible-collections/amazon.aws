@@ -48,7 +48,7 @@
       - '"TagA" in iam_role.iam_role.tags'
       - iam_role.iam_role.tags.TagA == "ValueA"
 
-- name: iam_role_info after adding Tags
+- name: Iam_role_info after adding Tags
   amazon.aws.iam_role_info:
     name: "{{ test_role }}"
   register: role_info
@@ -126,7 +126,7 @@
       - '"TagA" in iam_role.iam_role.tags'
       - iam_role.iam_role.tags.TagA == "AValue"
 
-- name: iam_role_info after updating Tag
+- name: Iam_role_info after updating Tag
   amazon.aws.iam_role_info:
     name: "{{ test_role }}"
   register: role_info
@@ -208,7 +208,7 @@
       - '"TagB" in iam_role.iam_role.tags'
       - iam_role.iam_role.tags.TagB == "ValueB"
 
-- name: iam_role_info after adding second Tag without purge
+- name: Iam_role_info after adding second Tag without purge
   amazon.aws.iam_role_info:
     name: "{{ test_role }}"
   register: role_info
@@ -291,7 +291,7 @@
       - '"TagB" in iam_role.iam_role.tags'
       - iam_role.iam_role.tags.TagB == "ValueB"
 
-- name: iam_role_info after purging first Tag
+- name: Iam_role_info after purging first Tag
   amazon.aws.iam_role_info:
     name: "{{ test_role }}"
   register: role_info

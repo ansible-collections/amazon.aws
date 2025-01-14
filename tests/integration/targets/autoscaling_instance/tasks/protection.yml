@@ -4,15 +4,15 @@
 # =====================================================
 
 # Set all to Unprotected - no change
-- name: instance_ids - all Unprotected (idempotency) - check_mode
+- name: Instance_ids - all Unprotected (idempotency) - check_mode
   amazon.aws.autoscaling_instance:
     instance_ids: "{{ initial_instances }}"
     group_name: "{{ default_resource_name }}"
     state: present
-    protection: False
-  diff: True
+    protection: false
+  diff: true
   register: unprotected_all
-  check_mode: True
+  check_mode: true
 
 - ansible.builtin.assert:
     that:
@@ -39,13 +39,13 @@
     specific_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[1]) | first }}"
     other_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[0]) | first }}"
 
-- name: instance_ids - all Unprotected (idempotency)
+- name: Instance_ids - all Unprotected (idempotency)
   amazon.aws.autoscaling_instance:
     instance_ids: "{{ initial_instances }}"
     group_name: "{{ default_resource_name }}"
     state: present
-    protection: False
-  diff: True
+    protection: false
+  diff: true
   register: unprotected_all
 
 - ansible.builtin.assert:
@@ -74,15 +74,15 @@
     other_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[0]) | first }}"
 
 # Set all to Protected
-- name: instance_ids - all Protected - check_mode
+- name: Instance_ids - all Protected - check_mode
   amazon.aws.autoscaling_instance:
     instance_ids: "{{ initial_instances }}"
     group_name: "{{ default_resource_name }}"
     state: present
-    protection: True
-  diff: True
+    protection: true
+  diff: true
   register: protected_all
-  check_mode: True
+  check_mode: true
 
 - ansible.builtin.assert:
     that:
@@ -109,13 +109,13 @@
     specific_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[1]) | first }}"
     other_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[0]) | first }}"
 
-- name: instance_ids - all Protected
+- name: Instance_ids - all Protected
   amazon.aws.autoscaling_instance:
     instance_ids: "{{ initial_instances }}"
     group_name: "{{ default_resource_name }}"
     state: present
-    protection: True
-  diff: True
+    protection: true
+  diff: true
   register: protected_all
 
 - ansible.builtin.assert:
@@ -143,15 +143,15 @@
     specific_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[1]) | first }}"
     other_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[0]) | first }}"
 
-- name: instance_ids - all Protected (idempotency) - check_mode
+- name: Instance_ids - all Protected (idempotency) - check_mode
   amazon.aws.autoscaling_instance:
     instance_ids: "{{ initial_instances }}"
     group_name: "{{ default_resource_name }}"
     state: present
-    protection: True
-  diff: True
+    protection: true
+  diff: true
   register: protected_all
-  check_mode: True
+  check_mode: true
 
 - ansible.builtin.assert:
     that:
@@ -178,13 +178,13 @@
     specific_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[1]) | first }}"
     other_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[0]) | first }}"
 
-- name: instance_ids - all Protected (idempotency)
+- name: Instance_ids - all Protected (idempotency)
   amazon.aws.autoscaling_instance:
     instance_ids: "{{ initial_instances }}"
     group_name: "{{ default_resource_name }}"
     state: present
-    protection: True
-  diff: True
+    protection: true
+  diff: true
   register: protected_all
 
 - ansible.builtin.assert:
@@ -213,15 +213,15 @@
     other_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[0]) | first }}"
 
 # Set all to Unprotected again
-- name: instance_ids - all Unprotected - check_mode
+- name: Instance_ids - all Unprotected - check_mode
   amazon.aws.autoscaling_instance:
     instance_ids: "{{ initial_instances }}"
     group_name: "{{ default_resource_name }}"
     state: present
-    protection: False
-  diff: True
+    protection: false
+  diff: true
   register: unprotected_all
-  check_mode: True
+  check_mode: true
 
 - ansible.builtin.assert:
     that:
@@ -248,13 +248,13 @@
     specific_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[1]) | first }}"
     other_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[0]) | first }}"
 
-- name: instance_ids - all Unprotected
+- name: Instance_ids - all Unprotected
   amazon.aws.autoscaling_instance:
     instance_ids: "{{ initial_instances }}"
     group_name: "{{ default_resource_name }}"
     state: present
-    protection: False
-  diff: True
+    protection: false
+  diff: true
   register: unprotected_all
 
 - ansible.builtin.assert:
@@ -285,12 +285,12 @@
 # -- implicit instance list --
 
 # implicitly change all
-- name: no instance_ids - all Protected
+- name: No instance_ids - all Protected
   amazon.aws.autoscaling_instance:
     group_name: "{{ default_resource_name }}"
     state: present
-    protection: True
-  diff: True
+    protection: true
+  diff: true
   register: protected_all
 
 - ansible.builtin.assert:
@@ -319,12 +319,12 @@
     other_instance_info: "{{ current_result.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[0]) | first }}"
 
 # implicitly change all
-- name: no instance_ids - all Unprotected
+- name: No instance_ids - all Unprotected
   amazon.aws.autoscaling_instance:
     group_name: "{{ default_resource_name }}"
     state: present
-    protection: False
-  diff: True
+    protection: false
+  diff: true
   register: unprotected_all
 
 - ansible.builtin.assert:
@@ -357,80 +357,80 @@
 # =====================================================
 
 # Set to Unprotected - no change
-- name: instance_ids - one Unprotected (idempotency) - check_mode
+- name: Instance_ids - one Unprotected (idempotency) - check_mode
   amazon.aws.autoscaling_instance:
     instance_ids: "{{ initial_instances[1] }}"
     group_name: "{{ default_resource_name }}"
     state: present
-    protection: False
-  diff: True
+    protection: false
+  diff: true
   register: unprotected_one
-  check_mode: True
+  check_mode: true
 
-- name: instance_ids - one Unprotected (idempotency)
+- name: Instance_ids - one Unprotected (idempotency)
   amazon.aws.autoscaling_instance:
     instance_ids: "{{ initial_instances[1] }}"
     group_name: "{{ default_resource_name }}"
     state: present
-    protection: False
-  diff: True
+    protection: false
+  diff: true
   register: unprotected_one
 
 # Set to Protected
-- name: instance_ids - one Protected - check_mode
+- name: Instance_ids - one Protected - check_mode
   amazon.aws.autoscaling_instance:
     instance_ids: "{{ initial_instances[1] }}"
     group_name: "{{ default_resource_name }}"
     state: present
-    protection: True
-  diff: True
+    protection: true
+  diff: true
   register: protected_one
-  check_mode: True
+  check_mode: true
 
-- name: instance_ids - one Protected
+- name: Instance_ids - one Protected
   amazon.aws.autoscaling_instance:
     instance_ids: "{{ initial_instances[1] }}"
     group_name: "{{ default_resource_name }}"
     state: present
-    protection: True
-  diff: True
+    protection: true
+  diff: true
   register: protected_one
 
-- name: instance_ids - one Protected (idempotency) - check_mode
+- name: Instance_ids - one Protected (idempotency) - check_mode
   amazon.aws.autoscaling_instance:
     instance_ids: "{{ initial_instances[1] }}"
     group_name: "{{ default_resource_name }}"
     state: present
-    protection: True
-  diff: True
+    protection: true
+  diff: true
   register: protected_one
-  check_mode: True
+  check_mode: true
 
-- name: instance_ids - one Protected (idempotency)
+- name: Instance_ids - one Protected (idempotency)
   amazon.aws.autoscaling_instance:
     instance_ids: "{{ initial_instances[1] }}"
     group_name: "{{ default_resource_name }}"
     state: present
-    protection: True
-  diff: True
+    protection: true
+  diff: true
   register: protected_one
 
 # Set to Unprotected again
-- name: instance_ids - one Unprotected - check_mode
+- name: Instance_ids - one Unprotected - check_mode
   amazon.aws.autoscaling_instance:
     instance_ids: "{{ initial_instances[1] }}"
     group_name: "{{ default_resource_name }}"
     state: present
-    protection: False
-  diff: True
+    protection: false
+  diff: true
   register: unprotected_one
-  check_mode: True
+  check_mode: true
 
-- name: instance_ids - one Unprotected
+- name: Instance_ids - one Unprotected
   amazon.aws.autoscaling_instance:
     instance_ids: "{{ initial_instances[1] }}"
     group_name: "{{ default_resource_name }}"
     state: present
-    protection: False
-  diff: True
+    protection: false
+  diff: true
   register: unprotected_one

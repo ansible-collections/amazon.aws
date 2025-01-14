@@ -1,5 +1,5 @@
 ---
-- name: rds_instance / sgroups integration tests
+- name: Rds_instance / sgroups integration tests
 
   module_defaults:
     group/aws:
@@ -9,7 +9,7 @@
       region: "{{ aws_region }}"
 
   block:
-    - name: create a VPC
+    - name: Create a VPC
       amazon.aws.ec2_vpc_net:
         name: "{{ resource_prefix }}-vpc"
         state: present
@@ -19,7 +19,7 @@
           Description: created by rds_instance integration tests
       register: vpc_result
 
-    - name: create subnets
+    - name: Create subnets
       amazon.aws.ec2_vpc_subnet:
         cidr: "{{ item.cidr }}"
         az: "{{ item.zone }}"
@@ -288,7 +288,7 @@
       until: sgs_result is not failed
       delay: 10
 
-    - name: remove subnets
+    - name: Remove subnets
       amazon.aws.ec2_vpc_subnet:
         cidr: "{{ item.cidr }}"
         az: "{{ item.zone }}"

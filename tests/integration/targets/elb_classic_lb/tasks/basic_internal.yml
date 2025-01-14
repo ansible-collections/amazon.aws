@@ -222,7 +222,7 @@
 
     # ============================================================
 
-    - name: remove the test load balancer completely (check_mode)
+    - name: Remove the test load balancer completely (check_mode)
       amazon.aws.elb_classic_lb:
         name: "{{ elb_name }}"
         state: absent
@@ -230,28 +230,28 @@
       register: result
       check_mode: true
 
-    - name: assert the load balancer would be removed
+    - name: Assert the load balancer would be removed
       ansible.builtin.assert:
         that:
           - result is changed
           - result.elb.name == elb_name
           - result.elb.status == "deleted"
 
-    - name: remove the test load balancer completely
+    - name: Remove the test load balancer completely
       amazon.aws.elb_classic_lb:
         name: "{{ elb_name }}"
         state: absent
         wait: true
       register: result
 
-    - name: assert the load balancer was removed
+    - name: Assert the load balancer was removed
       ansible.builtin.assert:
         that:
           - result is changed
           - result.elb.name == elb_name
           - result.elb.status == "deleted"
 
-    - name: remove the test load balancer completely (idempotency) (check_mode)
+    - name: Remove the test load balancer completely (idempotency) (check_mode)
       amazon.aws.elb_classic_lb:
         name: "{{ elb_name }}"
         state: absent
@@ -259,21 +259,21 @@
       register: result
       check_mode: true
 
-    - name: assert the load balancer is gone
+    - name: Assert the load balancer is gone
       ansible.builtin.assert:
         that:
           - result is not changed
           - result.elb.name == elb_name
           - result.elb.status == "gone"
 
-    - name: remove the test load balancer completely (idempotency)
+    - name: Remove the test load balancer completely (idempotency)
       amazon.aws.elb_classic_lb:
         name: "{{ elb_name }}"
         state: absent
         wait: true
       register: result
 
-    - name: assert the load balancer is gone
+    - name: Assert the load balancer is gone
       ansible.builtin.assert:
         that:
           - result is not changed
@@ -282,7 +282,7 @@
 
   always:
     # ============================================================
-    - name: remove the test load balancer
+    - name: Remove the test load balancer
       amazon.aws.elb_classic_lb:
         name: "{{ elb_name }}"
         state: absent

@@ -11,7 +11,7 @@
       amazon.aws.rds_instance:
         id: "{{ instance_id }}"
         state: present
-        engine: "{{ engine}}"
+        engine: "{{ engine }}"
         engine_version: "{{ mariadb_engine_version }}"
         allow_major_version_upgrade: true
         username: "{{ username }}"
@@ -198,7 +198,7 @@
     - ansible.builtin.assert:
         that:
           - _result_instance_snapshot_info is successful
-    #- _result_instance_snapshot_info.cluster_snapshots | length == 3
+          # - _result_instance_snapshot_info.cluster_snapshots | length == 3
 
     - name: Delete existing DB instance snapshot (CHECK_MODE)
       amazon.aws.rds_instance_snapshot:

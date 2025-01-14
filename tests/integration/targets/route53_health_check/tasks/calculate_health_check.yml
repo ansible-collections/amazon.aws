@@ -6,7 +6,7 @@
         state: present
         name: "{{ tiny_prefix }}-{{ resource_path }}-test-hc-tag-operations"
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type_http }}"
         resource_path: "{{ resource_path }}"
         use_unique_names: true
@@ -18,7 +18,7 @@
       amazon.aws.route53_health_check:
         health_check_name: calculated_health_check
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: CALCULATED
         use_unique_names: true
         fqdn: "{{ fqdn }}"
@@ -128,7 +128,7 @@
         state: absent
         name: "{{ tiny_prefix }}-{{ resource_path }}-test-hc-tag-operations"
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type_http }}"
         resource_path: "{{ resource_path }}"
         use_unique_names: true

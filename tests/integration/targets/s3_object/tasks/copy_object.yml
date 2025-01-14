@@ -10,18 +10,18 @@
       another: meta
       mode: copy
   block:
-    - name: define bucket name used for tests
+    - name: Define bucket name used for tests
       ansible.builtin.set_fact:
         copy_bucket:
           src: "{{ bucket_name }}-copysrc"
           dst: "{{ bucket_name }}-copydst"
 
-    - name: create bucket source
+    - name: Create bucket source
       amazon.aws.s3_bucket:
         name: "{{ copy_bucket.src }}"
         state: present
 
-    - name: create bucket destination
+    - name: Create bucket destination
       amazon.aws.s3_bucket:
         name: "{{ copy_bucket.dst }}"
         state: present
@@ -68,7 +68,7 @@
         object: destination.txt
       register: copy_content
 
-    - name: assert that the content is matching with the source
+    - name: Assert that the content is matching with the source
       ansible.builtin.assert:
         that:
           - content == copy_content.contents
@@ -80,7 +80,7 @@
         object: destination.txt
       register: copy_url
 
-    - name: assert that tags are the same in the destination bucket
+    - name: Assert that tags are the same in the destination bucket
       ansible.builtin.assert:
         that:
           - put_result.tags == copy_url.tags
@@ -95,7 +95,7 @@
           object: source.txt
       register: copy_idempotency
 
-    - name: assert that no change was made
+    - name: Assert that no change was made
       ansible.builtin.assert:
         that:
           - copy_idempotency is not changed
@@ -113,7 +113,7 @@
           object: source.txt
       register: copy_result
 
-    - name: assert that tags were updated
+    - name: Assert that tags were updated
       ansible.builtin.assert:
         that:
           - copy_result is changed
@@ -131,7 +131,7 @@
           object: source.txt
       register: copy_result
 
-    - name: assert that no change was made
+    - name: Assert that no change was made
       ansible.builtin.assert:
         that:
           - copy_result is not changed
@@ -207,7 +207,7 @@
         - copywithmeta
       register: obj_info
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - obj_info.results | selectattr('item', 'equalto', 'nometa') | map(attribute='object_info.0.object_data.metadata') | first == {}
           - obj_info.results | selectattr('item', 'equalto', 'withmeta') | map(attribute='object_info.0.object_data.metadata') | first == withmeta_data

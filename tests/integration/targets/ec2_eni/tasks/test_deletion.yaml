@@ -1,6 +1,6 @@
 ---
 # ============================================================
-- name: test deleting the unattached network interface by using the ID (check mode)
+- name: Test deleting the unattached network interface by using the ID (check mode)
   amazon.aws.ec2_eni:
     eni_id: "{{ eni_id_1 }}"
     name: "{{ resource_prefix }}"
@@ -13,7 +13,7 @@
     that:
       - result_check_mode.changed
 
-- name: test deleting the unattached network interface by using the ID
+- name: Test deleting the unattached network interface by using the ID
   amazon.aws.ec2_eni:
     eni_id: "{{ eni_id_1 }}"
     name: "{{ resource_prefix }}"
@@ -31,7 +31,7 @@
       - '"network_interfaces" in eni_info'
       - eni_id_1 not in ( eni_info.network_interfaces | selectattr('id') | map(attribute='id') | list )
 
-- name: test removing the network interface by ID is idempotent (check mode)
+- name: Test removing the network interface by ID is idempotent (check mode)
   amazon.aws.ec2_eni:
     eni_id: "{{ eni_id_1 }}"
     name: "{{ resource_prefix }}"
@@ -44,7 +44,7 @@
     that:
       - not result_check_mode.changed
 
-- name: test removing the network interface by ID is idempotent
+- name: Test removing the network interface by ID is idempotent
   amazon.aws.ec2_eni:
     eni_id: "{{ eni_id_1 }}"
     name: "{{ resource_prefix }}"
@@ -58,13 +58,13 @@
       - result.interface is undefined
 
 # ============================================================
-- name: add a name tag to the other network interface before deleting it
+- name: Add a name tag to the other network interface before deleting it
   amazon.aws.ec2_eni:
     eni_id: "{{ eni_id_2 }}"
     name: "{{ resource_prefix }}"
     state: present
 
-- name: test deleting the unattached network interface by using the name
+- name: Test deleting the unattached network interface by using the name
   amazon.aws.ec2_eni:
     name: "{{ resource_prefix }}"
     subnet_id: "{{ vpc_subnet_id }}"
@@ -81,7 +81,7 @@
       - '"network_interfaces" in eni_info'
       - eni_id_2 not in ( eni_info.network_interfaces | selectattr('id') | map(attribute='id') | list )
 
-- name: test removing the network interface by name is idempotent
+- name: Test removing the network interface by name is idempotent
   amazon.aws.ec2_eni:
     name: "{{ resource_prefix }}"
     subnet_id: "{{ vpc_subnet_id }}"
@@ -93,7 +93,7 @@
       - not result.changed
       - result.interface is undefined
 
-- name: verify that the network interface ID does not exist (retry-delete by ID)
+- name: Verify that the network interface ID does not exist (retry-delete by ID)
   amazon.aws.ec2_eni:
     eni_id: "{{ eni_id_2 }}"
     state: absent

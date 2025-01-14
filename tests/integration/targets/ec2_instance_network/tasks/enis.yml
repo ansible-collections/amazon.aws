@@ -34,12 +34,12 @@
     ec2_instance_id: "{{ create_instance.instance_ids }}"
 
 - name: Get instance info
-  ec2_instance_info:
+  amazon.aws.ec2_instance_info:
     instance_ids: "{{ ec2_instance_id }}"
   register: _instances
 
 - name: Ensure instance has one ENI attached
-  assert:
+  ansible.builtin.assert:
     that:
       - _instances.instances.0.network_interfaces | map(attribute='network_interface_id') | list == [eni_a.interface.id]
       - _instances.instances.0.network_interfaces.0.attachment.device_index == 0
@@ -59,12 +59,12 @@
   register: attach_eni
 
 - name: Get instance info
-  ec2_instance_info:
+  amazon.aws.ec2_instance_info:
     instance_ids: "{{ ec2_instance_id }}"
   register: _instances
 
 - name: Ensure instance has 2 ENIs attached
-  assert:
+  ansible.builtin.assert:
     that:
       - attach_eni is changed
       - _instances.instances.0.network_interfaces | length == 2
@@ -105,12 +105,12 @@
   register: detach_eni
 
 - name: Get instance info
-  ec2_instance_info:
+  amazon.aws.ec2_instance_info:
     instance_ids: "{{ ec2_instance_id }}"
   register: _instances
 
 - name: Ensure instance has 2 ENIs attached
-  assert:
+  ansible.builtin.assert:
     that:
       - detach_eni is not changed
       - _instances.instances.0.network_interfaces | length == 2

@@ -1,5 +1,6 @@
 ---
-- module_defaults:
+- name: Cleanup common VPC resources
+  module_defaults:
     group/aws:
       access_key: "{{ aws_access_key }}"
       secret_key: "{{ aws_secret_key }}"
@@ -12,7 +13,7 @@
           instance-state-name: [pending, running, stopping, stopped]
           vpc-id: "{{ testing_vpc.vpc.id }}"
         termination_protection: false
-      ignore_errors: true
+      ignore_errors: true  # noqa: ignore-errors
 
     - name: (Cleanup) Find all remaining Instances
       amazon.aws.ec2_instance_info:
@@ -26,7 +27,7 @@
         state: absent
         instance_ids: "{{ item.instance_id }}"
         wait: false
-      ignore_errors: true
+      ignore_errors: true  # noqa: ignore-errors
       loop: "{{ instances.instances }}"
 
     - name: (Cleanup) Remove Instances (wait for completion)
@@ -37,7 +38,7 @@
           instance-state-name: [pending, running, shutting-down, stopping, stopped]
           vpc-id: "{{ testing_vpc.vpc.id }}"
         wait: true
-      ignore_errors: true
+      ignore_errors: true  # noqa: ignore-errors
       loop: "{{ instances.instances }}"
 
     - name: (Cleanup) Find all remaining ENIs
@@ -53,7 +54,7 @@
       register: eni_removed
       until: eni_removed is not failed
       with_items: "{{ enis.network_interfaces }}"
-      ignore_errors: true
+      ignore_errors: true  # noqa: ignore-errors
       retries: 10
 
     - name: (Cleanup) Find all remaining Security Groups
@@ -73,7 +74,7 @@
       loop: "{{ security_groups.security_groups }}"
       register: sg_removed
       until: sg_removed is not failed
-      ignore_errors: true
+      ignore_errors: true  # noqa: ignore-errors
       retries: 10
 
     - name: (Cleanup) Remove the security groups
@@ -85,7 +86,7 @@
         - item.group_name != 'default'
       register: sg_removed
       until: sg_removed is not failed
-      ignore_errors: true
+      ignore_errors: true  # noqa: ignore-errors
       retries: 10
 
     - name: (Cleanup) Find all remaining Subnets
@@ -102,7 +103,7 @@
       register: removed
       loop: "{{ subnets.subnets }}"
       until: removed is not failed
-      ignore_errors: true
+      ignore_errors: true  # noqa: ignore-errors
       retries: 10
 
     - name: (Cleanup) Remove the VPC
@@ -115,5 +116,5 @@
         tenancy: default
       register: removed
       until: removed is not failed
-      ignore_errors: true
+      ignore_errors: true  # noqa: ignore-errors
       retries: 10

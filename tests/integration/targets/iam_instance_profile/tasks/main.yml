@@ -301,7 +301,7 @@
           - complex_profile.roles[0].role_name == test_role+"-2"
       vars:
         profile_names: '{{ profile_info.iam_instance_profiles | map(attribute="instance_profile_name") }}'
-        complex_profile: '{{ profile_info.iam_instance_profiles | selectattr("instance_profile_name", "match", test_profile_complex) | first}}'
+        complex_profile: '{{ profile_info.iam_instance_profiles | selectattr("instance_profile_name", "match", test_profile_complex) | first }}'
 
     - name: List all Instance Profiles (filter by path)
       amazon.aws.iam_instance_profile_info:
@@ -334,7 +334,7 @@
           - complex_profile.roles[0].role_name == test_role+"-2"
       vars:
         profile_names: '{{ profile_info.iam_instance_profiles | map(attribute="instance_profile_name") }}'
-        complex_profile: '{{ profile_info.iam_instance_profiles | selectattr("instance_profile_name", "match", test_profile_complex) | first}}'
+        complex_profile: '{{ profile_info.iam_instance_profiles | selectattr("instance_profile_name", "match", test_profile_complex) | first }}'
 
     - name: List all Instance Profiles (filter by name - complex)
       amazon.aws.iam_instance_profile_info:
@@ -369,7 +369,7 @@
           - complex_profile.roles[0].tags == {}
       vars:
         profile_names: '{{ profile_info.iam_instance_profiles | map(attribute="instance_profile_name") }}'
-        complex_profile: '{{ profile_info.iam_instance_profiles | selectattr("instance_profile_name", "match", test_profile_complex) | first}}'
+        complex_profile: '{{ profile_info.iam_instance_profiles | selectattr("instance_profile_name", "match", test_profile_complex) | first }}'
 
     - name: List an Instance Profile (filter by name)
       amazon.aws.iam_instance_profile_info:

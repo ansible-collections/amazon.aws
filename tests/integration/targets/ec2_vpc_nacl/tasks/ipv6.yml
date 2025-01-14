@@ -1,6 +1,6 @@
+---
 - name: Test using IPv6
   block:
-
     # ============================================================
 
     - name: Create ingress and egress rules using subnet names
@@ -12,12 +12,12 @@
         tags:
           Created_by: "Ansible test {{ resource_prefix }}"
         ingress:
-          - [100, 'tcp', 'allow', '0.0.0.0/0', null, null, 22, 22]
-          - [200, 'tcp', 'allow', '0.0.0.0/0', null, null, 80, 80]
-          - [300, 'icmp', 'allow', '0.0.0.0/0', 0, 8]
+          - [100, "tcp", "allow", "0.0.0.0/0", !!null "", !!null "", 22, 22]
+          - [200, "tcp", "allow", "0.0.0.0/0", !!null "", !!null "", 80, 80]
+          - [300, "icmp", "allow", "0.0.0.0/0", 0, 8]
         egress:
-          - [100, 'all', 'allow', '0.0.0.0/0', null, null, null, null]
-        state: 'present'
+          - [100, "all", "allow", "0.0.0.0/0", !!null "", !!null "", !!null "", !!null ""]
+        state: "present"
       register: nacl
 
     - name: Assert that module returned the Network ACL id
@@ -38,22 +38,22 @@
         tags:
           Created_by: "Ansible test {{ resource_prefix }}"
         ingress:
-          - [100, 'tcp', 'allow', '0.0.0.0/0', null, null, 22, 22]
-          - [200, 'tcp', 'allow', '0.0.0.0/0', null, null, 80, 80]
-          - [205, 'tcp', 'allow', '::/0', null, null, 80, 80]
-          - [300, 'icmp', 'allow', '0.0.0.0/0', 0, 8]
-          - [305, 'ipv6-icmp', 'allow', '::/0', 0, 8]
+          - [100, "tcp", "allow", "0.0.0.0/0", !!null "", !!null "", 22, 22]
+          - [200, "tcp", "allow", "0.0.0.0/0", !!null "", !!null "", 80, 80]
+          - [205, "tcp", "allow", "::/0", !!null "", !!null "", 80, 80]
+          - [300, "icmp", "allow", "0.0.0.0/0", 0, 8]
+          - [305, "ipv6-icmp", "allow", "::/0", 0, 8]
         egress:
-          - [100, 'all', 'allow', '0.0.0.0/0', null, null, null, null]
-          - [105, 'all', 'allow', '::/0', null, null, null, null]
-        state: 'present'
+          - [100, "all", "allow", "0.0.0.0/0", !!null "", !!null "", !!null "", !!null ""]
+          - [105, "all", "allow", "::/0", !!null "", !!null "", !!null "", !!null ""]
+        state: "present"
       register: nacl
 
     - name: Assert that module reported change while the Network ACL remained unchanged
       ansible.builtin.assert:
-       that:
-         - nacl.changed
-         - nacl.nacl_id == nacl_id
+        that:
+          - nacl.changed
+          - nacl.nacl_id == nacl_id
 
     - name: Get network ACL facts (test that it works with ipv6 entries)
       amazon.aws.ec2_vpc_nacl_info:
@@ -78,16 +78,16 @@
           Created_by: "Ansible test {{ resource_prefix }}"
         ingress: []
         egress:
-          - [100, 'all', 'allow', '0.0.0.0/0', null, null, null, null]
-          - [105, 'all', 'allow', '::/0', null, null, null, null]
-        state: 'present'
+          - [100, "all", "allow", "0.0.0.0/0", !!null "", !!null "", !!null "", !!null ""]
+          - [105, "all", "allow", "::/0", !!null "", !!null "", !!null "", !!null ""]
+        state: "present"
       register: nacl
 
     - name: Assert that module reported change while the Network ACL remained unchanged
       ansible.builtin.assert:
-       that:
-         - nacl.changed
-         - nacl.nacl_id == nacl_id
+        that:
+          - nacl.changed
+          - nacl.nacl_id == nacl_id
 
     - name: Purge egress entries
       amazon.aws.ec2_vpc_nacl:
@@ -99,7 +99,7 @@
           Created_by: "Ansible test {{ resource_prefix }}"
         ingress: []
         egress: []
-        state: 'present'
+        state: "present"
       register: nacl
 
     - name: Assert that module reported change
@@ -121,7 +121,6 @@
           - nacl_facts.nacls[0].egress | length == 0
 
   always:
-
     - name: Remove network ACL
       amazon.aws.ec2_vpc_nacl:
         vpc_id: "{{ vpc_ipv6_id }}"

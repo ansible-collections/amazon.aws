@@ -1,5 +1,5 @@
 ---
-- name: rds_instance / upgrade integration tests
+- name: Rds_instance / upgrade integration tests
 
   module_defaults:
     group/aws:

@@ -1,3 +1,4 @@
+---
 - name: Test EIP allocation and reverse DNS record operations
   block:
     # ------------------------------------------------------------------------------------------
@@ -38,12 +39,12 @@
         record: "{{ test_domain }}"
         type: A
         ttl: 7200
-        value: "{{ eip.public_ip}}"
+        value: "{{ eip.public_ip }}"
         identifier: "{{ resource_prefix }}"
         wait: true
 
     - name: Wait for reverse DNS record update to complete
-      pause:
+      ansible.builtin.pause:
         minutes: 3
 
     - name: Assert that task result was as expected
@@ -95,11 +96,10 @@
           - eip.allocation_id is defined and eip.allocation_id.startswith("eipalloc-")
 
     - name: Wait for reverse DNS record update to complete
-      pause:
+      ansible.builtin.pause:
         minutes: 3
 
   always:
-
     - name: Delete EIP IP address an A record
       amazon.aws.route53:
         state: present
@@ -107,7 +107,7 @@
         record: "{{ test_domain }}"
         type: A
         ttl: 7200
-        value: "{{ eip.public_ip}}"
+        value: "{{ eip.public_ip }}"
         identifier: "{{ resource_prefix }}"
         wait: true
 

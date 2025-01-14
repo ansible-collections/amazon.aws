@@ -5,7 +5,7 @@
         state: present
         name: "{{ tiny_prefix }}-{{ item }}-test-hc-delete-if-found"
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type_http }}"
         resource_path: "{{ item }}"
         use_unique_names: true
@@ -28,7 +28,7 @@
         state: present
         name: "{{ tiny_prefix }}-{{ item }}-test-hc-delete-if-found"
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type_http }}"
         resource_path: "{{ item }}"
         use_unique_names: true
@@ -72,7 +72,7 @@
         state: present
         name: "{{ tiny_prefix }}-{{ item }}-test-hc-delete-if-found"
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type_http }}"
         resource_path: "{{ item }}"
         use_unique_names: true
@@ -97,7 +97,7 @@
         state: present
         name: "{{ tiny_prefix }}-{{ item }}-test-hc-delete-if-found"
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type_http }}"
         resource_path: "{{ item }}"
         use_unique_names: true
@@ -176,7 +176,7 @@
         state: absent
         name: "{{ tiny_prefix }}-{{ item }}-test-hc-delete-if-found"
         ip_address: "{{ ip_address }}"
-        port: "{{ port }}"
+        port: "{{ check_port }}"
         type: "{{ type_http }}"
         resource_path: "{{ item }}"
         use_unique_names: true

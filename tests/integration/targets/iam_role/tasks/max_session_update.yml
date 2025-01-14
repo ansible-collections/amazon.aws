@@ -39,7 +39,7 @@
     that:
       - iam_role is not changed
 
-- name: iam_role_info after updating Max Session Duration
+- name: Iam_role_info after updating Max Session Duration
   amazon.aws.iam_role_info:
     name: "{{ test_role }}"
   register: role_info
