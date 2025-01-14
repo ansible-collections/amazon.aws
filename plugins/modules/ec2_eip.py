@@ -80,7 +80,7 @@ options:
     description: The domain name to attach to the IP address.
     required: false
     type: str
-    version_added: 8.3.0
+    version_added: 9.0.0
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
