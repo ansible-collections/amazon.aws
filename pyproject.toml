@@ -49,3 +49,12 @@ builtins = "_"
 
 [tool.mypy]
 disable_error_code = ["import-untyped"]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+# "F401" - unused-imports - We use these imports to maintaining historic Interfaces
+# "E402" - import not at top of file - General Ansible style puts the documentation at the top.
+unfixable = ["F401"]
+ignore = ["F401", "E402"]
