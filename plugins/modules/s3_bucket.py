@@ -561,6 +561,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.policy import compare_policies
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_bucket_location
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import list_bucket_inventory_configurations
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import s3_extra_params
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import validate_bucket_name
@@ -1232,9 +1233,7 @@ def create_or_update_bucket(s3_client, module: AnsibleAWSModule):
     """
     name = module.params.get("name")
     object_lock_enabled = module.params.get("object_lock_enabled")
-    # default to US Standard region,
-    # note: module.region will also try to pull a default out of the boto3 configs.
-    location = module.region or "us-east-1"
+    location = get_s3_bucket_location(module)
 
     changed = False
     result = {}
