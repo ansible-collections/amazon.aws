@@ -561,7 +561,7 @@ def get_key_details(connection, module, key_id):
     try:
         current_rotation_status = connection.get_key_rotation_status(KeyId=key_id)
         result["enable_key_rotation"] = current_rotation_status.get("KeyRotationEnabled")
-    except is_boto3_error_code(["AccessDeniedException", "UnsupportedOperationException"]) as e:
+    except is_boto3_error_code(["AccessDeniedException", "UnsupportedOperationException"]):
         result["enable_key_rotation"] = None
     result["aliases"] = aliases.get(result["KeyId"], [])
 

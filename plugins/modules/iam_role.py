@@ -544,7 +544,7 @@ def create_or_update_role(module, client, role_name, create_instance_profile):
         try:
             changed |= create_instance_profiles(client, check_mode, role_name, path)
             wait_iam_exists(client, check_mode, role_name, wait, wait_timeout)
-        except AnsibleIAMAlreadyExistsError as e:
+        except AnsibleIAMAlreadyExistsError:
             module.warn(f"profile {role_name} already exists and will not be updated")
 
     changed |= update_managed_policies(client, module.check_mode, role_name, managed_policies, purge_policies)

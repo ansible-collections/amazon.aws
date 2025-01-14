@@ -666,7 +666,7 @@ def main():
         id_to_update_delete = module.params.get("health_check_id")
         try:
             existing_check = client.get_health_check(HealthCheckId=id_to_update_delete)["HealthCheck"]
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError):
             module.exit_json(
                 changed=False, msg=f"The specified health check with ID: {id_to_update_delete} does not exist"
             )

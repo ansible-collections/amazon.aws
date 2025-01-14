@@ -1371,7 +1371,7 @@ def create_autoscaling_group(connection):
                 changed = True
                 try:
                     attach_lb_target_groups(connection, group_name, list(tgs_to_attach))
-                except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+                except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError):
                     module.fail_json(msg=f"Failed to attach load balancer target groups {tgs_to_attach}")
 
         # check for attributes that aren't required for updating an existing ASG
