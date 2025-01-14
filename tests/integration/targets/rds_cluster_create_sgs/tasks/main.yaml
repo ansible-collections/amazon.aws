@@ -10,7 +10,7 @@
       amazon.aws.rds_cluster:
         id: "{{ cluster_id }}"
         state: absent
-        engine: "{{ engine}}"
+        engine: "{{ engine }}"
         username: "{{ username }}"
         password: "{{ password }}"
         skip_final_snapshot: true
@@ -83,7 +83,7 @@
           - "'master_username' in _result_create_db_cluster"
           - _result_create_db_cluster.master_username == username
           - "'port' in _result_create_db_cluster"
-          - _result_create_db_cluster.port == port
+          - _result_create_db_cluster.port == db_port
           - "'status' in _result_create_db_cluster"
           - _result_create_db_cluster.status == 'available'
           - _result_create_db_cluster.storage_encrypted == false
@@ -137,7 +137,7 @@
           - "'master_username' in _result_create_db_cluster"
           - _result_create_db_cluster.master_username == username
           - "'port' in _result_create_db_cluster"
-          - _result_create_db_cluster.port == port
+          - _result_create_db_cluster.port == db_port
           - "'status' in _result_create_db_cluster"
           - _result_create_db_cluster.status == 'available'
           - _result_create_db_cluster.storage_encrypted == false

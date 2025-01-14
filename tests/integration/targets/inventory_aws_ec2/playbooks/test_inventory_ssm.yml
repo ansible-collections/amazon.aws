@@ -1,5 +1,6 @@
 ---
-- hosts: 127.0.0.1
+- name: Run inventory test using SSM to suppliment inventory information
+  hosts: 127.0.0.1
   connection: local
   gather_facts: false
   environment: "{{ ansible_test.environment }}"
@@ -21,7 +22,7 @@
   tasks:
     - block:
         - ansible.builtin.include_role:
-            name: ../setup_ec2_facts
+            name: setup_ec2_facts
 
         # Create VPC, subnet, security group, and find image_id to create instance
         - ansible.builtin.include_tasks: tasks/setup.yml
@@ -62,7 +63,7 @@
           retries: 18
           delay: 10
 
-        - name: validate EC2 ssm-configured instance
+        - name: Validate EC2 ssm-configured instance
           ansible.builtin.assert:
             that:
               - result.ssm_inventory != {}
@@ -82,8 +83,9 @@
 
         # refresh inventory
         - ansible.builtin.meta: refresh_inventory
-        - ansible.builtin.debug: var=hostvars
-        - name: assert hostvars was populated with ssm_inventory information
+        - ansible.builtin.debug:
+            var: hostvars
+        - name: Assert hostvars was populated with ssm_inventory information
           ansible.builtin.assert:
             that:
               - ssm_hostname in hostvars

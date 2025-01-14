@@ -1,5 +1,6 @@
 ---
-- hosts: 127.0.0.1
+- name: Run a test using constructed features
+  hosts: 127.0.0.1
   connection: local
   gather_facts: false
   environment: "{{ ansible_test.environment }}"
@@ -14,7 +15,7 @@
         # Create VPC, subnet, security group, and find image_id to create instance
 
         - ansible.builtin.include_tasks: tasks/setup.yml
-        - name: create a new host
+        - name: Create a new host
           amazon.aws.ec2_instance:
             image_id: "{{ image_id }}"
             name: "{{ resource_prefix }}"
@@ -29,15 +30,15 @@
           register: setup_instance
 
         - ansible.builtin.meta: refresh_inventory
-        - name: register the keyed sg group name
+        - name: Register the keyed sg group name
           ansible.builtin.set_fact:
             sg_group_name: security_groups_{{ sg_id | replace('-', '_') }}
 
-        - name: register one of the keyed tag groups name
+        - name: Register one of the keyed tag groups name
           ansible.builtin.set_fact:
             tag_group_name: tag_Name_{{ resource_prefix | replace('-', '_') }}
 
-        - name: assert the keyed groups and groups from constructed config were added to inventory and composite var added to hostvars
+        - name: Assert the keyed groups and groups from constructed config were added to inventory and composite var added to hostvars
           ansible.builtin.assert:
             that:
               # There are 9 groups: all, ungrouped, aws_ec2, sg keyed group, 3 tag keyed group (one per tag), arch keyed group, constructed group

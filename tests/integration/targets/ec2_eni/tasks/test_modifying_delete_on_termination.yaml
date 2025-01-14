@@ -1,7 +1,7 @@
 ---
 # ============================================================
 
-- name: ensure delete_on_termination defaults to False
+- name: Ensure delete_on_termination defaults to False
   amazon.aws.ec2_eni:
     instance_id: "{{ instance_id_2 }}"
     device_index: 1
@@ -24,7 +24,7 @@
 
 # ============================================================
 
-- name: enable delete_on_termination (check mode)
+- name: Enable delete_on_termination (check mode)
   amazon.aws.ec2_eni:
     instance_id: "{{ instance_id_2 }}"
     device_index: 1
@@ -40,7 +40,7 @@
     that:
       - result_check_mode.changed
 
-- name: enable delete_on_termination
+- name: Enable delete_on_termination
   amazon.aws.ec2_eni:
     instance_id: "{{ instance_id_2 }}"
     device_index: 1
@@ -64,7 +64,7 @@
   vars:
     _interface_0: "{{ eni_info.network_interfaces[0] }}"
 
-- name: test idempotent behavior enabling delete_on_termination (check mode)
+- name: Test idempotent behavior enabling delete_on_termination (check mode)
   amazon.aws.ec2_eni:
     instance_id: "{{ instance_id_2 }}"
     device_index: 1
@@ -80,7 +80,7 @@
     that:
       - not result_check_mode.changed
 
-- name: test idempotent behavior enabling delete_on_termination
+- name: Test idempotent behavior enabling delete_on_termination
   amazon.aws.ec2_eni:
     instance_id: "{{ instance_id_2 }}"
     device_index: 1
@@ -98,7 +98,7 @@
 
 # ============================================================
 
-- name: disable delete_on_termination (check mode)
+- name: Disable delete_on_termination (check mode)
   amazon.aws.ec2_eni:
     instance_id: "{{ instance_id_2 }}"
     device_index: 1
@@ -114,7 +114,7 @@
     that:
       - result_check_mode.changed
 
-- name: disable delete_on_termination
+- name: Disable delete_on_termination
   amazon.aws.ec2_eni:
     instance_id: "{{ instance_id_2 }}"
     device_index: 1
@@ -140,14 +140,14 @@
 
 # ============================================================
 
-- name: terminate the instance to make sure the attached ENI remains
+- name: Terminate the instance to make sure the attached ENI remains
   amazon.aws.ec2_instance:
     state: absent
     instance_ids:
       - "{{ instance_id_2 }}"
     wait: true
 
-- name: verify the eni still exists
+- name: Verify the eni still exists
   amazon.aws.ec2_eni:
     eni_id: "{{ eni_id_1 }}"
     state: present
@@ -161,7 +161,7 @@
 
 # ============================================================
 
-- name: ensure the network interface is attached
+- name: Ensure the network interface is attached
   amazon.aws.ec2_eni:
     instance_id: "{{ instance_id_1 }}"
     device_index: 1
@@ -171,7 +171,7 @@
     attached: true
   register: result
 
-- name: ensure delete_on_termination is true
+- name: Ensure delete_on_termination is true
   amazon.aws.ec2_eni:
     instance_id: "{{ instance_id_1 }}"
     device_index: 1
@@ -182,14 +182,14 @@
     delete_on_termination: true
   register: result
 
-- name: test terminating the instance after setting delete_on_termination to true
+- name: Test terminating the instance after setting delete_on_termination to true
   amazon.aws.ec2_instance:
     state: absent
     instance_ids:
       - "{{ instance_id_1 }}"
     wait: true
 
-- name: verify the eni was also removed
+- name: Verify the eni was also removed
   amazon.aws.ec2_eni:
     eni_id: "{{ eni_id_1 }}"
     state: absent
@@ -207,7 +207,7 @@
 
 # ============================================================
 
-- name: recreate the network interface
+- name: Recreate the network interface
   amazon.aws.ec2_eni:
     device_index: 1
     private_ip_address: "{{ ip_1 }}"

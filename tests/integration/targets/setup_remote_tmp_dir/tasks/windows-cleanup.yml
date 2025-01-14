@@ -1,5 +1,5 @@
 ---
-- name: delete temporary directory (windows)
+- name: Delete temporary directory (windows)
   ansible.windows.win_file:
     path: "{{ remote_tmp_dir }}"
     state: absent

@@ -1,5 +1,5 @@
 ---
-- name: set connection information for AWS modules and run tests
+- name: Set connection information for AWS modules and run tests
   module_defaults:
     group/aws:
       access_key: "{{ aws_access_key }}"
@@ -13,7 +13,7 @@
         ansible_async_dir: "{{ lookup('env', 'HOME') }}/.ansible_async_{{ tiny_prefix }}/"
       when: (lookup('env', 'HOME'))
     # Preparation
-    - name: create minimal lambda role
+    - name: Create minimal lambda role
       amazon.aws.iam_role:
         name: "{{ lambda_role_name }}"
         assume_role_policy_document: '{{ lookup("file", "minimal_trust_policy.json") }}'
@@ -21,64 +21,64 @@
         managed_policies:
           - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
       register: iam_role
-    - name: wait 10 seconds for role to become available
+    - name: Wait 10 seconds for role to become available
       ansible.builtin.pause:
         seconds: 10
-      when: iam_role.changed
-    - name: move lambda into place for archive module
+    - name: Move lambda into place for archive module
       ansible.builtin.copy:
         src: mini_lambda.py
         dest: "{{ output_dir }}/mini_lambda.py"
         mode: preserve
-    - name: bundle lambda into a zip
+    - name: Bundle lambda into a zip
       register: zip_res
       community.general.archive:
         format: zip
         path: "{{ output_dir }}/mini_lambda.py"
         dest: "{{ output_dir }}/mini_lambda.zip"
+        mode: "0644"
 
     # Parameter tests
-    - name: test with no parameters
+    - name: Test with no parameters
       amazon.aws.lambda:
       register: result
       ignore_errors: true
-    - name: assert failure when called with no parameters
+    - name: Assert failure when called with no parameters
       ansible.builtin.assert:
         that:
           - result.failed
           - 'result.msg.startswith("missing required arguments: ")'
           - '"name" in result.msg'
 
-    - name: test with no parameters except state absent
+    - name: Test with no parameters except state absent
       amazon.aws.lambda:
         state: absent
       register: result
       ignore_errors: true
-    - name: assert failure when called with no parameters
+    - name: Assert failure when called with no parameters
       ansible.builtin.assert:
         that:
           - result.failed
           - 'result.msg.startswith("missing required arguments: name")'
 
-    - name: test with no role
+    - name: Test with no role
       amazon.aws.lambda:
         name: ansible-testing-fake-should-not-be-created
       register: result
       ignore_errors: true
-    - name: assert failure when called with no parameters
+    - name: Assert failure when called with no parameters
       ansible.builtin.assert:
         that:
           - result.failed
           - 'result.msg.startswith("state is present but all of the following are missing: ")'
           - '"role" in result.msg'
 
-    - name: test with no handler/image_uri
+    - name: Test with no handler/image_uri
       amazon.aws.lambda:
         name: ansible-testing-fake-should-not-be-created
         role: "{{ lambda_role_name }}"
       register: result
       ignore_errors: true
-    - name: assert failure when called with no parameters
+    - name: Assert failure when called with no parameters
       ansible.builtin.assert:
         that:
           - result.failed
@@ -86,17 +86,17 @@
           - '"runtime" in result.msg'
           - '"image_uri" in result.msg'
 
-    - name: test execute lambda with no function arn or name
+    - name: Test execute lambda with no function arn or name
       amazon.aws.lambda_execute:
       register: result
       ignore_errors: true
-    - name: assert failure when called with no parameters
+    - name: Assert failure when called with no parameters
       ansible.builtin.assert:
         that:
           - result.failed
           - "result.msg == 'one of the following is required: name, function_arn'"
 
-    - name: test state=present with security group but no vpc
+    - name: Test state=present with security group but no vpc
       amazon.aws.lambda:
         name: "{{ lambda_function_name }}"
         runtime: "{{ lambda_python_runtime }}"
@@ -110,7 +110,7 @@
         dead_letter_arn: "{{ omit }}"
       register: result
       ignore_errors: true
-    - name: assert lambda fails with proper message
+    - name: Assert lambda fails with proper message
       ansible.builtin.assert:
         that:
           - result is failed
@@ -118,7 +118,7 @@
           - result.changed == False
           - '"parameters are required together" in result.msg'
 
-    - name: test state=present with incomplete layers
+    - name: Test state=present with incomplete layers
       amazon.aws.lambda:
         name: "{{ lambda_function_name }}"
         runtime: "{{ lambda_python_runtime }}"
@@ -130,14 +130,14 @@
       check_mode: true
       register: result
       ignore_errors: true
-    - name: assert lambda fails with proper message
+    - name: Assert lambda fails with proper message
       ansible.builtin.assert:
         that:
           - result is failed
           - result is not changed
           - '"parameters are required together: layer_name, version found in layers" in result.msg'
 
-    - name: test state=present with incomplete layers
+    - name: Test state=present with incomplete layers
       amazon.aws.lambda:
         name: "{{ lambda_function_name }}"
         runtime: "{{ lambda_python_runtime }}"
@@ -150,7 +150,7 @@
       check_mode: true
       register: result
       ignore_errors: true
-    - name: assert lambda fails with proper message
+    - name: Assert lambda fails with proper message
       ansible.builtin.assert:
         that:
           - result is failed
@@ -158,7 +158,7 @@
           - '"parameters are mutually exclusive: version|layer_version_arn found in layers" in result.msg'
 
     # Prepare minimal Lambda
-    - name: test state=present - upload the lambda (check mode)
+    - name: Test state=present - upload the lambda (check mode)
       amazon.aws.lambda:
         name: "{{ lambda_function_name }}"
         runtime: "{{ lambda_python_runtime }}"
@@ -168,12 +168,12 @@
         architecture: arm64
       register: result
       check_mode: true
-    - name: assert lambda upload succeeded
+    - name: Assert lambda upload succeeded
       ansible.builtin.assert:
         that:
           - result.changed
 
-    - name: test state=present - upload the lambda
+    - name: Test state=present - upload the lambda
       amazon.aws.lambda:
         name: "{{ lambda_function_name }}"
         runtime: "{{ lambda_python_runtime }}"
@@ -182,7 +182,7 @@
         zip_file: "{{ zip_res.dest }}"
         architecture: arm64
       register: result
-    - name: assert lambda upload succeeded
+    - name: Assert lambda upload succeeded
       ansible.builtin.assert:
         that:
           - result.changed
@@ -194,47 +194,47 @@
         lambda_function_arn: "{{ result['configuration']['function_arn'] }}"
 
     - ansible.builtin.include_tasks: tagging.yml
-    - name: test lambda works (check mode)
+    - name: Test lambda works (check mode)
       amazon.aws.lambda_execute:
-        name: "{{lambda_function_name}}"
+        name: "{{ lambda_function_name }}"
         payload:
           name: Mr Ansible Tests
       register: result
       check_mode: true
-    - name: assert check mode works correctly
+    - name: Assert check mode works correctly
       ansible.builtin.assert:
         that:
           - result.changed
           - "'result' not in result"
 
-    - name: test lambda works
+    - name: Test lambda works
       amazon.aws.lambda_execute:
-        name: "{{lambda_function_name}}"
+        name: "{{ lambda_function_name }}"
         payload:
           name: Mr Ansible Tests
       register: result
-    - name: assert lambda manages to respond as expected
+    - name: Assert lambda manages to respond as expected
       ansible.builtin.assert:
         that:
           - result is not failed
           - result.result.output.message == "hello Mr Ansible Tests"
 
-    - name: test execute lambda with function arn
+    - name: Test execute lambda with function arn
       amazon.aws.lambda_execute:
         function_arn: "{{ lambda_function_arn }}"
         payload:
           name: Mr Ansible Tests
       register: result
-    - name: assert lambda manages to respond as expected
+    - name: Assert lambda manages to respond as expected
       ansible.builtin.assert:
         that:
           - result is not failed
           - result.result.output.message == "hello Mr Ansible Tests"
 
     # Test updating Lambda
-    - name: test lambda config updates (check mode)
+    - name: Test lambda config updates (check mode)
       amazon.aws.lambda:
-        name: "{{lambda_function_name}}"
+        name: "{{ lambda_function_name }}"
         runtime: nodejs14.x
         tracing_mode: Active
         handler: "{{ lambda_python_handler }}"
@@ -245,15 +245,15 @@
           Spaced key: A value with spaces
       register: update_result
       check_mode: true
-    - name: assert that update succeeded
+    - name: Assert that update succeeded
       ansible.builtin.assert:
         that:
           - update_result is not failed
           - update_result.changed == True
 
-    - name: test lambda config updates
+    - name: Test lambda config updates
       amazon.aws.lambda:
-        name: "{{lambda_function_name}}"
+        name: "{{ lambda_function_name }}"
         runtime: nodejs14.x
         tracing_mode: Active
         handler: "{{ lambda_python_handler }}"
@@ -263,7 +263,7 @@
           snake_case: a_snake_case_value
           Spaced key: A value with spaces
       register: update_result
-    - name: assert that update succeeded
+    - name: Assert that update succeeded
       ansible.builtin.assert:
         that:
           - update_result is not failed
@@ -271,9 +271,9 @@
           - update_result.configuration.runtime == 'nodejs14.x'
           - update_result.configuration.tracing_config.mode == 'Active'
 
-    - name: test no changes are made with the same parameters repeated (check mode)
+    - name: Test no changes are made with the same parameters repeated (check mode)
       amazon.aws.lambda:
-        name: "{{lambda_function_name}}"
+        name: "{{ lambda_function_name }}"
         runtime: nodejs14.x
         tracing_mode: Active
         handler: "{{ lambda_python_handler }}"
@@ -284,15 +284,15 @@
           Spaced key: A value with spaces
       register: update_result
       check_mode: true
-    - name: assert that update succeeded
+    - name: Assert that update succeeded
       ansible.builtin.assert:
         that:
           - update_result is not failed
           - update_result.changed == False
 
-    - name: test no changes are made with the same parameters repeated
+    - name: Test no changes are made with the same parameters repeated
       amazon.aws.lambda:
-        name: "{{lambda_function_name}}"
+        name: "{{ lambda_function_name }}"
         runtime: nodejs14.x
         tracing_mode: Active
         handler: "{{ lambda_python_handler }}"
@@ -302,7 +302,7 @@
           snake_case: a_snake_case_value
           Spaced key: A value with spaces
       register: update_result
-    - name: assert that update succeeded
+    - name: Assert that update succeeded
       ansible.builtin.assert:
         that:
           - update_result is not failed
@@ -310,15 +310,15 @@
           - update_result.configuration.runtime == 'nodejs14.x'
           - update_result.configuration.tracing_config.mode == 'Active'
 
-    - name: reset config updates for the following tests
+    - name: Reset config updates for the following tests
       amazon.aws.lambda:
-        name: "{{lambda_function_name}}"
+        name: "{{ lambda_function_name }}"
         runtime: "{{ lambda_python_runtime }}"
         tracing_mode: PassThrough
         handler: "{{ lambda_python_handler }}"
         role: "{{ lambda_role_name }}"
       register: result
-    - name: assert that reset succeeded
+    - name: Assert that reset succeeded
       ansible.builtin.assert:
         that:
           - result is not failed
@@ -327,12 +327,12 @@
           - result.configuration.tracing_config.mode == 'PassThrough'
 
     # Test lambda_info
-    - name: lambda_info | Gather all infos for all lambda functions
+    - name: Gather all infos for all lambda functions
       amazon.aws.lambda_info:
         query: all
       register: lambda_infos_all
       check_mode: true
-    - name: lambda_info | Assert successfull retrieval of all information 1
+    - name: Assert successfull retrieval of all information 1
       vars:
         lambda_info: "{{ lambda_infos_all.functions | selectattr('function_name', 'eq', lambda_function_name) | first }}"
       ansible.builtin.assert:
@@ -351,11 +351,11 @@
           - lambda_info.tags is defined
           - lambda_info.architectures == ['arm64']
 
-    - name: lambda_info | Ensure default query value is 'config' when function name omitted
+    - name: Ensure default query value is 'config' when function name omitted
       amazon.aws.lambda_info:
       register: lambda_infos_query_config
       check_mode: true
-    - name: lambda_info | Assert successfull retrieval of all information 2
+    - name: Assert successfull retrieval of all information 2
       vars:
         lambda_info: "{{ lambda_infos_query_config.functions | selectattr('function_name', 'eq', lambda_function_name) | first }}"
       ansible.builtin.assert:
@@ -373,11 +373,11 @@
           - lambda_info.mappings is not defined
           - lambda_info.tags is not defined
 
-    - name: lambda_info | Ensure default query value is 'all' when function name specified
+    - name: Ensure default query value is 'all' when function name specified
       amazon.aws.lambda_info:
         name: "{{ lambda_function_name }}"
       register: lambda_infos_query_all
-    - name: lambda_info | Assert successfull retrieval of all information 3
+    - name: Assert successfull retrieval of all information 3
       ansible.builtin.assert:
         that:
           - lambda_infos_query_all is not failed
@@ -389,12 +389,12 @@
           - lambda_infos_query_all.functions[0].mappings is defined
           - lambda_infos_query_all.functions[0].tags is defined
 
-    - name: lambda_info | Gather version infos for given lambda function
+    - name: Gather version infos for given lambda function
       amazon.aws.lambda_info:
         name: "{{ lambda_function_name }}"
         query: versions
       register: lambda_infos_versions
-    - name: lambda_info | Assert successfull retrieval of versions information
+    - name: Assert successfull retrieval of versions information
       ansible.builtin.assert:
         that:
           - lambda_infos_versions is not failed
@@ -406,12 +406,12 @@
           - lambda_infos_versions.functions[0].mappings is undefined
           - lambda_infos_versions.functions[0].tags is undefined
 
-    - name: lambda_info | Gather config infos for given lambda function
+    - name: Gather config infos for given lambda function
       amazon.aws.lambda_info:
         name: "{{ lambda_function_name }}"
         query: config
       register: lambda_infos_config
-    - name: lambda_info | Assert successfull retrieval of config information
+    - name: Assert successfull retrieval of config information
       ansible.builtin.assert:
         that:
           - lambda_infos_config is not failed
@@ -424,12 +424,12 @@
           - lambda_infos_config.functions[0].mappings is undefined
           - lambda_infos_config.functions[0].tags is undefined
 
-    - name: lambda_info | Gather policy infos for given lambda function
+    - name: Gather policy infos for given lambda function
       amazon.aws.lambda_info:
         name: "{{ lambda_function_name }}"
         query: policy
       register: lambda_infos_policy
-    - name: lambda_info | Assert successfull retrieval of policy information
+    - name: Assert successfull retrieval of policy information
       ansible.builtin.assert:
         that:
           - lambda_infos_policy is not failed
@@ -441,12 +441,12 @@
           - lambda_infos_policy.functions[0].mappings is undefined
           - lambda_infos_policy.functions[0].tags is undefined
 
-    - name: lambda_info | Gather aliases infos for given lambda function
+    - name: Gather aliases infos for given lambda function
       amazon.aws.lambda_info:
         name: "{{ lambda_function_name }}"
         query: aliases
       register: lambda_infos_aliases
-    - name: lambda_info | Assert successfull retrieval of aliases information
+    - name: Assert successfull retrieval of aliases information
       ansible.builtin.assert:
         that:
           - lambda_infos_aliases is not failed
@@ -458,12 +458,12 @@
           - lambda_infos_aliases.functions[0].mappings is undefined
           - lambda_infos_aliases.functions[0].tags is undefined
 
-    - name: lambda_info | Gather mappings infos for given lambda function
+    - name: Gather mappings infos for given lambda function
       amazon.aws.lambda_info:
         name: "{{ lambda_function_name }}"
         query: mappings
       register: lambda_infos_mappings
-    - name: lambda_info | Assert successfull retrieval of mappings information
+    - name: Assert successfull retrieval of mappings information
       ansible.builtin.assert:
         that:
           - lambda_infos_mappings is not failed
@@ -499,171 +499,171 @@
     #     - result is not failed
     #     - result.changed == False
 
-    - name: test putting an environment variable changes lambda (check mode)
+    - name: Test putting an environment variable changes lambda (check mode)
       amazon.aws.lambda:
-        name: "{{lambda_function_name}}"
+        name: "{{ lambda_function_name }}"
         runtime: "{{ lambda_python_runtime }}"
         handler: "{{ lambda_python_handler }}"
         role: "{{ lambda_role_name }}"
-        zip_file: "{{zip_res.dest}}"
+        zip_file: "{{ zip_res.dest }}"
         environment_variables:
           EXTRA_MESSAGE: I think you are great!!
       register: result
       check_mode: true
-    - name: assert lambda upload succeeded
+    - name: Assert lambda upload succeeded
       ansible.builtin.assert:
         that:
           - result is not failed
           - result.changed == True
 
-    - name: test putting an environment variable changes lambda
+    - name: Test putting an environment variable changes lambda
       amazon.aws.lambda:
-        name: "{{lambda_function_name}}"
+        name: "{{ lambda_function_name }}"
         runtime: "{{ lambda_python_runtime }}"
         handler: "{{ lambda_python_handler }}"
         role: "{{ lambda_role_name }}"
-        zip_file: "{{zip_res.dest}}"
+        zip_file: "{{ zip_res.dest }}"
         environment_variables:
           EXTRA_MESSAGE: I think you are great!!
       register: result
-    - name: assert lambda upload succeeded
+    - name: Assert lambda upload succeeded
       ansible.builtin.assert:
         that:
           - result is not failed
           - result.changed == True
           - result.configuration.environment.variables.extra_message == "I think you are great!!"
 
-    - name: test lambda works
+    - name: Test lambda works
       amazon.aws.lambda_execute:
-        name: "{{lambda_function_name}}"
+        name: "{{ lambda_function_name }}"
         payload:
           name: Mr Ansible Tests
       register: result
-    - name: assert lambda manages to respond as expected
+    - name: Assert lambda manages to respond as expected
       ansible.builtin.assert:
         that:
           - result is not failed
           - result.result.output.message == "hello Mr Ansible Tests. I think you are great!!"
 
     # Deletion behavious
-    - name: test state=absent (expect changed=True) (check mode)
+    - name: Test state=absent (expect changed=True) (check mode)
       amazon.aws.lambda:
-        name: "{{lambda_function_name}}"
+        name: "{{ lambda_function_name }}"
         state: absent
       register: result
       check_mode: true
 
-    - name: assert state=absent
+    - name: Assert state=absent
       ansible.builtin.assert:
         that:
           - result is not failed
           - result is changed
 
-    - name: test state=absent (expect changed=True)
+    - name: Test state=absent (expect changed=True)
       amazon.aws.lambda:
-        name: "{{lambda_function_name}}"
+        name: "{{ lambda_function_name }}"
         state: absent
       register: result
 
-    - name: assert state=absent
+    - name: Assert state=absent
       ansible.builtin.assert:
         that:
           - result is not failed
           - result is changed
 
-    - name: test state=absent (expect changed=False) when already deleted (check mode)
+    - name: Test state=absent (expect changed=False) when already deleted (check mode)
       amazon.aws.lambda:
-        name: "{{lambda_function_name}}"
+        name: "{{ lambda_function_name }}"
         state: absent
       register: result
       check_mode: true
 
-    - name: assert state=absent
+    - name: Assert state=absent
       ansible.builtin.assert:
         that:
           - result is not failed
           - result is not changed
 
-    - name: test state=absent (expect changed=False) when already deleted
+    - name: Test state=absent (expect changed=False) when already deleted
       amazon.aws.lambda:
-        name: "{{lambda_function_name}}"
+        name: "{{ lambda_function_name }}"
         state: absent
       register: result
 
-    - name: assert state=absent
+    - name: Assert state=absent
       ansible.builtin.assert:
         that:
           - result is not failed
           - result is not changed
 
     # Parallel creations and deletions
-    - name: parallel lambda creation 1/4
+    - name: Parallel lambda creation 1/4
       amazon.aws.lambda:
-        name: "{{lambda_function_name}}_1"
+        name: "{{ lambda_function_name }}_1"
         runtime: "{{ lambda_python_runtime }}"
         handler: "{{ lambda_python_handler }}"
         role: "{{ lambda_role_name }}"
-        zip_file: "{{zip_res.dest}}"
+        zip_file: "{{ zip_res.dest }}"
       async: 1000
       register: async_1
-    - name: parallel lambda creation 2/4
+    - name: Parallel lambda creation 2/4
       amazon.aws.lambda:
-        name: "{{lambda_function_name}}_2"
+        name: "{{ lambda_function_name }}_2"
         runtime: "{{ lambda_python_runtime }}"
         handler: "{{ lambda_python_handler }}"
         role: "{{ lambda_role_name }}"
-        zip_file: "{{zip_res.dest}}"
+        zip_file: "{{ zip_res.dest }}"
       async: 1000
       register: async_2
-    - name: parallel lambda creation 3/4
+    - name: Parallel lambda creation 3/4
       amazon.aws.lambda:
-        name: "{{lambda_function_name}}_3"
+        name: "{{ lambda_function_name }}_3"
         runtime: "{{ lambda_python_runtime }}"
         handler: "{{ lambda_python_handler }}"
         role: "{{ lambda_role_name }}"
-        zip_file: "{{zip_res.dest}}"
+        zip_file: "{{ zip_res.dest }}"
       async: 1000
       register: async_3
-    - name: parallel lambda creation 4/4
+    - name: Parallel lambda creation 4/4
       amazon.aws.lambda:
-        name: "{{lambda_function_name}}_4"
+        name: "{{ lambda_function_name }}_4"
         runtime: "{{ lambda_python_runtime }}"
         handler: "{{ lambda_python_handler }}"
         role: "{{ lambda_role_name }}"
-        zip_file: "{{zip_res.dest}}"
+        zip_file: "{{ zip_res.dest }}"
       register: result
-    - name: assert lambda manages to respond as expected
+    - name: Assert lambda manages to respond as expected
       ansible.builtin.assert:
         that:
           - result is not failed
-    - name: parallel lambda deletion 1/4
+    - name: Parallel lambda deletion 1/4
       amazon.aws.lambda:
-        name: "{{lambda_function_name}}_1"
+        name: "{{ lambda_function_name }}_1"
         state: absent
-        zip_file: "{{zip_res.dest}}"
+        zip_file: "{{ zip_res.dest }}"
       async: 1000
       register: async_1
-    - name: parallel lambda deletion 2/4
+    - name: Parallel lambda deletion 2/4
       amazon.aws.lambda:
-        name: "{{lambda_function_name}}_2"
+        name: "{{ lambda_function_name }}_2"
         state: absent
-        zip_file: "{{zip_res.dest}}"
+        zip_file: "{{ zip_res.dest }}"
       async: 1000
       register: async_2
-    - name: parallel lambda deletion 3/4
+    - name: Parallel lambda deletion 3/4
       amazon.aws.lambda:
-        name: "{{lambda_function_name}}_3"
+        name: "{{ lambda_function_name }}_3"
         state: absent
-        zip_file: "{{zip_res.dest}}"
+        zip_file: "{{ zip_res.dest }}"
       async: 1000
       register: async_3
-    - name: parallel lambda deletion 4/4
+    - name: Parallel lambda deletion 4/4
       amazon.aws.lambda:
-        name: "{{lambda_function_name}}_4"
+        name: "{{ lambda_function_name }}_4"
         state: absent
-        zip_file: "{{zip_res.dest}}"
+        zip_file: "{{ zip_res.dest }}"
       register: result
-    - name: assert lambda creation has succeeded
+    - name: Assert lambda creation has succeeded
       ansible.builtin.assert:
         that:
           - result is not failed
@@ -679,6 +679,7 @@
       ansible.builtin.file:
         path: "{{ remote_tmp_dir }}/python"
         state: directory
+        mode: "0755"
 
     - name: Create lambda layer library
       ansible.builtin.copy:
@@ -687,12 +688,14 @@
             print("Hello from the ansible amazon.aws lambda layer")
             return 1
         dest: "{{ remote_tmp_dir }}/python/lambda_layer.py"
+        mode: "0644"
 
     - name: Create lambda layer archive
       community.general.archive:
         format: zip
         path: "{{ remote_tmp_dir }}"
         dest: "{{ remote_tmp_dir }}/lambda_layer.zip"
+        mode: "0644"
 
     - name: Create lambda layer
       amazon.aws.lambda_layer:
@@ -792,7 +795,7 @@
       ignore_errors: true
       with_items: "{{ lambda_python_layers_names }}"
 
-    - name: ensure functions are absent at end of test
+    - name: Ensure functions are absent at end of test
       amazon.aws.lambda:
         name: "{{ item }}"
         state: absent
@@ -804,7 +807,7 @@
         - "{{ lambda_function_name }}_3"
         - "{{ lambda_function_name }}_4"
 
-    - name: ensure role has been removed at end of test
+    - name: Ensure role has been removed at end of test
       amazon.aws.iam_role:
         name: "{{ lambda_role_name }}"
         state: absent

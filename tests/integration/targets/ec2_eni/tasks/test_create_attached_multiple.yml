@@ -9,11 +9,11 @@
     wait: true
   register: ec2_instances
 
-- name: set variable for the instance ID
+- name: Set variable for the instance ID
   ansible.builtin.set_fact:
     instance_id_3: "{{ ec2_instances.instances[0].instance_id }}"
 
-#=================================================================
+# =================================================================
 
 - name: Create and attach another interface to above instance - check_mode
   amazon.aws.ec2_eni:
@@ -102,9 +102,9 @@
       - "'ec2:CreateNetworkInterface' not in result.resource_actions"
       - "'ec2:ModifyNetworkInterfaceAttribute' not in result.resource_actions"
 
-#=================================================================
+# =================================================================
 
-- name: remove the network interface created in this test
+- name: Remove the network interface created in this test
   amazon.aws.ec2_eni:
     eni_id: "{{ eni_id_attached_multiple }}"
     force_detach: true
@@ -112,7 +112,7 @@
   ignore_errors: true
   retries: 5
 
-- name: terminate the instance created in this test
+- name: Terminate the instance created in this test
   amazon.aws.ec2_instance:
     state: absent
     instance_ids:

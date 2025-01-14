@@ -8,7 +8,7 @@
 
   block:
   # ============================================================
-    - name: create a VPC
+    - name: Create a VPC
       amazon.aws.ec2_vpc_net:
         name: "{{ resource_prefix }}-vpc"
         state: present
@@ -18,7 +18,7 @@
           Description: Created by ansible-test
       register: vpc_result
 
-    - name: create a subnet
+    - name: Create a subnet
       amazon.aws.ec2_vpc_subnet:
         cidr: "{{ vpc_cidr }}"
         az: "{{ availability_zone }}"
@@ -29,7 +29,7 @@
         state: present
       register: vpc_subnet_result
 
-    - name: create a security group
+    - name: Create a security group
       amazon.aws.ec2_security_group:
         name: "{{ resource_prefix }}-sg"
         description: Created by {{ resource_prefix }}
@@ -62,27 +62,27 @@
         - 1
 
     # We only need these instances to be running
-    - name: set variables for the instance IDs
+    - name: Set variables for the instance IDs
       ansible.builtin.set_fact:
         instance_id_1: "{{ ec2_instances.results[0].instance_ids[0] }}"
         instance_id_2: "{{ ec2_instances.results[1].instance_ids[0] }}"
 
     # ============================================================
-    - name: test attaching and detaching network interfaces
+    - name: Test attaching and detaching network interfaces
       ansible.builtin.include_tasks: ./test_eni_basic_creation.yaml
-    - name: test attaching and detaching network interfaces
+    - name: Test attaching and detaching network interfaces
       ansible.builtin.include_tasks: ./test_ipaddress_assign.yaml
-    - name: test attaching and detaching network interfaces
+    - name: Test attaching and detaching network interfaces
       ansible.builtin.include_tasks: ./test_attachment.yaml
-    - name: test attaching and detaching multiple network interfaces
+    - name: Test attaching and detaching multiple network interfaces
       ansible.builtin.include_tasks: ./test_create_attached_multiple.yml
-    - name: test modifying source_dest_check
+    - name: Test modifying source_dest_check
       ansible.builtin.include_tasks: ./test_modifying_source_dest_check.yaml
-    - name: test modifying tags
+    - name: Test modifying tags
       ansible.builtin.include_tasks: ./test_modifying_tags.yaml
-    - name: test modifying delete_on_termination
+    - name: Test modifying delete_on_termination
       ansible.builtin.include_tasks: ./test_modifying_delete_on_termination.yaml
-    - name: test deleting ENIs
+    - name: Test deleting ENIs
       ansible.builtin.include_tasks: ./test_deletion.yaml
   always:
     # ============================================================
@@ -92,7 +92,7 @@
       amazon.aws.ec2_eni_info: {}
 
     # ============================================================
-    - name: remove the network interfaces
+    - name: Remove the network interfaces
       amazon.aws.ec2_eni:
         eni_id: "{{ item }}"
         force_detach: true
@@ -104,7 +104,7 @@
         - "{{ eni_id_2 | default(omit) }}"
         - "{{ eni_id_3 | default(omit) }}"
 
-    - name: terminate the instances
+    - name: Terminate the instances
       amazon.aws.ec2_instance:
         state: absent
         instance_ids:
@@ -115,7 +115,7 @@
       retries: 5
       when: instance_id_1 is defined and instance_id_2 is defined
 
-    - name: remove the security group
+    - name: Remove the security group
       amazon.aws.ec2_security_group:
         name: "{{ resource_prefix }}-sg"
         description: "{{ resource_prefix }}"
@@ -125,7 +125,7 @@
       ignore_errors: true
       retries: 5
 
-    - name: remove the subnet
+    - name: Remove the subnet
       amazon.aws.ec2_vpc_subnet:
         cidr: "{{ vpc_cidr }}"
         az: "{{ availability_zone }}"
@@ -135,7 +135,7 @@
       retries: 5
       when: vpc_subnet_result is defined
 
-    - name: remove the VPC
+    - name: Remove the VPC
       amazon.aws.ec2_vpc_net:
         name: "{{ resource_prefix }}-vpc"
         cidr_block: "{{ vpc_cidr }}"

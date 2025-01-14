@@ -1,5 +1,6 @@
 ---
-- run_once: '{{ setup_run_once | default("no") | bool }}'
+- name: Setup common VPC components
+  run_once: '{{ setup_run_once | default("no") | bool }}'
   module_defaults:
     group/aws:
       access_key: "{{ aws_access_key }}"
@@ -41,7 +42,7 @@
           Name: "{{ subnet_b_name }}"
       register: testing_subnet_b
 
-    - name: create a security group with the vpc
+    - name: Create a security group with the vpc
       amazon.aws.ec2_security_group:
         state: present
         name: "{{ security_group_name_1 }}"
@@ -58,7 +59,7 @@
             cidr_ip: "0.0.0.0/0"
       register: sg
 
-    - name: create secondary security group with the vpc
+    - name: Create secondary security group with the vpc
       amazon.aws.ec2_security_group:
         name: "{{ security_group_name_2 }}"
         description: a secondary security group for ansible tests

@@ -19,7 +19,7 @@
     security_group: "{{ sg_b }}"
   register: ec2_instance_b
 
-- name: store the Instance IDs
+- name: Store the Instance IDs
   ansible.builtin.set_fact:
     instance_a: "{{ ec2_instance_a.instance_ids[0] }}"
     instance_b: "{{ ec2_instance_b.instance_ids[0] }}"

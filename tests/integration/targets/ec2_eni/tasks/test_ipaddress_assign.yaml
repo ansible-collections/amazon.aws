@@ -1,6 +1,6 @@
 ---
 # ============================================================
-- name: add two implicit secondary IPs (check mode)
+- name: Add two implicit secondary IPs (check mode)
   amazon.aws.ec2_eni:
     device_index: 1
     private_ip_address: "{{ ip_1 }}"
@@ -14,7 +14,7 @@
     that:
       - result_check_mode.changed
 
-- name: add two implicit secondary IPs
+- name: Add two implicit secondary IPs
   amazon.aws.ec2_eni:
     device_index: 1
     private_ip_address: "{{ ip_1 }}"
@@ -36,7 +36,7 @@
   vars:
     _interface_0: "{{ eni_info.network_interfaces[0] }}"
 
-- name: test idempotence with two implicit secondary IPs (check mode)
+- name: Test idempotence with two implicit secondary IPs (check mode)
   amazon.aws.ec2_eni:
     device_index: 1
     private_ip_address: "{{ ip_1 }}"
@@ -50,7 +50,7 @@
     that:
       - not result_check_mode.changed
 
-- name: test idempotence with two implicit secondary IPs
+- name: Test idempotence with two implicit secondary IPs
   amazon.aws.ec2_eni:
     device_index: 1
     private_ip_address: "{{ ip_1 }}"
@@ -73,7 +73,7 @@
     _interface_0: "{{ eni_info.network_interfaces[0] }}"
 
 # ============================================================
-- name: ensure secondary addresses are only removed if purge is set to true
+- name: Ensure secondary addresses are only removed if purge is set to true
   amazon.aws.ec2_eni:
     purge_secondary_private_ip_addresses: false
     device_index: 1
@@ -101,15 +101,15 @@
 # Using secondary_private_ip_address_count leads to unpredicable IP assignment
 # For the following test, first find an IP that has not been used yet
 
-- name: save the list of private IPs in use
+- name: Save the list of private IPs in use
   ansible.builtin.set_fact:
     current_private_ips: "{{ result.interface | json_query('private_ip_addresses[*].private_ip_address') | list }}"
 
-- name: set new_secondary_ip to an IP that has not been used
+- name: Set new_secondary_ip to an IP that has not been used
   ansible.builtin.set_fact:
     new_secondary_ip: "{{ [ip_2, ip_3, ip_4] | difference(current_private_ips) | first }}"
 
-- name: add an explicit secondary address without purging the ones added implicitly
+- name: Add an explicit secondary address without purging the ones added implicitly
   amazon.aws.ec2_eni:
     purge_secondary_private_ip_addresses: false
     device_index: 1
@@ -137,7 +137,7 @@
     _private_ips: "{{ eni_info.network_interfaces | map(attribute='private_ip_addresses') | flatten | map(attribute='private_ip_address') | list }}"
 
 # ============================================================
-- name: remove secondary address (check mode)
+- name: Remove secondary address (check mode)
   amazon.aws.ec2_eni:
     purge_secondary_private_ip_addresses: true
     device_index: 1
@@ -152,7 +152,7 @@
     that:
       - result_check_mode.changed
 
-- name: remove secondary address
+- name: Remove secondary address
   amazon.aws.ec2_eni:
     purge_secondary_private_ip_addresses: true
     device_index: 1
@@ -175,7 +175,7 @@
   vars:
     _interface_0: "{{ eni_info.network_interfaces[0] }}"
 
-- name: test idempotent behavior purging secondary addresses (check mode)
+- name: Test idempotent behavior purging secondary addresses (check mode)
   amazon.aws.ec2_eni:
     purge_secondary_private_ip_addresses: true
     device_index: 1
@@ -190,7 +190,7 @@
     that:
       - not result_check_mode.changed
 
-- name: test idempotent behavior purging secondary addresses
+- name: Test idempotent behavior purging secondary addresses
   amazon.aws.ec2_eni:
     purge_secondary_private_ip_addresses: true
     device_index: 1
@@ -240,7 +240,7 @@
   vars:
     _interface_0: "{{ eni_info.network_interfaces[0] }}"
 
-- name: test that reassignment of an IP already in use fails when not explcitly allowed (default for allow_reassignment == False)
+- name: Test that reassignment of an IP already in use fails when not explcitly allowed (default for allow_reassignment == False)
   amazon.aws.ec2_eni:
     device_index: 1
     private_ip_address: "{{ ip_1 }}"
@@ -259,7 +259,7 @@
       - '"move is not allowed" in result.msg'
 
 # ============================================================
-- name: allow reassignment to add the list of secondary addresses
+- name: Allow reassignment to add the list of secondary addresses
   amazon.aws.ec2_eni:
     allow_reassignment: true
     device_index: 1
@@ -278,7 +278,7 @@
       - result.interface.id == eni_id_1
       - result.interface.private_ip_addresses | length == 4
 
-- name: test reassigment is idempotent
+- name: Test reassigment is idempotent
   amazon.aws.ec2_eni:
     allow_reassignment: true
     device_index: 1
@@ -298,7 +298,7 @@
 
 # ============================================================
 
-- name: purge all the secondary addresses
+- name: Purge all the secondary addresses
   amazon.aws.ec2_eni:
     purge_secondary_private_ip_addresses: true
     device_index: 1

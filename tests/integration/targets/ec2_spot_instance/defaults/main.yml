@@ -1,8 +1,8 @@
 ---
 vpc_seed_a: "{{ resource_prefix }}"
 vpc_seed_b: "{{ resource_prefix }}-ec2_eni"
-vpc_prefix: 10.{{ 256 | random(seed=vpc_seed_a) }}.{{ 256 | random(seed=vpc_seed_b ) }}
-vpc_cidr: "{{ vpc_prefix}}.128/26"
+vpc_prefix: 10.{{ 256 | random(seed=vpc_seed_a) }}.{{ 256 | random(seed=vpc_seed_b) }}
+vpc_cidr: "{{ vpc_prefix }}.128/26"
 ip_1: "{{ vpc_prefix }}.132"
 ip_2: "{{ vpc_prefix }}.133"
 ip_3: "{{ vpc_prefix }}.134"

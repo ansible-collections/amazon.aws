@@ -1,5 +1,5 @@
 ---
-- name: delete security groups
+- name: Delete security groups
   amazon.aws.ec2_security_group:
     name: "{{ item }}"
     state: absent
@@ -9,7 +9,7 @@
     - "{{ resource_prefix }}-b"
     - "{{ resource_prefix }}-c"
 
-- name: delete subnets
+- name: Delete subnets
   amazon.aws.ec2_vpc_subnet:
     vpc_id: "{{ setup_vpc.vpc.id }}"
     cidr: "{{ item }}"
@@ -21,7 +21,7 @@
     - "{{ subnet_cidr_3 }}"
     - "{{ subnet_cidr_4 }}"
 
-- name: delete VPC
+- name: Delete VPC
   amazon.aws.ec2_vpc_net:
     cidr_block: "{{ vpc_cidr }}"
     state: absent

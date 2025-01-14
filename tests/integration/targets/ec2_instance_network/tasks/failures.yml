@@ -22,7 +22,6 @@
       - make_instance is failed
       - make_instance.msg == "The option 'assign_public_ip' cannot be set to true with multiple network interfaces."
 
-
 # Network interface with mutiple primary private ip address
 - name: Make instance with network interfaces with mutiple primary private ip address
   amazon.aws.ec2_instance:

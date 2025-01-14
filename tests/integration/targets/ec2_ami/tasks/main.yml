@@ -10,7 +10,7 @@
     # ============================================================
 
     # SETUP: vpc, ec2 key pair, subnet, security group, ec2 instance, snapshot
-    - name: create a VPC to work in
+    - name: Create a VPC to work in
       amazon.aws.ec2_vpc_net:
         cidr_block: "{{ vpc_cidr }}"
         state: present
@@ -19,13 +19,13 @@
           Name: "{{ ec2_ami_name }}_setup"
       register: setup_vpc
 
-    - name: create a key pair to use for creating an ec2 instance
+    - name: Create a key pair to use for creating an ec2 instance
       amazon.aws.ec2_key:
         name: "{{ ec2_ami_name }}_setup"
         state: present
       register: setup_key
 
-    - name: create a subnet to use for creating an ec2 instance
+    - name: Create a subnet to use for creating an ec2 instance
       amazon.aws.ec2_vpc_subnet:
         az: "{{ availability_zone }}"
         tags: "{{ ec2_ami_name }}_setup"
@@ -36,7 +36,7 @@
           Name: "{{ ec2_ami_name }}_setup"
       register: setup_subnet
 
-    - name: create a security group to use for creating an ec2 instance
+    - name: Create a security group to use for creating an ec2 instance
       amazon.aws.ec2_security_group:
         name: "{{ ec2_ami_name }}_setup"
         description: created by Ansible integration tests
@@ -44,7 +44,7 @@
         vpc_id: "{{ setup_vpc.vpc.id }}"
       register: setup_sg
 
-    - name: provision ec2 instance to create an image
+    - name: Provision ec2 instance to create an image
       amazon.aws.ec2_instance:
         state: running
         key_name: "{{ setup_key.key.name }}"
@@ -64,7 +64,7 @@
       ansible.builtin.set_fact:
         ec2_instance_id: "{{ setup_instance.instances[0].instance_id }}"
 
-    - name: take a snapshot of the instance to create an image
+    - name: Take a snapshot of the instance to create an image
       amazon.aws.ec2_snapshot:
         instance_id: "{{ ec2_instance_id }}"
         device_name: "{{ ec2_ami_root_disk }}"
@@ -88,7 +88,7 @@
 
     # ============================================================
 
-    - name: test clean failure if not providing image_id or name with state=present
+    - name: Test clean failure if not providing image_id or name with state=present
       amazon.aws.ec2_ami:
         instance_id: "{{ ec2_instance_id }}"
         state: present
@@ -100,7 +100,7 @@
       register: result
       ignore_errors: true
 
-    - name: assert error message is helpful
+    - name: Assert error message is helpful
       ansible.builtin.assert:
         that:
           - result.failed
@@ -108,7 +108,7 @@
 
     # ============================================================
 
-    - name: create an image from the instance (check mode)
+    - name: Create an image from the instance (check mode)
       amazon.aws.ec2_ami:
         instance_id: "{{ ec2_instance_id }}"
         state: present
@@ -121,12 +121,12 @@
       check_mode: true
       register: check_mode_result
 
-    - name: assert that check_mode result is changed
+    - name: Assert that check_mode result is changed
       ansible.builtin.assert:
         that:
           - check_mode_result is changed
 
-    - name: create an image from the instance
+    - name: Create an image from the instance
       amazon.aws.ec2_ami:
         instance_id: "{{ ec2_instance_id }}"
         state: present
@@ -138,24 +138,24 @@
         root_device_name: "{{ ec2_ami_root_disk }}"
       register: result
 
-    - name: set image id fact for deletion later
+    - name: Set image id fact for deletion later
       ansible.builtin.set_fact:
         ec2_ami_image_id: "{{ result.image_id }}"
 
-    - name: assert that image has been created
+    - name: Assert that image has been created
       ansible.builtin.assert:
         that:
           - result.changed
           - result.image_id.startswith('ami-')
           - "'Name' in result.tags and result.tags.Name == ec2_ami_name + '_ami'"
 
-    - name: get related snapshot info and ensure the tags have been propagated
+    - name: Get related snapshot info and ensure the tags have been propagated
       amazon.aws.ec2_snapshot_info:
         snapshot_ids:
           - "{{ result.block_device_mapping[ec2_ami_root_disk].snapshot_id }}"
       register: snapshot_result
 
-    - name: ensure the tags have been propagated to the snapshot
+    - name: Ensure the tags have been propagated to the snapshot
       ansible.builtin.assert:
         that:
           - "'tags' in snapshot_result.snapshots[0]"
@@ -163,7 +163,7 @@
 
     # ============================================================
 
-    - name: create an image from the instance with attached devices with no_device true (check mode)
+    - name: Create an image from the instance with attached devices with no_device true (check mode)
       amazon.aws.ec2_ami:
         name: "{{ ec2_ami_name }}_no_device_true_ami"
         instance_id: "{{ ec2_instance_id }}"
@@ -180,12 +180,12 @@
       check_mode: true
       register: check_mode_result
 
-    - name: assert that check_mode result is changed
+    - name: Assert that check_mode result is changed
       ansible.builtin.assert:
         that:
           - check_mode_result is changed
 
-    - name: create an image from the instance with attached devices with no_device true
+    - name: Create an image from the instance with attached devices with no_device true
       amazon.aws.ec2_ami:
         name: "{{ ec2_ami_name }}_no_device_true_ami"
         instance_id: "{{ ec2_instance_id }}"
@@ -201,17 +201,17 @@
         root_device_name: "{{ ec2_ami_root_disk }}"
       register: result_no_device_true
 
-    - name: set image id fact for deletion later
+    - name: Set image id fact for deletion later
       ansible.builtin.set_fact:
         ec2_ami_no_device_true_image_id: "{{ result_no_device_true.image_id }}"
 
-    - name: assert that image with no_device option yes has been created
+    - name: Assert that image with no_device option yes has been created
       ansible.builtin.assert:
         that:
           - result_no_device_true.changed
           - "'/dev/sdf' not in result_no_device_true.block_device_mapping"
 
-    - name: create an image from the instance with attached devices with no_device false
+    - name: Create an image from the instance with attached devices with no_device false
       amazon.aws.ec2_ami:
         name: "{{ ec2_ami_name }}_no_device_false_ami"
         instance_id: "{{ ec2_instance_id }}"
@@ -226,11 +226,11 @@
         root_device_name: "{{ ec2_ami_root_disk }}"
       register: result_no_device_false
 
-    - name: set image id fact for deletion later
+    - name: Set image id fact for deletion later
       ansible.builtin.set_fact:
         ec2_ami_no_device_false_image_id: "{{ result_no_device_false.image_id }}"
 
-    - name: assert that image with no_device option no has been created
+    - name: Assert that image with no_device option no has been created
       ansible.builtin.assert:
         that:
           - result_no_device_false.changed
@@ -238,13 +238,13 @@
 
     # ============================================================
 
-    - name: gather facts about the image created
+    - name: Gather facts about the image created
       amazon.aws.ec2_ami_info:
         image_ids: "{{ ec2_ami_image_id }}"
       register: ami_facts_result
       ignore_errors: true
 
-    - name: assert that the right image was found
+    - name: Assert that the right image was found
       ansible.builtin.assert:
         that:
           - ami_facts_result.images[0].image_id == ec2_ami_image_id
@@ -252,20 +252,20 @@
     # some ec2_ami_info tests to test if the filtering is working fine.
     # ============================================================
 
-    - name: gather info about the image
+    - name: Gather info about the image
       amazon.aws.ec2_ami_info:
         image_ids: "{{ ec2_region_images[ec2_region] }}"
       register: ami_info_result
       ignore_errors: true
 
-    - name: assert that the right image was found
+    - name: Assert that the right image was found
       ansible.builtin.assert:
         that:
           - ami_info_result.images[0].image_id == ec2_region_images[ec2_region]
 
     # ============================================================
 
-    - name: gather info about the image using boolean filter
+    - name: Gather info about the image using boolean filter
       amazon.aws.ec2_ami_info:
         image_ids: "{{ ec2_region_images[ec2_region] }}"
         filters:
@@ -273,14 +273,14 @@
       register: ami_info_result
       ignore_errors: true
 
-    - name: assert that the right image was found
+    - name: Assert that the right image was found
       ansible.builtin.assert:
         that:
           - ami_info_result.images[0].image_id == ec2_region_images[ec2_region]
 
     # ============================================================
 
-    - name: gather info about the image using integer filter
+    - name: Gather info about the image using integer filter
       amazon.aws.ec2_ami_info:
         image_ids: "{{ ec2_region_images[ec2_region] }}"
         filters:
@@ -289,14 +289,14 @@
       register: ami_info_result
       ignore_errors: true
 
-    - name: assert that the right image was found
+    - name: Assert that the right image was found
       ansible.builtin.assert:
         that:
           - ami_info_result.images[0].image_id == ec2_region_images[ec2_region]
 
     # ============================================================
 
-    - name: gather info about the image using string filter
+    - name: Gather info about the image using string filter
       amazon.aws.ec2_ami_info:
         image_ids: "{{ ec2_region_images[ec2_region] }}"
         filters:
@@ -304,7 +304,7 @@
       register: ami_info_result
       ignore_errors: true
 
-    - name: assert that the right image was found
+    - name: Assert that the right image was found
       ansible.builtin.assert:
         that:
           - ami_info_result.images[0].image_id == ec2_region_images[ec2_region]
@@ -312,7 +312,7 @@
     # e2_ami_info filtering tests ends
     # ============================================================
 
-    - name: delete the image (check mode)
+    - name: Delete the image (check mode)
       amazon.aws.ec2_ami:
         instance_id: "{{ ec2_instance_id }}"
         state: absent
@@ -327,12 +327,12 @@
       check_mode: true
       register: check_mode_result
 
-    - name: assert that check_mode result is changed
+    - name: Assert that check_mode result is changed
       ansible.builtin.assert:
         that:
           - check_mode_result is changed
 
-    - name: delete the image
+    - name: Delete the image
       amazon.aws.ec2_ami:
         instance_id: "{{ ec2_instance_id }}"
         state: absent
@@ -346,7 +346,7 @@
       ignore_errors: true
       register: result
 
-    - name: assert that the image has been deleted
+    - name: Assert that the image has been deleted
       ansible.builtin.assert:
         that:
           - result.changed
@@ -355,13 +355,13 @@
 
     # ==============================================================
 
-    - name: test removing an ami if no image ID is provided (expected failed=true)
+    - name: Test removing an ami if no image ID is provided (expected failed=true)
       amazon.aws.ec2_ami:
         state: absent
       register: result
       ignore_errors: true
 
-    - name: assert that an image ID is required
+    - name: Assert that an image ID is required
       ansible.builtin.assert:
         that:
           - result.failed
@@ -369,7 +369,7 @@
 
     # ============================================================
 
-    - name: create an image from the snapshot
+    - name: Create an image from the snapshot
       amazon.aws.ec2_ami:
         name: "{{ ec2_ami_name }}_ami"
         description: "{{ ec2_ami_description }}"
@@ -388,12 +388,12 @@
       register: result
       ignore_errors: true
 
-    - name: set image id fact for deletion later
+    - name: Set image id fact for deletion later
       ansible.builtin.set_fact:
         ec2_ami_image_id: "{{ result.image_id }}"
         ec2_ami_snapshot: "{{ result.block_device_mapping[ec2_ami_root_disk].snapshot_id }}"
 
-    - name: assert a new ami has been created
+    - name: Assert a new ami has been created
       ansible.builtin.assert:
         that:
           - result.changed
@@ -401,7 +401,7 @@
 
     # ============================================================
 
-    - name: test default launch permissions idempotence (check mode)
+    - name: Test default launch permissions idempotence (check mode)
       amazon.aws.ec2_ami:
         description: "{{ ec2_ami_description }}"
         state: present
@@ -421,12 +421,12 @@
       check_mode: true
       register: check_mode_result
 
-    - name: assert that check_mode result is not changed
+    - name: Assert that check_mode result is not changed
       ansible.builtin.assert:
         that:
           - check_mode_result is not changed
 
-    - name: test default launch permissions idempotence
+    - name: Test default launch permissions idempotence
       amazon.aws.ec2_ami:
         description: "{{ ec2_ami_description }}"
         state: present
@@ -445,7 +445,7 @@
             snapshot_id: "{{ setup_snapshot.snapshot_id }}"
       register: result
 
-    - name: assert a new ami has not been created
+    - name: Assert a new ami has not been created
       ansible.builtin.assert:
         that:
           - not result.changed
@@ -453,7 +453,7 @@
 
     # ============================================================
 
-    - name: add a tag to the AMI
+    - name: Add a tag to the AMI
       amazon.aws.ec2_ami:
         state: present
         description: "{{ ec2_ami_description }}"
@@ -464,13 +464,13 @@
         purge_tags: false
       register: result
 
-    - name: assert a tag was added
+    - name: Assert a tag was added
       ansible.builtin.assert:
         that:
           - "'Name' in result.tags and result.tags.Name == ec2_ami_name + '_ami'"
           - "'New' in result.tags and result.tags.New == 'Tag'"
 
-    - name: use purge_tags to remove a tag from the AMI
+    - name: Use purge_tags to remove a tag from the AMI
       amazon.aws.ec2_ami:
         state: present
         description: "{{ ec2_ami_description }}"
@@ -480,7 +480,7 @@
           New: Tag
       register: result
 
-    - name: assert a tag was removed
+    - name: Assert a tag was removed
       ansible.builtin.assert:
         that:
           - "'Name' not in result.tags"
@@ -488,7 +488,7 @@
 
     # ============================================================
 
-    - name: update AMI launch permissions (check mode)
+    - name: Update AMI launch permissions (check mode)
       amazon.aws.ec2_ami:
         state: present
         image_id: "{{ result.image_id }}"
@@ -500,12 +500,12 @@
       check_mode: true
       register: check_mode_result
 
-    - name: assert that check_mode result is changed
+    - name: Assert that check_mode result is changed
       ansible.builtin.assert:
         that:
           - check_mode_result is changed
 
-    - name: update AMI launch permissions
+    - name: Update AMI launch permissions
       amazon.aws.ec2_ami:
         state: present
         image_id: "{{ result.image_id }}"
@@ -516,14 +516,14 @@
           group_names: [all]
       register: result
 
-    - name: assert launch permissions were updated
+    - name: Assert launch permissions were updated
       ansible.builtin.assert:
         that:
           - result.changed
 
     # ============================================================
 
-    - name: modify the AMI description (check mode)
+    - name: Modify the AMI description (check mode)
       amazon.aws.ec2_ami:
         state: present
         image_id: "{{ result.image_id }}"
@@ -536,12 +536,12 @@
       check_mode: true
       register: check_mode_result
 
-    - name: assert that check_mode result is changed
+    - name: Assert that check_mode result is changed
       ansible.builtin.assert:
         that:
           - check_mode_result is changed
 
-    - name: modify the AMI description
+    - name: Modify the AMI description
       amazon.aws.ec2_ami:
         state: present
         image_id: "{{ result.image_id }}"
@@ -553,14 +553,14 @@
           group_names: [all]
       register: result
 
-    - name: assert the description changed
+    - name: Assert the description changed
       ansible.builtin.assert:
         that:
           - result.changed
 
     # ============================================================
 
-    - name: remove public launch permissions
+    - name: Remove public launch permissions
       amazon.aws.ec2_ami:
         state: present
         image_id: "{{ result.image_id }}"
@@ -571,14 +571,14 @@
           group_names: []
       register: result
 
-    - name: assert launch permissions were updated
+    - name: Assert launch permissions were updated
       ansible.builtin.assert:
         that:
           - result.changed
 
     # ============================================================
 
-    - name: delete ami without deleting the snapshot (default is not to delete)
+    - name: Delete ami without deleting the snapshot (default is not to delete)
       amazon.aws.ec2_ami:
         instance_id: "{{ ec2_instance_id }}"
         state: absent
@@ -590,24 +590,24 @@
       ignore_errors: true
       register: result
 
-    - name: assert that the image has been deleted
+    - name: Assert that the image has been deleted
       ansible.builtin.assert:
         that:
           - result.changed
           - "'image_id' not in result"
 
-    - name: ensure the snapshot still exists
+    - name: Ensure the snapshot still exists
       amazon.aws.ec2_snapshot_info:
         snapshot_ids:
           - "{{ ec2_ami_snapshot }}"
       register: snapshot_result
 
-    - name: assert the snapshot wasn't deleted
+    - name: Assert the snapshot wasn't deleted
       ansible.builtin.assert:
         that:
           - snapshot_result.snapshots[0].snapshot_id == ec2_ami_snapshot
 
-    - name: delete ami for a second time (check mode)
+    - name: Delete ami for a second time (check mode)
       amazon.aws.ec2_ami:
         instance_id: "{{ ec2_instance_id }}"
         state: absent
@@ -619,12 +619,12 @@
       check_mode: true
       register: check_mode_result
 
-    - name: assert that check_mode result is not changed
+    - name: Assert that check_mode result is not changed
       ansible.builtin.assert:
         that:
           - check_mode_result is not changed
 
-    - name: delete ami for a second time
+    - name: Delete ami for a second time
       amazon.aws.ec2_ami:
         instance_id: "{{ ec2_instance_id }}"
         state: absent
@@ -635,7 +635,7 @@
         wait: true
       register: result
 
-    - name: assert that image does not exist
+    - name: Assert that image does not exist
       ansible.builtin.assert:
         that:
           - not result.changed
@@ -643,7 +643,7 @@
 
     # ============================================================
 
-    - name: create an image from the snapshot with boot_mode and tpm_support
+    - name: Create an image from the snapshot with boot_mode and tpm_support
       amazon.aws.ec2_ami:
         name: "{{ ec2_ami_name }}_ami-boot-tpm"
         description: "{{ ec2_ami_description }}"
@@ -664,18 +664,18 @@
       register: result
       ignore_errors: true
 
-    - name: set image id fact for deletion later
+    - name: Set image id fact for deletion later
       ansible.builtin.set_fact:
         ec2_ami_image_id_boot_tpm: "{{ result.image_id }}"
         ec2_ami_snapshot_boot_tpm: "{{ result.block_device_mapping[ec2_ami_root_disk].snapshot_id }}"
 
-    - name: gather facts about the image created
+    - name: Gather facts about the image created
       amazon.aws.ec2_ami_info:
         image_ids: "{{ ec2_ami_image_id_boot_tpm }}"
       register: ami_facts_result_boot_tpm
       ignore_errors: true
 
-    - name: assert that new ami has been created with desired options
+    - name: Assert that new ami has been created with desired options
       ansible.builtin.assert:
         that:
           - result.changed
@@ -686,7 +686,7 @@
 
     # === Test modify launch permissions org_arns and org_unit_arns=========================
 
-    - name: create an image from the instance
+    - name: Create an image from the instance
       amazon.aws.ec2_ami:
         instance_id: "{{ ec2_instance_id }}"
         state: present
@@ -698,7 +698,7 @@
         root_device_name: "{{ ec2_ami_root_disk }}"
       register: permissions_create_result
 
-    - name: modify the AMI launch permissions
+    - name: Modify the AMI launch permissions
       amazon.aws.ec2_ami:
         state: present
         image_id: "{{ permissions_create_result.image_id }}"
@@ -716,7 +716,7 @@
         describe_image_attributes: true
       register: permissions_info_result
 
-    - name: assert that launch permissions have changed
+    - name: Assert that launch permissions have changed
       ansible.builtin.assert:
         that:
           - permissions_update_result.changed
@@ -735,14 +735,14 @@
       ansible.builtin.debug:
         msg: "***** TESTING COMPLETE. COMMENCE TEARDOWN *****"
 
-    - name: delete ami
+    - name: Delete ami
       amazon.aws.ec2_ami:
         state: absent
         image_id: "{{ ec2_ami_image_id_boot_tpm }}"
         wait: true
       ignore_errors: true
 
-    - name: delete ami
+    - name: Delete ami
       amazon.aws.ec2_ami:
         state: absent
         image_id: "{{ ec2_ami_image_id }}"
@@ -750,21 +750,21 @@
         wait: true
       ignore_errors: true
 
-    - name: delete ami
+    - name: Delete ami
       amazon.aws.ec2_ami:
         state: absent
         image_id: "{{ ec2_ami_no_device_true_image_id }}"
         wait: true
       ignore_errors: true
 
-    - name: delete ami
+    - name: Delete ami
       amazon.aws.ec2_ami:
         state: absent
         image_id: "{{ ec2_ami_no_device_false_image_id }}"
         wait: true
       ignore_errors: true
 
-    - name: delete ami
+    - name: Delete ami
       amazon.aws.ec2_ami:
         state: absent
         image_id: "{{ ec2_ami_image_id }}"
@@ -772,13 +772,13 @@
         wait: true
       ignore_errors: true
 
-    - name: remove setup snapshot of ec2 instance
+    - name: Remove setup snapshot of ec2 instance
       amazon.aws.ec2_snapshot:
         state: absent
         snapshot_id: "{{ setup_snapshot.snapshot_id }}"
       ignore_errors: true
 
-    - name: remove setup ec2 instance
+    - name: Remove setup ec2 instance
       amazon.aws.ec2_instance:
         state: absent
         instance_ids:
@@ -786,13 +786,13 @@
         wait: true
       ignore_errors: true
 
-    - name: remove setup keypair
+    - name: Remove setup keypair
       amazon.aws.ec2_key:
-        name: "{{ec2_ami_name}}_setup"
+        name: "{{ ec2_ami_name }}_setup"
         state: absent
       ignore_errors: true
 
-    - name: remove setup security group
+    - name: Remove setup security group
       amazon.aws.ec2_security_group:
         name: "{{ ec2_ami_name }}_setup"
         description: created by Ansible integration tests
@@ -800,10 +800,10 @@
         vpc_id: "{{ setup_vpc.vpc.id }}"
       ignore_errors: true
 
-    - name: remove setup subnet
+    - name: Remove setup subnet
       amazon.aws.ec2_vpc_subnet:
         az: "{{ availability_zone }}"
-        tags: "{{ec2_ami_name}}_setup"
+        tags: "{{ ec2_ami_name }}_setup"
         vpc_id: "{{ setup_vpc.vpc.id }}"
         cidr: "{{ subnet_cidr }}"
         state: absent
@@ -811,7 +811,7 @@
           Name: "{{ ec2_ami_name }}_setup"
       ignore_errors: true
 
-    - name: remove setup VPC
+    - name: Remove setup VPC
       amazon.aws.ec2_vpc_net:
         cidr_block: "{{ vpc_cidr }}"
         state: absent

@@ -1,5 +1,5 @@
 ---
-- name: rds_instance / snapshot_mgmt integration tests
+- name: Rds_instance / snapshot_mgmt integration tests
 
   module_defaults:
     group/aws:

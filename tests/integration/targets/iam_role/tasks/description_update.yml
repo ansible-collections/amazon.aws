@@ -41,7 +41,7 @@
       - iam_role.iam_role.role_name == test_role
       - iam_role.iam_role.description == "Ansible Test Role "+resource_prefix
 
-- name: iam_role_info after adding Description
+- name: Iam_role_info after adding Description
   amazon.aws.iam_role_info:
     name: "{{ test_role }}"
   register: role_info
@@ -111,7 +111,7 @@
       - iam_role.iam_role.role_name == test_role
       - iam_role.iam_role.description == 'Ansible Test Role (updated) '+resource_prefix
 
-- name: iam_role_info after updating Description
+- name: Iam_role_info after updating Description
   amazon.aws.iam_role_info:
     name: "{{ test_role }}"
   register: role_info

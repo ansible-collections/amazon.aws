@@ -1,3 +1,4 @@
+---
 - name: Test deletion of launch template
   vars:
     deletion_launch_template_name: "{{ resource_prefix }}-deletion"
@@ -28,10 +29,10 @@
           - _templates.launch_templates[0].versions | length == 5
           - _templates.launch_templates[0].latest_version_number == 5
           - _templates.launch_templates[0].default_version_number == 5
-  
-    #====================================================================
+
+    # ====================================================================
     # Validate deletion errors
-    #====================================================================
+    # ====================================================================
     - name: Delete a non-existent template
       amazon.aws.ec2_launch_template:
         name: "{{ resource_prefix }}-not-a-real-template"
@@ -40,7 +41,7 @@
       ignore_errors: true
 
     - name: Ensure module did not failed while trying to delete non-existent template
-      assert:
+      ansible.builtin.assert:
         that:
           - delete_fake_template is not failed
 
@@ -91,9 +92,9 @@
       vars:
         error_m: "The following versions [10] do not exist for launch template id"
 
-    #====================================================================
+    # ====================================================================
     # Delete default version and set latest version as new default
-    #====================================================================
+    # ====================================================================
     - name: Delete default version and set a new default version (check mode)
       amazon.aws.ec2_launch_template:
         name: "{{ deletion_launch_template_name }}"
@@ -144,9 +145,9 @@
           - _templates.launch_templates[0].latest_version_number == 4
           - _templates.launch_templates[0].default_version_number == 4
 
-    #====================================================================
+    # ====================================================================
     # Delete a single version and set a new default version different from the latest
-    #====================================================================
+    # ====================================================================
     - name: Delete a single version and set a new default version different from the latest (check mode)
       amazon.aws.ec2_launch_template:
         name: "{{ deletion_launch_template_name }}"
@@ -199,9 +200,9 @@
           - _templates.launch_templates[0].latest_version_number == 4
           - _templates.launch_templates[0].default_version_number == 1
 
-    #====================================================================
+    # ====================================================================
     # Delete multiple versions
-    #====================================================================
+    # ====================================================================
     - name: Delete multiple versions (check mode)
       amazon.aws.ec2_launch_template:
         name: "{{ deletion_launch_template_name }}"
@@ -252,9 +253,9 @@
           - _templates.launch_templates[0].latest_version_number == 4
           - _templates.launch_templates[0].default_version_number == 4
 
-    #====================================================================
+    # ====================================================================
     # Delete launch template
-    #====================================================================
+    # ====================================================================
     - name: Delete launch template (check mode)
       amazon.aws.ec2_launch_template:
         name: "{{ deletion_launch_template_name }}"
@@ -312,9 +313,9 @@
           - delete_template_idempotency.deleted_template == {}
           - delete_template_idempotency.deleted_versions == []
 
-    #====================================================================
+    # ====================================================================
     # Delete launch template with multiple versions
-    #====================================================================
+    # ====================================================================
     - name: Create multiple versions of the launch template
       amazon.aws.ec2_launch_template:
         name: "{{ deletion_launch_template_name_2 }}"

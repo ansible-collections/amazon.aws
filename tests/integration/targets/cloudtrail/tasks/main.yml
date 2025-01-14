@@ -71,17 +71,17 @@
           - '"parameters are required together" in output.msg'
           - '"cloudwatch_logs_role_arn" in output.msg'
 
-    #- name: 'Global Logging must be enabled when enabling Multi-region'
-    #  amazon.aws.cloudtrail:
-    #    state: present
-    #    name: '{{ cloudtrail_name }}'
-    #    include_global_events: no
-    #    is_multi_region_trail: yes
-    #  register: output
-    #  ignore_errors: yes
-    #- assert:
-    #    that:
-    #    - output is failed
+    # - name: 'Global Logging must be enabled when enabling Multi-region'
+    #   amazon.aws.cloudtrail:
+    #     state: present
+    #     name: '{{ cloudtrail_name }}'
+    #     include_global_events: no
+    #     is_multi_region_trail: yes
+    #   register: output
+    #   ignore_errors: yes
+    # - assert:
+    #     that:
+    #     - output is failed
 
     # ============================================================
     #   Preparation
@@ -173,7 +173,7 @@
           - arn:aws:iam::aws:policy/AWSCloudTrail_FullAccess
       register: output_cloudwatch_no_kms_role
 
-    - name: pause to ensure role exists before attaching policy
+    - name: Pause to ensure role exists before attaching policy
       ansible.builtin.pause:
         seconds: 15
 
@@ -507,40 +507,40 @@
         that:
           - info.trail_list[0].sns_topic_name == sns_topic+"-2"
 
-    #- name: 'Remove SNS Topic (CHECK MODE)'
-    #  amazon.aws.cloudtrail:
-    #    state: present
-    #    name: '{{ cloudtrail_name }}'
-    #    sns_topic_name: ''
-    #  register: output
-    #  check_mode: yes
-    #- assert:
-    #    that:
-    #    - output is changed
+    # - name: 'Remove SNS Topic (CHECK MODE)'
+    #   amazon.aws.cloudtrail:
+    #     state: present
+    #     name: '{{ cloudtrail_name }}'
+    #     sns_topic_name: ''
+    #   register: output
+    #   check_mode: yes
+    # - assert:
+    #     that:
+    #     - output is changed
 
-    #- name: 'Remove SNS Topic'
-    #  amazon.aws.cloudtrail:
-    #    state: present
-    #    name: '{{ cloudtrail_name }}'
-    #    sns_topic_name: ''
-    #  register: output
-    #- assert:
-    #    that:
-    #    - output is changed
-    #    - output.trail.name == cloudtrail_name
-    #    - output.trail.sns_topic_name is none
+    # - name: 'Remove SNS Topic'
+    #   amazon.aws.cloudtrail:
+    #     state: present
+    #     name: '{{ cloudtrail_name }}'
+    #     sns_topic_name: ''
+    #   register: output
+    # - assert:
+    #     that:
+    #     - output is changed
+    #     - output.trail.name == cloudtrail_name
+    #     - output.trail.sns_topic_name is none
 
-    #- name: 'Remove SNS Topic (no change)'
-    #  amazon.aws.cloudtrail:
-    #    state: present
-    #    name: '{{ cloudtrail_name }}'
-    #    sns_topic_name: ''
-    #  register: output
-    #- assert:
-    #    that:
-    #    - output is not changed
-    #    - output.trail.name == cloudtrail_name
-    #    - output.trail.sns_topic_name is none
+    # - name: 'Remove SNS Topic (no change)'
+    #   amazon.aws.cloudtrail:
+    #     state: present
+    #     name: '{{ cloudtrail_name }}'
+    #     sns_topic_name: ''
+    #   register: output
+    # - assert:
+    #     that:
+    #     - output is not changed
+    #     - output.trail.name == cloudtrail_name
+    #     - output.trail.sns_topic_name is none
 
     # ============================================================
 
@@ -662,48 +662,48 @@
           - info.trail_list[0].cloud_watch_logs_log_group_arn == output_cloudwatch_log_group2.arn
           - info.trail_list[0].cloud_watch_logs_role_arn == output_cloudwatch_role.iam_role.arn
 
-    #- name: 'Remove CloudWatch Log Group (CHECK MODE)'
-    #  amazon.aws.cloudtrail:
-    #    state: present
-    #    name: '{{ cloudtrail_name }}'
-    #    cloudwatch_logs_log_group_arn: ''
-    #    cloudwatch_logs_role_arn: ''
-    #  register: output
-    #  check_mode: yes
-    #- assert:
-    #    that:
-    #    - output is changed
-    #    - output.trail.name == cloudtrail_name
-    #    - output.trail.cloud_watch_logs_log_group_arn is none
-    #    - output.trail.cloud_watch_logs_role_arn is none
+    # - name: 'Remove CloudWatch Log Group (CHECK MODE)'
+    #   amazon.aws.cloudtrail:
+    #     state: present
+    #     name: '{{ cloudtrail_name }}'
+    #     cloudwatch_logs_log_group_arn: ''
+    #     cloudwatch_logs_role_arn: ''
+    #   register: output
+    #   check_mode: yes
+    # - assert:
+    #     that:
+    #     - output is changed
+    #     - output.trail.name == cloudtrail_name
+    #     - output.trail.cloud_watch_logs_log_group_arn is none
+    #     - output.trail.cloud_watch_logs_role_arn is none
 
-    #- name: 'Remove CloudWatch Log Group'
-    #  amazon.aws.cloudtrail:
-    #    state: present
-    #    name: '{{ cloudtrail_name }}'
-    #    cloudwatch_logs_log_group_arn: ''
-    #    cloudwatch_logs_role_arn: ''
-    #  register: output
-    #- assert:
-    #    that:
-    #    - output is changed
-    #    - output.trail.name == cloudtrail_name
-    #    - output.trail.cloud_watch_logs_log_group_arn is none
-    #    - output.trail.cloud_watch_logs_role_arn is none
+    # - name: 'Remove CloudWatch Log Group'
+    #   amazon.aws.cloudtrail:
+    #     state: present
+    #     name: '{{ cloudtrail_name }}'
+    #     cloudwatch_logs_log_group_arn: ''
+    #     cloudwatch_logs_role_arn: ''
+    #   register: output
+    # - assert:
+    #     that:
+    #     - output is changed
+    #     - output.trail.name == cloudtrail_name
+    #     - output.trail.cloud_watch_logs_log_group_arn is none
+    #     - output.trail.cloud_watch_logs_role_arn is none
 
-    #- name: 'Remove CloudWatch Log Group (no change)'
-    #  amazon.aws.cloudtrail:
-    #    state: present
-    #    name: '{{ cloudtrail_name }}'
-    #    cloudwatch_logs_log_group_arn: ''
-    #    cloudwatch_logs_role_arn: ''
-    #  register: output
-    #- assert:
-    #    that:
-    #    - output is not changed
-    #    - output.trail.name == cloudtrail_name
-    #    - output.trail.cloud_watch_logs_log_group_arn is none
-    #    - output.trail.cloud_watch_logs_role_arn is none
+    # - name: 'Remove CloudWatch Log Group (no change)'
+    #   amazon.aws.cloudtrail:
+    #     state: present
+    #     name: '{{ cloudtrail_name }}'
+    #     cloudwatch_logs_log_group_arn: ''
+    #     cloudwatch_logs_role_arn: ''
+    #   register: output
+    # - assert:
+    #     that:
+    #     - output is not changed
+    #     - output.trail.name == cloudtrail_name
+    #     - output.trail.cloud_watch_logs_log_group_arn is none
+    #     - output.trail.cloud_watch_logs_role_arn is none
 
     # ============================================================
 
@@ -1333,16 +1333,16 @@
         role_arn: "{{ output_cloudwatch_no_kms_role.iam_role.arn }}"
         role_session_name: cloudtrailNoKms
         region: "{{ aws_region }}"
-      register: noKms_assumed_role
+      register: no_kms_assumed_role
 
     - name: Enable logging encryption w/ alias (no change, no kms permmissions, check mode)
       amazon.aws.cloudtrail:
         state: present
         name: "{{ cloudtrail_name }}"
         kms_key_id: alias/{{ kms_alias }}
-        access_key: "{{ noKms_assumed_role.sts_creds.access_key }}"
-        secret_key: "{{ noKms_assumed_role.sts_creds.secret_key }}"
-        session_token: "{{ noKms_assumed_role.sts_creds.session_token }}"
+        access_key: "{{ no_kms_assumed_role.sts_creds.access_key }}"
+        secret_key: "{{ no_kms_assumed_role.sts_creds.secret_key }}"
+        session_token: "{{ no_kms_assumed_role.sts_creds.session_token }}"
       check_mode: true
       register: output
     - ansible.builtin.assert:
@@ -1445,7 +1445,7 @@
     - ansible.builtin.assert:
         that:
           - output is changed
-          #- output.exists == True
+          # - output.exists == True
           - output.trail.name == cloudtrail_name
           - output.trail.home_region == aws_region
           - output.trail.include_global_service_events == True

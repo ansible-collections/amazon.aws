@@ -1,16 +1,19 @@
 ---
-- hosts: 127.0.0.1
+# Assumes that a cache was built, then the instances were removed.
+- name: Verify cache is updated upon refresh_inventory
+  hosts: 127.0.0.1
   connection: local
   gather_facts: false
   tasks:
-    - name: assert cache was used to populate inventory
+    - name: Assert cache was used to populate inventory
       ansible.builtin.assert:
         that:
           - "'aws_ec2' in groups"
           - groups.aws_ec2 | length > 0
 
+    # When we refresh the inventory the cached hosts should be removed
     - ansible.builtin.meta: refresh_inventory
-    - name: assert refresh_inventory updated the cache
+    - name: Assert refresh_inventory updated the cache
       ansible.builtin.assert:
         that:
           - "'aws_ec2' in groups"

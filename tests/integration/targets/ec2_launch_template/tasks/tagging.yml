@@ -40,7 +40,7 @@
         filters:
           launch-template-name: "{{ test_launch_template_name }}"
       register: _templates
-    
+
     - name: Ensure the launch template was created with tags
       ansible.builtin.assert:
         that:
@@ -55,8 +55,10 @@
           - instance_tags.tags == launch_template_instance_tags
           - network_interface_tags.tags == launch_template_network_tags
       vars:
-        instance_tags: "{{ _templates.launch_templates[0].versions[0].launch_template_data.tag_specifications | selectattr('resource_type', 'equalto', 'instance') | list | first }}"
-        network_interface_tags: "{{ _templates.launch_templates[0].versions[0].launch_template_data.tag_specifications | selectattr('resource_type', 'equalto', 'network-interface') | list | first }}"
+        instance_tags: "{{ _templates.launch_templates[0].versions[0].launch_template_data.tag_specifications | selectattr('resource_type', 'equalto', 'instance')
+          | list | first }}"
+        network_interface_tags: "{{ _templates.launch_templates[0].versions[0].launch_template_data.tag_specifications | selectattr('resource_type', 'equalto', 'network-interface')
+          | list | first }}"
 
     # Create launch template once again with same tags (expected no change)
     - name: Create launch template once again with same tags (expected no change)
@@ -97,8 +99,10 @@
           - instance_tags.tags == launch_template_instance_tags
           - network_interface_tags.tags == launch_template_network_tags
       vars:
-        instance_tags: "{{ _templates.launch_templates[0].versions[0].launch_template_data.tag_specifications | selectattr('resource_type', 'equalto', 'instance') | list | first }}"
-        network_interface_tags: "{{ _templates.launch_templates[0].versions[0].launch_template_data.tag_specifications | selectattr('resource_type', 'equalto', 'network-interface') | list | first }}"
+        instance_tags: "{{ _templates.launch_templates[0].versions[0].launch_template_data.tag_specifications | selectattr('resource_type', 'equalto', 'instance')
+          | list | first }}"
+        network_interface_tags: "{{ _templates.launch_templates[0].versions[0].launch_template_data.tag_specifications | selectattr('resource_type', 'equalto', 'network-interface')
+          | list | first }}"
 
     # Add new tag
     - name: Add new tag with purge_tags=false
@@ -141,8 +145,10 @@
           - instance_tags.tags == launch_template_instance_tags
           - network_interface_tags.tags == launch_template_network_tags
       vars:
-        instance_tags: "{{ _templates.launch_templates[0].versions[0].launch_template_data.tag_specifications | selectattr('resource_type', 'equalto', 'instance') | list | first }}"
-        network_interface_tags: "{{ _templates.launch_templates[0].versions[0].launch_template_data.tag_specifications | selectattr('resource_type', 'equalto', 'network-interface') | list | first }}"
+        instance_tags: "{{ _templates.launch_templates[0].versions[0].launch_template_data.tag_specifications | selectattr('resource_type', 'equalto', 'instance')
+          | list | first }}"
+        network_interface_tags: "{{ _templates.launch_templates[0].versions[0].launch_template_data.tag_specifications | selectattr('resource_type', 'equalto', 'network-interface')
+          | list | first }}"
 
     # Add new launch template version and update tags
     - name: Add new launch template version and update tags

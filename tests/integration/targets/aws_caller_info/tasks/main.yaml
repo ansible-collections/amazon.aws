@@ -6,11 +6,11 @@
       secret_key: "{{ aws_secret_key }}"
       session_token: "{{ security_token | default(omit) }}"
   block:
-    - name: retrieve caller facts
+    - name: Retrieve caller facts
       amazon.aws.aws_caller_info:
       register: result
 
-    - name: assert correct keys are returned
+    - name: Assert correct keys are returned
       ansible.builtin.assert:
         that:
           - result.account is not none

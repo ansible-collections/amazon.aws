@@ -47,7 +47,7 @@
       - iam_role is not changed
       - iam_role.iam_role.role_name == test_role
 
-- name: iam_role_info after adding Managed Policy
+- name: Iam_role_info after adding Managed Policy
   amazon.aws.iam_role_info:
     name: "{{ test_role }}"
   register: role_info
@@ -127,7 +127,7 @@
       - iam_role is not changed
       - iam_role.iam_role.role_name == test_role
 
-- name: iam_role_info after updating Managed Policy without purge
+- name: Iam_role_info after updating Managed Policy without purge
   amazon.aws.iam_role_info:
     name: "{{ test_role }}"
   register: role_info
@@ -204,7 +204,7 @@
       - iam_role is not changed
       - iam_role.iam_role.role_name == test_role
 
-- name: iam_role_info after updating Managed Policy with purge
+- name: Iam_role_info after updating Managed Policy with purge
   amazon.aws.iam_role_info:
     name: "{{ test_role }}"
   register: role_info

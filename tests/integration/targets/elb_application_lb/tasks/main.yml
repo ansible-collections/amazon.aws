@@ -133,7 +133,6 @@
         encryption: aws:kms
         policy: "{{ lookup('template', 'policy.json') }}"
 
-
     - name: Run tests for creating ALB with listener having multiple certificates
       ansible.builtin.import_tasks: alb_with_multiple_listener_certs.yml
 

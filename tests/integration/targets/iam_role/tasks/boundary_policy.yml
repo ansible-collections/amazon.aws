@@ -53,7 +53,7 @@
       - iam_role is not changed
       - iam_role.iam_role.role_name == test_role
 
-- name: iam_role_info after adding boundary policy
+- name: Iam_role_info after adding boundary policy
   amazon.aws.iam_role_info:
     name: "{{ test_role }}"
   register: role_info

@@ -20,7 +20,7 @@
               delete_on_termination: true
               volume_type: standard
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
         instance_type: "{{ ec2_instance_type }}"
         wait: true
       register: block_device_instances
@@ -54,7 +54,7 @@
               delete_on_termination: true
               volume_type: standard
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
         instance_type: "{{ ec2_instance_type }}"
       check_mode: true
 
@@ -99,7 +99,7 @@
               volume_type: gp3
               throughput: 500
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
         instance_type: "{{ ec2_instance_type }}"
         wait: true
       register: block_device_instances_gp3

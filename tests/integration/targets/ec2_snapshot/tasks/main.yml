@@ -284,7 +284,7 @@
       ignore_errors: true
       register: info_result
 
-    - name: assert that operation failed
+    - name: Assert that operation failed
       ansible.builtin.assert:
         that:
           - info_result is failed
@@ -298,7 +298,7 @@
       ignore_errors: true
       register: info_result
 
-    - name: assert that operation failed
+    - name: Assert that operation failed
       ansible.builtin.assert:
         that:
           - info_result is failed
@@ -386,7 +386,7 @@
 
     - name: Delete detached and untagged volume
       amazon.aws.ec2_vol:
-        id: "{{ volume_detached.volume_id}}"
+        id: "{{ volume_detached.volume_id }}"
         state: absent
       ignore_errors: true
 

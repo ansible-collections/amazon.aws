@@ -17,7 +17,7 @@
         license_specifications:
           - license_configuration_arn: "{{ ec2_license_configuration_arn }}"
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
         instance_type: "{{ ec2_instance_type }}"
         wait: true
       ignore_errors: true

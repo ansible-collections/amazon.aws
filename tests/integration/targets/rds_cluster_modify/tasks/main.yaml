@@ -12,13 +12,12 @@
   #   import_tasks: remove_from_global_db.yaml
 
     - name: Run tests for testing serverless v2 scaling configuration
-      import_tasks: create_update_cluster_serverless_v2_scaling_configuration.yaml
-
+      ansible.builtin.import_tasks: create_update_cluster_serverless_v2_scaling_configuration.yaml
     - name: Ensure the resource doesn't exist
       amazon.aws.rds_cluster:
         id: "{{ cluster_id }}"
         state: absent
-        engine: "{{ engine}}"
+        engine: "{{ engine }}"
         username: "{{ username }}"
         password: "{{ password }}"
         skip_final_snapshot: true
@@ -63,7 +62,7 @@
           - "'master_username' in _result_create_source_db_cluster"
           - _result_create_source_db_cluster.master_username == username
           - "'port' in _result_create_source_db_cluster"
-          - _result_create_source_db_cluster.port == port
+          - _result_create_source_db_cluster.port == db_port
           - "'status' in _result_create_source_db_cluster"
           - _result_create_source_db_cluster.status == "available"
           - "'tags' in _result_create_source_db_cluster"
@@ -98,7 +97,7 @@
           - "'master_username' in _result_modify_password"
           - _result_modify_password.master_username == username
           - "'port' in _result_create_source_db_cluster"
-          - _result_modify_password.port == port
+          - _result_modify_password.port == db_port
           - "'status' in _result_modify_password"
           - _result_modify_password.status == "available"
           - "'tags' in _result_modify_password"
@@ -172,27 +171,18 @@
           - "'tags' in _result_modify_id"
           - "'vpc_security_groups' in _result_modify_id"
 
-    - name: Check if DB cluster parameter group exists
-      ansible.builtin.command: aws rds describe-db-cluster-parameter-groups --db-cluster-parameter-group-name {{ new_db_parameter_group_name }}
-      environment:
-        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
-        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
-        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
-        AWS_DEFAULT_REGION: "{{ aws_region }}"
-      register: _result_check_db_parameter_group
-      ignore_errors: true
-      changed_when: _result_check_db_parameter_group.rc == 0
-
     - name: Create DB cluster parameter group if not exists
-      ansible.builtin.command: aws rds create-db-cluster-parameter-group --db-cluster-parameter-group-name {{ new_db_parameter_group_name }} --db-parameter-group-family
-        aurora-mysql8.0 --description "Test DB cluster parameter group"
-      environment:
-        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
-        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
-        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
-        AWS_DEFAULT_REGION: "{{ aws_region }}"
+      amazon.aws.rds_cluster_param_group:
+        name: "{{ new_db_parameter_group_name }}"
+        state: present
+        db_parameter_group_family: aurora-mysql8.0
+        description: "Test DB cluster parameter group"
       register: _result_create_db_parameter_group
-      when: _result_check_db_parameter_group.rc != 0
+
+    - name: Check param group was successfully created
+      ansible.builtin.assert:
+        that:
+          - _result_create_db_parameter_group is changed
 
     - name: Modify DB cluster parameter group
       amazon.aws.rds_cluster:
@@ -270,11 +260,8 @@
         skip_final_snapshot: true
       ignore_errors: true
 
-    - name: Delete cluster parameter group
-      ansible.builtin.command: aws rds delete-db-cluster-parameter-group --db-cluster-parameter-group-name {{ new_db_parameter_group_name }}
-      environment:
-        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
-        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
-        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
-        AWS_DEFAULT_REGION: "{{ aws_region }}"
-      ignore_errors: true
+    - name: Create DB cluster parameter group if not exists
+      amazon.aws.rds_cluster_param_group:
+        name: "{{ new_db_parameter_group_name }}"
+        state: absent
+      ignore_errors: true  # noqa: ignore-errors

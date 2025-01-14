@@ -1,5 +1,4 @@
 ---
-
 - block:
     # Ensure profile doesn't already exist (from an old test)
     - name: Delete Instance Profile
@@ -109,7 +108,6 @@
     - ansible.builtin.assert:
         that:
           - iam_instance_profile.iam_instance_profiles | length == 1
-
 
     # Profile does exist, don't delete
     - name: Remove IAM Role and don't delete profile (with existent profile)

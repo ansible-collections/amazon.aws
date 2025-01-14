@@ -41,22 +41,22 @@
       register: tag_profile
       check_mode: true
 
-    - name: assert would change
+    - name: Assert would change
       ansible.builtin.assert:
         that:
           - tag_profile is changed
 
-    - name: add tags
+    - name: Add tags
       amazon.aws.iam_instance_profile:
         tags: "{{ first_tags }}"
         state: present
       register: tag_profile
 
-    - name: get instance profile facts
+    - name: Get instance profile facts
       amazon.aws.iam_instance_profile_info: {}
       register: tag_profile_info
 
-    - name: verify the tags were added
+    - name: Verify the tags were added
       ansible.builtin.assert:
         that:
           - tag_profile is changed
@@ -70,21 +70,21 @@
       register: tag_profile
       check_mode: true
 
-    - name: assert would not change
+    - name: Assert would not change
       ansible.builtin.assert:
         that:
           - tag_profile is not changed
 
-    - name: add tags - IDEMPOTENCY
+    - name: Add tags - IDEMPOTENCY
       amazon.aws.iam_instance_profile:
         tags: "{{ first_tags }}"
         state: present
       register: tag_profile
-    - name: get instance profile facts
+    - name: Get instance profile facts
       amazon.aws.iam_instance_profile_info: {}
       register: tag_profile_info
 
-    - name: verify no change
+    - name: Verify no change
       ansible.builtin.assert:
         that:
           - tag_profile is not changed
@@ -100,21 +100,21 @@
       register: tag_profile
       check_mode: true
 
-    - name: assert would change
+    - name: Assert would change
       ansible.builtin.assert:
         that:
           - tag_profile is changed
 
-    - name: modify tags with purge
+    - name: Modify tags with purge
       amazon.aws.iam_instance_profile:
         tags: "{{ second_tags }}"
         state: present
       register: tag_profile
-    - name: get instance profile facts
+    - name: Get instance profile facts
       amazon.aws.iam_instance_profile_info:
       register: tag_profile_info
 
-    - name: verify the tags were added
+    - name: Verify the tags were added
       ansible.builtin.assert:
         that:
           - tag_profile is changed
@@ -128,21 +128,21 @@
       register: tag_profile
       check_mode: true
 
-    - name: assert would not change
+    - name: Assert would not change
       ansible.builtin.assert:
         that:
           - tag_profile is not changed
 
-    - name: modify tags with purge - IDEMPOTENCY
+    - name: Modify tags with purge - IDEMPOTENCY
       amazon.aws.iam_instance_profile:
         tags: "{{ second_tags }}"
         state: present
       register: tag_profile
-    - name: get instance profile facts
+    - name: Get instance profile facts
       amazon.aws.iam_instance_profile_info:
       register: tag_profile_info
 
-    - name: verify no change
+    - name: Verify no change
       ansible.builtin.assert:
         that:
           - tag_profile is not changed
@@ -159,22 +159,22 @@
       register: tag_profile
       check_mode: true
 
-    - name: assert would change
+    - name: Assert would change
       ansible.builtin.assert:
         that:
           - tag_profile is changed
 
-    - name: modify tags without purge
+    - name: Modify tags without purge
       amazon.aws.iam_instance_profile:
         tags: "{{ third_tags }}"
         state: present
         purge_tags: false
       register: tag_profile
-    - name: get instance profile facts
+    - name: Get instance profile facts
       amazon.aws.iam_instance_profile_info:
       register: tag_profile_info
 
-    - name: verify the tags were added
+    - name: Verify the tags were added
       ansible.builtin.assert:
         that:
           - tag_profile is changed
@@ -189,22 +189,22 @@
       register: tag_profile
       check_mode: true
 
-    - name: assert would not change
+    - name: Assert would not change
       ansible.builtin.assert:
         that:
           - tag_profile is not changed
 
-    - name: modify tags without purge - IDEMPOTENCY
+    - name: Modify tags without purge - IDEMPOTENCY
       amazon.aws.iam_instance_profile:
         tags: "{{ third_tags }}"
         state: present
         purge_tags: false
       register: tag_profile
-    - name: get instance profile facts
+    - name: Get instance profile facts
       amazon.aws.iam_instance_profile_info:
       register: tag_profile_info
 
-    - name: verify no change
+    - name: Verify no change
       ansible.builtin.assert:
         that:
           - tag_profile is not changed
@@ -219,7 +219,7 @@
       register: tag_profile
       check_mode: true
 
-    - name: assert would change
+    - name: Assert would change
       ansible.builtin.assert:
         that:
           - tag_profile is not changed
@@ -228,11 +228,11 @@
       amazon.aws.iam_instance_profile:
         state: present
       register: tag_profile
-    - name: get instance profile facts
+    - name: Get instance profile facts
       amazon.aws.iam_instance_profile_info:
       register: tag_profile_info
 
-    - name: verify the tags were added
+    - name: Verify the tags were added
       ansible.builtin.assert:
         that:
           - tag_profile is not changed
@@ -248,21 +248,21 @@
       register: tag_profile
       check_mode: true
 
-    - name: assert would change
+    - name: Assert would change
       ansible.builtin.assert:
         that:
           - tag_profile is changed
 
-    - name: remove all tags
+    - name: Remove all tags
       amazon.aws.iam_instance_profile:
         tags: {}
         state: present
       register: tag_profile
-    - name: get instance profile facts
+    - name: Get instance profile facts
       amazon.aws.iam_instance_profile_info:
       register: tag_profile_info
 
-    - name: verify the tags were added
+    - name: Verify the tags were added
       ansible.builtin.assert:
         that:
           - tag_profile is changed
@@ -276,21 +276,21 @@
       register: tag_profile
       check_mode: true
 
-    - name: assert would not change
+    - name: Assert would not change
       ansible.builtin.assert:
         that:
           - tag_profile is not changed
 
-    - name: remove all tags - IDEMPOTENCY
+    - name: Remove all tags - IDEMPOTENCY
       amazon.aws.iam_instance_profile:
         tags: {}
         state: present
       register: tag_profile
-    - name: get instance profile
+    - name: Get instance profile
       amazon.aws.iam_instance_profile_info:
       register: tag_profile_info
 
-    - name: verify no change
+    - name: Verify no change
       ansible.builtin.assert:
         that:
           - tag_profile is not changed

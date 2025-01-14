@@ -7,7 +7,6 @@
       region: "{{ aws_region }}"
 
   block:
-
     # ============================================================
 
     - name: Test without any parameters
@@ -26,19 +25,19 @@
       register: nacl_facts
 
     - name: Assert we don't error
-      assert:
+      ansible.builtin.assert:
         that:
           - nacl_facts is succeeded
 
     - name: Get network ACL info with invalid ID
       amazon.aws.ec2_vpc_nacl_info:
         nacl_ids:
-        - 'acl-000000000000'
+          - "acl-000000000000"
       register: nacl_facts
       ignore_errors: true
 
     - name: Assert message mentions missing ACLs
-      assert:
+      ansible.builtin.assert:
         that:
           - nacl_facts is failed
           - '"does not exist" in nacl_facts.msg'
@@ -55,8 +54,8 @@
 
     - name: Pick AZs
       ansible.builtin.set_fact:
-        az_one: '{{ az_info.availability_zones[0].zone_name }}'
-        az_two: '{{ az_info.availability_zones[1].zone_name }}'
+        az_one: "{{ az_info.availability_zones[0].zone_name }}"
+        az_two: "{{ az_info.availability_zones[1].zone_name }}"
 
     # ============================================================
 
@@ -137,7 +136,6 @@
     # ============================================================
 
   always:
-
     - name: Remove network ACL
       amazon.aws.ec2_vpc_nacl:
         vpc_id: "{{ vpc_id }}"
@@ -168,7 +166,7 @@
       ignore_errors: true
       register: removed_vpc
       with_items:
-        - '{{ vpc_id }}'
-        - '{{ vpc_ipv6_id }}'
+        - "{{ vpc_id }}"
+        - "{{ vpc_ipv6_id }}"
 
     # ============================================================

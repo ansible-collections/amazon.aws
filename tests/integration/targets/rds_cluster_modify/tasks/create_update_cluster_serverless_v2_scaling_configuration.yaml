@@ -21,7 +21,7 @@
         region: "{{ aws_region }}"
       register: result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - create_result_check_mode is changed
           - create_result_check_mode is not failed
@@ -46,7 +46,7 @@
         region: "{{ aws_region }}"
       register: result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - create_result is changed
           - create_result is not failed
@@ -73,7 +73,7 @@
         region: "{{ aws_region }}"
       register: result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - modify_result_check_mode is changed
           - modify_result_check_mode is not failed
@@ -99,7 +99,7 @@
         region: "{{ aws_region }}"
       register: result
 
-    - assert:
+    - ansible.builtin.assert:
         that:
           - modify_result is changed
           - modify_result is not failed
@@ -108,7 +108,6 @@
           - result.clusters[0].serverless_v2_scaling_configuration.max_capacity == 5
 
   always:
-
     - name: Delete DB cluster created in this test
       amazon.aws.rds_cluster:
         cluster_id: "{{ cluster_id }}"

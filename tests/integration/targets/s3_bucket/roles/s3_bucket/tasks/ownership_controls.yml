@@ -7,7 +7,7 @@
       region: "{{ aws_region }}"
   block:
     - ansible.builtin.set_fact:
-        local_bucket_name: "{{ bucket_name | hash('md5')}}ownership"
+        local_bucket_name: "{{ s3_bucket_name | hash('md5') }}ownership"
 
     - name: Create a simple bucket bad value for ownership controls
       amazon.aws.s3_bucket:
@@ -33,12 +33,12 @@
           - output.changed
           - not output.object_ownership|bool
 
-    - name: delete s3 bucket
+    - name: Delete s3 bucket
       amazon.aws.s3_bucket:
         name: "{{ local_bucket_name }}"
         state: absent
 
-    - name: create s3 bucket with object ownership controls
+    - name: Create s3 bucket with object ownership controls
       amazon.aws.s3_bucket:
         name: "{{ local_bucket_name }}"
         state: present
@@ -51,7 +51,7 @@
           - output.object_ownership
           - output.object_ownership == 'ObjectWriter'
 
-    - name: update s3 bucket ownership preferred controls
+    - name: Update s3 bucket ownership preferred controls
       amazon.aws.s3_bucket:
         name: "{{ local_bucket_name }}"
         state: present
@@ -64,7 +64,7 @@
           - output.object_ownership
           - output.object_ownership == 'BucketOwnerPreferred'
 
-    - name: test idempotency update s3 bucket ownership preferred controls
+    - name: Test idempotency update s3 bucket ownership preferred controls
       amazon.aws.s3_bucket:
         name: "{{ local_bucket_name }}"
         state: present
@@ -77,7 +77,7 @@
           - output.object_ownership
           - output.object_ownership == 'BucketOwnerPreferred'
 
-    - name: update s3 bucket ownership enforced controls
+    - name: Update s3 bucket ownership enforced controls
       amazon.aws.s3_bucket:
         name: "{{ local_bucket_name }}"
         state: present
@@ -90,7 +90,7 @@
           - output.object_ownership
           - output.object_ownership == 'BucketOwnerEnforced'
 
-    - name: test idempotency update s3 bucket ownership preferred controls
+    - name: Test idempotency update s3 bucket ownership preferred controls
       amazon.aws.s3_bucket:
         name: "{{ local_bucket_name }}"
         state: present
@@ -103,7 +103,7 @@
           - output.object_ownership
           - output.object_ownership == 'BucketOwnerEnforced'
 
-    - name: delete s3 bucket ownership controls
+    - name: Delete s3 bucket ownership controls
       amazon.aws.s3_bucket:
         name: "{{ local_bucket_name }}"
         state: present
@@ -115,7 +115,7 @@
           - output.changed
           - not output.object_ownership|bool
 
-    - name: delete s3 bucket ownership controls once again (idempotency)
+    - name: Delete s3 bucket ownership controls once again (idempotency)
       amazon.aws.s3_bucket:
         name: "{{ local_bucket_name }}"
         state: present
@@ -129,7 +129,7 @@
 
   # ============================================================
   always:
-    - name: delete s3 bucket ownership controls
+    - name: Delete s3 bucket ownership controls
       amazon.aws.s3_bucket:
         name: "{{ local_bucket_name }}"
         state: present

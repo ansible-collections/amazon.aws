@@ -1,5 +1,5 @@
 ---
-- name: set connection information for AWS modules and run tests
+- name: Set connection information for AWS modules and run tests
   module_defaults:
     group/aws:
       access_key: "{{ aws_access_key }}"
@@ -53,8 +53,9 @@
         AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
         AWS_DEFAULT_REGION: "{{ aws_region }}"
       register: lambda_function_details
+      changed_when: false
 
-    - name: convert it to an object
+    - name: Convert it to an object
       ansible.builtin.set_fact:
         lambda_function_details_obj: "{{ lambda_function_details.stdout | from_json }}"
 

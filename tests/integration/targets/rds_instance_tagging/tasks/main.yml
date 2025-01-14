@@ -1,5 +1,5 @@
 ---
-- name: rds_instance / tagging integration tests
+- name: Rds_instance / tagging integration tests
 
   module_defaults:
     group/aws:

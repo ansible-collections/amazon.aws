@@ -1,8 +1,8 @@
 ---
 - block:
-    - name: set up temporary group name for tests
+    - name: Set up temporary group name for tests
       ansible.builtin.set_fact:
-        group_tmp_name: "{{ec2_group_name}}-numbered-protos"
+        group_tmp_name: "{{ ec2_group_name }}-numbered-protos"
 
     - name: Create a group with numbered protocol (GRE)
       amazon.aws.ec2_security_group:
@@ -58,9 +58,9 @@
           - result is not changed
 
   always:
-    - name: tidy up egress rule test security group
+    - name: Tidy up egress rule test security group
       amazon.aws.ec2_security_group:
-        name: "{{group_tmp_name}}"
+        name: "{{ group_tmp_name }}"
         state: absent
         vpc_id: "{{ vpc_result.vpc.id }}"
       ignore_errors: true

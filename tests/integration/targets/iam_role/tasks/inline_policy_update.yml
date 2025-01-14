@@ -13,7 +13,7 @@
     iam_name: "{{ test_role }}"
     policy_name: inline-policy-b
     policy_json: '{{ lookup("file", "deny-all-b.json") }}'
-- name: iam_role_info after attaching inline policies (using iam_policy)
+- name: Iam_role_info after attaching inline policies (using iam_policy)
   amazon.aws.iam_role_info:
     name: "{{ test_role }}"
   register: role_info

@@ -29,7 +29,7 @@
           - "{{ snapshot_id }}"
       register: info_result
 
-    - name: assert that createVolumePermission are "Private"
+    - name: Assert that createVolumePermission are "Private"
       ansible.builtin.assert:
         that:
           - info_result.snapshots[0].create_volume_permissions | length == 0

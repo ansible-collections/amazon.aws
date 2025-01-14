@@ -15,45 +15,45 @@
       secret_key: "{{ aws_secret_key }}"
       session_token: "{{ security_token | default(omit) }}"
   block:
-    - name: define secret name
+    - name: Define secret name
       ansible.builtin.set_fact:
         secret_name: ansible-test-{{ tiny_prefix }}-secret
         secret_value: "{{ lookup('password', '/dev/null chars=ascii_lowercase,digits,punctuation length=16') }}"
         skip: skip
         warn: warn
 
-    - name: lookup missing secret (skip)
+    - name: Lookup missing secret (skip)
       ansible.builtin.set_fact:
         missing_secret: "{{ lookup('amazon.aws.secretsmanager_secret', secret_name, on_missing=skip, **connection_args) }}"
 
-    - name: assert that missing_secret is defined
+    - name: Assert that missing_secret is defined
       ansible.builtin.assert:
         that:
           - missing_secret is defined
           - missing_secret | list | length == 0
 
-    - name: lookup missing secret (warn)
+    - name: Lookup missing secret (warn)
       ansible.builtin.set_fact:
         missing_secret: "{{ lookup('amazon.aws.secretsmanager_secret', secret_name, on_missing=warn, **connection_args) }}"
 
-    - name: assert that missing_secret is defined
+    - name: Assert that missing_secret is defined
       ansible.builtin.assert:
         that:
           - missing_secret is defined
           - missing_secret | list | length == 0
 
-    - name: lookup missing secret (error)
+    - name: Lookup missing secret (error)
       ansible.builtin.set_fact:
         missing_secret: "{{ lookup('amazon.aws.secretsmanager_secret', secret_name, **connection_args) }}"
       ignore_errors: true
       register: get_missing_secret
 
-    - name: assert that setting the missing_secret failed
+    - name: Assert that setting the missing_secret failed
       ansible.builtin.assert:
         that:
           - get_missing_secret is failed
 
-    - name: create secret "{{ secret_name }}"
+    - name: Create secret "{{ secret_name }}"
       community.aws.secretsmanager_secret:
         name: "{{ secret_name }}"
         secret: "{{ secret_value }}"
@@ -62,67 +62,66 @@
         state: present
       register: create_secret
 
-    - name: read secret value
+    - name: Read secret value
       ansible.builtin.set_fact:
         look_secret: "{{ lookup('amazon.aws.secretsmanager_secret', secret_name, **connection_args) }}"
 
-    - name: assert that secret was successfully retrieved
+    - name: Assert that secret was successfully retrieved
       ansible.builtin.assert:
         that:
           - look_secret == secret_value
 
-    - name: read secret value (by ARN)
+    - name: Read secret value (by ARN)
       ansible.builtin.set_fact:
         look_secret_by_arn: "{{ lookup('amazon.aws.secretsmanager_secret', create_secret.secret.arn, **connection_args) }}"
 
-    - name: assert that secret was successfully retrieved
+    - name: Assert that secret was successfully retrieved
       ansible.builtin.assert:
         that:
           - look_secret_by_arn == secret_value
 
-    - name: delete secret
+    - name: Delete secret
       community.aws.secretsmanager_secret:
         name: "{{ secret_name }}"
         state: absent
         recovery_window: 7
 
-    - name: lookup deleted secret (skip)
+    - name: Lookup deleted secret (skip)
       ansible.builtin.set_fact:
         deleted_secret: "{{ lookup('amazon.aws.secretsmanager_secret', secret_name, on_deleted=skip, **connection_args) }}"
 
-    - name: assert that deleted_secret is defined
+    - name: Assert that deleted_secret is defined
       ansible.builtin.assert:
         that:
           - deleted_secret is defined
           - deleted_secret | list | length == 0
 
-    - name: lookup deleted secret (warn)
+    - name: Lookup deleted secret (warn)
       ansible.builtin.set_fact:
         deleted_secret: "{{ lookup('amazon.aws.secretsmanager_secret', secret_name, on_deleted=warn, **connection_args) }}"
 
-    - name: assert that deleted_secret is defined
+    - name: Assert that deleted_secret is defined
       ansible.builtin.assert:
         that:
           - deleted_secret is defined
           - deleted_secret | list | length == 0
 
-    - name: lookup deleted secret (error)
+    - name: Lookup deleted secret (error)
       ansible.builtin.set_fact:
         missing_secret: "{{ lookup('amazon.aws.secretsmanager_secret', secret_name, **connection_args) }}"
       ignore_errors: true
       register: get_deleted_secret
 
-    - name: assert that setting the deleted_secret failed
+    - name: Assert that setting the deleted_secret failed
       ansible.builtin.assert:
         that:
           - get_deleted_secret is failed
 
     # Test with nested secrets
-    - include_tasks: tasks/nested.yaml
-
+    - ansible.builtin.include_tasks: tasks/nested.yaml
   always:
   # delete secret created
-    - name: delete secret
+    - name: Delete secret
       community.aws.secretsmanager_secret:
         name: "{{ secret_name }}"
         state: absent

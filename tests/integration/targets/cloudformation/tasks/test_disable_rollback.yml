@@ -7,7 +7,7 @@
         stack_name: "{{ stack_name_disable_rollback_true }}"
         state: present
         disable_rollback: true
-        template_body: "{{ lookup('file','cf_template.json') }}"
+        template_body: "{{ lookup('file', 'cf_template.json') }}"
         template_parameters:
           InstanceType: t3.nano
           ImageId: "{{ ec2_ami_id }}"
@@ -26,7 +26,7 @@
         stack_name: "{{ stack_name_disable_rollback_true }}"
         state: present
         disable_rollback: true
-        template_body: "{{ lookup('file','cf_template.json') }}"
+        template_body: "{{ lookup('file', 'cf_template.json') }}"
         template_parameters:
           InstanceType: t3.nano
           ImageId: "{{ ec2_ami_id }}"
@@ -51,7 +51,7 @@
         stack_name: "{{ stack_name_disable_rollback_false }}"
         state: present
         disable_rollback: false
-        template_body: "{{ lookup('file','cf_template.json') }}"
+        template_body: "{{ lookup('file', 'cf_template.json') }}"
         template_parameters:
           InstanceType: t3.nano
           ImageId: "{{ ec2_ami_id }}"
@@ -70,7 +70,7 @@
         stack_name: "{{ stack_name_disable_rollback_false }}"
         state: present
         disable_rollback: false
-        template_body: "{{ lookup('file','cf_template.json') }}"
+        template_body: "{{ lookup('file', 'cf_template.json') }}"
         template_parameters:
           InstanceType: t3.nano
           ImageId: "{{ ec2_ami_id }}"
@@ -94,7 +94,7 @@
       amazon.aws.cloudformation:
         stack_name: "{{ stack_name }}"
         state: present
-        template_body: "{{ lookup('file','cf_template.json') }}"
+        template_body: "{{ lookup('file', 'cf_template.json') }}"
         template_parameters:
           InstanceType: t3.nano
           ImageId: "{{ ec2_ami_id }}"
@@ -112,7 +112,7 @@
       amazon.aws.cloudformation:
         stack_name: "{{ stack_name }}"
         state: present
-        template_body: "{{ lookup('file','cf_template.json') }}"
+        template_body: "{{ lookup('file', 'cf_template.json') }}"
         template_parameters:
           InstanceType: t3.nano
           ImageId: "{{ ec2_ami_id }}"
@@ -143,7 +143,7 @@
       amazon.aws.cloudformation:
         stack_name: "{{ stack_name }}-failtest"
         state: present
-        template_body: "{{ lookup('file','cf_template.json') }}"
+        template_body: "{{ lookup('file', 'cf_template.json') }}"
         disable_rollback: false
         template_parameters:
           InstanceType: t3.nano
@@ -156,7 +156,7 @@
       amazon.aws.cloudformation:
         stack_name: "{{ stack_name }}-failtest"
         state: present
-        template_body: "{{ lookup('file','cf_template.json') }}"
+        template_body: "{{ lookup('file', 'cf_template.json') }}"
         disable_rollback: true
         template_parameters:
           InstanceType: t3.nano
@@ -170,7 +170,7 @@
       amazon.aws.cloudformation:
         stack_name: "{{ stack_name }}-failtest"
         state: present
-        template_body: "{{ lookup('file','cf_template.json') }}"
+        template_body: "{{ lookup('file', 'cf_template.json') }}"
         disable_rollback: false
         template_parameters:
           InstanceType: t3.nano
@@ -183,7 +183,7 @@
       amazon.aws.cloudformation:
         stack_name: "{{ stack_name }}-failtest"
         state: present
-        template_body: "{{ lookup('file','cf_template.json') }}"
+        template_body: "{{ lookup('file', 'cf_template.json') }}"
         disable_rollback: true
         template_parameters:
           InstanceType: t3.nano

@@ -1,5 +1,6 @@
 ---
-- hosts: 127.0.0.1
+- name: Run a test using constructed features (tag based groups)
+  hosts: 127.0.0.1
   connection: local
   gather_facts: false
   environment: "{{ ansible_test.environment }}"
@@ -13,7 +14,7 @@
       block:
         # Create VPC, subnet, security group, and find image_id to create instance
         - ansible.builtin.include_tasks: tasks/setup.yml
-        - name: create a new host
+        - name: Create a new host
           amazon.aws.ec2_instance:
             image_id: "{{ image_id }}"
             name: "{{ resource_prefix }}"
@@ -32,7 +33,7 @@
         - ansible.builtin.debug:
             var: groups
 
-        - name: assert groups and hostvars were populated with inventory
+        - name: Assert groups and hostvars were populated with inventory
           ansible.builtin.assert:
             that:
               - "'aws_ec2' in groups"

@@ -2,7 +2,7 @@
 - block:
     - amazon.aws.aws_caller_info:
       register: caller_facts
-    - name: create a VPC
+    - name: Create a VPC
       amazon.aws.ec2_vpc_net:
         name: "{{ resource_prefix }}-vpc-2"
         state: present
@@ -81,7 +81,8 @@
         that:
           - out is failed
   always:
-    - ansible.builtin.pause: seconds=5
+    - ansible.builtin.pause:
+        seconds: "5"
     - name: Delete secondary-VPC side of peer
       amazon.aws.ec2_vpc_peering:
         vpc_id: "{{ vpc_result_2.vpc.id }}"
@@ -114,7 +115,7 @@
         state: absent
         vpc_id: "{{ vpc_result.vpc.id }}"
       ignore_errors: true
-    - name: tidy up VPC
+    - name: Tidy up VPC
       amazon.aws.ec2_vpc_net:
         name: "{{ resource_prefix }}-vpc-2"
         state: absent

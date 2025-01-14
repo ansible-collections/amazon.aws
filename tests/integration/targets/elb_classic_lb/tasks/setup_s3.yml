@@ -5,7 +5,7 @@
   amazon.aws.s3_bucket:
     name: "{{ s3_logging_bucket_a }}"
     state: present
-    policy: "{{ lookup('template','s3_policy.j2') }}"
+    policy: "{{ lookup('template', 's3_policy.j2') }}"
   register: logging_bucket
 
 - ansible.builtin.assert:
@@ -18,7 +18,7 @@
   amazon.aws.s3_bucket:
     name: "{{ s3_logging_bucket_b }}"
     state: present
-    policy: "{{ lookup('template','s3_policy.j2') }}"
+    policy: "{{ lookup('template', 's3_policy.j2') }}"
   register: logging_bucket
 
 - ansible.builtin.assert:

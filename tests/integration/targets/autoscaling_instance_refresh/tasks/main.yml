@@ -1,5 +1,5 @@
 ---
-- name: setup credentials and region
+- name: Setup credentials and region
   module_defaults:
     group/aws:
       access_key: "{{ aws_access_key }}"
@@ -12,7 +12,7 @@
     - name: Create VPC for use in testing
       amazon.aws.ec2_vpc_net:
         name: "{{ vpc_name }}"
-        cidr_block: '{{ subnet_a_cidr }}'
+        cidr_block: "{{ subnet_a_cidr }}"
         tenancy: default
       register: testing_vpc
 
@@ -26,7 +26,7 @@
       amazon.aws.ec2_vpc_subnet:
         state: present
         vpc_id: "{{ testing_vpc.vpc.id }}"
-        cidr: '{{ subnet_a_cidr }}'
+        cidr: "{{ subnet_a_cidr }}"
         az: "{{ aws_region }}a"
         resource_tags:
           Name: "{{ subnet_name }}"
@@ -85,19 +85,19 @@
         min_size: 1
         max_size: 1
         vpc_zone_identifier: "{{ testing_subnet.subnet.id }}"
-        wait_for_instances: no
+        wait_for_instances: false
         state: present
       register: output
 
     - name: Assert that there is no viable instance
       ansible.builtin.assert:
         that:
-        - "output.viable_instances == 0"
+          - "output.viable_instances == 0"
 
-  # ============================================================
+    # ============================================================
     - name: Run test with start_cancel_instance_refresh.yml
       ansible.builtin.include_tasks: start_cancel_instance_refresh.yml
-    
+
   # ============================================================
 
     - name: Run test with refresh_and_cancel_three_times.yml
@@ -108,7 +108,6 @@
       ansible.builtin.include_tasks: instance_refresh_info.yml
 
   always:
-
     - name: Kill asg
       amazon.aws.autoscaling_group:
         name: "{{ asg_name }}"
@@ -133,13 +132,13 @@
             load_balancer_port: 80
             instance_port: 80
         health_check:
-            ping_protocol: tcp
-            ping_port: 80
-            ping_path: "/"
-            response_timeout: 5
-            interval: 10
-            unhealthy_threshold: 4
-            healthy_threshold: 2
+          ping_protocol: tcp
+          ping_port: 80
+          ping_path: "/"
+          response_timeout: 5
+          interval: 10
+          unhealthy_threshold: 4
+          healthy_threshold: 2
       register: removed
       until: removed is not failed
       ignore_errors: true
@@ -197,7 +196,7 @@
       amazon.aws.ec2_vpc_subnet:
         state: absent
         vpc_id: "{{ testing_vpc.vpc.id }}"
-        cidr: '{{ subnet_a_cidr }}'
+        cidr: "{{ subnet_a_cidr }}"
       register: removed
       until: removed is not failed
       ignore_errors: true
@@ -206,7 +205,7 @@
     - name: Remove the VPC
       amazon.aws.ec2_vpc_net:
         name: "{{ vpc_name }}"
-        cidr_block: '{{ subnet_a_cidr }}'
+        cidr_block: "{{ subnet_a_cidr }}"
         state: absent
       register: removed
       until: removed is not failed

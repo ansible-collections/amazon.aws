@@ -5,19 +5,19 @@
   block:
     # ============================================================
 
-    - name: test without specifying required module options
+    - name: Test without specifying required module options
       amazon.aws.autoscaling_group:
         access_key: "{{ aws_access_key }}"
         secret_key: "{{ aws_secret_key }}"
         session_token: "{{ security_token | default(omit) }}"
       ignore_errors: true
       register: result
-    - name: assert name is a required module option
+    - name: Assert name is a required module option
       ansible.builtin.assert:
         that:
           - "result.msg == 'missing required arguments: name'"
 
-    - name: ensure launch configs exist
+    - name: Ensure launch configs exist
       community.aws.autoscaling_launch_config:
         name: "{{ item }}"
         assign_public_ip: true
@@ -38,7 +38,7 @@
 
     # ============================================================
 
-    - name: launch asg and wait for instances to be deemed healthy (no ELB)
+    - name: Launch asg and wait for instances to be deemed healthy (no ELB)
       amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         launch_config_name: "{{ resource_prefix }}-lc"
@@ -113,13 +113,13 @@
         that:
           - output is not changed
 
-    - name: kill asg
+    - name: Kill asg
       amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         state: absent
         wait_timeout: 800
       async: 400
-    - name: launch asg and do not wait for instances to be deemed healthy (no ELB)
+    - name: Launch asg and do not wait for instances to be deemed healthy (no ELB)
       amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         launch_config_name: "{{ resource_prefix }}-lc"
@@ -134,7 +134,7 @@
         that:
           - output.viable_instances == 0
 
-    - name: kill asg
+    - name: Kill asg
       amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         state: absent
@@ -144,7 +144,7 @@
       until: output is succeeded
       delay: 10
       async: 400
-    - name: create asg with asg metrics enabled
+    - name: Create asg with asg metrics enabled
       amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         metrics_collection: true
@@ -159,15 +159,15 @@
         that:
           - "'Group' in output.metrics_collection.0.Metric"
 
-    - name: kill asg
+    - name: Kill asg
       amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         state: absent
         wait_timeout: 800
       async: 400
-    - name: launch load balancer
+    - name: Launch load balancer
       amazon.aws.elb_classic_lb:
-        name: "{{ load_balancer_name }}"
+        name: "{{ ec2_asg_load_balancer_name }}"
         state: present
         security_group_ids:
           - "{{ sg.group_id }}"
@@ -186,7 +186,7 @@
           unhealthy_threshold: 4
           healthy_threshold: 2
       register: load_balancer
-    - name: launch asg and wait for instances to be deemed healthy (ELB)
+    - name: Launch asg and wait for instances to be deemed healthy (ELB)
       amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         launch_config_name: "{{ resource_prefix }}-lc"
@@ -196,7 +196,7 @@
         max_size: 1
         health_check_period: 300
         vpc_zone_identifier: "{{ testing_subnet.subnet.id }}"
-        load_balancers: "{{ load_balancer_name }}"
+        load_balancers: "{{ ec2_asg_load_balancer_name }}"
         wait_for_instances: true
         wait_timeout: 900
         state: present
@@ -208,7 +208,7 @@
     # ============================================================
 
     # grow scaling group to 3
-    - name: add 2 more instances wait for instances to be deemed healthy (ELB)
+    - name: Add 2 more instances wait for instances to be deemed healthy (ELB)
       amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         launch_config_name: "{{ resource_prefix }}-lc"
@@ -218,7 +218,7 @@
         max_size: 5
         health_check_period: 600
         vpc_zone_identifier: "{{ testing_subnet.subnet.id }}"
-        load_balancers: "{{ load_balancer_name }}"
+        load_balancers: "{{ ec2_asg_load_balancer_name }}"
         wait_for_instances: true
         wait_timeout: 1200
         state: present
@@ -230,32 +230,32 @@
     # ============================================================
 
     # Test max_instance_lifetime option
-    - name: enable asg max_instance_lifetime
+    - name: Enable asg max_instance_lifetime
       amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         max_instance_lifetime: 604801
       register: output
-    - name: ensure max_instance_lifetime is set
+    - name: Ensure max_instance_lifetime is set
       ansible.builtin.assert:
         that:
           - output.max_instance_lifetime == 604801
 
-    - name: run without max_instance_lifetime
+    - name: Run without max_instance_lifetime
       amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         launch_config_name: "{{ resource_prefix }}-lc"
-    - name: ensure max_instance_lifetime not affected by defaults
+    - name: Ensure max_instance_lifetime not affected by defaults
       ansible.builtin.assert:
         that:
           - output.max_instance_lifetime == 604801
 
-    - name: disable asg max_instance_lifetime
+    - name: Disable asg max_instance_lifetime
       amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         launch_config_name: "{{ resource_prefix }}-lc"
         max_instance_lifetime: 0
       register: output
-    - name: ensure max_instance_lifetime is not set
+    - name: Ensure max_instance_lifetime is not set
       ansible.builtin.assert:
         that:
           - not output.max_instance_lifetime
@@ -263,7 +263,7 @@
     # ============================================================
 
     # perform rolling replace with different launch configuration
-    - name: perform rolling update to new AMI
+    - name: Perform rolling update to new AMI
       amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         launch_config_name: "{{ resource_prefix }}-lc-2"
@@ -272,7 +272,7 @@
         min_size: 1
         max_size: 5
         health_check_period: 900
-        load_balancers: "{{ load_balancer_name }}"
+        load_balancers: "{{ ec2_asg_load_balancer_name }}"
         vpc_zone_identifier: "{{ testing_subnet.subnet.id }}"
         wait_for_instances: true
         replace_all_instances: true
@@ -290,7 +290,7 @@
     # ============================================================
 
     # perform rolling replace with the original launch configuration
-    - name: perform rolling update to new AMI while removing the load balancer
+    - name: Perform rolling update to new AMI while removing the load balancer
       amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         launch_config_name: "{{ resource_prefix }}-lc"
@@ -317,7 +317,7 @@
     # ============================================================
 
     # perform rolling replace with new launch configuration and lc_check:false
-    - name: "perform rolling update to new AMI with lc_check: false"
+    - name: "Perform rolling update to new AMI with lc_check: false"
       amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         launch_config_name: "{{ resource_prefix }}-lc-2"
@@ -334,7 +334,7 @@
         lc_check: false
         wait_timeout: 1800
         state: present
-    - name: get autoscaling_group info
+    - name: Get autoscaling_group info
       amazon.aws.autoscaling_group_info:
         name: "{{ resource_prefix }}-asg"
       register: output
@@ -344,13 +344,13 @@
 
     # ============================================================
 
-    - name: kill asg
+    - name: Kill asg
       amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         state: absent
         wait_timeout: 800
       async: 400
-    - name: "new asg with lc_check: false"
+    - name: "New asg with lc_check: false"
       amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         launch_config_name: "{{ resource_prefix }}-lc"
@@ -367,7 +367,7 @@
         lc_check: false
         wait_timeout: 1800
         state: present
-    - name: get autoscaling_group information
+    - name: Get autoscaling_group information
       amazon.aws.autoscaling_group_info:
         name: "{{ resource_prefix }}-asg"
       register: output
@@ -376,7 +376,7 @@
           - output.results[0].instances | length == 3
 
     # we need a launch template, otherwise we cannot test the mixed instance policy
-    - name: create launch template for autoscaling group to test its mixed instances policy
+    - name: Create launch template for autoscaling group to test its mixed instances policy
       amazon.aws.ec2_launch_template:
         template_name: "{{ resource_prefix }}-lt"
         image_id: "{{ ec2_ami_id }}"
@@ -390,7 +390,7 @@
             groups:
               - "{{ sg.group_id }}"
 
-    - name: update autoscaling group with mixed-instances policy with mixed instances types - check_mode
+    - name: Update autoscaling group with mixed-instances policy with mixed instances types - check_mode
       amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         launch_template:
@@ -413,7 +413,7 @@
           - output is not failed
           - '"autoscaling:CreateOrUpdateTags" not in output.resource_actions'
 
-    - name: update autoscaling group with mixed-instances policy with mixed instances types
+    - name: Update autoscaling group with mixed-instances policy with mixed instances types
       amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         launch_template:
@@ -435,7 +435,7 @@
           - output.mixed_instances_policy[0] == 't3.micro'
           - output.mixed_instances_policy[1] == 't2.nano'
 
-    - name: update autoscaling group with mixed-instances policy with instances_distribution
+    - name: Update autoscaling group with mixed-instances policy with instances_distribution
       amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         launch_template:
@@ -465,9 +465,9 @@
 
     # Target group names have max length of 32 characters
     - ansible.builtin.set_fact:
-        tg1_name: ansible-test-{{tiny_prefix}}-asg-t1
-        tg2_name: ansible-test-{{tiny_prefix}}-asg-t2
-    - name: create target group 1
+        tg1_name: ansible-test-{{ tiny_prefix }}-asg-t1
+        tg2_name: ansible-test-{{ tiny_prefix }}-asg-t2
+    - name: Create target group 1
       community.aws.elb_target_group:
         name: "{{ tg1_name }}"
         protocol: tcp
@@ -479,7 +479,7 @@
         vpc_id: "{{ testing_vpc.vpc.id }}"
         state: present
       register: out_tg1
-    - name: create target group 2
+    - name: Create target group 2
       community.aws.elb_target_group:
         name: "{{ tg2_name }}"
         protocol: tcp
@@ -491,7 +491,7 @@
         vpc_id: "{{ testing_vpc.vpc.id }}"
         state: present
       register: out_tg2
-    - name: update autoscaling group with tg1
+    - name: Update autoscaling group with tg1
       amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         launch_template:
@@ -508,7 +508,7 @@
         that:
           - output.target_group_arns[0] == out_tg1.target_group_arn
 
-    - name: update autoscaling group add tg2
+    - name: Update autoscaling group add tg2
       amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         launch_template:
@@ -526,7 +526,7 @@
         that:
           - output.target_group_arns | length == 2
 
-    - name: update autoscaling group remove tg1
+    - name: Update autoscaling group remove tg1
       amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         launch_template:
@@ -544,7 +544,7 @@
           - output.target_group_arns | length == 1
           - output.target_group_arns[0] == out_tg2.target_group_arn
 
-    - name: update autoscaling group remove tg2 and add tg1
+    - name: Update autoscaling group remove tg2 and add tg1
       amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         launch_template:
@@ -562,7 +562,7 @@
           - output.target_group_arns | length == 1
           - output.target_group_arns[0] == out_tg1.target_group_arn
 
-    - name: target group no change
+    - name: Target group no change
       amazon.aws.autoscaling_group:
         name: "{{ resource_prefix }}-asg"
         launch_template:

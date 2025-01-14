@@ -1,5 +1,5 @@
 ---
-- name: ec2_vpc_igw tests
+- name: Ec2_vpc_igw tests
   module_defaults:
     group/aws:
       access_key: "{{ aws_access_key }}"
@@ -384,7 +384,7 @@
           snake_case: simple_snake_case
       register: vpc_igw_update
 
-    - name: assert tags are updated (expected changed=true)
+    - name: Assert tags are updated (expected changed=true)
       ansible.builtin.assert:
         that:
           - vpc_igw_update is changed
@@ -764,7 +764,7 @@
     - name: Test state=absent when supplying a gateway id and wrong vpc id (expected failure)
       amazon.aws.ec2_vpc_igw:
         state: absent
-        internet_gateway_id: "{{ detached_igw_result.gateway_id}}"
+        internet_gateway_id: "{{ detached_igw_result.gateway_id }}"
         vpc_id: vpc-xxxxxxxxx
       register: vpc_igw_delete
       ignore_errors: true

@@ -1,5 +1,23 @@
 ---
 - name: Test copy recursively object from one bucket to another one.
+  vars:
+    bucket_src: "{{ bucket_name }}-recursive-src"
+    bucket_dst: "{{ bucket_name }}-recursive-dst"
+    s3_objects:
+      - object: file1.txt
+        content: |
+          some content for file1.txt
+      - object: file2.txt
+        content: |
+          some content for file2.txt
+      - object: file3.txt
+        content: |
+          some content for file3.txt
+      - object: testfile.py
+        content: This is a sample text file
+      - object: another.txt
+        content: another file to create into bucket
+
   block:
     - name: Create S3 bucket
       amazon.aws.s3_bucket:
@@ -25,7 +43,7 @@
           bucket: "{{ bucket_src }}"
       check_mode: true
 
-    - name: list objects from bucket
+    - name: List objects from bucket
       amazon.aws.s3_object:
         bucket: "{{ bucket_dst }}"
         mode: list
@@ -37,7 +55,7 @@
           - _objects.s3_keys | length == 0
 
     # Test: Copy all objects using prefix
-    - name: copy object using prefix
+    - name: Copy object using prefix
       amazon.aws.s3_object:
         bucket: "{{ bucket_dst }}"
         mode: copy
@@ -46,7 +64,7 @@
           prefix: file
       register: _copy_with_prefix
 
-    - name: list objects from bucket
+    - name: List objects from bucket
       amazon.aws.s3_object:
         bucket: "{{ bucket_dst }}"
         mode: list
@@ -62,7 +80,7 @@
           - '"file3.txt" in _objects.s3_keys'
 
     # Test: Copy all objects using prefix (idempotency)
-    - name: copy object using prefix (idempotency)
+    - name: Copy object using prefix (idempotency)
       amazon.aws.s3_object:
         bucket: "{{ bucket_dst }}"
         mode: copy
@@ -71,7 +89,7 @@
           prefix: file
       register: _copy_with_prefix_idempotency
 
-    - name: list objects from bucket
+    - name: List objects from bucket
       amazon.aws.s3_object:
         bucket: "{{ bucket_dst }}"
         mode: list
@@ -86,7 +104,7 @@
           - '"file2.txt" in _objects.s3_keys'
           - '"file3.txt" in _objects.s3_keys'
 
-    - name: test list to get just 1 object from the bucket
+    - name: Test list to get just 1 object from the bucket
       amazon.aws.s3_object:
         bucket: "{{ bucket_dst }}"
         mode: list
@@ -101,7 +119,7 @@
           - result.msg == "LIST operation complete"
 
     # Test: Copy all objects from source bucket
-    - name: copy all objects from source bucket
+    - name: Copy all objects from source bucket
       amazon.aws.s3_object:
         bucket: "{{ bucket_dst }}"
         mode: copy
@@ -109,7 +127,7 @@
           bucket: "{{ bucket_src }}"
       register: _copy_all
 
-    - name: list objects from bucket
+    - name: List objects from bucket
       amazon.aws.s3_object:
         bucket: "{{ bucket_dst }}"
         mode: list
@@ -122,7 +140,7 @@
           - _objects.s3_keys | length == 5
 
     # Test: Copy all objects from source bucket (idempotency)
-    - name: copy all objects from source bucket (idempotency)
+    - name: Copy all objects from source bucket (idempotency)
       amazon.aws.s3_object:
         bucket: "{{ bucket_dst }}"
         mode: copy
@@ -130,7 +148,7 @@
           bucket: "{{ bucket_src }}"
       register: _copy_all_idempotency
 
-    - name: list objects from bucket
+    - name: List objects from bucket
       amazon.aws.s3_object:
         bucket: "{{ bucket_dst }}"
         mode: list
@@ -141,24 +159,6 @@
         that:
           - _copy_all_idempotency is not changed
           - _objects.s3_keys | length == 5
-
-  vars:
-    bucket_src: "{{ bucket_name }}-recursive-src"
-    bucket_dst: "{{ bucket_name }}-recursive-dst"
-    s3_objects:
-      - object: file1.txt
-        content: |
-          some content for file1.txt
-      - object: file2.txt
-        content: |
-          some content for file2.txt
-      - object: file3.txt
-        content: |
-          some content for file3.txt
-      - object: testfile.py
-        content: This is a sample text file
-      - object: another.txt
-        content: another file to create into bucket
 
   always:
     - ansible.builtin.include_tasks: delete_bucket.yml

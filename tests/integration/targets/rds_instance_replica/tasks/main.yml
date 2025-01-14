@@ -1,5 +1,5 @@
 ---
-- name: rds_instance / replica integration tests
+- name: Rds_instance / replica integration tests
 
   module_defaults:
     group/aws:
@@ -9,7 +9,7 @@
       region: "{{ aws_region }}"
 
   block:
-    - name: set the two regions for the source DB and the replica
+    - name: Set the two regions for the source DB and the replica
       ansible.builtin.set_fact:
         region_src: "{{ aws_region }}"
         region_dest: "{{ aws_region }}"
