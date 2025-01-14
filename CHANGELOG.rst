@@ -10,7 +10,7 @@ v8.2.2
 Release Summary
 ---------------
 
-This release includes bugfixes for the aws_ec2 inventory plugin and the cloudformation, ec2_security_group, ec2_vol, ec2_vpc_net, lambda, rds_cluster, and s3_bucket modules.
+This release includes bugfixes for the ``aws_ec2`` inventory plugin and the ``cloudformation``, ``ec2_security_group``, ``ec2_vol``, ``ec2_vpc_net``, ``lambda``, ``rds_cluster``, and ``s3_bucket`` modules.
 
 Bugfixes
 --------
