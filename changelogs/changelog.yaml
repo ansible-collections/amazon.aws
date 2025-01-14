@@ -3536,3 +3536,31 @@ releases:
       name: rds_instance_param_group_info
       namespace: ''
     release_date: '2024-12-05'
+  9.1.1:
+    changes:
+      bugfixes:
+      - cloudformation - Fix bug where termination protection is not updated when
+        create_changeset=true is used for stack updates (https://github.com/ansible-collections/amazon.aws/pull/2391).
+      - ec2_security_group - Fix the diff mode issue when creating a security group
+        containing a rule with a managed prefix list (https://github.com/ansible-collections/amazon.aws/issues/2373).
+      - ec2_vpc_net - handle ipv6_cidr ``false`` and no Ipv6CidrBlockAssociationSet
+        in vpc (https://github.com/ansible-collections/amazon.aws/pull/2374).
+      - lambda - Remove non UTF-8 data (contents of Lambda ZIP file) from the module
+        output to avoid Ansible error (https://github.com/ansible-collections/amazon.aws/issues/2386).
+      - module_utils/ec2 - catch error code ``InvalidElasticIpID.NotFound`` on function
+        ``create_nat_gateway()``, sometimes the ``allocate_address`` API calls will
+        return the ID for a new elastic IP resource before it can be consistently
+        referenced (https://github.com/ansible-collections/amazon.aws/issues/1872).
+      - rds_cluster - Fix issue occurring when updating RDS cluster domain (https://github.com/ansible-collections/amazon.aws/issues/2390).
+      release_summary: This release includes bug fixes for the cloudformation, ec2_security_group,
+        lambda, rds_cluster, and ec2_vpc_net modules as well as one for the ec2 module_util.
+    fragments:
+    - 20241127-rds_cluster-fix-issue-occurring-when-updating-domain.yml
+    - 20241129-ec2_security_group-fix-issue-with-with-mode.yaml
+    - 20241206-ec2_nat_gateway-retry-on-invalid-elastic-ip-id.yaml
+    - 2386-lambda-remove-non-utf-8-output.yml
+    - 2391-cloudformation-update-stack-termination_protection.yml
+    - 9.1.1.yml
+    - handle_vpc_ipv6_false.yml
+    - tests-fqcn.yml
+    release_date: '2025-01-13'
