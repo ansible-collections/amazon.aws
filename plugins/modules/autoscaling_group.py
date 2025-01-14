@@ -1502,9 +1502,9 @@ def delete_autoscaling_group(connection):
     return False
 
 
-def get_chunks(l, n):
-    for i in range(0, len(l), n):
-        yield l[i:i + n]  # fmt: skip
+def get_chunks(objects, chunk_size):
+    for i in range(0, len(objects), chunk_size):
+        yield objects[i:i + chunk_size]  # fmt: skip
 
 
 def update_size(connection, group, max_size, min_size, dc):
