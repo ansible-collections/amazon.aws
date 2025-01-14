@@ -140,7 +140,6 @@ def parse_s3_endpoint(options):
 
 def s3_extra_params(options, sigv4=False):
     aws, extra_params = parse_s3_endpoint(options)
-    endpoint = extra_params["endpoint"]
     if not aws:
         return extra_params
     dualstack = options.get("dualstack")
