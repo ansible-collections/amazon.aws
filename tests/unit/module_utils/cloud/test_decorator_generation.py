@@ -18,8 +18,8 @@ if sys.version_info < (3, 8):
     )
 
 
-@pytest.fixture
-def patch_cloud_retry(monkeypatch):
+@pytest.fixture(name="patch_cloud_retry")
+def fixture_patch_cloud_retry(monkeypatch):
     """
     replaces CloudRetry.base_decorator with a MagicMock so that we can exercise the generation of
     the various "public" decorators.  We can then check that base_decorator was called as expected.

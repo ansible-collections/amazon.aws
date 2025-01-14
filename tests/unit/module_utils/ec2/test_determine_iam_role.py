@@ -37,14 +37,14 @@ class FailJsonException(Exception):
         pass
 
 
-@pytest.fixture
-def ec2_utils_fixture(monkeypatch):
+@pytest.fixture(name="ec2_utils_fixture")
+def fixture_ec2_utils_fixture(monkeypatch):
     monkeypatch.setattr(ec2_utils, "validate_aws_arn", lambda arn, service, resource_type: None)
     return ec2_utils
 
 
-@pytest.fixture
-def iam_client():
+@pytest.fixture(name="iam_client")
+def fixture_iam_client():
     client = MagicMock()
     return client
 

@@ -56,8 +56,8 @@ EXAMPLE_DATA = [
 ]
 
 
-@pytest.fixture
-def ansible_module():
+@pytest.fixture(name="ansible_module")
+def fixture_ansible_module():
     module = MagicMock()
     module.params = {}
     module.fail_json.side_effect = SystemExit(1)

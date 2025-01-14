@@ -27,8 +27,8 @@ class ExceptionB(Exception):
         pass
 
 
-@pytest.fixture
-def retrier():
+@pytest.fixture(name="retrier")
+def fixture_retrier():
     def do_retry(
         func=None,
         sleep_generator=None,

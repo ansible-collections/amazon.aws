@@ -25,8 +25,8 @@ MODULE_NAME = "ansible_collections.amazon.aws.plugins.module_utils.cloudfront_fa
 MOCK_CLOUDFRONT_FACTS_KEYED_LIST_HELPER = MODULE_NAME + ".cloudfront_facts_keyed_list_helper"
 
 
-@pytest.fixture()
-def cloudfront_facts_service():
+@pytest.fixture(name="cloudfront_facts_service")
+def fixture_cloudfront_facts_service():
     module = MagicMock()
     cloudfront_facts = CloudFrontFactsServiceManager(module)
 

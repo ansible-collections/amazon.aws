@@ -29,11 +29,11 @@ if not HAS_BOTO3:
 mod_name = "ansible_collections.amazon.aws.plugins.module_utils.rds"
 
 
-def expected(x):
+def helper_expected(x):
     return x, nullcontext()
 
 
-def error(*args, **kwargs):
+def helper_error(*args, **kwargs):
     return MagicMock(), pytest.raises(*args, **kwargs)
 
 
@@ -66,7 +66,7 @@ def test__wait_for_cluster_snapshot_status(waiter_name):
 
 
 @pytest.mark.parametrize(
-    "input, expected",
+    "waiter_name, expected",
     [
         (
             "db_snapshot_available",
@@ -75,18 +75,18 @@ def test__wait_for_cluster_snapshot_status(waiter_name):
         ("db_snapshot_deleted", "Failed to wait for DB snapshot test to be deleted"),
     ],
 )
-def test__wait_for_instance_snapshot_status_failed(input, expected):
+def test__wait_for_instance_snapshot_status_failed(waiter_name, expected):
     spec = {"get_waiter.side_effect": [botocore.exceptions.WaiterError(None, None, None)]}
     client = MagicMock(**spec)
     module = MagicMock()
 
-    rds.wait_for_instance_snapshot_status(client, module, "test", input)
-    module.fail_json_aws.assert_called_once
-    module.fail_json_aws.call_args[1]["msg"] == expected
+    rds.wait_for_instance_snapshot_status(client, module, "test", waiter_name)
+    module.fail_json_aws.assert_called_once()
+    assert module.fail_json_aws.call_args[1]["msg"] == expected
 
 
 @pytest.mark.parametrize(
-    "input, expected",
+    "waiter_name, expected",
     [
         (
             "db_cluster_snapshot_available",
@@ -98,14 +98,14 @@ def test__wait_for_instance_snapshot_status_failed(input, expected):
         ),
     ],
 )
-def test__wait_for_cluster_snapshot_status_failed(input, expected):
+def test__wait_for_cluster_snapshot_status_failed(waiter_name, expected):
     spec = {"get_waiter.side_effect": [botocore.exceptions.WaiterError(None, None, None)]}
     client = MagicMock(**spec)
     module = MagicMock()
 
-    rds.wait_for_cluster_snapshot_status(client, module, "test", input)
-    module.fail_json_aws.assert_called_once
-    module.fail_json_aws.call_args[1]["msg"] == expected
+    rds.wait_for_cluster_snapshot_status(client, module, "test", waiter_name)
+    module.fail_json_aws.assert_called_once()
+    assert module.fail_json_aws.call_args[1]["msg"] == expected
 
 
 @pytest.mark.parametrize(
@@ -116,7 +116,7 @@ def test__wait_for_cluster_snapshot_status_failed(input, expected):
             {
                 "new_db_cluster_identifier": "test",
             },
-            *expected(
+            *helper_expected(
                 rds.Boto3ClientMethod(
                     name="delete_db_cluster",
                     waiter="cluster_deleted",
@@ -131,7 +131,7 @@ def test__wait_for_cluster_snapshot_status_failed(input, expected):
             {
                 "new_db_cluster_identifier": "test",
             },
-            *expected(
+            *helper_expected(
                 rds.Boto3ClientMethod(
                     name="create_db_cluster",
                     waiter="cluster_available",
@@ -146,7 +146,7 @@ def test__wait_for_cluster_snapshot_status_failed(input, expected):
             {
                 "new_db_cluster_identifier": "test",
             },
-            *expected(
+            *helper_expected(
                 rds.Boto3ClientMethod(
                     name="start_db_cluster",
                     waiter="cluster_available",
@@ -161,7 +161,7 @@ def test__wait_for_cluster_snapshot_status_failed(input, expected):
             {
                 "new_db_cluster_identifier": "test",
             },
-            *expected(
+            *helper_expected(
                 rds.Boto3ClientMethod(
                     name="stop_db_cluster",
                     waiter="cluster_available",
@@ -176,7 +176,7 @@ def test__wait_for_cluster_snapshot_status_failed(input, expected):
             {
                 "new_db_cluster_identifier": "test",
             },
-            *expected(
+            *helper_expected(
                 rds.Boto3ClientMethod(
                     name="restore_db_cluster_from_snapshot",
                     waiter="cluster_available",
@@ -191,7 +191,7 @@ def test__wait_for_cluster_snapshot_status_failed(input, expected):
             {
                 "new_db_cluster_identifier": "test",
             },
-            *expected(
+            *helper_expected(
                 rds.Boto3ClientMethod(
                     name="modify_db_cluster",
                     waiter="cluster_available",
@@ -206,7 +206,7 @@ def test__wait_for_cluster_snapshot_status_failed(input, expected):
             {
                 "new_db_cluster_identifier": "test",
             },
-            *expected(
+            *helper_expected(
                 rds.Boto3ClientMethod(
                     name="list_tags_for_resource",
                     waiter="cluster_available",
@@ -219,7 +219,7 @@ def test__wait_for_cluster_snapshot_status_failed(input, expected):
         (
             "fake_method",
             {"wait": False},
-            *expected(
+            *helper_expected(
                 rds.Boto3ClientMethod(
                     name="fake_method", waiter="", operation_description="fake method", resource="", retry_codes=[]
                 )
@@ -228,7 +228,7 @@ def test__wait_for_cluster_snapshot_status_failed(input, expected):
         (
             "fake_method",
             {"wait": True},
-            *error(
+            *helper_error(
                 NotImplementedError,
                 match=(
                     "method fake_method hasn't been added to the list of accepted methods to use a waiter in"
@@ -253,7 +253,7 @@ def test__get_rds_method_attribute_cluster(method_name, params, expected, error)
             {
                 "new_db_instance_identifier": "test",
             },
-            *expected(
+            *helper_expected(
                 rds.Boto3ClientMethod(
                     name="delete_db_instance",
                     waiter="db_instance_deleted",
@@ -268,7 +268,7 @@ def test__get_rds_method_attribute_cluster(method_name, params, expected, error)
             {
                 "new_db_instance_identifier": "test",
             },
-            *expected(
+            *helper_expected(
                 rds.Boto3ClientMethod(
                     name="create_db_instance",
                     waiter="db_instance_available",
@@ -283,7 +283,7 @@ def test__get_rds_method_attribute_cluster(method_name, params, expected, error)
             {
                 "new_db_instance_identifier": "test",
             },
-            *expected(
+            *helper_expected(
                 rds.Boto3ClientMethod(
                     name="stop_db_instance",
                     waiter="db_instance_stopped",
@@ -298,7 +298,7 @@ def test__get_rds_method_attribute_cluster(method_name, params, expected, error)
             {
                 "new_db_instance_identifier": "test",
             },
-            *expected(
+            *helper_expected(
                 rds.Boto3ClientMethod(
                     name="promote_read_replica",
                     waiter="read_replica_promoted",
@@ -313,7 +313,7 @@ def test__get_rds_method_attribute_cluster(method_name, params, expected, error)
             {
                 "new_db_instance_identifier": "test",
             },
-            *expected(
+            *helper_expected(
                 rds.Boto3ClientMethod(
                     name="restore_db_instance_from_db_snapshot",
                     waiter="db_instance_available",
@@ -328,7 +328,7 @@ def test__get_rds_method_attribute_cluster(method_name, params, expected, error)
             {
                 "new_db_instance_identifier": "test",
             },
-            *expected(
+            *helper_expected(
                 rds.Boto3ClientMethod(
                     name="modify_db_instance",
                     waiter="db_instance_available",
@@ -343,7 +343,7 @@ def test__get_rds_method_attribute_cluster(method_name, params, expected, error)
             {
                 "new_db_instance_identifier": "test",
             },
-            *expected(
+            *helper_expected(
                 rds.Boto3ClientMethod(
                     name="add_role_to_db_instance",
                     waiter="role_associated",
@@ -358,7 +358,7 @@ def test__get_rds_method_attribute_cluster(method_name, params, expected, error)
             {
                 "new_db_instance_identifier": "test",
             },
-            *expected(
+            *helper_expected(
                 rds.Boto3ClientMethod(
                     name="remove_role_from_db_instance",
                     waiter="role_disassociated",
@@ -373,7 +373,7 @@ def test__get_rds_method_attribute_cluster(method_name, params, expected, error)
             {
                 "new_db_instance_identifier": "test",
             },
-            *expected(
+            *helper_expected(
                 rds.Boto3ClientMethod(
                     name="list_tags_for_resource",
                     waiter="db_instance_available",
@@ -386,7 +386,7 @@ def test__get_rds_method_attribute_cluster(method_name, params, expected, error)
         (
             "fake_method",
             {"wait": False},
-            *expected(
+            *helper_expected(
                 rds.Boto3ClientMethod(
                     name="fake_method", waiter="", operation_description="fake method", resource="", retry_codes=[]
                 )
@@ -395,7 +395,7 @@ def test__get_rds_method_attribute_cluster(method_name, params, expected, error)
         (
             "fake_method",
             {"wait": True},
-            *error(
+            *helper_error(
                 NotImplementedError,
                 match=(
                     "method fake_method hasn't been added to the list of accepted methods to use a waiter in"
@@ -420,7 +420,7 @@ def test__get_rds_method_attribute_instance(method_name, params, expected, error
             {
                 "db_snapshot_identifier": "test",
             },
-            *expected(
+            *helper_expected(
                 rds.Boto3ClientMethod(
                     name="delete_db_snapshot",
                     waiter="db_snapshot_deleted",
@@ -435,7 +435,7 @@ def test__get_rds_method_attribute_instance(method_name, params, expected, error
             {
                 "db_snapshot_identifier": "test",
             },
-            *expected(
+            *helper_expected(
                 rds.Boto3ClientMethod(
                     name="create_db_snapshot",
                     waiter="db_snapshot_available",
@@ -448,7 +448,7 @@ def test__get_rds_method_attribute_instance(method_name, params, expected, error
         (
             "copy_db_snapshot",
             {"source_db_snapshot_identifier": "test", "db_snapshot_identifier": "test-copy"},
-            *expected(
+            *helper_expected(
                 rds.Boto3ClientMethod(
                     name="copy_db_snapshot",
                     waiter="db_snapshot_available",
@@ -463,7 +463,7 @@ def test__get_rds_method_attribute_instance(method_name, params, expected, error
             {
                 "db_snapshot_identifier": "test",
             },
-            *expected(
+            *helper_expected(
                 rds.Boto3ClientMethod(
                     name="list_tags_for_resource",
                     waiter="db_snapshot_available",
@@ -478,7 +478,7 @@ def test__get_rds_method_attribute_instance(method_name, params, expected, error
             {
                 "db_cluster_snapshot_identifier": "test",
             },
-            *expected(
+            *helper_expected(
                 rds.Boto3ClientMethod(
                     name="delete_db_cluster_snapshot",
                     waiter="db_cluster_snapshot_deleted",
@@ -493,7 +493,7 @@ def test__get_rds_method_attribute_instance(method_name, params, expected, error
             {
                 "db_cluster_snapshot_identifier": "test",
             },
-            *expected(
+            *helper_expected(
                 rds.Boto3ClientMethod(
                     name="create_db_cluster_snapshot",
                     waiter="db_cluster_snapshot_available",
@@ -506,7 +506,7 @@ def test__get_rds_method_attribute_instance(method_name, params, expected, error
         (
             "copy_db_cluster_snapshot",
             {"source_db_cluster_snapshot_identifier": "test", "db_cluster_snapshot_identifier": "test-copy"},
-            *expected(
+            *helper_expected(
                 rds.Boto3ClientMethod(
                     name="copy_db_cluster_snapshot",
                     waiter="db_cluster_snapshot_available",
@@ -521,7 +521,7 @@ def test__get_rds_method_attribute_instance(method_name, params, expected, error
             {
                 "db_cluster_snapshot_identifier": "test",
             },
-            *expected(
+            *helper_expected(
                 rds.Boto3ClientMethod(
                     name="list_tags_for_resource",
                     waiter="db_cluster_snapshot_available",
@@ -534,7 +534,7 @@ def test__get_rds_method_attribute_instance(method_name, params, expected, error
         (
             "fake_method",
             {"wait": False},
-            *expected(
+            *helper_expected(
                 rds.Boto3ClientMethod(
                     name="fake_method", waiter="", operation_description="fake method", resource="", retry_codes=[]
                 )
@@ -543,7 +543,7 @@ def test__get_rds_method_attribute_instance(method_name, params, expected, error
         (
             "fake_method",
             {"wait": True},
-            *error(
+            *helper_error(
                 NotImplementedError,
                 match=(
                     "method fake_method hasn't been added to the list of accepted methods to use a waiter in"
@@ -669,7 +669,7 @@ def test__handle_errors(method_name, exception, expected):
                 code="InvalidParameterCombination",
                 message="ModifyDbCluster API",
             ),
-            *expected(
+            *helper_expected(
                 "It appears you are trying to modify attributes that are managed at the cluster level. Please see"
                 " rds_cluster"
             ),
@@ -677,7 +677,7 @@ def test__handle_errors(method_name, exception, expected):
         (
             "modify_db_instance",
             build_exception("modify_db_instance", code="InvalidParameterCombination"),
-            *error(
+            *helper_error(
                 NotImplementedError,
                 match=(
                     "method modify_db_instance hasn't been added to the list of accepted methods to use a waiter in"
@@ -688,7 +688,7 @@ def test__handle_errors(method_name, exception, expected):
         (
             "promote_read_replica",
             build_exception("promote_read_replica", code="InvalidDBInstanceState"),
-            *error(
+            *helper_error(
                 NotImplementedError,
                 match=(
                     "method promote_read_replica hasn't been added to the list of accepted methods to use a waiter in"
@@ -699,7 +699,7 @@ def test__handle_errors(method_name, exception, expected):
         (
             "promote_read_replica_db_cluster",
             build_exception("promote_read_replica_db_cluster", code="InvalidDBClusterStateFault"),
-            *error(
+            *helper_error(
                 NotImplementedError,
                 match=(
                     "method promote_read_replica_db_cluster hasn't been added to the list of accepted methods to use a"
@@ -710,7 +710,9 @@ def test__handle_errors(method_name, exception, expected):
         (
             "create_db_cluster",
             build_exception("create_db_cluster", code="InvalidParameterValue"),
-            *expected("DB engine fake_engine should be one of aurora, aurora-mysql, aurora-postgresql"),
+            *helper_expected(
+                "DB engine fake_engine should be one of ['aurora', 'aurora-mysql', 'aurora-postgresql', 'mysql', 'postgres']"
+            ),
         ),
     ],
 )
@@ -719,8 +721,8 @@ def test__handle_errors_failed(method_name, exception, expected, error):
 
     with error:
         rds.handle_errors(module, exception, method_name, {"Engine": "fake_engine"})
-        module.fail_json_aws.assert_called_once
-        module.fail_json_aws.call_args[1]["msg"] == expected
+        module.fail_json_aws.assert_called_once()
+        assert module.fail_json_aws.call_args[1]["msg"] == expected
 
 
 @pytest.mark.parametrize(

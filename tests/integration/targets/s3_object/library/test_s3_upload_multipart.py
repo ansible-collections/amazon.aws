@@ -93,7 +93,7 @@ def main():
     )
 
     bucket = module.params.get("bucket")
-    object = module.params.get("object")
+    object_key = module.params.get("object")
     part_size = module.params.get("part_size")
     parts = module.params.get("parts")
 
@@ -109,13 +109,13 @@ def main():
         module.fail_json_aws(e, msg="Failed to connect to AWS")
 
     # create multipart upload
-    response = s3.create_multipart_upload(Bucket=bucket, Key=object)
+    response = s3.create_multipart_upload(Bucket=bucket, Key=object_key)
     upload_id = response.get("UploadId")
 
     # upload parts
     upload_params = {
         "Bucket": bucket,
-        "Key": object,
+        "Key": object_key,
         "UploadId": upload_id,
     }
 
@@ -124,7 +124,7 @@ def main():
     # complete the upload
     response = s3.complete_multipart_upload(
         Bucket=bucket,
-        Key=object,
+        Key=object_key,
         MultipartUpload={"Parts": multiparts},
         UploadId=upload_id,
     )

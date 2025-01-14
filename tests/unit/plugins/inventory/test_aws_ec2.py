@@ -38,8 +38,8 @@ from ansible_collections.amazon.aws.plugins.inventory.aws_ec2 import _get_tag_ho
 from ansible_collections.amazon.aws.plugins.inventory.aws_ec2 import _prepare_host_vars
 
 
-@pytest.fixture()
-def inventory():
+@pytest.fixture(name="inventory")
+def fixture_inventory():
     inventory = InventoryModule()
     inventory._options = {
         "aws_profile": "first_precedence",
