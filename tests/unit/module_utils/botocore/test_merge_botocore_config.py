@@ -20,8 +20,8 @@ MINIMAL_CONFIG = {
 }
 
 
-@pytest.fixture
-def basic_config():
+@pytest.fixture(name="basic_config")
+def fixture_basic_config():
     config = botocore.config.Config(**MINIMAL_CONFIG)
     return config
 

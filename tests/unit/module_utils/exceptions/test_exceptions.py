@@ -10,8 +10,8 @@ import pytest
 import ansible_collections.amazon.aws.plugins.module_utils.exceptions as aws_exceptions
 
 
-@pytest.fixture
-def utils_exceptions():
+@pytest.fixture(name="utils_exceptions")
+def fixture_utils_exceptions():
     return aws_exceptions
 
 

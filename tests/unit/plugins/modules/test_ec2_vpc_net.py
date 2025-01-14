@@ -15,8 +15,8 @@ from ansible_collections.amazon.aws.plugins.modules import ec2_vpc_net
 module_name = "ansible_collections.amazon.aws.plugins.modules.ec2_vpc_net"
 
 
-@pytest.fixture
-def ansible_module():
+@pytest.fixture(name="ansible_module")
+def fixture_ansible_module():
     module = MagicMock()
     module.check_mode = False
     module.params = {}

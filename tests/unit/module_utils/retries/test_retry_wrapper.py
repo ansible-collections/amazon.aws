@@ -18,8 +18,8 @@ import ansible_collections.amazon.aws.plugins.module_utils.botocore as util_boto
 import ansible_collections.amazon.aws.plugins.module_utils.retries as util_retries
 
 
-@pytest.fixture
-def fake_client():
+@pytest.fixture(name="fake_client")
+def fixture_fake_client():
     retryable_response = {"Error": {"Code": "RequestLimitExceeded", "Message": "Something went wrong"}}
     retryable_exception = botocore.exceptions.ClientError(retryable_response, "fail_retryable")
     not_retryable_response = {"Error": {"Code": "AnotherProblem", "Message": "Something went wrong"}}
@@ -35,8 +35,8 @@ def fake_client():
     return client
 
 
-@pytest.fixture
-def quick_backoff():
+@pytest.fixture(name="quick_backoff")
+def fixture_quick_backoff():
     # Because RetryingBotoClientWrapper will wrap resources using the this decorator,
     # we're going to rely on AWSRetry.jittered_backoff rather than trying to mock out
     # a decorator use a really short delay to keep the tests quick, and we only need

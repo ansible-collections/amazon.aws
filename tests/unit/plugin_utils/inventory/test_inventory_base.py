@@ -100,8 +100,8 @@ class AwsUnitTestTemplar:
         return variable
 
 
-@pytest.fixture
-def aws_inventory_base():
+@pytest.fixture(name="aws_inventory_base")
+def fixture_aws_inventory_base():
     inventory = utils_inventory.AWSInventoryBase()
     inventory._options = {}
     inventory.templar = None

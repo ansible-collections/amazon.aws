@@ -16,8 +16,8 @@ from ansible.module_utils.six import PY3
 from ansible.module_utils.six import string_types
 
 
-@pytest.fixture
-def stdin(mocker, request):
+@pytest.fixture(name="stdin")
+def fixture_stdin(mocker, request):
     old_args = ansible.module_utils.basic._ANSIBLE_ARGS
     ansible.module_utils.basic._ANSIBLE_ARGS = None
     old_argv = sys.argv
@@ -56,8 +56,8 @@ def stdin(mocker, request):
     sys.argv = old_argv
 
 
-@pytest.fixture
-def am(stdin, request):
+@pytest.fixture(name="am")
+def fixture_am(stdin, request):
     old_args = ansible.module_utils.basic._ANSIBLE_ARGS
     ansible.module_utils.basic._ANSIBLE_ARGS = None
     old_argv = sys.argv

@@ -57,8 +57,8 @@ def make_clienterror_exception(code="AccessDenied"):
     )
 
 
-@pytest.fixture()
-def inventory():
+@pytest.fixture(name="inventory")
+def fixture_inventory():
     inventory = InventoryModule()
     inventory.inventory = MagicMock()
     inventory._populate_host_vars = MagicMock()
@@ -78,8 +78,8 @@ def inventory():
     return inventory
 
 
-@pytest.fixture()
-def connection():
+@pytest.fixture(name="connection")
+def fixture_connection():
     conn = MagicMock()
     return conn
 
@@ -543,13 +543,13 @@ def test_inventory_add_hosts(m_get_rds_hostname, inventory, hostvars_prefix, hos
         tmp = []
         for host in camel_hosts:
             new_host = copy.deepcopy(host)
-            for key in host:
+            for key, value in host.items():
                 new_key = key
                 if hostvars_prefix:
                     new_key = _options["hostvars_prefix"] + new_key
                 if hostvars_suffix:
                     new_key += _options["hostvars_suffix"]
-                new_host[new_key] = host[key]
+                new_host[new_key] = value
             tmp.append(new_host)
         camel_hosts = tmp
 

@@ -13,7 +13,7 @@ module_name = "ansible_collections.amazon.aws.plugins.modules.ec2_import_image"
 module_name_info = "ansible_collections.amazon.aws.plugins.modules.ec2_import_image_info"
 utils = "ansible_collections.amazon.aws.plugins.module_utils.ec2"
 
-expected_result = {
+p_expected_result = {
     "import_task_id": "import-ami-0c207d759080a3dff",
     "progress": "19",
     "snapshot_details": [
@@ -30,7 +30,7 @@ expected_result = {
     "task_name": "clone-vm-import-image",
 }
 
-describe_import_image_tasks = [
+p_describe_import_image_tasks = [
     {
         "import_task_id": "import-ami-0c207d759080a3dff",
         "progress": "19",
@@ -49,8 +49,8 @@ describe_import_image_tasks = [
 ]
 
 
-@pytest.fixture
-def module():
+@pytest.fixture(name="module")
+def fixture_module():
     # Create a MagicMock for the module object
     module_mock = MagicMock()
     module_mock.params = {
@@ -71,15 +71,15 @@ def module():
     "import_image_info, expected_result",
     [
         (
-            [[], describe_import_image_tasks],
-            {"changed": True, "import_image": expected_result},
+            [[], p_describe_import_image_tasks],
+            {"changed": True, "import_image": p_expected_result},
         ),
         (
-            [describe_import_image_tasks, describe_import_image_tasks],
+            [p_describe_import_image_tasks, p_describe_import_image_tasks],
             {
                 "changed": False,
                 "msg": "An import task with the specified name already exists",
-                "import_image": expected_result,
+                "import_image": p_expected_result,
             },
         ),
     ],
@@ -113,11 +113,11 @@ def test_present_no_check_mode(
             {"changed": True, "msg": "Would have created the import task if not in check mode"},
         ),
         (
-            describe_import_image_tasks,
+            p_describe_import_image_tasks,
             {
                 "changed": False,
                 "msg": "An import task with the specified name already exists",
-                "import_image": expected_result,
+                "import_image": p_expected_result,
             },
         ),
     ],
@@ -151,8 +151,8 @@ def test_present_check_mode(
             },
         ),
         (
-            describe_import_image_tasks,
-            {"changed": True, "import_image": expected_result},
+            p_describe_import_image_tasks,
+            {"changed": True, "import_image": p_expected_result},
         ),
     ],
 )
@@ -190,7 +190,7 @@ def test_absent_no_check_mode(
             },
         ),
         (
-            describe_import_image_tasks,
+            p_describe_import_image_tasks,
             {"changed": True, "msg": "Would have cancelled the import task if not in check mode"},
         ),
     ],

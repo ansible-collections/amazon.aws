@@ -14,8 +14,8 @@ from ansible_collections.amazon.aws.plugins.modules import ec2_instance
 module_path = "ansible_collections.amazon.aws.plugins.modules.ec2_instance"
 
 
-@pytest.fixture
-def ansible_aws_module():
+@pytest.fixture(name="ansible_aws_module")
+def fixture_ansible_aws_module():
     module = MagicMock()
     module.params = {}
     module.check_mode = False
