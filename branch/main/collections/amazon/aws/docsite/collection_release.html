@@ -186,12 +186,6 @@ backported.</p>
 <p>Ensure that your local copy of the <code class="docutils literal notranslate"><span class="pre">main</span></code> branch is up to date and contains all planned patches.</p>
 <section id="preparing-a-new-stable-branch">
 <h4>Preparing a new stable branch<a class="headerlink" href="#preparing-a-new-stable-branch" title="Link to this heading"></a></h4>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>Zuul will need updating here too.</p>
-<p>As part of the next release cycle please add an entry here about configuring the Zuul sanity jobs
-for the new stable-6 branch.</p>
-</div>
 <p>Create and push a new <code class="docutils literal notranslate"><span class="pre">stable-&lt;major-version&gt;</span></code> branch (for example <code class="docutils literal notranslate"><span class="pre">stable-6</span></code> for release
 <code class="docutils literal notranslate"><span class="pre">6.0.0</span></code>):</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>fetch<span class="w"> </span>origin
@@ -199,6 +193,12 @@ git<span class="w"> </span>checkout<span class="w"> </span>main
 git<span class="w"> </span>reset<span class="w"> </span>--hard<span class="w"> </span>origin/main
 git<span class="w"> </span>checkout<span class="w"> </span>-b<span class="w"> </span>stable-6
 git<span class="w"> </span>push<span class="w"> </span>--set-upstream<span class="w"> </span>origin<span class="w"> </span>stable-6
+</pre></div>
+</div>
+<p>Create a new label <code class="docutils literal notranslate"><span class="pre">backport-&lt;major-version&gt;</span></code> (for example <code class="docutils literal notranslate"><span class="pre">backport-6</span></code> for release <code class="docutils literal notranslate"><span class="pre">6.0.0</span></code>).
+This can either be done through the <a class="reference external" href="https://github.com/ansible-collections/amazon.aws/labels">GitHub UI</a>
+or using the GH CLI if you have it installed and configured:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gh<span class="w"> </span>label<span class="w"> </span>create<span class="w"> </span>backport-6<span class="w"> </span>-c<span class="w"> </span>FFAA22<span class="w"> </span>--description<span class="w"> </span><span class="s2">&quot;PR should be backported to the stable-6 branch&quot;</span><span class="w"> </span>-R<span class="w"> </span>ansible-collections/amazon.aws
 </pre></div>
 </div>
 <p>Create a pull request against the new branch updating any documentation links from <code class="docutils literal notranslate"><span class="pre">main</span></code> to the
@@ -211,15 +211,34 @@ new <code class="docutils literal notranslate"><span class="pre">stable-&lt;majo
 <p>Now that our new major release has been branched, we update the <code class="docutils literal notranslate"><span class="pre">main</span></code> branch so that it’s
 configured as the pre-release development version for the <strong>next</strong> release (for example
 <code class="docutils literal notranslate"><span class="pre">7.0.0-dev0</span></code> if you’re preparing <code class="docutils literal notranslate"><span class="pre">6.0.0</span></code>).</p>
+<p>Create a pull request against the <code class="docutils literal notranslate"><span class="pre">main</span></code> branch that updates the
+<a class="reference external" href="https://github.com/ansible-collections/amazon.aws/tree/main/.github/workflows/backports.yml">backport-labeller workflow</a>
+so that non-breaking changes will automatically be backported to the new branch:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nn">---</span>
+<span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mergeit-backport</span>
+
+<span class="nn">...</span>
+
+<span class="nt">jobs</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">changelog-labeller</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ansible-network/github_actions/.github/workflows/backport-labeller.yml@main</span>
+<span class="w">    </span><span class="nt">with</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">label_minor_release</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">backport-6</span>
+<span class="w">      </span><span class="nt">label_bugfix_release</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">backport-5</span>
+</pre></div>
+</div>
 <p>Create a pull request against the <code class="docutils literal notranslate"><span class="pre">main</span></code> branch updating the
 <a class="reference external" href="https://github.com/ansible-collections/amazon.aws/blob/main/galaxy.yml">galaxy.yml</a> version
 information and the  <a class="reference external" href="https://github.com/ansible-collections/amazon.aws/blob/main/plugins/module_utils/common.py">plugins/module_utils/common.py</a>
 version information to a <code class="docutils literal notranslate"><span class="pre">dev0</span></code> prerelease of the next major release.  This may result in deprecation
 errors from the sanity tests.  Create issues and add entries to the relevant
 <a class="reference external" href="https://github.com/ansible-collections/amazon.aws/tree/main/tests/sanity">sanity test ignore files</a>.
-(including a link to the issue)</p>
+(including a link to the issue).</p>
 <p>For an example pull request see
 <a class="reference external" href="https://github.com/ansible-collections/amazon.aws/pull/1108">ansible-collections/amazon.aws#1108</a></p>
+<p>(In theory both steps can be done with a single PR.  However, the bot performing our automatic
+merges will refuse to merge PRs which make changes to the contents of .github.  Splitting the PRs up
+reduces the scope of the manually merged PR.)</p>
 </section>
 <section id="next-steps">
 <h4>Next steps<a class="headerlink" href="#next-steps" title="Link to this heading"></a></h4>
