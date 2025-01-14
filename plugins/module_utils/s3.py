@@ -198,3 +198,9 @@ def _list_objects_v2(client, **params):
 def list_bucket_object_keys(client, bucket, prefix=None, max_keys=None, start_after=None):
     response = _list_objects_v2(client, Bucket=bucket, Prefix=prefix, StartAfter=start_after, MaxKeys=max_keys)
     return [c["Key"] for c in response.get("Contents", [])]
+
+
+def get_s3_bucket_location(module):
+    if module.params.get("ceph") is True:
+        return module.params.get("region")
+    return module.region or "us-east-1"
