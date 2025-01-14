@@ -228,15 +228,7 @@ def _aws_region(params: Dict) -> Optional[str]:
 
 def get_aws_region(
     module: AnsibleAWSModule,
-    boto3: Optional[bool] = None,
 ) -> Optional[str]:  # pylint: disable=redefined-outer-name
-    if boto3 is not None:
-        module.deprecate(
-            "get_aws_region(): the boto3 parameter will be removed in a release after 2025-05-01. "
-            "The parameter has been ignored since release 4.0.0.",
-            date="2025-05-01",
-            collection_name="amazon.aws",
-        )
     try:
         return _aws_region(module.params)
     except AnsibleBotocoreError as e:
@@ -302,15 +294,7 @@ def _aws_connection_info(params: Dict) -> Tuple[Optional[str], Optional[str], Di
 
 def get_aws_connection_info(
     module: AnsibleAWSModule,
-    boto3: Optional[bool] = None,
 ) -> Tuple[Optional[str], Optional[str], Dict]:  # pylint: disable=redefined-outer-name
-    if boto3 is not None:
-        module.deprecate(
-            "get_aws_connection_info(): the boto3 parameter will be removed in a release after 2025-05-01. "
-            "The parameter has been ignored since release 4.0.0.",
-            date="2025-05-01",
-            collection_name="amazon.aws",
-        )
     try:
         return _aws_connection_info(module.params)
     except AnsibleBotocoreError as e:
