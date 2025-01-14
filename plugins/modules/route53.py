@@ -44,8 +44,10 @@ options:
   type:
     description:
       - The type of DNS record to create.
+      - Support for V(SSHFP) was added in release 9.2.0. See AWS Doc for more information
+        U(https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/ResourceRecordTypes.html).
     required: true
-    choices: [ 'A', 'CNAME', 'MX', 'AAAA', 'TXT', 'PTR', 'SRV', 'SPF', 'CAA', 'NS', 'SOA' ]
+    choices: [ 'A', 'CNAME', 'MX', 'AAAA', 'TXT', 'PTR', 'SRV', 'SPF', 'CAA', 'NS', 'SOA', 'SSHFP' ]
     type: str
   alias:
     description:
@@ -273,6 +275,7 @@ EXAMPLES = r"""
     ttl: 7200
     value: 1.1.1.1,2.2.2.2,3.3.3.3
     wait: true
+
 - name: Update new.foo.com as an A record with a list of 3 IPs and wait until the changes have been replicated
   amazon.aws.route53:
     state: present
@@ -285,6 +288,7 @@ EXAMPLES = r"""
       - 2.2.2.2
       - 3.3.3.3
     wait: true
+
 - name: Retrieve the details for new.foo.com
   amazon.aws.route53:
     state: get
@@ -292,6 +296,7 @@ EXAMPLES = r"""
     record: new.foo.com
     type: A
   register: rec
+
 - name: Delete new.foo.com A record using the results from the get command
   amazon.aws.route53:
     state: absent
@@ -300,6 +305,7 @@ EXAMPLES = r"""
     ttl: "{{ rec.set.ttl }}"
     type: "{{ rec.set.type }}"
     value: "{{ rec.set.value }}"
+
 # Add an AAAA record.  Note that because there are colons in the value
 # that the IPv6 address must be quoted. Also shows using the old form command=create.
 - name: Add an AAAA record
@@ -310,6 +316,7 @@ EXAMPLES = r"""
     type: AAAA
     ttl: 7200
     value: "::1"
+
 # For more information on SRV records see:
 # https://en.wikipedia.org/wiki/SRV_record
 - name: Add a SRV record with multiple fields for a service on port 22222
@@ -319,6 +326,7 @@ EXAMPLES = r"""
     record: "_example-service._tcp.foo.com"
     type: SRV
     value: "0 0 22222 host1.foo.com,0 0 22222 host2.foo.com"
+
 # Note that TXT and SPF records must be surrounded
 # by quotes when sent to Route 53:
 - name: Add a TXT record.
@@ -329,6 +337,7 @@ EXAMPLES = r"""
     type: TXT
     ttl: 7200
     value: '"bar"'
+
 - name: Add an alias record that points to an Amazon ELB
   amazon.aws.route53:
     state: present
@@ -338,6 +347,7 @@ EXAMPLES = r"""
     value: "{{ elb_dns_name }}"
     alias: true
     alias_hosted_zone_id: "{{ elb_zone_id }}"
+
 - name: Retrieve the details for elb.foo.com
   amazon.aws.route53:
     state: get
@@ -345,6 +355,7 @@ EXAMPLES = r"""
     record: elb.foo.com
     type: A
   register: rec
+
 - name: Delete an alias record using the results from the get command
   amazon.aws.route53:
     state: absent
@@ -355,6 +366,7 @@ EXAMPLES = r"""
     value: "{{ rec.set.value }}"
     alias: true
     alias_hosted_zone_id: "{{ rec.set.alias_hosted_zone_id }}"
+
 - name: Add an alias record that points to an Amazon ELB and evaluates it health
   amazon.aws.route53:
     state: present
@@ -365,6 +377,7 @@ EXAMPLES = r"""
     alias: true
     alias_hosted_zone_id: "{{ elb_zone_id }}"
     alias_evaluate_target_health: true
+
 - name: Add an AAAA record with Hosted Zone ID
   amazon.aws.route53:
     state: present
@@ -374,6 +387,7 @@ EXAMPLES = r"""
     type: AAAA
     ttl: 7200
     value: "::1"
+
 - name: Use a routing policy to distribute traffic
   amazon.aws.route53:
     state: present
@@ -386,6 +400,7 @@ EXAMPLES = r"""
     identifier: "host1@www"
     weight: 100
     health_check: "d994b780-3150-49fd-9205-356abdd42e75"
+
 - name: Add a CAA record (RFC 6844)
   amazon.aws.route53:
     state: present
@@ -396,6 +411,7 @@ EXAMPLES = r"""
       - 0 issue "ca.example.net"
       - 0 issuewild ";"
       - 0 iodef "mailto:security@example.com"
+
 - name: Create a record with geo_location - country_code
   amazon.aws.route53:
     state: present
@@ -407,6 +423,7 @@ EXAMPLES = r"""
     ttl: 30
     geo_location:
       country_code: US
+
 - name: Create a record with geo_location - subdivision code
   amazon.aws.route53:
     state: present
@@ -419,6 +436,22 @@ EXAMPLES = r"""
     geo_location:
       country_code: US
       subdivision_code: TX
+
+- name: Add new.foo.com as an SSHFP record
+  amazon.aws.route53:
+    state: present
+    zone: test-zone.com
+    record: new.foo.com
+    type: SSHFP
+    ttl: 7200
+    value: 1 1 11F1A11D1111112B111C1B11B1C11C11C1234567
+
+- name: Delete new.foo.com as an SSHFP record
+  amazon.aws.route53:
+    state: absent
+    zone: test-zone.com
+    record: new.foo.com
+    type: SSHFP
 """
 
 from operator import itemgetter
@@ -558,7 +591,7 @@ def main():
         type=dict(
             type="str",
             required=True,
-            choices=["A", "AAAA", "CAA", "CNAME", "MX", "NS", "PTR", "SOA", "SPF", "SRV", "TXT"],
+            choices=["A", "AAAA", "CAA", "CNAME", "MX", "NS", "PTR", "SOA", "SPF", "SSHFP", "SRV", "TXT"],
         ),
         alias=dict(type="bool"),
         alias_hosted_zone_id=dict(type="str"),
