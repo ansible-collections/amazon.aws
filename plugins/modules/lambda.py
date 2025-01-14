@@ -668,7 +668,6 @@ def main():
     tags = module.params.get("tags")
     purge_tags = module.params.get("purge_tags")
     kms_key_arn = module.params.get("kms_key_arn")
-    architectures = module.params.get("architecture")
     image_uri = module.params.get("image_uri")
     layers = []
 
