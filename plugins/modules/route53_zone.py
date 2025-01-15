@@ -222,6 +222,57 @@ def find_zones(zone_in, private_zone):
     return zones
 
 
+def get_dnssec(client, module, zone_id):
+    try:
+        return client.get_dnssec(HostedZoneId=zone_id)
+    except (BotoCoreError, ClientError) as e:
+        module.fail_json_aws(e, msg=f"Could not get DNSSEC for {zone_id}")
+
+
+def enable_dnssec(client, module, zone_id):
+    try:
+        client.enable_hosted_zone_dnssec(HostedZoneId=zone_id)
+    except (BotoCoreError, ClientError) as e:
+        module.fail_json_aws(e, msg=f"Could not enable DNSSEC for {zone_id}")
+
+
+def ensure_dnssec(client, module, zone_id):
+    changed = False
+    dnssec = module.params.get("dnssec")
+
+    response = get_dnssec(client, module, zone_id)
+    dnssec_status = response["Status"]["ServeSignature"]
+
+    # If get_dnssec command output returns "NOT_SIGNING",
+    # the Domain Name System Security Extensions (DNSSEC) signing is not enabled for the
+    # Amazon Route 53 hosted zone.
+    if dnssec:
+        if dnssec_status == "NOT_SIGNING":
+            # Enable DNSSEC
+            if not module.check_mode:
+                enable_dnssec(client, module, zone_id)
+            changed = True
+        elif dnssec_status == "DELETING":
+            # DNSSEC signing is in the process of being removed for the hosted zone.
+            module.warn(
+                f"DNSSEC signing is in the process of being removed for the hosted zone: {zone_id}."
+                "Could not enable it."
+            )
+    else:
+        if dnssec_status == "SIGNING":
+            # Disable DNSSEC
+            if not module.check_mode:
+                try:
+                    client.disable_hosted_zone_dnssec(HostedZoneId=zone_id)
+                except (BotoCoreError, ClientError) as e:
+                    module.fail_json_aws(e, msg=f"Could not enable DNSSEC for {zone_id}")
+            changed = True
+        # if dnssec_status == "DELETING":
+        # DNSSEC signing is in the process of being removed for the hosted zone.
+
+    return changed
+
+
 def create(matching_zones):
     zone_in = module.params.get("zone").lower()
     vpc_id = module.params.get("vpc_id")
