@@ -226,6 +226,8 @@ def main():
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
         supports_check_mode=True,
+        required_if=required_if,
+        mutually_exclusive=mutually_exclusive,
     )
 
     client = module.client("iam", retry_decorator=AWSRetry.jittered_backoff())
