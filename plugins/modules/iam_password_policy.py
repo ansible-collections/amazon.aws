@@ -159,7 +159,7 @@ class IAMConnection(object):
 
         try:
             original_policy = self.policy_to_dict(policy)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError):
             original_policy = {}
 
         try:

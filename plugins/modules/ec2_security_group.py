@@ -831,7 +831,7 @@ def _create_target_from_rule(
     try:
         group = _create_security_group_with_wait(client, module, group_name, rule["group_desc"], vpc_id, tags)
         changed = True
-    except is_ansible_aws_error_code("InvalidGroup.Duplicate") as e:
+    except is_ansible_aws_error_code("InvalidGroup.Duplicate"):
         # The group exists, but didn't show up in any of our previous describe-security-groups calls
         # Try searching on a filter for the name, and allow a retry window for AWS to update
         # the model on their end.

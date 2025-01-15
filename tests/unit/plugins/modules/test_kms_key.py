@@ -70,5 +70,5 @@ def test_validate_params():
     module = MagicMock()
     module.params = {"state": "present", "multi_region": True}
 
-    result = kms_key.validate_params(module, key_details["KeyMetadata"])
+    kms_key.validate_params(module, key_details["KeyMetadata"])
     module.fail_json.assert_called_with(msg="You cannot change the multi-region property on an existing key.")

@@ -339,7 +339,7 @@ class TestIamUtils:
         self.sts_client.get_caller_identity.assert_called_once()
         self.iam_client.get_user.assert_called_once()
         # Check we got the values back we expected.
-        assert e.type == SystemExit
+        assert e.type is SystemExit
         assert e.value.code == 1  # 1 == fail_json_aws
 
     def test_get_aws_account_info__client_failures(self):
@@ -354,7 +354,7 @@ class TestIamUtils:
         self.sts_client.get_caller_identity.assert_called_once()
         self.iam_client.get_user.assert_called_once()
         # Check we got the values back we expected.
-        assert e.type == SystemExit
+        assert e.type is SystemExit
         assert e.value.code == 1  # 1 == fail_json_aws
 
     def test_get_aws_account_info__encoded_failures(self):
@@ -369,5 +369,5 @@ class TestIamUtils:
         self.sts_client.get_caller_identity.assert_called_once()
         self.iam_client.get_user.assert_called_once()
         # Check we got the values back we expected.
-        assert e.type == SystemExit
+        assert e.type is SystemExit
         assert e.value.code == 1  # 1 == fail_json (we couldn't parse the AccessDenied errors)

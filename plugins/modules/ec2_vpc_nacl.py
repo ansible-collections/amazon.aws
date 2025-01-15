@@ -425,7 +425,6 @@ def ensure_present(client, module: AnsibleAWSModule) -> None:
 
 def ensure_absent(client, module: AnsibleAWSModule) -> None:
     changed = False
-    result = {}
     nacl = describe_network_acl(client, module)
     if not nacl:
         module.exit_json(changed=changed)

@@ -93,8 +93,6 @@ def delete_eigw(module: AnsibleAWSModule, connection, eigw_id: str) -> Dict[str,
     eigw_id    : ID of the EIGW to delete
     """
 
-    vpc_id = module.params.get("vpc_id")
-
     if module.check_mode:
         return dict(
             changed=True, msg=f"Would have deleted Egress internet only Gateway id '{eigw_id}' if not in check mode."

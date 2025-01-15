@@ -478,7 +478,7 @@ def describe_s3_object_acl(connection, bucket_name, object_name):
 
     try:
         object_acl_info = connection.get_object_acl(**params)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError):
         pass
 
     if len(object_acl_info) != 0:
@@ -499,7 +499,7 @@ def describe_s3_object_attributes(connection, module, bucket_name, object_name):
 
     try:
         object_attributes_info = connection.get_object_attributes(**params)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError):
         object_attributes_info["msg"] = "Object attributes not found"
 
     if len(object_attributes_info) != 0 and "msg" not in object_attributes_info.keys():
@@ -519,7 +519,7 @@ def describe_s3_object_legal_hold(connection, bucket_name, object_name):
 
     try:
         object_legal_hold_info = connection.get_object_legal_hold(**params)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError):
         pass
 
     if len(object_legal_hold_info) != 0:
@@ -538,7 +538,7 @@ def describe_s3_object_lock_configuration(connection, bucket_name):
 
     try:
         object_legal_lock_configuration_info = connection.get_object_lock_configuration(**params)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError):
         pass
 
     if len(object_legal_lock_configuration_info) != 0:
@@ -558,7 +558,7 @@ def describe_s3_object_retention(connection, bucket_name, object_name):
 
     try:
         object_retention_info = connection.get_object_retention(**params)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError):
         pass
 
     if len(object_retention_info) != 0:
@@ -578,7 +578,7 @@ def describe_s3_object_tagging(connection, bucket_name, object_name):
 
     try:
         object_tagging_info = connection.get_object_tagging(**params)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError):
         pass
 
     if len(object_tagging_info) != 0:
@@ -633,7 +633,7 @@ def get_object(connection, bucket_name, object_name):
 
     try:
         object_info = connection.head_object(**params)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError):
         pass
 
     if len(object_info) != 0:

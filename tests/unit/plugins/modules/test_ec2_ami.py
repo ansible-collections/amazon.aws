@@ -219,16 +219,6 @@ def test_UpdateImage_set_launch_permission_check_mode_no_change():
     assert changed is False
     assert connection.modify_image_attribute.call_count == 0
 
-    launch_permissions = {"user_ids": ["123456789012"], "group_names": ["foo", "bar"]}
-    image = {
-        "ImageId": "ami-0c7a795306730b288",
-        "LaunchPermissions": [
-            {"UserId": "123456789012"},
-            {"GroupName": "foo"},
-            {"GroupName": "bar"},
-        ],
-    }
-
 
 def test_UpdateImage_set_launch_permission_check_mode_with_change():
     connection = MagicMock()

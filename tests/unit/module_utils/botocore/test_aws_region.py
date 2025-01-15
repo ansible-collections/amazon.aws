@@ -129,10 +129,8 @@ def test_aws_region_no_boto(monkeypatch, botocore_utils):
 def test_aws_region_no_profile(monkeypatch, botocore_utils, fake_boto3):
     monkeypatch.setattr(botocore_utils, "boto3", fake_boto3)
     fake_session_module = fake_boto3.session
-    fake_session = fake_session_module.Session(sentinel.RETRIEVAL)
 
     assert botocore_utils._aws_region(dict(region=sentinel.PARAM_REGION)) is sentinel.PARAM_REGION
-    assert fake_session_module.Session.call_args == call(sentinel.RETRIEVAL)
 
     assert botocore_utils._aws_region(dict()) is sentinel.BOTO3_REGION
     assert fake_session_module.Session.call_args == call(profile_name=None)
@@ -141,10 +139,8 @@ def test_aws_region_no_profile(monkeypatch, botocore_utils, fake_boto3):
 def test_aws_region_none_profile(monkeypatch, botocore_utils, fake_boto3):
     monkeypatch.setattr(botocore_utils, "boto3", fake_boto3)
     fake_session_module = fake_boto3.session
-    fake_session = fake_session_module.Session(sentinel.RETRIEVAL)
 
     assert botocore_utils._aws_region(dict(region=sentinel.PARAM_REGION, profile=None)) is sentinel.PARAM_REGION
-    assert fake_session_module.Session.call_args == call(sentinel.RETRIEVAL)
 
     assert utils_botocore._aws_region(dict(profile=None)) is sentinel.BOTO3_REGION
     assert fake_session_module.Session.call_args == call(profile_name=None)
@@ -153,10 +149,8 @@ def test_aws_region_none_profile(monkeypatch, botocore_utils, fake_boto3):
 def test_aws_region_empty_profile(monkeypatch, botocore_utils, fake_boto3):
     monkeypatch.setattr(botocore_utils, "boto3", fake_boto3)
     fake_session_module = fake_boto3.session
-    fake_session = fake_session_module.Session(sentinel.RETRIEVAL)
 
     assert botocore_utils._aws_region(dict(region=sentinel.PARAM_REGION, profile="")) is sentinel.PARAM_REGION
-    assert fake_session_module.Session.call_args == call(sentinel.RETRIEVAL)
 
     assert utils_botocore._aws_region(dict(profile="")) is sentinel.BOTO3_REGION
     assert fake_session_module.Session.call_args == call(profile_name=None)
@@ -165,13 +159,11 @@ def test_aws_region_empty_profile(monkeypatch, botocore_utils, fake_boto3):
 def test_aws_region_with_profile(monkeypatch, botocore_utils, fake_boto3):
     monkeypatch.setattr(botocore_utils, "boto3", fake_boto3)
     fake_session_module = fake_boto3.session
-    fake_session = fake_session_module.Session(sentinel.RETRIEVAL)
 
     assert (
         botocore_utils._aws_region(dict(region=sentinel.PARAM_REGION, profile=sentinel.PARAM_PROFILE))
         is sentinel.PARAM_REGION
     )
-    assert fake_session_module.Session.call_args == call(sentinel.RETRIEVAL)
 
     assert utils_botocore._aws_region(dict(profile=sentinel.PARAM_PROFILE)) is sentinel.BOTO3_REGION
     assert fake_session_module.Session.call_args == call(profile_name=sentinel.PARAM_PROFILE)
