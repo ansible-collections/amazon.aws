@@ -278,6 +278,8 @@ tags:
 """
 
 import time
+from typing import Any
+from typing import Dict
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
@@ -318,32 +320,39 @@ def find_zones(zone_in, private_zone):
     return zones
 
 
-def get_dnssec(client, module, zone_id):
+def get_dnssec(hosted_zone_id: str) -> Dict[str, Any]:
     try:
-        return client.get_dnssec(HostedZoneId=zone_id)
+        return client.get_dnssec(HostedZoneId=hosted_zone_id)
     except (BotoCoreError, ClientError) as e:
-        module.fail_json_aws(e, msg=f"Could not get DNSSEC for {zone_id}")
+        module.fail_json_aws(e, msg=f"Could not get dnssec details about hosted zone {hosted_zone_id}")
 
 
-def enable_dnssec(client, module, zone_id):
+def enable_hosted_zone_dnssec(zone_id: str) -> None:
     try:
         client.enable_hosted_zone_dnssec(HostedZoneId=zone_id)
     except (BotoCoreError, ClientError) as e:
         module.fail_json_aws(e, msg=f"Could not enable DNSSEC for {zone_id}")
 
 
-def disable_dnssec(client, module, zone_id):
+def disable_hosted_zone_dnssec(zone_id: str) -> None:
     try:
         client.disable_hosted_zone_dnssec(HostedZoneId=zone_id)
     except (BotoCoreError, ClientError) as e:
         module.fail_json_aws(e, msg=f"Could not enable DNSSEC for {zone_id}")
 
 
-def ensure_dnssec(client, module, zone_id):
+def get_hosted_zone(hosted_zone_id: str) -> Dict[str, Any]:
+    try:
+        return client.get_hosted_zone(Id=hosted_zone_id)  # could be in different regions or have different VPCids
+    except (BotoCoreError, ClientError) as e:
+        module.fail_json_aws(e, msg=f"Could not get details about hosted zone {hosted_zone_id}")
+
+
+def ensure_dnssec(zone_id: str) -> bool:
     changed = False
     dnssec = module.params.get("dnssec")
 
-    response = get_dnssec(client, module, zone_id)
+    response = get_dnssec(zone_id)
     dnssec_status = response["Status"]["ServeSignature"]
 
     # If get_dnssec command output returns "NOT_SIGNING",
@@ -353,7 +362,7 @@ def ensure_dnssec(client, module, zone_id):
         if dnssec_status == "NOT_SIGNING":
             # Enable DNSSEC
             if not module.check_mode:
-                enable_dnssec(client, module, zone_id)
+                enable_hosted_zone_dnssec(zone_id)
             changed = True
         elif dnssec_status == "DELETING":
             # DNSSEC signing is in the process of being removed for the hosted zone.
@@ -365,7 +374,7 @@ def ensure_dnssec(client, module, zone_id):
         if dnssec_status == "SIGNING":
             # Disable DNSSEC
             if not module.check_mode:
-                disable_dnssec(client, module, zone_id)
+                disable_hosted_zone_dnssec(zone_id)
             changed = True
         # if dnssec_status == "DELETING":
         # DNSSEC signing is in the process of being removed for the hosted zone.
@@ -408,10 +417,10 @@ def create(matching_zones):
     if zone_id:
         if not private_zone:
             # Enable/Disable DNSSEC
-            changed |= ensure_dnssec(client, module, zone_id)
+            changed |= ensure_dnssec(zone_id)
 
             # Update result with information about DNSSEC
-            result["dnssec"] = camel_dict_to_snake_dict(get_dnssec(client, module, zone_id))
+            result["dnssec"] = camel_dict_to_snake_dict(get_dnssec(zone_id))
             del result["dnssec"]["response_metadata"]
 
         # Handle Tags
@@ -426,10 +435,7 @@ def create(matching_zones):
 
 def create_or_update_private(matching_zones, record):
     for z in matching_zones:
-        try:
-            result = client.get_hosted_zone(Id=z["Id"])  # could be in different regions or have different VPCids
-        except (BotoCoreError, ClientError) as e:
-            module.fail_json_aws(e, msg=f"Could not get details about hosted zone {z['Id']}")
+        result = get_hosted_zone(z["Id"])  # could be in different regions or have different VPCids
         zone_details = result["HostedZone"]
         vpc_details = result["VPCs"]
         matching = False
@@ -500,12 +506,9 @@ def create_or_update_private(matching_zones, record):
 def create_or_update_public(matching_zones, record):
     zone_details, zone_delegation_set_details = None, {}
     for matching_zone in matching_zones:
-        try:
-            zone = client.get_hosted_zone(Id=matching_zone["Id"])
-            zone_details = zone["HostedZone"]
-            zone_delegation_set_details = zone.get("DelegationSet", {})
-        except (BotoCoreError, ClientError) as e:
-            module.fail_json_aws(e, msg=f"Could not get details about hosted zone {matching_zone['Id']}")
+        zone = get_hosted_zone(matching_zone["Id"])
+        zone_details = zone["HostedZone"]
+        zone_delegation_set_details = zone.get("DelegationSet", {})
         if "Comment" in zone_details["Config"] and zone_details["Config"]["Comment"] != record["comment"]:
             if not module.check_mode:
                 try:
@@ -553,16 +556,13 @@ def create_or_update_public(matching_zones, record):
 
 def delete_private(matching_zones, vpcs):
     for z in matching_zones:
-        try:
-            result = client.get_hosted_zone(Id=z["Id"])
-        except (BotoCoreError, ClientError) as e:
-            module.fail_json_aws(e, msg=f"Could not get details about hosted zone {z['Id']}")
+        result = get_hosted_zone(z["Id"])
         zone_details = result["HostedZone"]
         vpc_details = result["VPCs"]
         if isinstance(vpc_details, dict):
             if vpc_details["VPC"]["VPCId"] == vpcs[0]["id"] and vpcs[0]["region"] == vpc_details["VPC"]["VPCRegion"]:
                 if not module.check_mode:
-                    delete_hosted_zone(client, module, z["Id"])
+                    delete_hosted_zone(z["Id"])
                 return True, f"Successfully deleted {zone_details['Name']}"
         else:
             # Sort the lists and compare them to make sure they contain the same items
@@ -570,7 +570,7 @@ def delete_private(matching_zones, vpcs):
                 [vpc["region"] for vpc in vpcs]
             ) == sorted([v["VPCRegion"] for v in vpc_details]):
                 if not module.check_mode:
-                    delete_hosted_zone(client, module, z["Id"])
+                    delete_hosted_zone(z["Id"])
                 return True, f"Successfully deleted {zone_details['Name']}"
 
     return False, "The VPCs do not match a private hosted zone."
@@ -582,7 +582,7 @@ def delete_public(matching_zones):
         msg = "There are multiple zones that match. Use hosted_zone_id to specify the correct zone."
     else:
         if not module.check_mode:
-            delete_hosted_zone(client, module, matching_zones[0]["Id"])
+            delete_hosted_zone(matching_zones[0]["Id"])
         changed = True
         msg = f"Successfully deleted {matching_zones[0]['Id']}"
     return changed, msg
@@ -594,12 +594,12 @@ def delete_hosted_id(hosted_zone_id, matching_zones):
         for z in matching_zones:
             deleted.append(z["Id"])
             if not module.check_mode:
-                delete_hosted_zone(client, module, z["Id"])
+                delete_hosted_zone(z["Id"])
         changed = True
         msg = f"Successfully deleted zones: {deleted}"
     elif hosted_zone_id in [zo["Id"].replace("/hostedzone/", "") for zo in matching_zones]:
         if not module.check_mode:
-            delete_hosted_zone(client, module, hosted_zone_id)
+            delete_hosted_zone(hosted_zone_id)
         changed = True
         msg = f"Successfully deleted zone: {hosted_zone_id}"
     else:
@@ -608,7 +608,7 @@ def delete_hosted_id(hosted_zone_id, matching_zones):
     return changed, msg
 
 
-def delete_hosted_zone(client, module, hosted_zone_id):
+def delete_hosted_zone(hosted_zone_id):
     try:
         client.delete_hosted_zone(Id=hosted_zone_id)
     except is_boto3_error_code("HostedZoneNotEmpty") as e:
