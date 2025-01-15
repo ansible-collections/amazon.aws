@@ -1170,7 +1170,7 @@ class ElbManager:
         return True
 
     def _create_elb(self):
-        listeners = list(self._format_listener(l) for l in self.listeners)
+        listeners = list(self._format_listener(listener) for listener in self.listeners)
         if not self.scheme:
             self.scheme = "internet-facing"
         params = dict(
@@ -1392,7 +1392,7 @@ class ElbManager:
 
         listeners = check_elb.get("ListenerDescriptions", [])
         if listeners:
-            info["listeners"] = list(self._api_listener_as_tuple(l["Listener"]) for l in listeners)
+            info["listeners"] = list(self._api_listener_as_tuple(listener["Listener"]) for listener in listeners)
         else:
             info["listeners"] = []
 
@@ -1555,18 +1555,18 @@ class ElbManager:
 
         # We can't use sets here: dicts aren't hashable, so convert to the boto3
         # format and use a generator to filter
-        new_listeners = list(self._format_listener(l, True) for l in self.listeners)
-        existing_listeners = list(l["Listener"] for l in self.elb["ListenerDescriptions"])
-        listeners_to_remove = list(l for l in existing_listeners if l not in new_listeners)
-        listeners_to_add = list(l for l in new_listeners if l not in existing_listeners)
+        new_listeners = list(self._format_listener(listener, True) for listener in self.listeners)
+        existing_listeners = list(listener["Listener"] for listener in self.elb["ListenerDescriptions"])
+        listeners_to_remove = list(listener for listener in existing_listeners if listener not in new_listeners)
+        listeners_to_add = list(listener for listener in new_listeners if listener not in existing_listeners)
 
         changed = False
 
         if self.purge_listeners:
-            ports_to_remove = list(l["LoadBalancerPort"] for l in listeners_to_remove)
+            ports_to_remove = list(listener["LoadBalancerPort"] for listener in listeners_to_remove)
         else:
-            old_ports = set(l["LoadBalancerPort"] for l in listeners_to_remove)
-            new_ports = set(l["LoadBalancerPort"] for l in listeners_to_add)
+            old_ports = set(listener["LoadBalancerPort"] for listener in listeners_to_remove)
+            new_ports = set(listener["LoadBalancerPort"] for listener in listeners_to_add)
             # If we're not purging, then we need to remove Listeners
             # where the full definition doesn't match, but the port does
             ports_to_remove = list(old_ports & new_ports)

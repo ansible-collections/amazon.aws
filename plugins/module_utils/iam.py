@@ -334,7 +334,7 @@ def tag_iam_instance_profile(client, name, tags):
     if not tags:
         return
     boto3_tags = ansible_dict_to_boto3_tag_list(tags or {})
-    result = client.tag_instance_profile(InstanceProfileName=name, Tags=boto3_tags)
+    client.tag_instance_profile(InstanceProfileName=name, Tags=boto3_tags)
 
 
 @IAMErrorHandler.common_error_handler("untag instance profile")

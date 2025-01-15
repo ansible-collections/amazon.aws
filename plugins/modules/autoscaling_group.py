@@ -1371,7 +1371,7 @@ def create_autoscaling_group(connection):
                 changed = True
                 try:
                     attach_lb_target_groups(connection, group_name, list(tgs_to_attach))
-                except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+                except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError):
                     module.fail_json(msg=f"Failed to attach load balancer target groups {tgs_to_attach}")
 
         # check for attributes that aren't required for updating an existing ASG
@@ -1502,9 +1502,9 @@ def delete_autoscaling_group(connection):
     return False
 
 
-def get_chunks(l, n):
-    for i in range(0, len(l), n):
-        yield l[i:i + n]  # fmt: skip
+def get_chunks(objects, chunk_size):
+    for i in range(0, len(objects), chunk_size):
+        yield objects[i:i + chunk_size]  # fmt: skip
 
 
 def update_size(connection, group, max_size, min_size, dc):
@@ -1683,15 +1683,15 @@ def get_instances_by_launch_config(props, lc_check, initial_instances):
                 old_instances.append(i)
 
     else:
-        module.debug(f"Comparing initial instances with current: {*initial_instances, }")
+        module.debug(f"Comparing initial instances with current: {(*initial_instances,)}")
         for i in props["instances"]:
             if i not in initial_instances:
                 new_instances.append(i)
             else:
                 old_instances.append(i)
 
-    module.debug(f"New instances: {len(new_instances)}, {*new_instances, }")
-    module.debug(f"Old instances: {len(old_instances)}, {*old_instances, }")
+    module.debug(f"New instances: {len(new_instances)}, {(*new_instances,)}")
+    module.debug(f"Old instances: {len(old_instances)}, {(*old_instances,)}")
 
     return new_instances, old_instances
 
@@ -1710,15 +1710,15 @@ def get_instances_by_launch_template(props, lt_check, initial_instances):
             else:
                 old_instances.append(i)
     else:
-        module.debug(f"Comparing initial instances with current: {*initial_instances, }")
+        module.debug(f"Comparing initial instances with current: {(*initial_instances,)}")
         for i in props["instances"]:
             if i not in initial_instances:
                 new_instances.append(i)
             else:
                 old_instances.append(i)
 
-    module.debug(f"New instances: {len(new_instances)}, {*new_instances, }")
-    module.debug(f"Old instances: {len(old_instances)}, {*old_instances, }")
+    module.debug(f"New instances: {len(new_instances)}, {(*new_instances,)}")
+    module.debug(f"Old instances: {len(old_instances)}, {(*old_instances,)}")
 
     return new_instances, old_instances
 
@@ -1783,9 +1783,9 @@ def terminate_batch(connection, replace_instances, initial_instances, leftovers=
     instances_to_terminate = list_purgeable_instances(props, lc_check, lt_check, replace_instances, initial_instances)
 
     module.debug(f"new instances needed: {num_new_inst_needed}")
-    module.debug(f"new instances: {*new_instances, }")
-    module.debug(f"old instances: {*old_instances, }")
-    module.debug(f"batch instances: {*instances_to_terminate, }")
+    module.debug(f"new instances: {(*new_instances,)}")
+    module.debug(f"old instances: {(*old_instances,)}")
+    module.debug(f"batch instances: {(*instances_to_terminate,)}")
 
     if num_new_inst_needed == 0:
         decrement_capacity = True

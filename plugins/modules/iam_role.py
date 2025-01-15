@@ -498,7 +498,7 @@ def update_basic_role(module, client, role_name, role):
     # As of botocore 1.34.3, the APIs don't support updating the Name or Path
     if update_role_path(client, check_mode, role, path):
         module.warn(
-            "iam_role doesn't support updating the path: " f"current path '{role.get('Path')}', requested path '{path}'"
+            f"iam_role doesn't support updating the path: current path '{role.get('Path')}', requested path '{path}'"
         )
 
     changed = False
@@ -544,7 +544,7 @@ def create_or_update_role(module, client, role_name, create_instance_profile):
         try:
             changed |= create_instance_profiles(client, check_mode, role_name, path)
             wait_iam_exists(client, check_mode, role_name, wait, wait_timeout)
-        except AnsibleIAMAlreadyExistsError as e:
+        except AnsibleIAMAlreadyExistsError:
             module.warn(f"profile {role_name} already exists and will not be updated")
 
     changed |= update_managed_policies(client, module.check_mode, role_name, managed_policies, purge_policies)

@@ -1016,14 +1016,14 @@ def handle_bucket_object_lock(s3_client, module: AnsibleAWSModule, name: str) ->
     try:
         object_lock_status = get_bucket_object_lock_enabled(s3_client, name)
         object_lock_result = object_lock_status
-    except is_boto3_error_code(["NotImplemented", "XNotImplemented"]) as e:
+    except is_boto3_error_code(["NotImplemented", "XNotImplemented"]):
         if object_lock_enabled is not None:
             module.fail_json(msg="Fetching bucket object lock state is not supported")
     except is_boto3_error_code("ObjectLockConfigurationNotFoundError"):  # pylint: disable=duplicate-except
         if object_lock_enabled:
             module.fail_json(msg="Enabling object lock for existing buckets is not supported")
         object_lock_result = False
-    except is_boto3_error_code("AccessDenied") as e:  # pylint: disable=duplicate-except
+    except is_boto3_error_code("AccessDenied"):  # pylint: disable=duplicate-except
         if object_lock_enabled is not None:
             module.fail_json(msg="Permission denied fetching object lock state for bucket")
     except (
@@ -1063,7 +1063,7 @@ def handle_bucket_accelerate(s3_client, module: AnsibleAWSModule, name: str) -> 
     except is_boto3_error_code(["NotImplemented", "XNotImplemented"]) as e:
         if accelerate_enabled is not None:
             module.fail_json_aws(e, msg="Fetching bucket transfer acceleration state is not supported")
-    except is_boto3_error_code(["UnsupportedArgument", "MethodNotAllowed"]) as e:  # pylint: disable=duplicate-except
+    except is_boto3_error_code(["UnsupportedArgument", "MethodNotAllowed"]):  # pylint: disable=duplicate-except
         # - Transfer Acceleration is not available in AWS GovCloud (US) and throws UnsupportedArgument.
         # https://docs.aws.amazon.com/govcloud-us/latest/UserGuide/govcloud-s3.html#govcloud-S3-diffs
         # - Transfer Acceleration is not available in some AWS regions and throws MethodNotAllowed

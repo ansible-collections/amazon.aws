@@ -272,21 +272,15 @@ def create_or_update_private(matching_zones, record):
             module.fail_json_aws(e, msg=f"Could not get details about hosted zone {z['Id']}")
         zone_details = result["HostedZone"]
         vpc_details = result["VPCs"]
-        current_vpc_ids = None
-        current_vpc_regions = None
         matching = False
         if isinstance(vpc_details, dict) and len(record["vpcs"]) == 1:
             if vpc_details["VPC"]["VPCId"] == record["vpcs"][0]["id"]:
-                current_vpc_ids = [vpc_details["VPC"]["VPCId"]]
-                current_vpc_regions = [vpc_details["VPC"]["VPCRegion"]]
                 matching = True
         else:
             # Sort the lists and compare them to make sure they contain the same items
             if sorted([vpc["id"] for vpc in record["vpcs"]]) == sorted([v["VPCId"] for v in vpc_details]) and sorted(
                 [vpc["region"] for vpc in record["vpcs"]]
             ) == sorted([v["VPCRegion"] for v in vpc_details]):
-                current_vpc_ids = [vpc["id"] for vpc in record["vpcs"]]
-                current_vpc_regions = [vpc["region"] for vpc in record["vpcs"]]
                 matching = True
 
         if matching:

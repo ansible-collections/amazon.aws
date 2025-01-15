@@ -1048,7 +1048,7 @@ def s3_object_do_put(module, connection, connection_v4, s3_vars):
         connection = connection_v4
 
     if s3_vars["src"] is not None and not path_check(s3_vars["src"]):
-        module.fail_json(msg=f"Local object \"{s3_vars['src']}\" does not exist for PUT operation")
+        module.fail_json(msg=f'Local object "{s3_vars["src"]}" does not exist for PUT operation')
 
     keyrtn = key_check(
         module,
