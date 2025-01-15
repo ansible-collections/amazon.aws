@@ -1,0 +1,29 @@
+{
+    "Id": "dnssec-policy",
+	"Version": "2012-10-17",
+	"Statement": [
+        {
+            "Sid": "Allow Route 53 DNSSEC Service",
+            "Effect": "Allow",
+            "Principal": {
+                "Service": "dnssec-route53.amazonaws.com"
+            },
+            "Action": [
+                "kms:DescribeKey",
+                "kms:GetPublicKey",
+                "kms:Sign",
+                "kms:Verify"
+            ],
+            "Resource": "*"
+        },
+		{
+            "Sid": "Enable IAM User Permissions",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::{{ aws_caller_info.account }}:root"
+            },
+            "Action": "kms:*",
+            "Resource": "*"
+        }
+	]
+}
