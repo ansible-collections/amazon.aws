@@ -5,7 +5,7 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 DOCUMENTATION = r"""
-module: route53_ksk
+module: route53_key_signing_key
 short_description: Manages a key-signing key (KSK)
 version_added: 9.2.0
 description:
@@ -17,7 +17,7 @@ description:
 options:
     state:
         description:
-            - Whether or not the zone should exist or not.
+            - Whether or not the zone should exist.
         default: present
         choices: [ "present", "absent" ]
         type: str
@@ -72,25 +72,25 @@ EXAMPLES = r"""
 - name: Create a Key Signing Key Request
   amazon.aws.route53_ksk:
     name: "{{ resource_prefix }}-ksk"
-    hosted_zone_id: "{{ _hosted_zone.zone_id }}"
-    key_management_service_arn: "{{ kms_key.key_arn }}"
-    caller_reference: "{{ aws_caller_info.arn }}"
+    hosted_zone_id: "ZZZ1111112222"
+    key_management_service_arn: "arn:aws:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab"
+    caller_reference: "arn:aws:iam::123456789012:user/SomeUser"
     status: "INACTIVE"
     state: present
 
 - name: Activate a Key Signing Key Request
   amazon.aws.route53_ksk:
     name: "{{ resource_prefix }}-ksk"
-    hosted_zone_id: "{{ _hosted_zone.zone_id }}"
-    key_management_service_arn: "{{ kms_key.key_arn }}"
-    caller_reference: "{{ aws_caller_info.arn }}"
+    hosted_zone_id: "ZZZ1111112222"
+    key_management_service_arn: "arn:aws:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab"
+    caller_reference: "arn:aws:iam::123456789012:user/SomeUser"
     status: "ACTIVE"
     state: present
 
 - name: Delete a Key Signing Key Request and deactivate it
   amazon.aws.route53_ksk:
     name: "{{ resource_prefix }}-ksk"
-    hosted_zone_id: "{{ _hosted_zone.zone_id }}"
+    hosted_zone_id: "ZZZ1111112222"
     state: absent
 """
 
@@ -200,6 +200,10 @@ try:
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
+from typing import Any
+from typing import Dict
+from typing import Tuple
+
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.exceptions import AnsibleAWSError
@@ -207,27 +211,23 @@ from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleA
 from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
 
 
-def deactivate(client, hosted_zone_id, name):
+def deactivate_key_signing_key(client, hosted_zone_id: str, name: str) -> Dict[str, Any]:
     return client.deactivate_key_signing_key(HostedZoneId=hosted_zone_id, Name=name)
 
 
-def activate(client, hosted_zone_id, name):
+def activate_key_signing_key(client, hosted_zone_id: str, name: str) -> Dict[str, Any]:
     return client.activate_key_signing_key(HostedZoneId=hosted_zone_id, Name=name)
 
 
-def get_change(client, change_id):
+def get_change(client, change_id: str) -> Dict[str, Any]:
     return client.get_change(Id=change_id)
 
 
-def get_hosted_zone(client, hosted_zone_id):
-    return client.get_hosted_zone(Id=hosted_zone_id)
-
-
-def get_dnssec(client, hosted_zone_id):
+def get_dnssec(client, hosted_zone_id: str) -> Dict[str, Any]:
     return client.get_dnssec(HostedZoneId=hosted_zone_id)
 
 
-def find_ksk(client, module):
+def find_ksk(client, module: AnsibleAWSModule) -> Dict[str, Any]:
     hosted_zone_dnssec = get_dnssec(client, module.params.get("hosted_zone_id"))
     if hosted_zone_dnssec["KeySigningKeys"] != []:
         for ksk in hosted_zone_dnssec["KeySigningKeys"]:
@@ -236,7 +236,7 @@ def find_ksk(client, module):
     return {}
 
 
-def wait(client, module, change_id):
+def wait(client, module: AnsibleAWSModule, change_id: str) -> None:
     try:
         waiter = get_waiter(client, "resource_record_sets_changed")
         waiter.wait(
@@ -250,7 +250,7 @@ def wait(client, module, change_id):
         module.fail_json_aws(e, msg="Timeout waiting for changes to be applied")
 
 
-def create_or_update(client, module: AnsibleAWSModule, ksk):
+def create_or_update(client, module: AnsibleAWSModule, ksk: Dict[str, Any]) -> Tuple[bool, Dict[str, Any]]:
     changed: bool = False
     zone_id = module.params.get("hosted_zone_id")
     name = module.params.get("name")
@@ -270,9 +270,9 @@ def create_or_update(client, module: AnsibleAWSModule, ksk):
                 )
 
             if status == "ACTIVE":
-                response.update(activate(client, zone_id, name))
+                response.update(activate_key_signing_key(client, zone_id, name))
             elif status == "INACTIVE":
-                response.update(deactivate(client, zone_id, name))
+                response.update(deactivate_key_signing_key(client, zone_id, name))
     else:
         changed = True
         if module.check_mode:
@@ -289,7 +289,7 @@ def create_or_update(client, module: AnsibleAWSModule, ksk):
     return changed, response
 
 
-def delete(client, module: AnsibleAWSModule, ksk):
+def delete(client, module: AnsibleAWSModule, ksk: Dict[str, Any]) -> Tuple[bool, Dict[str, Any]]:
     changed: bool = False
     zone_id = module.params.get("hosted_zone_id")
     name = module.params.get("name")
@@ -304,7 +304,7 @@ def delete(client, module: AnsibleAWSModule, ksk):
                 msg="Would have deleted the Key Signing Key if not in check_mode.",
             )
 
-        result = deactivate(client, zone_id, name)
+        result = deactivate_key_signing_key(client, zone_id, name)
         change_id = result["ChangeInfo"]["Id"]
         wait(client, module, change_id)
 
