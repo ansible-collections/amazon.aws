@@ -1,0 +1,31 @@
+name: Detect Patchback Bot Backport Failures
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+
+jobs:
+  detect_backport_failure:
+    if: github.event.pull_request.merged == true  # Only run for merged PRs
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check for Patchback Bot Comments
+        id: check_comments
+        shell: bash
+        run: |
+          # Check if the comment exists from patchback with the specific failure text
+          comment_exists=$(gh pr view ${{ github.event.pull_request.number }} -R ${{ github.repository }} --json comments --jq '[.comments[] | select(.body and (.body | capture("💔 cherry-picking failed"))) ] | length > 0')
+
+          # Output the result directly
+          echo "::set-output name=comment_exists::$comment_exists"
+
+      - name: Add Backport Failed Label
+        if: steps.check_comment.outputs.comment_exists == 'true'  # Run only if failure was detected
+        shell: bash
+        run: |
+          # Add the backport_failed label
+          gh pr edit ${{ github.event.pull_request.number }} --add-label "backport_failed"
