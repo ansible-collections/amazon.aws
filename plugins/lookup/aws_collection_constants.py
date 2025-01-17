@@ -22,7 +22,7 @@ options:
       - AMAZON_AWS_COLLECTION_NAME
       - COMMUNITY_AWS_COLLECTION_VERSION
       - COMMUNITY_AWS_COLLECTION_NAME
-    required: True
+    required: true
 """
 
 EXAMPLES = r"""
@@ -30,7 +30,7 @@ EXAMPLES = r"""
 
 RETURN = r"""
 _raw:
-  description: value
+  description: Value.
   type: str
 """
 

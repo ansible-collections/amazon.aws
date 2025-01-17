@@ -3,7 +3,7 @@
 # (C) 2018 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-DOCUMENTATION = """
+DOCUMENTATION = r"""
     name: aws_resource_actions
     type: aggregate
     short_description: summarizes all "resource:actions" completed
@@ -15,7 +15,7 @@ DOCUMENTATION = """
       - whitelisting in configuration - see examples section below for details.
 """
 
-EXAMPLES = """
+EXAMPLES = r"""
 example: >
   To enable, add this to your ansible.cfg file in the defaults block
     [defaults]
