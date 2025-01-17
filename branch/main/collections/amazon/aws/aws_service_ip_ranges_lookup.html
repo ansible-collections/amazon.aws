@@ -4,10 +4,10 @@
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta content="2.16.2" name="antsibull-docs" />
+<meta content="2.16.3" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>amazon.aws.aws_service_ip_ranges lookup – Look up the IP ranges for services provided in AWS such as EC2 and S3. &mdash; Ansible collections  documentation</title>
+  <title>amazon.aws.aws_service_ip_ranges lookup – Look up the IP ranges for services provided in AWS such as EC2 and S3 &mdash; Ansible collections  documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=41de9001" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/ansible.css?v=c5b67dd2" />
       <link rel="stylesheet" type="text/css" href="../../../_static/antsibull-minimal.css" />
@@ -122,7 +122,7 @@
           <li class="breadcrumb-item"><a href="../../index.html">Collection Index</a></li>
           <li class="breadcrumb-item"><a href="../index.html">Collections in the Amazon Namespace</a></li>
           <li class="breadcrumb-item"><a href="index.html">Amazon.Aws</a></li>
-      <li class="breadcrumb-item active">amazon.aws.aws_service_ip_ranges lookup – Look up the IP ranges for services provided in AWS such as EC2 and S3.</li>
+      <li class="breadcrumb-item active">amazon.aws.aws_service_ip_ranges lookup – Look up the IP ranges for services provided in AWS such as EC2 and S3</li>
       <li class="wy-breadcrumbs-aside">
               <!-- User defined GitHub URL -->
               <a href="https://github.com/ansible-collections/amazon.aws/edit/main/plugins/lookup/aws_service_ip_ranges.py?description=%23%23%23%23%23%20SUMMARY%0A%3C!—%20Your%20description%20here%20–%3E%0A%0A%0A%23%23%23%23%23%20ISSUE%20TYPE%0A-%20Docs%20Pull%20Request%0A%0A%2Blabel:%20docsite_pr" class="fa fa-github"> Edit on GitHub</a>
@@ -136,7 +136,7 @@
            <div itemprop="articleBody">
              
   <span class="target" id="ansible-collections-amazon-aws-aws-service-ip-ranges-lookup"></span><section id="amazon-aws-aws-service-ip-ranges-lookup-look-up-the-ip-ranges-for-services-provided-in-aws-such-as-ec2-and-s3">
-<h1>amazon.aws.aws_service_ip_ranges lookup – Look up the IP ranges for services provided in AWS such as EC2 and S3.<a class="headerlink" href="#amazon-aws-aws-service-ip-ranges-lookup-look-up-the-ip-ranges-for-services-provided-in-aws-such-as-ec2-and-s3" title="Link to this heading"></a></h1>
+<h1>amazon.aws.aws_service_ip_ranges lookup – Look up the IP ranges for services provided in AWS such as EC2 and S3<a class="headerlink" href="#amazon-aws-aws-service-ip-ranges-lookup-look-up-the-ip-ranges-for-services-provided-in-aws-such-as-ec2-and-s3" title="Link to this heading"></a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This lookup plugin is part of the <a class="reference external" href="https://galaxy.ansible.com/ui/repo/published/amazon/aws/">amazon.aws collection</a> (version 10.0.0-dev0).</p>
@@ -186,21 +186,22 @@ examples: <code class="docutils literal notranslate"><span class="pre">lookup('a
 <a class="ansibleOptionLink" href="#parameter-ipv6_prefixes" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 <p><em class="ansible-option-versionadded">added in amazon.aws 2.1.0</em></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>When <em>ipv6_prefixes=True</em> the lookup will return ipv6 addresses instead of ipv4 addresses</p>
+<td><div class="ansible-option-cell"><p>When <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-aws-service-ip-ranges-lookup-parameter-ipv6-prefixes"><span class="std std-ref"><span class="pre">ipv6_prefixes=true</span></span></a></code> the lookup will return ipv6 addresses instead of ipv4 addresses.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-service-ip-ranges-lookup-parameter-region"><strong>region</strong></p>
 <a class="ansibleOptionLink" href="#parameter-region" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>The AWS region to narrow the ranges to. Examples: us-east-1, eu-west-2, ap-southeast-1</p>
+<td><div class="ansible-option-cell"><p>The AWS region to narrow the ranges to. Examples include <code class="ansible-value docutils literal notranslate"><span class="pre">us-east-1</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">eu-west-2</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">ap-southeast-1</span></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-service"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-service-ip-ranges-lookup-parameter-service"><strong>service</strong></p>
 <a class="ansibleOptionLink" href="#parameter-service" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>The service to filter ranges by. Options: EC2, S3, CLOUDFRONT, CODEbUILD, ROUTE53, ROUTE53_HEALTHCHECKS</p>
+<td><div class="ansible-option-cell"><p>The service to filter ranges by.</p>
+<p>Options include <code class="ansible-value docutils literal notranslate"><span class="pre">EC2</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">S3</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">CLOUDFRONT</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">CODEBUILD</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">ROUTE53</span></code>, <code class="ansible-value docutils literal notranslate"><span class="pre">ROUTE53_HEALTHCHECKS</span></code>.</p>
 </div></td>
 </tr>
 </tbody>
@@ -212,11 +213,11 @@ examples: <code class="docutils literal notranslate"><span class="pre">lookup('a
 <span class="w">  </span><span class="nt">ec2_ranges</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">&#39;aws_service_ip_ranges&#39;</span><span class="o">,</span> <span class="nv">region</span><span class="o">=</span><span class="s1">&#39;ap-southeast-2&#39;</span><span class="o">,</span> <span class="nv">service</span><span class="o">=</span><span class="s1">&#39;EC2&#39;</span><span class="o">,</span> <span class="nv">wantlist</span><span class="o">=</span><span class="kp">True</span><span class="o">)</span> <span class="cp">}}</span><span class="s">&quot;</span>
 <span class="nt">tasks</span><span class="p">:</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;use</span><span class="nv"> </span><span class="s">list</span><span class="nv"> </span><span class="s">return</span><span class="nv"> </span><span class="s">option</span><span class="nv"> </span><span class="s">and</span><span class="nv"> </span><span class="s">iterate</span><span class="nv"> </span><span class="s">as</span><span class="nv"> </span><span class="s">a</span><span class="nv"> </span><span class="s">loop&quot;</span>
-<span class="w">    </span><span class="nt">debug</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">msg=&quot;</span><span class="cp">{%</span> <span class="k">for</span> <span class="nv">cidr</span> <span class="k">in</span> <span class="nv">ec2_ranges</span> <span class="cp">%}{{</span> <span class="nv">cidr</span> <span class="cp">}}</span><span class="l l-Scalar l-Scalar-Plain"> </span><span class="cp">{%</span> <span class="k">endfor</span> <span class="cp">%}</span><span class="l l-Scalar l-Scalar-Plain">&quot;</span>
+<span class="w">    </span><span class="nt">ansible.builtin.debug</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">msg=&quot;</span><span class="cp">{%</span> <span class="k">for</span> <span class="nv">cidr</span> <span class="k">in</span> <span class="nv">ec2_ranges</span> <span class="cp">%}{{</span> <span class="nv">cidr</span> <span class="cp">}}</span><span class="l l-Scalar l-Scalar-Plain"> </span><span class="cp">{%</span> <span class="k">endfor</span> <span class="cp">%}</span><span class="l l-Scalar l-Scalar-Plain">&quot;</span>
 <span class="w">  </span><span class="c1"># &quot;52.62.0.0/15 52.64.0.0/17 52.64.128.0/17 52.65.0.0/16 52.95.241.0/24 52.95.255.16/28 54.66.0.0/16 &quot;</span>
 
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Pull</span><span class="nv"> </span><span class="s">S3</span><span class="nv"> </span><span class="s">IP</span><span class="nv"> </span><span class="s">ranges,</span><span class="nv"> </span><span class="s">and</span><span class="nv"> </span><span class="s">print</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">default</span><span class="nv"> </span><span class="s">return</span><span class="nv"> </span><span class="s">style&quot;</span>
-<span class="w">    </span><span class="nt">debug</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">msg=&quot;</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">&#39;aws_service_ip_ranges&#39;</span><span class="o">,</span> <span class="nv">region</span><span class="o">=</span><span class="s1">&#39;us-east-1&#39;</span><span class="o">,</span> <span class="nv">service</span><span class="o">=</span><span class="s1">&#39;S3&#39;</span><span class="o">)</span> <span class="cp">}}</span><span class="l l-Scalar l-Scalar-Plain">&quot;</span>
+<span class="w">    </span><span class="nt">ansible.builtin.debug</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">msg=&quot;</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">&#39;aws_service_ip_ranges&#39;</span><span class="o">,</span> <span class="nv">region</span><span class="o">=</span><span class="s1">&#39;us-east-1&#39;</span><span class="o">,</span> <span class="nv">service</span><span class="o">=</span><span class="s1">&#39;S3&#39;</span><span class="o">)</span> <span class="cp">}}</span><span class="l l-Scalar l-Scalar-Plain">&quot;</span>
 <span class="w">  </span><span class="c1"># &quot;52.92.16.0/20,52.216.0.0/15,54.231.0.0/17&quot;</span>
 </pre></div>
 </div>
@@ -234,7 +235,7 @@ examples: <code class="docutils literal notranslate"><span class="pre">lookup('a
 <div class="ansibleOptionAnchor" id="return-_raw"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-service-ip-ranges-lookup-return-raw"><strong>Return value</strong></p>
 <a class="ansibleOptionLink" href="#return-_raw" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>comma-separated list of CIDR ranges</p>
+<td><div class="ansible-option-cell"><p>Comma-separated list of CIDR ranges.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 </div></td>
 </tr>
