@@ -34,7 +34,7 @@ Example:
 import asyncio
 import json
 from datetime import datetime
-from typing import Any
+from typing import Any, Awaitable, Dict, cast
 
 from aiobotocore.session import get_session
 from botocore.client import BaseClient
@@ -69,7 +69,9 @@ async def _get_cloudtrail_events(
     client: BaseClient, params: dict[str, Any]
 ) -> list[dict[str, Any]]:
     paginator = client.get_paginator("lookup_events")
-    results = await paginator.paginate(**params).build_full_result()
+    results: Dict[str, Any] = await cast(
+        Awaitable[Dict[str, Any]], paginator.paginate(**params).build_full_result()
+    )
     events = results.get("Events", [])
     # type guards:
     if not isinstance(events, list):
