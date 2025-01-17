@@ -15,7 +15,7 @@ extends_documentation_fragment:
   - amazon.aws.assume_role.plugins
 description:
   - Get inventory hosts from Amazon Web Services EC2.
-  - "The inventory file is a YAML configuration file and must end with C(aws_ec2.{yml|yaml}). Example: C(my_inventory.aws_ec2.yml)."
+  - The inventory file is a YAML configuration file and must end with C(aws_ec2.{yml|yaml}). For example - C(my_inventory.aws_ec2.yml).
 notes:
   - If no credentials are provided and the control node has an associated IAM instance profile then the
     role will be used for authentication.
@@ -25,7 +25,7 @@ options:
   regions:
     description:
       - A list of regions in which to describe EC2 instances.
-      - If empty (the default) default this will include all regions, except possibly restricted ones like us-gov-west-1 and cn-north-1.
+      - If empty (the default) default this will include all regions, except possibly restricted ones like V(us-gov-west-1) and V(cn-north-1).
     type: list
     elements: str
     default: []
@@ -45,27 +45,27 @@ options:
         description:
           - Name of the host.
         type: str
-        required: True
+        required: true
       prefix:
         description:
-          - Prefix to prepend to I(name). Same options as I(name).
-          - If I(prefix) is specified, final hostname will be I(prefix) +  I(separator) + I(name).
+          - Prefix to prepend to O(hostnames.name). Same options as O(hostnames.name).
+          - If O(hostnames.prefix) is specified, final hostname will be O(hostnames.prefix) + O(hostnames.separator) + O(hostnames.name).
         type: str
         default: ''
-        required: False
+        required: false
       separator:
         description:
-          - Value to separate I(prefix) and I(name) when I(prefix) is specified.
+          - Value to separate O(hostnames.prefix) and O(hostnames.name) when O(hostnames.prefix) is specified.
         type: str
         default: '_'
-        required: False
+        required: false
   allow_duplicated_hosts:
     description:
-      - By default, the first name that matches an entry of the I(hostnames) list is returned.
+      - By default, the first name that matches an entry of the O(hostnames) list is returned.
       - Turn this flag on if you don't mind having duplicated entries in the inventory
         and you want to get all the hostnames that match.
     type: bool
-    default: False
+    default: false
     version_added: 5.0.0
   filters:
     description:
@@ -86,7 +86,7 @@ options:
   exclude_filters:
     description:
       - A list of filters. Any instances matching one of the filters are excluded from the result.
-      - The filters from C(exclude_filters) take priority over the C(include_filters) and C(filters) keys
+      - The filters from O(exclude_filters) take priority over the O(include_filters) and O(filters) keys.
       - Available filters are listed here U(http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options).
       - Every entry in this list triggers a search query. As such, from a performance point of view, it's better to
         keep the list as short as possible.
@@ -99,7 +99,7 @@ options:
       - By default if a 403 (Forbidden) error code is encountered this plugin will fail.
       - You can set this option to False in the inventory config file which will allow 403 errors to be gracefully skipped.
     type: bool
-    default: True
+    default: true
   use_contrib_script_compatible_sanitization:
     description:
       - By default this plugin is using a general group name sanitization to create safe and usable group names for use in Ansible.
@@ -112,13 +112,13 @@ options:
       - This is not the default as such names break certain functionality as not all characters are valid Python identifiers
         which group names end up being used as.
     type: bool
-    default: False
+    default: false
   use_contrib_script_compatible_ec2_tag_keys:
     description:
       - Expose the host tags with ec2_tag_TAGNAME keys like the old ec2.py inventory script.
       - The use of this feature is discouraged and we advise to migrate to the new ``tags`` structure.
     type: bool
-    default: False
+    default: false
     version_added: 1.5.0
   hostvars_prefix:
     description:
@@ -133,11 +133,11 @@ options:
   use_ssm_inventory:
     description:
       - Enables fetching additional EC2 instance information from the AWS Systems Manager (SSM) inventory service into hostvars.
-      - By leveraging the SSM inventory data, the I(use_ssm_inventory) option provides additional details and attributes
+      - By leveraging the SSM inventory data, the O(use_ssm_inventory) option provides additional details and attributes
         about the EC2 instances in your inventory. These details can include operating system information, installed software,
         network configurations, and custom inventory attributes defined in SSM.
     type: bool
-    default: False
+    default: false
     version_added: 6.0.0
 """
 
