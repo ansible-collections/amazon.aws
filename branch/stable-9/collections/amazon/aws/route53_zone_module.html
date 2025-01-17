@@ -246,6 +246,19 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-dnssec"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-zone-module-parameter-dnssec"><strong>dnssec</strong></p>
+<a class="ansibleOptionLink" href="#parameter-dnssec" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 9.2.0</em></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Enables DNSSEC signing in a specific hosted zone.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-endpoint_url"></div>
 <div class="ansibleOptionAnchor" id="parameter-ec2_url"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_endpoint_url"></div>
@@ -259,7 +272,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_URL</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-hosted_zone_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-zone-module-parameter-hosted-zone-id"><strong>hosted_zone_id</strong></p>
 <a class="ansibleOptionLink" href="#parameter-hosted_zone_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -267,7 +280,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <p>Required if there are multiple zones identified with the above options.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-profile"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_profile"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-zone-module-parameter-profile"><span id="ansible-collections-amazon-aws-route53-zone-module-parameter-aws-profile"></span><strong>profile</strong></p>
 <a class="ansibleOptionLink" href="#parameter-profile" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_profile</span></p>
@@ -279,7 +292,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <p>The <em>profile</em> option is mutually exclusive with the <em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> options.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-purge_tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-zone-module-parameter-purge-tags"><strong>purge_tags</strong></p>
 <a class="ansibleOptionLink" href="#parameter-purge_tags" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -293,7 +306,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-region"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_region"></div>
 <div class="ansibleOptionAnchor" id="parameter-ec2_region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-zone-module-parameter-region"><span id="ansible-collections-amazon-aws-route53-zone-module-parameter-ec2-region"></span><span id="ansible-collections-amazon-aws-route53-zone-module-parameter-aws-region"></span><strong>region</strong></p>
@@ -308,7 +321,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_REGION</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-secret_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_secret_access_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_secret_key"></div>
@@ -325,7 +338,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_SECRET_KEY</span></code> environment variable has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-session_token"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_session_token"></div>
 <div class="ansibleOptionAnchor" id="parameter-security_token"></div>
@@ -343,7 +356,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <p>Support for the <code class="docutils literal notranslate"><span class="pre">EC2_SECRET_KEY</span></code> and <code class="docutils literal notranslate"><span class="pre">AWS_SECURITY_TOKEN</span></code> environment variables has been deprecated and will be removed in a release after 2024-12-01.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-state"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-zone-module-parameter-state"><strong>state</strong></p>
 <a class="ansibleOptionLink" href="#parameter-state" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -355,7 +368,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-tags"></div>
 <div class="ansibleOptionAnchor" id="parameter-resource_tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-zone-module-parameter-tags"><span id="ansible-collections-amazon-aws-route53-zone-module-parameter-resource-tags"></span><strong>tags</strong></p>
 <a class="ansibleOptionLink" href="#parameter-tags" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: resource_tags</span></p>
@@ -365,7 +378,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <p>If the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-route53-zone-module-parameter-tags"><span class="std std-ref"><span class="pre">tags</span></span></a></strong></code> parameter is not set then tags will not be modified.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-validate_certs"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-zone-module-parameter-validate-certs"><strong>validate_certs</strong></p>
 <a class="ansibleOptionLink" href="#parameter-validate_certs" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -378,21 +391,21 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-vpc_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-zone-module-parameter-vpc-id"><strong>vpc_id</strong></p>
 <a class="ansibleOptionLink" href="#parameter-vpc_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The VPC ID the zone should be a part of (if this is going to be a private zone).</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-vpc_region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-zone-module-parameter-vpc-region"><strong>vpc_region</strong></p>
 <a class="ansibleOptionLink" href="#parameter-vpc_region" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The VPC Region the zone should be a part of (if this is going to be a private zone).</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-vpcs"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-zone-module-parameter-vpcs"><strong>vpcs</strong></p>
 <a class="ansibleOptionLink" href="#parameter-vpcs" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
 <p><em class="ansible-option-versionadded">added in amazon.aws 5.3.0</em></p>
@@ -400,21 +413,21 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <td><div class="ansible-option-cell"><p>The VPCs the zone should be a part of (if this is going to be a private zone).</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-vpcs/id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-zone-module-parameter-vpcs-id"><strong>id</strong></p>
 <a class="ansibleOptionLink" href="#parameter-vpcs/id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ID of the VPC.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-vpcs/region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-zone-module-parameter-vpcs-region"><strong>region</strong></p>
 <a class="ansibleOptionLink" href="#parameter-vpcs/region" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The region of the VPC.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-zone"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-zone-module-parameter-zone"><strong>zone</strong></p>
 <a class="ansibleOptionLink" href="#parameter-zone" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
 </div></td>
@@ -513,6 +526,169 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <td><div class="ansible-option-cell"><p>Id of the associated reusable delegation set.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> for public hosted zones, if they have been associated with a reusable delegation set</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;A1BCDEF2GHIJKL&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-dnssec"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-zone-module-return-dnssec"><strong>dnssec</strong></p>
+<a class="ansibleOptionLink" href="#return-dnssec" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 9.2.0</em></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Information about DNSSEC for a specific hosted zone.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-route53-zone-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code> and the hosted zone is public</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-dnssec/key_signing_key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-zone-module-return-dnssec-key-signing-key"><strong>key_signing_key</strong></p>
+<a class="ansibleOptionLink" href="#return-dnssec/key_signing_key" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The key-signing key (KSK) that the request creates.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-route53-zone-module-parameter-state"><span class="std std-ref"><span class="pre">state=present</span></span></a></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[{&quot;created_date&quot;:</span> <span class="pre">&quot;2024-12-04T15:15:36.715000+00:00&quot;,</span> <span class="pre">&quot;digest_algorithm_mnemonic&quot;:</span> <span class="pre">&quot;SHA-256&quot;,</span> <span class="pre">&quot;digest_algorithm_type&quot;:</span> <span class="pre">2,</span> <span class="pre">&quot;digest_value&quot;:</span> <span class="pre">&quot;xxx&quot;,</span> <span class="pre">&quot;dnskey_record&quot;:</span> <span class="pre">&quot;xxx&quot;,</span> <span class="pre">&quot;ds_record&quot;:</span> <span class="pre">&quot;xxx&quot;,</span> <span class="pre">&quot;flag&quot;:</span> <span class="pre">257,</span> <span class="pre">&quot;key_tag&quot;:</span> <span class="pre">18948,</span> <span class="pre">&quot;kms_arn&quot;:</span> <span class="pre">&quot;arn:aws:kms:us-east-1:xxx:key/xxx&quot;,</span> <span class="pre">&quot;last_modified_date&quot;:</span> <span class="pre">&quot;2024-12-04T15:15:36.715000+00:00&quot;,</span> <span class="pre">&quot;name&quot;:</span> <span class="pre">&quot;ansible-test-44230979--ksk&quot;,</span> <span class="pre">&quot;public_key&quot;:</span> <span class="pre">&quot;xxxx&quot;,</span> <span class="pre">&quot;signing_algorithm_mnemonic&quot;:</span> <span class="pre">&quot;ECDSAP256SHA256&quot;,</span> <span class="pre">&quot;signing_algorithm_type&quot;:</span> <span class="pre">13,</span> <span class="pre">&quot;status&quot;:</span> <span class="pre">&quot;INACTIVE&quot;}]</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-dnssec/key_signing_key/created_date"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-zone-module-return-dnssec-key-signing-key-created-date"><strong>created_date</strong></p>
+<a class="ansibleOptionLink" href="#return-dnssec/key_signing_key/created_date" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The date when the key-signing key (KSK) was created.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-dnssec/key_signing_key/digest_algorithm_mnemonic"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-zone-module-return-dnssec-key-signing-key-digest-algorithm-mnemonic"><strong>digest_algorithm_mnemonic</strong></p>
+<a class="ansibleOptionLink" href="#return-dnssec/key_signing_key/digest_algorithm_mnemonic" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A string used to represent the delegation signer digest algorithm.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-dnssec/key_signing_key/digest_algorithm_type"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-zone-module-return-dnssec-key-signing-key-digest-algorithm-type"><strong>digest_algorithm_type</strong></p>
+<a class="ansibleOptionLink" href="#return-dnssec/key_signing_key/digest_algorithm_type" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>An integer used to represent the delegation signer digest algorithm.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-dnssec/key_signing_key/digest_value"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-zone-module-return-dnssec-key-signing-key-digest-value"><strong>digest_value</strong></p>
+<a class="ansibleOptionLink" href="#return-dnssec/key_signing_key/digest_value" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A cryptographic digest of a DNSKEY resource record (RR).</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-dnssec/key_signing_key/dnskey_record"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-zone-module-return-dnssec-key-signing-key-dnskey-record"><strong>dnskey_record</strong></p>
+<a class="ansibleOptionLink" href="#return-dnssec/key_signing_key/dnskey_record" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A string that represents a DNSKEY record.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-dnssec/key_signing_key/ds_record"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-zone-module-return-dnssec-key-signing-key-ds-record"><strong>ds_record</strong></p>
+<a class="ansibleOptionLink" href="#return-dnssec/key_signing_key/ds_record" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A string that represents a delegation signer (DS) record.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-dnssec/key_signing_key/flag"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-zone-module-return-dnssec-key-signing-key-flag"><strong>flag</strong></p>
+<a class="ansibleOptionLink" href="#return-dnssec/key_signing_key/flag" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>An integer that specifies how the key is used.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-dnssec/key_signing_key/key_tag"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-zone-module-return-dnssec-key-signing-key-key-tag"><strong>key_tag</strong></p>
+<a class="ansibleOptionLink" href="#return-dnssec/key_signing_key/key_tag" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>An integer used to identify the DNSSEC record for the domain name.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-dnssec/key_signing_key/kms_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-zone-module-return-dnssec-key-signing-key-kms-arn"><strong>kms_arn</strong></p>
+<a class="ansibleOptionLink" href="#return-dnssec/key_signing_key/kms_arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The Amazon resource name (ARN) used to identify the customer managed key in Key Management Service (KMS).</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-dnssec/key_signing_key/last_modified_date"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-zone-module-return-dnssec-key-signing-key-last-modified-date"><strong>last_modified_date</strong></p>
+<a class="ansibleOptionLink" href="#return-dnssec/key_signing_key/last_modified_date" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The last time that the key-signing key (KSK) was changed.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-dnssec/key_signing_key/name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-zone-module-return-dnssec-key-signing-key-name"><strong>name</strong></p>
+<a class="ansibleOptionLink" href="#return-dnssec/key_signing_key/name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A string used to identify a key-signing key (KSK).</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-dnssec/key_signing_key/public_key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-zone-module-return-dnssec-key-signing-key-public-key"><strong>public_key</strong></p>
+<a class="ansibleOptionLink" href="#return-dnssec/key_signing_key/public_key" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The public key, represented as a Base64 encoding.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-dnssec/key_signing_key/signing_algorithm_mnemonic"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-zone-module-return-dnssec-key-signing-key-signing-algorithm-mnemonic"><strong>signing_algorithm_mnemonic</strong></p>
+<a class="ansibleOptionLink" href="#return-dnssec/key_signing_key/signing_algorithm_mnemonic" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A string used to represent the signing algorithm.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-dnssec/key_signing_key/signing_algorithm_type"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-zone-module-return-dnssec-key-signing-key-signing-algorithm-type"><strong>signing_algorithm_type</strong></p>
+<a class="ansibleOptionLink" href="#return-dnssec/key_signing_key/signing_algorithm_type" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>An integer used to represent the signing algorithm.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-dnssec/key_signing_key/status"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-zone-module-return-dnssec-key-signing-key-status"><strong>status</strong></p>
+<a class="ansibleOptionLink" href="#return-dnssec/key_signing_key/status" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A string that represents the current key-signing key (KSK) status.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-dnssec/key_signing_key/status_message"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-zone-module-return-dnssec-key-signing-key-status-message"><strong>status_message</strong></p>
+<a class="ansibleOptionLink" href="#return-dnssec/key_signing_key/status_message" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The status message provided for ACTION_NEEDED or INTERNAL_FAILURE statuses.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-dnssec/status"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-zone-module-return-dnssec-status"><strong>status</strong></p>
+<a class="ansibleOptionLink" href="#return-dnssec/status" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A dictionary representing the status of DNSSEC.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;serve_signature&quot;:</span> <span class="pre">&quot;SIGNING&quot;}</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-dnssec/status/serve_signature"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-route53-zone-module-return-dnssec-status-serve-signature"><strong>serve_signature</strong></p>
+<a class="ansibleOptionLink" href="#return-dnssec/status/serve_signature" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>A string that represents the current hosted zone signing status.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
