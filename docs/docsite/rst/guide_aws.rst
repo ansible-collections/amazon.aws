@@ -66,7 +66,7 @@ Or they can be specified using "module_defaults" at the top of a playbook.::
             key_name: "example-ssh-key"
             image_id: "..."
 
-Credentials can also be accessed from a `Credentials Profile <https://docs.aws.amazon.com/sdk-for-php/v3/developer-guide/guide_credentials_profiles.html>`_.::
+Credentials can also be accessed from a `Credentials Profile <https://docs.aws.amazon.com/cli/v1/userguide/cli-configure-files.html>`_.::
 
     - amazon.aws.ec2_instance:
         aws_profile: default
