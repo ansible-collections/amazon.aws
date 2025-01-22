@@ -1,0 +1,2 @@
+minor_changes:
+  - plugin_utils/inventory - Fix filter attribute in the inventory too allow env vars (https://github.com/ansible-collections/amazon.aws/pull/2379)
