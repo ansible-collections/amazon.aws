@@ -7,6 +7,14 @@ on:
       - edited
 
 jobs:
+  dump_context:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dump context
+        env:
+          EVENT_CONTEXT: ${{ toJson(github.event) }}
+        run: |
+          echo  "${EVENT_CONTEXT}"
   check_patchback_comment:
     if: ${{
       github.event.issue.pull_request.merged_at &&
