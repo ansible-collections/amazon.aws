@@ -7,18 +7,19 @@ on:
       - edited
 
 jobs:
-  dump_context:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Dump context
-        env:
-          EVENT_CONTEXT: ${{ toJson(github.event) }}
-        run: |
-          echo  "${EVENT_CONTEXT}"
+  # dump_context:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Dump context
+  #       env:
+  #         EVENT_CONTEXT: ${{ toJson(github.event) }}
+  #       run: |
+  #         echo  "${EVENT_CONTEXT}"
   check_patchback_comment:
+    # if patchback[bot] stops working we might want to switch to user.id == 45432694
     if: ${{
       github.event.issue.pull_request.merged_at &&
-      github.event.comment.user.login == 'patchback' &&
+      github.event.comment.user.login == 'patchback[bot]' &&
       contains(github.event.comment.body, '💔 cherry-picking failed')
       }}
     runs-on: ubuntu-latest
