@@ -8,4 +8,4 @@
       template:
         dest: "{{ playbook_dir }}/ssm_vars_to_delete.yml"
         src: ssm_vars_to_delete.yml.j2
-      ignore_errors: yes
+      ignore_errors: true

@@ -54,22 +54,25 @@
         instance_ids: "{{ created_instance_ids }}"
         state: absent
         wait: True
-      ignore_errors: yes
+      ignore_errors: true
       when: ec2_vars_file.stat.exists == true
+
+    - name: Delete EC2 infrastructure
+      include_tasks: 'ec2_infra_teardown.yml'
 
     - name: Delete S3 bucket
       include_tasks: 'delete_bucket.yml'
       loop:
         - "{{ bucket_name }}"
       when: s3_vars_file.stat.exists == true
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: Delete IAM role
       iam_role:
         name: "{{ iam_role_name }}"
         state: absent
         delete_instance_profile: True
-      ignore_errors: yes
+      ignore_errors: true
       when: iam_role_vars_file.stat.exists == true
 
     - name: Delete the KMS key
@@ -80,10 +83,10 @@
     - name: Delete SSM document
       command: "aws ssm delete-document --name {{ ssm_document_name }}"
       environment: "{{ connection_env }}"
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: Delete AWS keys environement
       file:
         path: "{{ playbook_dir }}/aws-env-vars.sh"
         state: absent
-      ignore_errors: yes
+      ignore_errors: true

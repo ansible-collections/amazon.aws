@@ -1,6 +1,12 @@
+- name: Display architecture
+  ansible.builtin.debug:
+    var: ansible_architecture
+- name: Set download link
+  ansible.builtin.set_fact:
+    ssm_plugin_url: "{{ (ansible_architecture in ['aarch64', 'arm64']) | ternary('ubuntu_arm64', 'ubuntu_64bit') }}"
 - name: Download SSM plugin
   get_url:
-    url: https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb
+    url: 'https://s3.amazonaws.com/session-manager-downloads/plugin/latest/{{ ssm_plugin_url }}/session-manager-plugin.deb'
     dest: /tmp/session-manager-plugin.deb
     mode: '0440'
   tags: setup_infra
