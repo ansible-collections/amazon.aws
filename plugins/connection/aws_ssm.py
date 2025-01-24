@@ -747,6 +747,10 @@ class Connection(ConnectionBase):
         # output to keep will be before the mark
         stdout = stdout[:stdout.rfind(mark_begin)]  # fmt: skip
 
+        # If the return code contains #CLIXML (like a progress bar) remove it
+        clixml_filter = re.compile(r"#<\sCLIXML\s<Objs.*</Objs>")
+        stdout = clixml_filter.sub("", stdout)
+
         # If it looks like JSON remove any newlines
         if stdout.startswith("{"):
             stdout = stdout.replace("\n", "")
