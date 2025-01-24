@@ -427,12 +427,11 @@ class Connection(ConnectionBase):
         )
         # Fetch the location of the bucket so we can open a client against the 'right' endpoint
         # This /should/ always work
-        bucket_location = tmp_s3_client.get_bucket_location(
+        head_bucket = tmp_s3_client.head_bucket(
             Bucket=(self.get_option("bucket_name")),
         )
-        if bucket_location["LocationConstraint"]:
-            bucket_region = bucket_location["LocationConstraint"]
-        else:
+        bucket_region = head_bucket.get("ResponseMetadata", {}).get("HTTPHeaders", {}).get("x-amz-bucket-region", None)
+        if bucket_region is None:
             bucket_region = "us-east-1"
 
         if self.get_option("bucket_endpoint_url"):
