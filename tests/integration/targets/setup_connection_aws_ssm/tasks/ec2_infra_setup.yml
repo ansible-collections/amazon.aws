@@ -1,0 +1,94 @@
+---
+- name: Create a VPC to work in
+  amazon.aws.ec2_vpc_net:
+    cidr_block: "{{ ec2_infra_vpc_cidr_block }}"
+    name: "{{ ec2_infra_vpc_name }}"
+    dns_support: true
+    dns_hostnames: true
+  register: vpc
+
+- name: Create internet gateway attached to the VPC
+  amazon.aws.ec2_vpc_igw:
+    vpc_id: "{{ vpc.vpc.id }}"
+    state: present
+  register: internet_gw
+
+- name: Create public subnet
+  amazon.aws.ec2_vpc_subnet:
+    vpc_id: "{{ vpc.vpc.id }}"
+    cidr: "{{ ec2_infra_public_subnet_cidr_block }}"
+    map_public: true
+    az: "{{ aws_region }}a"
+  register: public_subnet
+
+- name: Create private subnet
+  amazon.aws.ec2_vpc_subnet:
+    vpc_id: "{{ vpc.vpc.id }}"
+    cidr: "{{ ec2_infra_private_subnet_cidr_block }}"
+    map_public: true
+    az: "{{ aws_region }}a"
+  register: private_subnet
+
+- name: Set fact for private subnet
+  ansible.builtin.set_fact:
+    private_subnet_id: "{{ private_subnet.subnet.id }}"
+
+- name: Allocate Elastic IP
+  amazon.aws.ec2_eip:
+    state: present
+    release_on_disassociation: true
+  register: allocate_eip
+
+- name: Create NAT gateway on public subnet
+  amazon.aws.ec2_vpc_nat_gateway:
+    state: present
+    subnet_id: "{{ public_subnet.subnet.id }}"
+    allocation_id: "{{ allocate_eip.allocation_id }}"
+    if_exist_do_not_create: true
+    wait: true
+    wait_timeout: 600
+  register: natgateway
+
+- name: Create Route table for public subnet
+  amazon.aws.ec2_vpc_route_table:
+    vpc_id: "{{ vpc.vpc.id }}"
+    subnets:
+      - "{{ public_subnet.subnet.id }}"
+    routes:
+      - dest: 0.0.0.0/0
+        gateway_id: "{{ internet_gw.gateway_id }}"
+    lookup: tag
+    resource_tags:
+      subnet: public
+      route: internet
+    state: present
+
+- name: Create Route table for private subnet
+  amazon.aws.ec2_vpc_route_table:
+    vpc_id: "{{ vpc.vpc.id }}"
+    subnets:
+      - "{{ private_subnet.subnet.id }}"
+    routes:
+      - dest: 0.0.0.0/0
+        gateway_id: "{{ natgateway.nat_gateway_id }}"
+    lookup: tag
+    resource_tags:
+      subnet: private
+      route: gateway
+    state: present
+
+- name: Create security group
+  amazon.aws.ec2_security_group:
+    name: "{{ ec2_infra_security_group_name }}"
+    vpc_id: "{{ vpc.vpc.id }}"
+    description: VPC security group
+    rules:
+      - cidr_ip: 0.0.0.0/0
+        proto: tcp
+        from_port: 22
+        to_port: 22
+    rules_egress:
+      - cidr_ip: 0.0.0.0/0
+        proto: -1
+    state: present
+  register: secgroup
