@@ -28,4 +28,5 @@ cd ../connection
 # Execute Integration tests
 INVENTORY="${PLAYBOOK_DIR}/ssm_inventory" ./test.sh \
     -e target_hosts=aws_ssm \
+    -e wait_for_timeout=1200 \
     "$@"
