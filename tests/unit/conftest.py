@@ -5,5 +5,5 @@
 
 import pytest
 
-from .utils.amazon_placebo_fixtures import fixture_maybe_sleep
-from .utils.amazon_placebo_fixtures import fixture_placeboify
+from ansible_collections.amazon.aws.tests.unit.utils.amazon_placebo_fixtures import fixture_maybe_sleep
+from ansible_collections.amazon.aws.tests.unit.utils.amazon_placebo_fixtures import fixture_placeboify
