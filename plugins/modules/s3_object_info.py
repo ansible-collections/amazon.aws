@@ -25,6 +25,7 @@ options:
     description:
       - The name of the object.
       - If not specified, a list of all objects in the specified bucket will be returned.
+      - Mutually exclusive with O(prefix).
     required: false
     type: str
   endpoint_url:
@@ -108,6 +109,12 @@ options:
       - Max number of results to return.  Set this if you want to retrieve only partial results.
     type: int
     version_added: 9.0.0
+  prefix:
+    description:
+      - Limits the response to keys that begin with the specified prefix.
+      - Mutually exclusive with O(object_name).
+    type: str
+    version_added: 9.2.0
 notes:
   - Support for the E(S3_URL) environment variable has been
     deprecated and will be removed in a release after 2024-12-01, please use the O(endpoint_url) parameter
@@ -159,6 +166,11 @@ EXAMPLES = r"""
       attributes_list:
         - ETag
         - ObjectSize
+
+- name: Retrieve keys that begin with the prefix /my/desired/
+  amazon.aws.s3_object_info:
+    bucket: mybucket
+    prefix: /my/desired/
 """
 
 RETURN = r"""
@@ -641,6 +653,7 @@ def list_bucket_objects(connection, module, bucket_name):
             bucket=bucket_name,
             max_keys=module.params["max_keys"],
             start_after=module.params["marker"],
+            prefix=module.params["prefix"],
         )
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to list bucket objects.")
@@ -692,6 +705,7 @@ def main():
         ceph=dict(default=False, type="bool", aliases=["rgw"]),
         marker=dict(),
         max_keys=dict(type="int", no_log=False),
+        prefix=dict(type="str", required=False),
     )
 
     required_if = [
@@ -702,6 +716,7 @@ def main():
         argument_spec=argument_spec,
         supports_check_mode=True,
         required_if=required_if,
+        mutually_exclusive=[["object_name", "prefix"]],
     )
 
     bucket_name = module.params.get("bucket_name")

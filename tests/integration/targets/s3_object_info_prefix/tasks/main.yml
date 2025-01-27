@@ -1,0 +1,90 @@
+---
+# Integration tests for s3_object_info with prefix
+- module_defaults:
+    group/aws:
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+
+  vars:
+    bucket_name: '{{ resource_prefix | hash("md5") }}'
+    src_objects:
+      - ansible/hello.txt
+      - ansible/world.txt
+      - ansible-core.yaml
+      - ansible-builder.yaml
+
+  block:
+    # Ensure module fails when both object_name and prefix parameters are provided
+    - name: Retrieve a list of objects in Ceph RGW S3
+      amazon.aws.s3_object_info:
+        prefix: test_
+        bucket_name: "{{ bucket_name }}"
+        object_name: test
+      register: error_m
+      ignore_errors: true
+
+    - name: Ensure module fails when both object_name and prefix are passed
+      ansible.builtin.assert:
+        that:
+          - error_m is failed
+          - error_m.msg == "parameters are mutually exclusive: object_name|prefix"
+
+    - name: Create bucket
+      amazon.aws.s3_bucket:
+        name: "{{ bucket_name }}"
+        state: present
+
+    - name: Put object into bucket
+      amazon.aws.s3_object:
+        bucket: "{{ bucket_name }}"
+        mode: put
+        object: "{{ item }}"
+        content: "some bucket content for testing amazon.aws.s3_object_info module"
+      with_items: "{{ src_objects }}"
+
+    - name: Retrieve objects using prefix 'ansible/'
+      amazon.aws.s3_object_info:
+        prefix: 'ansible/'
+        bucket_name: "{{ bucket_name }}"
+      register: objects
+
+    - name: Ensure all objects retrieved have a 'ansible/' prefix
+      ansible.builtin.assert:
+        that:
+          - (objects.s3_keys | map('regex_search', '^ansible/(\w+)\.txt$') | length) == (objects.s3_keys | length)
+
+    - name: Retrieve objects using prefix 'ansible-'
+      amazon.aws.s3_object_info:
+        prefix: 'ansible-'
+        bucket_name: "{{ bucket_name }}"
+      register: objects
+
+    - name: Ensure all objects retrieved have a 'ansible-' prefix
+      ansible.builtin.assert:
+        that:
+          - (objects.s3_keys | map('regex_search', '^ansible\-(\w+)\.yaml$') | length) == (objects.s3_keys | length)
+
+  always:
+    # Delete bucket
+    - name: List bucket object
+      amazon.aws.s3_object_info:
+        bucket_name: "{{ bucket_name }}"
+      register: objects
+      ignore_errors: true
+
+    - name: Remove objects from bucket
+      amazon.aws.s3_object:
+        bucket: "{{ bucket_name }}"
+        mode: delobj
+        object: "{{ item }}"
+      with_items: "{{ objects.s3_keys }}"
+      when: "'s3_keys' in objects"
+      ignore_errors: true
+
+    - name: Delete the bucket
+      amazon.aws.s3_bucket:
+        name: "{{ bucket_name }}"
+        state: absent
+      ignore_errors: true
