@@ -74,6 +74,7 @@ class S3ErrorHandler(AWSErrorHandler):
     def common_error_handler(cls, description):
         def wrapper(func):
             parent_class = super(S3ErrorHandler, cls)
+
             @parent_class.common_error_handler(description)
             @functools.wraps(func)
             def handler(*args, **kwargs):
