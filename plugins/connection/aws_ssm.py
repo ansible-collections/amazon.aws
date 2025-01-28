@@ -299,7 +299,7 @@ import time
 try:
     import boto3
     from botocore.client import Config
-except ImportError as e:
+except ImportError:
     pass
 
 from functools import wraps
