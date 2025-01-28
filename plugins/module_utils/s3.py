@@ -3,8 +3,20 @@
 # Copyright (c) 2018 Red Hat, Inc.
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-import functools
+from __future__ import annotations
+
+import json
 import string
+import typing
+
+if typing.TYPE_CHECKING:
+    from typing import Any
+    from typing import Dict
+    from typing import List
+    from typing import Optional
+    from typing import Tuple
+    from .retries import RetryingBotoClientWrapper
+
 from urllib.parse import urlparse
 
 try:
@@ -15,9 +27,6 @@ except ImportError:
     HAS_MD5 = False
 
 try:
-    # Beware, S3 is a "special" case, it sometimes catches botocore exceptions and
-    # re-raises them as boto3 exceptions.
-    import boto3
     import botocore
 except ImportError:
     pass  # Handled by the calling module
@@ -26,87 +35,198 @@ except ImportError:
 from ansible.module_utils.basic import to_text
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_message
-from ansible_collections.amazon.aws.plugins.module_utils.errors import AWSErrorHandler
-from ansible_collections.amazon.aws.plugins.module_utils.exceptions import AnsibleAWSError
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 
 IGNORE_S3_DROP_IN_EXCEPTIONS = ["XNotImplemented", "NotImplemented", "AccessControlListNotSupported"]
 
+from ._s3 import common as _common
+from ._s3 import transformations as _transformations
+from ._s3 import waiters as _waiters
 
-class AnsibleS3Error(AnsibleAWSError):
-    pass
+S3ErrorHandler = _common.S3ErrorHandler
+
+AnsibleS3Error = _common.AnsibleS3Error
+AnsibleS3Sigv4RequiredError = _common.AnsibleS3Error
+AnsibleS3PermissionsError = _common.AnsibleS3PermissionsError
+AnsibleS3SupportError = _common.AnsibleS3SupportError
+AnsibleS3RegionSupportError = _common.AnsibleS3RegionSupportError
+
+normalize_s3_bucket_versioning = _transformations.normalize_s3_bucket_versioning
+normalize_s3_bucket_public_access = _transformations.normalize_s3_bucket_public_access
+normalize_s3_bucket_acls = _transformations.normalize_s3_bucket_acls
+s3_acl_to_name = _transformations.s3_acl_to_name
+merge_tags = _transformations.merge_tags
 
 
-class AnsibleS3Sigv4RequiredError(AnsibleS3Error):
-    pass
+def get_s3_waiter(client: RetryingBotoClientWrapper, waiter_name: str) -> Any:
+    return _waiters.waiter_factory.get_waiter(client, waiter_name)
 
 
-class AnsibleS3PermissionsError(AnsibleS3Error):
-    pass
+@S3ErrorHandler.list_error_handler("get bucket encryption settings", {})
+@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
+def get_s3_bucket_accelerate_configuration(s3_client, bucket_name: str) -> Dict:
+    """
+    Get transfer accelerate configuration of the S3 bucket.
+    Parameters:
+        s3_client (boto3.client): The Boto3 S3 client object.
+        bucket_name (str): The name of the S3 bucket.
+    Returns:
+        Transfer accelerate status of the S3 bucket.
+    """
+    try:
+        return s3_client.get_bucket_accelerate_configuration(Bucket=bucket_name)
+    except is_boto3_error_code(["UnsupportedArgument", "MethodNotAllowed"]) as e:
+        # aws-gov throws UnsupportedArgument (consistently)
+        # aws throws MethodNotAllowed where acceleration isn't available /yet/
+        raise AnsibleS3RegionSupportError(
+            message="Failed to get bucket encryption settings (not available in S3 bucket region)", exception=e
+        ) from e
 
 
-class AnsibleS3SupportError(AnsibleS3Error):
-    pass
+@S3ErrorHandler.list_error_handler("get bucket ACLs", [])
+@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
+def get_s3_bucket_acl(s3_client, bucket_name: str) -> List:
+    """
+    Get ACLs of the S3 bucket.
+    Parameters:
+        s3_client (boto3.client): The Boto3 S3 client object.
+        bucket_name (str): The name of the S3 bucket.
+    Returns:
+        Transfer accelerate status of the S3 bucket.
+    """
+    return s3_client.get_bucket_acl(Bucket=bucket_name)
 
 
-class S3ErrorHandler(AWSErrorHandler):
-    _CUSTOM_EXCEPTION = AnsibleS3Error
+@S3ErrorHandler.list_error_handler("get bucket encryption settings", {})
+@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
+def get_s3_bucket_encryption(client, bucket_name: str) -> Dict:
+    """
+    Retrieve the encryption configuration for an S3 bucket.
+    Parameters:
+        client (boto3.client): The Boto3 S3 client object.
+        bucket_name (str): The name of the S3 bucket.
+    Returns:
+        Encryption configuration of the bucket.
+    """
+    return client.get_bucket_encryption(Bucket=bucket_name).get("ServerSideEncryptionConfiguration")
 
-    @classmethod
-    def _is_missing(cls):
-        return is_boto3_error_code(
-            [
-                "404",
-                "NoSuchTagSet",
-                "NoSuchTagSetError",
-                "ObjectLockConfigurationNotFoundError",
-                "NoSuchBucketPolicy",
-                "ServerSideEncryptionConfigurationNotFoundError",
-                "NoSuchBucket",
-                "NoSuchPublicAccessBlockConfiguration",
-                "OwnershipControlsNotFoundError",
-                "NoSuchOwnershipControls",
-            ]
-        )
 
-    @classmethod
-    def common_error_handler(cls, description):
-        def wrapper(func):
-            @super(S3ErrorHandler, cls).common_error_handler(description)
-            @functools.wraps(func)
-            def handler(*args, **kwargs):
-                try:
-                    return func(*args, **kwargs)
-                except is_boto3_error_code(["403", "AccessDenied"]) as e:
-                    # FUTURE: there's a case to be made that this moves up into AWSErrorHandler
-                    # for now, we'll handle this just for S3, but wait and see if it pops up in too
-                    # many other places
-                    raise AnsibleS3PermissionsError(
-                        message=f"Failed to {description} (permission denied)", exception=e
-                    ) from e
-                except is_boto3_error_message(  # pylint: disable=duplicate-except
-                    "require AWS Signature Version 4"
-                ) as e:
-                    raise AnsibleS3Sigv4RequiredError(
-                        message=f"Failed to {description} (not supported by cloud)", exception=e
-                    ) from e
-                except is_boto3_error_code(IGNORE_S3_DROP_IN_EXCEPTIONS) as e:  # pylint: disable=duplicate-except
-                    # Unlike most of our modules, we attempt to handle non-AWS clouds.  For read-only
-                    # actions we sometimes need the ability to ignore unsupported features.
-                    raise AnsibleS3SupportError(
-                        message=f"Failed to {description} (not supported by cloud)", exception=e
-                    ) from e
-                except botocore.exceptions.EndpointConnectionError as e:
-                    raise cls._CUSTOM_EXCEPTION(
-                        message=f"Failed to {description} - Invalid endpoint provided", exception=e
-                    ) from e
-                except boto3.exceptions.Boto3Error as e:
-                    raise cls._CUSTOM_EXCEPTION(message=f"Failed to {description}", exception=e) from e
+@S3ErrorHandler.list_error_handler("get bucket ownership settings", {})
+@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
+def get_s3_bucket_ownership_controls(client, bucket_name: str) -> Dict:
+    """
+    Retrieve bucket ownership controls for S3 bucket
+    Parameters:
+        client (boto3.client): The Boto3 S3 client object.
+        bucket_name (str): The name of the S3 bucket.
+    Returns:
+        Bucket ownership controls of the bucket.
+    """
+    return client.get_bucket_ownership_controls(Bucket=bucket_name).get("OwnershipControls")
 
-            return handler
 
-        return wrapper
+@S3ErrorHandler.list_error_handler("get bucket policy", {})
+@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
+def get_s3_bucket_policy(client, bucket_name: str) -> Dict:
+    """
+    Retrieve bucket policy for an S3 bucket
+    Parameters:
+        client (boto3.client): The Boto3 S3 client object.
+        bucket_name (str): The name of the S3 bucket.
+    Returns:
+        Bucket policy controls of the bucket.
+    """
+    policy = client.get_bucket_policy(Bucket=bucket_name).get("Policy")
+    try:
+        return json.loads(policy)
+    except ValueError as e:
+        raise AnsibleS3Error(exception=e, message="Unable to parse current bucket policy") from e
+
+
+@S3ErrorHandler.list_error_handler("get bucket request payment settings", {})
+@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
+def get_s3_bucket_request_payment(client, bucket_name: str) -> Dict:
+    """
+    Retrieve bucket request payment settings for an S3 bucket
+    Parameters:
+        client (boto3.client): The Boto3 S3 client object.
+        bucket_name (str): The name of the S3 bucket.
+    Returns:
+        Request payment settings of the bucket.
+    """
+    return client.get_bucket_request_payment(Bucket=bucket_name).get("Payer")
+
+
+@S3ErrorHandler.list_error_handler("get bucket tags", {})
+@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
+def get_s3_bucket_tagging(client, bucket_name: str) -> Dict:
+    """
+    Retrieve tagging for an S3 bucket
+    Parameters:
+        client (boto3.client): The Boto3 S3 client object.
+        bucket_name (str): The name of the S3 bucket.
+    Returns:
+        The current tags dictionary applied to the bucket.
+    """
+    current_tags = client.get_bucket_tagging(Bucket=bucket_name).get("TagSet")
+    return boto3_tag_list_to_ansible_dict(current_tags)
+
+
+@S3ErrorHandler.list_error_handler("get bucket versioning settings", {})
+@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
+def get_s3_bucket_versioning(client, bucket_name: str) -> Dict:
+    """
+    Retrieve bucket versioning settings for an S3 bucket
+    Parameters:
+        client (boto3.client): The Boto3 S3 client object.
+        bucket_name (str): The name of the S3 bucket.
+    Returns:
+        Versioning settings of the bucket.
+    """
+    return client.get_bucket_versioning(Bucket=bucket_name)
+
+
+@S3ErrorHandler.list_error_handler("get bucket object lock settings", {})
+@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
+def get_s3_object_lock_configuration(client, bucket_name: str) -> Dict:
+    """
+    Retrieve object lock configuration for an S3 bucket.
+    Parameters:
+        client (boto3.client): The Boto3 S3 client object.
+        bucket_name (str): The name of the S3 bucket.
+    Returns:
+        The object lock configuration of the bucket.
+    """
+    return client.get_object_lock_configuration(Bucket=bucket_name).get("ObjectLockConfiguration")
+
+
+@S3ErrorHandler.list_error_handler("get bucket public access block settings", {})
+@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
+def get_s3_bucket_public_access_block(client, bucket_name: str) -> Dict:
+    """
+    Get current public access block configuration for a bucket.
+    Parameters:
+        s3_client (boto3.client): The Boto3 S3 client object.
+        bucket_name (str): The name of the S3 bucket.
+    Returns:
+        The current public access block configuration for the bucket.
+    """
+    return client.get_public_access_block(Bucket=bucket_name).get("PublicAccessBlockConfiguration")
+
+
+@S3ErrorHandler.list_error_handler("determine if bucket exisits", {})
+@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["OperationAborted"])
+def head_s3_bucket(client, bucket_name: str) -> Dict:
+    """
+    Retrieve basic information about an S3 bucket
+    Parameters:
+        s3_client (boto3.client): The Boto3 S3 client object.
+        bucket_name (str): The name of the S3 bucket.
+    Returns:
+        Basic information about the bucket.
+    """
+    return client.head_bucket(Bucket=bucket_name)
 
 
 def s3_head_objects(client, parts, bucket, obj, versionId):
@@ -230,7 +350,7 @@ def s3_extra_params(options, sigv4=False):
     dualstack = options.get("dualstack")
     if not dualstack and not sigv4:
         return extra_params
-    config = {}
+    config: dict = {}
     if dualstack:
         config["use_dualstack_endpoint"] = True
     if sigv4:
@@ -239,7 +359,8 @@ def s3_extra_params(options, sigv4=False):
     return extra_params
 
 
-@AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
+@S3ErrorHandler.list_error_handler("get bucket inventory settings", {})
+@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
 def _list_bucket_inventory_configurations(client, **params):
     return client.list_bucket_inventory_configurations(**params)
 
@@ -247,7 +368,7 @@ def _list_bucket_inventory_configurations(client, **params):
 # _list_backup_inventory_configurations is a workaround for a missing paginator for listing
 # bucket inventory configuration in boto3:
 # https://github.com/boto/botocore/blob/1.34.141/botocore/data/s3/2006-03-01/paginators-1.json
-def list_bucket_inventory_configurations(client, bucket_name):
+def list_bucket_inventory_configurations(client, bucket_name: str) -> list:
     first_iteration = False
     next_token = None
 

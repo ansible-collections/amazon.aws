@@ -28,36 +28,136 @@
 
     - ansible.builtin.assert:
         that:
-          - private_acl.changed
+          - private_acl.acl == "private"
+          - private_acl is not changed
 
+    # failure expected - public ACLs prohibited by "block_public_acls"
     - name: Update bucket ACL, new value = public-read
       amazon.aws.s3_bucket:
         name: "{{ local_bucket_name }}"
         acl: public-read
         state: present
-      ignore_errors: true
+      ignore_errors: true  # noqa: ignore-errors
       register: public_read_acl
 
     - ansible.builtin.assert:
         that:
           - public_read_acl is failed
 
+    - name: Update bucket public access configuration (allow public access so we can test ACLs)
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
+        state: present
+        public_access:
+          block_public_acls: false
+          block_public_policy: true
+          ignore_public_acls: false
+          restrict_public_buckets: true
+      register: public_access
+
+    - ansible.builtin.assert:
+        that:
+          - public_access.changed
+
     - name: Update bucket ACL, new value = public-read
       amazon.aws.s3_bucket:
         name: "{{ local_bucket_name }}"
         acl: public-read
         state: present
-        public_access:
-          block_public_acls: false
-          block_public_policy: true
-          ignore_public_acls: true
-          restrict_public_buckets: true
       ignore_errors: true
       register: public_read_acl
 
     - ansible.builtin.assert:
         that:
           - public_read_acl.changed
+          - public_read_acl.acl == "public-read"
+
+    - name: Update bucket ACL, new value = public-read (idempotency)
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
+        acl: public-read
+        state: present
+      ignore_errors: true
+      register: public_read_acl
+
+    - ansible.builtin.assert:
+        that:
+          - public_read_acl is not changed
+          - public_read_acl.acl == "public-read"
+
+    - name: Update bucket ACL, new value = public-write
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
+        acl: public-read-write
+        state: present
+      ignore_errors: true
+      register: public_write_acl
+
+    - ansible.builtin.assert:
+        that:
+          - public_write_acl.changed
+          - public_write_acl.acl == "public-read-write"
+
+    - name: Update bucket ACL, new value = public-write (idempotency)
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
+        acl: public-read-write
+        state: present
+      ignore_errors: true
+      register: public_write_acl
+
+    - ansible.builtin.assert:
+        that:
+          - public_write_acl is not changed
+          - public_write_acl.acl == "public-read-write"
+
+    - name: Update bucket ACL, new value = authenticated-read
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
+        acl: authenticated-read
+        state: present
+      register: auth_acl
+
+    - ansible.builtin.assert:
+        that:
+          - auth_acl.changed
+          - auth_acl.acl == "authenticated-read"
+
+    - name: Update bucket ACL, new value = authenticated-read (idempotency)
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
+        acl: authenticated-read
+        state: present
+      register: auth_acl
+
+    - ansible.builtin.assert:
+        that:
+          - auth_acl is not changed
+          - auth_acl.acl == "authenticated-read"
+
+    - name: Update bucket ACL, new value = private
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
+        acl: private
+        state: present
+      register: private_acl
+
+    - ansible.builtin.assert:
+        that:
+          - private_acl.changed
+          - private_acl.acl == "private"
+
+    - name: Update bucket ACL, new value = private (idempotency)
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
+        acl: private
+        state: present
+      register: private_acl
+
+    - ansible.builtin.assert:
+        that:
+          - private_acl is not changed
+          - private_acl.acl == "private"
 
   # ============================================================
   always:
@@ -65,4 +165,4 @@
       amazon.aws.s3_bucket:
         name: "{{ local_bucket_name }}"
         state: absent
-      ignore_errors: true
+      ignore_errors: true  # noqa: ignore-errors
