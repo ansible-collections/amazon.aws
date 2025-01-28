@@ -1933,6 +1933,8 @@ def diff_instance_and_params(
             if network_interfaces:
                 subnet_id = network_interfaces[0].get("subnet_id")
                 groups = network_interfaces[0].get("groups")
+                if not subnet_id and module.params.get("vpc_subnet_id"):
+                    subnet_id = module.params.get("vpc_subnet_id")
             elif module.params.get("vpc_subnet_id"):
                 subnet_id = module.params.get("vpc_subnet_id")
             else:
