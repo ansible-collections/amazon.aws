@@ -158,6 +158,7 @@ options:
     description:
       - The subnet ID in which to launch the instance (VPC).
       - If none is provided, M(amazon.aws.ec2_instance) will chose the default zone of the default VPC.
+      - If used along with O(network), O(vpc_subnet_id) is used as a fallback to prevent errors when O(network.subnet_id) is not specified.
     aliases: ['subnet_id']
     type: str
   network:
@@ -168,6 +169,7 @@ options:
       - This field is deprecated and will be removed in a release after 2026-12-01, use O(network_interfaces) or O(network_interfaces_ids) instead.
       - Mutually exclusive with O(network_interfaces).
       - Mutually exclusive with O(network_interfaces_ids).
+      - If used along with O(vpc_subnet_id), O(vpc_subnet_id)  is used as a fallback to prevent errors when O(network.subnet_id) is not specified.
     type: dict
     suboptions:
       interfaces:
@@ -1881,8 +1883,10 @@ def diff_instance_and_params(instance, params, skip=None):
             if network_interfaces:
                 subnet_id = network_interfaces[0].get("subnet_id")
                 groups = network_interfaces[0].get("groups")
-            elif params.get("vpc_subnet_id"):
-                subnet_id = params.get("vpc_subnet_id")
+                if not subnet_id and module.params.get("vpc_subnet_id"):
+                    subnet_id = module.params.get("vpc_subnet_id")
+            elif module.params.get("vpc_subnet_id"):
+                subnet_id = module.params.get("vpc_subnet_id")
             else:
                 subnet_id = describe_default_subnet(module=module, use_availability_zone=False)
 
