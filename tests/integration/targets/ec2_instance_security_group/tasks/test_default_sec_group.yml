@@ -1,0 +1,98 @@
+---
+- name: Test creating an instance attached to a security group "default" and network configuration missing subnet_id
+  block:
+    - name: Create VPC 1
+      amazon.aws.ec2_vpc_net:
+        name: "vpc-1"
+        cidr_block: "{{ vpc_cidr_1 }}"
+        state: present
+      register: vpc_1
+
+    - name: Create VPC 2
+      amazon.aws.ec2_vpc_net:
+        name: "vpc-2"
+        cidr_block: "{{ vpc_cidr_2 }}"
+        state: present
+      register: vpc_2
+
+    - name: Create Subnet 1 in VPC 1
+      amazon.aws.ec2_vpc_subnet:
+        vpc_id: "{{ vpc_1.vpc.id }}"
+        cidr: "{{ subnet_cidr_1 }}"
+        state: present
+      register: subnet_1
+
+    - name: Create Subnet 2 in VPC 2
+      amazon.aws.ec2_vpc_subnet:
+        vpc_id: "{{ vpc_2.vpc.id }}"
+        cidr: "{{ subnet_cidr_2 }}"
+        state: present
+      register: subnet_2
+
+    - name: Get security groups for vpc_1
+      amazon.aws.ec2_security_group_info:
+        filters:
+          vpc-id: "{{ vpc_1.vpc.id }}"
+      register: security_group_vpc_1
+
+    - name: Create EC2 instance
+      amazon.aws.ec2_instance:
+        image_id: "{{ ec2_ami_id }}"
+        instance_type: "t2.micro"
+        network:
+          assign_public_ip: false
+        security_groups: "default"
+        tags:
+          Owner: Integration-Test
+          Persistent: false
+          Name: "{{ resource_prefix}}-test-instance"
+        vpc_subnet_id: "{{ subnet_1.subnet.id }}"
+        wait: true
+        state: present
+      register: ec2_instance
+
+    - name: Assert create results
+      ansible.builtin.assert:
+        that:
+          - ec2_instance is not failed
+          - ec2_instance is changed
+          - ec2_instance.instances[0].security_groups[0].group_id == security_group_vpc_1.security_groups[0].group_id
+          - security_group_vpc_1.security_groups[0].group_name == "default"
+
+  always:
+    - name: Destroy EC2 instance
+      amazon.aws.ec2_instance:
+        instance_ids: "{{ ec2_instance.instance_ids[0] }}"
+        state: absent
+      register: destroyed_instance
+      ignore_errors: true
+
+    - name: Destroy Subnet 1
+      amazon.aws.ec2_vpc_subnet:
+        vpc_id: "{{ vpc_1.vpc.id }}"
+        cidr: "{{ subnet_cidr_1 }}"
+        state: absent
+      register: destroyed_subnet_1
+      ignore_errors: true
+
+    - name: Destroy Subnet 2
+      amazon.aws.ec2_vpc_subnet:
+        vpc_id: "{{ vpc_2.vpc.id }}"
+        cidr: "{{ subnet_cidr_2 }}"
+        state: absent
+      register: destroyed_subnet_2
+      ignore_errors: true
+
+    - name: Destroy VPC 1
+      amazon.aws.ec2_vpc_net:
+        vpc_id: "{{ vpc_1.vpc.id }}"
+        state: absent
+      register: destroyed_vpc_1
+      ignore_errors: true
+
+    - name: Destroy VPC 2
+      amazon.aws.ec2_vpc_net:
+        vpc_id: "{{ vpc_2.vpc.id }}"
+        state: absent
+      register: destroyed_vpc_2
+      ignore_errors: true
