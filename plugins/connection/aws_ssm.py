@@ -5,6 +5,7 @@
 
 # Based on the ssh connection plugin by Michael DeHaan
 
+
 DOCUMENTATION = r"""
 name: aws_ssm
 author:
@@ -284,7 +285,6 @@ EXAMPLES = r"""
         name: nginx
         state: present
 """
-
 import os
 import getpass
 import json
@@ -295,6 +295,7 @@ import select
 import string
 import subprocess
 import time
+from typing import Optional
 
 try:
     import boto3
@@ -347,7 +348,10 @@ def _ssm_retry(func):
                 if isinstance(e, AnsibleConnectionFailure):
                     msg = f"ssm_retry: attempt: {attempt}, cmd ({cmd_summary}), pausing for {pause} seconds"
                 else:
-                    msg = f"ssm_retry: attempt: {attempt}, caught exception({e}) from cmd ({cmd_summary}), pausing for {pause} seconds"
+                    msg = (
+                        f"ssm_retry: attempt: {attempt}, caught exception({e})"
+                        f"from cmd ({cmd_summary}),pausing for {pause} seconds"
+                    )
 
                 self._vv(msg)
 
@@ -389,6 +393,90 @@ class Connection(ConnectionBase):
     _session_id = ""
     _timeout = False
     MARK_LENGTH = 26
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if not HAS_BOTO3:
+            raise AnsibleError(missing_required_lib("boto3"))
+
+        self.host = self._play_context.remote_addr
+
+        if getattr(self._shell, "SHELL_FAMILY", "") == "powershell":
+            self.delegate = None
+            self.has_native_async = True
+            self.always_pipeline_modules = True
+            self.module_implementation_preferences = (".ps1", ".exe", "")
+            self.protocol = None
+            self.shell_id = None
+            self._shell_type = "powershell"
+            self.is_windows = True
+
+    def __del__(self):
+        self.close()
+
+    def _connect(self):
+        """connect to the host via ssm"""
+
+        self._play_context.remote_user = getpass.getuser()
+
+        if not self._session_id:
+            self.start_session()
+        return self
+
+    def _init_clients(self) -> None:
+        """
+        Initializes required AWS clients (SSM and S3).
+        Delegates client initialization to specialized methods.
+        """
+
+        self._vvvv("INITIALIZE BOTO3 CLIENTS")
+        profile_name = self.get_option("profile") or ""
+        region_name = self.get_option("region")
+
+        # Initialize SSM client
+        self._initialize_ssm_client(region_name, profile_name)
+
+        # Initialize S3 client
+        self._initialize_s3_client(profile_name)
+
+    def _initialize_ssm_client(self, region_name: Optional[str], profile_name: str) -> None:
+        """
+        Initializes the SSM client used to manage sessions.
+        Args:
+            region_name (Optional[str]): AWS region for the SSM client.
+            profile_name (str): AWS profile name for authentication.
+
+        Returns:
+            None
+        """
+
+        self._vvvv("SETUP BOTO3 CLIENTS: SSM")
+        self._client = self._get_boto_client(
+            "ssm",
+            region_name=region_name,
+            profile_name=profile_name,
+        )
+
+    def _initialize_s3_client(self, profile_name: str) -> None:
+        """
+        Initializes the S3 client used for accessing S3 buckets.
+
+        Args:
+            profile_name (str): AWS profile name for authentication.
+
+        Returns:
+            None
+        """
+
+        s3_endpoint_url, s3_region_name = self._get_bucket_endpoint()
+        self._vvvv(f"SETUP BOTO3 CLIENTS: S3 {s3_endpoint_url}")
+        self._s3_client = self._get_boto_client(
+            "s3",
+            region_name=s3_region_name,
+            endpoint_url=s3_endpoint_url,
+            profile_name=profile_name,
+        )
 
     def _display(self, f, message):
         if self.host:
@@ -446,62 +534,6 @@ class Connection(ConnectionBase):
         )
 
         return s3_bucket_client.meta.endpoint_url, s3_bucket_client.meta.region_name
-
-    def _init_clients(self):
-        self._vvvv("INITIALIZE BOTO3 CLIENTS")
-        profile_name = self.get_option("profile") or ""
-        region_name = self.get_option("region")
-
-        # The SSM Boto client, currently used to initiate and manage the session
-        # Note: does not handle the actual SSM session traffic
-        self._vvvv("SETUP BOTO3 CLIENTS: SSM")
-        ssm_client = self._get_boto_client(
-            "ssm",
-            region_name=region_name,
-            profile_name=profile_name,
-        )
-        self._client = ssm_client
-
-        s3_endpoint_url, s3_region_name = self._get_bucket_endpoint()
-        self._vvvv(f"SETUP BOTO3 CLIENTS: S3 {s3_endpoint_url}")
-        s3_bucket_client = self._get_boto_client(
-            "s3",
-            region_name=s3_region_name,
-            endpoint_url=s3_endpoint_url,
-            profile_name=profile_name,
-        )
-
-        self._s3_client = s3_bucket_client
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        if not HAS_BOTO3:
-            raise AnsibleError(missing_required_lib("boto3"))
-
-        self.host = self._play_context.remote_addr
-
-        if getattr(self._shell, "SHELL_FAMILY", "") == "powershell":
-            self.delegate = None
-            self.has_native_async = True
-            self.always_pipeline_modules = True
-            self.module_implementation_preferences = (".ps1", ".exe", "")
-            self.protocol = None
-            self.shell_id = None
-            self._shell_type = "powershell"
-            self.is_windows = True
-
-    def __del__(self):
-        self.close()
-
-    def _connect(self):
-        """connect to the host via ssm"""
-
-        self._play_context.remote_user = getpass.getuser()
-
-        if not self._session_id:
-            self.start_session()
-        return self
 
     def reset(self):
         """start a fresh ssm session"""
@@ -853,7 +885,8 @@ class Connection(ConnectionBase):
             put_commands = [
                 (
                     "Invoke-WebRequest -Method PUT "
-                    f"-Headers @{{{put_command_headers}}} "  # @{'key' = 'value'; 'key2' = 'value2'}
+                    # @{'key' = 'value'; 'key2' = 'value2'}
+                    f"-Headers @{{{put_command_headers}}} "
                     f"-InFile '{in_path}' "
                     f"-Uri '{put_url}' "
                     f"-UseBasicParsing"
