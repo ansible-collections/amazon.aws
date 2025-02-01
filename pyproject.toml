@@ -39,8 +39,6 @@ transform-joins = true
 exclude = [
     "ec2_metadata_facts",
 ]
-<<<<<<< HEAD
-=======
 
 [tool.flake8]
 # E123, E125 skipped as they are invalid PEP-8.
@@ -60,4 +58,3 @@ line-length = 120
 # "E402" - import not at top of file - General Ansible style puts the documentation at the top.
 unfixable = ["F401"]
 ignore = ["F401", "E402"]
->>>>>>> d595a577 (Add ruff to tox.ini and fix some minor linting issues (#2464))
