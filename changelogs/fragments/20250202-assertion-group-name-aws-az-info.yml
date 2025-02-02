@@ -1,0 +1,3 @@
+---
+trivial:
+- "Fix assertion way to check the AZ group_name attribute"
