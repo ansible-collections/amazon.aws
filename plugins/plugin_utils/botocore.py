@@ -18,9 +18,10 @@ from typing import Dict
 from typing import Optional
 from typing import Tuple
 from typing import Union
-from typing_extensions import TypeAlias
 
 if typing.TYPE_CHECKING:
+    from typing_extensions import TypeAlias
+
     from .base import AWSPluginBase
 
     ClientType: TypeAlias = botocore.client.BaseClient

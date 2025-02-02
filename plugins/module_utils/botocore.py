@@ -49,7 +49,6 @@ from typing import Set
 from typing import Tuple
 from typing import Type
 from typing import Union
-from typing_extensions import TypeAlias
 
 BOTO3_IMP_ERR = None
 try:
@@ -63,6 +62,8 @@ except ImportError:
     HAS_BOTO3 = False
 
 if typing.TYPE_CHECKING:
+    from typing_extensions import TypeAlias
+
     ClientType: TypeAlias = botocore.client.BaseClient
     ResourceType: TypeAlias = boto3.resources.base.ServiceResource
     BotoConn = Union[ClientType, ResourceType, Tuple[ClientType, ResourceType]]
@@ -458,6 +459,7 @@ def enable_placebo(session: boto3.session.Session) -> None:
         pill.record()
     if "_ANSIBLE_PLACEBO_REPLAY" in os.environ:
         import shutil
+
         import placebo
 
         replay_entries = sorted([int(i) for i in os.listdir(os.environ["_ANSIBLE_PLACEBO_REPLAY"])])
