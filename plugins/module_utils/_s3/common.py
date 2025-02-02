@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import functools
+from typing import cast
 
 try:
     # Beware, S3 is a "special" case, it sometimes catches botocore exceptions and
@@ -67,7 +68,7 @@ class S3ErrorHandler(AWSErrorHandler):
     @classmethod
     def common_error_handler(cls, description):
         def wrapper(func):
-            parent_class = super(S3ErrorHandler, cls)
+            parent_class = cast(AWSErrorHandler, super(S3ErrorHandler, cls))
 
             @parent_class.common_error_handler(description)
             @functools.wraps(func)

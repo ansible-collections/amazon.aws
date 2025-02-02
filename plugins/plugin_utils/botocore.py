@@ -18,12 +18,13 @@ from typing import Dict
 from typing import Optional
 from typing import Tuple
 from typing import Union
+from typing_extensions import TypeAlias
 
 if typing.TYPE_CHECKING:
     from .base import AWSPluginBase
 
-    ClientType = botocore.client.BaseClient
-    ResourceType = boto3.resources.base.ServiceResource
+    ClientType: TypeAlias = botocore.client.BaseClient
+    ResourceType: TypeAlias = boto3.resources.base.ServiceResource
     BotoConn = Union[ClientType, ResourceType, Tuple[ClientType, ResourceType]]
 
 from ansible.module_utils.basic import to_native

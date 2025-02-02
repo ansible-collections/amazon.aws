@@ -1,0 +1,7 @@
+bugfixes:
+  - module_utils.botocore - fixed type aliasing().
+  - plugin_utils.botocore - fixed type aliasing().
+minor_changes:
+  - module_utils._s3 - explicitly cast super to the parent type().
+  - module_utils.botocore - avoid assigning unused parts of exc_info return().
+  - module_utils.exceptions - avoid assigning unused parts of exc_info return().
