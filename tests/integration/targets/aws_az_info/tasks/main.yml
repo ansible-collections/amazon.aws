@@ -105,7 +105,7 @@
           - '"zone_id" in first_az'
           - '"zone_name" in first_az'
           - '"zone_type" in first_az'
-          - first_az.group_name == 'us-west-2'
+          - first_az.group_name.startswith('us-west-2')
           - first_az.network_border_group == 'us-west-2'
           - first_az.region_name == 'us-west-2'
           # AZs are mapped to the 'real' AZs on a per-account basis
@@ -138,7 +138,7 @@
           - '"zone_id" in first_az'
           - '"zone_name" in first_az'
           - '"zone_type" in first_az'
-          - first_az.group_name == 'eu-central-1'
+          - first_az.group_name.startswith('eu-central-1')
           - first_az.network_border_group == 'eu-central-1'
           - first_az.region_name == 'eu-central-1'
           # AZs are mapped to the 'real' AZs on a per-account basis
@@ -172,7 +172,7 @@
           - '"zone_id" in first_az'
           - '"zone_name" in first_az'
           - '"zone_type" in first_az'
-          - first_az.group_name == 'eu-west-2'
+          - first_az.group_name.startswith('eu-west-2')
           - first_az.network_border_group == 'eu-west-2'
           - first_az.region_name == 'eu-west-2'
           # AZs are mapped to the 'real' AZs on a per-account basis
