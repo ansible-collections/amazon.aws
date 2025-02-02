@@ -54,7 +54,7 @@ BOTO3_IMP_ERR = None
 try:
     import boto3
     import botocore
-    from botocore import ClientError
+    from botocore.exceptions import ClientError
 
     HAS_BOTO3 = True
 except ImportError:
