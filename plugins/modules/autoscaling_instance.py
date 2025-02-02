@@ -798,7 +798,6 @@ def _validate_remove_conditions(params: Dict[str, Any], instances: AnsibleAWSRes
 
 
 def _validate_attach_conditions(params: Dict[str, Any], instances: AnsibleAWSResourceList) -> None:
-    all_ids = _all_instance_ids(instances)
     instance_ids = set(params.get("instance_ids") or [])
 
     # These instances are terminating, we can't do anything with them.

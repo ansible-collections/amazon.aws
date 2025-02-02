@@ -629,8 +629,6 @@ def main():
         ["image_uri", "s3_object_version"],
     ]
 
-    required_by = {"runtime": ["handler"]}
-
     required_together = [
         ["s3_key", "s3_bucket"],
         ["vpc_subnet_ids", "vpc_security_group_ids"],
@@ -668,7 +666,6 @@ def main():
     tags = module.params.get("tags")
     purge_tags = module.params.get("purge_tags")
     kms_key_arn = module.params.get("kms_key_arn")
-    architectures = module.params.get("architecture")
     image_uri = module.params.get("image_uri")
     layers = []
 

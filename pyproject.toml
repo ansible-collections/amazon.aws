@@ -39,3 +39,22 @@ transform-joins = true
 exclude = [
     "ec2_metadata_facts",
 ]
+
+[tool.flake8]
+# E123, E125 skipped as they are invalid PEP-8.
+show-source = true
+ignore = ["E123", "E125", "E203", "E402", "E501", "E741", "F401", "F811", "F841", "W503"]
+max-line-length = 160
+builtins = "_"
+
+[tool.mypy]
+disable_error_code = ["import-untyped"]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+# "F401" - unused-imports - We use these imports to maintaining historic Interfaces
+# "E402" - import not at top of file - General Ansible style puts the documentation at the top.
+unfixable = ["F401"]
+ignore = ["F401", "E402"]

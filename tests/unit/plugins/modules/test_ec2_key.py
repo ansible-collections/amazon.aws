@@ -68,11 +68,6 @@ def test_api_failure__import_key_pair():
     name = "my_keypair"
     key_material = "ssh-rsa AAAAB3NzaC1yc2EAA email@example.com"
 
-    expected_params = {
-        "KeyName": name,
-        "PublicKeyMaterial": to_bytes(key_material),
-    }
-
     ec2_client.import_key_pair.side_effect = raise_botocore_exception_clienterror("import_key_pair")
 
     with pytest.raises(ec2_key.Ec2KeyFailure):
@@ -131,7 +126,6 @@ def test_extract_key_data_create_key_pair():
 def test_get_key_fingerprint(m_find_key_pair, m_import_key_pair, m_delete_key_pair):
     module = MagicMock()
     ec2_client = MagicMock()
-    file_name = MagicMock()
 
     m_find_key_pair.return_value = None
 
@@ -564,7 +558,6 @@ def test_delete_key_pair_key_exists(m_find_key_pair, m_delete_key_pair, tmp_path
     ec2_client = MagicMock()
 
     name = "my_keypair"
-    file_name = tmp_path / "private_key_data.pem"
     module.check_mode = False
 
     m_find_key_pair.return_value = {

@@ -225,7 +225,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import delete_ec2_t
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_ec2_transit_gateways
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.module_utils.waiters import wait_for_resource_state
@@ -235,9 +234,6 @@ class AnsibleEc2Tgw:
     def __init__(self, module: AnsibleAWSModule, results: Dict[str, Any]) -> None:
         self._module = module
         self._results = results
-        retry_decorator = AWSRetry.jittered_backoff(
-            catch_extra_error_codes=["IncorrectState"],
-        )
         self._connection = module.client("ec2")
         self._check_mode = self._module.check_mode
 
