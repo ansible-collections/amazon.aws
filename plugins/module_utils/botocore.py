@@ -463,7 +463,7 @@ def enable_placebo(session: boto3.session.Session) -> None:
         import placebo
 
         replay_entries = sorted([int(i) for i in os.listdir(os.environ["_ANSIBLE_PLACEBO_REPLAY"])])
-        data_path = f"{os.environ['_ANSIBLE_PLACEBO_REPLAY']}/{int(replay_entries[0])}"
+        data_path = f"{os.environ['_ANSIBLE_PLACEBO_REPLAY']}/{replay_entries[0]}"
         try:
             shutil.rmtree("_tmp")
         except FileNotFoundError:
