@@ -9,3 +9,5 @@ virtualenv
 awscli
 # Used for comparing SSH Public keys to the Amazon fingerprints
 cryptography
+# Used for recordings
+placebo
