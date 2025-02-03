@@ -285,9 +285,9 @@ EXAMPLES = r"""
         name: nginx
         state: present
 """
-import os
 import getpass
 import json
+import os
 import pty
 import random
 import re
@@ -296,6 +296,8 @@ import string
 import subprocess
 import time
 from typing import Optional
+from typing import NoReturn
+from typing import Tuple
 
 try:
     import boto3
@@ -304,17 +306,18 @@ except ImportError:
     pass
 
 from functools import wraps
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOTO3
+
 from ansible.errors import AnsibleConnectionFailure
 from ansible.errors import AnsibleError
 from ansible.errors import AnsibleFileNotFound
-from ansible.module_utils.basic import missing_required_lib
-from ansible.module_utils.six.moves import xrange
 from ansible.module_utils._text import to_bytes
 from ansible.module_utils._text import to_text
+from ansible.module_utils.basic import missing_required_lib
 from ansible.plugins.connection import ConnectionBase
 from ansible.plugins.shell.powershell import _common_args
 from ansible.utils.display import Display
+
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOTO3
 
 display = Display()
 
@@ -375,6 +378,29 @@ def chunks(lst, n):
         yield lst[i:i + n]  # fmt: skip
 
 
+def filter_ansi(line: str, is_windows: bool) -> str:
+    """Remove any ANSI terminal control codes.
+
+    :param line: The input line.
+    :param is_windows: Whether the output is coming from a Windows host.
+    :returns: The result line.
+    """
+    line = to_text(line)
+
+    if is_windows:
+        osc_filter = re.compile(r"\x1b\][^\x07]*\x07")
+        line = osc_filter.sub("", line)
+        ansi_filter = re.compile(r"(\x9B|\x1B\[)[0-?]*[ -/]*[@-~]")
+        line = ansi_filter.sub("", line)
+
+        # Replace or strip sequence (at terminal width)
+        line = line.replace("\r\r\n", "\n")
+        if len(line) == 201:
+            line = line[:-1]
+
+    return line
+
+
 class Connection(ConnectionBase):
     """AWS SSM based connections"""
 
@@ -401,6 +427,9 @@ class Connection(ConnectionBase):
             raise AnsibleError(missing_required_lib("boto3"))
 
         self.host = self._play_context.remote_addr
+        self._instance_id = None
+        self._polling_obj = None
+        self._has_timeout = False
 
         if getattr(self._shell, "SHELL_FAMILY", "") == "powershell":
             self.delegate = None
@@ -541,13 +570,18 @@ class Connection(ConnectionBase):
         self.close()
         return self.start_session()
 
+    @property
+    def instance_id(self) -> str:
+        if not self._instance_id:
+            self._instance_id = self.host if self.get_option("instance_id") is None else self.get_option("instance_id")
+        return self._instance_id
+
+    @instance_id.setter
+    def instance_id(self, instance_id: str) -> NoReturn:
+        self._instance_id = instance_id
+
     def start_session(self):
         """start ssm session"""
-
-        if self.get_option("instance_id") is None:
-            self.instance_id = self.host
-        else:
-            self.instance_id = self.get_option("instance_id")
 
         self._vvv(f"ESTABLISH SSM CONNECTION TO: {self.instance_id}")
 
@@ -592,8 +626,6 @@ class Connection(ConnectionBase):
         os.close(stdout_w)
         self._stdout = os.fdopen(stdout_r, "rb", 0)
         self._session = session
-        self._poll_stdout = select.poll()
-        self._poll_stdout.register(self._stdout, select.POLLIN)
 
         # Disable command echo and prompt.
         self._prepare_terminal()
@@ -602,48 +634,55 @@ class Connection(ConnectionBase):
 
         return session
 
-    @_ssm_retry
-    def exec_command(self, cmd, in_data=None, sudoable=True):
-        """run a command on the ssm host"""
+    def poll_stdout(self, timeout: int = 1000) -> bool:
+        """Polls the stdout file descriptor.
 
-        super().exec_command(cmd, in_data=in_data, sudoable=sudoable)
+        :param timeout: Specifies the length of time in milliseconds which the system will wait.
+        :returns: A boolean to specify the polling result
+        """
+        if self._polling_obj is None:
+            self._polling_obj = select.poll()
+            self._polling_obj.register(self._stdout, select.POLLIN)
+        return bool(self._polling_obj.poll(timeout))
 
-        self._vvv(f"EXEC: {to_text(cmd)}")
+    def poll(self, label: str, cmd: str) -> NoReturn:
+        """Poll session to retrieve content from stdout.
 
-        session = self._session
+        :param label: A label for the display (EXEC, PRE...)
+        :param cmd: The command being executed
+        """
+        start = round(time.time())
+        yield self.poll_stdout()
+        timeout = self.get_option("ssm_timeout")
+        while self._session.poll() is None:
+            remaining = start + timeout - round(time.time())
+            self._vvvv(f"{label} remaining: {remaining} second(s)")
+            if remaining < 0:
+                self._has_timeout = True
+                raise AnsibleConnectionFailure(f"{label} command '{cmd}' timeout on host: {self.instance_id}")
+            yield self.poll_stdout()
 
-        mark_begin = "".join([random.choice(string.ascii_letters) for i in xrange(self.MARK_LENGTH)])
-        if self.is_windows:
-            mark_start = mark_begin + " $LASTEXITCODE"
-        else:
-            mark_start = mark_begin
-        mark_end = "".join([random.choice(string.ascii_letters) for i in xrange(self.MARK_LENGTH)])
+    def exec_communicate(self, cmd: str, mark_start: str, mark_begin: str, mark_end: str) -> Tuple[int, str, str]:
+        """Interact with session.
+        Read stdout between the markers until 'mark_end' is reached.
 
-        # Wrap command in markers accordingly for the shell used
-        cmd = self._wrap_command(cmd, sudoable, mark_start, mark_end)
-
-        self._flush_stderr(session)
-
-        for chunk in chunks(cmd, 1024):
-            session.stdin.write(to_bytes(chunk, errors="surrogate_or_strict"))
-
+        :param cmd: The command being executed.
+        :param mark_start: The marker which starts the output.
+        :param mark_begin: The begin marker.
+        :param mark_end: The end marker.
+        :returns: A tuple with the return code, the stdout and the stderr content.
+        """
         # Read stdout between the markers
         stdout = ""
         win_line = ""
         begin = False
-        stop_time = int(round(time.time())) + self.get_option("ssm_timeout")
-        while session.poll() is None:
-            remaining = stop_time - int(round(time.time()))
-            if remaining < 1:
-                self._timeout = True
-                self._vvvv(f"EXEC timeout stdout: \n{to_text(stdout)}")
-                raise AnsibleConnectionFailure(f"SSM exec_command timeout on host: {self.instance_id}")
-            if self._poll_stdout.poll(1000):
-                line = self._filter_ansi(self._stdout.readline())
-                self._vvvv(f"EXEC stdout line: \n{to_text(line)}")
-            else:
-                self._vvvv(f"EXEC remaining: {remaining}")
+        returncode = None
+        for poll_result in self.poll("EXEC", cmd):
+            if not poll_result:
                 continue
+
+            line = filter_ansi(self._stdout.readline(), self.is_windows)
+            self._vvvv(f"EXEC stdout line: \n{line}")
 
             if not begin and self.is_windows:
                 win_line = win_line + line
@@ -662,9 +701,33 @@ class Connection(ConnectionBase):
                     break
                 stdout = stdout + line
 
-        stderr = self._flush_stderr(session)
+        # see https://github.com/pylint-dev/pylint/issues/8909)
+        return (returncode, stdout, self._flush_stderr(self._session))  # pylint: disable=unreachable
 
-        return (returncode, stdout, stderr)
+    @_ssm_retry
+    def exec_command(self, cmd: str, in_data: bool = None, sudoable: bool = True) -> Tuple[int, str, str]:
+        """run a command on the ssm host"""
+
+        super().exec_command(cmd, in_data=in_data, sudoable=sudoable)
+
+        self._vvv(f"EXEC: {to_text(cmd)}")
+
+        mark_begin = "".join([random.choice(string.ascii_letters) for i in range(self.MARK_LENGTH)])
+        if self.is_windows:
+            mark_start = mark_begin + " $LASTEXITCODE"
+        else:
+            mark_start = mark_begin
+        mark_end = "".join([random.choice(string.ascii_letters) for i in range(self.MARK_LENGTH)])
+
+        # Wrap command in markers accordingly for the shell used
+        cmd = self._wrap_command(cmd, mark_start, mark_end)
+
+        self._flush_stderr(self._session)
+
+        for chunk in chunks(cmd, 1024):
+            self._session.stdin.write(to_bytes(chunk, errors="surrogate_or_strict"))
+
+        return self.exec_communicate(cmd, mark_start, mark_begin, mark_end)
 
     def _prepare_terminal(self):
         """perform any one-time terminal settings"""
@@ -682,7 +745,7 @@ class Connection(ConnectionBase):
         disable_echo_cmd = to_bytes("stty -echo\n", errors="surrogate_or_strict")
 
         disable_prompt_complete = None
-        end_mark = "".join([random.choice(string.ascii_letters) for i in xrange(self.MARK_LENGTH)])
+        end_mark = "".join([random.choice(string.ascii_letters) for i in range(self.MARK_LENGTH)])
         disable_prompt_cmd = to_bytes(
             "PS1='' ; bind 'set enable-bracketed-paste off'; printf '\\n%s\\n' '" + end_mark + "'\n",
             errors="surrogate_or_strict",
@@ -691,18 +754,12 @@ class Connection(ConnectionBase):
 
         stdout = ""
         # Custom command execution for when we're waiting for startup
-        stop_time = int(round(time.time())) + self.get_option("ssm_timeout")
-        while (not disable_prompt_complete) and (self._session.poll() is None):
-            remaining = stop_time - int(round(time.time()))
-            if remaining < 1:
-                self._timeout = True
-                self._vvvv(f"PRE timeout stdout: \n{to_bytes(stdout)}")
-                raise AnsibleConnectionFailure(f"SSM start_session timeout on host: {self.instance_id}")
-            if self._poll_stdout.poll(1000):
+        for poll_result in self.poll("PRE", "start_session"):
+            if disable_prompt_complete:
+                break
+            if poll_result:
                 stdout += to_text(self._stdout.read(1024))
                 self._vvvv(f"PRE stdout line: \n{to_bytes(stdout)}")
-            else:
-                self._vvvv(f"PRE remaining: {remaining}")
 
             # wait til prompt is ready
             if startup_complete is False:
@@ -734,12 +791,13 @@ class Connection(ConnectionBase):
                     stdout = stdout[match.end():]  # fmt: skip
                     disable_prompt_complete = True
 
-        if not disable_prompt_complete:
+        # see https://github.com/pylint-dev/pylint/issues/8909)
+        if not disable_prompt_complete:  # pylint: disable=unreachable
             raise AnsibleConnectionFailure(f"SSM process closed during _prepare_terminal on host: {self.instance_id}")
         self._vvvv("PRE Terminal configured")
 
-    def _wrap_command(self, cmd, sudoable, mark_start, mark_end):
-        """wrap command so stdout and status can be extracted"""
+    def _wrap_command(self, cmd: str, mark_start: str, mark_end: str) -> str:
+        """Wrap command so stdout and status can be extracted"""
 
         if self.is_windows:
             if not cmd.startswith(" ".join(_common_args) + " -EncodedCommand"):
@@ -788,23 +846,6 @@ class Connection(ConnectionBase):
             stdout = stdout.replace("\n", "")
 
         return (returncode, stdout)
-
-    def _filter_ansi(self, line):
-        """remove any ANSI terminal control codes"""
-        line = to_text(line)
-
-        if self.is_windows:
-            osc_filter = re.compile(r"\x1b\][^\x07]*\x07")
-            line = osc_filter.sub("", line)
-            ansi_filter = re.compile(r"(\x9B|\x1B\[)[0-?]*[ -/]*[@-~]")
-            line = ansi_filter.sub("", line)
-
-            # Replace or strip sequence (at terminal width)
-            line = line.replace("\r\r\n", "\n")
-            if len(line) == 201:
-                line = line[:-1]
-
-        return line
 
     def _flush_stderr(self, session_process):
         """read and return stderr with minimal blocking"""
@@ -995,7 +1036,7 @@ class Connection(ConnectionBase):
         """terminate the connection"""
         if self._session_id:
             self._vvv(f"CLOSING SSM CONNECTION TO: {self.instance_id}")
-            if self._timeout:
+            if self._has_timeout:
                 self._session.terminate()
             else:
                 cmd = b"\nexit\n"
