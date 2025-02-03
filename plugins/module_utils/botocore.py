@@ -37,6 +37,7 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 import traceback
 import typing
 from typing import Any
@@ -53,6 +54,7 @@ BOTO3_IMP_ERR = None
 try:
     import boto3
     import botocore
+    from botocore.exceptions import ClientError
 
     HAS_BOTO3 = True
 except ImportError:
@@ -60,8 +62,10 @@ except ImportError:
     HAS_BOTO3 = False
 
 if typing.TYPE_CHECKING:
-    ClientType = botocore.client.BaseClient
-    ResourceType = boto3.resources.base.ServiceResource
+    from typing_extensions import TypeAlias
+
+    ClientType: TypeAlias = botocore.client.BaseClient
+    ResourceType: TypeAlias = boto3.resources.base.ServiceResource
     BotoConn = Union[ClientType, ResourceType, Tuple[ClientType, ResourceType]]
     from .modules import AnsibleAWSModule
 
@@ -114,6 +118,7 @@ def boto3_conn(
         return _boto3_conn(conn_type=conn_type, resource=resource, region=region, endpoint=endpoint, **params)
     except botocore.exceptions.NoRegionError:
         module.fail_json(
+            # pylint: disable-next=protected-access
             msg=f"The {module._name} module requires a region and none was found in configuration, "
             "environment variables or module parameters",
         )
@@ -228,7 +233,7 @@ def _aws_region(params: Dict) -> Optional[str]:
 
 def get_aws_region(
     module: AnsibleAWSModule,
-) -> Optional[str]:  # pylint: disable=redefined-outer-name
+) -> Optional[str]:
     try:
         return _aws_region(module.params)
     except AnsibleBotocoreError as e:
@@ -294,7 +299,7 @@ def _aws_connection_info(params: Dict) -> Tuple[Optional[str], Optional[str], Di
 
 def get_aws_connection_info(
     module: AnsibleAWSModule,
-) -> Tuple[Optional[str], Optional[str], Dict]:  # pylint: disable=redefined-outer-name
+) -> Tuple[Optional[str], Optional[str], Dict]:
     try:
         return _aws_connection_info(module.params)
     except AnsibleBotocoreError as e:
@@ -369,12 +374,8 @@ def is_boto3_error_code(
     except botocore.exceptions.ClientError as e:
         # handle the generic error case for all other codes
     """
-    from botocore.exceptions import ClientError
-
     if e is None:
-        import sys
-
-        dummy, e, dummy = sys.exc_info()
+        e = sys.exc_info()[1]
     if not isinstance(code, (list, tuple, set)):
         code = [code]
     if isinstance(e, ClientError) and e.response["Error"]["Code"] in code:
@@ -398,12 +399,9 @@ def is_boto3_error_message(
     except botocore.exceptions.ClientError as e:
         # handle the generic error case for all other codes
     """
-    from botocore.exceptions import ClientError
 
     if e is None:
-        import sys
-
-        dummy, e, dummy = sys.exc_info()
+        e = sys.exc_info()[1]
     if isinstance(e, ClientError) and msg in e.response["Error"]["Message"]:
         return ClientError
     return type("NeverEverRaisedException", (Exception,), {})
@@ -415,7 +413,7 @@ def get_boto3_client_method_parameters(
     required=False,
 ) -> List:
     op = client.meta.method_to_api_mapping.get(method_name)
-    input_shape = client._service_model.operation_model(op).input_shape
+    input_shape = client._service_model.operation_model(op).input_shape  # pylint: disable=protected-access
     if not input_shape:
         parameters = []
     elif required:
@@ -450,12 +448,12 @@ def enable_placebo(session: boto3.session.Session) -> None:
     """
     Helper to record or replay offline modules for testing purpose.
     """
+    # pylint: disable=import-outside-toplevel
     if "_ANSIBLE_PLACEBO_RECORD" in os.environ:
         import placebo
 
-        existing_entries = os.listdir(os.environ["_ANSIBLE_PLACEBO_RECORD"])
-        idx = len(existing_entries)
-        data_path = f"{os.environ['_ANSIBLE_PLACEBO_RECORD']}/{idx}"
+        recorded_entries = os.listdir(os.environ["_ANSIBLE_PLACEBO_RECORD"])
+        data_path = f"{os.environ['_ANSIBLE_PLACEBO_RECORD']}/{len(recorded_entries)}"
         os.mkdir(data_path)
         pill = placebo.attach(session, data_path=data_path)
         pill.record()
@@ -464,18 +462,18 @@ def enable_placebo(session: boto3.session.Session) -> None:
 
         import placebo
 
-        existing_entries = sorted([int(i) for i in os.listdir(os.environ["_ANSIBLE_PLACEBO_REPLAY"])])
-        idx = str(existing_entries[0])
-        data_path = os.environ["_ANSIBLE_PLACEBO_REPLAY"] + "/" + idx
+        replay_entries = sorted([int(i) for i in os.listdir(os.environ["_ANSIBLE_PLACEBO_REPLAY"])])
+        data_path = f"{os.environ['_ANSIBLE_PLACEBO_REPLAY']}/{replay_entries[0]}"
         try:
             shutil.rmtree("_tmp")
         except FileNotFoundError:
             pass
         shutil.move(data_path, "_tmp")
-        if len(existing_entries) == 1:
+        if len(replay_entries) == 1:
             os.rmdir(os.environ["_ANSIBLE_PLACEBO_REPLAY"])
         pill = placebo.attach(session, data_path="_tmp")
         pill.playback()
+    # pylint: enable=import-outside-toplevel
 
 
 def check_sdk_version_supported(

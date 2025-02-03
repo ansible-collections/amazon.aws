@@ -48,7 +48,7 @@ def is_ansible_aws_error_code(code, e=None):
     if e is None:
         import sys
 
-        dummy, e, dummy = sys.exc_info()
+        e = sys.exc_info()[1]
     if not isinstance(code, (list, tuple, set)):
         code = [code]
     if (
@@ -79,7 +79,7 @@ def is_ansible_aws_error_message(msg, e=None):
     if e is None:
         import sys
 
-        dummy, e, dummy = sys.exc_info()
+        e = sys.exc_info()[1]
     if (
         isinstance(e, AnsibleAWSError)
         and e.exception
