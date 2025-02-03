@@ -181,3 +181,26 @@ def list_bucket_inventory_configurations(client, bucket_name):
         entries.extend(response["InventoryConfigurationList"])
         next_token = response.get("NextToken")
     return entries
+
+
+@AWSRetry.jittered_backoff()
+def _list_objects_v2(client, **params):
+    params = {k: v for k, v in params.items() if v is not None}
+    # For practical purposes, the paginator ignores MaxKeys, if we've been passed MaxKeys we need to
+    # explicitly call list_objects_v3 rather than re-use the paginator
+    if params.get("MaxKeys", None) is not None:
+        return client.list_objects_v2(**params)
+
+    paginator = client.get_paginator("list_objects_v2")
+    return paginator.paginate(**params).build_full_result()
+
+
+def list_bucket_object_keys(client, bucket, prefix=None, max_keys=None, start_after=None):
+    response = _list_objects_v2(client, Bucket=bucket, Prefix=prefix, StartAfter=start_after, MaxKeys=max_keys)
+    return [c["Key"] for c in response.get("Contents", [])]
+
+
+def get_s3_bucket_location(module):
+    if module.params.get("ceph") is True:
+        return module.params.get("region")
+    return module.region or "us-east-1"
