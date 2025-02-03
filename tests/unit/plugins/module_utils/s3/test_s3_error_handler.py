@@ -10,6 +10,8 @@ except ImportError:
 
 import pytest
 
+pytest.skip("skipping tests for s3 code that hasn't been backported yet", allow_module_level=True)
+
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOTO3
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import AnsibleS3Error
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import AnsibleS3PermissionsError
