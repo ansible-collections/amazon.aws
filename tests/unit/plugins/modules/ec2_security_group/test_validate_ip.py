@@ -12,15 +12,15 @@ import pytest
 import ansible_collections.amazon.aws.plugins.modules.ec2_security_group as ec2_security_group_module
 
 
-@pytest.fixture
-def aws_module():
+@pytest.fixture(name="aws_module")
+def fixture_aws_module():
     aws_module = MagicMock()
     aws_module.warn = warnings.warn
     return aws_module
 
 
-@pytest.fixture
-def ec2_security_group(monkeypatch):
+@pytest.fixture(name="ec2_security_group")
+def fixture_ec2_security_group(monkeypatch):
     # monkey patches various ec2_security_group module functions, we'll separately test the operation of
     # these functions, we just care that it's passing the results into the right place in the
     # instance spec.

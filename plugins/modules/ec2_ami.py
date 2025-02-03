@@ -646,7 +646,6 @@ class DeregisterImage:
     @classmethod
     def do(cls, module, connection, image_id):
         """Entry point to deregister an image"""
-        delete_snapshot = module.params.get("delete_snapshot")
         wait = module.params.get("wait")
         wait_timeout = module.params.get("wait_timeout")
         image = get_image_by_id(connection, image_id)
@@ -671,7 +670,7 @@ class DeregisterImage:
 
         exit_params = {"msg": "AMI deregister operation complete.", "changed": True}
 
-        if delete_snapshot:
+        if module.params.get("delete_snapshot"):
             exit_params["snapshots_deleted"] = list(purge_snapshots(connection))
 
         module.exit_json(**exit_params)

@@ -11,8 +11,8 @@ import pytest
 from ansible_collections.amazon.aws.plugins.modules import rds_cluster
 
 
-@pytest.fixture
-def ansible_module():
+@pytest.fixture(name="ansible_module")
+def fixture_ansible_module():
     module = MagicMock()
     module.check_mode = False
     module.params = {}

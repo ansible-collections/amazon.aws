@@ -31,8 +31,8 @@ class FailException(Exception):
     pass
 
 
-@pytest.fixture
-def aws_module(monkeypatch):
+@pytest.fixture(name="aws_module")
+def fixture_aws_module(monkeypatch):
     aws_module = MagicMock()
     aws_module.fail_json.side_effect = FailException()
     aws_module.fail_json_aws.side_effect = FailException()
@@ -40,8 +40,8 @@ def aws_module(monkeypatch):
     return aws_module
 
 
-@pytest.fixture
-def fake_botocore(monkeypatch):
+@pytest.fixture(name="fake_botocore")
+def fixture_fake_botocore(monkeypatch):
     # Note: this isn't a monkey-patched real-botocore, this is a complete fake.
     fake_session = MagicMock()
     fake_session.get_config_variable.return_value = sentinel.BOTO3_REGION
@@ -58,8 +58,8 @@ def fake_botocore(monkeypatch):
     return fake_botocore
 
 
-@pytest.fixture
-def botocore_utils(monkeypatch):
+@pytest.fixture(name="botocore_utils")
+def fixture_botocore_utils(monkeypatch):
     region_method = MagicMock(name="_aws_region")
     monkeypatch.setattr(utils_botocore, "_aws_region", region_method)
     region_method.return_value = sentinel.RETURNED_REGION
@@ -204,7 +204,7 @@ def test_aws_connection_info_validation(monkeypatch, botocore_utils, options, ex
     assert region is sentinel.RETURNED_REGION
     assert endpoint_url is None
     assert boto_params == expected_params
-    boto_params["verify"] is expected_validate
+    assert boto_params["verify"] == expected_validate
 
 
 def test_aws_connection_info_profile(monkeypatch, botocore_utils):

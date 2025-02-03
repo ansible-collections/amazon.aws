@@ -6,7 +6,6 @@ __metaclass__ = type
 
 import errno
 import os
-import time
 
 import mock
 import pytest
@@ -29,23 +28,11 @@ will fail if resources it depends on don't exist.
 >     with pytest.raises(FailJSON) as excinfo:
 >         asg_module.create_autoscaling_group(connection, module)
 >     .... asserts based on module state/exceptions ....
-
-In more advanced cases, use unrecorded resource fixtures to fill in ARNs/IDs of
-things modules depend on, such as:
-
-> def test_create_in_vpc(placeboify, scratch_vpc):
->     connection = placeboify.client('autoscaling')
->     module = FakeModule(name='test-asg-created',
->         min_size=0, max_size=0, desired_capacity=0,
->         availability_zones=[s['az'] for s in scratch_vpc['subnets']],
->         vpc_zone_identifier=[s['id'] for s in scratch_vpc['subnets']],
->     )
->     ..... so on and so forth ....
 """
 
 
-@pytest.fixture
-def placeboify(request, monkeypatch):
+@pytest.fixture(name="placeboify")
+def fixture_placeboify(request, monkeypatch):
     """This fixture puts a recording/replaying harness around `boto3_conn`
 
     Placeboify patches the `boto3_conn` function in ec2 module_utils to return
@@ -104,107 +91,8 @@ def placeboify(request, monkeypatch):
     pill.stop()
 
 
-@pytest.fixture(scope="module")
-def basic_launch_config():
-    """Create an EC2 launch config whose creation *is not* recorded and return its name
-
-    This fixture is module-scoped, since launch configs are immutable and this
-    can be reused for many tests.
-    """
-    if not os.getenv("PLACEBO_RECORD"):
-        yield "pytest_basic_lc"
-        return
-
-    # use a *non recording* session to make the launch config
-    # since that's a prereq of the ec2_asg module, and isn't what
-    # we're testing.
-    asg = boto3.client("autoscaling")
-    asg.create_launch_configuration(
-        LaunchConfigurationName="pytest_basic_lc",
-        ImageId="ami-9be6f38c",  # Amazon Linux 2016.09 us-east-1 AMI, can be any valid AMI
-        SecurityGroups=[],
-        UserData="#!/bin/bash\necho hello world",
-        InstanceType="t2.micro",
-        InstanceMonitoring={"Enabled": False},
-        AssociatePublicIpAddress=True,
-    )
-
-    yield "pytest_basic_lc"
-
-    try:
-        asg.delete_launch_configuration(LaunchConfigurationName="pytest_basic_lc")
-    except botocore.exceptions.ClientError as e:
-        if "not found" in e.message:
-            return
-        raise
-
-
-@pytest.fixture(scope="module")
-def scratch_vpc():
-    if not os.getenv("PLACEBO_RECORD"):
-        yield {
-            "vpc_id": "vpc-123456",
-            "cidr_range": "10.0.0.0/16",
-            "subnets": [
-                {
-                    "id": "subnet-123456",
-                    "az": "us-east-1d",
-                },
-                {
-                    "id": "subnet-654321",
-                    "az": "us-east-1e",
-                },
-            ],
-        }
-        return
-
-    # use a *non recording* session to make the base VPC and subnets
-    ec2 = boto3.client("ec2")
-    vpc_resp = ec2.create_vpc(
-        CidrBlock="10.0.0.0/16",
-        AmazonProvidedIpv6CidrBlock=False,
-    )
-    subnets = (
-        ec2.create_subnet(
-            VpcId=vpc_resp["Vpc"]["VpcId"],
-            CidrBlock="10.0.0.0/24",
-        ),
-        ec2.create_subnet(
-            VpcId=vpc_resp["Vpc"]["VpcId"],
-            CidrBlock="10.0.1.0/24",
-        ),
-    )
-    time.sleep(3)
-
-    yield {
-        "vpc_id": vpc_resp["Vpc"]["VpcId"],
-        "cidr_range": "10.0.0.0/16",
-        "subnets": [
-            {
-                "id": s["Subnet"]["SubnetId"],
-                "az": s["Subnet"]["AvailabilityZone"],
-            }
-            for s in subnets
-        ],
-    }
-
-    try:
-        for s in subnets:
-            try:
-                ec2.delete_subnet(SubnetId=s["Subnet"]["SubnetId"])
-            except botocore.exceptions.ClientError as e:
-                if "not found" in e.message:
-                    continue
-                raise
-        ec2.delete_vpc(VpcId=vpc_resp["Vpc"]["VpcId"])
-    except botocore.exceptions.ClientError as e:
-        if "not found" in e.message:
-            return
-        raise
-
-
-@pytest.fixture(scope="module")
-def maybe_sleep():
+@pytest.fixture(scope="module", name="maybe_sleep")
+def fixture_maybe_sleep():
     """If placebo is reading saved sessions, make sleep always take 0 seconds.
 
     AWS modules often perform polling or retries, but when using recorded
