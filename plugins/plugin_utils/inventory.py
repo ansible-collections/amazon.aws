@@ -56,12 +56,11 @@ class AWSInventoryBase(BaseInventoryPlugin, Constructable, Cacheable, AWSPluginB
                 return value
 
             if isinstance(value, dict):
-                new = {}
-                for i in value:
-                    new[i] = self.templar.template(variable=value[i], disable_lookups=False)
-                return new
+                return {k: self.templar.template(variable=v, disable_lookups=False) for k, v in value.items()}
+            if isinstance(value, list):
+                return [self.templar.template(variable=v, disable_lookups=False) for v in value]
 
-            elif not self.templar.is_template(value):
+            if not self.templar.is_template(value):
                 return value
 
             return self.templar.template(variable=value, disable_lookups=False)
