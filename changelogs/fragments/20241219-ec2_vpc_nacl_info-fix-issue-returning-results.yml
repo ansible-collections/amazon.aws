@@ -1,3 +1,0 @@
----
-bugfixes:
-  - ec2_vpc_nacl_info - Fix failure when listing NetworkACLs and no ACLs are found (https://github.com/ansible-collections/amazon.aws/issues/2425).

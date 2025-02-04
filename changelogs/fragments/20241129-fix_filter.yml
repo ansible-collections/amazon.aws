@@ -1,2 +1,0 @@
-minor_changes:
-  - plugin_utils/inventory - Add ``filters`` to list of templatable inventory options (https://github.com/ansible-collections/amazon.aws/pull/2379)

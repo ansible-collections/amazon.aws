@@ -1,3 +1,0 @@
----
-trivial:
-- "Fix assertion way to check the AZ group_name attribute (https://github.com/ansible-collections/amazon.aws/pull/2496)."
