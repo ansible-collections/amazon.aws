@@ -48,7 +48,7 @@ Minor Changes
 Bugfixes
 --------
 
-- ec2_instance - Fix issue where EC2 instance module failed to apply security groups when both `network` and `vpc_subnet_id`` were specified, caused by passing `None` to discover_security_groups() (https://github.com/ansible-collections/amazon.aws/pull/2488).
+- ec2_instance - Fix issue where EC2 instance module failed to apply security groups when both ``network`` and ``vpc_subnet_id`` were specified, caused by passing ``None`` to discover_security_groups() (https://github.com/ansible-collections/amazon.aws/pull/2488).
 - ec2_vpc_nacl_info - Fix failure when listing NetworkACLs and no ACLs are found (https://github.com/ansible-collections/amazon.aws/issues/2425).
 - iam_access_key - add missing requirements checks (https://github.com/ansible-collections/amazon.aws/pull/2465).
 - module_utils.botocore - fixed type aliasing (https://github.com/ansible-collections/amazon.aws/pull/2497).
