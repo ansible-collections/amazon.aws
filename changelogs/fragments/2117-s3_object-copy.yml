@@ -1,3 +1,0 @@
----
-minor_changes:
- - s3_object - use the ``copy`` rather than ``copy_object`` method when performing an S3 to S3 copy (https://github.com/ansible-collections/amazon.aws/issues/2117).

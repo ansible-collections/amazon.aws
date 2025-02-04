@@ -1,3 +1,0 @@
----
-minor_changes:
-  - inventory/aws_ec2 - Support jinja2 expression in ``hostnames`` variable(https://github.com/ansible-collections/amazon.aws/issues/2402).

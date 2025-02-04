@@ -1,3 +1,0 @@
----
-bugfixes:
-  - iam_access_key - add missing requirements checks (https://github.com/ansible-collections/amazon.aws/pull/2465).

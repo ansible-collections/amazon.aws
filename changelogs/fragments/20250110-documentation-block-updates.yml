@@ -1,3 +1,0 @@
----
-trivial:
-- "Update documentation blocks for modules that had options released in 9.0.0 but marked as version_added: 8.3.0. (https://github.com/ansible-collections/amazon.aws/pull/2453)"

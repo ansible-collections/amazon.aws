@@ -1,3 +1,0 @@
----
-bugfixes:
-  - s3_bucket - Do not use default region as location constraint when creating bucket on ceph cluster (https://github.com/ansible-collections/amazon.aws/issues/2420).
