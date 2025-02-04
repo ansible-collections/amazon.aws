@@ -1,26 +1,3 @@
-"""aws_sqs_queue.py.
-
-An ansible-rulebook event source plugin for receiving events via an AWS SQS queue.
-
-Arguments:
----------
-    access_key:    Optional AWS access key ID
-    secret_key:    Optional AWS secret access key
-    session_token: Optional STS session token for use with temporary credentials
-    endpoint_url:  Optional URL to connect to instead of the default AWS endpoints
-    region:        Optional AWS region to use
-    name:          Name of the queue
-    delay_seconds: The SQS long polling duration. Set to 0 to disable. Defaults to 2.
-
-Example:
--------
-    - ansible.eda.aws_sqs_queue:
-        region: us-east-1
-        name: eda
-        delay_seconds: 10
-
-"""
-
 import asyncio
 import json
 import logging
@@ -28,6 +5,54 @@ from typing import Any
 
 import botocore.exceptions
 from aiobotocore.session import get_session
+
+DOCUMENTATION = r"""
+---
+short_description: Receive events via an AWS SQS queue.
+description:
+  - An ansible-rulebook event source plugin for receiving events via an AWS SQS queue.
+  - This supports all the authentication methods supported by boto library:
+    https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html
+options:
+  access_key:
+    description:
+      - Optional AWS access key ID.
+    type: str
+  secret_key:
+    description:
+      - Optional AWS secret access key.
+    type: str
+  session_token:
+    description:
+      - Optional STS session token for use with temporary credentials.
+    type: str
+  endpoint_url:
+    description:
+      - Optional URL to connect to instead of the default AWS endpoints.
+    type: str
+  region:
+    description:
+      - Optional AWS region to use.
+    type: str
+  name:
+    description:
+      - Name of the queue.
+    type: str
+    required: true
+  delay_seconds:
+    description:
+      - The SQS long polling duration.
+      - Set to 0 to disable.
+    type: int
+    default: 2
+"""
+
+EXAMPLES = r"""
+- ansible.eda.aws_sqs_queue:
+    region: us-east-1
+    name: eda
+    delay_seconds: 10
+"""
 
 
 # pylint: disable=too-many-locals
