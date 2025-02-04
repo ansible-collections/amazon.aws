@@ -1,3 +1,0 @@
----
-bugfixes:
-  - ec2_instance - Fix issue where EC2 instance module failed to apply security groups when both `network` and `vpc_subnet_id`` were specified, caused by passing `None` to discover_security_groups() (https://github.com/ansible-collections/amazon.aws/pull/2488).
