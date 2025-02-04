@@ -1245,7 +1245,6 @@ def calculate_object_etag(module, s3, bucket, obj, head_etag, version=None):
 
 def copy_object_to_bucket(module, s3, bucket, obj, encrypt, metadata, validate, src_bucket, src_obj, versionId=None):
     try:
-        params = {"Bucket": bucket, "Key": obj}
         if not key_check(module, s3, src_bucket, src_obj, version=versionId, validate=validate):
             # Key does not exist in source bucket
             module.exit_json(
@@ -1299,25 +1298,29 @@ def copy_object_to_bucket(module, s3, bucket, obj, encrypt, metadata, validate, 
             }
             if versionId:
                 bucketsrc.update({"VersionId": versionId})
-            params.update({"CopySource": bucketsrc})
-            params.update(
-                get_extra_params(
-                    encrypt,
-                    module.params.get("encryption_mode"),
-                    module.params.get("encryption_kms_key_id"),
-                    metadata,
-                )
+
+            extra_args = get_extra_params(
+                encrypt,
+                module.params.get("encryption_mode"),
+                module.params.get("encryption_kms_key_id"),
+                metadata,
             )
+
             if metadata:
                 # 'MetadataDirective' Specifies whether the metadata is copied from the source object or replaced
                 # with metadata that's provided in the request. The default value is 'COPY', therefore when user
                 # specifies a metadata we should set it to 'REPLACE'
-                params.update({"MetadataDirective": "REPLACE"})
-            s3.copy_object(aws_retry=True, **params)
+                extra_args.update({"MetadataDirective": "REPLACE"})
+
+            # perform a "managed" copy rather simply using copy_object.  This will automatically use
+            # multi-part uploads where necessary (https://github.com/boto/boto3/issues/1715)
+            s3.copy(bucketsrc, bucket, obj, ExtraArgs=extra_args, aws_retry=True)
+
+            # We can't set the ACLs & tags during the copy, update them afterwards
             put_object_acl(module, s3, bucket, obj)
-            # Tags
             tags, tags_updated = ensure_tags(s3, module, bucket, obj)
-            msg = f"Object copied from bucket {bucketsrc['Bucket']} to bucket {bucket}."
+
+            msg = f"Object copied from bucket {src_bucket} to bucket {bucket}."
             return changed, {"msg": msg, "tags": tags}
     except (
         botocore.exceptions.BotoCoreError,
