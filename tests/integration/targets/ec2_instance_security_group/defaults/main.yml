@@ -1,4 +1,9 @@
 ---
 # defaults file for ec2_instance_security_group
 ec2_instance_type: t3a.micro
-ec2_instance_tag_testid: "{{ resource_prefix }}-instance-sg"
+ec2_instance_tag_TestId: "{{ resource_prefix }}-instance-sg"
+
+vpc_cidr_1: "10.{{ 256 | random(seed=resource_prefix) }}.0.0/16"
+vpc_cidr_2: "10.{{ 256 | random(seed=resource_prefix) }}.0.0/16"
+subnet_cidr_1: "10.{{ 256 | random(seed=resource_prefix) }}.1.0/24"
+subnet_cidr_2: "10.{{ 256 | random(seed=resource_prefix) }}.2.0/24"
