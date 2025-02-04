@@ -22,7 +22,7 @@
       amazon.aws.iam_role:
         state: present
         name: "{{ iam_name }}"
-        assume_role_policy_document: "{{ lookup('file','no_trust.json') }}"
+        assume_role_policy_document: "{{ lookup('file', 'no_trust.json') }}"
       register: result
     - name: Ensure role was created
       ansible.builtin.assert:

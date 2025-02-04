@@ -14,15 +14,15 @@
         ansible_async_dir: "{{ lookup('env', 'HOME') }}/.ansible_async_{{ tiny_prefix }}/"
       when: (lookup('env', 'HOME'))
 
-    - name: get ARN of calling user
+    - name: Get ARN of calling user
       amazon.aws.aws_caller_info:
       register: aws_caller_info
 
-    - name: register account id
+    - name: Register account id
       ansible.builtin.set_fact:
         aws_account: "{{ aws_caller_info.account }}"
 
-    - name: check that temp directory was made
+    - name: Check that temp directory was made
       ansible.builtin.assert:
         that:
           - remote_tmp_dir is defined
@@ -31,13 +31,13 @@
       ansible.builtin.set_fact:
         content: "{{ lookup('password', '/dev/null chars=ascii_letters,digits,hexdigits,punctuation') }}"
 
-    - name: test create bucket
+    - name: Test create bucket
       amazon.aws.s3_bucket:
         name: "{{ bucket_name }}"
         state: present
       register: result
 
-    - name: list objects from empty bucket
+    - name: List objects from empty bucket
       amazon.aws.s3_object_info:
         bucket_name: "{{ bucket_name }}"
       register: objects
@@ -51,7 +51,7 @@
         that:
           - result is changed
 
-    - name: make a bucket with the bucket-owner-full-control ACL
+    - name: Make a bucket with the bucket-owner-full-control ACL
       amazon.aws.s3_bucket:
         name: "{{ bucket_name_acl }}"
         state: present
@@ -66,14 +66,15 @@
       ansible.builtin.copy:
         content: "{{ content }}"
         dest: "{{ remote_tmp_dir }}/upload.txt"
+        mode: "0644"
 
-    - name: stat the file
+    - name: Stat the file
       ansible.builtin.stat:
         path: "{{ remote_tmp_dir }}/upload.txt"
         get_checksum: true
       register: upload_file
 
-    - name: test putting an object in the bucket
+    - name: Test putting an object in the bucket
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: put
@@ -148,7 +149,7 @@
           - '"last_modified" in info_result.object_info[0].object_data'
           - '"content_type" in info_result.object_info[0].object_data'
 
-    - name: test using s3_object with async
+    - name: Test using s3_object with async
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: put
@@ -158,14 +159,14 @@
       async: 30
       poll: 0
 
-    - name: ensure it completed
+    - name: Ensure it completed
       ansible.builtin.async_status:
         jid: "{{ test_async.ansible_job_id }}"
       register: status
       until: status is finished
       retries: 30
 
-    - name: test put with overwrite=different and unmodified object
+    - name: Test put with overwrite=different and unmodified object
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: put
@@ -179,7 +180,7 @@
         that:
           - result is not changed
 
-    - name: check that roles file lookups work as expected
+    - name: Check that roles file lookups work as expected
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: put
@@ -197,7 +198,7 @@
     # s3_object (and its old alias) use an action plugin to support using the
     # 'file' lookup path or a remote path.  Keeping this working is dependent on
     # having a redirect for both the module and the action plugin
-    - name: check that roles file lookups work as expected when using old name
+    - name: Check that roles file lookups work as expected when using old name
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: put
@@ -213,7 +214,7 @@
           - result is changed
           - result.msg == "PUT operation complete"
 
-    - name: test put with overwrite=never
+    - name: Test put with overwrite=never
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: put
@@ -228,7 +229,7 @@
         that:
           - result is not changed
 
-    - name: test put with overwrite=different and modified object
+    - name: Test put with overwrite=different and modified object
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: put
@@ -243,7 +244,7 @@
         that:
           - result is changed
 
-    - name: test put with overwrite=always
+    - name: Test put with overwrite=always
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: put
@@ -258,7 +259,7 @@
         that:
           - result is changed
 
-    - name: test get object
+    - name: Test get object
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: get
@@ -269,7 +270,7 @@
       register: result
       until: result.msg == 'GET operation complete'
 
-    - name: stat the file so we can compare the checksums
+    - name: Stat the file so we can compare the checksums
       ansible.builtin.stat:
         path: "{{ remote_tmp_dir }}/download.txt"
         get_checksum: true
@@ -279,7 +280,7 @@
         that:
           - upload_file.stat.checksum == download_file.stat.checksum
 
-    - name: test get object (absolute path)
+    - name: Test get object (absolute path)
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: get
@@ -290,7 +291,7 @@
       register: result
       until: result.msg == 'GET operation complete'
 
-    - name: stat the file so we can compare the checksums
+    - name: Stat the file so we can compare the checksums
       ansible.builtin.stat:
         path: "{{ remote_tmp_dir }}/download-2.txt"
         get_checksum: true
@@ -300,7 +301,7 @@
         that:
           - upload_file.stat.checksum == download_file.stat.checksum
 
-    - name: test get with overwrite=different and identical files
+    - name: Test get with overwrite=different and identical files
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: get
@@ -314,12 +315,13 @@
         that:
           - result is not changed
 
-    - name: modify destination
+    - name: Modify destination
       ansible.builtin.copy:
         dest: "{{ remote_tmp_dir }}/download.txt"
         src: hello.txt
+        mode: "0644"
 
-    - name: test get with overwrite=never
+    - name: Test get with overwrite=never
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: get
@@ -334,7 +336,7 @@
         that:
           - result is not changed
 
-    - name: test get with overwrite=different and modified file
+    - name: Test get with overwrite=different and modified file
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: get
@@ -348,7 +350,7 @@
         that:
           - result is changed
 
-    - name: test get with overwrite=always
+    - name: Test get with overwrite=always
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: get
@@ -363,7 +365,7 @@
         that:
           - result is changed
 
-    - name: test get with overwrite=latest and identical files
+    - name: Test get with overwrite=latest and identical files
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: get
@@ -378,9 +380,10 @@
         that:
           - result is not changed
 
-    - name: modify mtime for local file to past
-      ansible.builtin.shell: touch -mt 197001010900.00 "{{ remote_tmp_dir }}/download.txt"
-    - name: test get with overwrite=latest and files that mtimes are different
+    - name: Modify mtime for local file to past
+      ansible.builtin.command: touch -mt 197001010900.00 "{{ remote_tmp_dir }}/download.txt"  # noqa: no-changed-when
+
+    - name: Test get with overwrite=latest and files that mtimes are different
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: get
@@ -395,7 +398,7 @@
         that:
           - result is changed
 
-    - name: test geturl of the object
+    - name: Test geturl of the object
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: geturl
@@ -410,7 +413,7 @@
           - "'Download url:' in result.msg"
           - result is changed
 
-    - name: test geturl of the object with sigv4
+    - name: Test geturl of the object with sigv4
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: geturl
@@ -426,7 +429,7 @@
           - "'Download url:' in result.msg"
           - result is changed
 
-    - name: test getstr of the object
+    - name: Test getstr of the object
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: getstr
@@ -440,7 +443,7 @@
           - result.msg == "GET operation complete"
           - result.contents == content
 
-    - name: test list to get all objects in the bucket
+    - name: Test list to get all objects in the bucket
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: list
@@ -453,7 +456,7 @@
           - "'delete.txt' in result.s3_keys"
           - result.msg == "LIST operation complete"
 
-    - name: test delobj to just delete an object in the bucket
+    - name: Test delobj to just delete an object in the bucket
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: delobj
@@ -467,7 +470,7 @@
           - "'Object deleted from bucket' in result.msg"
           - result is changed
 
-    - name: test putting an object in the bucket with metadata set
+    - name: Test putting an object in the bucket with metadata set
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: put
@@ -486,7 +489,7 @@
           - result is changed
           - result.msg == "PUT operation complete"
 
-    - name: test delobj to just delete an object in the bucket
+    - name: Test delobj to just delete an object in the bucket
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: delobj
@@ -495,7 +498,7 @@
       delay: 3
       register: result
 
-    - name: test putting an encrypted object in the bucket
+    - name: Test putting an encrypted object in the bucket
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: put
@@ -511,7 +514,7 @@
           - result is changed
           - result.msg == "PUT operation complete"
 
-    - name: test get encrypted object
+    - name: Test get encrypted object
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: get
@@ -522,7 +525,7 @@
       register: result
       until: result.msg == 'GET operation complete'
 
-    - name: stat the file so we can compare the checksums
+    - name: Stat the file so we can compare the checksums
       ansible.builtin.stat:
         path: "{{ remote_tmp_dir }}/download_encrypted.txt"
         get_checksum: true
@@ -532,7 +535,7 @@
         that:
           - upload_file.stat.checksum == download_file.stat.checksum
 
-    - name: delete encrypted file
+    - name: Delete encrypted file
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: delobj
@@ -540,7 +543,7 @@
       retries: 3
       delay: 3
 
-    - name: test putting an aws:kms encrypted object in the bucket
+    - name: Test putting an aws:kms encrypted object in the bucket
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: put
@@ -557,7 +560,7 @@
           - result is changed
           - result.msg == "PUT operation complete"
 
-    - name: test get KMS encrypted object
+    - name: Test get KMS encrypted object
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: get
@@ -568,7 +571,7 @@
       register: result
       until: result.msg == 'GET operation complete'
 
-    - name: get the stat of the file so we can compare the checksums
+    - name: Get the stat of the file so we can compare the checksums
       ansible.builtin.stat:
         path: "{{ remote_tmp_dir }}/download_kms.txt"
         get_checksum: true
@@ -580,7 +583,7 @@
 
     # FIXME - could use a test that checks uploaded file is *actually* aws:kms encrypted
 
-    - name: delete KMS encrypted file
+    - name: Delete KMS encrypted file
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: delobj
@@ -592,7 +595,7 @@
     #        but that would require ability to create and remove such keys.
     #        PRs exist for that, but propose deferring until after merge.
 
-    - name: test creation of empty path
+    - name: Test creation of empty path
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: create
@@ -606,7 +609,7 @@
           - "'Virtual directory foo/bar/baz/ created' in result.msg"
           - result is changed
 
-    - name: test deletion of empty path
+    - name: Test deletion of empty path
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: delobj
@@ -614,7 +617,7 @@
       retries: 3
       delay: 3
 
-    - name: test delete bucket
+    - name: Test delete bucket
       amazon.aws.s3_bucket:
         name: "{{ bucket_name }}"
         state: absent
@@ -632,28 +635,32 @@
         name: "{{ bucket_name }}"
         state: present
 
-    - name: test multipart download - platform specific
+    - name: Test multipart download - platform specific
       when:
         - ansible_system == 'Linux' or ansible_distribution == 'MacOSX'
       block:
-        - name: make tempfile 4 GB for OSX
-          ansible.builtin.command:
-            _raw_params: dd if=/dev/zero of={{ remote_tmp_dir }}/largefile bs=1m count=4096
+        - name: Make tempfile 4 GB for OSX
+          ansible.builtin.command: |
+            dd if=/dev/zero of={{ remote_tmp_dir }}/largefile bs=1m count=4096
+          args:
+            creates: "{{ remote_tmp_dir }}/largefile"
           when: ansible_distribution == 'MacOSX'
 
-        - name: make tempfile 4 GB for linux
-          ansible.builtin.command:
-            _raw_params: dd if=/dev/zero of={{ remote_tmp_dir }}/largefile bs=1M count=4096
+        - name: Make tempfile 4 GB for linux
+          ansible.builtin.command: |
+            dd if=/dev/zero of={{ remote_tmp_dir }}/largefile bs=1M count=4096
+          args:
+            creates: "{{ remote_tmp_dir }}/largefile"
           when: ansible_system == 'Linux'
 
-        - name: upload the file to the bucket
+        - name: Upload the file to the bucket
           amazon.aws.s3_object:
             bucket: "{{ bucket_name }}"
             mode: put
             src: "{{ remote_tmp_dir }}/largefile"
             object: multipart.txt
 
-        - name: download file once
+        - name: Download file once
           amazon.aws.s3_object:
             bucket: "{{ bucket_name }}"
             mode: get
@@ -669,7 +676,7 @@
             that:
               - result is changed
 
-        - name: download file again
+        - name: Download file again
           amazon.aws.s3_object:
             bucket: "{{ bucket_name }}"
             mode: get
@@ -683,7 +690,7 @@
               - result is not changed
 
     # Public objects aren't allowed by default
-    - name: fail to upload the file to the bucket with an ACL
+    - name: Fail to upload the file to the bucket with an ACL
       amazon.aws.s3_object:
         bucket: "{{ bucket_name_acl }}"
         mode: put
@@ -698,7 +705,7 @@
         that:
           - upload_private is failed
 
-    - name: upload the file to the bucket with an ACL
+    - name: Upload the file to the bucket with an ACL
       amazon.aws.s3_object:
         bucket: "{{ bucket_name_acl }}"
         mode: put
@@ -712,7 +719,7 @@
         that:
           - upload_owner is changed
 
-    - name: create an object from static content
+    - name: Create an object from static content
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         object: put-content.txt
@@ -725,7 +732,7 @@
         that:
           - result is changed
 
-    - name: ensure idempotency on static content
+    - name: Ensure idempotency on static content
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         object: put-content.txt
@@ -738,7 +745,7 @@
         that:
           - result is not changed
 
-    - name: fetch test content
+    - name: Fetch test content
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: getstr
@@ -752,7 +759,7 @@
     - ansible.builtin.set_fact:
         put_template_text: test template
 
-    - name: create an object from a template
+    - name: Create an object from a template
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         object: put-template.txt
@@ -764,7 +771,7 @@
         that:
           - result is changed
 
-    - name: create an object from a template (idempotency)
+    - name: Create an object from a template (idempotency)
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         object: put-template.txt
@@ -776,7 +783,7 @@
         that:
           - result is not changed
 
-    - name: fetch template content
+    - name: Fetch template content
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: getstr
@@ -792,7 +799,7 @@
         src: "{{ role_path }}/files/test.png"
       register: put_binary
 
-    - name: create an object from binary data
+    - name: Create an object from binary data
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         object: put-binary.bin
@@ -804,7 +811,7 @@
         that:
           - result is changed
 
-    - name: create an object from binary data (idempotency)
+    - name: Create an object from binary data (idempotency)
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         object: put-binary.bin
@@ -816,7 +823,7 @@
         that:
           - result is not changed
 
-    - name: fetch binary content
+    - name: Fetch binary content
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: get
@@ -824,7 +831,7 @@
         object: put-binary.bin
       register: result
 
-    - name: stat the files so we can compare the checksums
+    - name: Stat the files so we can compare the checksums
       ansible.builtin.stat:
         path: "{{ item }}"
         get_checksum: true
@@ -840,7 +847,7 @@
     - name: Run tagging tests
       block:
         # ============================================================
-        - name: create an object from static content
+        - name: Create an object from static content
           amazon.aws.s3_object:
             bucket: "{{ bucket_name }}"
             object: put-content.txt
@@ -860,7 +867,7 @@
               - result.tags["tag_one"] == resource_prefix +' One'
               - result.tags["Tag Two"] == 'two '+ resource_prefix
 
-        - name: ensure idempotency on static content
+        - name: Ensure idempotency on static content
           amazon.aws.s3_object:
             bucket: "{{ bucket_name }}"
             object: put-content.txt
@@ -1076,13 +1083,13 @@
     - ansible.builtin.include_tasks: copy_object_acl_disabled_bucket.yml
     - ansible.builtin.include_tasks: copy_multipart_upload.yml
   always:
-    - name: delete temporary files
-      file:
+    - name: Delete temporary files
+      ansible.builtin.file:
         state: absent
         path: "{{ remote_tmp_dir }}"
-      ignore_errors: true
+      ignore_errors: true  # noqa: ignore-errors
 
-    - include_tasks: delete_bucket.yml
+    - ansible.builtin.include_tasks: delete_bucket.yml
       with_items:
         - "{{ bucket_name }}"
         - "{{ bucket_name_with_dot }}"

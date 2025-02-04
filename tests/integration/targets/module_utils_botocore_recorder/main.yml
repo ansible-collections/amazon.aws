@@ -1,5 +1,6 @@
 ---
-- hosts: localhost
+- name: Run aws_az_info tests using a placebo recording
+  hosts: localhost
   tasks:
     - name: Call aws_az_info
       amazon.aws.aws_az_info:
@@ -9,4 +10,6 @@
       register: result
     - ansible.builtin.assert:
         that:
-          - lookup('ansible.builtin.env', '_ANSIBLE_PLACEBO_RECORD') or (lookup('ansible.builtin.env', '_ANSIBLE_PLACEBO_REPLAY') and result.user_id == "AWZBREIZHEOMABRONIFVGFS6GH")
+          - result.user_id == "AIDA12345EXAMPLE54321"
+      when:
+        - lookup('ansible.builtin.env', '_ANSIBLE_PLACEBO_REPLAY')

@@ -36,7 +36,7 @@
     - name: Create a cloudformation stack (Check mode)
       amazon.aws.cloudformation:
         stack_name: "{{ stack_name }}"
-        template_body: "{{ lookup('file','cf_template.json') }}"
+        template_body: "{{ lookup('file', 'cf_template.json') }}"
         template_parameters:
           InstanceType: t3.nano
           ImageId: "{{ ec2_ami_id }}"
@@ -56,7 +56,7 @@
     - name: Create a cloudformation stack
       amazon.aws.cloudformation:
         stack_name: "{{ stack_name }}"
-        template_body: "{{ lookup('file','cf_template.json') }}"
+        template_body: "{{ lookup('file', 'cf_template.json') }}"
         template_parameters:
           InstanceType: t3.nano
           ImageId: "{{ ec2_ami_id }}"
@@ -78,7 +78,7 @@
     - name: Create a cloudformation stack (Check mode) (idempotent)
       amazon.aws.cloudformation:
         stack_name: "{{ stack_name }}"
-        template_body: "{{ lookup('file','cf_template.json') }}"
+        template_body: "{{ lookup('file', 'cf_template.json') }}"
         template_parameters:
           InstanceType: t3.nano
           ImageId: "{{ ec2_ami_id }}"
@@ -97,7 +97,7 @@
     - name: Create a cloudformation stack (idempotent)
       amazon.aws.cloudformation:
         stack_name: "{{ stack_name }}"
-        template_body: "{{ lookup('file','cf_template.json') }}"
+        template_body: "{{ lookup('file', 'cf_template.json') }}"
         template_parameters:
           InstanceType: t3.nano
           ImageId: "{{ ec2_ami_id }}"
@@ -198,7 +198,7 @@
         stack_name: "{{ stack_name }}"
         create_changeset: true
         changeset_name: test-changeset
-        template_body: "{{ lookup('file','cf_template.json') }}"
+        template_body: "{{ lookup('file', 'cf_template.json') }}"
         template_parameters:
           InstanceType: t3.micro
           ImageId: "{{ ec2_ami_id }}"
@@ -243,7 +243,7 @@
       amazon.aws.cloudformation:
         stack_name: "{{ stack_name }}"
         create_changeset: true
-        template_body: "{{ lookup('file','cf_template.json') }}"
+        template_body: "{{ lookup('file', 'cf_template.json') }}"
         template_parameters:
           InstanceType: t3.nano
           ImageId: "{{ ec2_ami_id }}"
@@ -265,7 +265,7 @@
       amazon.aws.cloudformation:
         stack_name: "{{ stack_name }}"
         termination_protection: true
-        template_body: "{{ lookup('file','cf_template.json') }}"
+        template_body: "{{ lookup('file', 'cf_template.json') }}"
         template_parameters:
           InstanceType: t3.nano
           ImageId: "{{ ec2_ami_id }}"
@@ -306,7 +306,7 @@
       amazon.aws.cloudformation:
         stack_name: "{{ stack_name }}"
         termination_protection: false
-        template_body: "{{ lookup('file','cf_template.json') }}"
+        template_body: "{{ lookup('file', 'cf_template.json') }}"
         template_parameters:
           InstanceType: t3.nano
           ImageId: "{{ ec2_ami_id }}"
@@ -348,8 +348,8 @@
     - name: Setting an stack policy with json body
       amazon.aws.cloudformation:
         stack_name: "{{ stack_name }}"
-        stack_policy_body: "{{ lookup('file','update_policy.json') }}"
-        template_body: "{{ lookup('file','cf_template.json') }}"
+        stack_policy_body: "{{ lookup('file', 'update_policy.json') }}"
+        template_body: "{{ lookup('file', 'cf_template.json') }}"
         template_parameters:
           InstanceType: t3.nano
           ImageId: "{{ ec2_ami_id }}"
@@ -367,8 +367,8 @@
     - name: Setting an stack policy on update
       amazon.aws.cloudformation:
         stack_name: "{{ stack_name }}"
-        stack_policy_on_update_body: "{{ lookup('file','update_policy.json') }}"
-        template_body: "{{ lookup('file','cf_template.json') }}"
+        stack_policy_on_update_body: "{{ lookup('file', 'update_policy.json') }}"
+        template_body: "{{ lookup('file', 'cf_template.json') }}"
         template_parameters:
           InstanceType: t3.nano
           ImageId: "{{ ec2_ami_id }}"

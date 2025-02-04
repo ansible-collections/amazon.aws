@@ -26,7 +26,7 @@
         az: "{{ availability_zone }}"
       register: testing_subnet
 
-    - name: create an ec2 instance
+    - name: Create an ec2 instance
       amazon.aws.ec2_instance:
         name: "{{ instance_name }}"
         vpc_subnet_id: "{{ testing_subnet.subnet.id }}"
@@ -36,12 +36,12 @@
           ResourcePrefix: "{{ resource_prefix }}"
       register: test_instance
 
-    - name: check task return attributes
+    - name: Check task return attributes
       ansible.builtin.assert:
         that:
           - test_instance.changed
 
-    - name: create another ec2 instance
+    - name: Create another ec2 instance
       amazon.aws.ec2_instance:
         name: "{{ instance_name }}-2"
         vpc_subnet_id: "{{ testing_subnet.subnet.id }}"
@@ -51,12 +51,12 @@
           ResourcePrefix: "{{ resource_prefix }}"
       register: test_instance_2
 
-    - name: check task return attributes
+    - name: Check task return attributes
       ansible.builtin.assert:
         that:
           - test_instance_2.changed
 
-    - name: create another ec2 instance
+    - name: Create another ec2 instance
       amazon.aws.ec2_instance:
         name: "{{ instance_name }}-3"
         vpc_subnet_id: "{{ testing_subnet.subnet.id }}"
@@ -66,14 +66,14 @@
           ResourcePrefix: "{{ resource_prefix }}"
       register: test_instance_3
 
-    - name: check task return attributes
+    - name: Check task return attributes
       ansible.builtin.assert:
         that:
           - test_instance_3.changed
 
     # # ==== ec2_vol tests ===============================================
 
-    - name: create a volume (validate module defaults - check_mode)
+    - name: Create a volume (validate module defaults - check_mode)
       amazon.aws.ec2_vol:
         volume_size: 1
         zone: "{{ availability_zone }}"
@@ -86,7 +86,7 @@
         that:
           - volume1_check_mode is changed
 
-    - name: create a volume (validate module defaults)
+    - name: Create a volume (validate module defaults)
       amazon.aws.ec2_vol:
         volume_size: 1
         zone: "{{ availability_zone }}"
@@ -94,7 +94,7 @@
           ResourcePrefix: "{{ resource_prefix }}"
       register: volume1
 
-    - name: check task return attributes
+    - name: Check task return attributes
       ansible.builtin.assert:
         that:
           - volume1.changed
@@ -112,7 +112,7 @@
 
     # no idempotency check needed here
 
-    - name: create another volume (override module defaults)
+    - name: Create another volume (override module defaults)
       amazon.aws.ec2_vol:
         encrypted: true
         volume_size: 4
@@ -124,7 +124,7 @@
         zone: "{{ availability_zone }}"
       register: volume2
 
-    - name: check task return attributes
+    - name: Check task return attributes
       ansible.builtin.assert:
         that:
           - volume2.changed
@@ -140,7 +140,7 @@
           - volume2.volume.encrypted
           - volume2.volume.tags.ResourcePrefix == resource_prefix
 
-    - name: create another volume (override module defaults) (idempotent)
+    - name: Create another volume (override module defaults) (idempotent)
       amazon.aws.ec2_vol:
         encrypted: true
         volume_size: 4
@@ -152,12 +152,12 @@
         zone: "{{ availability_zone }}"
       register: volume2_idem
 
-    - name: check task return attributes
+    - name: Check task return attributes
       ansible.builtin.assert:
         that:
           - not volume2_idem.changed
 
-    - name: create snapshot from volume
+    - name: Create snapshot from volume
       amazon.aws.ec2_snapshot:
         volume_id: "{{ volume1.volume_id }}"
         description: Resource Prefix - {{ resource_prefix }}
@@ -165,12 +165,12 @@
           ResourcePrefix: "{{ resource_prefix }}"
       register: vol1_snapshot
 
-    - name: check task return attributes
+    - name: Check task return attributes
       ansible.builtin.assert:
         that:
           - vol1_snapshot.changed
 
-    - name: create a volume from a snapshot (check_mode)
+    - name: Create a volume from a snapshot (check_mode)
       amazon.aws.ec2_vol:
         snapshot: "{{ vol1_snapshot.snapshot_id }}"
         encrypted: true
@@ -182,12 +182,12 @@
       check_mode: true
       register: volume3_check_mode
 
-    - name: check task return attributes
+    - name: Check task return attributes
       ansible.builtin.assert:
         that:
           - volume3_check_mode.changed
 
-    - name: create a volume from a snapshot
+    - name: Create a volume from a snapshot
       amazon.aws.ec2_vol:
         snapshot: "{{ vol1_snapshot.snapshot_id }}"
         encrypted: true
@@ -198,7 +198,7 @@
           ResourcePrefix: "{{ resource_prefix }}"
       register: volume3
 
-    - name: check task return attributes
+    - name: Check task return attributes
       ansible.builtin.assert:
         that:
           - volume3.changed
@@ -210,7 +210,7 @@
         instance_ids: "{{ test_instance.instance_ids }}"
         wait: true
 
-    - name: attach existing volume to an instance (check_mode)
+    - name: Attach existing volume to an instance (check_mode)
       amazon.aws.ec2_vol:
         id: "{{ volume1.volume_id }}"
         instance: "{{ test_instance.instance_ids[0] }}"
@@ -223,7 +223,7 @@
         that:
           - vol_attach_result_check_mode is changed
 
-    - name: attach existing volume to an instance
+    - name: Attach existing volume to an instance
       amazon.aws.ec2_vol:
         id: "{{ volume1.volume_id }}"
         instance: "{{ test_instance.instance_ids[0] }}"
@@ -231,7 +231,7 @@
         delete_on_termination: false
       register: vol_attach_result
 
-    - name: check task return attributes
+    - name: Check task return attributes
       ansible.builtin.assert:
         that:
           - vol_attach_result.changed
@@ -240,7 +240,7 @@
 
     # There's a delay between the volume being "In Use", and the attachment being reported.  This
     # can result in a race condition on the results.  (There's no clean waiter to use either)
-    - name: wait for volume to report attached/attaching
+    - name: Wait for volume to report attached/attaching
       amazon.aws.ec2_vol_info:
         filters:
           volume-id: "{{ volume1.volume_id }}"
@@ -257,7 +257,7 @@
           - vol_attach_info.volumes[0].attachment_set[0].device == '/dev/sdg'
           - not vol_attach_info.volumes[0].attachment_set[0].delete_on_termination
 
-    - name: attach existing volume to an instance (idempotent - check_mode)
+    - name: Attach existing volume to an instance (idempotent - check_mode)
       amazon.aws.ec2_vol:
         id: "{{ volume1.volume_id }}"
         instance: "{{ test_instance.instance_ids[0] }}"
@@ -270,7 +270,7 @@
         that:
           - vol_attach_result_check_mode is not changed
 
-    - name: attach existing volume to an instance (idempotent)
+    - name: Attach existing volume to an instance (idempotent)
       amazon.aws.ec2_vol:
         id: "{{ volume1.volume_id }}"
         instance: "{{ test_instance.instance_ids[0] }}"
@@ -278,13 +278,13 @@
         delete_on_termination: false
       register: vol_attach_result
 
-    - name: check task return attributes
+    - name: Check task return attributes
       ansible.builtin.assert:
         that:
           - not vol_attach_result.changed
           - vol_attach_result.volume.attachment_set[0].status in ['attached', 'attaching']
 
-    - name: attach a new volume to an instance (check_mode)
+    - name: Attach a new volume to an instance (check_mode)
       amazon.aws.ec2_vol:
         instance: "{{ test_instance.instance_ids[0] }}"
         device_name: /dev/sdh
@@ -304,7 +304,7 @@
         that:
           - new_vol_attach_result_check_mode is changed
 
-    - name: attach a new volume to an instance
+    - name: Attach a new volume to an instance
       amazon.aws.ec2_vol:
         instance: "{{ test_instance.instance_ids[0] }}"
         device_name: /dev/sdh
@@ -319,7 +319,7 @@
           ResourcePrefix: "{{ resource_prefix }}"
       register: new_vol_attach_result
 
-    - name: check task return attributes
+    - name: Check task return attributes
       ansible.builtin.assert:
         that:
           - new_vol_attach_result.changed
@@ -334,7 +334,7 @@
           - new_vol_attach_result.volume.tags["snake_case"] == 'simple_snake_case'
           - new_vol_attach_result.volume.tags["Name"] == resource_prefix +' - sdh'
 
-    - name: attach a new volume to an instance (idempotent - check_mode)
+    - name: Attach a new volume to an instance (idempotent - check_mode)
       amazon.aws.ec2_vol:
         instance: "{{ test_instance.instance_ids[0] }}"
         device_name: /dev/sdh
@@ -350,7 +350,7 @@
         that:
           - new_vol_attach_result_idem_check_mode is not changed
 
-    - name: attach a new volume to an instance (idempotent)
+    - name: Attach a new volume to an instance (idempotent)
       amazon.aws.ec2_vol:
         instance: "{{ test_instance.instance_ids[0] }}"
         device_name: /dev/sdh
@@ -361,13 +361,13 @@
       register: new_vol_attach_result_idem
       ignore_errors: true
 
-    - name: check task return attributes
+    - name: Check task return attributes
       ansible.builtin.assert:
         that:
           - not new_vol_attach_result_idem.changed
           - "'Volume mapping for /dev/sdh already exists' in new_vol_attach_result_idem.msg"
 
-    - name: change some tag values
+    - name: Change some tag values
       amazon.aws.ec2_vol:
         instance: "{{ test_instance.instance_ids[0] }}"
         id: "{{ new_vol_attach_result.volume.id }}"
@@ -382,7 +382,7 @@
         purge_tags: false
       register: new_vol_attach_result
 
-    - name: check task return attributes
+    - name: Check task return attributes
       ansible.builtin.assert:
         that:
           - new_vol_attach_result.changed
@@ -404,7 +404,7 @@
           - new_vol_attach_result.volume.tags["ResourcePrefix"] == resource_prefix
           - new_vol_attach_result.volume.tags["Name"] == resource_prefix +' - sdh'
 
-    - name: change some tag values
+    - name: Change some tag values
       amazon.aws.ec2_vol:
         instance: "{{ test_instance.instance_ids[0] }}"
         id: "{{ new_vol_attach_result.volume.id }}"
@@ -419,7 +419,7 @@
         purge_tags: true
       register: new_vol_attach_result
 
-    - name: check task return attributes
+    - name: Check task return attributes
       ansible.builtin.assert:
         that:
           - new_vol_attach_result.changed
@@ -439,7 +439,7 @@
           - new_vol_attach_result.volume.tags["snake_case"] == 'simple_snake_case ❤️'
           - new_vol_attach_result.volume.tags["ResourcePrefix"] == resource_prefix
 
-    - name: create a volume from a snapshot and attach to the instance (check_mode)
+    - name: Create a volume from a snapshot and attach to the instance (check_mode)
       amazon.aws.ec2_vol:
         instance: "{{ test_instance.instance_ids[0] }}"
         device_name: /dev/sdi
@@ -453,7 +453,7 @@
         that:
           - attach_new_vol_from_snapshot_result_check_mode is changed
 
-    - name: create a volume from a snapshot and attach to the instance
+    - name: Create a volume from a snapshot and attach to the instance
       amazon.aws.ec2_vol:
         instance: "{{ test_instance.instance_ids[0] }}"
         device_name: /dev/sdi
@@ -462,7 +462,7 @@
           ResourcePrefix: "{{ resource_prefix }}"
       register: attach_new_vol_from_snapshot_result
 
-    - name: check task return attributes
+    - name: Check task return attributes
       ansible.builtin.assert:
         that:
           - attach_new_vol_from_snapshot_result.changed
@@ -471,39 +471,39 @@
           - attach_new_vol_from_snapshot_result.volume.attachment_set[0].status in ['attached', 'attaching']
           - attach_new_vol_from_snapshot_result.volume.attachment_set[0].instance_id == test_instance.instance_ids[0]
 
-    - name: get info on ebs volumes
+    - name: Get info on ebs volumes
       amazon.aws.ec2_vol_info:
       register: ec2_vol_info
 
-    - name: check task return attributes
+    - name: Check task return attributes
       ansible.builtin.assert:
         that:
           - not ec2_vol_info.failed
 
-    - name: get info on ebs volumes
+    - name: Get info on ebs volumes
       amazon.aws.ec2_vol_info:
         filters:
           attachment.instance-id: "{{ test_instance.instance_ids[0] }}"
       register: ec2_vol_info
 
-    - name: check task return attributes
+    - name: Check task return attributes
       ansible.builtin.assert:
         that:
           - ec2_vol_info.volumes | length == 4
 
-    - name: must not change because of missing parameter modify_volume
+    - name: Must not change because of missing parameter modify_volume
       amazon.aws.ec2_vol:
         id: "{{ new_vol_attach_result.volume_id }}"
         zone: "{{ availability_zone }}"
         volume_type: gp3
       register: changed_gp3_volume
 
-    - name: volume must not changed
+    - name: Volume must not changed
       ansible.builtin.assert:
         that:
           - not changed_gp3_volume.changed
 
-    - name: change existing volume to gp3 (check_mode)
+    - name: Change existing volume to gp3 (check_mode)
       amazon.aws.ec2_vol:
         id: "{{ new_vol_attach_result.volume_id }}"
         zone: "{{ availability_zone }}"
@@ -516,7 +516,7 @@
         that:
           - changed_gp3_volume_check_mode is changed
 
-    - name: change existing volume to gp3
+    - name: Change existing volume to gp3
       amazon.aws.ec2_vol:
         id: "{{ new_vol_attach_result.volume_id }}"
         zone: "{{ availability_zone }}"
@@ -524,7 +524,7 @@
         modify_volume: true
       register: changed_gp3_volume
 
-    - name: check that volume_type has changed
+    - name: Check that volume_type has changed
       ansible.builtin.assert:
         that:
           - changed_gp3_volume.changed
@@ -546,7 +546,7 @@
           - new_vol_attach_result.volume.tags["snake_case"] == 'simple_snake_case ❤️'
           - new_vol_attach_result.volume.tags["ResourcePrefix"] == resource_prefix
 
-    - name: volume must be from type gp3 (idempotent)
+    - name: Volume must be from type gp3 (idempotent)
       amazon.aws.ec2_vol:
         id: "{{ new_vol_attach_result.volume_id }}"
         zone: "{{ availability_zone }}"
@@ -558,7 +558,7 @@
       until: not changed_gp3_volume.failed
       # retry because ebs change is to slow
 
-    - name: must not changed (idempotent)
+    - name: Must not changed (idempotent)
       ansible.builtin.assert:
         that:
           - not changed_gp3_volume.changed
@@ -580,20 +580,20 @@
           - new_vol_attach_result.volume.tags["snake_case"] == 'simple_snake_case ❤️'
           - new_vol_attach_result.volume.tags["ResourcePrefix"] == resource_prefix
 
-    - name: re-read volume information to validate new volume_type
+    - name: Re-read volume information to validate new volume_type
       amazon.aws.ec2_vol_info:
         filters:
           volume-id: "{{ changed_gp3_volume.volume_id }}"
       register: verify_gp3_change
 
-    - name: volume type must be gp3
+    - name: Volume type must be gp3
       ansible.builtin.assert:
         that:
           - v.type == 'gp3'
       vars:
         v: "{{ verify_gp3_change.volumes[0] }}"
 
-    - name: detach volume from the instance (check_mode)
+    - name: Detach volume from the instance (check_mode)
       amazon.aws.ec2_vol:
         id: "{{ new_vol_attach_result.volume_id }}"
         instance: ""
@@ -604,41 +604,41 @@
         that:
           - new_vol_attach_result_check_mode is changed
 
-    - name: detach volume from the instance
+    - name: Detach volume from the instance
       amazon.aws.ec2_vol:
         id: "{{ new_vol_attach_result.volume_id }}"
         instance: ""
       register: new_vol_attach_result
 
-    - name: check task return attributes
+    - name: Check task return attributes
       ansible.builtin.assert:
         that:
           - new_vol_attach_result.changed
           - new_vol_attach_result.volume.status == 'available'
 
-    - name: detach volume from the instance (idempotent - check_mode)
+    - name: Detach volume from the instance (idempotent - check_mode)
       amazon.aws.ec2_vol:
         id: "{{ new_vol_attach_result.volume_id }}"
         instance: ""
       register: new_vol_attach_result_idem_check_mode
 
-    - name: check task return attributes
+    - name: Check task return attributes
       ansible.builtin.assert:
         that:
           - not new_vol_attach_result_idem_check_mode.changed
 
-    - name: detach volume from the instance (idempotent)
+    - name: Detach volume from the instance (idempotent)
       amazon.aws.ec2_vol:
         id: "{{ new_vol_attach_result.volume_id }}"
         instance: ""
       register: new_vol_attach_result_idem
 
-    - name: check task return attributes
+    - name: Check task return attributes
       ansible.builtin.assert:
         that:
           - not new_vol_attach_result_idem.changed
 
-    - name: delete volume (check_mode)
+    - name: Delete volume (check_mode)
       amazon.aws.ec2_vol:
         id: "{{ volume2.volume_id }}"
         state: absent
@@ -649,18 +649,18 @@
         that:
           - delete_volume_result_check_mode is changed
 
-    - name: delete volume
+    - name: Delete volume
       amazon.aws.ec2_vol:
         id: "{{ volume2.volume_id }}"
         state: absent
       register: delete_volume_result
 
-    - name: check task return attributes
+    - name: Check task return attributes
       ansible.builtin.assert:
         that:
           - delete_volume_result.changed
 
-    - name: delete volume (idempotent - check_mode)
+    - name: Delete volume (idempotent - check_mode)
       amazon.aws.ec2_vol:
         id: "{{ volume2.volume_id }}"
         state: absent
@@ -671,13 +671,13 @@
         that:
           - delete_volume_result_check_mode is not changed
 
-    - name: delete volume (idempotent)
+    - name: Delete volume (idempotent)
       amazon.aws.ec2_vol:
         id: "{{ volume2.volume_id }}"
         state: absent
       register: delete_volume_result_idem
 
-    - name: check task return attributes
+    - name: Check task return attributes
       ansible.builtin.assert:
         that:
           - not delete_volume_result_idem.changed
@@ -697,7 +697,7 @@
         delete_on_termination: true
       register: dot_volume
 
-    - name: check task return attributes
+    - name: Check task return attributes
       ansible.builtin.assert:
         that:
           - dot_volume.changed
@@ -764,7 +764,7 @@
         v: "{{ volume_info.volumes[0] }}"
       when: ansible_version.full is version('2.7', '>=')
 
-    - name: test create a new gp3 volume
+    - name: Test create a new gp3 volume
       amazon.aws.ec2_vol:
         volume_size: 70
         zone: "{{ availability_zone }}"
@@ -776,7 +776,7 @@
           ResourcePrefix: "{{ resource_prefix }}"
       register: gp3_volume
 
-    - name: check that volume_type is gp3
+    - name: Check that volume_type is gp3
       ansible.builtin.assert:
         that:
           - gp3_volume.changed
@@ -801,14 +801,14 @@
           volume-id: "{{ gp3_volume.volume_id }}"
       register: verify_throughput
 
-    - name: throughput must be equal to 130
+    - name: Throughput must be equal to 130
       ansible.builtin.assert:
         that:
           - v.throughput == 130
       vars:
         v: "{{ verify_throughput.volumes[0] }}"
 
-    - name: print out facts
+    - name: Print out facts
       ansible.builtin.debug:
         var: vol_facts
 
@@ -818,18 +818,18 @@
           volume-id: "{{ gp3_volume.volume_id }}"
       register: verify_throughput
 
-    - name: throughput must be equal to 130
+    - name: Throughput must be equal to 130
       ansible.builtin.assert:
         that:
           - v.throughput == 130
       vars:
         v: "{{ verify_throughput.volumes[0] }}"
 
-    - name: print out facts
+    - name: Print out facts
       ansible.builtin.debug:
         var: vol_facts
 
-    - name: increase throughput
+    - name: Increase throughput
       amazon.aws.ec2_vol:
         volume_size: 70
         zone: "{{ availability_zone }}"
@@ -841,7 +841,7 @@
           ResourcePrefix: "{{ resource_prefix }}"
       register: gp3_volume
 
-    - name: check that throughput has changed
+    - name: Check that throughput has changed
       ansible.builtin.assert:
         that:
           - gp3_volume.changed
@@ -857,7 +857,7 @@
           - gp3_volume.volume.throughput == 131
 
     # Multi-Attach disk
-    - name: create disk with multi-attach enabled
+    - name: Create disk with multi-attach enabled
       amazon.aws.ec2_vol:
         volume_size: 4
         volume_type: io1
@@ -868,14 +868,14 @@
           ResourcePrefix: "{{ resource_prefix }}"
       register: multi_attach_disk
 
-    - name: check volume creation
+    - name: Check volume creation
       ansible.builtin.assert:
         that:
           - multi_attach_disk.changed
           - "'volume' in multi_attach_disk"
           - multi_attach_disk.volume.multi_attach_enabled
 
-    - name: attach existing volume to an instance
+    - name: Attach existing volume to an instance
       amazon.aws.ec2_vol:
         id: "{{ multi_attach_disk.volume_id }}"
         instance: "{{ test_instance.instance_ids[0] }}"
@@ -889,7 +889,7 @@
         instance_ids: "{{ test_instance_2.instance_ids }}"
         wait: true
 
-    - name: attach existing volume to second instance
+    - name: Attach existing volume to second instance
       amazon.aws.ec2_vol:
         id: "{{ multi_attach_disk.volume_id }}"
         instance: "{{ test_instance_2.instance_ids[0] }}"
@@ -897,7 +897,7 @@
         delete_on_termination: false
       register: vol_attach_result
 
-    - name: check task return attributes
+    - name: Check task return attributes
       ansible.builtin.assert:
         that:
           - vol_attach_result.changed
@@ -906,7 +906,7 @@
           - test_instance.instance_ids[0] in vol_attach_result.volume.attachment_set | map(attribute="instance_id") | list
           - test_instance_2.instance_ids[0] in vol_attach_result.volume.attachment_set | map(attribute="instance_id") | list
 
-    - name: create a volume without tags
+    - name: Create a volume without tags
       amazon.aws.ec2_vol:
         volume_size: 5
         zone: "{{ availability_zone }}"
@@ -918,7 +918,7 @@
           - volume_without_tag.changed
 
     # idempotency check without tags
-    - name: create a volume without tags (idempotency check)
+    - name: Create a volume without tags (idempotency check)
       amazon.aws.ec2_vol:
         volume_size: 5
         zone: "{{ availability_zone }}"
@@ -945,7 +945,7 @@
     - ansible.builtin.debug:
         var: pre_delete
 
-    - name: delete test instance
+    - name: Delete test instance
       amazon.aws.ec2_instance:
         instance_ids:
           - "{{ item }}"
@@ -957,7 +957,7 @@
         - "{{ test_instance_3.instance_ids[0] }}"
       ignore_errors: true
 
-    - name: delete volumes
+    - name: Delete volumes
       amazon.aws.ec2_vol:
         id: "{{ item.volume_id }}"
         state: absent
@@ -973,20 +973,20 @@
         - "{{ multi_attach_disk }}"
         - "{{ volume_without_tag }}"
 
-    - name: delete snapshot
+    - name: Delete snapshot
       amazon.aws.ec2_snapshot:
         snapshot_id: "{{ vol1_snapshot.snapshot_id }}"
         state: absent
       ignore_errors: true
 
-    - name: delete test subnet
+    - name: Delete test subnet
       amazon.aws.ec2_vpc_subnet:
         vpc_id: "{{ testing_vpc.vpc.id }}"
         cidr: "{{ subnet_cidr }}"
         state: absent
       ignore_errors: true
 
-    - name: delete test VPC
+    - name: Delete test VPC
       amazon.aws.ec2_vpc_net:
         name: "{{ vpc_name }}"
         cidr_block: "{{ vpc_cidr }}"

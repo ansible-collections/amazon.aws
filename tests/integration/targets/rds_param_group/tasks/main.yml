@@ -12,7 +12,7 @@
 
 # ============================================================
 
-- name: rds_option_group tests
+- name: Rds_option_group tests
   module_defaults:
     group/aws:
       access_key: "{{ aws_access_key }}"

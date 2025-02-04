@@ -1,7 +1,7 @@
 ---
 # ============================================================
 
-- name: test state=present for multiple ipv6 and ipv4 targets (expected changed=true) (CHECK MODE)
+- name: Test state=present for multiple ipv6 and ipv4 targets (expected changed=true) (CHECK MODE)
   amazon.aws.ec2_security_group:
     name: "{{ ec2_group_name }}"
     description: "{{ ec2_group_description }}"
@@ -22,12 +22,12 @@
   check_mode: true
   register: result
 
-- name: assert state=present (expected changed=true)
+- name: Assert state=present (expected changed=true)
   ansible.builtin.assert:
     that:
       - result.changed
 
-- name: test state=present for multiple ipv6 and ipv4 targets (expected changed=true)
+- name: Test state=present for multiple ipv6 and ipv4 targets (expected changed=true)
   amazon.aws.ec2_security_group:
     name: "{{ ec2_group_name }}"
     description: "{{ ec2_group_description }}"
@@ -47,7 +47,7 @@
           - [10.0.0.0/24, 10.20.0.0/24]
   register: result
 
-- name: assert state=present (expected changed=true)
+- name: Assert state=present (expected changed=true)
   ansible.builtin.assert:
     that:
       - result.changed
@@ -55,7 +55,7 @@
       - result.ip_permissions[0].ip_ranges | length == 4 or result.ip_permissions[1].ip_ranges | length == 4
       - result.ip_permissions[0].ipv6_ranges | length == 2 or result.ip_permissions[1].ipv6_ranges | length == 2
 
-- name: test state=present for multiple ipv6 and ipv4 targets (expected changed=false) (CHECK MODE)
+- name: Test state=present for multiple ipv6 and ipv4 targets (expected changed=false) (CHECK MODE)
   amazon.aws.ec2_security_group:
     name: "{{ ec2_group_name }}"
     description: "{{ ec2_group_description }}"
@@ -76,12 +76,12 @@
   check_mode: true
   register: result
 
-- name: assert state=present (expected changed=true)
+- name: Assert state=present (expected changed=true)
   ansible.builtin.assert:
     that:
       - not result.changed
 
-- name: test state=present for multiple ipv6 and ipv4 targets (expected changed=false)
+- name: Test state=present for multiple ipv6 and ipv4 targets (expected changed=false)
   amazon.aws.ec2_security_group:
     name: "{{ ec2_group_name }}"
     description: "{{ ec2_group_description }}"
@@ -101,12 +101,12 @@
           - [10.0.0.0/24, 10.20.0.0/24]
   register: result
 
-- name: assert state=present (expected changed=true)
+- name: Assert state=present (expected changed=true)
   ansible.builtin.assert:
     that:
       - not result.changed
 
-- name: test state=present purging a nested ipv4 target (expected changed=true) (CHECK MODE)
+- name: Test state=present purging a nested ipv4 target (expected changed=true) (CHECK MODE)
   amazon.aws.ec2_security_group:
     name: "{{ ec2_group_name }}"
     description: "{{ ec2_group_description }}"
@@ -131,7 +131,7 @@
     that:
       - result.changed
 
-- name: test state=present purging a nested ipv4 target (expected changed=true)
+- name: Test state=present purging a nested ipv4 target (expected changed=true)
   amazon.aws.ec2_security_group:
     name: "{{ ec2_group_name }}"
     description: "{{ ec2_group_description }}"
@@ -157,7 +157,7 @@
       - result.ip_permissions[0].ip_ranges | length == 3 or result.ip_permissions[1].ip_ranges | length == 3
       - result.ip_permissions[0].ipv6_ranges | length == 2 or result.ip_permissions[1].ipv6_ranges | length == 2
 
-- name: test state=present with both associated ipv6 targets nested (expected changed=false)
+- name: Test state=present with both associated ipv6 targets nested (expected changed=false)
   amazon.aws.ec2_security_group:
     name: "{{ ec2_group_name }}"
     description: "{{ ec2_group_description }}"
@@ -180,7 +180,7 @@
     that:
       - not result.changed
 
-- name: test state=present add another nested ipv6 target (expected changed=true)
+- name: Test state=present add another nested ipv6 target (expected changed=true)
   amazon.aws.ec2_security_group:
     name: "{{ ec2_group_name }}"
     description: "{{ ec2_group_description }}"
@@ -207,7 +207,7 @@
       - result.ip_permissions[0].ip_ranges | length == 3 or result.ip_permissions[1].ip_ranges | length == 3
       - result.ip_permissions[0].ipv6_ranges | length == 3 or result.ip_permissions[1].ipv6_ranges | length == 3
 
-- name: delete it
+- name: Delete it
   amazon.aws.ec2_security_group:
     name: "{{ ec2_group_name }}"
     state: absent

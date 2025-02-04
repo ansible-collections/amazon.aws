@@ -10,7 +10,7 @@
       amazon.aws.iam_role:
         state: present
         name: "{{ first_iam_role }}"
-        assume_role_policy_document: "{{ lookup('file','assume-role-policy.json') }}"
+        assume_role_policy_document: "{{ lookup('file', 'assume-role-policy.json') }}"
         create_instance_profile: true
         managed_policy:
           - AmazonEC2ContainerServiceRole
@@ -20,13 +20,13 @@
       amazon.aws.iam_role:
         state: present
         name: "{{ second_iam_role }}"
-        assume_role_policy_document: "{{ lookup('file','assume-role-policy.json') }}"
+        assume_role_policy_document: "{{ lookup('file', 'assume-role-policy.json') }}"
         create_instance_profile: true
         managed_policy:
           - AmazonEC2ContainerServiceRole
       register: iam_role_2
 
-    - name: wait 10 seconds for roles to become available
+    - name: Wait 10 seconds for roles to become available
       ansible.builtin.wait_for:
         timeout: 10
       delegate_to: localhost
@@ -41,7 +41,7 @@
         instance_role: "{{ first_iam_role }}"
         vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
       register: instance_with_role
 
     - ansible.builtin.assert:
@@ -58,16 +58,16 @@
         instance_role: "{{ iam_role.iam_role.arn.replace(':role/', ':instance-profile/') }}"
         vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
       check_mode: true
 
-    - name: fact presented ec2 instance
+    - name: Fact presented ec2 instance
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-test-instance-role"
       register: presented_instance_fact
 
-    - name: fact checkmode ec2 instance
+    - name: Fact checkmode ec2 instance
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-test-instance-role-checkmode"
@@ -89,15 +89,15 @@
         instance_role: "{{ iam_role_2.iam_role.arn.replace(':role/', ':instance-profile/') }}"
         vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
       register: instance_with_updated_role
 
-    - name: wait 10 seconds for role update to complete
+    - name: Wait 10 seconds for role update to complete
       ansible.builtin.wait_for:
         timeout: 10
       delegate_to: localhost
 
-    - name: fact checkmode ec2 instance
+    - name: Fact checkmode ec2 instance
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-test-instance-role"
@@ -114,7 +114,7 @@
       amazon.aws.ec2_instance:
         state: absent
         filters:
-          tag:TestId: "{{ ec2_instance_tag_TestId }}"
+          tag:TestId: "{{ ec2_instance_tag_testid }}"
         wait: true
       ignore_errors: true
 

@@ -1,3 +1,4 @@
+---
 # aws regions supporting 't3.micro' instance type
 - ansible.builtin.set_fact:
     av_zones:

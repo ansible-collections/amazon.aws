@@ -10,7 +10,7 @@
       amazon.aws.rds_cluster:
         id: "{{ cluster_id }}"
         state: absent
-        engine: "{{ engine}}"
+        engine: "{{ engine }}"
         username: "{{ username }}"
         password: "{{ password }}"
         skip_final_snapshot: true
@@ -25,7 +25,7 @@
       amazon.aws.rds_cluster:
         id: "{{ cluster_id }}"
         state: present
-        engine: "{{ engine}}"
+        engine: "{{ engine }}"
         backup_retention_period: 1
         username: "{{ username }}"
         password: "{{ password }}"
@@ -53,7 +53,7 @@
           - "'master_username' in _result_create_source_db_cluster"
           - _result_create_source_db_cluster.master_username == username
           - "'port' in _result_create_source_db_cluster"
-          - _result_create_source_db_cluster.port == port
+          - _result_create_source_db_cluster.port == db_port
           - "'status' in _result_create_source_db_cluster"
           - _result_create_source_db_cluster.status == 'available'
           - _result_create_source_db_cluster.storage_encrypted == false
@@ -66,7 +66,7 @@
         id: "{{ cluster_id }}-point-in-time"
         source_db_cluster_identifier: "{{ cluster_id }}"
         creation_source: cluster
-        engine: "{{ engine}}"
+        engine: "{{ engine }}"
         username: "{{ username }}"
         password: "{{ password }}"
         use_latest_restorable_time: true
@@ -95,7 +95,7 @@
           - "'master_username' in _result_restored_db_cluster"
           - _result_restored_db_cluster.master_username == username
           - "'port' in _result_restored_db_cluster"
-          - _result_restored_db_cluster.port == port
+          - _result_restored_db_cluster.port == db_port
           - "'status' in _result_restored_db_cluster"
           - _result_restored_db_cluster.status == "available"
           - "'tags' in _result_restored_db_cluster"
@@ -110,7 +110,7 @@
         id: "{{ cluster_id }}-point-in-time"
         source_db_cluster_identifier: "{{ cluster_id }}"
         creation_source: cluster
-        engine: "{{ engine}}"
+        engine: "{{ engine }}"
         username: "{{ username }}"
         password: "{{ password }}"
         restore_to_time: "{{ _result_restored_db_cluster.latest_restorable_time }}"
@@ -164,7 +164,7 @@
           - "'master_username' in _result_restored_db_cluster"
           - _result_restored_db_cluster.master_username == username
           - "'port' in _result_restored_db_cluster"
-          - _result_restored_db_cluster.port == port
+          - _result_restored_db_cluster.port == db_port
           - "'status' in _result_restored_db_cluster"
           - _result_restored_db_cluster.status == "available"
           - "'tags' in _result_restored_db_cluster"

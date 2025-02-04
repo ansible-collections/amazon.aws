@@ -70,7 +70,7 @@
         path: "{{ test_path }}"
         delete_instance_profile: true
       ignore_errors: true
-    - name: iam_role_info after Role deletion
+    - name: Iam_role_info after Role deletion
       amazon.aws.iam_role_info:
         name: "{{ test_role }}"
       ignore_errors: true

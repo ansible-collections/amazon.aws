@@ -59,8 +59,9 @@
         AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
         AWS_DEFAULT_REGION: "{{ aws_region }}"
       register: instance_termination_check
+      changed_when: false
 
-    - name: convert it to an object
+    - name: Convert it to an object
       ansible.builtin.set_fact:
         instance_termination_status: "{{ instance_termination_check.stdout | from_json }}"
 
@@ -142,8 +143,9 @@
         AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
         AWS_DEFAULT_REGION: "{{ aws_region }}"
       register: instance_termination_check
+      changed_when: false
 
-    - name: convert it to an object
+    - name: Convert it to an object
       ansible.builtin.set_fact:
         instance_termination_status: "{{ instance_termination_check.stdout | from_json }}"
 
@@ -175,8 +177,9 @@
         AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
         AWS_DEFAULT_REGION: "{{ aws_region }}"
       register: instance_termination_check
+      changed_when: false
 
-    - name: convert it to an object
+    - name: Convert it to an object
       ansible.builtin.set_fact:
         instance_termination_status: "{{ instance_termination_check.stdout | from_json }}"
 

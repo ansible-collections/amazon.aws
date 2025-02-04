@@ -2,35 +2,35 @@
 - block:
     - name: Create a group with self-referring rule
       amazon.aws.ec2_security_group:
-        name: "{{ec2_group_name}}-auto-create-1"
+        name: "{{ ec2_group_name }}-auto-create-1"
         vpc_id: "{{ vpc_result.vpc.id }}"
-        description: "{{ec2_group_description}}"
+        description: "{{ ec2_group_description }}"
         rules:
           - proto: tcp
             from_port: 8000
             to_port: 8100
-            group_name: "{{ec2_group_name}}-auto-create-1"
+            group_name: "{{ ec2_group_name }}-auto-create-1"
         state: present
       register: result
 
     - name: Create a second group rule
       amazon.aws.ec2_security_group:
-        name: "{{ec2_group_name}}-auto-create-2"
+        name: "{{ ec2_group_name }}-auto-create-2"
         vpc_id: "{{ vpc_result.vpc.id }}"
-        description: "{{ec2_group_description}}"
+        description: "{{ ec2_group_description }}"
         state: present
 
     - name: Create a series of rules with a recently created group as target
       amazon.aws.ec2_security_group:
-        name: "{{ec2_group_name}}-auto-create-1"
+        name: "{{ ec2_group_name }}-auto-create-1"
         vpc_id: "{{ vpc_result.vpc.id }}"
-        description: "{{ec2_group_description}}"
+        description: "{{ ec2_group_description }}"
         purge_rules: false
         rules:
           - proto: tcp
             from_port: "{{ item }}"
             to_port: "{{ item }}"
-            group_name: "{{ec2_group_name}}-auto-create-2"
+            group_name: "{{ ec2_group_name }}-auto-create-2"
         state: present
       register: result
       with_items:
@@ -45,19 +45,19 @@
 
     - name: Create a group with only the default rule
       amazon.aws.ec2_security_group:
-        name: "{{ec2_group_name}}-auto-create-1"
+        name: "{{ ec2_group_name }}-auto-create-1"
         vpc_id: "{{ vpc_result.vpc.id }}"
-        description: "{{ec2_group_description}}"
+        description: "{{ ec2_group_description }}"
         rules:
           - proto: tcp
             from_port: 8182
             to_port: 8182
-            group_name: "{{ec2_group_name}}-auto-create-3"
+            group_name: "{{ ec2_group_name }}-auto-create-3"
         state: present
       register: result
       ignore_errors: true
 
-    - name: assert you can't create a new group from a rule target with no description
+    - name: Assert you can't create a new group from a rule target with no description
       ansible.builtin.assert:
         that:
           - result is failed
@@ -65,16 +65,16 @@
 
     - name: Create a group with a target of a separate group
       amazon.aws.ec2_security_group:
-        name: "{{ec2_group_name}}-auto-create-1"
+        name: "{{ ec2_group_name }}-auto-create-1"
         vpc_id: "{{ vpc_result.vpc.id }}"
-        description: "{{ec2_group_description}}"
+        description: "{{ ec2_group_description }}"
         rules:
           - proto: tcp
             ports:
               - 22
               - 80
-            group_name: "{{ec2_group_name}}-auto-create-3"
-            group_desc: "{{ec2_group_description}}"
+            group_name: "{{ ec2_group_name }}-auto-create-3"
+            group_desc: "{{ ec2_group_description }}"
         state: present
       register: result
 
@@ -84,9 +84,9 @@
 
     - name: Create a 4th group
       amazon.aws.ec2_security_group:
-        name: "{{ec2_group_name}}-auto-create-4"
+        name: "{{ ec2_group_name }}-auto-create-4"
         vpc_id: "{{ vpc_result.vpc.id }}"
-        description: "{{ec2_group_description}}"
+        description: "{{ ec2_group_description }}"
         state: present
         rules:
           - proto: tcp
@@ -94,16 +94,16 @@
               - 22
             cidr_ip: "0.0.0.0/0"
 
-    - name: use recently created group in a rule
+    - name: Use recently created group in a rule
       amazon.aws.ec2_security_group:
-        name: "{{ec2_group_name}}-auto-create-5"
+        name: "{{ ec2_group_name }}-auto-create-5"
         vpc_id: "{{ vpc_result.vpc.id }}"
-        description: "{{ec2_group_description}}"
+        description: "{{ ec2_group_description }}"
         rules:
           - proto: tcp
             ports:
               - 443
-            group_name: "{{ec2_group_name}}-auto-create-4"
+            group_name: "{{ ec2_group_name }}-auto-create-4"
         state: present
 
     - ansible.builtin.assert:
@@ -111,17 +111,17 @@
           - result.warning is not defined
 
   always:
-    - name: tidy up egress rule test security group rules
+    - name: Tidy up egress rule test security group rules
       amazon.aws.ec2_security_group:
-        name: "{{ec2_group_name}}-auto-create-{{ item }}"
-        description: "{{ec2_group_description}}"
+        name: "{{ ec2_group_name }}-auto-create-{{ item }}"
+        description: "{{ ec2_group_description }}"
         rules: []
         rules_egress: []
       ignore_errors: true
       with_items: [5, 4, 3, 2, 1]
-    - name: tidy up egress rule test security group
+    - name: Tidy up egress rule test security group
       amazon.aws.ec2_security_group:
-        name: "{{ec2_group_name}}-auto-create-{{ item }}"
+        name: "{{ ec2_group_name }}-auto-create-{{ item }}"
         state: absent
         vpc_id: "{{ vpc_result.vpc.id }}"
       ignore_errors: true

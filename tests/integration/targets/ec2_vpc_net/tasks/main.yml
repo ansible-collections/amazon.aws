@@ -50,7 +50,7 @@
       ansible.builtin.assert:
         that:
           - result is failed
-          #- result.msg.startswith("missing required arguments")
+          # - result.msg.startswith("missing required arguments")
           - result.msg.startswith("one of")
 
     # ============================================================
@@ -181,10 +181,10 @@
         state: present
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ vpc_name }}"
-        # Intentionaly commenting out 'ipv6_cidr'
-        # When the 'ipv6_cidr' property is missing, the VPC should retain its configuration.
-        # That should not cause the module to set default value 'false' and disassociate the IPv6 block.
-        #ipv6_cidr: True
+        ## Intentionaly commenting out 'ipv6_cidr'
+        ## When the 'ipv6_cidr' property is missing, the VPC should retain its configuration.
+        ## That should not cause the module to set default value 'false' and disassociate the IPv6 block.
+        # ipv6_cidr: True
       register: result
 
     - name: Assert configuration did not change
@@ -1581,7 +1581,6 @@
           - result.vpc.ipv6_cidr_block_association_set[0].association_id.startswith("vpc-cidr-assoc-")
           - result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block | ansible.utils.ipv6
           - result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block_state.state in ["disassociated"]
-
 
     - name: Retry to remove IPv6 CIDR association from VPC
       amazon.aws.ec2_vpc_net:

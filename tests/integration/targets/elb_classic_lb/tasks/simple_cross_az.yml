@@ -1,7 +1,7 @@
 ---
 # ===========================================================
 
-- name: disable cross-az balancing on ELB (check_mode)
+- name: Disable cross-az balancing on ELB (check_mode)
   amazon.aws.elb_classic_lb:
     name: "{{ elb_name }}"
     state: present
@@ -13,7 +13,7 @@
     that:
       - result is changed
 
-- name: disable cross-az balancing on ELB
+- name: Disable cross-az balancing on ELB
   amazon.aws.elb_classic_lb:
     name: "{{ elb_name }}"
     state: present
@@ -25,7 +25,7 @@
       - result is changed
       - result.elb.cross_az_load_balancing == 'no'
 
-- name: disable cross-az balancing on ELB - idempotency (check_mode)
+- name: Disable cross-az balancing on ELB - idempotency (check_mode)
   amazon.aws.elb_classic_lb:
     name: "{{ elb_name }}"
     state: present
@@ -37,7 +37,7 @@
     that:
       - result is not changed
 
-- name: disable cross-az balancing on ELB - idempotency
+- name: Disable cross-az balancing on ELB - idempotency
   amazon.aws.elb_classic_lb:
     name: "{{ elb_name }}"
     state: present
@@ -51,7 +51,7 @@
 
 # ===========================================================
 
-- name: re-enable cross-az balancing on ELB (check_mode)
+- name: Re-enable cross-az balancing on ELB (check_mode)
   amazon.aws.elb_classic_lb:
     name: "{{ elb_name }}"
     state: present
@@ -63,7 +63,7 @@
     that:
       - result is changed
 
-- name: re-enable cross-az balancing on ELB
+- name: Re-enable cross-az balancing on ELB
   amazon.aws.elb_classic_lb:
     name: "{{ elb_name }}"
     state: present
@@ -75,7 +75,7 @@
       - result is changed
       - result.elb.cross_az_load_balancing == 'yes'
 
-- name: re-enable cross-az balancing on ELB - idempotency (check_mode)
+- name: Re-enable cross-az balancing on ELB - idempotency (check_mode)
   amazon.aws.elb_classic_lb:
     name: "{{ elb_name }}"
     state: present
@@ -87,7 +87,7 @@
     that:
       - result is not changed
 
-- name: re-enable cross-az balancing on ELB - idempotency
+- name: Re-enable cross-az balancing on ELB - idempotency
   amazon.aws.elb_classic_lb:
     name: "{{ elb_name }}"
     state: present

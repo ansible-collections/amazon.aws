@@ -1,5 +1,6 @@
 ---
-- hosts: localhost
+- name: Prepare environment for common credential/connection helper tests
+  hosts: localhost
   connection: local
   gather_facts: false
   tasks:
@@ -33,8 +34,10 @@
       ansible.builtin.template:
         dest: ./session_credentials.yml
         src: session_credentials.yml.j2
+        mode: "0600"
 
     - name: Write out boto config file
       ansible.builtin.template:
         dest: ./boto3_config
         src: boto_config.j2
+        mode: "0644"

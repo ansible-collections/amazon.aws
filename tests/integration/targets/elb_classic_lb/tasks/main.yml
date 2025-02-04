@@ -34,7 +34,7 @@
   always:
     # ============================================================
     # ELB should already be gone, but double-check
-    - name: remove the test load balancer
+    - name: Remove the test load balancer
       amazon.aws.elb_classic_lb:
         name: "{{ elb_name }}"
         state: absent

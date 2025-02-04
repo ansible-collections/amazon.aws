@@ -1,5 +1,5 @@
 ---
-- name: remove mariadb instance
+- name: Remove mariadb instance
   amazon.aws.rds_instance:
     state: absent
     engine: "{{ instance_engine }}"

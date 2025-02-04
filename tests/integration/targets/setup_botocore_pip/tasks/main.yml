@@ -13,22 +13,21 @@
   notify:
     - Delete temporary pip environment
 
-- name: Record temporary directory
+- name: Record Python virtual environment details
   ansible.builtin.set_fact:
-    botocore_pip_directory: "{{ botocore_pip_directory.path }}"
-
-- ansible.builtin.set_fact:
-    botocore_virtualenv: "{{ botocore_pip_directory }}/virtualenv"
+    botocore_pip_directory: "{{ pip_dir }}"
     botocore_virtualenv_command: "{{ ansible_python_interpreter }} -m virtualenv"
+    botocore_virtualenv: "{{ venv_dir }}"
+    botocore_virtualenv_interpreter: "{{ venv_dir }}/bin/python"
+  vars:
+    pip_dir: "{{ botocore_pip_directory.path }}"
+    venv_dir: "{{ pip_dir }}/virtualenv"
 
-- ansible.builtin.set_fact:
-    botocore_virtualenv_interpreter: "{{ botocore_virtualenv }}/bin/python"
-
-- ansible.builtin.pip:
+- name: Install specific boto3 and botocore versions
+  ansible.builtin.pip:
     name:
       - boto3{{ _boto3_comparison }}{{ _boto3_version }}
       - botocore{{ _botocore_comparison }}{{ _botocore_version }}
-      - coverage<5
     virtualenv: "{{ botocore_virtualenv }}"
     virtualenv_command: "{{ botocore_virtualenv_command }}"
     virtualenv_site_packages: false

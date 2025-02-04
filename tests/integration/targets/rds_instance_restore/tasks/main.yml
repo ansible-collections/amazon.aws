@@ -1,5 +1,5 @@
 ---
-- name: rds_instance / restore integration tests
+- name: Rds_instance / restore integration tests
 
   module_defaults:
     group/aws:

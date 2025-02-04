@@ -4,7 +4,7 @@ ec2_instance_test_name: ec2_instance
 
 ec2_instance_owner: integration-run-{{ ec2_instance_test_name }}
 ec2_instance_type: t3.micro
-ec2_instance_tag_TestId: "{{ resource_prefix }}-{{ ec2_instance_test_name }}"
+ec2_instance_tag_testid: "{{ resource_prefix }}-{{ ec2_instance_test_name }}"
 
 vpc_name: "{{ resource_prefix }}-{{ ec2_instance_test_name }}"
 vpc_seed: "{{ resource_prefix }}-{{ ec2_instance_test_name }}"

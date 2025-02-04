@@ -26,19 +26,20 @@
       register: multiple_ips
 
     - name: Fact presented instance
-      ec2_instance_info:
+      amazon.aws.ec2_instance_info:
         instance_ids: "{{ multiple_ips.instance_ids }}"
       register: _instances
 
     - name: Ensure instance has ENI attached with 2 Private IP addresses
-      assert:
+      ansible.builtin.assert:
         that:
           - multiple_ips is changed
           - _instances.instances.0.network_interfaces | length == 1
           - _instances.instances.0.network_interfaces.0.private_ip_addresses | length == 2
-          - _instances.instances.0.network_interfaces.0.private_ip_addresses | selectattr('primary', 'equalto', true) | map(attribute='private_ip_address') | list | first == subnet_a_startswith+'120'
-          - _instances.instances.0.network_interfaces.0.private_ip_addresses | selectattr('primary', 'equalto', false) | map(attribute='private_ip_address') | list | first == subnet_a_startswith+'121'
-
+          - _instances.instances.0.network_interfaces.0.private_ip_addresses | selectattr('primary', 'equalto', true) | map(attribute='private_ip_address') | list
+            | first == subnet_a_startswith+'120'
+          - _instances.instances.0.network_interfaces.0.private_ip_addresses | selectattr('primary', 'equalto', false) | map(attribute='private_ip_address') | list
+            | first == subnet_a_startswith+'121'
 
     - name: Make instance with single private ip addresses
       amazon.aws.ec2_instance:
@@ -53,12 +54,12 @@
       register: single_ip
 
     - name: Fact presented instance
-      ec2_instance_info:
+      amazon.aws.ec2_instance_info:
         instance_ids: "{{ single_ip.instance_ids }}"
       register: _instances
 
     - name: Ensure instance has one ENI attached to it
-      assert:
+      ansible.builtin.assert:
         that:
           - multiple_ips is changed
           - _instances.instances.0.network_interfaces | length == 1
@@ -84,12 +85,12 @@
       register: ipv6_instance
 
     - name: Fact presented instance
-      ec2_instance_info:
+      amazon.aws.ec2_instance_info:
         instance_ids: "{{ ipv6_instance.instance_ids }}"
       register: _instances
 
     - name: Ensure instance has one ENI attached to it
-      assert:
+      ansible.builtin.assert:
         that:
           - ipv6_instance is changed
           - _instances.instances.0.network_interfaces | length == 1
@@ -114,12 +115,12 @@
         created_instance_id: "{{ create_with_group.instance_ids }}"
 
     - name: Fact presented instance
-      ec2_instance_info:
+      amazon.aws.ec2_instance_info:
         instance_ids: "{{ created_instance_id }}"
       register: _instances
 
     - name: Ensure instance has been created with one security group
-      assert:
+      ansible.builtin.assert:
         that:
           - create_with_group is changed
           - _instances.instances.0.security_groups | map(attribute='group_name') | list == [security_group_name_1]
@@ -140,12 +141,12 @@
       check_mode: true
 
     - name: Fact presented instance
-      ec2_instance_info:
+      amazon.aws.ec2_instance_info:
         instance_ids: "{{ created_instance_id }}"
       register: _instances
 
     - name: Ensure instance has still one Security group
-      assert:
+      ansible.builtin.assert:
         that:
           - add_group_checkmode is changed
           - _instances.instances.0.security_groups | map(attribute='group_name') | list == [security_group_name_1]
@@ -165,12 +166,12 @@
       register: add_group
 
     - name: Fact presented instance
-      ec2_instance_info:
+      amazon.aws.ec2_instance_info:
         instance_ids: "{{ created_instance_id }}"
       register: _instances
 
     - name: Ensure instance has 1 additional Security group
-      assert:
+      ansible.builtin.assert:
         that:
           - add_group is changed
           - _instances.instances.0.security_groups | length == 2
@@ -192,7 +193,7 @@
       register: add_group_idempotency
 
     - name: Ensure no change was made on the instance
-      assert:
+      ansible.builtin.assert:
         that:
           - add_group_idempotency is not changed
 
@@ -208,12 +209,12 @@
       check_mode: true
 
     - name: Fact presented instance
-      ec2_instance_info:
+      amazon.aws.ec2_instance_info:
         instance_ids: "{{ created_instance_id }}"
       register: _instances
 
     - name: Ensure instance has still 2 Security groups
-      assert:
+      ansible.builtin.assert:
         that:
           - remove_group_checkmode is changed
           - _instances.instances.0.security_groups | length == 2
@@ -231,12 +232,12 @@
       register: remove_group
 
     - name: Fact presented instance
-      ec2_instance_info:
+      amazon.aws.ec2_instance_info:
         instance_ids: "{{ created_instance_id }}"
       register: _instances
 
     - name: Ensure instance has 1 less Security group
-      assert:
+      ansible.builtin.assert:
         that:
           - remove_group is changed
           - _instances.instances.0.security_groups | length == 1
@@ -253,6 +254,6 @@
       register: remove_group_idempotency
 
     - name: Ensure module did not reported change
-      assert:
+      ansible.builtin.assert:
         that:
           - remove_group_idempotency is not changed

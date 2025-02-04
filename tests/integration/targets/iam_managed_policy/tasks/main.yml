@@ -75,7 +75,7 @@
 
     - name: Store policy_id
       ansible.builtin.set_fact:
-        managed_policy_id: '{{ result.policy.policy_id }}'
+        managed_policy_id: "{{ result.policy.policy_id }}"
 
     - name: Create IAM managed policy - idempotency check
       amazon.aws.iam_managed_policy:
@@ -254,7 +254,7 @@
           - result.policy.policy_id == managed_policy_id
 
     - name: Run tagging tests
-      ansible.builtin.include_tasks: 'tags.yml'
+      ansible.builtin.include_tasks: "tags.yml"
 
     ## Test policy deletion
     - name: Delete IAM managed policy - check mode
@@ -385,7 +385,7 @@
 
     - name: Store new policy_id
       ansible.builtin.set_fact:
-        managed_policy_id: '{{ result.policy.policy_id }}'
+        managed_policy_id: "{{ result.policy.policy_id }}"
 
     - name: Create complex IAM managed policy - idempotency check - check mode
       amazon.aws.iam_managed_policy:

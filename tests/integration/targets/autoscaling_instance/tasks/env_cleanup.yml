@@ -1,5 +1,5 @@
 ---
-- name: kill asg
+- name: Kill asg
   amazon.aws.autoscaling_group:
     name: "{{ default_resource_name }}"
     state: absent
@@ -13,13 +13,13 @@
   amazon.aws.ec2_instance:
     state: absent
     instance_ids: "{{ all_instances }}"
-    wait: True
+    wait: true
   register: removed
   until: removed is not failed
   ignore_errors: true
   retries: 10
 
-- name: remove target group
+- name: Remove target group
   community.aws.elb_target_group:
     name: "{{ item }}"
     state: absent
@@ -31,7 +31,7 @@
     - "{{ default_tiny_name }}-1"
     - "{{ default_tiny_name }}-2"
 
-- name: remove launch templates
+- name: Remove launch templates
   amazon.aws.ec2_launch_template:
     name: "{{ item }}"
     state: absent
@@ -47,3 +47,5 @@
 - ansible.builtin.include_role:
     name: setup_ec2_vpc
     tasks_from: cleanup.yml
+  vars:
+    setup_ec2_vpc_id: "{{ vpc_id }}"

@@ -13,13 +13,13 @@
         image_id: "{{ ec2_ami_id }}"
         availability_zone: "{{ subnet_b_az }}"
         tags:
-          TestId: "{{ ec2_instance_tag_TestId }}"
+          TestId: "{{ ec2_instance_tag_testid }}"
         user_data: "{{ ec2_instance_user_data }}"
         instance_type: "{{ ec2_instance_type }}"
         wait: false
       register: _instances
 
-    - name: Gather {{ ec2_instance_name }} info
+    - name: Gather info about instance {{ ec2_instance_name }}
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ ec2_instance_name }}"

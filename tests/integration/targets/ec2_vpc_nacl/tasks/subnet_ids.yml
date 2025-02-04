@@ -1,3 +1,4 @@
+---
 # ============================================================
 
 - name: Create ingress and egress rules using subnet IDs
@@ -8,12 +9,12 @@
     tags:
       Created_by: "Ansible test {{ resource_prefix }}"
     ingress:
-      - [100, 'tcp', 'allow', '0.0.0.0/0', null, null, 22, 22]
-      - [200, 'tcp', 'allow', '0.0.0.0/0', null, null, 80, 80]
-      - [300, 'icmp', 'allow', '0.0.0.0/0', 0, 8]
+      - [100, "tcp", "allow", "0.0.0.0/0", !!null "", !!null "", 22, 22]
+      - [200, "tcp", "allow", "0.0.0.0/0", !!null "", !!null "", 80, 80]
+      - [300, "icmp", "allow", "0.0.0.0/0", 0, 8]
     egress:
-      - [100, 'all', 'allow', '0.0.0.0/0', null, null, null, null]
-    state: 'present'
+      - [100, "all", "allow", "0.0.0.0/0", !!null "", !!null "", !!null "", !!null ""]
+    state: "present"
   register: nacl
 
 - name: Set helpful fact for Network ACL ID
@@ -53,12 +54,12 @@
     tags:
       Created_by: "Ansible test {{ resource_prefix }}"
     ingress:
-      - [100, 'tcp', 'allow', '0.0.0.0/0', null, null, 22, 22]
-      - [200, 'tcp', 'allow', '0.0.0.0/0', null, null, 80, 80]
-      - [300, 'icmp', 'allow', '0.0.0.0/0', 0, 8]
+      - [100, "tcp", "allow", "0.0.0.0/0", !!null "", !!null "", 22, 22]
+      - [200, "tcp", "allow", "0.0.0.0/0", !!null "", !!null "", 80, 80]
+      - [300, "icmp", "allow", "0.0.0.0/0", 0, 8]
     egress:
-      - [100, 'all', 'allow', '0.0.0.0/0', null, null, null, null]
-    state: 'present'
+      - [100, "all", "allow", "0.0.0.0/0", !!null "", !!null "", !!null "", !!null ""]
+    state: "present"
   register: nacl
 
 - name: Assert the network acl already existed
@@ -92,12 +93,12 @@
     tags:
       Created_by: "Ansible test {{ resource_prefix }}"
     ingress:
-      - [100, 'tcp', 'allow', '0.0.0.0/0', null, null, 22, 22]
-      - [200, 'tcp', 'allow', '0.0.0.0/0', null, null, 80, 80]
-      - [300, 'icmp', 'allow', '0.0.0.0/0', 0, 8]
+      - [100, "tcp", "allow", "0.0.0.0/0", !!null "", !!null "", 22, 22]
+      - [200, "tcp", "allow", "0.0.0.0/0", !!null "", !!null "", 80, 80]
+      - [300, "icmp", "allow", "0.0.0.0/0", 0, 8]
     egress:
-      - [100, 'all', 'allow', '0.0.0.0/0', null, null, null, null]
-    state: 'present'
+      - [100, "all", "allow", "0.0.0.0/0", !!null "", !!null "", !!null "", !!null ""]
+    state: "present"
   register: nacl
 
 - name: Assert the network ACL changed

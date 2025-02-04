@@ -2,7 +2,7 @@
 - name: Run tagging tests
   block:
     - ansible.builtin.set_fact:
-        local_bucket_name: "{{ bucket_name | hash('md5')}}-tags"
+        local_bucket_name: "{{ s3_bucket_name | hash('md5') }}-tags"
     # ============================================================
     - name: Create simple s3_bucket for testing tagging
       amazon.aws.s3_bucket:
@@ -83,10 +83,10 @@
 
     ## ============================================================
 
-    #- name: 'Pause to help with s3 bucket eventual consistency'
-    #  wait_for:
-    #    timeout: 10
-    #  delegate_to: localhost
+    # - name: 'Pause to help with s3 bucket eventual consistency'
+    #   wait_for:
+    #     timeout: 10
+    #   delegate_to: localhost
 
     ## ============================================================
 
@@ -124,10 +124,10 @@
 
     ## ============================================================
 
-    #- name: 'Pause to help with s3 bucket eventual consistency'
-    #  wait_for:
-    #    timeout: 10
-    #  delegate_to: localhost
+    # - name: 'Pause to help with s3 bucket eventual consistency'
+    #   wait_for:
+    #     timeout: 10
+    #   delegate_to: localhost
 
     ## ============================================================
 
@@ -165,10 +165,10 @@
 
     ## ============================================================
 
-    #- name: 'Pause to help with s3 bucket eventual consistency'
-    #  wait_for:
-    #    timeout: 10
-    #  delegate_to: localhost
+    # - name: 'Pause to help with s3 bucket eventual consistency'
+    #   wait_for:
+    #     timeout: 10
+    #   delegate_to: localhost
 
     ## ============================================================
 
@@ -189,10 +189,10 @@
 
     ## ============================================================
 
-    #- name: 'Pause to help with s3 bucket eventual consistency'
-    #  wait_for:
-    #    timeout: 10
-    #  delegate_to: localhost
+    # - name: 'Pause to help with s3 bucket eventual consistency'
+    #   wait_for:
+    #     timeout: 10
+    #   delegate_to: localhost
 
     ## ============================================================
 
