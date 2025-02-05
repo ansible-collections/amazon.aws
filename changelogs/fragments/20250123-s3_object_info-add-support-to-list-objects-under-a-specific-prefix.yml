@@ -1,3 +1,0 @@
----
-minor_changes:
-  - s3_object_info - add support to list objects under a specific prefix (https://github.com/ansible-collections/amazon.aws/issues/2477).

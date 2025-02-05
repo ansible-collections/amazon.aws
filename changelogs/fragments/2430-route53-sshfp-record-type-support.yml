@@ -1,3 +1,0 @@
----
-minor_changes:
-  - route53 - Add support for type ``SSHFP`` records (https://github.com/ansible-collections/amazon.aws/pull/2430).

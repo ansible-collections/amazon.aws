@@ -1,2 +1,0 @@
-minor_changes:
-  - route53_zone - Add support for enabling DNSSEC signing in a specific hosted zone (https://github.com/ansible-collections/amazon.aws/issues/1976).
