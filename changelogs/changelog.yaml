@@ -3211,6 +3211,23 @@ releases:
     - 8.2.2.yml
     - handle_vpc_ipv6_false.yml
     release_date: '2025-01-14'
+  8.2.3:
+    changes:
+      bugfixes:
+      - ec2_instance - Fix issue where EC2 instance module failed to apply security
+        groups when both `network` and `vpc_subnet_id`` were specified, caused by
+        passing `None` to discover_security_groups() (https://github.com/ansible-collections/amazon.aws/pull/2488).
+      - s3_bucket - Do not use default region as location constraint when creating
+        bucket on ceph cluster (https://github.com/ansible-collections/amazon.aws/issues/2420).
+      release_summary: This release includes bugfixes for the  ``ec2_instance`` and
+        ``s3_bucket`` modules.
+    fragments:
+    - 20250113-s3_bucket-location-constraints-for-ceph-cluster.yml
+    - 20250202-assertion-group-name-aws-az-info.yml
+    - 2488-ec2_instance-fix-security-group-attachment-issue.yml
+    - 8.2.3.yml
+    - readme_template_update.yml
+    release_date: '2025-02-04'
   9.0.0:
     changes:
       breaking_changes:
