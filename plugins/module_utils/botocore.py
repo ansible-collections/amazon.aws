@@ -64,7 +64,9 @@ except ImportError:
 if typing.TYPE_CHECKING:
     from typing_extensions import TypeAlias
 
-    ClientType: TypeAlias = botocore.client.BaseClient
+    from .retries import RetryingBotoClientWrapper
+
+    ClientType: TypeAlias = Union[botocore.client.BaseClient, RetryingBotoClientWrapper]
     ResourceType: TypeAlias = boto3.resources.base.ServiceResource
     BotoConn = Union[ClientType, ResourceType, Tuple[ClientType, ResourceType]]
     from .modules import AnsibleAWSModule
