@@ -38,7 +38,7 @@ runs:
         INPUT_RELEASE: ${{ inputs.release }}
 
     - name: Upload RST release log
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: changelog-rst
         path: changelog-release.rst
@@ -50,7 +50,7 @@ runs:
       shell: bash
 
     - name: Upload MD release log
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: changelog-md
         path: changelog-release.md
