@@ -736,20 +736,26 @@ class Connection(ConnectionBase):
         # see https://github.com/pylint-dev/pylint/issues/8909)
         return (returncode, stdout, self._flush_stderr(self._session))  # pylint: disable=unreachable
 
+    @staticmethod
+    def generate_mark() -> str:
+        """Generates a random string of characters to delimit SSM CLI commands"""
+        mark = "".join([random.choice(string.ascii_letters) for i in range(Connection.MARK_LENGTH)])
+        return mark
+
     @_ssm_retry
     def exec_command(self, cmd: str, in_data: bool = None, sudoable: bool = True) -> Tuple[int, str, str]:
-        """run a command on the ssm host"""
+        """When running a command on the SSM host, uses generate_mark to get delimiting strings"""
 
         super().exec_command(cmd, in_data=in_data, sudoable=sudoable)
 
         self._vvv(f"EXEC: {to_text(cmd)}")
 
-        mark_begin = "".join([random.choice(string.ascii_letters) for i in range(self.MARK_LENGTH)])
+        mark_begin = self.generate_mark()
         if self.is_windows:
             mark_start = mark_begin + " $LASTEXITCODE"
         else:
             mark_start = mark_begin
-        mark_end = "".join([random.choice(string.ascii_letters) for i in range(self.MARK_LENGTH)])
+        mark_end = self.generate_mark()
 
         # Wrap command in markers accordingly for the shell used
         cmd = self._wrap_command(cmd, mark_start, mark_end)
@@ -777,7 +783,7 @@ class Connection(ConnectionBase):
         disable_echo_cmd = to_bytes("stty -echo\n", errors="surrogate_or_strict")
 
         disable_prompt_complete = None
-        end_mark = "".join([random.choice(string.ascii_letters) for i in range(self.MARK_LENGTH)])
+        end_mark = self.generate_mark()
         disable_prompt_cmd = to_bytes(
             "PS1='' ; bind 'set enable-bracketed-paste off'; printf '\\n%s\\n' '" + end_mark + "'\n",
             errors="surrogate_or_strict",

@@ -11,6 +11,8 @@ from ansible.plugins.loader import connection_loader
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOTO3
 
+from ansible_collections.community.aws.plugins.connection.aws_ssm import Connection
+
 if not HAS_BOTO3:
     pytestmark = pytest.mark.skip("test_data_pipeline.py requires the python modules 'boto3' and 'botocore'")
 
@@ -257,3 +259,12 @@ class TestConnectionBaseClass:
         conn._session_id.return_value = "a"
         conn._client = MagicMock()
         conn.close()
+
+    def test_generate_mark(self):
+        """Testing string generation"""
+        test_a = Connection.generate_mark()
+        test_b = Connection.generate_mark()
+
+        assert test_a != test_b
+        assert len(test_a) == Connection.MARK_LENGTH
+        assert len(test_b) == Connection.MARK_LENGTH
