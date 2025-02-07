@@ -284,6 +284,38 @@ EXAMPLES = r"""
       yum:
         name: nginx
         state: present
+
+---
+# Execution: ansible-playbook play.yaml -i ssm_inventory.ini
+# =====================================================
+# ssm_inventory.ini
+# [all]
+# linux ansible_aws_ssm_instance_id=i-01234567829abcdef ansible_aws_ssm_region=us-east-1
+
+# [all:vars]
+# ansible_connection=community.aws.aws_ssm
+# ansible_python_interpreter=/usr/bin/python3
+# local_tmp=/tmp/ansible-local-ssm-0123456
+# ansible_aws_ssm_bucket_name=my-test-bucket
+# ansible_aws_ssm_s3_addressing_style=virtual
+# -----------------------
+# Transfer file and run script on remote host
+- name: Transfer file and Run script into SSM manage node
+  hosts: all
+  gather_facts: false
+
+  tasks:
+    - name: Create shell script
+      ansible.builtin.copy:
+        mode: '0755'
+        dest: '/tmp/date.sh'
+        content: |
+          #!/usr/bin/env bash
+          date
+
+    - name: Execute script from remote host
+      ansible.builtin.shell:
+        cmd: '/tmp/date.sh'
 """
 import getpass
 import json
