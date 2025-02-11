@@ -81,6 +81,14 @@ EXAMPLES = r"""
   amazon.aws.ec2_placement_group:
     name: my-cluster
     state: absent
+
+- name: Create placement group through NLB
+  amazon.aws.ec2_placement_group:
+    name: my-cluster
+    state: present
+    endpoint_url: "https://internal-nlb-12345.us-east-1.elb.amazonaws.com"
+    region: us-east-1
+    
 """
 
 RETURN = r"""
