@@ -32,6 +32,8 @@ def fixture_connection_aws_ssm():
     connection._session = MagicMock()
     connection._session.poll = MagicMock()
     connection._session.poll.side_effect = lambda: None
+    connection._session.stdin = MagicMock()
+    connection._session.stdin.write = MagicMock()
     connection._stdout = MagicMock()
     connection._flush_stderr = MagicMock()
 
