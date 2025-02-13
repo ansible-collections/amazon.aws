@@ -327,8 +327,8 @@ import select
 import string
 import subprocess
 import time
-from typing import Optional
 from typing import NoReturn
+from typing import Optional
 from typing import Tuple
 
 try:
@@ -609,7 +609,7 @@ class Connection(ConnectionBase):
         return self._instance_id
 
     @instance_id.setter
-    def instance_id(self, instance_id: str) -> NoReturn:
+    def instance_id(self, instance_id: str) -> None:
         self._instance_id = instance_id
 
     def start_session(self):
@@ -646,7 +646,7 @@ class Connection(ConnectionBase):
         self._vvvv(f"SSM COMMAND: {to_text(cmd)}")
 
         stdout_r, stdout_w = pty.openpty()
-        session = subprocess.Popen(
+        self._session = subprocess.Popen(
             cmd,
             stdin=subprocess.PIPE,
             stdout=stdout_w,
@@ -657,14 +657,13 @@ class Connection(ConnectionBase):
 
         os.close(stdout_w)
         self._stdout = os.fdopen(stdout_r, "rb", 0)
-        self._session = session
 
-        # Disable command echo and prompt.
+        # For non-windows Hosts: Ensure the session has started, and disable command echo and prompt.
         self._prepare_terminal()
 
-        self._vvvv(f"SSM CONNECTION ID: {self._session_id}")
+        self._vvvv(f"SSM CONNECTION ID: {self._session_id}")  # pylint: disable=unreachable
 
-        return session
+        return self._session
 
     def poll_stdout(self, timeout: int = 1000) -> bool:
         """Polls the stdout file descriptor.
@@ -767,72 +766,74 @@ class Connection(ConnectionBase):
 
         return self.exec_communicate(cmd, mark_start, mark_begin, mark_end)
 
-    def _prepare_terminal(self):
-        """perform any one-time terminal settings"""
-        # No windows setup for now
-        if self.is_windows:
-            return
+    def _ensure_ssm_session_has_started(self) -> None:
+        """Ensure the SSM session has started on the host. We poll stdout
+        until we match the following string 'Starting session with SessionId'
+        """
+        stdout = ""
+        for poll_result in self.poll("START SSM SESSION", "start_session"):
+            if poll_result:
+                stdout += to_text(self._stdout.read(1024))
+                self._vvvv(f"START SSM SESSION stdout line: \n{to_bytes(stdout)}")
+                match = str(stdout).find("Starting session with SessionId")
+                if match != -1:
+                    self._vvvv("START SSM SESSION startup output received")
+                    break
 
-        # *_complete variables are 3 valued:
-        #   - None: not started
-        #   - False: started
-        #   - True: complete
-
-        startup_complete = False
-        disable_echo_complete = None
-        disable_echo_cmd = to_bytes("stty -echo\n", errors="surrogate_or_strict")
-
-        disable_prompt_complete = None
-        end_mark = self.generate_mark()
+    def _disable_prompt_command(self) -> None:
+        """Disable prompt command from the host"""
+        end_mark = "".join([random.choice(string.ascii_letters) for i in range(self.MARK_LENGTH)])
         disable_prompt_cmd = to_bytes(
             "PS1='' ; bind 'set enable-bracketed-paste off'; printf '\\n%s\\n' '" + end_mark + "'\n",
             errors="surrogate_or_strict",
         )
         disable_prompt_reply = re.compile(r"\r\r\n" + re.escape(end_mark) + r"\r\r\n", re.MULTILINE)
 
+        # Send command
+        self._vvvv(f"DISABLE PROMPT Disabling Prompt: \n{disable_prompt_cmd}")
+        self._session.stdin.write(disable_prompt_cmd)
+
         stdout = ""
-        # Custom command execution for when we're waiting for startup
-        for poll_result in self.poll("PRE", "start_session"):
-            if disable_prompt_complete:
-                break
+        for poll_result in self.poll("DISABLE PROMPT", disable_prompt_cmd):
             if poll_result:
                 stdout += to_text(self._stdout.read(1024))
-                self._vvvv(f"PRE stdout line: \n{to_bytes(stdout)}")
+                self._vvvv(f"DISABLE PROMPT stdout line: \n{to_bytes(stdout)}")
+                if disable_prompt_reply.search(stdout):
+                    break
 
-            # wait til prompt is ready
-            if startup_complete is False:
-                match = str(stdout).find("Starting session with SessionId")
-                if match != -1:
-                    self._vvvv("PRE startup output received")
-                    startup_complete = True
+    def _disable_echo_command(self) -> None:
+        """Disable echo command from the host"""
+        disable_echo_cmd = to_bytes("stty -echo\n", errors="surrogate_or_strict")
 
-            # disable echo
-            if startup_complete and (disable_echo_complete is None):
-                self._vvvv(f"PRE Disabling Echo: {disable_echo_cmd}")
-                self._session.stdin.write(disable_echo_cmd)
-                disable_echo_complete = False
+        # Send command
+        self._vvvv(f"DISABLE ECHO Disabling Prompt: \n{disable_echo_cmd}")
+        self._session.stdin.write(disable_echo_cmd)
 
-            if disable_echo_complete is False:
+        stdout = ""
+        for poll_result in self.poll("DISABLE ECHO", disable_echo_cmd):
+            if poll_result:
+                stdout += to_text(self._stdout.read(1024))
+                self._vvvv(f"DISABLE ECHO stdout line: \n{to_bytes(stdout)}")
                 match = str(stdout).find("stty -echo")
                 if match != -1:
-                    disable_echo_complete = True
+                    break
 
-            # disable prompt
-            if disable_echo_complete and disable_prompt_complete is None:
-                self._vvvv(f"PRE Disabling Prompt: \n{disable_prompt_cmd}")
-                self._session.stdin.write(disable_prompt_cmd)
-                disable_prompt_complete = False
+    def _prepare_terminal(self) -> None:
+        """perform any one-time terminal settings"""
+        # No Windows setup for now
+        if self.is_windows:
+            return
 
-            if disable_prompt_complete is False:
-                match = disable_prompt_reply.search(stdout)
-                if match:
-                    stdout = stdout[match.end():]  # fmt: skip
-                    disable_prompt_complete = True
+        # Ensure SSM Session has started
+        self._ensure_ssm_session_has_started()
 
-        # see https://github.com/pylint-dev/pylint/issues/8909)
-        if not disable_prompt_complete:  # pylint: disable=unreachable
-            raise AnsibleConnectionFailure(f"SSM process closed during _prepare_terminal on host: {self.instance_id}")
-        self._vvvv("PRE Terminal configured")
+        # Disable echo command
+        self._disable_echo_command()  # pylint: disable=unreachable
+
+        # Disable prompt command
+        self._disable_prompt_command()  # pylint: disable=unreachable
+
+        self._vvvv("PRE Terminal configured")  # pylint: disable=unreachable
 
     def _wrap_command(self, cmd: str, mark_start: str, mark_end: str) -> str:
         """Wrap command so stdout and status can be extracted"""
