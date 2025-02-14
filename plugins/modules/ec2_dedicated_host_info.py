@@ -7,7 +7,7 @@
 DOCUMENTATION = r"""
 ---
 module: ec2_dedicated_host_info
-version_added: 10.0.0
+version_added: 9.3.0
 short_description: Gather information about EC2 Dedicated Hosts in AWS
 description:
   - Gather information about EC2 Dedicated Hosts in AWS.

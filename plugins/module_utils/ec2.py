@@ -1847,7 +1847,7 @@ def describe_ec2_mac_dedicated_hosts(
 
 @EC2DedicatedHost.deletion_error_handler("release dedicated host")
 @AWSRetry.jittered_backoff()
-def release_ec2_deidcated_host(client, host_id: Union[str, List[str]]) -> bool:
+def release_ec2_dedicated_host(client, host_id: Union[str, List[str]]) -> bool:
     host_ids = host_id
     if isinstance(host_id, string_types):
         host_ids = [host_id]
@@ -1857,7 +1857,7 @@ def release_ec2_deidcated_host(client, host_id: Union[str, List[str]]) -> bool:
 
 @EC2DedicatedHost.common_error_handler("allocate dedicated hosts")
 @AWSRetry.jittered_backoff()
-def allocate_ec2_deidcated_hosts(
+def allocate_ec2_dedicated_hosts(
     client, availability_zone: str, **params: Dict[str, Union[List[str], List[Dict[str, Union[str, List[str]]]]]]
 ) -> List[str]:
     return client.allocate_hosts(AvailabilityZone=availability_zone, **params)["HostIds"]
@@ -1865,7 +1865,7 @@ def allocate_ec2_deidcated_hosts(
 
 @EC2DedicatedHost.common_error_handler("modify dedicated hosts")
 @AWSRetry.jittered_backoff()
-def modify_ec2_deidcated_hosts(
+def modify_ec2_dedicated_hosts(
     client,
     host_id: Union[List[str], str],
     **params: Dict[str, Union[List[str], List[Dict[str, Union[str, List[str]]]]]],
