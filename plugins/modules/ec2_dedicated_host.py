@@ -7,8 +7,8 @@
 DOCUMENTATION = r"""
 ---
 module: ec2_dedicated_host
-version_added: 10.0.0
-short_description: Create, update or delete (release) EC2 dedicated host.
+version_added: 9.3.0
+short_description: Create, update or delete (release) EC2 dedicated host
 description:
   - Create, update or delete (release) EC2 dedicated host.
 author:
@@ -28,7 +28,7 @@ options:
     required: false
   lookup:
     description:
-      - Look up ecc2 dedicated host by either O(tags) or by O(host_id).
+      - Look up EC2 dedicated host by either O(tags) or by O(host_id).
       - If O(lookup=tag) and O(tags) is not specified then no lookup for an
         existing dedicated host is performed and a new dedicated host will be created.
       - When using O(lookup=tag), multiple matches being found will result in
@@ -284,11 +284,11 @@ from typing import Optional
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleEC2Error
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import allocate_ec2_deidcated_hosts
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import allocate_ec2_dedicated_hosts
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_ec2_dedicated_hosts
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import modify_ec2_deidcated_hosts
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import release_ec2_deidcated_host
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import modify_ec2_dedicated_hosts
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import release_ec2_dedicated_host
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 
@@ -301,7 +301,7 @@ def describe_host(client, host_id: str) -> Optional[Dict[str, Any]]:
     return host_info
 
 
-def tags_match(match_tags, candidate_tags):
+def tags_match(match_tags: Dict[str, str], candidate_tags: Dict[str, str]) -> bool:
     return all((k in candidate_tags and candidate_tags[k] == v for k, v in match_tags.items()))
 
 
@@ -346,9 +346,9 @@ def release_host(client, module: AnsibleAWSModule, existing: Dict[str, Any]) -> 
         module.exit_json(changed=False)
     host_id = module.params.get("host_id")
     if module.check_mode:
-        module.exit_json(changed=True, msg=f"Would have release dedicated host '{host_id}' if not in check mode.")
-    changed = release_ec2_deidcated_host(client, host_id)
-    module.exit_json(changed=changed)
+        module.exit_json(changed=True, msg=f"Would have released dedicated host '{host_id}' if not in check mode.")
+    changed = release_ec2_dedicated_host(client, host_id)
+    module.exit_json(changed=changed, host=format_output(existing))
 
 
 def create_or_update_host(client, module: AnsibleAWSModule, existing: Dict[str, Any]) -> NoReturn:
@@ -378,9 +378,7 @@ def create_or_update_host(client, module: AnsibleAWSModule, existing: Dict[str, 
             if module.check_mode:
                 module.exit_json(changed=True, msg="Would have update dedicated host if not in check mode.")
 
-            module.exit_json(params_to_update=params_to_update)
-
-            result = modify_ec2_deidcated_hosts(client, host_id=host_id, **params_to_update)
+            result = modify_ec2_dedicated_hosts(client, host_id=host_id, **params_to_update)
             if result.get("Unsuccessful"):
                 code = result["Unsuccessful"][0]["Error"]["Code"]
                 message = result["Unsuccessful"][0]["Error"]["Code"]
@@ -422,7 +420,7 @@ def create_or_update_host(client, module: AnsibleAWSModule, existing: Dict[str, 
         if quantity:
             params["Quantity"] = quantity
 
-        host_id = allocate_ec2_deidcated_hosts(client, availability_zone=availability_zone, **params)[0]
+        host_id = allocate_ec2_dedicated_hosts(client, availability_zone=availability_zone, **params)[0]
         changed = True
 
     # Ensure tags
