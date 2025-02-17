@@ -38,7 +38,6 @@ don't need to be wrapped in the backoff decorator.
 """
 
 import logging
-import os
 import re
 import traceback
 from io import StringIO
