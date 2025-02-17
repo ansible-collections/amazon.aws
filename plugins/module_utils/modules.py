@@ -106,37 +106,6 @@ class AnsibleAWSModule:
             except AnsibleBotocoreError as e:
                 self._module.fail_json(to_native(e))
 
-        deprecated_vars = {"EC2_REGION", "EC2_SECURITY_TOKEN", "EC2_SECRET_KEY", "EC2_ACCESS_KEY", "EC2_URL", "S3_URL"}
-        if deprecated_vars.intersection(set(os.environ.keys())):
-            self._module.deprecate(
-                (
-                    "Support for the 'EC2_REGION', 'EC2_ACCESS_KEY', 'EC2_SECRET_KEY', "
-                    "'EC2_SECURITY_TOKEN', 'EC2_URL', and 'S3_URL' environment "
-                    "variables has been deprecated.  "
-                    "These variables are currently used for all AWS services which can "
-                    "cause confusion.  We recomend using the relevant module "
-                    "parameters or alternatively the 'AWS_REGION', 'AWS_ACCESS_KEY_ID', "
-                    "'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN', and 'AWS_URL' "
-                    "environment variables can be used instead."
-                ),
-                date="2024-12-01",
-                collection_name="amazon.aws",
-            )
-
-        if "AWS_SECURITY_TOKEN" in os.environ.keys():
-            self._module.deprecate(
-                (
-                    "Support for the 'AWS_SECURITY_TOKEN' environment variable "
-                    "has been deprecated.  This variable was based on the original "
-                    "boto SDK, support for which has now been dropped.  "
-                    "We recommend using the 'session_token' module parameter "
-                    "or alternatively the 'AWS_SESSION_TOKEN' environment variable "
-                    "can be used instead."
-                ),
-                date="2024-12-01",
-                collection_name="amazon.aws",
-            )
-
         self.check_mode = self._module.check_mode
         self._diff = self._module._diff
         self._name = self._module._name
@@ -312,29 +281,18 @@ def _aws_common_argument_spec() -> Dict["str", Any]:
     """
     return dict(
         access_key=dict(
-            aliases=["aws_access_key_id", "aws_access_key", "ec2_access_key"],
-            deprecated_aliases=[
-                dict(name="ec2_access_key", date="2024-12-01", collection_name="amazon.aws"),
-            ],
-            fallback=(env_fallback, ["AWS_ACCESS_KEY_ID", "AWS_ACCESS_KEY", "EC2_ACCESS_KEY"]),
+            aliases=["aws_access_key_id", "aws_access_key"],
+            fallback=(env_fallback, ["AWS_ACCESS_KEY_ID", "AWS_ACCESS_KEY"]),
             no_log=False,
         ),
         secret_key=dict(
-            aliases=["aws_secret_access_key", "aws_secret_key", "ec2_secret_key"],
-            deprecated_aliases=[
-                dict(name="ec2_secret_key", date="2024-12-01", collection_name="amazon.aws"),
-            ],
-            fallback=(env_fallback, ["AWS_SECRET_ACCESS_KEY", "AWS_SECRET_KEY", "EC2_SECRET_KEY"]),
+            aliases=["aws_secret_access_key", "aws_secret_key"],
+            fallback=(env_fallback, ["AWS_SECRET_ACCESS_KEY", "AWS_SECRET_KEY"]),
             no_log=True,
         ),
         session_token=dict(
-            aliases=["aws_session_token", "security_token", "access_token", "aws_security_token"],
-            deprecated_aliases=[
-                dict(name="access_token", date="2024-12-01", collection_name="amazon.aws"),
-                dict(name="security_token", date="2024-12-01", collection_name="amazon.aws"),
-                dict(name="aws_security_token", date="2024-12-01", collection_name="amazon.aws"),
-            ],
-            fallback=(env_fallback, ["AWS_SESSION_TOKEN", "AWS_SECURITY_TOKEN", "EC2_SECURITY_TOKEN"]),
+            aliases=["aws_session_token"],
+            fallback=(env_fallback, ["AWS_SESSION_TOKEN"]),
             no_log=True,
         ),
         profile=dict(
@@ -342,12 +300,8 @@ def _aws_common_argument_spec() -> Dict["str", Any]:
             fallback=(env_fallback, ["AWS_PROFILE", "AWS_DEFAULT_PROFILE"]),
         ),
         endpoint_url=dict(
-            aliases=["aws_endpoint_url", "ec2_url", "s3_url"],
-            deprecated_aliases=[
-                dict(name="ec2_url", date="2024-12-01", collection_name="amazon.aws"),
-                dict(name="s3_url", date="2024-12-01", collection_name="amazon.aws"),
-            ],
-            fallback=(env_fallback, ["AWS_URL", "EC2_URL", "S3_URL"]),
+            aliases=["aws_endpoint_url"],
+            fallback=(env_fallback, ["AWS_URL"]),
         ),
         validate_certs=dict(
             type="bool",
@@ -374,11 +328,8 @@ def aws_argument_spec() -> Dict["str", Any]:
     """
     region_spec = dict(
         region=dict(
-            aliases=["aws_region", "ec2_region"],
-            deprecated_aliases=[
-                dict(name="ec2_region", date="2024-12-01", collection_name="amazon.aws"),
-            ],
-            fallback=(env_fallback, ["AWS_REGION", "AWS_DEFAULT_REGION", "EC2_REGION"]),
+            aliases=["aws_region"],
+            fallback=(env_fallback, ["AWS_REGION", "AWS_DEFAULT_REGION"]),
         ),
     )
     spec = _aws_common_argument_spec()

@@ -115,10 +115,6 @@ options:
       - Mutually exclusive with O(object_name).
     type: str
     version_added: 9.2.0
-notes:
-  - Support for the E(S3_URL) environment variable has been
-    deprecated and will be removed in a release after 2024-12-01, please use the O(endpoint_url) parameter
-    or the E(AWS_URL) environment variable.
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules

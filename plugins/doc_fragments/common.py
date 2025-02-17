@@ -17,54 +17,36 @@ options:
       - AWS access key ID.
       - See the AWS documentation for more information about access tokens
         U(https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys).
-      - The C(AWS_ACCESS_KEY_ID), C(AWS_ACCESS_KEY) or C(EC2_ACCESS_KEY)
+      - The C(AWS_ACCESS_KEY_ID) or C(AWS_ACCESS_KEY)
         environment variables may also be used in decreasing order of
         preference.
       - The I(aws_access_key) and I(profile) options are mutually exclusive.
       - The I(aws_access_key_id) alias was added in release 5.1.0 for
         consistency with the AWS botocore SDK.
-      - The I(ec2_access_key) alias has been deprecated and will be removed in a
-        release after 2024-12-01.
-      - Support for the C(EC2_ACCESS_KEY) environment variable has been
-        deprecated and will be removed in a release after 2024-12-01.
     type: str
-    aliases: ['aws_access_key_id', 'aws_access_key', 'ec2_access_key']
+    aliases: ['aws_access_key_id', 'aws_access_key']
   secret_key:
     description:
       - AWS secret access key.
       - See the AWS documentation for more information about access tokens
         U(https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys).
-      - The C(AWS_SECRET_ACCESS_KEY), C(AWS_SECRET_KEY), or C(EC2_SECRET_KEY)
+      - The C(AWS_SECRET_ACCESS_KEY) or C(AWS_SECRET_KEY)
         environment variables may also be used in decreasing order of
         preference.
       - The I(secret_key) and I(profile) options are mutually exclusive.
       - The I(aws_secret_access_key) alias was added in release 5.1.0 for
         consistency with the AWS botocore SDK.
-      - The I(ec2_secret_key) alias has been deprecated and will be removed in a
-        release after 2024-12-01.
-      - Support for the C(EC2_SECRET_KEY) environment variable has been
-        deprecated and will be removed in a release after 2024-12-01.
     type: str
-    aliases: ['aws_secret_access_key', 'aws_secret_key', 'ec2_secret_key']
+    aliases: ['aws_secret_access_key', 'aws_secret_key']
   session_token:
     description:
       - AWS STS session token for use with temporary credentials.
       - See the AWS documentation for more information about access tokens
         U(https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys).
-      - The C(AWS_SESSION_TOKEN), C(AWS_SECURITY_TOKEN) or C(EC2_SECURITY_TOKEN)
-        environment variables may also be used in decreasing order of preference.
-      - The I(security_token) and I(profile) options are mutually exclusive.
-      - Aliases I(aws_session_token) and I(session_token) were added in release
-        3.2.0, with the parameter being renamed from I(security_token) to
-        I(session_token) in release 6.0.0.
-      - The I(security_token), I(aws_security_token), and I(access_token)
-        aliases have been deprecated and will be removed in a release after
-        2024-12-01.
-      - Support for the C(EC2_SECRET_KEY) and C(AWS_SECURITY_TOKEN) environment
-        variables has been deprecated and will be removed in a release after
-        2024-12-01.
+      - The C(AWS_SESSION_TOKEN) environment variable may also be used.
+      - The I(session_token) and I(profile) options are mutually exclusive.
     type: str
-    aliases: ['aws_session_token', 'security_token', 'aws_security_token', 'access_token']
+    aliases: ['aws_session_token']
   profile:
     description:
       - A named AWS profile to use for authentication.
@@ -72,7 +54,7 @@ options:
         U(https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html).
       - The C(AWS_PROFILE) environment variable may also be used.
       - The I(profile) option is mutually exclusive with the I(aws_access_key),
-        I(aws_secret_key) and I(security_token) options.
+        I(aws_secret_key) and I(session_token) options.
     type: str
     aliases: ['aws_profile']
 
@@ -82,14 +64,9 @@ options:
         can be used to connection to other AWS-compatible services the
         amazon.aws and community.aws collections are only tested against
         AWS.
-      - The  C(AWS_URL) or C(EC2_URL) environment variables may also be used,
-        in decreasing order of preference.
-      - The I(ec2_url) and I(s3_url) aliases have been deprecated and will be
-        removed in a release after 2024-12-01.
-      - Support for the C(EC2_URL) environment variable has been deprecated and
-        will be removed in a release after 2024-12-01.
+      - The  C(AWS_URL) environment variable may also be used.
     type: str
-    aliases: ['ec2_url', 'aws_endpoint_url', 's3_url' ]
+    aliases: ['aws_endpoint_url']
 
   aws_ca_bundle:
     description:
@@ -145,19 +122,11 @@ options:
       - The I(aws_access_key) and I(profile) options are mutually exclusive.
       - The I(aws_access_key_id) alias was added in release 5.1.0 for
         consistency with the AWS botocore SDK.
-      - The I(ec2_access_key) alias has been deprecated and will be removed in a
-        release after 2024-12-01.
     type: str
-    aliases: ['aws_access_key_id', 'aws_access_key', 'ec2_access_key']
+    aliases: ['aws_access_key_id', 'aws_access_key']
     env:
       - name: AWS_ACCESS_KEY_ID
       - name: AWS_ACCESS_KEY
-      - name: EC2_ACCESS_KEY
-        deprecated:
-          removed_at_date: '2024-12-01'
-          collection_name: amazon.aws
-          why: 'EC2 in the name implied it was limited to EC2 resources.  However, it is used for all connections.'
-          alternatives: AWS_ACCESS_KEY_ID
   secret_key:
     description:
       - AWS secret access key.
@@ -166,47 +135,21 @@ options:
       - The I(secret_key) and I(profile) options are mutually exclusive.
       - The I(aws_secret_access_key) alias was added in release 5.1.0 for
         consistency with the AWS botocore SDK.
-      - The I(ec2_secret_key) alias has been deprecated and will be removed in a
-        release after 2024-12-01.
     type: str
-    aliases: ['aws_secret_access_key', 'aws_secret_key', 'ec2_secret_key']
+    aliases: ['aws_secret_access_key', 'aws_secret_key']
     env:
       - name: AWS_SECRET_ACCESS_KEY
       - name: AWS_SECRET_KEY
-      - name: EC2_SECRET_KEY
-        deprecated:
-          removed_at_date: '2024-12-01'
-          collection_name: amazon.aws
-          why: 'EC2 in the name implied it was limited to EC2 resources.  However, it is used for all connections.'
-          alternatives: AWS_SECRET_ACCESS_KEY
   session_token:
     description:
       - AWS STS session token for use with temporary credentials.
       - See the AWS documentation for more information about access tokens
         U(https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys).
-      - The I(security_token) and I(profile) options are mutually exclusive.
-      - Aliases I(aws_session_token) and I(session_token) were added in release
-        3.2.0, with the parameter being renamed from I(security_token) to
-        I(session_token) in release 6.0.0.
-      - The I(security_token), I(aws_security_token), and I(access_token)
-        aliases have been deprecated and will be removed in a release after
-        2024-12-01.
+      - The I(session_token) and I(profile) options are mutually exclusive.
     type: str
-    aliases: ['aws_session_token', 'security_token', 'aws_security_token', 'access_token']
+    aliases: ['aws_session_token']
     env:
       - name: AWS_SESSION_TOKEN
-      - name: AWS_SECURITY_TOKEN
-        deprecated:
-          removed_at_date: '2024-12-01'
-          collection_name: amazon.aws
-          why: 'AWS_SECURITY_TOKEN was used for compatibility with the original boto SDK, support for which has been dropped'
-          alternatives: AWS_SESSION_TOKEN
-      - name: EC2_SECURITY_TOKEN
-        deprecated:
-          removed_at_date: '2024-12-01'
-          collection_name: amazon.aws
-          why: 'EC2 in the name implied it was limited to EC2 resources.  However, it is used for all connections.'
-          alternatives: AWS_SESSION_TOKEN
 
   profile:
     description:
@@ -214,7 +157,7 @@ options:
       - See the AWS documentation for more information about named profiles
         U(https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html).
       - The I(profile) option is mutually exclusive with the I(aws_access_key),
-        I(aws_secret_key) and I(security_token) options.
+        I(aws_secret_key) and I(session_token) options.
       - The I(boto_profile) alias has been deprecated and will be removed in a
         release after 2024-12-01.
     type: str
@@ -234,12 +177,6 @@ options:
     aliases: ['aws_endpoint_url', 'endpoint' ]
     env:
       - name: AWS_URL
-      - name: EC2_URL
-        deprecated:
-          removed_at_date: '2024-12-01'
-          collection_name: amazon.aws
-          why: 'EC2 in the name implied it was limited to EC2 resources.  However, it is used for all connections.'
-          alternatives: AWS_URL
 
 notes:
   - B(Caution:) For modules, environment variables and configuration files are

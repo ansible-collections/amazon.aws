@@ -62,7 +62,7 @@
     aws_region: "{{ aws_region }}"
     aws_access_key: "{{ aws_access_key }}"
     aws_secret_key: "{{ aws_secret_key }}"
-    aws_security_token: "{{ security_token }}"
+    aws_session_token: "{{ security_token }}"
   register: bad_profile
   ignore_errors: true
 

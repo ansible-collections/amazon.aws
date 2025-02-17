@@ -1,0 +1,37 @@
+---
+breaking_changes:
+  - amazon.aws collection - Support for the ``EC2_ACCESS_KEY`` environment variable
+    was deprecated in release ``6.0.0`` and has now been removed.  Please
+    use the ``access_key`` parameter or ``AWS_ACCESS_KEY_ID`` environment variable
+    instead (https://github.com/ansible-collections/amazon.aws/pull/2527).
+  - amazon.aws collection - The ``ec2_access_key`` alias for the ``access_key``
+    parameter was deprecated in release ``6.0.0`` and has now been removed.  Please
+    use the ``access_key`` name instead (https://github.com/ansible-collections/amazon.aws/pull/2527).
+  - amazon.aws collection - Support for the ``EC2_SECRET_KEY`` environment variable
+    was deprecated in release ``6.0.0`` and has now been removed.  Please
+    use the ``secret_key`` parameter or ``AWS_SECRET_ACCESS_KEY`` environment
+    variable instead (https://github.com/ansible-collections/amazon.aws/pull/2527).
+  - amazon.aws collection - The ``ec2_secret_key`` alias for the ``secret_key``
+    parameter was deprecated in release ``6.0.0`` and has now been removed.  Please
+    use the ``secret_key`` name instead (https://github.com/ansible-collections/amazon.aws/pull/2527).
+  - amazon.aws collection - Support for the ``EC2_SECURITY_TOKEN`` and ``AWS_SECURITY_TOKEN`` environment
+    variables were deprecated in release ``6.0.0`` and have now been removed.  Please
+    use the ``session_token`` parameter or ``AWS_SESSION_TOKEN`` environment variable
+    instead (https://github.com/ansible-collections/amazon.aws/pull/2527).
+  - amazon.aws collection - The ``access_token``, ``aws_security_token`` and ``security_token`` aliases for the ``session_token``
+    parameter were deprecated in release ``6.0.0`` and have now been removed.  Please
+    use the ``session_token`` name instead (https://github.com/ansible-collections/amazon.aws/pull/2527).
+  - amazon.aws collection - Support for the ``EC2_REGION`` environment variable
+    was deprecated in release ``6.0.0`` and has now been removed.  Please
+    use the ``region`` parameter or ``AWS_REGION`` environment variable instead
+    (https://github.com/ansible-collections/amazon.aws/pull/2527).
+  - amazon.aws collection - The ``ec2_region`` alias for the ``region`` parameter
+    was deprecated in release ``6.0.0`` and has now been removed.  Please
+    use the ``region`` name instead (https://github.com/ansible-collections/amazon.aws/pull/2527).
+  - amazon.aws collection - The ``ec2_url`` and ``s3_url`` aliases for the ``endpoint_url`` parameter
+    were deprecated in release ``6.0.0`` and have now been removed.  Please
+    use the ``region`` name instead (https://github.com/ansible-collections/amazon.aws/pull/2527).
+  - amazon.aws collection - Support for the ``EC2_URL`` and ``S3_URL`` environment
+    variables were deprecated in release ``6.0.0`` and have now been removed.  Please
+    use the ``endpoint_url`` parameter or ``AWS_URL`` environment variable
+    instead (https://github.com/ansible-collections/amazon.aws/pull/2527).

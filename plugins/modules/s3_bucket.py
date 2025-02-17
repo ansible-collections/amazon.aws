@@ -269,12 +269,7 @@ notes:
     operations/API aren't implemented by the endpoint, module doesn't fail
     if each parameter satisfies the following condition.
     O(requester_pays) is V(false), O(policy), O(tags), and O(versioning) are V(None).
-  - In release 5.0.0 the O(s3_url) parameter was merged into the O(endpoint_url) parameter,
-    O(s3_url) remains as an alias for O(endpoint_url).
   - For Walrus O(endpoint_url) should be set to the FQDN of the endpoint with neither scheme nor path.
-  - Support for the E(S3_URL) environment variable has been
-    deprecated and will be removed in a release after 2024-12-01, please use the O(endpoint_url) parameter
-    or the E(AWS_URL) environment variable.
 """
 
 EXAMPLES = r"""
