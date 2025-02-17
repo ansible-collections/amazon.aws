@@ -1873,4 +1873,4 @@ def modify_ec2_dedicated_hosts(
     host_ids = host_id
     if isinstance(host_id, string_types):
         host_ids = [host_id]
-    return client.allocate_hosts(HostIds=host_ids, **params)
+    return client.modify_hosts(HostIds=host_ids, **params)
