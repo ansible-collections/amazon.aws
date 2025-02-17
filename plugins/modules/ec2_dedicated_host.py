@@ -381,7 +381,7 @@ def create_or_update_host(client, module: AnsibleAWSModule, existing: Dict[str, 
             result = modify_ec2_dedicated_hosts(client, host_id=host_id, **params_to_update)
             if result.get("Unsuccessful"):
                 code = result["Unsuccessful"][0]["Error"]["Code"]
-                message = result["Unsuccessful"][0]["Error"]["Code"]
+                message = result["Unsuccessful"][0]["Error"]["Message"]
                 module.fail_json(
                     msg=f"The Dedicated Hosts '{host_id}' could not be modified. Code='{code}' Message = '{message}'"
                 )
