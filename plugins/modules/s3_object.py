@@ -67,7 +67,7 @@ options:
     type: int
   metadata:
     description:
-      - Metadata to use when O(mode=put) or O(mode=copy) as a dictionary of key value pairs.
+      - Metadata to use when O(mode=copy), O(mode=create) or O(mode=put) as a dictionary of key value pairs.
     type: dict
   mode:
     description:
