@@ -629,7 +629,7 @@ def put_object_acl(module, s3, bucket, obj, params=None):
         raise S3ObjectFailure(f"Failed while creating object {obj}.", e)
 
 
-def create_dirkey(module, s3, bucket, obj, encrypt, expiry):
+def create_dirkey(module, s3, bucket, obj, encrypt, expiry, metadata):
     if module.check_mode:
         module.exit_json(msg="PUT operation skipped - running in check mode", changed=True)
     params = {"Bucket": bucket, "Key": obj, "Body": b""}
@@ -638,6 +638,7 @@ def create_dirkey(module, s3, bucket, obj, encrypt, expiry):
             encrypt,
             module.params.get("encryption_mode"),
             module.params.get("encryption_kms_key_id"),
+            metadata,
         )
     )
     put_object_acl(module, s3, bucket, obj, params)
@@ -1151,6 +1152,7 @@ def s3_object_do_create(module, connection, connection_v4, s3_vars):
         s3_vars["object"],
         s3_vars["encrypt"],
         s3_vars["expiry"],
+        s3_vars["metadata"],
     )
 
 
