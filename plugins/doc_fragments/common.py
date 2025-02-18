@@ -158,10 +158,8 @@ options:
         U(https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html).
       - The I(profile) option is mutually exclusive with the I(aws_access_key),
         I(aws_secret_key) and I(session_token) options.
-      - The I(boto_profile) alias has been deprecated and will be removed in a
-        release after 2024-12-01.
     type: str
-    aliases: ['aws_profile', 'boto_profile']
+    aliases: ['aws_profile']
     env:
       - name: AWS_PROFILE
       - name: AWS_DEFAULT_PROFILE
@@ -171,10 +169,8 @@ options:
         can be used to connection to other AWS-compatible services the
         amazon.aws and community.aws collections are only tested against
         AWS.
-      - The I(endpoint) alias has been deprecated and will be
-        removed in a release after 2024-12-01.
     type: str
-    aliases: ['aws_endpoint_url', 'endpoint' ]
+    aliases: ['aws_endpoint_url']
     env:
       - name: AWS_URL
 
