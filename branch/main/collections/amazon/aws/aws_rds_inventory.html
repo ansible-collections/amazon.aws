@@ -184,25 +184,18 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-rds-
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-access_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_access_key_id"></div>
-<div class="ansibleOptionAnchor" id="parameter-aws_access_key"></div>
-<div class="ansibleOptionAnchor" id="parameter-ec2_access_key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-ec2-access-key"><span id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-aws-access-key-id"></span><span id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-aws-access-key"></span><span id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-access-key"></span><strong>access_key</strong></p>
-<a class="ansibleOptionLink" href="#parameter-access_key" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_access_key_id, aws_access_key, ec2_access_key</span></p>
+<div class="ansibleOptionAnchor" id="parameter-aws_access_key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-aws-access-key-id"><span id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-aws-access-key"></span><span id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-access-key"></span><strong>access_key</strong></p>
+<a class="ansibleOptionLink" href="#parameter-access_key" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_access_key_id, aws_access_key</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>AWS access key ID.</p>
 <p>See the AWS documentation for more information about access tokens <a class="reference external" href="https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys">https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys</a>.</p>
 <p>The <em>aws_access_key</em> and <em>profile</em> options are mutually exclusive.</p>
 <p>The <em>aws_access_key_id</em> alias was added in release 5.1.0 for consistency with the AWS botocore SDK.</p>
-<p>The <em>ec2_access_key</em> alias has been deprecated and will be removed in a release after 2024-12-01.</p>
 <p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
-<ul>
+<ul class="simple">
 <li><p>Environment variable: <span class="target" id="index-0"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_ACCESS_KEY_ID"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_ACCESS_KEY_ID</span></code></a></p></li>
 <li><p>Environment variable: <span class="target" id="index-1"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_ACCESS_KEY"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_ACCESS_KEY</span></code></a></p></li>
-<li><p>Environment variable: <span class="target" id="index-2"></span><a class="reference internal" href="../../environment_variables.html#envvar-EC2_ACCESS_KEY"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">EC2_ACCESS_KEY</span></code></a></p>
-<p>Removed in: major release after 2024-12-01</p>
-<p>Why: EC2 in the name implied it was limited to EC2 resources. However, it is used for all connections.</p>
-<p>Alternative: AWS_ACCESS_KEY_ID</p>
-</li>
 </ul>
 </div></td>
 </tr>
@@ -234,7 +227,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-rds-
 </pre></div>
 </div>
 </li>
-<li><p>Environment variable: <span class="target" id="index-3"></span><a class="reference internal" href="../../environment_variables.html#envvar-ANSIBLE_INVENTORY_CACHE"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">ANSIBLE_INVENTORY_CACHE</span></code></a></p></li>
+<li><p>Environment variable: <span class="target" id="index-2"></span><a class="reference internal" href="../../environment_variables.html#envvar-ANSIBLE_INVENTORY_CACHE"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">ANSIBLE_INVENTORY_CACHE</span></code></a></p></li>
 </ul>
 </div></td>
 </tr>
@@ -255,8 +248,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-rds-
 </pre></div>
 </div>
 </li>
-<li><p>Environment variable: <span class="target" id="index-4"></span><a class="reference external" href="https://docs.ansible.com/ansible-core/devel/reference_appendices/config.html#envvar-ANSIBLE_CACHE_PLUGIN_CONNECTION" title="(in Ansible Core vdevel)"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">ANSIBLE_CACHE_PLUGIN_CONNECTION</span></code></a></p></li>
-<li><p>Environment variable: <span class="target" id="index-5"></span><a class="reference internal" href="../../environment_variables.html#envvar-ANSIBLE_INVENTORY_CACHE_CONNECTION"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">ANSIBLE_INVENTORY_CACHE_CONNECTION</span></code></a></p></li>
+<li><p>Environment variable: <span class="target" id="index-3"></span><a class="reference external" href="https://docs.ansible.com/ansible-core/devel/reference_appendices/config.html#envvar-ANSIBLE_CACHE_PLUGIN_CONNECTION" title="(in Ansible Core vdevel)"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">ANSIBLE_CACHE_PLUGIN_CONNECTION</span></code></a></p></li>
+<li><p>Environment variable: <span class="target" id="index-4"></span><a class="reference internal" href="../../environment_variables.html#envvar-ANSIBLE_INVENTORY_CACHE_CONNECTION"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">ANSIBLE_INVENTORY_CACHE_CONNECTION</span></code></a></p></li>
 </ul>
 </div></td>
 </tr>
@@ -278,8 +271,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-rds-
 </pre></div>
 </div>
 </li>
-<li><p>Environment variable: <span class="target" id="index-6"></span><a class="reference external" href="https://docs.ansible.com/ansible-core/devel/reference_appendices/config.html#envvar-ANSIBLE_CACHE_PLUGIN" title="(in Ansible Core vdevel)"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">ANSIBLE_CACHE_PLUGIN</span></code></a></p></li>
-<li><p>Environment variable: <span class="target" id="index-7"></span><a class="reference internal" href="../../environment_variables.html#envvar-ANSIBLE_INVENTORY_CACHE_PLUGIN"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">ANSIBLE_INVENTORY_CACHE_PLUGIN</span></code></a></p></li>
+<li><p>Environment variable: <span class="target" id="index-5"></span><a class="reference external" href="https://docs.ansible.com/ansible-core/devel/reference_appendices/config.html#envvar-ANSIBLE_CACHE_PLUGIN" title="(in Ansible Core vdevel)"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">ANSIBLE_CACHE_PLUGIN</span></code></a></p></li>
+<li><p>Environment variable: <span class="target" id="index-6"></span><a class="reference internal" href="../../environment_variables.html#envvar-ANSIBLE_INVENTORY_CACHE_PLUGIN"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">ANSIBLE_INVENTORY_CACHE_PLUGIN</span></code></a></p></li>
 </ul>
 </div></td>
 </tr>
@@ -301,8 +294,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-rds-
 </pre></div>
 </div>
 </li>
-<li><p>Environment variable: <span class="target" id="index-8"></span><a class="reference external" href="https://docs.ansible.com/ansible-core/devel/reference_appendices/config.html#envvar-ANSIBLE_CACHE_PLUGIN_PREFIX" title="(in Ansible Core vdevel)"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">ANSIBLE_CACHE_PLUGIN_PREFIX</span></code></a></p></li>
-<li><p>Environment variable: <span class="target" id="index-9"></span><a class="reference internal" href="../../environment_variables.html#envvar-ANSIBLE_INVENTORY_CACHE_PLUGIN_PREFIX"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">ANSIBLE_INVENTORY_CACHE_PLUGIN_PREFIX</span></code></a></p></li>
+<li><p>Environment variable: <span class="target" id="index-7"></span><a class="reference external" href="https://docs.ansible.com/ansible-core/devel/reference_appendices/config.html#envvar-ANSIBLE_CACHE_PLUGIN_PREFIX" title="(in Ansible Core vdevel)"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">ANSIBLE_CACHE_PLUGIN_PREFIX</span></code></a></p></li>
+<li><p>Environment variable: <span class="target" id="index-8"></span><a class="reference internal" href="../../environment_variables.html#envvar-ANSIBLE_INVENTORY_CACHE_PLUGIN_PREFIX"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">ANSIBLE_INVENTORY_CACHE_PLUGIN_PREFIX</span></code></a></p></li>
 </ul>
 </div></td>
 </tr>
@@ -324,8 +317,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-rds-
 </pre></div>
 </div>
 </li>
-<li><p>Environment variable: <span class="target" id="index-10"></span><a class="reference external" href="https://docs.ansible.com/ansible-core/devel/reference_appendices/config.html#envvar-ANSIBLE_CACHE_PLUGIN_TIMEOUT" title="(in Ansible Core vdevel)"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">ANSIBLE_CACHE_PLUGIN_TIMEOUT</span></code></a></p></li>
-<li><p>Environment variable: <span class="target" id="index-11"></span><a class="reference internal" href="../../environment_variables.html#envvar-ANSIBLE_INVENTORY_CACHE_TIMEOUT"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">ANSIBLE_INVENTORY_CACHE_TIMEOUT</span></code></a></p></li>
+<li><p>Environment variable: <span class="target" id="index-9"></span><a class="reference external" href="https://docs.ansible.com/ansible-core/devel/reference_appendices/config.html#envvar-ANSIBLE_CACHE_PLUGIN_TIMEOUT" title="(in Ansible Core vdevel)"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">ANSIBLE_CACHE_PLUGIN_TIMEOUT</span></code></a></p></li>
+<li><p>Environment variable: <span class="target" id="index-10"></span><a class="reference internal" href="../../environment_variables.html#envvar-ANSIBLE_INVENTORY_CACHE_TIMEOUT"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">ANSIBLE_INVENTORY_CACHE_TIMEOUT</span></code></a></p></li>
 </ul>
 </div></td>
 </tr>
@@ -339,21 +332,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-rds-
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-endpoint_url"></div>
-<div class="ansibleOptionAnchor" id="parameter-aws_endpoint_url"></div>
-<div class="ansibleOptionAnchor" id="parameter-endpoint"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-endpoint-url"><span id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-endpoint"></span><span id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-aws-endpoint-url"></span><strong>endpoint_url</strong></p>
-<a class="ansibleOptionLink" href="#parameter-endpoint_url" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_endpoint_url, endpoint</span></p>
+<div class="ansibleOptionAnchor" id="parameter-aws_endpoint_url"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-endpoint-url"><span id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-aws-endpoint-url"></span><strong>endpoint_url</strong></p>
+<a class="ansibleOptionLink" href="#parameter-endpoint_url" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_endpoint_url</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>URL to connect to instead of the default AWS endpoints. While this can be used to connection to other AWS-compatible services the amazon.aws and community.aws collections are only tested against AWS.</p>
-<p>The <em>endpoint</em> alias has been deprecated and will be removed in a release after 2024-12-01.</p>
 <p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
-<ul>
-<li><p>Environment variable: <span class="target" id="index-12"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_URL"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_URL</span></code></a></p></li>
-<li><p>Environment variable: <span class="target" id="index-13"></span><a class="reference internal" href="../../environment_variables.html#envvar-EC2_URL"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">EC2_URL</span></code></a></p>
-<p>Removed in: major release after 2024-12-01</p>
-<p>Why: EC2 in the name implied it was limited to EC2 resources. However, it is used for all connections.</p>
-<p>Alternative: AWS_URL</p>
-</li>
+<ul class="simple">
+<li><p>Environment variable: <span class="target" id="index-11"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_URL"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_URL</span></code></a></p></li>
 </ul>
 </div></td>
 </tr>
@@ -482,39 +468,31 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-rds-
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-profile"></div>
-<div class="ansibleOptionAnchor" id="parameter-aws_profile"></div>
-<div class="ansibleOptionAnchor" id="parameter-boto_profile"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-profile"><span id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-boto-profile"></span><span id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-aws-profile"></span><strong>profile</strong></p>
-<a class="ansibleOptionLink" href="#parameter-profile" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_profile, boto_profile</span></p>
+<div class="ansibleOptionAnchor" id="parameter-aws_profile"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-profile"><span id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-aws-profile"></span><strong>profile</strong></p>
+<a class="ansibleOptionLink" href="#parameter-profile" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_profile</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A named AWS profile to use for authentication.</p>
 <p>See the AWS documentation for more information about named profiles <a class="reference external" href="https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html">https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html</a>.</p>
-<p>The <em>profile</em> option is mutually exclusive with the <em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> options.</p>
-<p>The <em>boto_profile</em> alias has been deprecated and will be removed in a release after 2024-12-01.</p>
+<p>The <em>profile</em> option is mutually exclusive with the <em>aws_access_key</em>, <em>aws_secret_key</em> and <em>session_token</em> options.</p>
 <p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
 <ul class="simple">
-<li><p>Environment variable: <span class="target" id="index-14"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_PROFILE"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_PROFILE</span></code></a></p></li>
-<li><p>Environment variable: <span class="target" id="index-15"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_DEFAULT_PROFILE"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_DEFAULT_PROFILE</span></code></a></p></li>
+<li><p>Environment variable: <span class="target" id="index-12"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_PROFILE"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_PROFILE</span></code></a></p></li>
+<li><p>Environment variable: <span class="target" id="index-13"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_DEFAULT_PROFILE"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_DEFAULT_PROFILE</span></code></a></p></li>
 </ul>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-region"></div>
-<div class="ansibleOptionAnchor" id="parameter-aws_region"></div>
-<div class="ansibleOptionAnchor" id="parameter-ec2_region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-region"><span id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-ec2-region"></span><span id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-aws-region"></span><strong>region</strong></p>
-<a class="ansibleOptionLink" href="#parameter-region" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_region, ec2_region</span></p>
+<div class="ansibleOptionAnchor" id="parameter-aws_region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-region"><span id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-aws-region"></span><strong>region</strong></p>
+<a class="ansibleOptionLink" href="#parameter-region" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_region</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The AWS region to use.</p>
 <p>See the Amazon AWS documentation for more information <a class="reference external" href="http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region">http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region</a>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
-<ul>
-<li><p>Environment variable: <span class="target" id="index-16"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_REGION"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_REGION</span></code></a></p></li>
-<li><p>Environment variable: <span class="target" id="index-17"></span><a class="reference internal" href="../../environment_variables.html#envvar-EC2_REGION"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">EC2_REGION</span></code></a></p>
-<p>Removed in: major release after 2024-12-01</p>
-<p>Why: EC2 in the name implied it was limited to EC2 resources, when it is used for all connections</p>
-<p>Alternative: AWS_REGION</p>
-</li>
+<ul class="simple">
+<li><p>Environment variable: <span class="target" id="index-14"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_REGION"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_REGION</span></code></a></p></li>
 </ul>
 </div></td>
 </tr>
@@ -529,55 +507,33 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-rds-
 <tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-secret_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_secret_access_key"></div>
-<div class="ansibleOptionAnchor" id="parameter-aws_secret_key"></div>
-<div class="ansibleOptionAnchor" id="parameter-ec2_secret_key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-secret-key"><span id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-ec2-secret-key"></span><span id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-aws-secret-key"></span><span id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-aws-secret-access-key"></span><strong>secret_key</strong></p>
-<a class="ansibleOptionLink" href="#parameter-secret_key" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_secret_access_key, aws_secret_key, ec2_secret_key</span></p>
+<div class="ansibleOptionAnchor" id="parameter-aws_secret_key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-secret-key"><span id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-aws-secret-key"></span><span id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-aws-secret-access-key"></span><strong>secret_key</strong></p>
+<a class="ansibleOptionLink" href="#parameter-secret_key" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_secret_access_key, aws_secret_key</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>AWS secret access key.</p>
 <p>See the AWS documentation for more information about access tokens <a class="reference external" href="https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys">https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys</a>.</p>
 <p>The <em>secret_key</em> and <em>profile</em> options are mutually exclusive.</p>
 <p>The <em>aws_secret_access_key</em> alias was added in release 5.1.0 for consistency with the AWS botocore SDK.</p>
-<p>The <em>ec2_secret_key</em> alias has been deprecated and will be removed in a release after 2024-12-01.</p>
 <p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
-<ul>
-<li><p>Environment variable: <span class="target" id="index-18"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_SECRET_ACCESS_KEY"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_SECRET_ACCESS_KEY</span></code></a></p></li>
-<li><p>Environment variable: <span class="target" id="index-19"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_SECRET_KEY"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_SECRET_KEY</span></code></a></p></li>
-<li><p>Environment variable: <span class="target" id="index-20"></span><a class="reference internal" href="../../environment_variables.html#envvar-EC2_SECRET_KEY"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">EC2_SECRET_KEY</span></code></a></p>
-<p>Removed in: major release after 2024-12-01</p>
-<p>Why: EC2 in the name implied it was limited to EC2 resources. However, it is used for all connections.</p>
-<p>Alternative: AWS_SECRET_ACCESS_KEY</p>
-</li>
+<ul class="simple">
+<li><p>Environment variable: <span class="target" id="index-15"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_SECRET_ACCESS_KEY"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_SECRET_ACCESS_KEY</span></code></a></p></li>
+<li><p>Environment variable: <span class="target" id="index-16"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_SECRET_KEY"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_SECRET_KEY</span></code></a></p></li>
 </ul>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-session_token"></div>
-<div class="ansibleOptionAnchor" id="parameter-aws_session_token"></div>
-<div class="ansibleOptionAnchor" id="parameter-security_token"></div>
-<div class="ansibleOptionAnchor" id="parameter-aws_security_token"></div>
-<div class="ansibleOptionAnchor" id="parameter-access_token"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-session-token"><span id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-security-token"></span><span id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-aws-session-token"></span><span id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-aws-security-token"></span><span id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-access-token"></span><strong>session_token</strong></p>
-<a class="ansibleOptionLink" href="#parameter-session_token" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_session_token, security_token, aws_security_token, access_token</span></p>
+<div class="ansibleOptionAnchor" id="parameter-aws_session_token"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-session-token"><span id="ansible-collections-amazon-aws-aws-rds-inventory-parameter-aws-session-token"></span><strong>session_token</strong></p>
+<a class="ansibleOptionLink" href="#parameter-session_token" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_session_token</span></p>
 <p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>AWS STS session token for use with temporary credentials.</p>
 <p>See the AWS documentation for more information about access tokens <a class="reference external" href="https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys">https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys</a>.</p>
-<p>The <em>security_token</em> and <em>profile</em> options are mutually exclusive.</p>
-<p>Aliases <em>aws_session_token</em> and <em>session_token</em> were added in release 3.2.0, with the parameter being renamed from <em>security_token</em> to <em>session_token</em> in release 6.0.0.</p>
-<p>The <em>security_token</em>, <em>aws_security_token</em>, and <em>access_token</em> aliases have been deprecated and will be removed in a release after 2024-12-01.</p>
+<p>The <em>session_token</em> and <em>profile</em> options are mutually exclusive.</p>
 <p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
-<ul>
-<li><p>Environment variable: <span class="target" id="index-21"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_SESSION_TOKEN"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_SESSION_TOKEN</span></code></a></p></li>
-<li><p>Environment variable: <span class="target" id="index-22"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_SECURITY_TOKEN"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_SECURITY_TOKEN</span></code></a></p>
-<p>Removed in: major release after 2024-12-01</p>
-<p>Why: AWS_SECURITY_TOKEN was used for compatibility with the original boto SDK, support for which has been dropped</p>
-<p>Alternative: AWS_SESSION_TOKEN</p>
-</li>
-<li><p>Environment variable: <span class="target" id="index-23"></span><a class="reference internal" href="../../environment_variables.html#envvar-EC2_SECURITY_TOKEN"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">EC2_SECURITY_TOKEN</span></code></a></p>
-<p>Removed in: major release after 2024-12-01</p>
-<p>Why: EC2 in the name implied it was limited to EC2 resources. However, it is used for all connections.</p>
-<p>Alternative: AWS_SESSION_TOKEN</p>
-</li>
+<ul class="simple">
+<li><p>Environment variable: <span class="target" id="index-17"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_SESSION_TOKEN"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_SESSION_TOKEN</span></code></a></p></li>
 </ul>
 </div></td>
 </tr>
@@ -633,7 +589,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-rds-
 </pre></div>
 </div>
 </li>
-<li><p>Environment variable: <span class="target" id="index-24"></span><a class="reference internal" href="../../environment_variables.html#envvar-ANSIBLE_INVENTORY_USE_EXTRA_VARS"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">ANSIBLE_INVENTORY_USE_EXTRA_VARS</span></code></a></p></li>
+<li><p>Environment variable: <span class="target" id="index-18"></span><a class="reference internal" href="../../environment_variables.html#envvar-ANSIBLE_INVENTORY_USE_EXTRA_VARS"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">ANSIBLE_INVENTORY_USE_EXTRA_VARS</span></code></a></p></li>
 </ul>
 </div></td>
 </tr>
