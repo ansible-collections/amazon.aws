@@ -2,13 +2,13 @@
 ##################################################################################
 # Tests using Endpoints
 
-- name: Test basic operation using standard endpoint (aws-parameters)
+- name: Test basic operation using standard endpoint (default-parameter-name)
   example_module:
     region: "{{ aws_region }}"
-    aws_endpoint_url: https://ec2.{{ aws_region }}.amazonaws.com
-    aws_access_key: "{{ aws_access_key }}"
-    aws_secret_key: "{{ aws_secret_key }}"
-    aws_session_token: "{{ security_token }}"
+    endpoint_url: https://ec2.{{ aws_region }}.amazonaws.com
+    access_key: "{{ aws_access_key }}"
+    secret_key: "{{ aws_secret_key }}"
+    session_token: "{{ security_token }}"
   register: standard_endpoint_result
 
 - name: Check that we connected to the standard endpoint
@@ -20,13 +20,13 @@
 # The FIPS endpoints aren't available in every region, this will trigger errors
 # outside of: [ us-east-1, us-east-2, us-west-1, us-west-2 ]
 
-- name: Test basic operation using FIPS endpoint (aws-parameters)
+- name: Test basic operation using FIPS endpoint (default-parameter-name)
   example_module:
     region: "{{ aws_region }}"
-    aws_endpoint_url: https://ec2-fips.us-east-1.amazonaws.com
-    aws_access_key: "{{ aws_access_key }}"
-    aws_secret_key: "{{ aws_secret_key }}"
-    aws_session_token: "{{ security_token }}"
+    endpoint_url: https://ec2-fips.us-east-1.amazonaws.com
+    access_key: "{{ aws_access_key }}"
+    secret_key: "{{ aws_secret_key }}"
+    session_token: "{{ security_token }}"
   register: fips_endpoint_result
 
 - name: Check that we connected to the FIPS endpoint
@@ -35,13 +35,13 @@
       - fips_endpoint_result is successful
       - '"ec2-fips:DescribeImages" in fips_endpoint_result.resource_actions'
 
-- name: Test basic operation using FIPS endpoint (aws-parameters)
+- name: Test basic operation using FIPS endpoint (alias-parameter-name)
   example_module:
     region: "{{ aws_region }}"
-    endpoint_url: https://ec2-fips.us-east-1.amazonaws.com
-    aws_access_key: "{{ aws_access_key }}"
-    aws_secret_key: "{{ aws_secret_key }}"
-    aws_session_token: "{{ security_token }}"
+    aws_endpoint_url: https://ec2-fips.us-east-1.amazonaws.com
+    access_key: "{{ aws_access_key }}"
+    secret_key: "{{ aws_secret_key }}"
+    session_token: "{{ security_token }}"
   register: fips_endpoint_result
 
 - name: Check that we connected to the FIPS endpoint
@@ -56,9 +56,9 @@
 - name: Test basic operation using FIPS endpoint (aws-environment)
   example_module:
     region: "{{ aws_region }}"
-    aws_access_key: "{{ aws_access_key }}"
-    aws_secret_key: "{{ aws_secret_key }}"
-    aws_session_token: "{{ security_token }}"
+    access_key: "{{ aws_access_key }}"
+    secret_key: "{{ aws_secret_key }}"
+    session_token: "{{ security_token }}"
   environment:
     AWS_URL: https://ec2-fips.us-east-1.amazonaws.com
   register: fips_endpoint_result
