@@ -263,12 +263,7 @@ author:
   - "Alina Buzachis (@alinabuzachis)"
 notes:
   - Support for O(tags) and O(purge_tags) was added in release 2.0.0.
-  - In release 5.0.0 the O(s3_url) parameter was merged into the O(endpoint_url) parameter,
-    I(s3_url) remains as an alias for O(endpoint_url).
   - For Walrus O(endpoint_url) should be set to the FQDN of the endpoint with neither scheme nor path.
-  - Support for the E(S3_URL) environment variable has been
-    deprecated and will be removed in a release after 2024-12-01, please use the O(endpoint_url) parameter
-    or the E(AWS_URL) environment variable.
   - Support for creating and deleting buckets was removed in release 6.0.0.
 extends_documentation_fragment:
   - amazon.aws.common.modules

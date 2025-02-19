@@ -45,7 +45,7 @@ def fixture_inventory():
         "aws_profile": "first_precedence",
         "aws_access_key": "test_access_key",
         "aws_secret_key": "test_secret_key",
-        "aws_security_token": "test_security_token",
+        "aws_session_token": "test_security_token",
         "iam_role_arn": None,
         "use_contrib_script_compatible_ec2_tag_keys": False,
         "hostvars_prefix": "",

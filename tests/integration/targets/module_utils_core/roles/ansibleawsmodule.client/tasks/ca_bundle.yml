@@ -25,7 +25,7 @@
     region: "{{ aws_region }}"
     access_key: "{{ aws_access_key }}"
     secret_key: "{{ aws_secret_key }}"
-    security_token: "{{ security_token }}"
+    session_token: "{{ security_token }}"
     validate_certs: false
   register: default_bundle_result
 
@@ -41,7 +41,7 @@
     region: "{{ aws_region }}"
     access_key: "{{ aws_access_key }}"
     secret_key: "{{ aws_secret_key }}"
-    security_token: "{{ security_token }}"
+    session_token: "{{ security_token }}"
     aws_ca_bundle: "{{ ca_tmp.path }}/amazonroot.pem"
   register: amazon_ca_result
 
@@ -54,7 +54,7 @@
     region: "{{ aws_region }}"
     access_key: "{{ aws_access_key }}"
     secret_key: "{{ aws_secret_key }}"
-    security_token: "{{ security_token }}"
+    session_token: "{{ security_token }}"
   environment:
     AWS_CA_BUNDLE: "{{ ca_tmp.path }}/amazonroot.pem"
   register: amazon_ca_result
@@ -68,7 +68,7 @@
     region: "{{ aws_region }}"
     access_key: "{{ aws_access_key }}"
     secret_key: "{{ aws_secret_key }}"
-    security_token: "{{ security_token }}"
+    session_token: "{{ security_token }}"
     aws_ca_bundle: "{{ ca_tmp.path }}/amazonroot.pem"
     validate_certs: false
   register: amazon_ca_result
@@ -82,7 +82,7 @@
     region: "{{ aws_region }}"
     access_key: "{{ aws_access_key }}"
     secret_key: "{{ aws_secret_key }}"
-    security_token: "{{ security_token }}"
+    session_token: "{{ security_token }}"
     validate_certs: false
   environment:
     AWS_CA_BUNDLE: "{{ ca_tmp.path }}/amazonroot.pem"
@@ -100,7 +100,7 @@
     region: "{{ aws_region }}"
     access_key: "{{ aws_access_key }}"
     secret_key: "{{ aws_secret_key }}"
-    security_token: "{{ security_token }}"
+    session_token: "{{ security_token }}"
     aws_ca_bundle: "{{ ca_tmp.path }}/isrg-x1.pem"
   register: isrg_ca_result
   ignore_errors: true
@@ -117,7 +117,7 @@
     region: "{{ aws_region }}"
     access_key: "{{ aws_access_key }}"
     secret_key: "{{ aws_secret_key }}"
-    security_token: "{{ security_token }}"
+    session_token: "{{ security_token }}"
   environment:
     AWS_CA_BUNDLE: "{{ ca_tmp.path }}/isrg-x1.pem"
   register: isrg_ca_result
@@ -135,7 +135,7 @@
     region: "{{ aws_region }}"
     access_key: "{{ aws_access_key }}"
     secret_key: "{{ aws_secret_key }}"
-    security_token: "{{ security_token }}"
+    session_token: "{{ security_token }}"
     aws_ca_bundle: "{{ ca_tmp.path }}/isrg-x1.pem"
     validate_certs: false
   register: isrg_ca_result
@@ -149,7 +149,7 @@
     region: "{{ aws_region }}"
     access_key: "{{ aws_access_key }}"
     secret_key: "{{ aws_secret_key }}"
-    security_token: "{{ security_token }}"
+    session_token: "{{ security_token }}"
     validate_certs: false
   environment:
     AWS_CA_BUNDLE: "{{ ca_tmp.path }}/isrg-x1.pem"

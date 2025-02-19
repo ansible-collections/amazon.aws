@@ -1,10 +1,4 @@
 ---
-# A Note about ec2 environment variable name preference:
-#  - EC2_URL -> AWS_URL
-#  - EC2_ACCESS_KEY -> AWS_ACCESS_KEY_ID -> AWS_ACCESS_KEY
-#  - EC2_SECRET_KEY -> AWS_SECRET_ACCESS_KEY -> AWX_SECRET_KEY
-#  - EC2_REGION -> AWS_REGION
-#
 # TODO - name: test 'region' parameter
 # TODO - name: test 'state=absent' parameter for existing key
 # TODO - name: test 'state=absent' parameter for missing key
