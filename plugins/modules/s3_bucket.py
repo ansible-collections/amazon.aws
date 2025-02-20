@@ -569,7 +569,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_bucket
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_bucket_acl
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_bucket_encryption
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_bucket_location
-from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_bucket_ownership_controls
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_bucket_object_ownership
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_bucket_policy
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_bucket_public_access_block
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_bucket_request_payment
@@ -926,7 +926,7 @@ def handle_bucket_ownership(s3_client: ClientType, module: AnsibleAWSModule, nam
     object_ownership = module.params.get("object_ownership")
 
     try:
-        bucket_ownership = get_bucket_ownership_cntrl(s3_client, name)
+        bucket_ownership = get_s3_bucket_object_ownership(s3_client, name)
     except (AnsibleS3PermissionsError, AnsibleS3SupportError) as e:
         if delete_object_ownership or object_ownership is not None:
             raise
@@ -1863,24 +1863,6 @@ def wait_tags_are_applied(s3_client: ClientType, bucket_name: str, expected_tags
         time.sleep(5)
 
     raise AnsibleS3Error(message="Bucket tags failed to apply in the expected time")
-
-
-def get_bucket_ownership_cntrl(s3_client, bucket_name: str) -> Optional[str]:
-    """
-    Get the current bucket ownership controls.
-    Parameters:
-        s3_client (boto3.client): The Boto3 S3 client object.
-        bucket_name (str): The name of the S3 bucket.
-    Returns:
-      The object ownership rule
-    """
-    result = get_s3_bucket_ownership_controls(s3_client, bucket_name)
-    if not result:
-        return None
-    try:
-        return result["Rules"][0]["ObjectOwnership"]
-    except (KeyError, IndexError) as e:
-        raise AnsibleS3SupportError(message="Failed to parse bucket object ownership settings") from e
 
 
 def paginated_list(s3_client: ClientType, **pagination_params) -> Iterator[List[str]]:
