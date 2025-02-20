@@ -1816,3 +1816,61 @@ def create_ec2_transit_gateway(
 def delete_ec2_transit_gateway(client, transit_gateway_id: str) -> bool:
     client.delete_transit_gateway(TransitGatewayId=transit_gateway_id)
     return True
+
+
+# EC2 Dedicated host
+class EC2DedicatedHost(AWSErrorHandler):
+    _CUSTOM_EXCEPTION = AnsibleEC2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code("InvalidHostID.NotFound")
+
+
+@EC2DedicatedHost.list_error_handler("describe dedicated host", [])
+@AWSRetry.jittered_backoff()
+def describe_ec2_dedicated_hosts(
+    client, **params: Dict[str, Union[List[str], List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
+    paginator = client.get_paginator("describe_hosts")
+    return paginator.paginate(**params).build_full_result()["Hosts"]
+
+
+@EC2DedicatedHost.list_error_handler("describe mac dedicated host", [])
+@AWSRetry.jittered_backoff()
+def describe_ec2_mac_dedicated_hosts(
+    client, **params: Dict[str, Union[List[str], List[Dict[str, Union[str, List[str]]]]]]
+) -> List[Dict[str, Any]]:
+    paginator = client.get_paginator("describe_mac_hosts")
+    return paginator.paginate(**params).build_full_result()["MacHosts"]
+
+
+@EC2DedicatedHost.deletion_error_handler("release dedicated host")
+@AWSRetry.jittered_backoff()
+def release_ec2_dedicated_host(client, host_id: Union[str, List[str]]) -> bool:
+    host_ids = host_id
+    if isinstance(host_id, string_types):
+        host_ids = [host_id]
+    client.release_hosts(HostIds=host_ids)
+    return True
+
+
+@EC2DedicatedHost.common_error_handler("allocate dedicated hosts")
+@AWSRetry.jittered_backoff()
+def allocate_ec2_dedicated_hosts(
+    client, availability_zone: str, **params: Dict[str, Union[List[str], List[Dict[str, Union[str, List[str]]]]]]
+) -> List[str]:
+    return client.allocate_hosts(AvailabilityZone=availability_zone, **params)["HostIds"]
+
+
+@EC2DedicatedHost.common_error_handler("modify dedicated hosts")
+@AWSRetry.jittered_backoff()
+def modify_ec2_dedicated_hosts(
+    client,
+    host_id: Union[List[str], str],
+    **params: Dict[str, Union[List[str], List[Dict[str, Union[str, List[str]]]]]],
+) -> Dict[str, Any]:
+    host_ids = host_id
+    if isinstance(host_id, string_types):
+        host_ids = [host_id]
+    return client.modify_hosts(HostIds=host_ids, **params)
