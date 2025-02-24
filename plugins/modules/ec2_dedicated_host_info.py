@@ -63,19 +63,31 @@ hosts:
   returned: When O(mac_only=false)
   type: complex
   contains:
+    allocation_time:
+      description: The time that the Dedicated Host was allocated.
+      returned: always
+      type: str
+      sample: "2025-02-12T12:09:22+00:00"
+    allows_multiple_instance_types:
+      description: Indicates whether the Dedicated Host supports multiple instance types of the same instance family.
+      returned: always
+      type: str
+      sample: "off"
     auto_placement:
       description: Whether auto-placement is on or off.
       returned: always
       type: str
-    availability:
+      sample: "off"
+    availability_zone:
       description: The Availability Zone of the Dedicated Host.
       returned: always
       type: str
-    availability_zone:
-      description: Availability zone of ENI.
+      sample: "us-east-1b"
+    availability_zone_id:
+      description: The ID of the Availability Zone in which the Dedicated Host is allocated.
       returned: always
       type: str
-      sample: "us-east-1b"
+      sample: "use1-az6"
     available_capacity:
       description: Information about the instances running on the Dedicated Host.
       returned: always
@@ -85,6 +97,7 @@ hosts:
           description: The number of vCPUs available for launching instances onto the Dedicated Host.
           returned: always
           type: int
+          sample: 8
         available_instance_capacity:
           description: The number of instances that can be launched onto the Dedicated Host.
           returned: always
@@ -94,22 +107,27 @@ hosts:
               description: The number of instances that can be launched onto the Dedicated Host.
               returned: always
               type: int
+              sample: 1
             instance_type:
               description: The instance type supported by the Dedicated Host.
               returned: always
               type: str
+              sample: "mac2.metal"
             total_capacity:
               description: The total number of instances that can be launched onto the Dedicated Host if there are no instances running on it.
               returned: always
               type: dict
-    client_token:
-      description: Unique, case-sensitive identifier that you provide to ensure the idempotency of the request.
-      returned: always
-      type: str
+              sample: 1
     host_id:
       description: The ID of the Dedicated Host.
       returned: always
       type: str
+      sample: "h-03f51341e6e39f848"
+    client_token:
+      description: Unique, case-sensitive identifier that you provide to ensure the idempotency of the request.
+      returned: always
+      type: str
+      sample: "token-0123456789a"
     host_properties:
       description: The hardware specifications of the Dedicated Host.
       returned: always
@@ -119,22 +137,27 @@ hosts:
           description: The number of cores on the Dedicated Host.
           returned: always
           type: int
+          sample: 8
         instance_type:
           description: The instance type supported by the Dedicated Host.
           returned: always
           type: str
+          sample: "mac2.metal"
         instance_family:
           description: The instance family supported by the Dedicated Host.
-          returned: always
+          returned: if defined
           type: str
+          sample: "mac2"
         sockets:
           description: The number of sockets on the Dedicated Host.
           returned: always
           type: int
+          sample: 1
         total_v_cpus:
           description: The total number of vCPUs on the Dedicated Host.
           returned: always
           type: int
+          sample: 8
     host_reservation_id:
       description: The reservation ID of the Dedicated Host.
       returned: always
@@ -148,58 +171,57 @@ hosts:
           description: The ID of instance that is running on the Dedicated Host.
           returned: always
           type: str
+          sample: "i-0123456789abcd"
         instance_type:
           description: The instance type of the running instance.
           returned: always
           type: str
+          sample: "ec2.micro"
         owner_id:
           description: The ID of the Amazon Web Services account that owns the instance.
           returned: always
           type: str
+          sample: "0123456789"
     state:
       description: The state of the Dedicated Host.
       returned: always
       type: str
-    allocation_time:
-      description: The time that the Dedicated Host was allocated.
-      returned: always
-      type: str
+      sample: "available"
     release_time:
       description: The time that the Dedicated Host was released.
       returned: always
       type: str
+      sample: "2025-02-12T12:09:22+00:00"
     host_recovery:
       description: Indicates whether host recovery is enabled or disabled for the Dedicated Host.
       returned: always
       type: str
-    allows_multiple_instance_types:
-      description: Indicates whether the Dedicated Host supports multiple instance types of the same instance family.
-      returned: always
-      type: str
+      sample: "off"
     owner_id:
       description: The ID of the Amazon Web Services account that owns the Dedicated Host.
       returned: always
       type: str
-    availability_zone_id:
-      description: The ID of the Availability Zone in which the Dedicated Host is allocated.
-      returned: always
-      type: str
+      sample: "0123456789"
     member_of_service_linked_resource_group:
       description: Indicates whether the Dedicated Host is in a host resource group.
       returned: always
-      type: str
+      type: bool
+      sample: false
     outpost_arn:
       description: The Amazon Resource Name (ARN) of the Amazon Web Services Outpost on which the Dedicated Host is allocated.
       returned: always
       type: str
+      sample: "arn:aws:outposts:us-east-1:0123012301230123:outpost/op-0123456789abcdef0"
     host_maintenance:
       description: Indicates whether host maintenance is enabled or disabled for the Dedicated Host.
       returned: always
       type: str
+      sample: "off"
     asset_id:
       description: The ID of the Outpost hardware asset on which the Dedicated Host is allocated.
       returned: always
       type: str
+      sample: "abcdefgh"
     tags:
       description: Dictionary of tags added to the dedicated host.
       returned: always
@@ -214,11 +236,13 @@ mac_hosts:
       description: The EC2 Mac Dedicated Host ID.
       returned: always
       type: str
+      sample: "h-04b38258aba8c1875"
     mac_os_latest_supported_versions:
       description: The latest macOS versions that the EC2 Mac Dedicated Host can launch without being upgraded.
       returned: always
       type: list
       elements: str
+      sample: ["15.3", "14.7.3", "13.7.3"]
 """
 
 from typing import Any

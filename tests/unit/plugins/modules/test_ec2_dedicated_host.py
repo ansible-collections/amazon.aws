@@ -41,7 +41,7 @@ def test_get_ec2_dedicated_host_with_lookup_host_id(
 
     assert ec2_dedicated_host.get_ec2_dedicated_host(client, ansible_module) == expected
     expected_params = {
-        "Filter": [{"Name": "state", "Values": ["available", "under-assessment", "permanent-failure"]}],
+        "Filters": [{"Name": "state", "Values": ["available", "under-assessment", "permanent-failure"]}],
         "HostIds": ["h-012345"],
     }
     m_describe_ec2_dedicated_hosts.assert_called_once_with(client, **expected_params)
@@ -95,6 +95,6 @@ def test_get_ec2_dedicated_host_with_lookup_tag(
     else:
         assert ec2_dedicated_host.get_ec2_dedicated_host(client, ansible_module) == expected
     expected_params = {
-        "Filter": [{"Name": "state", "Values": ["available", "under-assessment", "permanent-failure"]}],
+        "Filters": [{"Name": "state", "Values": ["available", "under-assessment", "permanent-failure"]}],
     }
     m_describe_ec2_dedicated_hosts.assert_called_once_with(client, **expected_params)

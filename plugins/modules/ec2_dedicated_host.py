@@ -131,19 +131,31 @@ host:
   returned: When O(state=present)
   type: complex
   contains:
+    allocation_time:
+      description: The time that the Dedicated Host was allocated.
+      returned: always
+      type: str
+      sample: "2025-02-12T12:09:22+00:00"
+    allows_multiple_instance_types:
+      description: Indicates whether the Dedicated Host supports multiple instance types of the same instance family.
+      returned: always
+      type: str
+      sample: "off"
     auto_placement:
       description: Whether auto-placement is on or off.
       returned: always
       type: str
-    availability:
+      sample: "off"
+    availability_zone:
       description: The Availability Zone of the Dedicated Host.
       returned: always
       type: str
-    availability_zone:
-      description: Availability zone of ENI.
+      sample: "us-east-1b"
+    availability_zone_id:
+      description: The ID of the Availability Zone in which the Dedicated Host is allocated.
       returned: always
       type: str
-      sample: "us-east-1b"
+      sample: "use1-az6"
     available_capacity:
       description: Information about the instances running on the Dedicated Host.
       returned: always
@@ -153,6 +165,7 @@ host:
           description: The number of vCPUs available for launching instances onto the Dedicated Host.
           returned: always
           type: int
+          sample: 8
         available_instance_capacity:
           description: The number of instances that can be launched onto the Dedicated Host.
           returned: always
@@ -162,22 +175,27 @@ host:
               description: The number of instances that can be launched onto the Dedicated Host.
               returned: always
               type: int
+              sample: 1
             instance_type:
               description: The instance type supported by the Dedicated Host.
               returned: always
               type: str
+              sample: "mac2.metal"
             total_capacity:
               description: The total number of instances that can be launched onto the Dedicated Host if there are no instances running on it.
               returned: always
               type: dict
-    client_token:
-      description: Unique, case-sensitive identifier that you provide to ensure the idempotency of the request.
-      returned: always
-      type: str
+              sample: 1
     host_id:
       description: The ID of the Dedicated Host.
       returned: always
       type: str
+      sample: "h-03f51341e6e39f848"
+    client_token:
+      description: Unique, case-sensitive identifier that you provide to ensure the idempotency of the request.
+      returned: always
+      type: str
+      sample: "token-0123456789a"
     host_properties:
       description: The hardware specifications of the Dedicated Host.
       returned: always
@@ -187,22 +205,27 @@ host:
           description: The number of cores on the Dedicated Host.
           returned: always
           type: int
+          sample: 8
         instance_type:
           description: The instance type supported by the Dedicated Host.
           returned: always
           type: str
+          sample: "mac2.metal"
         instance_family:
           description: The instance family supported by the Dedicated Host.
-          returned: always
+          returned: if defined
           type: str
+          sample: "mac2"
         sockets:
           description: The number of sockets on the Dedicated Host.
           returned: always
           type: int
+          sample: 1
         total_v_cpus:
           description: The total number of vCPUs on the Dedicated Host.
           returned: always
           type: int
+          sample: 8
     host_reservation_id:
       description: The reservation ID of the Dedicated Host.
       returned: always
@@ -216,58 +239,57 @@ host:
           description: The ID of instance that is running on the Dedicated Host.
           returned: always
           type: str
+          sample: "i-0123456789abcd"
         instance_type:
           description: The instance type of the running instance.
           returned: always
           type: str
+          sample: "ec2.micro"
         owner_id:
           description: The ID of the Amazon Web Services account that owns the instance.
           returned: always
           type: str
+          sample: "0123456789"
     state:
       description: The state of the Dedicated Host.
       returned: always
       type: str
-    allocation_time:
-      description: The time that the Dedicated Host was allocated.
-      returned: always
-      type: str
+      sample: "available"
     release_time:
       description: The time that the Dedicated Host was released.
       returned: always
       type: str
+      sample: "2025-02-12T12:09:22+00:00"
     host_recovery:
       description: Indicates whether host recovery is enabled or disabled for the Dedicated Host.
       returned: always
       type: str
-    allows_multiple_instance_types:
-      description: Indicates whether the Dedicated Host supports multiple instance types of the same instance family.
-      returned: always
-      type: str
+      sample: "off"
     owner_id:
       description: The ID of the Amazon Web Services account that owns the Dedicated Host.
       returned: always
       type: str
-    availability_zone_id:
-      description: The ID of the Availability Zone in which the Dedicated Host is allocated.
-      returned: always
-      type: str
+      sample: "0123456789"
     member_of_service_linked_resource_group:
       description: Indicates whether the Dedicated Host is in a host resource group.
       returned: always
-      type: str
+      type: bool
+      sample: false
     outpost_arn:
       description: The Amazon Resource Name (ARN) of the Amazon Web Services Outpost on which the Dedicated Host is allocated.
       returned: always
       type: str
+      sample: "arn:aws:outposts:us-east-1:0123012301230123:outpost/op-0123456789abcdef0"
     host_maintenance:
       description: Indicates whether host maintenance is enabled or disabled for the Dedicated Host.
       returned: always
       type: str
+      sample: "off"
     asset_id:
       description: The ID of the Outpost hardware asset on which the Dedicated Host is allocated.
       returned: always
       type: str
+      sample: "abcdefgh"
     tags:
       description: Dictionary of tags added to the dedicated host.
       returned: always
@@ -308,7 +330,7 @@ def tags_match(match_tags: Dict[str, str], candidate_tags: Dict[str, str]) -> bo
 def get_ec2_dedicated_host(client, module: AnsibleAWSModule) -> Optional[Dict[str, Any]]:
     host_info = None
     # Select all states except 'released' and 'released-permanent-failure'
-    params = {"Filter": [{"Name": "state", "Values": ["available", "under-assessment", "permanent-failure"]}]}
+    params = {"Filters": [{"Name": "state", "Values": ["available", "under-assessment", "permanent-failure"]}]}
 
     lookup = module.params.get("lookup")
     host_id = module.params.get("host_id")
@@ -363,15 +385,15 @@ def create_or_update_host(client, module: AnsibleAWSModule, existing: Dict[str, 
         auto_placement = module.params.get("auto_placement")
         host_recovery = module.params.get("host_recovery")
         params_to_update = {}
-        if host_recovery != existing["HostRecovery"]:
+        if host_recovery != existing.get("HostRecovery"):
             params_to_update["HostRecovery"] = host_recovery
-        if instance_type != existing["HostProperties"].get("InstanceType"):
+        if instance_type != existing.get("HostProperties", {}).get("InstanceType"):
             params_to_update["InstanceType"] = instance_type
-        if instance_family != existing["HostProperties"].get("InstanceFamily"):
+        if instance_family != existing.get("HostProperties", {}).get("InstanceFamily"):
             params_to_update["InstanceFamily"] = instance_family
-        if host_maintenance != existing["HostMaintenance"]:
+        if host_maintenance != existing.get("HostMaintenance"):
             params_to_update["HostMaintenance"] = host_maintenance
-        if auto_placement != existing["AutoPlacement"]:
+        if auto_placement != existing.get("AutoPlacement"):
             params_to_update["AutoPlacement"] = auto_placement
 
         if params_to_update:
