@@ -87,10 +87,15 @@ options:
     - name: ansible_aws_ssm_bucket_endpoint_url
     version_added: 5.3.0
   plugin:
-    description: This defines the location of the session-manager-plugin binary.
+    description:
+    - This defines the location of the session-manager-plugin binary.
+    - Support for environment variable was added in version 9.1.0.
+    - The plugin will first check the V('/usr/local/bin/session-manager-plugin') as the default path of the SSM plugin
+      if this does not exist, it will find the session-manager-plugin from the PATH environment variable. Added in version 9.1.0.
     vars:
     - name: ansible_aws_ssm_plugin
-    default: '/usr/local/bin/session-manager-plugin'
+    env:
+    - name: AWS_SESSION_MANAGER_PLUGIN
   profile:
     description: Sets AWS profile to use.
     vars:
@@ -345,6 +350,7 @@ from ansible.errors import AnsibleFileNotFound
 from ansible.module_utils._text import to_bytes
 from ansible.module_utils._text import to_text
 from ansible.module_utils.basic import missing_required_lib
+from ansible.module_utils.common.process import get_bin_path
 from ansible.plugins.connection import ConnectionBase
 from ansible.plugins.shell.powershell import _common_args
 from ansible.utils.display import Display
@@ -612,14 +618,28 @@ class Connection(ConnectionBase):
     def instance_id(self, instance_id: str) -> None:
         self._instance_id = instance_id
 
+    def get_executable(self) -> str:
+        ssm_plugin_executable = self.get_option("plugin")
+        if ssm_plugin_executable:
+            # User has provided a path to the ssm plugin, ensure this is a valid path
+            if not os.path.exists(to_bytes(ssm_plugin_executable, errors="surrogate_or_strict")):
+                raise AnsibleError(f"failed to find the executable specified {ssm_plugin_executable}.")
+        else:
+            ssm_plugin_executable = "/usr/local/bin/session-manager-plugin"
+            if not os.path.exists(to_bytes(ssm_plugin_executable, errors="surrogate_or_strict")):
+                # find executable from path 'session-manager-plugin'
+                try:
+                    ssm_plugin_executable = get_bin_path("session-manager-plugin")
+                except ValueError as e:
+                    raise AnsibleError(str(e))
+        return ssm_plugin_executable
+
     def start_session(self):
         """start ssm session"""
 
         self._vvv(f"ESTABLISH SSM CONNECTION TO: {self.instance_id}")
 
-        executable = self.get_option("plugin")
-        if not os.path.exists(to_bytes(executable, errors="surrogate_or_strict")):
-            raise AnsibleError(f"failed to find the executable specified {executable}.")
+        executable = self.get_executable()
 
         self._init_clients()
 
