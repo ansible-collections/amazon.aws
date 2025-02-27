@@ -937,7 +937,7 @@ releases:
       - ec2_instance - Add a condition to handle default ```instance_type``` value
         for fix breaking on instance creation with launch template (https://github.com/ansible-collections/amazon.aws/pull/587).
       - ec2_instance - raise an error when missing permission to stop instance when
-        ``state`` is set to ``rebooted``` (https://github.com/ansible-collections/amazon.aws/pull/671).
+        ``state`` is set to ``rebooted`` (https://github.com/ansible-collections/amazon.aws/pull/671).
       - ec2_vpc_igw - use gateway_id rather than filters to paginate if possible to
         fix 'NoneType' object is not subscriptable error (https://github.com/ansible-collections/amazon.aws/pull/766).
       - ec2_vpc_net - fix a bug where CIDR configuration would be updated in check
@@ -3096,7 +3096,7 @@ releases:
         instance profiles the ``amazon.aws.iam_instance_profile`` module can be used
         instead (https://github.com/ansible-collections/amazon.aws/pull/2221).
       minor_changes:
-      - cloudwatch_metric_alarm - add  support for ``evaluate_low_sample_count_percentile```
+      - cloudwatch_metric_alarm - add  support for ``evaluate_low_sample_count_percentile``
         parameter.
       - cloudwatch_metric_alarm - support DatapointsToAlarm config (https://github.com/ansible-collections/amazon.aws/pull/2196).
       - ec2_ami - Add support for uefi-preferred boot mode (https://github.com/ansible-collections/amazon.aws/pull/2253).
@@ -3690,3 +3690,21 @@ releases:
       name: route53_key_signing_key
       namespace: ''
     release_date: '2025-02-04'
+  9.3.0:
+    changes:
+      minor_changes:
+      - s3_object - support passing metadata in ``create`` mode (https://github.com/ansible-collections/amazon.aws/pull/2529).
+      release_summary: This minor release includes two new modules (``ec2_dedicated_host``
+        and ``ec2_dedicated_host_info``) and a new feature for the ``s3_object`` module
+        that now supports passing metadata in ``create`` mode.
+    fragments:
+    - 2529-s3_object-create-metadata.yml
+    - release_summary.yml
+    modules:
+    - description: Create, update or delete (release) EC2 dedicated host
+      name: ec2_dedicated_host
+      namespace: ''
+    - description: Gather information about EC2 Dedicated Hosts in AWS
+      name: ec2_dedicated_host_info
+      namespace: ''
+    release_date: '2025-02-27'
