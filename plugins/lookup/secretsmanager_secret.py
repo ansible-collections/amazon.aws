@@ -13,13 +13,19 @@ description:
   - Look up secrets stored in AWS Secrets Manager provided the caller
     has the appropriate permissions to read the secret.
   - Lookup is based on the secret's I(Name) value.
-  - Optional parameters can be passed into this lookup; O(version_id) and O(version_stage).
+  - Supports fetching full attributes (ARN, Description, LastChangedDate, Tags) aka boto's describe_secret.
+  - Optional parameters for get value include O(version_id), O(version_stage).
   - Prior to release 6.0.0 this module was known as C(aws_ssm), the usage remains the same.
 
 options:
   _terms:
     description: Name of the secret to look up in AWS Secrets Manager.
     required: true
+  get_attributes:
+    description: Whether to return full attributes instead of just the secret value.
+    type: bool
+    default: false
+    version_added: 2.0.0
   bypath:
     description: A boolean to indicate whether the parameter is provided as a hierarchy.
     default: false
@@ -81,6 +87,9 @@ EXAMPLES = r"""
 - name: Lookup secretsmanager secret in the current region
   ansible.builtin.debug: msg="{{ lookup('amazon.aws.aws_secret', '/path/to/secrets', bypath=true) }}"
 
+- name: Lookup secretsmanager secret attributes in the current region
+  ansible.builtin.debug: msg="{{ lookup('amazon.aws.aws_secret', '/path/to/secrets', get_attributes=true) }}"
+
 - name: Create RDS instance with aws_secret lookup for password param
   amazon.aws.rds_instance:
     state: present
@@ -114,10 +123,11 @@ EXAMPLES = r"""
 
 RETURN = r"""
 _raw:
-  description: Returns the value of the secret stored in AWS Secrets Manager.
+  description: Returns either the secret value or a dictionary containing attributes stored in AWS Secrets Manager.
 """
 
 import json
+import datetime
 
 try:
     import botocore
@@ -150,11 +160,12 @@ class LookupModule(AWSLookupBase):
 
         super().run(terms, variables, **kwargs)
 
+        get_attributes = self.get_option("get_attributes")
         on_missing = self.get_option("on_missing")
         on_denied = self.get_option("on_denied")
         on_deleted = self.get_option("on_deleted")
 
-        # validate arguments 'on_missing' and 'on_denied'
+        # validate arguments 'on_missing', 'on_denied' and 'on_deleted'
         if on_missing is not None and (
             not isinstance(on_missing, string_types) or on_missing.lower() not in ["error", "warn", "skip"]
         ):
@@ -197,9 +208,10 @@ class LookupModule(AWSLookupBase):
         else:
             secrets = []
             for term in terms:
-                value = self.get_secret_value(
+                secret_data = self.get_secret_data(
                     term,
                     client,
+                    get_attributes=get_attributes,
                     version_stage=self.get_option("version_stage"),
                     version_id=self.get_option("version_id"),
                     on_missing=on_missing,
@@ -207,19 +219,21 @@ class LookupModule(AWSLookupBase):
                     on_deleted=on_deleted,
                     nested=self.get_option("nested"),
                 )
-                if value:
-                    secrets.append(value)
+                if secret_data:
+                    secrets.append(secret_data)
+
             if self.get_option("join"):
-                joined_secret = []
-                joined_secret.append("".join(secrets))
-                return joined_secret
+                    joined_secret = []
+                    joined_secret.append("".join(secrets))
+                    return joined_secret
 
         return secrets
 
-    def get_secret_value(
+    def get_secret_data(
         self,
         term,
         client,
+        get_attributes=False,
         version_stage=None,
         version_id=None,
         on_missing=None,
@@ -242,6 +256,17 @@ class LookupModule(AWSLookupBase):
             params["SecretId"] = secret_name
 
         try:
+            # Fetch only attributes if requested
+            if get_attributes:
+                secret_data = client.describe_secret(SecretId=term)
+
+                # Convert datetime objects to ISO 8601 format
+                for key in ["LastChangedDate", "LastAccessedDate", "CreatedDate"]:
+                    if key in secret_data and isinstance(secret_data[key], datetime.datetime):
+                        secret_data[key] = secret_data[key].isoformat()
+
+                return secret_data
+
             response = client.get_secret_value(aws_retry=True, **params)
             if "SecretBinary" in response:
                 return response["SecretBinary"]
