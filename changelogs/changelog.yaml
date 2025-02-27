@@ -3707,4 +3707,4 @@ releases:
     - description: Gather information about EC2 Dedicated Hosts in AWS
       name: ec2_dedicated_host_info
       namespace: ''
-    release_date: '2025-02-27'
+    release_date: '2025-03-04'
