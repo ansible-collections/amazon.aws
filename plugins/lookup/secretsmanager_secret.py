@@ -261,7 +261,7 @@ class LookupModule(AWSLookupBase):
                 secret_data = client.describe_secret(SecretId=term)
 
                 # Convert datetime objects to ISO 8601 format
-                for key in ["LastChangedDate", "LastAccessedDate", "CreatedDate"]:
+                for key in ["LastChangedDate", "LastAccessedDate", "CreatedDate", "DeletedDate"]:
                     if key in secret_data and isinstance(secret_data[key], datetime.datetime):
                         secret_data[key] = secret_data[key].isoformat()
 
