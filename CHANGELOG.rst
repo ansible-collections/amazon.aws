@@ -4,6 +4,24 @@ amazon.aws Release Notes
 
 .. contents:: Topics
 
+v9.3.0
+======
+
+Release Summary
+---------------
+
+This minor release includes two new modules (``ec2_dedicated_host`` and ``ec2_dedicated_host_info``) and a new feature for the ``s3_object`` module that now supports passing metadata in ``create`` mode.
+
+Minor Changes
+-------------
+
+- s3_object - support passing metadata in ``create`` mode (https://github.com/ansible-collections/amazon.aws/pull/2529).
+
+New Modules
+-----------
+
+- ec2_dedicated_host - Create, update or delete (release) EC2 dedicated host
+- ec2_dedicated_host_info - Gather information about EC2 Dedicated Hosts in AWS
 
 v9.2.0
 ======
@@ -262,7 +280,7 @@ This release includes bugfixes for the  ``ec2_instance`` and ``s3_bucket`` modul
 Bugfixes
 --------
 
-- ec2_instance - Fix issue where EC2 instance module failed to apply security groups when both ``network`` and ``vpc_subnet_id``` were specified, caused by passing ``None`` to discover_security_groups() (https://github.com/ansible-collections/amazon.aws/pull/2488).
+- ec2_instance - Fix issue where EC2 instance module failed to apply security groups when both ``network`` and ``vpc_subnet_id`` were specified, caused by passing ``None`` to discover_security_groups() (https://github.com/ansible-collections/amazon.aws/pull/2488).
 - s3_bucket - Do not use default region as location constraint when creating bucket on ceph cluster (https://github.com/ansible-collections/amazon.aws/issues/2420).
 
 v8.2.2
@@ -310,7 +328,7 @@ The amazon.aws 8.2.0 release includes a number of bugfixes, some new features an
 Minor Changes
 -------------
 
-- cloudwatch_metric_alarm - add  support for ``evaluate_low_sample_count_percentile``` parameter.
+- cloudwatch_metric_alarm - add  support for ``evaluate_low_sample_count_percentile`` parameter.
 - cloudwatch_metric_alarm - support DatapointsToAlarm config (https://github.com/ansible-collections/amazon.aws/pull/2196).
 - ec2_ami - Add support for uefi-preferred boot mode (https://github.com/ansible-collections/amazon.aws/pull/2253).
 - ec2_instance - Add support for ``network_interfaces`` and ``network_interfaces_ids`` options replacing deprecated option ``network`` (https://github.com/ansible-collections/amazon.aws/pull/2123).
@@ -793,7 +811,6 @@ Release Summary
 This release is the last planned minor release of ``amazon.aws`` prior to the release of 7.0.0.
 It includes documentation fixes as well as minor changes and bug fixes for the ``ec2_ami`` and ``elb_application_lb_info`` modules.
 
-
 Minor Changes
 -------------
 
@@ -1125,7 +1142,6 @@ Release Summary
 
 This release brings few bugfixes.
 
-
 Bugfixes
 --------
 
@@ -1145,7 +1161,6 @@ Release Summary
 ---------------
 
 This release contains a number of bugfixes, new features and new modules.  This is the last planned minor release prior to the release of version 6.0.0.
-
 
 Minor Changes
 -------------
@@ -1240,7 +1255,6 @@ Release Summary
 ---------------
 
 A minor release containing bugfixes for the ``ec2_eni_info`` module and the ``aws_rds`` inventory plugin, as well as improvements to the ``rds_instance`` module.
-
 
 Minor Changes
 -------------
@@ -1465,7 +1479,6 @@ Release Summary
 
 This release contains a minor bugfix for the ``ec2_vol`` module, some minor work on the ``ec2_key`` module, and various documentation fixes.  This is the last planned release of the 4.x series.
 
-
 Minor Changes
 -------------
 
@@ -1504,7 +1517,6 @@ Release Summary
 The amazon.aws 4.3.0 release includes a number of minor bug fixes and improvements.
 Following the release of amazon.aws 5.0.0, backports to the 4.x series will be limited to
 security issues and bugfixes.
-
 
 Minor Changes
 -------------
@@ -1627,7 +1639,7 @@ Bugfixes
 
 - ec2_group - fix uncaught exception when running with ``--diff`` and ``--check`` to create a new security group (https://github.com/ansible-collections/amazon.aws/issues/440).
 - ec2_instance - Add a condition to handle default ```instance_type``` value for fix breaking on instance creation with launch template (https://github.com/ansible-collections/amazon.aws/pull/587).
-- ec2_instance - raise an error when missing permission to stop instance when ``state`` is set to ``rebooted``` (https://github.com/ansible-collections/amazon.aws/pull/671).
+- ec2_instance - raise an error when missing permission to stop instance when ``state`` is set to ``rebooted`` (https://github.com/ansible-collections/amazon.aws/pull/671).
 - ec2_vpc_igw - use gateway_id rather than filters to paginate if possible to fix 'NoneType' object is not subscriptable error (https://github.com/ansible-collections/amazon.aws/pull/766).
 - ec2_vpc_net - fix a bug where CIDR configuration would be updated in check mode (https://github.com/ansible/ansible/issues/62678).
 - ec2_vpc_net - fix a bug where the module would get stuck if DNS options were updated in check mode (https://github.com/ansible/ansible/issues/62677).
@@ -1659,7 +1671,6 @@ Release Summary
 ---------------
 
 Following the release of amazon.aws 5.0.0, 3.5.0 is a bugfix release and the final planned release for the 3.x series.
-
 
 Minor Changes
 -------------
