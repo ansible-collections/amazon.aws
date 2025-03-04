@@ -268,3 +268,45 @@ class TestConnectionBaseClass:
         assert test_a != test_b
         assert len(test_a) == Connection.MARK_LENGTH
         assert len(test_b) == Connection.MARK_LENGTH
+
+    @pytest.mark.parametrize("is_windows", [False, True])
+    def test_generate_commands(self, is_windows):
+        """Testing command generation on Windows systems"""
+        pc = PlayContext()
+        new_stdin = StringIO()
+        conn = connection_loader.get("community.aws.aws_ssm", pc, new_stdin)
+        conn.get_option = MagicMock()
+
+        conn.is_windows = is_windows
+
+        mock_s3_client = MagicMock()
+        mock_s3_client.generate_presigned_url.return_value = "https://test-url"
+        conn._s3_client = mock_s3_client
+
+        test_command_generation = conn._generate_commands(
+            "test_bucket",
+            "test/s3/path",
+            "test/in/path",
+            "test/out/path",
+        )
+
+        # Check contents of generated command dictionaries
+        assert "command" in test_command_generation[0][0]
+        assert "method" in test_command_generation[0][0]
+        assert "headers" in test_command_generation[0][0]
+
+        if is_windows:
+            assert "Invoke-WebRequest" in test_command_generation[0][1]["command"]
+            assert test_command_generation[0][1]["method"] == "put"
+            # Two command dictionaries are generated for Windows
+            assert len(test_command_generation[0]) == 2
+        else:
+            assert "curl --request PUT -H" in test_command_generation[0][2]["command"]
+            assert test_command_generation[0][2]["method"] == "put"
+            # Three command dictionaries are generated on non-Windows systems
+            assert len(test_command_generation[0]) == 3
+
+        # Ensure data types of command object are as expected
+        assert isinstance(test_command_generation, tuple)
+        assert isinstance(test_command_generation[0], list)
+        assert isinstance(test_command_generation[0][0], dict)
