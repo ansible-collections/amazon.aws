@@ -97,6 +97,10 @@ options:
         description:
           - The character set to associate with the DB cluster.
         type: str
+    database_insights_mode
+        description:
+          - Indicates which mode of Database Insights to enable for the target DB cluster. Options are 'advanced' or 'standard'
+        type: str
     database_name:
         description:
           - The name for your database. If a name is not provided Amazon RDS will not create a database.
@@ -176,6 +180,10 @@ options:
         description:
           - Enable mapping of AWS Identity and Access Management (IAM) accounts to database accounts.
             If this option is omitted when creating the cluster, Amazon RDS sets this to C(false).
+        type: bool
+    enable_performance_insights:
+        description:
+          - Whether to enable Performance Insights for the DB instance.
         type: bool
     allocated_storage:
         description:
@@ -285,6 +293,14 @@ options:
         description:
           - The option group to associate with the DB cluster.
         type: str
+    performance_insights_kms_key_id:
+        description:
+          - The AWS KMS key identifier (ARN, name, or alias) for encryption of Performance Insights data.
+        type: str
+    performance_insights_retention_period:
+        description:
+          - The amount of time, in days, to retain Performance Insights data. Valid values are 7 or 731.
+        type: int
     port:
         description:
           - The port number on which the instances in the DB cluster accept connections. If not specified, Amazon RDS
@@ -586,10 +602,6 @@ cross_account_clone:
   returned: always
   type: bool
   sample: false
-database_insights_mode
-    description:
-      - Indicates which mode of Database Insights to enable for the target DB cluster. Options are 'advanced' or 'standard'
-    type: str
 db_cluster_arn:
   description: The Amazon Resource Name (ARN) for the DB cluster.
   returned: always
@@ -641,10 +653,6 @@ earliest_restorable_time:
   returned: always
   type: str
   sample: "2018-06-29T14:09:34.797000+00:00"
-enable_performance_insights:
-    description:
-      - Whether to enable Performance Insights for the DB instance.
-    type: bool
 endpoint:
   description: The connection endpoint for the primary instance of the DB cluster.
   returned: always
@@ -696,14 +704,6 @@ multi_az:
   returned: always
   type: bool
   sample: false
-performance_insights_kms_key_id:
-    description:
-      - The AWS KMS key identifier (ARN, name, or alias) for encryption of Performance Insights data.
-    type: str
-performance_insights_retention_period:
-    description:
-      - The amount of time, in days, to retain Performance Insights data. Valid values are 7 or 731.
-    type: int
 port:
   description: The port that the database engine is listening on.
   returned: always
