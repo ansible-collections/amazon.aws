@@ -164,7 +164,7 @@ class CloudFrontFactsServiceManager:
             origin_access_identities = []
             for origin_access_identity in self.list_origin_access_identities():
                 oai_id = origin_access_identity["Id"]
-                oai_full_response = self.get_origin_access_identity(oai_id)
+                oai_full_response = self.get_origin_access_identity(id=oai_id)
                 oai_summary = {"Id": oai_id, "ETag": oai_full_response["ETag"]}
                 origin_access_identities.append(oai_summary)
             return {"origin_access_identities": origin_access_identities}
