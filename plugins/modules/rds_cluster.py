@@ -183,7 +183,7 @@ options:
         type: bool
     enable_performance_insights:
         description:
-          - Whether to enable Performance Insights for the DB instance.
+          - Whether to enable Performance Insights for the DB cluster.
         type: bool
     allocated_storage:
         description:
