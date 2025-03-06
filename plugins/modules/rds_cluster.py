@@ -97,6 +97,10 @@ options:
         description:
           - The character set to associate with the DB cluster.
         type: str
+    database_insights_mode
+        description:
+          - Indicates which mode of Database Insights to enable for the target DB cluster. Options are 'advanced' or 'standard'
+        type: str
     database_name:
         description:
           - The name for your database. If a name is not provided Amazon RDS will not create a database.
@@ -176,6 +180,10 @@ options:
         description:
           - Enable mapping of AWS Identity and Access Management (IAM) accounts to database accounts.
             If this option is omitted when creating the cluster, Amazon RDS sets this to C(false).
+        type: bool
+    enable_performance_insights:
+        description:
+          - Whether to enable Performance Insights for the DB cluster.
         type: bool
     allocated_storage:
         description:
@@ -285,6 +293,14 @@ options:
         description:
           - The option group to associate with the DB cluster.
         type: str
+    performance_insights_kms_key_id:
+        description:
+          - The AWS KMS key identifier (ARN, name, or alias) for encryption of Performance Insights data.
+        type: str
+    performance_insights_retention_period:
+        description:
+          - The amount of time, in days, to retain Performance Insights data. Valid values are 7 or 731.
+        type: int
     port:
         description:
           - The port number on which the instances in the DB cluster accept connections. If not specified, Amazon RDS
@@ -822,13 +838,17 @@ def get_create_options(params_dict):
         "DBClusterIdentifier",
         "DBClusterParameterGroupName",
         "DBSubnetGroupName",
+        "DatabaseInsightsMode",
         "DatabaseName",
         "EnableCloudwatchLogsExports",
         "EnableIAMDatabaseAuthentication",
+        "EnablePerformanceInsights",
         "KmsKeyId",
         "Engine",
         "EngineMode",
         "EngineVersion",
+        "PerformanceInsightsKMSKeyId",
+        "PerformanceInsightsRetentionPeriod",
         "PreferredMaintenanceWindow",
         "MasterUserPassword",
         "MasterUsername",
@@ -865,15 +885,19 @@ def get_modify_options(params_dict, force_update_password):
         "BacktrackWindow",
         "BackupRetentionPeriod",
         "PreferredBackupWindow",
+        "DatabaseInsightsMode",
         "DBClusterIdentifier",
         "DBClusterParameterGroupName",
         "EnableIAMDatabaseAuthentication",
+        "EnablePerformanceInsights",
         "EngineVersion",
         "PreferredMaintenanceWindow",
         "MasterUserPassword",
         "NewDBClusterIdentifier",
         "OptionGroupName",
         "Port",
+        "PerformanceInsightsKMSKeyId",
+        "PerformanceInsightsRetentionPeriod",
         "VpcSecurityGroupIds",
         "EnableIAMDatabaseAuthentication",
         "CloudwatchLogsExportConfiguration",
@@ -907,18 +931,22 @@ def get_restore_s3_options(params_dict):
         "BacktrackWindow",
         "BackupRetentionPeriod",
         "CharacterSetName",
+        "DatabaseInsightsMode",
         "DBClusterIdentifier",
         "DBClusterParameterGroupName",
         "DBSubnetGroupName",
         "DatabaseName",
         "EnableCloudwatchLogsExports",
         "EnableIAMDatabaseAuthentication",
+        "EnablePerformanceInsights",
         "Engine",
         "EngineVersion",
         "KmsKeyId",
         "MasterUserPassword",
         "MasterUsername",
         "OptionGroupName",
+        "PerformanceInsightsKMSKeyId",
+        "PerformanceInsightsRetentionPeriod",
         "Port",
         "PreferredBackupWindow",
         "PreferredMaintenanceWindow",
@@ -935,6 +963,10 @@ def get_restore_s3_options(params_dict):
         "CopyTagsToSnapshot",
         "Domain",
         "DomainIAMRoleName",
+        "DatabaseInsightsMode",
+        "EnablePerformanceInsights",
+        "PerformanceInsightsKMSKeyId",
+        "PerformanceInsightsRetentionPeriod",
     ]
 
     return dict((k, v) for k, v in params_dict.items() if k in options and v is not None)
@@ -944,15 +976,19 @@ def get_restore_snapshot_options(params_dict):
     options = [
         "AvailabilityZones",
         "BacktrackWindow",
+        "DatabaseInsightsMode",
         "DBClusterIdentifier",
         "DBSubnetGroupName",
         "DatabaseName",
         "EnableCloudwatchLogsExports",
         "EnableIAMDatabaseAuthentication",
+        "EnablePerformanceInsights",
         "Engine",
         "EngineVersion",
         "KmsKeyId",
         "OptionGroupName",
+        "PerformanceInsightsKMSKeyId",
+        "PerformanceInsightsRetentionPeriod",
         "Port",
         "SnapshotIdentifier",
         "Tags",
@@ -969,12 +1005,16 @@ def get_restore_snapshot_options(params_dict):
 def get_restore_cluster_options(params_dict):
     options = [
         "BacktrackWindow",
+        "DatabaseInsightsMode",
         "DBClusterIdentifier",
         "DBSubnetGroupName",
         "EnableCloudwatchLogsExports",
         "EnableIAMDatabaseAuthentication",
+        "EnablePerformanceInsights",
         "KmsKeyId",
         "OptionGroupName",
+        "PerformanceInsightsKMSKeyId",
+        "PerformanceInsightsRetentionPeriod",
         "Port",
         "RestoreToTime",
         "RestoreType",
@@ -1092,6 +1132,21 @@ def changing_cluster_options(modify_params, current_cluster):
         g["DBClusterOptionGroupName"] for g in current_cluster["DBClusterOptionGroupMemberships"]
     ]:
         changing_params["OptionGroupName"] = option_group
+    enable_performance_insights = modify_params.pop("EnablePerformanceInsights", None)
+    if enable_performance_insights != current_cluster["EnablePerformanceInsights"]:
+        changing_params["EnablePerformanceInsights"] = enable_performance_insights
+    
+    performance_insights_kms_key_id = modify_params.pop("PerformanceInsightsKMSKeyId", None)
+    if performance_insights_kms_key_id != current_cluster["PerformanceInsightsKMSKeyId"]:
+        changing_params["PerformanceInsightsKMSKeyId"] = performance_insights_kms_key_id
+
+    performance_insights_retention_period = modify_params("PerformanceInsightsRetentionPeriod", None)
+    if performance_insights_retention_period != current_cluster["PerformanceInsightsRetentionPeriod"]:
+        changing_params["PerformanceInsightsRetentionPeriod"] = performance_insights_retention_period
+
+    database_insights_mode = modify_params.pop("DatabaseInsightsMode", None)
+    if database_insights_mode != current_cluster["DatabaseInsightsMode"]:
+        changing_params["DatabaseInsightsMode"] = database_insights_mode
 
     vpc_sgs = modify_params.pop("VpcSecurityGroupIds", None)
     if vpc_sgs:
@@ -1259,10 +1314,12 @@ def main():
         backup_retention_period=dict(type="int", default=1),
         character_set_name=dict(),
         database_name=dict(aliases=["db_name"]),
+        database_insights_mode=dict(choices=["standard","advanced"]),
         db_cluster_identifier=dict(required=True, aliases=["cluster_id", "id", "cluster_name"]),
         db_cluster_parameter_group_name=dict(),
         db_subnet_group_name=dict(),
         enable_cloudwatch_logs_exports=dict(type="list", elements="str"),
+        enable_performance_insights=dict(type="bool"),
         deletion_protection=dict(type="bool"),
         global_cluster_identifier=dict(),
         enable_http_endpoint=dict(type="bool"),
@@ -1286,6 +1343,8 @@ def main():
         new_db_cluster_identifier=dict(aliases=["new_cluster_id", "new_id", "new_cluster_name"]),
         option_group_name=dict(),
         port=dict(type="int"),
+        performance_insights_kms_key_id=dict(),
+        performance_insights_retention_period=dict(type="int"),
         preferred_backup_window=dict(aliases=["backup_window"]),
         preferred_maintenance_window=dict(aliases=["maintenance_window"]),
         remove_from_global_db=dict(type="bool"),
