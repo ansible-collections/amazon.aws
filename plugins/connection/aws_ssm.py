@@ -332,7 +332,10 @@ import select
 import string
 import subprocess
 import time
+from functools import wraps
+from typing import Any
 from typing import Dict
+from typing import Iterator
 from typing import List
 from typing import NoReturn
 from typing import Optional
@@ -344,8 +347,6 @@ try:
     from botocore.client import Config
 except ImportError:
     pass
-
-from functools import wraps
 
 from ansible.errors import AnsibleConnectionFailure
 from ansible.errors import AnsibleError
@@ -360,10 +361,12 @@ from ansible.utils.display import Display
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOTO3
 
+from ansible_collections.community.aws.plugins.plugin_utils.s3clientmanager import S3ClientManager
+
 display = Display()
 
 
-def _ssm_retry(func):
+def _ssm_retry(func: Any) -> Any:
     """
     Decorator to retry in the case of a connection failure
     Will retry if:
@@ -374,7 +377,7 @@ def _ssm_retry(func):
     """
 
     @wraps(func)
-    def wrapped(self, *args, **kwargs):
+    def wrapped(self, *args: Any, **kwargs: Any) -> Any:
         remaining_tries = int(self.get_option("reconnection_retries")) + 1
         cmd_summary = f"{args[0]}..."
         for attempt in range(remaining_tries):
@@ -413,7 +416,7 @@ def _ssm_retry(func):
     return wrapped
 
 
-def chunks(lst, n):
+def chunks(lst: List, n: int) -> Iterator[List[Any]]:
     """Yield successive n-sized chunks from lst."""
     for i in range(0, len(lst), n):
         yield lst[i:i + n]  # fmt: skip
@@ -471,7 +474,7 @@ class Connection(ConnectionBase):
     _timeout = False
     MARK_LENGTH = 26
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         if not HAS_BOTO3:
@@ -492,12 +495,11 @@ class Connection(ConnectionBase):
             self._shell_type = "powershell"
             self.is_windows = True
 
-    def __del__(self):
+    def __del__(self) -> None:
         self.close()
 
-    def _connect(self):
+    def _connect(self) -> Any:
         """connect to the host via ssm"""
-
         self._play_context.remote_user = getpass.getuser()
 
         if not self._session_id:
@@ -509,16 +511,23 @@ class Connection(ConnectionBase):
         Initializes required AWS clients (SSM and S3).
         Delegates client initialization to specialized methods.
         """
-
         self._vvvv("INITIALIZE BOTO3 CLIENTS")
         profile_name = self.get_option("profile") or ""
         region_name = self.get_option("region")
 
-        # Initialize SSM client
-        self._initialize_ssm_client(region_name, profile_name)
+        # Initialize S3ClientManager
+        self.s3_manager = S3ClientManager(self)
 
         # Initialize S3 client
-        self._initialize_s3_client(profile_name)
+        s3_endpoint_url, s3_region_name = self.s3_manager.get_bucket_endpoint()
+        self._vvvv(f"SETUP BOTO3 CLIENTS: S3 {s3_endpoint_url}")
+        self.s3_manager.initialize_client(
+            region_name=s3_region_name, endpoint_url=s3_endpoint_url, profile_name=profile_name
+        )
+        self._s3_client = self.s3_manager._s3_client
+
+        # Initialize SSM client
+        self._initialize_ssm_client(region_name, profile_name)
 
     def _initialize_ssm_client(self, region_name: Optional[str], profile_name: str) -> None:
         """
@@ -538,84 +547,26 @@ class Connection(ConnectionBase):
             profile_name=profile_name,
         )
 
-    def _initialize_s3_client(self, profile_name: str) -> None:
-        """
-        Initializes the S3 client used for accessing S3 buckets.
-
-        Args:
-            profile_name (str): AWS profile name for authentication.
-
-        Returns:
-            None
-        """
-
-        s3_endpoint_url, s3_region_name = self._get_bucket_endpoint()
-        self._vvvv(f"SETUP BOTO3 CLIENTS: S3 {s3_endpoint_url}")
-        self._s3_client = self._get_boto_client(
-            "s3",
-            region_name=s3_region_name,
-            endpoint_url=s3_endpoint_url,
-            profile_name=profile_name,
-        )
-
-    def _display(self, f, message):
+    def _display(self, f: Any, message: str) -> None:
         if self.host:
             host_args = {"host": self.host}
         else:
             host_args = {}
         f(to_text(message), **host_args)
 
-    def _v(self, message):
+    def _v(self, message: str) -> None:
         self._display(display.v, message)
 
-    def _vv(self, message):
+    def _vv(self, message: str) -> None:
         self._display(display.vv, message)
 
-    def _vvv(self, message):
+    def _vvv(self, message: str) -> None:
         self._display(display.vvv, message)
 
-    def _vvvv(self, message):
+    def _vvvv(self, message: str) -> None:
         self._display(display.vvvv, message)
 
-    def _get_bucket_endpoint(self):
-        """
-        Fetches the correct S3 endpoint and region for use with our bucket.
-        If we don't explicitly set the endpoint then some commands will use the global
-        endpoint and fail
-        (new AWS regions and new buckets in a region other than the one we're running in)
-        """
-
-        region_name = self.get_option("region") or "us-east-1"
-        profile_name = self.get_option("profile") or ""
-        self._vvvv("_get_bucket_endpoint: S3 (global)")
-        tmp_s3_client = self._get_boto_client(
-            "s3",
-            region_name=region_name,
-            profile_name=profile_name,
-        )
-        # Fetch the location of the bucket so we can open a client against the 'right' endpoint
-        # This /should/ always work
-        head_bucket = tmp_s3_client.head_bucket(
-            Bucket=(self.get_option("bucket_name")),
-        )
-        bucket_region = head_bucket.get("ResponseMetadata", {}).get("HTTPHeaders", {}).get("x-amz-bucket-region", None)
-        if bucket_region is None:
-            bucket_region = "us-east-1"
-
-        if self.get_option("bucket_endpoint_url"):
-            return self.get_option("bucket_endpoint_url"), bucket_region
-
-        # Create another client for the region the bucket lives in, so we can nab the endpoint URL
-        self._vvvv(f"_get_bucket_endpoint: S3 (bucket region) - {bucket_region}")
-        s3_bucket_client = self._get_boto_client(
-            "s3",
-            region_name=bucket_region,
-            profile_name=profile_name,
-        )
-
-        return s3_bucket_client.meta.endpoint_url, s3_bucket_client.meta.region_name
-
-    def reset(self):
+    def reset(self) -> Any:
         """start a fresh ssm session"""
         self._vvvv("reset called on ssm connection")
         self.close()
@@ -885,7 +836,7 @@ class Connection(ConnectionBase):
         self._vvvv(f"_wrap_command: \n'{to_text(cmd)}'")
         return cmd
 
-    def _post_process(self, stdout, mark_begin):
+    def _post_process(self, stdout: str, mark_begin: str) -> Tuple[str, str]:
         """extract command status and strip unwanted lines"""
 
         if not self.is_windows:
@@ -919,7 +870,7 @@ class Connection(ConnectionBase):
 
         return (returncode, stdout)
 
-    def _flush_stderr(self, session_process):
+    def _flush_stderr(self, session_process) -> str:
         """read and return stderr with minimal blocking"""
 
         poll_stderr = select.poll()
@@ -934,15 +885,6 @@ class Connection(ConnectionBase):
             stderr = stderr + line
 
         return stderr
-
-    def _get_url(self, client_method, bucket_name, out_path, http_method, extra_args=None):
-        """Generate URL for get_object / put_object"""
-
-        client = self._s3_client
-        params = {"Bucket": bucket_name, "Key": out_path}
-        if extra_args is not None:
-            params.update(extra_args)
-        return client.generate_presigned_url(client_method, Params=params, ExpiresIn=3600, HttpMethod=http_method)
 
     def _get_boto_client(self, service, region_name=None, profile_name=None, endpoint_url=None):
         """Gets a boto3 client based on the STS token"""
@@ -971,21 +913,8 @@ class Connection(ConnectionBase):
         )
         return client
 
-    def _escape_path(self, path):
+    def _escape_path(self, path: str) -> str:
         return path.replace("\\", "/")
-
-    def _generate_encryption_settings(self):
-        put_args = {}
-        put_headers = {}
-        if not self.get_option("bucket_sse_mode"):
-            return put_args, put_headers
-
-        put_args["ServerSideEncryption"] = self.get_option("bucket_sse_mode")
-        put_headers["x-amz-server-side-encryption"] = self.get_option("bucket_sse_mode")
-        if self.get_option("bucket_sse_mode") == "aws:kms" and self.get_option("bucket_sse_kms_key_id"):
-            put_args["SSEKMSKeyId"] = self.get_option("bucket_sse_kms_key_id")
-            put_headers["x-amz-server-side-encryption-aws-kms-key-id"] = self.get_option("bucket_sse_kms_key_id")
-        return put_args, put_headers
 
     def _generate_commands(
         self,
@@ -1006,11 +935,11 @@ class Connection(ConnectionBase):
         :returns: A tuple containing a list of command dictionaries along with any ``put_args`` dictionaries.
         """
 
-        put_args, put_headers = self._generate_encryption_settings()
+        put_args, put_headers = self.s3_manager.generate_encryption_settings()
         commands = []
 
-        put_url = self._get_url("put_object", bucket_name, s3_path, "PUT", extra_args=put_args)
-        get_url = self._get_url("get_object", bucket_name, s3_path, "GET")
+        put_url = self.s3_manager.get_url("put_object", bucket_name, s3_path, "PUT", extra_args=put_args)
+        get_url = self.s3_manager.get_url("get_object", bucket_name, s3_path, "GET")
 
         if self.is_windows:
             put_command_headers = "; ".join([f"'{h}' = '{v}'" for h, v in put_headers.items()])
@@ -1150,7 +1079,7 @@ class Connection(ConnectionBase):
             # Remove the files from the bucket after they've been transferred
             client.delete_object(Bucket=bucket_name, Key=s3_path)
 
-    def put_file(self, in_path, out_path):
+    def put_file(self, in_path: str, out_path: str) -> Tuple[int, str, str]:
         """transfer a file from local to remote"""
 
         super().put_file(in_path, out_path)
@@ -1161,7 +1090,7 @@ class Connection(ConnectionBase):
 
         return self._file_transport_command(in_path, out_path, "put")
 
-    def fetch_file(self, in_path, out_path):
+    def fetch_file(self, in_path: str, out_path: str) -> Tuple[int, str, str]:
         """fetch a file from remote to local"""
 
         super().fetch_file(in_path, out_path)
@@ -1169,7 +1098,7 @@ class Connection(ConnectionBase):
         self._vvv(f"FETCH {in_path} TO {out_path}")
         return self._file_transport_command(in_path, out_path, "get")
 
-    def close(self):
+    def close(self) -> None:
         """terminate the connection"""
         if self._session_id:
             self._vvv(f"CLOSING SSM CONNECTION TO: {self.instance_id}")
