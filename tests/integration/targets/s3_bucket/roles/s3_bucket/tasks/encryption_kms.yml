@@ -26,7 +26,7 @@
     - ansible.builtin.assert:
         that:
           - output.changed
-          - output.encryption
+          - output.encryption != {}
           - output.encryption.SSEAlgorithm == 'aws:kms'
 
     - name: Re-enable aws:kms encryption with KMS master key (idempotent)
@@ -39,7 +39,7 @@
     - ansible.builtin.assert:
         that:
           - not output.changed
-          - output.encryption
+          - output.encryption != {}
           - output.encryption.SSEAlgorithm == 'aws:kms'
 
     ## # ============================================================
