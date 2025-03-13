@@ -40,17 +40,8 @@ def fixture_connection_aws_ssm():
     def display_msg(msg):
         print("--- AWS SSM CONNECTION --- ", msg)
 
-    connection._v = MagicMock()
-    connection._v.side_effect = display_msg
-
-    connection._vv = MagicMock()
-    connection._vv.side_effect = display_msg
-
-    connection._vvv = MagicMock()
-    connection._vvv.side_effect = display_msg
-
-    connection._vvvv = MagicMock()
-    connection._vvvv.side_effect = display_msg
+    connection.verbosity_display = MagicMock()
+    connection.verbosity_display.side_effect = lambda level, msg: display_msg(msg)
 
     connection.get_option = MagicMock()
     return connection
