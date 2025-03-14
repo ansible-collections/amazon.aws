@@ -31,6 +31,7 @@ extends_documentation_fragment:
 
 EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
+# testing
 
 - name: Gather information about all availability zones
   amazon.aws.aws_az_info:
