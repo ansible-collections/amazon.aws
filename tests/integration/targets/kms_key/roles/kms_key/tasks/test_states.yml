@@ -352,7 +352,7 @@
       vars:
         key_data: "{{ key_info.kms_keys[0] }}"
         now_time: '{{ lookup("pipe", "date -u +%Y-%m-%d\ %H:%M:%S") }}'
-        deletion_time: '{{ key_data.deletion_date[:19] | to_datetime("%Y-%m-%dT%H:%M:%S") }}'
+        deletion_time: "{{ key_data.deletion_date[:19] }}"
       ansible.builtin.assert:
         that:
           - key_data.key_id | length >= 36
@@ -372,8 +372,8 @@
           - key_data.key_policies[0].Id == 'key-default-1'
           - key_data.description == ''
           # Times won't be perfect, allow a 24 hour window
-          - (( deletion_time ) - ( now_time | to_datetime )).days <= 30
-          - (( deletion_time ) - ( now_time | to_datetime )).days >= 29
+          - (( deletion_time | to_datetime("%Y-%m-%dT%H:%M:%S") ) - ( now_time | to_datetime )).days <= 30
+          - (( deletion_time | to_datetime("%Y-%m-%dT%H:%M:%S") ) - ( now_time | to_datetime )).days >= 29
 
     - name: Delete key (idempotence) - check mode
       amazon.aws.kms_key:
@@ -394,7 +394,7 @@
     - name: Assert no change occurred
       vars:
         now_time: '{{ lookup("pipe", "date -u +%Y-%m-%d\ %H:%M:%S") }}'
-        deletion_time: '{{ key.deletion_date[:19] | to_datetime("%Y-%m-%dT%H:%M:%S") }}'
+        deletion_time: "{{ key.deletion_date[:19] }}"
       ansible.builtin.assert:
         that:
           - not key.changed
@@ -416,8 +416,8 @@
           - key.key_policies[0].Id == 'key-default-1'
           - key.description == ''
           # Times won't be perfect, allow a 24 hour window
-          - (( deletion_time ) - ( now_time | to_datetime )).days <= 30
-          - (( deletion_time ) - ( now_time | to_datetime )).days >= 29
+          - (( deletion_time | to_datetime("%Y-%m-%dT%H:%M:%S") ) - ( now_time | to_datetime )).days <= 30
+          - (( deletion_time | to_datetime("%Y-%m-%dT%H:%M:%S") ) - ( now_time | to_datetime )).days >= 29
 
     # ------------------------------------------------------------------------------------------
 
@@ -525,14 +525,14 @@
       vars:
         deleted_key: "{{ deleted_kms.kms_keys[0] }}"
         now_time: '{{ lookup("pipe", "date -u +%Y-%m-%d\ %H:%M:%S") }}'
-        deletion_time: '{{ deleted_key.deletion_date[:19] | to_datetime("%Y-%m-%dT%H:%M:%S") }}'
+        deletion_time: "{{ deleted_key.deletion_date[:19] }}"
       ansible.builtin.assert:
         that:
           - delete_kms.changed
           - deleted_key.key_state == "PendingDeletion"
           # Times won't be perfect, allow a 24 hour window
-          - (( deletion_time ) - ( now_time | to_datetime )).days <= 7
-          - (( deletion_time ) - ( now_time | to_datetime )).days >= 6
+          - (( deletion_time | to_datetime("%Y-%m-%dT%H:%M:%S") ) - ( now_time | to_datetime )).days <= 7
+          - (( deletion_time | to_datetime("%Y-%m-%dT%H:%M:%S") ) - ( now_time | to_datetime )).days >= 6
 
     # ============================================================
     # test different key usage and specs
