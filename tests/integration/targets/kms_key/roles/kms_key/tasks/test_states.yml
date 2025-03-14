@@ -372,8 +372,8 @@
           - key_data.key_policies[0].Id == 'key-default-1'
           - key_data.description == ''
           # Times won't be perfect, allow a 24 hour window
-          - (( deletion_time | to_datetime ) - ( now_time | to_datetime )).days <= 30
-          - (( deletion_time | to_datetime ) - ( now_time | to_datetime )).days >= 29
+          - (( deletion_time ) - ( now_time | to_datetime )).days <= 30
+          - (( deletion_time ) - ( now_time | to_datetime )).days >= 29
 
     - name: Delete key (idempotence) - check mode
       amazon.aws.kms_key:
@@ -416,8 +416,8 @@
           - key.key_policies[0].Id == 'key-default-1'
           - key.description == ''
           # Times won't be perfect, allow a 24 hour window
-          - (( deletion_time | to_datetime ) - ( now_time | to_datetime )).days <= 30
-          - (( deletion_time | to_datetime ) - ( now_time | to_datetime )).days >= 29
+          - (( deletion_time ) - ( now_time | to_datetime )).days <= 30
+          - (( deletion_time ) - ( now_time | to_datetime )).days >= 29
 
     # ------------------------------------------------------------------------------------------
 
@@ -531,8 +531,8 @@
           - delete_kms.changed
           - deleted_key.key_state == "PendingDeletion"
           # Times won't be perfect, allow a 24 hour window
-          - (( deletion_time | to_datetime ) - ( now_time | to_datetime )).days <= 7
-          - (( deletion_time | to_datetime ) - ( now_time | to_datetime )).days >= 6
+          - (( deletion_time ) - ( now_time | to_datetime )).days <= 7
+          - (( deletion_time ) - ( now_time | to_datetime )).days >= 6
 
     # ============================================================
     # test different key usage and specs
