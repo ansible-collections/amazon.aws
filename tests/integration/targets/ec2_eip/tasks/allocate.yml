@@ -31,7 +31,7 @@
           - eip is changed
           - "'ec2:CreateTags' not in eip.resource_actions"
           - "'ec2:DeleteTags' not in eip.resource_actions"
-          - eip.public_ip is defined and ( eip.public_ip | ansible.utils.ipaddr )
+          - eip.public_ip is defined and ( eip.public_ip | ansible.utils.ipaddr is truthy)
           - eip.allocation_id is defined and eip.allocation_id.startswith("eipalloc-")
 
     - name: Ensure New EIP was created
@@ -96,7 +96,7 @@
     - ansible.builtin.assert:
         that:
           - eip is not changed
-          - eip.public_ip is defined and ( eip.public_ip | ansible.utils.ipaddr )
+          - eip.public_ip is defined and ( eip.public_ip | ansible.utils.ipaddr is truthy)
           - eip.allocation_id is defined and eip.allocation_id.startswith("eipalloc-")
 
     - name: Ensure EIP was not created
@@ -134,7 +134,7 @@
     - ansible.builtin.assert:
         that:
           - eip_pool is changed
-          - eip_pool.public_ip is defined and ( eip_pool.public_ip | ansible.utils.ipaddr )
+          - eip_pool.public_ip is defined and ( eip_pool.public_ip | ansible.utils.ipaddr is truthy)
           - eip_pool.allocation_id is defined and eip_pool.allocation_id.startswith("eipalloc-")
 
     - name: Ensure new EIP was created
