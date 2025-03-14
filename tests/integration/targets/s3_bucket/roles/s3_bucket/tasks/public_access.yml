@@ -24,7 +24,7 @@
     - ansible.builtin.assert:
         that:
           - output.changed
-          - output.public_access_block
+          - output.public_access_block != {}
           - output.public_access_block.BlockPublicAcls
           - output.public_access_block.BlockPublicPolicy
           - output.public_access_block.IgnorePublicAcls
@@ -44,7 +44,7 @@
     - ansible.builtin.assert:
         that:
           - output.changed
-          - output.public_access_block
+          - output.public_access_block != {}
           - output.public_access_block.BlockPublicAcls
           - not output.public_access_block.BlockPublicPolicy
           - output.public_access_block.IgnorePublicAcls
@@ -64,7 +64,7 @@
     - ansible.builtin.assert:
         that:
           - output is not changed
-          - output.public_access_block
+          - output.public_access_block != {}
           - output.public_access_block.BlockPublicAcls
           - not output.public_access_block.BlockPublicPolicy
           - output.public_access_block.IgnorePublicAcls

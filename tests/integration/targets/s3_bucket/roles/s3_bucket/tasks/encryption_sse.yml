@@ -27,7 +27,7 @@
         that:
           # SSE is now enabled by default
           # - output.changed
-          - output.encryption
+          - output.encryption != {}
           - output.encryption.SSEAlgorithm == 'AES256'
 
     - name: Re-enable AES256 encryption (idempotency)
@@ -40,7 +40,7 @@
     - ansible.builtin.assert:
         that:
           - not output.changed
-          - output.encryption
+          - output.encryption != {}
           - output.encryption.SSEAlgorithm == 'AES256'
 
     ## # ============================================================

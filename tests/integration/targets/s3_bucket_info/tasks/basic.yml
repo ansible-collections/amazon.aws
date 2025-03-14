@@ -6,7 +6,7 @@
   ansible.builtin.assert:
     that:
       - bucket_list.changed == False
-      - bucket_list.buckets
+      - bucket_list.buckets | length > 0
 
 - name: Get complex S3 bucket list
   amazon.aws.s3_bucket_info:
@@ -67,7 +67,7 @@
       - item.bucket_tagging["Title Case"] == 'Hello Cruel World'
       - item.bucket_location.LocationConstraint == aws_region
       - item.bucket_versioning.Status is defined
-      - item.bucket_versioning.Status
+      - item.bucket_versioning.Status != ""
       - item.bucket_versioning.MFADelete is undefined
   loop: "{{ bucket_list.buckets }}"
   loop_control:

@@ -37,7 +37,7 @@
         that:
           - output.changed
           - output.object_lock_enabled
-          - output.object_lock_default_retention
+          - output.object_lock_default_retention != {}
 
     - name: Delete test s3 bucket
       amazon.aws.s3_bucket:
@@ -65,7 +65,7 @@
         that:
           - output.changed
           - output.object_lock_enabled
-          - output.object_lock_default_retention
+          - output.object_lock_default_retention != {}
 
     - name: Touch bucket with object lock enabled (idempotency)
       amazon.aws.s3_bucket:
@@ -81,7 +81,7 @@
         that:
           - not output.changed
           - output.object_lock_enabled
-          - output.object_lock_default_retention
+          - output.object_lock_default_retention != {}
 
     - name: Change bucket with object lock default retention enabled
       amazon.aws.s3_bucket:
@@ -97,7 +97,7 @@
         that:
           - output.changed
           - output.object_lock_enabled
-          - output.object_lock_default_retention
+          - output.object_lock_default_retention != {}
 
     - name: Disable object lock default retention
       amazon.aws.s3_bucket:

@@ -136,7 +136,7 @@
     # ============================================================
     - name: Tests IPv6 with the default VPC
       ansible.builtin.include_tasks: ./ipv6_default_tests.yml
-      when: default_vpc
+      when: default_vpc != ""
 
     - name: Test IPv6 with a specified VPC
       block:
@@ -455,7 +455,7 @@
           - result.changed
           - result.warning is not defined
           - result.ip_permissions|length == 2
-          - result.ip_permissions[0].user_id_group_pairs or result.ip_permissions[1].user_id_group_pairs
+          - (result.ip_permissions[0].user_id_group_pairs | length > 0) or (result.ip_permissions[1].user_id_group_pairs | length > 0)
           - result.ip_permissions_egress[0].ip_protocol == "-1"
 
     # ============================================================
@@ -688,7 +688,7 @@
 
     # ============================================================
     - name: Test using the default VPC
-      when: default_vpc
+      when: default_vpc != ""
 
       # ============================================================
       block:
