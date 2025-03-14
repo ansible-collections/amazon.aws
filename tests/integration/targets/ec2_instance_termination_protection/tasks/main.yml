@@ -62,7 +62,7 @@
     - name: Assert termination protection status did not change in check_mode
       ansible.builtin.assert:
         that:
-          - instance_info.instances.0.attributes.disable_api_termination.value
+          - instance_info.instances.0.attributes.disable_api_termination.value is true
 
     - name: Create instance with termination protection (check mode) (idempotent)
       amazon.aws.ec2_instance:
@@ -140,7 +140,7 @@
     - name: Assert termination protection status did not change in check_mode
       ansible.builtin.assert:
         that:
-          - instance_info.instances.0.attributes.disable_api_termination.value
+          - instance_info.instances.0.attributes.disable_api_termination.value is true
 
     - name: Set termination protection to false
       amazon.aws.ec2_instance:
@@ -169,7 +169,7 @@
     - name: Assert termination protection status did not change in check_mode
       ansible.builtin.assert:
         that:
-          - not instance_info.instances.0.attributes.disable_api_termination.value
+          - instance_info.instances.0.attributes.disable_api_termination.value is false
 
     - name: Set termination protection to false (idempotent)
       amazon.aws.ec2_instance:
