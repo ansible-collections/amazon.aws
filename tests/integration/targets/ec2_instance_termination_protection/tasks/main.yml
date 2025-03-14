@@ -52,23 +52,17 @@
           - create_instance_results.spec.DisableApiTermination
 
     - name: Get info on termination protection
-      ansible.builtin.command: aws ec2 describe-instance-attribute --attribute disableApiTermination --instance-id {{ instance_id }}
-      environment:
-        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
-        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
-        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
-        AWS_DEFAULT_REGION: "{{ aws_region }}"
-      register: instance_termination_check
-      changed_when: false
-
-    - name: Convert it to an object
-      ansible.builtin.set_fact:
-        instance_termination_status: "{{ instance_termination_check.stdout | from_json }}"
+      amazon.aws.ec2_instance_info:
+        instance_ids:
+          - "{{ instance_id }}"
+        include_attributes:
+          - disableApiTermination
+      register: instance_info
 
     - name: Assert termination protection status did not change in check_mode
       ansible.builtin.assert:
         that:
-          - instance_termination_status.DisableApiTermination.Value == true
+          - instance_info.instances.0.attributes.disable_api_termination.value is true
 
     - name: Create instance with termination protection (check mode) (idempotent)
       amazon.aws.ec2_instance:
@@ -136,22 +130,17 @@
           - set_termination_protectioncheck_mode_results.changed
 
     - name: Get info on termination protection
-      ansible.builtin.command: aws ec2 describe-instance-attribute --attribute disableApiTermination --instance-id {{ instance_id }}
-      environment:
-        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
-        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
-        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
-        AWS_DEFAULT_REGION: "{{ aws_region }}"
-      register: instance_termination_check
-      changed_when: false
+      amazon.aws.ec2_instance_info:
+        instance_ids:
+          - "{{ instance_id }}"
+        include_attributes:
+          - disableApiTermination
+      register: instance_info
 
-    - name: Convert it to an object
-      ansible.builtin.set_fact:
-        instance_termination_status: "{{ instance_termination_check.stdout | from_json }}"
-
-    - ansible.builtin.assert:
+    - name: Assert termination protection status did not change in check_mode
+      ansible.builtin.assert:
         that:
-          - instance_termination_status.DisableApiTermination.Value == true
+          - instance_info.instances.0.attributes.disable_api_termination.value is true
 
     - name: Set termination protection to false
       amazon.aws.ec2_instance:
@@ -170,22 +159,17 @@
           - set_termination_protection_results.changed
 
     - name: Get info on termination protection
-      ansible.builtin.command: aws ec2 describe-instance-attribute --attribute disableApiTermination --instance-id {{ instance_id }}
-      environment:
-        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
-        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
-        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
-        AWS_DEFAULT_REGION: "{{ aws_region }}"
-      register: instance_termination_check
-      changed_when: false
+      amazon.aws.ec2_instance_info:
+        instance_ids:
+          - "{{ instance_id }}"
+        include_attributes:
+          - disableApiTermination
+      register: instance_info
 
-    - name: Convert it to an object
-      ansible.builtin.set_fact:
-        instance_termination_status: "{{ instance_termination_check.stdout | from_json }}"
-
-    - ansible.builtin.assert:
+    - name: Assert termination protection status did not change in check_mode
+      ansible.builtin.assert:
         that:
-          - instance_termination_status.DisableApiTermination.Value == false
+          - instance_info.instances.0.attributes.disable_api_termination.value is false
 
     - name: Set termination protection to false (idempotent)
       amazon.aws.ec2_instance:
