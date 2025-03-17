@@ -53,7 +53,7 @@
           - eip_info.addresses[0].public_ip == eip.public_ip
           - eip_info.addresses[0].association_id is defined and eip_info.addresses[0].association_id.startswith("eipassoc-")
           - eip_info.addresses[0].network_interface_id == eni_create_a.interface.id
-          - eip_info.addresses[0].private_ip_address is defined and ( eip_info.addresses[0].private_ip_address | ansible.utils.ipaddr is truthy)
+          - eip_info.addresses[0].private_ip_address is defined and eip_info.addresses[0].private_ip_address is ansible.utils.ipv4_address
           - eip_info.addresses[0].network_interface_owner_id == caller_info.account
 
     - name: Ensure no new EIP was allocated
@@ -99,7 +99,7 @@
           - eip_info.addresses[0].public_ip == eip.public_ip
           - eip_info.addresses[0].association_id is defined and eip_info.addresses[0].association_id.startswith("eipassoc-")
           - eip_info.addresses[0].network_interface_id == eni_create_a.interface.id
-          - eip_info.addresses[0].private_ip_address is defined and ( eip_info.addresses[0].private_ip_address | ansible.utils.ipaddr is truthy)
+          - eip_info.addresses[0].private_ip_address is defined and eip_info.addresses[0].private_ip_address is ansible.utils.ipv4_address
 
     - name: Ensure no new EIP was allocated
       ansible.builtin.include_tasks: tasks/common.yml
@@ -130,7 +130,7 @@
           - eip_info.addresses[0].public_ip == eip.public_ip
           - eip_info.addresses[0].association_id is defined and eip_info.addresses[0].association_id.startswith("eipassoc-")
           - eip_info.addresses[0].network_interface_id == eni_create_a.interface.id
-          - eip_info.addresses[0].private_ip_address is defined and ( eip_info.addresses[0].private_ip_address | ansible.utils.ipaddr is truthy)
+          - eip_info.addresses[0].private_ip_address is defined and eip_info.addresses[0].private_ip_address is ansible.utils.ipv4_address
 
     - name: Ensure no new EIP was allocated
       ansible.builtin.include_tasks: tasks/common.yml
@@ -177,7 +177,7 @@
           - eip_info.addresses[0].public_ip == eip.public_ip
           - eip_info.addresses[0].association_id is defined and eip_info.addresses[0].association_id.startswith("eipassoc-")
           - eip_info.addresses[0].network_interface_id == eni_create_b.interface.id
-          - eip_info.addresses[0].private_ip_address is defined and ( eip_info.addresses[0].private_ip_address | ansible.utils.ipaddr is truthy)
+          - eip_info.addresses[0].private_ip_address is defined and eip_info.addresses[0].private_ip_address is ansible.utils.ipv4_address
 
     - name: Ensure no new EIP was allocated
       ansible.builtin.include_tasks: tasks/common.yml
@@ -219,7 +219,7 @@
           - eip_info.addresses[0].public_ip == eip.public_ip
           - eip_info.addresses[0].association_id is defined and eip_info.addresses[0].association_id.startswith("eipassoc-")
           - eip_info.addresses[0].network_interface_id == eni_create_b.interface.id
-          - eip_info.addresses[0].private_ip_address is defined and ( eip_info.addresses[0].private_ip_address | ansible.utils.ipaddr is truthy)
+          - eip_info.addresses[0].private_ip_address is defined and eip_info.addresses[0].private_ip_address is ansible.utils.ipv4_address
 
     - name: Ensure no new EIP was allocated
       ansible.builtin.include_tasks: tasks/common.yml

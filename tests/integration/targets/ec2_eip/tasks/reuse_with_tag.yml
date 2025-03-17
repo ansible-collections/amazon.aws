@@ -29,7 +29,7 @@
         that:
           - no_tagged_eip is changed
           - "'ec2:CreateTags' not in no_tagged_eip.resource_actions"
-          - no_tagged_eip.public_ip is defined and ( no_tagged_eip.public_ip | ansible.utils.ipaddr is truthy)
+          - no_tagged_eip.public_ip is defined and no_tagged_eip.public_ip is ansible.utils.ipv4_address
           - no_tagged_eip.allocation_id is defined and no_tagged_eip.allocation_id.startswith("eipalloc-")
 
     - name: Ensure new EIP was allocated
@@ -87,7 +87,7 @@
     - ansible.builtin.assert:
         that:
           - reallocate_eip is not changed
-          - reallocate_eip.public_ip is defined and ( reallocate_eip.public_ip | ansible.utils.ipaddr is truthy)
+          - reallocate_eip.public_ip is defined and reallocate_eip.public_ip is ansible.utils.ipv4_address
           - reallocate_eip.allocation_id is defined and reallocate_eip.allocation_id.startswith("eipalloc-")
 
     - name: Ensure no EIP was allocated
@@ -129,7 +129,7 @@
     - ansible.builtin.assert:
         that:
           - backend_eip is changed
-          - backend_eip.public_ip is defined and ( backend_eip.public_ip | ansible.utils.ipaddr is truthy)
+          - backend_eip.public_ip is defined and backend_eip.public_ip is ansible.utils.ipv4_address
           - backend_eip.allocation_id is defined and backend_eip.allocation_id.startswith("eipalloc-")
 
     - name: Ensure new EIP was allocated
