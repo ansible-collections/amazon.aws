@@ -123,7 +123,7 @@
           - '"instance_tenancy" in result.vpc'
           - result.vpc.ipv6_cidr_block_association_set | length == 1
           - result.vpc.ipv6_cidr_block_association_set[0].association_id.startswith("vpc-cidr-assoc-")
-          - result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block | ansible.utils.ipv6
+          - result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block is defined and result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block is ansible.utils.ipv6
           - result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block_state.state in ["associated", "associating"]
           - '"is_default" in result.vpc'
           - '"state" in result.vpc'
@@ -168,7 +168,7 @@
           - '"instance_tenancy" in result.vpc'
           - result.vpc.ipv6_cidr_block_association_set | length == 1
           - result.vpc.ipv6_cidr_block_association_set[0].association_id.startswith("vpc-cidr-assoc-")
-          - result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block | ansible.utils.ipv6
+          - result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block is defined and result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block is ansible.utils.ipv6
           - result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block_state.state in ["associated", "associating"]
           - '"is_default" in result.vpc'
           - '"state" in result.vpc'
@@ -398,7 +398,7 @@
           - '"instance_tenancy" in result.vpc'
           - result.vpc.ipv6_cidr_block_association_set | length == 1
           - result.vpc.ipv6_cidr_block_association_set[0].association_id.startswith("vpc-cidr-assoc-")
-          - result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block | ansible.utils.ipv6
+          - result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block is defined and result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block is ansible.utils.ipv6
           - result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block_state.state in ["associated", "associating"]
           - '"is_default" in result.vpc'
           - '"state" in result.vpc'
@@ -1579,7 +1579,7 @@
           - result is changed
           - result.vpc.ipv6_cidr_block_association_set | length == 1
           - result.vpc.ipv6_cidr_block_association_set[0].association_id.startswith("vpc-cidr-assoc-")
-          - result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block | ansible.utils.ipv6
+          - result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block is defined and result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block is ansible.utils.ipv6
           - result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block_state.state in ["disassociated"]
 
     - name: Retry to remove IPv6 CIDR association from VPC
@@ -1612,10 +1612,10 @@
           # now there should be one disassociated block and one associated block.
           - result.vpc.ipv6_cidr_block_association_set | length == 2
           - result.vpc.ipv6_cidr_block_association_set[0].association_id.startswith("vpc-cidr-assoc-")
-          - result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block | ansible.utils.ipv6
+          - result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block is defined and result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block is ansible.utils.ipv6
           - result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block_state.state in ["disassociated", "disassociating"]
           - result.vpc.ipv6_cidr_block_association_set[1].association_id.startswith("vpc-cidr-assoc-")
-          - result.vpc.ipv6_cidr_block_association_set[1].ipv6_cidr_block | ansible.utils.ipv6
+          - result.vpc.ipv6_cidr_block_association_set[1].ipv6_cidr_block is defined and result.vpc.ipv6_cidr_block_association_set[1].ipv6_cidr_block is ansible.utils.ipv6
           - result.vpc.ipv6_cidr_block_association_set[1].ipv6_cidr_block_state.state in ["associated", "associating"]
 
     # ============================================================
