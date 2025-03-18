@@ -33,34 +33,30 @@
         # refresh inventory
         - ansible.builtin.meta: refresh_inventory
 
-        - name: Display ansible hostvars variable
+        - name: Display ansible groups variable
           ansible.builtin.debug:
-            var: hostvars
+            var: groups
 
-        - name: Assert that hostvars contain multiple hostnames (hostnames with multiple tags and allow_duplicated_hosts=true)
+        - name: Assert that aws_ec2 group contain multiple hostnames (hostnames with multiple tags and allow_duplicated_hosts=true)
           ansible.builtin.assert:
             that:
-              - hostvars.keys() | length == 2
-              - '"tag1.prod-Ansible" in hostvars'
-              - '"tag2.prod-Ansible" in hostvars'
+              - groups["aws_ec2"] | list | sort == ["Tag1.prod-Ansible", "Tag2.prod-Ansible"]
           when:
             - search_multiple_tags | default(false) | bool
             - (allow_duplicated_hosts | default(false) | bool)
 
-        - name: Assert that hostvars contain only 1 hostname (hostnames with multiple tags and allow_duplicated_hosts=false)
+        - name: Assert that aws_ec2 group contain only 1 hostname (hostnames with multiple tags and allow_duplicated_hosts=false)
           ansible.builtin.assert:
             that:
-              - hostvars.keys() | length == 1
-              - '"tag1.prod-Ansible" in hostvars'
+              - groups["aws_ec2"] | list == ["Tag1.prod-Ansible"]
           when:
             - search_multiple_tags | default(false) | bool
             - not (allow_duplicated_hosts | default(false) | bool)
 
-        - name: Assert that hostvars contain only 1 hostname (hostnames with single tag)
+        - name: Assert that aws_ec2 group contain only 1 hostname (hostnames with single tag)
           ansible.builtin.assert:
             that:
-              - hostvars.keys() | length == 1
-              - '"TAG1.PROD-ANSIBLE" in hostvars'
+              - groups["aws_ec2"] | list == ["TAG1.PROD-ANSIBLE"]
           when:
             - not (search_multiple_tags | default(false) | bool)
             - not (allow_duplicated_hosts | default(false) | bool)
