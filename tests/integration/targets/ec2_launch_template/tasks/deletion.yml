@@ -49,7 +49,7 @@
       amazon.aws.ec2_launch_template:
         name: "{{ deletion_launch_template_name }}"
         state: absent
-        versions_to_delete: "{{ range(1, 6) }}"
+        versions_to_delete: "{{ range(1, 6) | list }}"
       ignore_errors: true
       register: delete_default_v
 
@@ -63,7 +63,7 @@
       amazon.aws.ec2_launch_template:
         name: "{{ deletion_launch_template_name }}"
         state: absent
-        versions_to_delete: "{{ range(3, 6) }}"
+        versions_to_delete: "{{ range(3, 6) | list }}"
         default_version: 6
       ignore_errors: true
       register: delete_set_non_existing_v

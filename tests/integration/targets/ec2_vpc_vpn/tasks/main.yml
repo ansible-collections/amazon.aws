@@ -51,7 +51,7 @@
       ansible.builtin.assert:
         that:
           - result is failed
-          - result.msg == "parameters are mutually exclusive: vpn_gateway_id|transit_gateway_id"
+          - "'parameters are mutually exclusive: vpn_gateway_id|transit_gateway_id' in result.msg"
 
     - name: Create EC2 VPN Connection, with customer gateway and transit_gateway
       amazon.aws.ec2_vpc_vpn:
