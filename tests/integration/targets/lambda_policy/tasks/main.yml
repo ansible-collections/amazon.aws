@@ -118,7 +118,7 @@
     - name: Assert API works success
       ansible.builtin.assert:
         that:
-          - uri_result
+          - uri_result != {}
     - name: Deploy new API
       community.aws.api_gateway:
         api_file: "{{ output_dir }}/endpoint-test-swagger-api.yml.j2"

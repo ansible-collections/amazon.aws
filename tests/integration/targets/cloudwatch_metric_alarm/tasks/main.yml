@@ -97,7 +97,7 @@
       ansible.builtin.assert:
         that:
           - ec2_instance_metric_alarm.changed
-          - ec2_instance_metric_alarm.alarm_arn
+          - ec2_instance_metric_alarm.alarm_arn  != ""
           - ec2_instance_metric_alarm.statistic == alarm_info.metric_alarms[0].statistic
           - ec2_instance_metric_alarm.name  == alarm_info.metric_alarms[0].alarm_name
           - ec2_instance_metric_alarm.metric == alarm_info.metric_alarms[0].metric_name
@@ -368,7 +368,7 @@
       ansible.builtin.assert:
         that:
           - ec2_instance_metric_alarm_no_unit.changed
-          - ec2_instance_metric_alarm_no_unit.alarm_arn
+          - ec2_instance_metric_alarm_no_unit.alarm_arn != ""
           - ec2_instance_metric_alarm_no_unit.statistic == alarm_info_no_unit.metric_alarms[0].statistic
           - ec2_instance_metric_alarm_no_unit.name  == alarm_info_no_unit.metric_alarms[0].alarm_name
           - ec2_instance_metric_alarm_no_unit.metric == alarm_info_no_unit.metric_alarms[0].metric_name
@@ -439,7 +439,7 @@
       ansible.builtin.assert:
         that:
           - ec2_instance_metric_alarm_metrics.changed
-          - ec2_instance_metric_alarm_metrics.alarm_arn
+          - ec2_instance_metric_alarm_metrics.alarm_arn != ""
           - ec2_instance_metric_alarm_metrics.metrics[0].metric_stat.stat == alarm_info_metrics.metric_alarms[0].metrics[0].metric_stat.stat
           - ec2_instance_metric_alarm_metrics.metrics[0].metric_stat.metric.namespace == alarm_info_metrics.metric_alarms[0].metrics[0].metric_stat.metric.namespace
           - ec2_instance_metric_alarm_metrics.metrics[0].metric_stat.metric.metric_name == alarm_info_metrics.metric_alarms[0].metrics[0].metric_stat.metric.metric_name
