@@ -90,8 +90,8 @@ options:
     backup_retention_period:
         description:
           - The number of days for which automated backups are retained (must be within V(1) to V(35)).
-            May be used when creating a new cluster, when restoring from S3, or when modifying a cluster.
-        type: int
+          May be used when creating a new cluster, when restoring from S3, or when modifying a cluster.
+          type: int
         default: 1
     character_set_name:
         description:
@@ -101,6 +101,7 @@ options:
         description:
           - Indicates which mode of Database Insights to enable for the target DB cluster. Options are 'advanced' or 'standard'
         type: str
+        versions_added: 9.4.0
     database_name:
         description:
           - The name for your database. If a name is not provided Amazon RDS will not create a database.
@@ -185,6 +186,7 @@ options:
         description:
           - Whether to enable Performance Insights for the DB cluster.
         type: bool
+        versions_added: 9.4.0
     allocated_storage:
         description:
           - The amount of storage in gibibytes (GiB) to allocate to each DB instance in the Multi-AZ DB cluster.
@@ -297,10 +299,12 @@ options:
         description:
           - The AWS KMS key identifier (ARN, name, or alias) for encryption of Performance Insights data.
         type: str
+        versions_added: 9.4.0
     performance_insights_retention_period:
         description:
-          - The amount of time, in days, to retain Performance Insights data. Valid values are 7 or 731.
+          - The amount of time, in days, to retain Performance Insights data. Valid values are V(7) or V(731).
         type: int
+        versions_added: 9.4.0
     port:
         description:
           - The port number on which the instances in the DB cluster accept connections. If not specified, Amazon RDS
@@ -1132,6 +1136,7 @@ def changing_cluster_options(modify_params, current_cluster):
         g["DBClusterOptionGroupName"] for g in current_cluster["DBClusterOptionGroupMemberships"]
     ]:
         changing_params["OptionGroupName"] = option_group
+        
     enable_performance_insights = modify_params.pop("EnablePerformanceInsights", None)
     if enable_performance_insights != current_cluster["EnablePerformanceInsights"]:
         changing_params["EnablePerformanceInsights"] = enable_performance_insights
