@@ -409,7 +409,7 @@
         that:
           - igw_info is successful
           - '"internet_gateways" in igw_info'
-          - igw_info.internet_gateways | selectattr("internet_gateway_id","equalto",igw_id)
+          - igw_id in (igw_info.internet_gateways | map(attribute='internet_gateway_id') | list)
 
     - name: Gather information about a filtered list of Internet Gateways using tags - CHECK_MODE
       amazon.aws.ec2_vpc_igw_info:
@@ -423,7 +423,7 @@
         that:
           - igw_info is successful
           - '"internet_gateways" in igw_info'
-          - igw_info.internet_gateways | selectattr("internet_gateway_id","equalto",igw_id)
+          - igw_id in (igw_info.internet_gateways | map(attribute='internet_gateway_id') | list)
 
     # ============================================================
     - name: Gather information about a filtered list of Internet Gateways using tags (no match)
