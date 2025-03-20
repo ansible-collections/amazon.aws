@@ -288,6 +288,11 @@ except ImportError:
     pass  # will be captured by imported HAS_BOTO3
 
 from ansible.module_utils._text import to_text
+
+try:
+    from ansible.template import trust_as_template
+except ImportError:
+    trust_as_template = None
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
@@ -400,9 +405,11 @@ instance_data_filter_to_boto_attr = {
 
 def _get_tag_hostname(preference, instance):
     tag_hostnames = preference.split("tag:", 1)[1]
+    expected_single_value = False
     if "," in tag_hostnames:
         tag_hostnames = tag_hostnames.split(",")
     else:
+        expected_single_value = True
         tag_hostnames = [tag_hostnames]
 
     tags = boto3_tag_list_to_ansible_dict(instance.get("Tags", []))
@@ -416,6 +423,8 @@ def _get_tag_hostname(preference, instance):
             tag_value = tags.get(v)
             if tag_value:
                 tag_values.append(to_text(tag_value))
+    if expected_single_value and len(tag_values) > 0:
+        tag_values = tag_values[0]
     return tag_values
 
 
@@ -574,6 +583,8 @@ class InventoryModule(AWSInventoryBase):
             template_var = "{{'%s'|%s}}" % (hostname, jinja2_filter)
             if isinstance(hostname, list):
                 template_var = "{{%s|%s}}" % (hostname, jinja2_filter)
+            if trust_as_template:
+                template_var = trust_as_template(template_var)
             hostname = self.templar.template(variable=template_var, disable_lookups=False)
         if isinstance(hostname, list) and return_single_hostname:
             hostname = hostname[0] if hostname else None

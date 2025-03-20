@@ -192,10 +192,10 @@ def test_inventory_verify_file(m_base_verify_file, inventory, base_verify_file_r
     [
         ("tag:os_provider", {"Tags": []}, []),
         ("tag:os_provider", {}, []),
-        ("tag:os_provider", {"Tags": [{"Key": "os_provider", "Value": "RedHat"}]}, ["RedHat"]),
+        ("tag:os_provider", {"Tags": [{"Key": "os_provider", "Value": "RedHat"}]}, "RedHat"),
         ("tag:OS_Provider", {"Tags": [{"Key": "os_provider", "Value": "RedHat"}]}, []),
         ("tag:tag:os_provider", {"Tags": [{"Key": "os_provider", "Value": "RedHat"}]}, []),
-        ("tag:os_provider=RedHat", {"Tags": [{"Key": "os_provider", "Value": "RedHat"}]}, ["os_provider_RedHat"]),
+        ("tag:os_provider=RedHat", {"Tags": [{"Key": "os_provider", "Value": "RedHat"}]}, "os_provider_RedHat"),
         ("tag:os_provider=CoreOS", {"Tags": [{"Key": "os_provider", "Value": "RedHat"}]}, []),
         (
             "tag:os_provider=RedHat,os_release=7",
