@@ -90,8 +90,8 @@ options:
     backup_retention_period:
         description:
           - The number of days for which automated backups are retained (must be within V(1) to V(35)).
-          May be used when creating a new cluster, when restoring from S3, or when modifying a cluster.
-          type: int
+            May be used when creating a new cluster, when restoring from S3, or when modifying a cluster.
+        type: int
         default: 1
     character_set_name:
         description:
