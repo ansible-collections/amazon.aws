@@ -1804,7 +1804,7 @@ class ElbManager:
                 aws_retry=True, LoadBalancerName=self.name, LoadBalancerAttributes=attributes
             )
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-            self.module.fail_json_aws(e, msg="Failed to apply load balancer attrbutes")
+            self.module.fail_json_aws(e, msg="Failed to apply load balancer attributes")
 
     def _proxy_policy_name(self):
         return "ProxyProtocol-policy"
