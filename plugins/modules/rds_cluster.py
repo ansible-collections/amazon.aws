@@ -97,9 +97,12 @@ options:
         description:
           - The character set to associate with the DB cluster.
         type: str
-    database_insights_mode
+    database_insights_mode:
         description:
-          - Indicates which mode of Database Insights to enable for the target DB cluster. Options are 'advanced' or 'standard'
+          - Indicates which mode of Database Insights to enable for the target DB cluster.
+        choices:
+          - standard
+          - advanced
         type: str
         versions_added: 9.4.0
     database_name:
