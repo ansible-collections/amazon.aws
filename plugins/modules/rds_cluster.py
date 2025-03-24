@@ -849,7 +849,7 @@ def get_create_options(params_dict):
         "DatabaseName",
         "EnableCloudwatchLogsExports",
         "EnableIAMDatabaseAuthentication",
-        "EnablePerformanceInsights",
+        "PerformanceInsightsEnabled",
         "KmsKeyId",
         "Engine",
         "EngineMode",
@@ -896,7 +896,7 @@ def get_modify_options(params_dict, force_update_password):
         "DBClusterIdentifier",
         "DBClusterParameterGroupName",
         "EnableIAMDatabaseAuthentication",
-        "EnablePerformanceInsights",
+        "PerformanceInsightsEnabled",
         "EngineVersion",
         "PreferredMaintenanceWindow",
         "MasterUserPassword",
@@ -945,7 +945,7 @@ def get_restore_s3_options(params_dict):
         "DatabaseName",
         "EnableCloudwatchLogsExports",
         "EnableIAMDatabaseAuthentication",
-        "EnablePerformanceInsights",
+        "PerformanceInsightsEnabled",
         "Engine",
         "EngineVersion",
         "KmsKeyId",
@@ -971,7 +971,7 @@ def get_restore_s3_options(params_dict):
         "Domain",
         "DomainIAMRoleName",
         "DatabaseInsightsMode",
-        "EnablePerformanceInsights",
+        "PerformanceInsightsEnabled",
         "PerformanceInsightsKMSKeyId",
         "PerformanceInsightsRetentionPeriod",
     ]
@@ -989,7 +989,7 @@ def get_restore_snapshot_options(params_dict):
         "DatabaseName",
         "EnableCloudwatchLogsExports",
         "EnableIAMDatabaseAuthentication",
-        "EnablePerformanceInsights",
+        "PerformanceInsightsEnabled",
         "Engine",
         "EngineVersion",
         "KmsKeyId",
@@ -1017,7 +1017,7 @@ def get_restore_cluster_options(params_dict):
         "DBSubnetGroupName",
         "EnableCloudwatchLogsExports",
         "EnableIAMDatabaseAuthentication",
-        "EnablePerformanceInsights",
+        "PerformanceInsightsEnabled",
         "KmsKeyId",
         "OptionGroupName",
         "PerformanceInsightsKMSKeyId",
@@ -1140,9 +1140,9 @@ def changing_cluster_options(modify_params, current_cluster):
     ]:
         changing_params["OptionGroupName"] = option_group
         
-    enable_performance_insights = modify_params.pop("EnablePerformanceInsights", None)
-    if enable_performance_insights != current_cluster["EnablePerformanceInsights"]:
-        changing_params["EnablePerformanceInsights"] = enable_performance_insights
+    enable_performance_insights = modify_params.pop("PerformanceInsightsEnabled", None)
+    if enable_performance_insights != current_cluster["PerformanceInsightsEnabled"]:
+        changing_params["PerformanceInsightsEnabled"] = enable_performance_insights
     
     performance_insights_kms_key_id = modify_params.pop("PerformanceInsightsKMSKeyId", None)
     if performance_insights_kms_key_id != current_cluster["PerformanceInsightsKMSKeyId"]:
