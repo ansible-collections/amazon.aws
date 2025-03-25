@@ -11,7 +11,7 @@ regions:
 - '{{ aws_region }}'
 hostnames:
 {% if search_multiple_tags | default(false) %}
-- "tag:Tag1,Tag2 | replace('test', 'prod') | title()"
+- "tag:Tag1,Tag2 | map('replace', 'test', 'prod') | map('title')"
 {% else %}
 - "tag:Tag1 | replace('test', 'prod') | upper()"
 {% endif %}
