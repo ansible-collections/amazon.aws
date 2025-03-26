@@ -22,7 +22,12 @@ from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto
 from ansible_collections.amazon.aws.plugins.module_utils.errors import AWSErrorHandler
 from ansible_collections.amazon.aws.plugins.module_utils.exceptions import AnsibleAWSError
 
-IGNORE_S3_DROP_IN_EXCEPTIONS = ["XNotImplemented", "NotImplemented", "AccessControlListNotSupported", "501"]
+IGNORE_S3_DROP_IN_EXCEPTIONS = [
+    "501",
+    "AccessControlListNotSupported",
+    "NotImplemented",
+    "XNotImplemented",
+]
 
 
 class AnsibleS3Error(AnsibleAWSError):
@@ -53,15 +58,16 @@ class S3ErrorHandler(AWSErrorHandler):
         return is_boto3_error_code(
             [
                 "404",
+                "NoSuchBucket",
+                "NoSuchBucketPolicy",
+                "NoSuchKey",
+                "NoSuchOwnershipControls",
+                "NoSuchPublicAccessBlockConfiguration",
                 "NoSuchTagSet",
                 "NoSuchTagSetError",
                 "ObjectLockConfigurationNotFoundError",
-                "NoSuchBucketPolicy",
-                "ServerSideEncryptionConfigurationNotFoundError",
-                "NoSuchBucket",
-                "NoSuchPublicAccessBlockConfiguration",
                 "OwnershipControlsNotFoundError",
-                "NoSuchOwnershipControls",
+                "ServerSideEncryptionConfigurationNotFoundError",
             ]
         )
 

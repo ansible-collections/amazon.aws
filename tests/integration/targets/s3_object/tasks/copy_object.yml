@@ -145,12 +145,14 @@
           bucket: "{{ copy_bucket.src }}"
           object: this_key_does_not_exist.txt
       register: result
+      ignore_errors: true
 
     - name: Validate result when copying missing key
       ansible.builtin.assert:
         that:
           - result is not changed
-          - result.msg == "Key this_key_does_not_exist.txt does not exist in bucket "+copy_bucket.src+"."
+          - result is failed
+          - '"this_key_does_not_exist.txt does not exist in bucket" in result.msg'
 
     # Copy with metadata
     - name: Set fact for bucket name

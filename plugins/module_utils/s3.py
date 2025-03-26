@@ -15,7 +15,7 @@ if typing.TYPE_CHECKING:
     from typing import List
     from typing import Optional
     from typing import Tuple
-    from .retries import RetryingBotoClientWrapper
+    from .botocore import ClientType
 
 from urllib.parse import urlparse
 
@@ -37,6 +37,7 @@ from ansible.module_utils.basic import to_text
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
 
 IGNORE_S3_DROP_IN_EXCEPTIONS = ["XNotImplemented", "NotImplemented", "AccessControlListNotSupported"]
 
@@ -59,23 +60,23 @@ s3_acl_to_name = _transformations.s3_acl_to_name
 merge_tags = _transformations.merge_tags
 
 
-def get_s3_waiter(client: RetryingBotoClientWrapper, waiter_name: str) -> Any:
+def get_s3_waiter(client: ClientType, waiter_name: str) -> Any:
     return _waiters.waiter_factory.get_waiter(client, waiter_name)
 
 
 @S3ErrorHandler.list_error_handler("get bucket encryption settings", {})
 @AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def get_s3_bucket_accelerate_configuration(s3_client, bucket_name: str) -> Dict:
+def get_s3_bucket_accelerate_configuration(client: ClientType, bucket_name: str) -> Dict:
     """
     Get transfer accelerate configuration of the S3 bucket.
     Parameters:
-        s3_client (boto3.client): The Boto3 S3 client object.
+        client (boto3.client): The Boto3 S3 client object.
         bucket_name (str): The name of the S3 bucket.
     Returns:
         Transfer accelerate status of the S3 bucket.
     """
     try:
-        return s3_client.get_bucket_accelerate_configuration(Bucket=bucket_name)
+        return client.get_bucket_accelerate_configuration(Bucket=bucket_name)
     except is_boto3_error_code(["UnsupportedArgument", "MethodNotAllowed"]) as e:
         # aws-gov throws UnsupportedArgument (consistently)
         # aws throws MethodNotAllowed where acceleration isn't available /yet/
@@ -86,21 +87,21 @@ def get_s3_bucket_accelerate_configuration(s3_client, bucket_name: str) -> Dict:
 
 @S3ErrorHandler.list_error_handler("get bucket ACLs", [])
 @AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def get_s3_bucket_acl(s3_client, bucket_name: str) -> List:
+def get_s3_bucket_acl(client: ClientType, bucket_name: str) -> List:
     """
     Get ACLs of the S3 bucket.
     Parameters:
-        s3_client (boto3.client): The Boto3 S3 client object.
+        client (boto3.client): The Boto3 S3 client object.
         bucket_name (str): The name of the S3 bucket.
     Returns:
         Transfer accelerate status of the S3 bucket.
     """
-    return s3_client.get_bucket_acl(Bucket=bucket_name)
+    return client.get_bucket_acl(Bucket=bucket_name)
 
 
 @S3ErrorHandler.list_error_handler("get bucket encryption settings", {})
 @AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def get_s3_bucket_encryption(client, bucket_name: str) -> Dict:
+def get_s3_bucket_encryption(client: ClientType, bucket_name: str) -> Dict:
     """
     Retrieve the encryption configuration for an S3 bucket.
     Parameters:
@@ -114,7 +115,7 @@ def get_s3_bucket_encryption(client, bucket_name: str) -> Dict:
 
 @S3ErrorHandler.list_error_handler("get bucket ownership settings", {})
 @AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def get_s3_bucket_ownership_controls(client, bucket_name: str) -> Dict:
+def get_s3_bucket_ownership_controls(client: ClientType, bucket_name: str) -> Dict:
     """
     Retrieve bucket ownership controls for S3 bucket
     Parameters:
@@ -126,9 +127,27 @@ def get_s3_bucket_ownership_controls(client, bucket_name: str) -> Dict:
     return client.get_bucket_ownership_controls(Bucket=bucket_name).get("OwnershipControls")
 
 
+def get_s3_bucket_object_ownership(client: ClientType, bucket_name: str) -> Optional[str]:
+    """
+    Get the current bucket ownership rule.
+    Parameters:
+        client (boto3.client): The Boto3 S3 client object.
+        bucket_name (str): The name of the S3 bucket.
+    Returns:
+      The object ownership rule
+    """
+    result = get_s3_bucket_ownership_controls(client, bucket_name)
+    if not result:
+        return None
+    try:
+        return result["Rules"][0]["ObjectOwnership"]
+    except (KeyError, IndexError) as e:
+        raise AnsibleS3SupportError(message="Failed to parse bucket object ownership settings") from e
+
+
 @S3ErrorHandler.list_error_handler("get bucket policy", {})
 @AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def get_s3_bucket_policy(client, bucket_name: str) -> Dict:
+def get_s3_bucket_policy(client: ClientType, bucket_name: str) -> Dict:
     """
     Retrieve bucket policy for an S3 bucket
     Parameters:
@@ -146,7 +165,7 @@ def get_s3_bucket_policy(client, bucket_name: str) -> Dict:
 
 @S3ErrorHandler.list_error_handler("get bucket request payment settings", {})
 @AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def get_s3_bucket_request_payment(client, bucket_name: str) -> Dict:
+def get_s3_bucket_request_payment(client: ClientType, bucket_name: str) -> Dict:
     """
     Retrieve bucket request payment settings for an S3 bucket
     Parameters:
@@ -160,7 +179,7 @@ def get_s3_bucket_request_payment(client, bucket_name: str) -> Dict:
 
 @S3ErrorHandler.list_error_handler("get bucket tags", {})
 @AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def get_s3_bucket_tagging(client, bucket_name: str) -> Dict:
+def get_s3_bucket_tagging(client: ClientType, bucket_name: str) -> Dict:
     """
     Retrieve tagging for an S3 bucket
     Parameters:
@@ -175,7 +194,7 @@ def get_s3_bucket_tagging(client, bucket_name: str) -> Dict:
 
 @S3ErrorHandler.list_error_handler("get bucket versioning settings", {})
 @AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def get_s3_bucket_versioning(client, bucket_name: str) -> Dict:
+def get_s3_bucket_versioning(client: ClientType, bucket_name: str) -> Dict:
     """
     Retrieve bucket versioning settings for an S3 bucket
     Parameters:
@@ -189,7 +208,7 @@ def get_s3_bucket_versioning(client, bucket_name: str) -> Dict:
 
 @S3ErrorHandler.list_error_handler("get bucket object lock settings", {})
 @AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def get_s3_object_lock_configuration(client, bucket_name: str) -> Dict:
+def get_s3_object_lock_configuration(client: ClientType, bucket_name: str) -> Dict:
     """
     Retrieve object lock configuration for an S3 bucket.
     Parameters:
@@ -203,11 +222,11 @@ def get_s3_object_lock_configuration(client, bucket_name: str) -> Dict:
 
 @S3ErrorHandler.list_error_handler("get bucket public access block settings", {})
 @AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def get_s3_bucket_public_access_block(client, bucket_name: str) -> Dict:
+def get_s3_bucket_public_access_block(client: ClientType, bucket_name: str) -> Dict:
     """
     Get current public access block configuration for a bucket.
     Parameters:
-        s3_client (boto3.client): The Boto3 S3 client object.
+        client (boto3.client): The Boto3 S3 client object.
         bucket_name (str): The name of the S3 bucket.
     Returns:
         The current public access block configuration for the bucket.
@@ -217,16 +236,29 @@ def get_s3_bucket_public_access_block(client, bucket_name: str) -> Dict:
 
 @S3ErrorHandler.list_error_handler("determine if bucket exisits", {})
 @AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["OperationAborted"])
-def head_s3_bucket(client, bucket_name: str) -> Dict:
+def head_s3_bucket(client: ClientType, bucket_name: str) -> Dict:
     """
     Retrieve basic information about an S3 bucket
     Parameters:
-        s3_client (boto3.client): The Boto3 S3 client object.
+        client (boto3.client): The Boto3 S3 client object.
         bucket_name (str): The name of the S3 bucket.
     Returns:
         Basic information about the bucket.
     """
     return client.head_bucket(Bucket=bucket_name)
+
+
+@S3ErrorHandler.list_error_handler("get metadata (HEAD) for object", {})
+@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["OperationAborted"])
+def _head_s3_object(client: ClientType, **params) -> Dict:
+    parameters = scrub_none_parameters(params)
+    result = client.head_object(**parameters)
+    result.pop("ResponseMetadata", None)
+    return result
+
+
+def head_s3_object(client: ClientType, bucket: str, obj_key: str, version: Optional[str] = None) -> Dict:
+    return _head_s3_object(client, Bucket=bucket, Key=obj_key, VersionId=version)
 
 
 def s3_head_objects(client, parts, bucket, obj, versionId):
@@ -236,7 +268,7 @@ def s3_head_objects(client, parts, bucket, obj, versionId):
 
     for part in range(1, parts + 1):
         args["PartNumber"] = part
-        yield client.head_object(**args)
+        yield _head_s3_object(client, **args)
 
 
 def calculate_checksum_with_file(client, parts, bucket, obj, versionId, filename):
@@ -361,14 +393,14 @@ def s3_extra_params(options, sigv4=False):
 
 @S3ErrorHandler.list_error_handler("get bucket inventory settings", {})
 @AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def _list_bucket_inventory_configurations(client, **params):
+def _list_bucket_inventory_configurations(client: ClientType, **params):
     return client.list_bucket_inventory_configurations(**params)
 
 
 # _list_backup_inventory_configurations is a workaround for a missing paginator for listing
 # bucket inventory configuration in boto3:
 # https://github.com/boto/botocore/blob/1.34.141/botocore/data/s3/2006-03-01/paginators-1.json
-def list_bucket_inventory_configurations(client, bucket_name: str) -> list:
+def list_bucket_inventory_configurations(client: ClientType, bucket_name: str) -> list:
     first_iteration = False
     next_token = None
 
@@ -388,8 +420,9 @@ def list_bucket_inventory_configurations(client, bucket_name: str) -> list:
     return entries
 
 
+@S3ErrorHandler.list_error_handler("list objects in bucket", {})
 @AWSRetry.jittered_backoff()
-def _list_objects_v2(client, **params):
+def _list_objects_v2(client: ClientType, **params):
     params = {k: v for k, v in params.items() if v is not None}
     # For practical purposes, the paginator ignores MaxKeys, if we've been passed MaxKeys we need to
     # explicitly call list_objects_v3 rather than re-use the paginator
@@ -400,7 +433,13 @@ def _list_objects_v2(client, **params):
     return paginator.paginate(**params).build_full_result()
 
 
-def list_bucket_object_keys(client, bucket, prefix=None, max_keys=None, start_after=None):
+def list_bucket_object_keys(
+    client: ClientType,
+    bucket: str,
+    prefix: Optional[str] = None,
+    max_keys: Optional[int] = None,
+    start_after: Optional[str] = None,
+):
     response = _list_objects_v2(client, Bucket=bucket, Prefix=prefix, StartAfter=start_after, MaxKeys=max_keys)
     return [c["Key"] for c in response.get("Contents", [])]
 
