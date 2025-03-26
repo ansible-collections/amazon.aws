@@ -37,7 +37,7 @@
     - ansible.builtin.assert:
         that:
           - output.changed
-          - output.bucket_inventory
+          - output.bucket_inventory | length > 0
 
     - name: Re-configure inventory configuration
       amazon.aws.s3_bucket:
@@ -57,7 +57,7 @@
     - ansible.builtin.assert:
         that:
           - output.changed
-          - output.bucket_inventory
+          - output.bucket_inventory | length > 0
 
     - name: Re-configure inventory configuration (idempotency)
       amazon.aws.s3_bucket:
@@ -77,7 +77,7 @@
     - ansible.builtin.assert:
         that:
           - output is not changed
-          - output.bucket_inventory
+          - output.bucket_inventory | length > 0
 
     - name: Delete inventory configuration
       amazon.aws.s3_bucket:
@@ -89,7 +89,7 @@
     - ansible.builtin.assert:
         that:
           - output is changed
-          - not output.bucket_inventory|bool
+          - not output.bucket_inventory | length > 0
 
     - name: Delete inventory configuration (idempotency)
       amazon.aws.s3_bucket:
@@ -101,7 +101,7 @@
     - ansible.builtin.assert:
         that:
           - output is not changed
-          - not output.bucket_inventory|bool
+          - not output.bucket_inventory | length > 0
 
     # ============================================================
 

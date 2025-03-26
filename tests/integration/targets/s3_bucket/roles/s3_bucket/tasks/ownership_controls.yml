@@ -48,7 +48,7 @@
     - ansible.builtin.assert:
         that:
           - output.changed
-          - output.object_ownership
+          - '"object_ownership" in output'
           - output.object_ownership == 'ObjectWriter'
 
     - name: Update s3 bucket ownership preferred controls
@@ -61,7 +61,7 @@
     - ansible.builtin.assert:
         that:
           - output.changed
-          - output.object_ownership
+          - '"object_ownership" in output'
           - output.object_ownership == 'BucketOwnerPreferred'
 
     - name: Test idempotency update s3 bucket ownership preferred controls
@@ -74,7 +74,7 @@
     - ansible.builtin.assert:
         that:
           - output.changed is false
-          - output.object_ownership
+          - '"object_ownership" in output'
           - output.object_ownership == 'BucketOwnerPreferred'
 
     - name: Update s3 bucket ownership enforced controls
@@ -87,7 +87,7 @@
     - ansible.builtin.assert:
         that:
           - output.changed
-          - output.object_ownership
+          - '"object_ownership" in output'
           - output.object_ownership == 'BucketOwnerEnforced'
 
     - name: Test idempotency update s3 bucket ownership preferred controls
@@ -100,7 +100,7 @@
     - ansible.builtin.assert:
         that:
           - output.changed is false
-          - output.object_ownership
+          - '"object_ownership" in output'
           - output.object_ownership == 'BucketOwnerEnforced'
 
     - name: Delete s3 bucket ownership controls
