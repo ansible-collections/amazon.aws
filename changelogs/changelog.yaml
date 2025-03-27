@@ -3708,3 +3708,17 @@ releases:
       name: ec2_dedicated_host_info
       namespace: ''
     release_date: '2025-03-04'
+  9.4.0:
+    changes:
+      bugfixes:
+      - lookup/aws_account_attribute - plugin should return a list when ``wantlist=True``
+        (https://github.com/ansible-collections/amazon.aws/pull/2552).
+      minor_changes:
+      - inventory/aws_ec2 - Update templating mechanism to support ansible-core 2.19
+        changes (https://github.com/ansible-collections/amazon.aws/pull/2552).
+      release_summary: This minor release includes bug fixes and minor changes to
+        validate the collection against the future ``ansible-core 2.19`` version.
+    fragments:
+    - 20250319-ansible-core-2-19-testing.yaml
+    - release_summary.yml
+    release_date: '2025-04-01'
