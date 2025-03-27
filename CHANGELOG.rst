@@ -298,7 +298,7 @@ This release includes bugfixes for the  ``ec2_instance`` and ``s3_bucket`` modul
 Bugfixes
 --------
 
-- ec2_instance - Fix issue where EC2 instance module failed to apply security groups when both `network` and `vpc_subnet_id`` were specified, caused by passing `None` to discover_security_groups() (https://github.com/ansible-collections/amazon.aws/pull/2488).
+- ec2_instance - Fix issue where EC2 instance module failed to apply security groups when both `network` and `vpc_subnet_id` were specified, caused by passing `None` to discover_security_groups() (https://github.com/ansible-collections/amazon.aws/pull/2488).
 - s3_bucket - Do not use default region as location constraint when creating bucket on ceph cluster (https://github.com/ansible-collections/amazon.aws/issues/2420).
 
 v8.2.2
