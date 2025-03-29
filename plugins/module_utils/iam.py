@@ -165,6 +165,13 @@ def get_iam_user(client, user):
     return normalize_iam_user(results.get("User", []))
 
 
+@IAMErrorHandler.list_error_handler("get user tags")
+@AWSRetry.jittered_backoff()
+def list_iam_user_tags(client, user):
+    results = client.list_user_tags(UserName=user)
+    return results.get("Tags", [])
+
+
 def find_iam_managed_policy_by_name(client, name):
     policies = list_iam_managed_policies(client)
     for policy in policies:
