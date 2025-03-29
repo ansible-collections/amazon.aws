@@ -932,6 +932,20 @@ def main():
             default=[],
             elements="dict",
             options=dict(
+                LogOptions=dict(
+                    type="dict",
+                    options=dict(
+                        CloudWatchLogOptions=dict(
+                            type="dict",
+                            options=(
+                                LogEnabled=dict(type="bool"),
+                                LogGroupArn=dict(type="str"),
+                                LogOutputFormat=dict(type="str", choices=["json", "text"]),
+                            ),
+                        ),
+                    ),
+                ),
+                StartupAction=dict(type="str", choices=["add", "start"]),
                 TunnelInsideCidr=dict(type="str"),
                 TunnelInsideIpv6Cidr=dict(type="str"),
                 PreSharedKey=dict(type="str", no_log=True),
