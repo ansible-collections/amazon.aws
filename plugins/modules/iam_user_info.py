@@ -147,10 +147,15 @@ def _list_users(connection, name, group, path):
     if name and not (path or group):
         return [get_iam_user(connection, name)]
 
+    iam_users = []
+
     if group:
-        iam_users = get_iam_group(connection, group)["Users"]
+        iam_group = get_iam_group(connection, group)
+        if iam_group:
+            iam_users = group["Users"]
     else:
         iam_users = list_iam_users(connection, path=path)
+
 
     if not iam_users:
         return []
