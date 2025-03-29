@@ -1,0 +1,3 @@
+---
+bugfixes:
+  - iam_user_info - Acutally call GetUser when only user name is supplied insteaf od listing and filtering from all users
