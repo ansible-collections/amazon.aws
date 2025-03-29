@@ -149,3 +149,12 @@
   ansible.builtin.assert:
     that:
       - not iam_group.changed
+
+- name: Get info on non existent group
+  amazon.aws.iam_user_info:
+    group: "non-existent-group"
+  register: iam_user_info
+- name: Assert empty list of users for non existant group are returned
+  ansible.builtin.assert:
+    that:
+      - iam_user_info.iam_users | length == 0
