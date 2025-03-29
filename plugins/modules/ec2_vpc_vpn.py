@@ -71,6 +71,38 @@ options:
     elements: dict
     default: []
     suboptions:
+        LogOptions:
+            type: dict
+            description:
+              - Options for VPN connection logging.
+            version_added: 9.4.0
+            suboptions:
+                CloudWatchLogOptions:
+                    type: dict
+                    description:
+                      - Options for sending VPN connections logs to CloudWatch.
+                    suboptions:
+                        LogEnabled:
+                            type: bool
+                            description:
+                              - Enable or disable VPN tunnel logging feature.
+                        LogGroupArn:
+                            type: str
+                            description:
+                              - ARN of the CloudWatch log group to send logs to.
+                        LogOutputFormat:
+                            type: str
+                            description:
+                              - Log format.
+                            choices: ["json", "text"]
+        StartupAction:
+            type: str
+            description:
+              - The action to take when establishing the tunnel.
+              - O(tunnel_options.StartupAction=add) means the customer gateway must initiate the IKE negotiation and bring up the tunnel.
+              - O(tunnel_options.StartupAction=start) means the AWS must initiate the IKE negotiation and bring up the tunnel.
+            choices: ["add", "start"]
+            version_added: 9.4.0
         TunnelInsideCidr:
             type: str
             description:
@@ -900,6 +932,20 @@ def main():
             default=[],
             elements="dict",
             options=dict(
+                LogOptions=dict(
+                    type="dict",
+                    options=dict(
+                        CloudWatchLogOptions=dict(
+                            type="dict",
+                            options=dict(
+                                LogEnabled=dict(type="bool"),
+                                LogGroupArn=dict(type="str"),
+                                LogOutputFormat=dict(type="str", choices=["json", "text"]),
+                            ),
+                        ),
+                    ),
+                ),
+                StartupAction=dict(type="str", choices=["add", "start"]),
                 TunnelInsideCidr=dict(type="str"),
                 TunnelInsideIpv6Cidr=dict(type="str"),
                 PreSharedKey=dict(type="str", no_log=True),
