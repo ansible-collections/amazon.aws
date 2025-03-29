@@ -160,9 +160,11 @@ def get_iam_access_keys(client, user):
 
 @IAMErrorHandler.list_error_handler("get user")
 @AWSRetry.jittered_backoff()
-def get_iam_user(client, user):
+def get_iam_user(client, user, normalize=True):
     results = client.get_user(UserName=user)
-    return normalize_iam_user(results.get("User", []))
+    if normalize:
+        return normalize_iam_user(results.get("User", []))
+    return results.get("User", [])
 
 
 @IAMErrorHandler.list_error_handler("get user tags")

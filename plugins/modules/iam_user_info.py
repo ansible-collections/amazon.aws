@@ -144,8 +144,8 @@ def check_console_access(connection, user_name):
 
 def _list_users(connection, name, group, path):
     # name but not path or group
-    if name and not (path or group):
-        return [get_iam_user(connection, name)]
+    if name and path == "/" and not group:
+        return [get_iam_user(connection, name, normalize=False)]
 
     iam_users = []
 
