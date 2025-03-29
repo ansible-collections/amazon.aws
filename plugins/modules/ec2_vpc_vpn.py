@@ -937,7 +937,7 @@ def main():
                     options=dict(
                         CloudWatchLogOptions=dict(
                             type="dict",
-                            options=(
+                            options=dict(
                                 LogEnabled=dict(type="bool"),
                                 LogGroupArn=dict(type="str"),
                                 LogOutputFormat=dict(type="str", choices=["json", "text"]),
