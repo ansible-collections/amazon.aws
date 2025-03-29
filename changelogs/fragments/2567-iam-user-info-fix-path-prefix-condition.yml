@@ -1,0 +1,3 @@
+---
+bugfixes:
+  - iam_user_info - Acutally filter users by path prefix when one is provided

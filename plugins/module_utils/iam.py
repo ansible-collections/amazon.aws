@@ -95,7 +95,7 @@ def list_iam_role_attached_policies(client, role_name):
 @AWSRetry.jittered_backoff()
 def list_iam_users(client, path=None):
     args = {}
-    if path is None:
+    if path is not None:
         args = {"PathPrefix": path}
     paginator = client.get_paginator("list_users")
     return paginator.paginate(**args).build_full_result()["Users"]
