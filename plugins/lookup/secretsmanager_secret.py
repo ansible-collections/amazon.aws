@@ -25,7 +25,7 @@ options:
     description: Whether to return full attributes instead of just the secret value.
     type: bool
     default: false
-    version_added: 2.0.0
+    version_added: 9.4.0
   bypath:
     description: A boolean to indicate whether the parameter is provided as a hierarchy.
     default: false
