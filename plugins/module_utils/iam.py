@@ -95,7 +95,7 @@ def list_iam_role_attached_policies(client, role_name):
 @AWSRetry.jittered_backoff()
 def list_iam_users(client, path=None):
     args = {}
-    if path is None:
+    if path is not None:
         args = {"PathPrefix": path}
     paginator = client.get_paginator("list_users")
     return paginator.paginate(**args).build_full_result()["Users"]
@@ -160,9 +160,18 @@ def get_iam_access_keys(client, user):
 
 @IAMErrorHandler.list_error_handler("get user")
 @AWSRetry.jittered_backoff()
-def get_iam_user(client, user):
+def get_iam_user(client, user, normalize=True):
     results = client.get_user(UserName=user)
-    return normalize_iam_user(results.get("User", []))
+    if normalize:
+        return normalize_iam_user(results.get("User", []))
+    return results.get("User", [])
+
+
+@IAMErrorHandler.list_error_handler("get user tags")
+@AWSRetry.jittered_backoff()
+def list_iam_user_tags(client, user):
+    results = client.list_user_tags(UserName=user)
+    return results.get("Tags", [])
 
 
 def find_iam_managed_policy_by_name(client, name):
