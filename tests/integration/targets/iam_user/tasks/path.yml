@@ -29,6 +29,31 @@
       - iam_user.iam_user.user.user_name == test_user
       - iam_user.iam_user.user.path == test_path2
 
+- name: Add tag to test user
+  amazon.aws.iam_user:
+    name: "{{ test_user }}"
+    state: present
+    tags:
+      TagA: ValueA
+
+- name: List users by path
+  amazon.aws.iam_user_info:
+    path: "{{ test_path2 }}"
+  register: iam_user_info
+- name: Assert user found by path
+  ansible.builtin.assert:
+    that:
+      - iam_user_info.iam_users | length == 1
+      - iam_user_info.iam_users[0].user_name == test_user
+      - iam_user_info.iam_users[0].tags | length == 1
+      - iam_user_info.iam_users[0].tags.TagA == "ValueA"
+
+- name: Remove tag from test user
+  amazon.aws.iam_user:
+    name: "{{ test_user }}"
+    state: present
+    tags: {}
+
 - name: Retry set path (check_mode)
   amazon.aws.iam_user:
     name: "{{ test_user }}"

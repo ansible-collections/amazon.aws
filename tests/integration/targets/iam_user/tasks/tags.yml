@@ -30,6 +30,18 @@
       - '"TagA" in iam_user.iam_user.user.tags'
       - iam_user.iam_user.user.tags.TagA == "ValueA"
 
+- name: Get info on IAM user
+  amazon.aws.iam_user_info:
+    name: "{{ test_user }}"
+  register: iam_user_info
+- name: Assert tag present in user info
+  ansible.builtin.assert:
+    that:
+      - iam_user_info.iam_users | length == 1
+      - iam_user_info.iam_users[0].arn == iam_user.iam_user.user.arn
+      - iam_user_info.iam_users[0].tags | length == 1
+      - iam_user_info.iam_users[0].tags.TagA == "ValueA"
+
 - name: Add Tag (no change - check mode)
   amazon.aws.iam_user:
     name: "{{ test_user }}"
