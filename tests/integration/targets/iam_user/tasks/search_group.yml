@@ -13,6 +13,13 @@
       - iam_group.changed
       - iam_group.iam_group.users
 
+- name: Add tag to test user
+  amazon.aws.iam_user:
+    name: "{{ test_user }}"
+    state: present
+    tags:
+      TagA: ValueA
+
 - name: Get info on IAM user(s) in group
   amazon.aws.iam_user_info:
     group: "{{ test_group }}"
@@ -27,7 +34,14 @@
       - iam_user_info.iam_users[0].path == test_iam_user.path
       - iam_user_info.iam_users[0].user_id == test_iam_user.user_id
       - iam_user_info.iam_users[0].user_name == test_iam_user.user_name
-      - iam_user_info.iam_users[0].tags | length == 0
+      - iam_user_info.iam_users[0].tags | length == 1
+      - iam_user_info.iam_users[0].tags.TagA == "ValueA"
+
+- name: Remove tag from test user
+  amazon.aws.iam_user:
+    name: "{{ test_user }}"
+    state: present
+    tags: {}
 
 - name: Remove user from group
   amazon.aws.iam_group:
@@ -135,3 +149,12 @@
   ansible.builtin.assert:
     that:
       - not iam_group.changed
+
+- name: Get info on non existent group
+  amazon.aws.iam_user_info:
+    group: "non-existent-group"
+  register: iam_user_info
+- name: Assert empty list of users for non existant group are returned
+  ansible.builtin.assert:
+    that:
+      - iam_user_info.iam_users | length == 0
