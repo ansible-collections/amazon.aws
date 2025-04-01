@@ -129,6 +129,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.iam import AnsibleIAMEr
 from ansible_collections.amazon.aws.plugins.module_utils.iam import IAMErrorHandler
 from ansible_collections.amazon.aws.plugins.module_utils.iam import get_iam_group
 from ansible_collections.amazon.aws.plugins.module_utils.iam import get_iam_user
+from ansible_collections.amazon.aws.plugins.module_utils.iam import list_iam_user_tags
 from ansible_collections.amazon.aws.plugins.module_utils.iam import list_iam_users
 from ansible_collections.amazon.aws.plugins.module_utils.iam import normalize_iam_user
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
@@ -143,11 +144,15 @@ def check_console_access(connection, user_name):
 
 def _list_users(connection, name, group, path):
     # name but not path or group
-    if name and not (path or group):
-        return [get_iam_user(connection, name)]
+    if name and path == "/" and not group:
+        return [get_iam_user(connection, name, normalize=False)]
+
+    iam_users = []
 
     if group:
-        iam_users = get_iam_group(connection, group)["Users"]
+        iam_group = get_iam_group(connection, group)
+        if iam_group:
+            iam_users = iam_group["Users"]
     else:
         iam_users = list_iam_users(connection, path=path)
 
@@ -157,6 +162,9 @@ def _list_users(connection, name, group, path):
     # filter by name when a path or group was specified
     if name:
         iam_users = [u for u in iam_users if u["UserName"] == name]
+
+    for user in iam_users:
+        user["Tags"] = list_iam_user_tags(connection, user["UserName"])
 
     return iam_users
 
@@ -187,6 +195,7 @@ def main():
     path = module.params.get("path_prefix")
 
     connection = module.client("iam")
+
     try:
         module.exit_json(changed=False, iam_users=list_users(connection, name, group, path))
     except AnsibleIAMError as e:
