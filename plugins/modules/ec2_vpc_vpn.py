@@ -682,7 +682,7 @@ def ensure_tunnel_options(
 
     for tunnel_idx in range(1):
         current_tunnel_options = vpn_connection["Options"]["TunnelOptions"][tunnel_idx]
-        new_tunnel_options = tunnel_options[tunnel_idx]
+        new_tunnel_options = {k: v for k, v in tunnel_options[tunnel_idx].items() if v is not None}
 
         for param in current_tunnel_options:
             if param in new_tunnel_options and current_tunnel_options[param] != new_tunnel_options[param]:
