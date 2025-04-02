@@ -168,7 +168,7 @@
           StartupAction: start
         state: present
       register: result
-      
+
     - name: Assert that no changes are made
       ansible.builtin.assert:
         that:
