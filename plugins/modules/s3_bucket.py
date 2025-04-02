@@ -1324,6 +1324,8 @@ def put_object_lock_configuration(s3_client: ClientType, bucket_name: str, objec
     Returns:
         None
     """
+
+
     conf = {"ObjectLockEnabled": "Enabled", "Rule": {"DefaultRetention": object_lock_default_retention}}
     s3_client.put_object_lock_configuration(Bucket=bucket_name, ObjectLockConfiguration=conf)
 
