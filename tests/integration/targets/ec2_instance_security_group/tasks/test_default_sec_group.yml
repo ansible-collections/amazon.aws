@@ -45,7 +45,7 @@
         tags:
           Owner: Integration-Test
           Persistent: false
-          Name: "{{ resource_prefix}}-test-instance"
+          Name: "{{ resource_prefix }}-test-instance"
         vpc_subnet_id: "{{ subnet_1.subnet.id }}"
         wait: true
         state: present
