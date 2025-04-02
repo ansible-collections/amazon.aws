@@ -701,7 +701,10 @@ def ensure_tunnel_options(
                     WaiterConfig={"Delay": delay, "MaxAttempts": max_attempts},
                 )
             except WaiterError as e:
-                module.fail_json_aws(e, msg=f"Failed to wait for VPN connection {vpn_connection['VpnConnectionId']} to be available")
+                module.fail_json_aws(
+                    e,
+                    msg=f"Failed to wait for VPN connection {vpn_connection['VpnConnectionId']} to be available",
+                )
             except AnsibleEC2Error as e:
                 module.fail_json_aws(e, msg="Failed to modify VPN connection tunnel options")
 
