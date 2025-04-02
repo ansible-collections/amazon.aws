@@ -1,0 +1,29 @@
+---
+name: Code linting checks
+
+on: # yamllint disable-line rule:truthy
+  workflow_call:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+    branches:
+      - main
+      - stable-*
+    tags:
+      - "*"
+
+jobs:
+  black:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - uses: psf/black@stable
+        with:
+          options: "--check --verbose"
+          src: "./plugins ./tests"
+          use_pyproject: true
