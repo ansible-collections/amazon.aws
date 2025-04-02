@@ -138,12 +138,18 @@
         customer_gateway_id: "{{ cgw.gateway.customer_gateway.customer_gateway_id }}"
         vpn_gateway_id: "{{ vgw.vgw.id }}"
         tunnel_options:
-          LogOptions:
-            CloudWatchLogOptions:
-              LogEnabled: true
-              LogGroupArn: "{{ log_group.arn }}"
-              LogOutputFormat: json
-          StartupAction: start
+          - LogOptions:
+              CloudWatchLogOptions:
+                LogEnabled: true
+                LogGroupArn: "{{ log_group.arn }}"
+                LogOutputFormat: json
+            StartupAction: start
+          - LogOptions:
+              CloudWatchLogOptions:
+                LogEnabled: true
+                LogGroupArn: "{{ log_group.arn }}"
+                LogOutputFormat: json
+            StartupAction: start
         state: present
       register: result
 
@@ -154,18 +160,27 @@
           - result.options[0].tunnel_options[0].log_options.cloud_watch_log_options.log_enabled == true
           - result.options[0].tunnel_options[0].log_options.cloud_watch_log_options.log_group_arn == log_group.arn
           - result.options[0].tunnel_options[0].startup_action == "start"
+          - result.options[1].tunnel_options[0].log_options.cloud_watch_log_options.log_enabled == true
+          - result.options[1].tunnel_options[0].log_options.cloud_watch_log_options.log_group_arn == log_group.arn
+          - result.options[1].tunnel_options[0].startup_action == "start"
 
     - name: Enable VPN connection logging (idempotency)
       amazon.aws.ec2_vpc_vpn:
         customer_gateway_id: "{{ cgw.gateway.customer_gateway.customer_gateway_id }}"
         vpn_gateway_id: "{{ vgw.vgw.id }}"
         tunnel_options:
-          LogOptions:
-            CloudWatchLogOptions:
-              LogEnabled: true
-              LogGroupArn: "{{ log_group.arn }}"
-              LogOutputFormat: json
-          StartupAction: start
+          - LogOptions:
+              CloudWatchLogOptions:
+                LogEnabled: true
+                LogGroupArn: "{{ log_group.arn }}"
+                LogOutputFormat: json
+            StartupAction: start
+          - LogOptions:
+              CloudWatchLogOptions:
+                LogEnabled: true
+                LogGroupArn: "{{ log_group.arn }}"
+                LogOutputFormat: json
+            StartupAction: start
         state: present
       register: result
 
@@ -176,6 +191,34 @@
           - result.options[0].tunnel_options[0].log_options.cloud_watch_log_options.log_enabled == true
           - result.options[0].tunnel_options[0].log_options.cloud_watch_log_options.log_group_arn == log_group.arn
           - result.options[0].tunnel_options[0].startup_action == "start"
+          - result.options[1].tunnel_options[0].log_options.cloud_watch_log_options.log_enabled == true
+          - result.options[1].tunnel_options[0].log_options.cloud_watch_log_options.log_group_arn == log_group.arn
+          - result.options[1].tunnel_options[0].startup_action == "start"
+
+    - name: Disable VPN connection logging (idempotency)
+      amazon.aws.ec2_vpc_vpn:
+        customer_gateway_id: "{{ cgw.gateway.customer_gateway.customer_gateway_id }}"
+        vpn_gateway_id: "{{ vgw.vgw.id }}"
+        tunnel_options:
+          - LogOptions:
+              CloudWatchLogOptions:
+                LogEnabled: false
+            StartupAction: add
+          - LogOptions:
+              CloudWatchLogOptions:
+                LogEnabled: false
+            StartupAction: add
+        state: present
+      register: result
+
+    - name: Assert that no changes are made
+      ansible.builtin.assert:
+        that:
+          - result.changed == false
+          - result.options[0].tunnel_options[0].log_options.cloud_watch_log_options.log_enabled == false
+          - result.options[0].tunnel_options[0].startup_action == "add"
+          - result.options[1].tunnel_options[0].log_options.cloud_watch_log_options.log_enabled == false
+          - result.options[1].tunnel_options[0].startup_action == "add"
 
   # ============================================================
 
