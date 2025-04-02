@@ -4,6 +4,24 @@ amazon.aws Release Notes
 
 .. contents:: Topics
 
+v9.4.0
+======
+
+Release Summary
+---------------
+
+This minor release includes bug fixes and minor changes to validate the collection against the future ``ansible-core 2.19`` version.
+
+Minor Changes
+-------------
+
+- inventory/aws_ec2 - Update templating mechanism to support ansible-core 2.19 changes (https://github.com/ansible-collections/amazon.aws/pull/2552).
+
+Bugfixes
+--------
+
+- lookup/aws_account_attribute - plugin should return a list when ``wantlist=True`` (https://github.com/ansible-collections/amazon.aws/pull/2552).
+
 v9.3.0
 ======
 
