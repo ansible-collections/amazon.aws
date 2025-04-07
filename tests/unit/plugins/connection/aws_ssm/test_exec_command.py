@@ -141,6 +141,8 @@ def test_connection_aws_ssm_exec_command(m_chunks, connection_aws_ssm, is_window
     cmd = MagicMock()
     in_data = MagicMock()
     sudoable = MagicMock()
+    connection_aws_ssm.terminal_manager = MagicMock()
+
     assert result == connection_aws_ssm.exec_command(cmd, in_data, sudoable)
     # m_chunks.assert_called_once_with(chunk, 1024)
     connection_aws_ssm._flush_stderr.assert_called_once_with(connection_aws_ssm._session)
