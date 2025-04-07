@@ -356,12 +356,12 @@ from ansible.module_utils._text import to_text
 from ansible.module_utils.basic import missing_required_lib
 from ansible.module_utils.common.process import get_bin_path
 from ansible.plugins.connection import ConnectionBase
-from ansible.plugins.shell.powershell import _common_args
 from ansible.utils.display import Display
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOTO3
 
 from ansible_collections.community.aws.plugins.plugin_utils.s3clientmanager import S3ClientManager
+from ansible_collections.community.aws.plugins.plugin_utils.terminalmanager import TerminalManager
 
 display = Display()
 
@@ -484,6 +484,7 @@ class Connection(ConnectionBase):
         self._instance_id = None
         self._polling_obj = None
         self._has_timeout = False
+        self.terminal_manager = TerminalManager(self)
 
         if getattr(self._shell, "SHELL_FAMILY", "") == "powershell":
             self.delegate = None
@@ -645,7 +646,7 @@ class Connection(ConnectionBase):
         self._stdout = os.fdopen(stdout_r, "rb", 0)
 
         # For non-windows Hosts: Ensure the session has started, and disable command echo and prompt.
-        self._prepare_terminal()
+        self.terminal_manager.prepare_terminal()
 
         self.verbosity_display(4, f"SSM CONNECTION ID: {self._session_id}")  # pylint: disable=unreachable
 
@@ -743,7 +744,7 @@ class Connection(ConnectionBase):
         mark_end = self.generate_mark()
 
         # Wrap command in markers accordingly for the shell used
-        cmd = self._wrap_command(cmd, mark_start, mark_end)
+        cmd = self.terminal_manager.wrap_command(cmd, mark_start, mark_end)
 
         self._flush_stderr(self._session)
 
@@ -751,92 +752,6 @@ class Connection(ConnectionBase):
             self._session.stdin.write(to_bytes(chunk, errors="surrogate_or_strict"))
 
         return self.exec_communicate(cmd, mark_start, mark_begin, mark_end)
-
-    def _ensure_ssm_session_has_started(self) -> None:
-        """Ensure the SSM session has started on the host. We poll stdout
-        until we match the following string 'Starting session with SessionId'
-        """
-        stdout = ""
-        for poll_result in self.poll("START SSM SESSION", "start_session"):
-            if poll_result:
-                stdout += to_text(self._stdout.read(1024))
-                self.verbosity_display(4, f"START SSM SESSION stdout line: \n{to_bytes(stdout)}")
-                match = str(stdout).find("Starting session with SessionId")
-                if match != -1:
-                    self.verbosity_display(4, "START SSM SESSION startup output received")
-                    break
-
-    def _disable_prompt_command(self) -> None:
-        """Disable prompt command from the host"""
-        end_mark = "".join([random.choice(string.ascii_letters) for i in range(self.MARK_LENGTH)])
-        disable_prompt_cmd = to_bytes(
-            "PS1='' ; bind 'set enable-bracketed-paste off'; printf '\\n%s\\n' '" + end_mark + "'\n",
-            errors="surrogate_or_strict",
-        )
-        disable_prompt_reply = re.compile(r"\r\r\n" + re.escape(end_mark) + r"\r\r\n", re.MULTILINE)
-
-        # Send command
-        self.verbosity_display(4, f"DISABLE PROMPT Disabling Prompt: \n{disable_prompt_cmd}")
-        self._session.stdin.write(disable_prompt_cmd)
-
-        stdout = ""
-        for poll_result in self.poll("DISABLE PROMPT", disable_prompt_cmd):
-            if poll_result:
-                stdout += to_text(self._stdout.read(1024))
-                self.verbosity_display(4, f"DISABLE PROMPT stdout line: \n{to_bytes(stdout)}")
-                if disable_prompt_reply.search(stdout):
-                    break
-
-    def _disable_echo_command(self) -> None:
-        """Disable echo command from the host"""
-        disable_echo_cmd = to_bytes("stty -echo\n", errors="surrogate_or_strict")
-
-        # Send command
-        self.verbosity_display(4, f"DISABLE ECHO Disabling Prompt: \n{disable_echo_cmd}")
-        self._session.stdin.write(disable_echo_cmd)
-
-        stdout = ""
-        for poll_result in self.poll("DISABLE ECHO", disable_echo_cmd):
-            if poll_result:
-                stdout += to_text(self._stdout.read(1024))
-                self.verbosity_display(4, f"DISABLE ECHO stdout line: \n{to_bytes(stdout)}")
-                match = str(stdout).find("stty -echo")
-                if match != -1:
-                    break
-
-    def _prepare_terminal(self) -> None:
-        """perform any one-time terminal settings"""
-        # No Windows setup for now
-        if self.is_windows:
-            return
-
-        # Ensure SSM Session has started
-        self._ensure_ssm_session_has_started()
-
-        # Disable echo command
-        self._disable_echo_command()  # pylint: disable=unreachable
-
-        # Disable prompt command
-        self._disable_prompt_command()  # pylint: disable=unreachable
-
-        self.verbosity_display(4, "PRE Terminal configured")  # pylint: disable=unreachable
-
-    def _wrap_command(self, cmd: str, mark_start: str, mark_end: str) -> str:
-        """Wrap command so stdout and status can be extracted"""
-
-        if self.is_windows:
-            if not cmd.startswith(" ".join(_common_args) + " -EncodedCommand"):
-                cmd = self._shell._encode_script(cmd, preserve_rc=True)
-            cmd = cmd + "; echo " + mark_start + "\necho " + mark_end + "\n"
-        else:
-            cmd = (
-                f"printf '%s\\n' '{mark_start}';\n"
-                f"echo | {cmd};\n"
-                f"printf '\\n%s\\n%s\\n' \"$?\" '{mark_end}';\n"
-            )  # fmt: skip
-
-        self.verbosity_display(4, f"_wrap_command: \n'{to_text(cmd)}'")
-        return cmd
 
     def _post_process(self, stdout: str, mark_begin: str) -> Tuple[str, str]:
         """extract command status and strip unwanted lines"""
