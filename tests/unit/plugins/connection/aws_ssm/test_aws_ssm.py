@@ -176,45 +176,18 @@ class TestConnectionBaseClass:
                 ANY, loaded_aws_ssm.test_options["bucket_name"], s3_path, ExtraArgs=args
             )
 
-    @pytest.mark.parametrize("session_initialized", [True, False])
-    @pytest.mark.parametrize("client_initialized", [True, False])
-    @pytest.mark.parametrize("has_timeout", [True, False])
-    def test_plugins_connection_aws_ssm_close(
-        self, loaded_aws_ssm, session_initialized, client_initialized, has_timeout
-    ):
-        session_id = MagicMock()
-        if session_initialized:
-            loaded_aws_ssm._session_id = session_id
-        if client_initialized:
-            loaded_aws_ssm._client = MagicMock()
-        loaded_aws_ssm._has_timeout = has_timeout
-        loaded_aws_ssm._session = MagicMock()
-
+    @pytest.mark.parametrize("session_manager_initialized", [True, False])
+    def test_plugins_connection_aws_ssm_close(self, loaded_aws_ssm, session_manager_initialized):
+        session_manager = MagicMock()
+        if session_manager_initialized:
+            loaded_aws_ssm.session_manager = session_manager
         loaded_aws_ssm.close()
-        if not session_initialized:
-            loaded_aws_ssm._session.terminate.assert_not_called()
-            loaded_aws_ssm._session.communicate.assert_not_called()
-            if loaded_aws_ssm._client:
-                loaded_aws_ssm._client.terminate_session.assert_not_called()
+
+        if session_manager_initialized:
+            session_manager.terminate.assert_called_once()
         else:
-            if has_timeout:
-                loaded_aws_ssm._session.terminate.assert_called_once_with()
-                loaded_aws_ssm._session.communicate.assert_not_called()
-            else:
-                loaded_aws_ssm._session.communicate.assert_called_once_with(b"\nexit\n")
-                loaded_aws_ssm._session.terminate.assert_not_called()
-            if loaded_aws_ssm._client:
-                loaded_aws_ssm._client.terminate_session.assert_called_once_with(SessionId=session_id)
-            assert loaded_aws_ssm._session_id == ""
-
-    #     def test_generate_mark(self):
-    #         """Testing string generation"""
-    #         test_a = Connection.generate_mark()
-    #         test_b = Connection.generate_mark()
-
-    #         assert test_a != test_b
-    #         assert len(test_a) == Connection.MARK_LENGTH
-    #         assert len(test_b) == Connection.MARK_LENGTH
+            session_manager.terminate.assert_not_called()
+        assert loaded_aws_ssm.session_manager is None
 
     @pytest.mark.parametrize("level", ["invalid value", 5, -1])
     @patch("ansible_collections.community.aws.plugins.connection.aws_ssm.display")
@@ -248,25 +221,6 @@ class TestConnectionBaseClass:
         if host:
             args["host"] = host
         getattr(mock_display, method).assert_called_once_with(message, **args)
-
-    def test_poll_verbosity(self, loaded_aws_ssm):
-        """Test poll method verbosity display"""
-
-        loaded_aws_ssm._session = MagicMock()
-        loaded_aws_ssm._session.poll.return_value = None
-        loaded_aws_ssm.get_option = MagicMock(return_value=10)  # ssm_timeout
-        loaded_aws_ssm.poll_stdout = MagicMock()
-        loaded_aws_ssm.instance_id = "i-1234567890"
-        loaded_aws_ssm.host = loaded_aws_ssm.instance_id
-
-        with patch("time.time", return_value=100), patch.object(loaded_aws_ssm, "verbosity_display") as mock_display:
-            poll_gen = loaded_aws_ssm.poll("TEST", "test command")
-            # Advance generator twice to trigger the verbosity message
-            next(poll_gen)
-            next(poll_gen)
-
-            # Verify verbosity message contains remaining time
-            mock_display.assert_called_with(4, "TEST remaining: 10 second(s)")
 
 
 class TestS3ClientManager:
