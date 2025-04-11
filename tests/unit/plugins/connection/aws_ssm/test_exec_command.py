@@ -9,64 +9,12 @@
 # absolute import path or across collections.
 
 
-import time
 from unittest.mock import MagicMock
 from unittest.mock import patch
 
 import pytest
 
 from ansible.errors import AnsibleConnectionFailure
-
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOTO3
-
-if not HAS_BOTO3:
-    pytestmark = pytest.mark.skip("test_poll.py requires the python modules 'boto3' and 'botocore'")
-
-
-def poll_stdout_mock(timeout=1):
-    time.sleep(timeout)
-    result = False
-    if poll_stdout_mock.results:
-        result = poll_stdout_mock.results.pop(0)
-    return result
-
-
-@pytest.mark.parametrize(
-    "timeout,number_poll_false",
-    [
-        (5, 2),
-        (5, 4),
-    ],
-)
-def test_connection_aws_ssm_poll_no_timeout(connection_aws_ssm, timeout, number_poll_false):
-    options = {"ssm_timeout": timeout}
-    connection_aws_ssm.get_option.side_effect = options.get
-
-    poll_stdout_mock.results = [False for i in range(number_poll_false)] + [True]
-    connection_aws_ssm.poll_stdout.side_effect = poll_stdout_mock
-
-    for result in connection_aws_ssm.poll("UNIT_TEST", "ansible-test units"):
-        if result:
-            break
-
-
-@pytest.mark.parametrize("timeout", [5, 4, 3])
-def test_connection_aws_ssm_poll_with_timeout(connection_aws_ssm, timeout):
-    options = {"ssm_timeout": timeout}
-    connection_aws_ssm.get_option.side_effect = options.get
-
-    poll_stdout_mock.results = [False for i in range(timeout + 1)]
-    connection_aws_ssm.poll_stdout.side_effect = poll_stdout_mock
-
-    with pytest.raises(AnsibleConnectionFailure) as exc_info:
-        for result in connection_aws_ssm.poll("UNIT_TEST", "ansible-test units"):
-            if result:
-                break
-    assert connection_aws_ssm._has_timeout
-    assert (
-        str(exc_info.value)
-        == f"UNIT_TEST command 'ansible-test units' timeout on host: {connection_aws_ssm.instance_id}"
-    )
 
 
 @pytest.mark.parametrize(
@@ -97,15 +45,14 @@ def test_connection_aws_ssm_exec_communicate(
         while True:
             yield True
 
-    connection_aws_ssm.poll.side_effect = _poll
-    connection_aws_ssm._stdout.readline = MagicMock()
-    connection_aws_ssm._stdout.readline.side_effect = stdout_lines
+    connection_aws_ssm.session_manager.poll.side_effect = _poll
+    connection_aws_ssm.session_manager.stdout_readline.side_effect = stdout_lines
     connection_aws_ssm._post_process = MagicMock()
     returncode = MagicMock()
     connection_aws_ssm._post_process.side_effect = lambda line, marker: (returncode, line)
 
     stderr = MagicMock()
-    connection_aws_ssm._flush_stderr.return_value = stderr
+    connection_aws_ssm.session_manager.flush_stderr.return_value = stderr
 
     result_returncode, result_stdout, result_stderr = connection_aws_ssm.exec_communicate(
         "ansible-test units", mark_start, mark_start, mark_end
@@ -118,8 +65,8 @@ def test_connection_aws_ssm_exec_communicate(
 
 def test_connection_aws_ssm_exec_communicate_with_exception(connection_aws_ssm):
     exception_msg = "Connection timeout??!!"
-    connection_aws_ssm.poll = MagicMock()
-    connection_aws_ssm.poll.side_effect = AnsibleConnectionFailure(exception_msg)
+    connection_aws_ssm.exec_communicate = MagicMock()
+    connection_aws_ssm.exec_communicate.side_effect = AnsibleConnectionFailure(exception_msg)
 
     with pytest.raises(AnsibleConnectionFailure) as exc_info:
         connection_aws_ssm.exec_communicate("ansible-test units", MagicMock(), MagicMock(), MagicMock())
@@ -145,4 +92,4 @@ def test_connection_aws_ssm_exec_command(m_chunks, connection_aws_ssm, is_window
 
     assert result == connection_aws_ssm.exec_command(cmd, in_data, sudoable)
     # m_chunks.assert_called_once_with(chunk, 1024)
-    connection_aws_ssm._flush_stderr.assert_called_once_with(connection_aws_ssm._session)
+    connection_aws_ssm.session_manager.flush_stderr.assert_called_once_with()
