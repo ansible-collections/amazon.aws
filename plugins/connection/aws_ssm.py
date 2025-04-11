@@ -323,20 +323,15 @@ EXAMPLES = r"""
         cmd: '/tmp/date.sh'
 """
 import getpass
-import json
 import os
-import pty
 import random
 import re
-import select
 import string
-import subprocess
 import time
 from functools import wraps
 from typing import Any
 from typing import Iterator
 from typing import List
-from typing import NoReturn
 from typing import Tuple
 from typing import TypedDict
 
@@ -354,6 +349,9 @@ from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOT
 from ansible_collections.community.aws.plugins.plugin_utils.base import AwsConnectionPluginBase
 from ansible_collections.community.aws.plugins.plugin_utils.s3clientmanager import S3ClientManager
 from ansible_collections.community.aws.plugins.plugin_utils.terminalmanager import TerminalManager
+from ansible_collections.community.aws.plugins.plugin_utils.ssmsessionmanager import (
+    SSMSessionManager,
+)
 
 display = Display()
 
@@ -459,10 +457,8 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
     is_windows = False
 
     _client = None
-    _session = None
-    _stdout = None
-    _session_id = ""
-    _timeout = False
+    s3_manager = None
+    session_manager = None
     MARK_LENGTH = 26
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -473,9 +469,8 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
 
         self.host = self._play_context.remote_addr
         self._instance_id = None
-        self._polling_obj = None
-        self._has_timeout = False
         self.terminal_manager = TerminalManager(self)
+        self.session_manager = None
 
         if getattr(self._shell, "SHELL_FAMILY", "") == "powershell":
             self.delegate = None
@@ -493,8 +488,7 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
     def _connect(self) -> Any:
         """connect to the host via ssm"""
         self._play_context.remote_user = getpass.getuser()
-
-        if not self._session_id:
+        if not self.session_manager:
             self.start_session()
         return self
 
@@ -523,11 +517,15 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
         self.verbosity_display(4, f"BUCKET Information - Endpoint: {s3_endpoint_url} / Region: {s3_region_name}")
 
         # Initialize S3ClientManager
-        s3_client = self._get_boto_client("s3", endpoint_url=s3_endpoint_url, region_name=s3_region_name, config=config)
-        self.s3_manager = S3ClientManager(s3_client)
+        if not self.s3_manager:
+            s3_client = self._get_boto_client(
+                "s3", endpoint_url=s3_endpoint_url, region_name=s3_region_name, config=config
+            )
+            self.s3_manager = S3ClientManager(s3_client)
 
         # Initialize SSM client
-        self._client = self._get_boto_client("ssm", region_name=self.get_option("region"), config=config)
+        if not self._client:
+            self._client = self._get_boto_client("ssm", region_name=self.get_option("region"), config=config)
 
     @property
     def s3_client(self) -> None:
@@ -556,11 +554,11 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
             raise AnsibleError(f"Invalid verbosity level: {level}")
         verbosity_level[level](to_text(message), **host_args)
 
-    def reset(self) -> Any:
+    def reset(self) -> None:
         """start a fresh ssm session"""
         self.verbosity_display(4, "reset called on ssm connection")
         self.close()
-        return self.start_session()
+        self.start_session()
 
     @property
     def instance_id(self) -> str:
@@ -588,7 +586,7 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
                     raise AnsibleError(str(e))
         return ssm_plugin_executable
 
-    def start_session(self):
+    def start_session(self) -> None:
         """start ssm session"""
 
         self.verbosity_display(3, f"ESTABLISH SSM CONNECTION TO: {self.instance_id}")
@@ -597,76 +595,22 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
 
         self._init_clients()
 
-        self.verbosity_display(4, f"START SSM SESSION: {self.instance_id}")
-        start_session_args = dict(Target=self.instance_id, Parameters={})
-        document_name = self.get_option("ssm_document")
-        if document_name is not None:
-            start_session_args["DocumentName"] = document_name
-        response = self._client.start_session(**start_session_args)
-        self.verbosity_display(4, f"START SESSION RESPONSE: {response}")
-        self._session_id = response["SessionId"]
+        if self.session_manager is None:
+            self.session_manager = SSMSessionManager(
+                self._client,
+                self.instance_id,
+                verbosity_display=self.verbosity_display,
+                ssm_timeout=self.get_option("ssm_timeout"),
+            )
+            self.session_manager.start_session(
+                executable=executable,
+                document_name=self.get_option("ssm_document"),
+                region_name=self.get_option("region"),
+                profile_name=self.get_option("profile") or "",
+            )
 
-        region_name = self.get_option("region")
-        profile_name = self.get_option("profile") or ""
-        cmd = [
-            executable,
-            json.dumps(response),
-            region_name,
-            "StartSession",
-            profile_name,
-            json.dumps({"Target": self.instance_id}),
-            self._client.meta.endpoint_url,
-        ]
-
-        self.verbosity_display(4, f"SSM COMMAND: {to_text(cmd)}")
-
-        stdout_r, stdout_w = pty.openpty()
-        self._session = subprocess.Popen(
-            cmd,
-            stdin=subprocess.PIPE,
-            stdout=stdout_w,
-            stderr=subprocess.PIPE,
-            close_fds=True,
-            bufsize=0,
-        )
-
-        os.close(stdout_w)
-        self._stdout = os.fdopen(stdout_r, "rb", 0)
-
-        # For non-windows Hosts: Ensure the session has started, and disable command echo and prompt.
-        self.terminal_manager.prepare_terminal()
-
-        self.verbosity_display(4, f"SSM CONNECTION ID: {self._session_id}")  # pylint: disable=unreachable
-
-        return self._session
-
-    def poll_stdout(self, timeout: int = 1000) -> bool:
-        """Polls the stdout file descriptor.
-
-        :param timeout: Specifies the length of time in milliseconds which the system will wait.
-        :returns: A boolean to specify the polling result
-        """
-        if self._polling_obj is None:
-            self._polling_obj = select.poll()
-            self._polling_obj.register(self._stdout, select.POLLIN)
-        return bool(self._polling_obj.poll(timeout))
-
-    def poll(self, label: str, cmd: str) -> NoReturn:
-        """Poll session to retrieve content from stdout.
-
-        :param label: A label for the display (EXEC, PRE...)
-        :param cmd: The command being executed
-        """
-        start = round(time.time())
-        yield self.poll_stdout()
-        timeout = self.get_option("ssm_timeout")
-        while self._session.poll() is None:
-            remaining = start + timeout - round(time.time())
-            self.verbosity_display(4, f"{label} remaining: {remaining} second(s)")
-            if remaining < 0:
-                self._has_timeout = True
-                raise AnsibleConnectionFailure(f"{label} command '{cmd}' timeout on host: {self.instance_id}")
-            yield self.poll_stdout()
+            # For non-windows Hosts: Ensure the session has started, and disable command echo and prompt.
+            self.terminal_manager.prepare_terminal()
 
     def exec_communicate(self, cmd: str, mark_start: str, mark_begin: str, mark_end: str) -> Tuple[int, str, str]:
         """Interact with session.
@@ -683,11 +627,11 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
         win_line = ""
         begin = False
         returncode = None
-        for poll_result in self.poll("EXEC", cmd):
+        for poll_result in self.session_manager.poll("EXEC", cmd):
             if not poll_result:
                 continue
 
-            line = filter_ansi(self._stdout.readline(), self.is_windows)
+            line = filter_ansi(self.session_manager.stdout_readline(), self.is_windows)
             self.verbosity_display(4, f"EXEC stdout line: \n{line}")
 
             if not begin and self.is_windows:
@@ -708,7 +652,7 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
                 stdout = stdout + line
 
         # see https://github.com/pylint-dev/pylint/issues/8909)
-        return (returncode, stdout, self._flush_stderr(self._session))  # pylint: disable=unreachable
+        return (returncode, stdout, self.session_manager.flush_stderr())
 
     @staticmethod
     def generate_mark() -> str:
@@ -734,10 +678,10 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
         # Wrap command in markers accordingly for the shell used
         cmd = self.terminal_manager.wrap_command(cmd, mark_start, mark_end)
 
-        self._flush_stderr(self._session)
+        self.session_manager.flush_stderr()
 
         for chunk in chunks(cmd, 1024):
-            self._session.stdin.write(to_bytes(chunk, errors="surrogate_or_strict"))
+            self.session_manager.stdin_write(to_bytes(chunk, errors="surrogate_or_strict"))
 
         return self.exec_communicate(cmd, mark_start, mark_begin, mark_end)
 
@@ -774,22 +718,6 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
             stdout = stdout.replace("\n", "")
 
         return (returncode, stdout)
-
-    def _flush_stderr(self, session_process) -> str:
-        """read and return stderr with minimal blocking"""
-
-        poll_stderr = select.poll()
-        poll_stderr.register(session_process.stderr, select.POLLIN)
-        stderr = ""
-
-        while session_process.poll() is None:
-            if not poll_stderr.poll(1):
-                break
-            line = session_process.stderr.readline()
-            self.verbosity_display(4, f"stderr line: {to_text(line)}")
-            stderr = stderr + line
-
-        return stderr
 
     def _escape_path(self, path: str) -> str:
         return path.replace("\\", "/")
@@ -878,16 +806,6 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
 
     def close(self) -> None:
         """terminate the connection"""
-        if self._session_id:
-            self.verbosity_display(3, f"CLOSING SSM CONNECTION TO: {self.instance_id}")
-            if self._session is not None:
-                if self._has_timeout:
-                    self._session.terminate()
-                else:
-                    cmd = b"\nexit\n"
-                    self._session.communicate(cmd)
-
-            self.verbosity_display(4, f"TERMINATE SSM SESSION: {self._session_id}")
-            if self._client:
-                self._client.terminate_session(SessionId=self._session_id)
-            self._session_id = ""
+        if self.session_manager is not None:
+            self.session_manager.terminate()
+            self.session_manager = None
