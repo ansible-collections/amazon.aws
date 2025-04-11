@@ -24,18 +24,9 @@ def fixture_connection_aws_ssm():
     connection = Connection()
 
     connection._instance_id = "i-0a1b2c3d4e5f"
-    connection._polling_obj = None
-    connection._has_timeout = False
     connection.is_windows = False
 
-    connection.poll_stdout = MagicMock()
-    connection._session = MagicMock()
-    connection._session.poll = MagicMock()
-    connection._session.poll.side_effect = lambda: None
-    connection._session.stdin = MagicMock()
-    connection._session.stdin.write = MagicMock()
-    connection._stdout = MagicMock()
-    connection._flush_stderr = MagicMock()
+    connection.session_manager = MagicMock()
 
     def display_msg(msg):
         print("--- AWS SSM CONNECTION --- ", msg)
