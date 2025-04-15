@@ -104,7 +104,7 @@ options:
           - standard
           - advanced
         type: str
-        versions_added: 9.4.0
+        version_added: 9.5.0
     database_name:
         description:
           - The name for your database. If a name is not provided Amazon RDS will not create a database.
@@ -189,7 +189,7 @@ options:
         description:
           - Whether to enable Performance Insights for the DB cluster.
         type: bool
-        versions_added: 9.4.0
+        version_added: 9.5.0
     allocated_storage:
         description:
           - The amount of storage in gibibytes (GiB) to allocate to each DB instance in the Multi-AZ DB cluster.
@@ -302,12 +302,12 @@ options:
         description:
           - The AWS KMS key identifier (ARN, name, or alias) for encryption of Performance Insights data.
         type: str
-        versions_added: 9.4.0
+        version_added: 9.5.0
     performance_insights_retention_period:
         description:
           - The amount of time, in days, to retain Performance Insights data. Valid values are V(7) or V(731).
         type: int
-        versions_added: 9.4.0
+        version_added: 9.5.0
     port:
         description:
           - The port number on which the instances in the DB cluster accept connections. If not specified, Amazon RDS
@@ -807,7 +807,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.rds import wait_for_clu
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
 
-
 @AWSRetry.jittered_backoff(retries=10)
 def _describe_db_clusters(**params):
     try:
@@ -938,7 +937,6 @@ def get_restore_s3_options(params_dict):
         "BacktrackWindow",
         "BackupRetentionPeriod",
         "CharacterSetName",
-        "DatabaseInsightsMode",
         "DBClusterIdentifier",
         "DBClusterParameterGroupName",
         "DBSubnetGroupName",
@@ -983,7 +981,6 @@ def get_restore_snapshot_options(params_dict):
     options = [
         "AvailabilityZones",
         "BacktrackWindow",
-        "DatabaseInsightsMode",
         "DBClusterIdentifier",
         "DBSubnetGroupName",
         "DatabaseName",
@@ -1012,7 +1009,6 @@ def get_restore_snapshot_options(params_dict):
 def get_restore_cluster_options(params_dict):
     options = [
         "BacktrackWindow",
-        "DatabaseInsightsMode",
         "DBClusterIdentifier",
         "DBSubnetGroupName",
         "EnableCloudwatchLogsExports",
@@ -1148,7 +1144,7 @@ def changing_cluster_options(modify_params, current_cluster):
     if performance_insights_kms_key_id != current_cluster["PerformanceInsightsKMSKeyId"]:
         changing_params["PerformanceInsightsKMSKeyId"] = performance_insights_kms_key_id
 
-    performance_insights_retention_period = modify_params("PerformanceInsightsRetentionPeriod", None)
+    performance_insights_retention_period = modify_params.pop("PerformanceInsightsRetentionPeriod", None)
     if performance_insights_retention_period != current_cluster["PerformanceInsightsRetentionPeriod"]:
         changing_params["PerformanceInsightsRetentionPeriod"] = performance_insights_retention_period
 
