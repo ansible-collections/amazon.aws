@@ -3215,8 +3215,8 @@ releases:
     changes:
       bugfixes:
       - ec2_instance - Fix issue where EC2 instance module failed to apply security
-        groups when both `network` and `vpc_subnet_id`` were specified, caused by
-        passing `None` to discover_security_groups() (https://github.com/ansible-collections/amazon.aws/pull/2488).
+        groups when both ``network`` and ``vpc_subnet_id`` were specified, caused by
+        passing ``None`` to discover_security_groups() (https://github.com/ansible-collections/amazon.aws/pull/2488).
       - s3_bucket - Do not use default region as location constraint when creating
         bucket on ceph cluster (https://github.com/ansible-collections/amazon.aws/issues/2420).
       release_summary: This release includes bugfixes for the  ``ec2_instance`` and
