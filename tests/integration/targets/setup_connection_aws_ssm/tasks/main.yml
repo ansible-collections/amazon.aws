@@ -40,11 +40,11 @@
           name: '{{ ami_configuration.name }}'
       register: ec2_amis
       when:
-        - ami_configuration.name | default(False)
+        - ami_configuration.name is defined
 
     - name: AMI Lookup (SSM Parameter)
       when:
-        - ami_configuration.ssm_parameter | default(False)
+        - ami_configuration.ssm_parameter is defined
       block:
         - ansible.builtin.set_fact:
             ssm_amis: "{{ lookup('amazon.aws.ssm_parameter', ami_configuration.ssm_parameter, **connection_args) }}"
