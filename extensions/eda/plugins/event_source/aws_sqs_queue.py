@@ -1,7 +1,7 @@
 import asyncio
 import json
 import logging
-from typing import Any
+from typing import Any, TypedDict
 
 import botocore.exceptions
 from aiobotocore.session import get_session
@@ -31,6 +31,13 @@ options:
     description:
       - Optional URL to connect to instead of the default AWS endpoints.
     type: str
+  queue_owner_aws_account_id:
+    description:
+      - >
+        Optional The Amazon Web Services account ID of the account that
+        created the queue. This is only required when you are attempting
+        to access a queue owned by another Amazon Web Services account.
+    type: str
   region:
     description:
       - Optional AWS region to use.
@@ -46,6 +53,14 @@ options:
       - Set to 0 to disable.
     type: int
     default: 2
+  max_number_of_messages:
+    description:
+      - >
+        Optional The maximum number of messages to return. Amazon SQS
+        never returns more messages than this value (however, fewer
+        messages might be returned). Valid values are 1 to 10.
+    type: int
+    default: 1
 """
 
 EXAMPLES = r"""
@@ -54,6 +69,11 @@ EXAMPLES = r"""
     name: eda
     delay_seconds: 10
 """
+
+
+DeleteMessageBatchRequestEntryTypeDef = TypedDict(
+    "DeleteMessageBatchRequestEntryTypeDef", {"Id": str, "ReceiptHandle": str}
+)
 
 
 # pylint: disable=too-many-locals
@@ -66,11 +86,18 @@ async def main(queue: asyncio.Queue[Any], args: dict[str, Any]) -> None:
         raise ValueError(msg)
     queue_name = str(args.get("name"))
     wait_seconds = int(args.get("delay_seconds", 2))
+    max_number_of_messages = int(args.get("max_number_of_messages", 1))
+    queue_owner_aws_account_id = args.get("queue_owner_aws_account_id")
 
     session = get_session()
+
+    queue_args = {"QueueName": queue_name}
+    if queue_owner_aws_account_id:
+        queue_args["QueueOwnerAWSAccountId"] = queue_owner_aws_account_id
+
     async with session.create_client("sqs", **connection_args(args)) as client:
         try:
-            response = await client.get_queue_url(QueueName=queue_name)
+            response = await client.get_queue_url(**queue_args)
         except botocore.exceptions.ClientError as err:
             if (
                 err.response["Error"]["Code"]
@@ -88,9 +115,11 @@ async def main(queue: asyncio.Queue[Any], args: dict[str, Any]) -> None:
             response_msg = await client.receive_message(
                 QueueUrl=queue_url,
                 WaitTimeSeconds=wait_seconds,
+                MaxNumberOfMessages=max_number_of_messages,
             )
 
             if "Messages" in response_msg:
+                entries = []
                 for entry in response_msg["Messages"]:
                     if (
                         not isinstance(entry, dict) or "MessageId" not in entry
@@ -99,6 +128,11 @@ async def main(queue: asyncio.Queue[Any], args: dict[str, Any]) -> None:
                             f"Unexpected response {response_msg}, missing MessageId."
                         )
                         raise ValueError(err_msg)
+                    entries.append(
+                        DeleteMessageBatchRequestEntryTypeDef(
+                            Id=entry["MessageId"], ReceiptHandle=entry["ReceiptHandle"]
+                        )
+                    )
                     meta = {"MessageId": entry["MessageId"]}
                     try:
                         msg_body = json.loads(entry["Body"])
@@ -108,11 +142,30 @@ async def main(queue: asyncio.Queue[Any], args: dict[str, Any]) -> None:
                     await queue.put({"body": msg_body, "meta": meta})
                     await asyncio.sleep(0)
 
-                    # Need to remove msg from queue or else it'll reappear
-                    await client.delete_message(
-                        QueueUrl=queue_url,
-                        ReceiptHandle=entry["ReceiptHandle"],
-                    )
+                # Need to remove msg from queue or else it'll reappear
+                delete_results = await client.delete_message_batch(
+                    QueueUrl=queue_url, Entries=entries
+                )
+
+                # Check if the deletion was successful
+                if "Successful" in delete_results:
+                    for item in delete_results["Successful"]:
+                        logger.debug(
+                            "Message with ID %s deleted successfully", item["Id"]
+                        )
+                # Log a error if any message failed deletions
+                if "Failed" in delete_results:
+                    for item in delete_results["Failed"]:
+                        logger.error(
+                            "Error deleting message with ID : %s "
+                            "Error Code: %s "
+                            "Error Message: %s "
+                            "SenderFault: %s",
+                            item["Id"],
+                            item["Code"],
+                            item["Message"],
+                            str(item["SenderFault"]),
+                        )
             else:
                 logger.debug("No messages in queue")
 

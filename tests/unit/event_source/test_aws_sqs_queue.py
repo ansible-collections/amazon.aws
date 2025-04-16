@@ -20,16 +20,34 @@ async def test_receive_from_sqs(eda_queue: ListQueue) -> None:
         message1 = {
             "MessageId": "1",
             "Body": "Hello World",
-            "ReceiptHandle": None,
+            "ReceiptHandle": "abcdef",
         }
         message2 = {
             "MessageId": "2",
             "Body": '{"Say":"Hello World"}',
-            "ReceiptHandle": None,
+            "ReceiptHandle": "xyz123",
+        }
+        delete_response1 = {
+            "Id": "1",
+            "ReceiptHandle": "abcdef",
+        }
+        delete_response2 = {
+            "Id": "2",
+            "ReceiptHandle": "xyz123",
+            "Code": "405",
+            "Message": "Failed to delete Message",
+            "SenderFault": True,
         }
 
         response = {"Messages": [message1, message2]}
+        delete_response = {
+            "Successful": [delete_response1],
+            "Failed": [delete_response2],
+        }
         client.receive_message = AsyncMock(side_effect=[response, ValueError()])
+        client.delete_message_batch = AsyncMock(
+            side_effect=[delete_response, ValueError()]
+        )
 
         session.create_client.return_value = client
         session.create_client.not_async = True
@@ -41,6 +59,8 @@ async def test_receive_from_sqs(eda_queue: ListQueue) -> None:
                     "region": "us-east-1",
                     "name": "eda",
                     "delay_seconds": 1,
+                    "max_number_of_messages": 3,
+                    "queue_owner_aws_account_id": "123456",
                 },
             )
         assert eda_queue.queue[0] == {"body": "Hello World", "meta": {"MessageId": "1"}}
