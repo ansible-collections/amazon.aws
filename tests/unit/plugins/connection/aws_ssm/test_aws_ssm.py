@@ -1,7 +1,6 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from io import StringIO
-from unittest.mock import ANY
 from unittest.mock import MagicMock
 from unittest.mock import call
 from unittest.mock import patch
@@ -33,6 +32,8 @@ def fixture_loaded_aws_ssm():
         "reconnection_retries": 3,
     }
     conn.get_option = MagicMock(side_effect=conn.test_options.get)
+    conn.file_transfer_manager = MagicMock()
+
     return conn
 
 
@@ -101,17 +102,20 @@ class TestConnectionBaseClass:
         in_path = MagicMock()
         out_path = MagicMock()
         file_transport_result = MagicMock()
-        loaded_aws_ssm._file_transport_command = MagicMock(return_value=file_transport_result)
+        loaded_aws_ssm.generate_commands = MagicMock(return_value=("", [], {}))
+        loaded_aws_ssm.file_transfer_manager._file_transport_command = MagicMock(return_value=file_transport_result)
         to_bytes_results = MagicMock()
         mock_to_bytes.return_value = to_bytes_results
         if path_exists:
             assert loaded_aws_ssm.put_file(in_path, out_path) == file_transport_result
-            loaded_aws_ssm._file_transport_command.assert_called_once_with(in_path, out_path, "put")
+            loaded_aws_ssm.file_transfer_manager._file_transport_command.assert_called_once_with(
+                in_path, out_path, "put", [], {}, ""
+            )
         else:
             with pytest.raises(AnsibleFileNotFound) as exc_info:
                 loaded_aws_ssm.put_file(in_path, out_path)
             str(exc_info.value).startswith("file or module does not exist: ")
-            loaded_aws_ssm._file_transport_command.assert_not_called()
+            loaded_aws_ssm.file_transfer_manager._file_transport_command.assert_not_called()
 
         mock_os_path_exists.assert_called_once_with(to_bytes_results)
         mock_to_bytes.assert_called_once_with(in_path, errors="surrogate_or_strict")
@@ -120,61 +124,13 @@ class TestConnectionBaseClass:
         in_path = MagicMock()
         out_path = MagicMock()
         file_transport_result = MagicMock()
-        loaded_aws_ssm._file_transport_command = MagicMock(return_value=file_transport_result)
+        loaded_aws_ssm.generate_commands = MagicMock(return_value=("", [], {}))
+        loaded_aws_ssm.file_transfer_manager._file_transport_command = MagicMock(return_value=file_transport_result)
 
         loaded_aws_ssm.fetch_file(in_path, out_path) == file_transport_result
-        loaded_aws_ssm._file_transport_command.assert_called_once_with(in_path, out_path, "get")
-
-    @pytest.mark.parametrize("ssm_action", ["get", "put", "another_action"])
-    @patch("ansible_collections.community.aws.plugins.connection.aws_ssm.to_bytes")
-    def test_plugins_connection_file_transport_command(self, mock_to_bytes, loaded_aws_ssm, ssm_action, tmp_path):
-        loaded_aws_ssm.is_windows = MagicMock()
-        loaded_aws_ssm.instance_id = MagicMock()
-        s3_path = MagicMock()
-        loaded_aws_ssm._escape_path = MagicMock(return_value=s3_path)
-        loaded_aws_ssm.test_options.update({"bucket_name": MagicMock()})
-        loaded_aws_ssm.s3_manager = MagicMock()
-        loaded_aws_ssm.s3_manager.client = MagicMock()
-
-        mock_to_bytes.side_effect = lambda x, **kwargs: x
-
-        command = MagicMock()
-        args = MagicMock()
-        loaded_aws_ssm.s3_manager.generate_host_commands = MagicMock(return_value=(command, args))
-
-        transport_result = MagicMock()
-        loaded_aws_ssm._exec_transport_commands = MagicMock(return_value=transport_result)
-
-        in_path = tmp_path / "in_file"
-        in_path.write_text("Some unit tests content", encoding="utf-8")
-        out_path = tmp_path / "out_file"
-
-        assert transport_result == loaded_aws_ssm._file_transport_command(in_path, out_path, ssm_action)
-
-        loaded_aws_ssm.s3_manager.client.delete_object.assert_called_once_with(
-            Bucket=loaded_aws_ssm.test_options["bucket_name"], Key=s3_path
+        loaded_aws_ssm.file_transfer_manager._file_transport_command.assert_called_once_with(
+            in_path, out_path, "get", [], {}, ""
         )
-        loaded_aws_ssm.s3_manager.generate_host_commands.assert_called_once_with(
-            loaded_aws_ssm.test_options["bucket_name"],
-            loaded_aws_ssm.test_options["bucket_sse_mode"],
-            loaded_aws_ssm.test_options["bucket_sse_kms_key_id"],
-            s3_path,
-            in_path,
-            out_path,
-            loaded_aws_ssm.is_windows,
-            ssm_action,
-        )
-        loaded_aws_ssm._exec_transport_commands.assert_called_once_with(in_path, out_path, command)
-        if ssm_action == "get":
-            loaded_aws_ssm.s3_manager.client.download_fileobj.assert_called_once_with(
-                loaded_aws_ssm.test_options["bucket_name"], s3_path, ANY
-            )
-            loaded_aws_ssm.s3_manager.client.upload_fileobj.assert_not_called()
-        else:
-            loaded_aws_ssm.s3_manager.client.download_fileobj.assert_not_called()
-            loaded_aws_ssm.s3_manager.client.upload_fileobj.assert_called_once_with(
-                ANY, loaded_aws_ssm.test_options["bucket_name"], s3_path, ExtraArgs=args
-            )
 
     @pytest.mark.parametrize("session_manager_initialized", [True, False])
     def test_plugins_connection_aws_ssm_close(self, loaded_aws_ssm, session_manager_initialized):

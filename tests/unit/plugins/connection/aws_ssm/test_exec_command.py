@@ -79,6 +79,7 @@ def test_connection_aws_ssm_exec_communicate_with_exception(connection_aws_ssm):
 def test_connection_aws_ssm_exec_command(m_chunks, connection_aws_ssm, is_windows):
     connection_aws_ssm.is_windows = is_windows
     connection_aws_ssm.exec_communicate = MagicMock()
+    connection_aws_ssm.reconnection_retries = 5
     result = MagicMock()
     connection_aws_ssm.exec_communicate.return_value = result
 

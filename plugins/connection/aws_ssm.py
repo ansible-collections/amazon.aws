@@ -327,15 +327,11 @@ import os
 import random
 import re
 import string
-import time
-from functools import wraps
-from typing import Any
+from typing import Any, Dict
 from typing import Iterator
 from typing import List
 from typing import Tuple
-from typing import TypedDict
 
-from ansible.errors import AnsibleConnectionFailure
 from ansible.errors import AnsibleError
 from ansible.errors import AnsibleFileNotFound
 from ansible.module_utils._text import to_bytes
@@ -353,57 +349,12 @@ from ansible_collections.community.aws.plugins.plugin_utils.ssm.sessionmanager i
     SSMSessionManager,
 )
 
+from ansible_collections.community.aws.plugins.plugin_utils.ssm.filetransfermanager import FileTransferManager
+from ansible_collections.community.aws.plugins.plugin_utils.ssm.common import ssm_retry
+from ansible_collections.community.aws.plugins.plugin_utils.ssm.common import CommandResult
+
+
 display = Display()
-
-
-def _ssm_retry(func: Any) -> Any:
-    """
-    Decorator to retry in the case of a connection failure
-    Will retry if:
-    * an exception is caught
-    Will not retry if
-    * remaining_tries is <2
-    * retries limit reached
-    """
-
-    @wraps(func)
-    def wrapped(self, *args: Any, **kwargs: Any) -> Any:
-        remaining_tries = int(self.get_option("reconnection_retries")) + 1
-        cmd_summary = f"{args[0]}..."
-        for attempt in range(remaining_tries):
-            try:
-                return_tuple = func(self, *args, **kwargs)
-                self.verbosity_display(4, f"ssm_retry: (success) {to_text(return_tuple)}")
-                break
-
-            except (AnsibleConnectionFailure, Exception) as e:
-                if attempt == remaining_tries - 1:
-                    raise
-                pause = 2**attempt - 1
-                pause = min(pause, 30)
-
-                if isinstance(e, AnsibleConnectionFailure):
-                    msg = f"ssm_retry: attempt: {attempt}, cmd ({cmd_summary}), pausing for {pause} seconds"
-                else:
-                    msg = (
-                        f"ssm_retry: attempt: {attempt}, caught exception({e})"
-                        f"from cmd ({cmd_summary}),pausing for {pause} seconds"
-                    )
-
-                self.verbosity_display(2, msg)
-
-                time.sleep(pause)
-
-                # Do not attempt to reuse the existing session on retries
-                # This will cause the SSM session to be completely restarted,
-                # as well as reinitializing the boto3 clients
-                self.close()
-
-                continue
-
-        return return_tuple
-
-    return wrapped
 
 
 def chunks(lst: List, n: int) -> Iterator[List[Any]]:
@@ -435,14 +386,13 @@ def filter_ansi(line: str, is_windows: bool) -> str:
     return line
 
 
-class CommandResult(TypedDict):
+def escape_path(path: str) -> str:
     """
-    A dictionary that contains the executed command results.
+    Converts a file path to a safe format by replacing backslashes with forward slashes.
+    :param path: The file path to escape.
+    :return: The escaped file path.
     """
-
-    returncode: int
-    stdout_combined: str
-    stderr_combined: str
+    return path.replace("\\", "/")
 
 
 class Connection(ConnectionBase, AwsConnectionPluginBase):
@@ -457,8 +407,8 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
     is_windows = False
 
     _client = None
-    s3_manager = None
-    session_manager = None
+    _s3_manager = None
+    _session_manager = None
     MARK_LENGTH = 26
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -470,7 +420,7 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
         self.host = self._play_context.remote_addr
         self._instance_id = None
         self.terminal_manager = TerminalManager(self)
-        self.session_manager = None
+        self.reconnection_retries = self.get_option("reconnection_retries")
 
         if getattr(self._shell, "SHELL_FAMILY", "") == "powershell":
             self.delegate = None
@@ -482,6 +432,62 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
             self._shell_type = "powershell"
             self.is_windows = True
 
+    @property
+    def s3_client(self) -> None:
+        if self._s3_manager is not None:
+            return self._s3_manager.client
+        return None
+
+    @property
+    def s3_manager(self) -> None:
+        if self._s3_manager is None:
+            config = {"signature_version": "s3v4", "s3": {"addressing_style": self.get_option("s3_addressing_style")}}
+
+            bucket_endpoint_url = self.get_option("bucket_endpoint_url")
+            s3_endpoint_url, s3_region_name = S3ClientManager.get_bucket_endpoint(
+                bucket_name=self.get_option("bucket_name"),
+                bucket_endpoint_url=bucket_endpoint_url,
+                access_key_id=self.get_option("access_key_id"),
+                secret_key_id=self.get_option("secret_access_key"),
+                session_token=self.get_option("session_token"),
+                region_name=self.get_option("region"),
+                profile_name=self.get_option("profile"),
+            )
+
+            s3_client = self._get_boto_client(
+                "s3", endpoint_url=s3_endpoint_url, region_name=s3_region_name, config=config
+            )
+
+            self._s3_manager = S3ClientManager(s3_client)
+
+        return self._s3_manager
+
+    @property
+    def session_manager(self):
+        return self._session_manager
+
+    @session_manager.setter
+    def session_manager(self, value):
+        self._session_manager = value
+
+    @property
+    def ssm_client(self):
+        if self._client is None:
+            config = {"signature_version": "s3v4", "s3": {"addressing_style": self.get_option("s3_addressing_style")}}
+
+            self._client = self._get_boto_client("ssm", region_name=self.get_option("region"), config=config)
+        return self._client
+
+    @property
+    def instance_id(self) -> str:
+        if not self._instance_id:
+            self._instance_id = self.host if self.get_option("instance_id") is None else self.get_option("instance_id")
+        return self._instance_id
+
+    @instance_id.setter
+    def instance_id(self, instance_id: str) -> None:
+        self._instance_id = instance_id
+
     def __del__(self) -> None:
         self.close()
 
@@ -490,6 +496,7 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
         self._play_context.remote_user = getpass.getuser()
         if not self.session_manager:
             self.start_session()
+
         return self
 
     def _init_clients(self) -> None:
@@ -500,39 +507,22 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
 
         self.verbosity_display(4, "INITIALIZE BOTO3 CLIENTS")
 
-        # Create S3 and SSM clients
-        config = {"signature_version": "s3v4", "s3": {"addressing_style": self.get_option("s3_addressing_style")}}
-
-        bucket_endpoint_url = self.get_option("bucket_endpoint_url")
-        s3_endpoint_url, s3_region_name = S3ClientManager.get_bucket_endpoint(
-            bucket_name=self.get_option("bucket_name"),
-            bucket_endpoint_url=bucket_endpoint_url,
-            access_key_id=self.get_option("access_key_id"),
-            secret_key_id=self.get_option("secret_access_key"),
-            session_token=self.get_option("session_token"),
-            region_name=self.get_option("region"),
-            profile_name=self.get_option("profile"),
-        )
-
-        self.verbosity_display(4, f"BUCKET Information - Endpoint: {s3_endpoint_url} / Region: {s3_region_name}")
-
-        # Initialize S3ClientManager
-        if not self.s3_manager:
-            s3_client = self._get_boto_client(
-                "s3", endpoint_url=s3_endpoint_url, region_name=s3_region_name, config=config
-            )
-            self.s3_manager = S3ClientManager(s3_client)
+        # Initialize S3 client
+        self.s3_manager
 
         # Initialize SSM client
-        if not self._client:
-            self._client = self._get_boto_client("ssm", region_name=self.get_option("region"), config=config)
+        self.ssm_client
 
-    @property
-    def s3_client(self) -> None:
-        client = None
-        if self.s3_manager is not None:
-            client = self.s3_manager.client
-        return client
+        # Initialize FileTransferManager
+        self.file_transfer_manager = FileTransferManager(
+            bucket_name=self.get_option("bucket_name"),
+            instance_id=self.instance_id,
+            s3_client=self.s3_client,
+            reconnection_retries=self.reconnection_retries,
+            verbosity_display=self.verbosity_display,
+            close=self.close,
+            exec_command=self.exec_command,
+        )
 
     def verbosity_display(self, level: int, message: str) -> None:
         """
@@ -559,16 +549,6 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
         self.verbosity_display(4, "reset called on ssm connection")
         self.close()
         self.start_session()
-
-    @property
-    def instance_id(self) -> str:
-        if not self._instance_id:
-            self._instance_id = self.host if self.get_option("instance_id") is None else self.get_option("instance_id")
-        return self._instance_id
-
-    @instance_id.setter
-    def instance_id(self, instance_id: str) -> None:
-        self._instance_id = instance_id
 
     def get_executable(self) -> str:
         ssm_plugin_executable = self.get_option("plugin")
@@ -597,11 +577,12 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
 
         if self.session_manager is None:
             self.session_manager = SSMSessionManager(
-                self._client,
+                self.ssm_client,
                 self.instance_id,
                 verbosity_display=self.verbosity_display,
                 ssm_timeout=self.get_option("ssm_timeout"),
             )
+
             self.session_manager.start_session(
                 executable=executable,
                 document_name=self.get_option("ssm_document"),
@@ -660,7 +641,7 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
         mark = "".join([random.choice(string.ascii_letters) for i in range(Connection.MARK_LENGTH)])
         return mark
 
-    @_ssm_retry
+    @ssm_retry
     def exec_command(self, cmd: str, in_data: bool = None, sudoable: bool = True) -> Tuple[int, str, str]:
         """When running a command on the SSM host, uses generate_mark to get delimiting strings"""
 
@@ -719,8 +700,31 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
 
         return (returncode, stdout)
 
-    def _escape_path(self, path: str) -> str:
-        return path.replace("\\", "/")
+    def generate_commands(self, in_path: str, out_path: str, ssm_action: str) -> Tuple[str, str, Dict]:
+        """
+        Generate S3 path and associated transport commands for file transfer.
+        :param in_path: The local file path to transfer from.
+        :param out_path: The remote file path to transfer to (used to build the S3 key).
+        :param ssm_action: The SSM action to perform ("get" or "put").
+        :return: A tuple containing:
+            - s3_path (str): The S3 key used for the transfer.
+            - commands (List[Dict]): A list of commands to be executed for the transfer.
+            - put_args (Dict): Additional arguments needed for a 'put' operation.
+        """
+        s3_path = escape_path(f"{self.instance_id}/{out_path}")
+        command = ""
+        put_args = []
+        command, put_args = self.s3_manager.generate_host_commands(
+            self.get_option("bucket_name"),
+            self.get_option("bucket_sse_mode"),
+            self.get_option("bucket_sse_kms_key_id"),
+            s3_path,
+            in_path,
+            out_path,
+            self.is_windows,
+            ssm_action,
+        )
+        return s3_path, command, put_args
 
     def _exec_transport_commands(self, in_path: str, out_path: str, command: dict) -> CommandResult:
         """
@@ -740,52 +744,7 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
 
         return returncode, stdout, stderr
 
-    @_ssm_retry
-    def _file_transport_command(
-        self,
-        in_path: str,
-        out_path: str,
-        ssm_action: str,
-    ) -> CommandResult:
-        """
-        Transfer file(s) to/from host using an intermediate S3 bucket and then delete the file(s).
-
-        :param in_path: The input path.
-        :param out_path: The output path.
-        :param ssm_action: The SSM action to perform ("get" or "put").
-
-        :returns: The command's return code, stdout, and stderr in a tuple.
-        """
-
-        bucket_name = self.get_option("bucket_name")
-        s3_path = self._escape_path(f"{self.instance_id}/{out_path}")
-
-        command, put_args = self.s3_manager.generate_host_commands(
-            bucket_name,
-            self.get_option("bucket_sse_mode"),
-            self.get_option("bucket_sse_kms_key_id"),
-            s3_path,
-            in_path,
-            out_path,
-            self.is_windows,
-            ssm_action,
-        )
-
-        try:
-            if ssm_action == "get":
-                result = self._exec_transport_commands(in_path, out_path, command)
-                with open(to_bytes(out_path, errors="surrogate_or_strict"), "wb") as data:
-                    self.s3_client.download_fileobj(bucket_name, s3_path, data)
-            else:
-                with open(to_bytes(in_path, errors="surrogate_or_strict"), "rb") as data:
-                    self.s3_client.upload_fileobj(data, bucket_name, s3_path, ExtraArgs=put_args)
-                result = self._exec_transport_commands(in_path, out_path, command)
-            return result
-        finally:
-            # Remove the files from the bucket after they've been transferred
-            self.s3_client.delete_object(Bucket=bucket_name, Key=s3_path)
-
-    def put_file(self, in_path: str, out_path: str) -> Tuple[int, str, str]:
+    def put_file(self, in_path: str, out_path: str) -> CommandResult:
         """transfer a file from local to remote"""
 
         super().put_file(in_path, out_path)
@@ -794,15 +753,18 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
         if not os.path.exists(to_bytes(in_path, errors="surrogate_or_strict")):
             raise AnsibleFileNotFound(f"file or module does not exist: {in_path}")
 
-        return self._file_transport_command(in_path, out_path, "put")
+        s3_path, command, put_args = self.generate_commands(in_path, out_path, "put")
+        return self.file_transfer_manager._file_transport_command(in_path, out_path, "put", command, put_args, s3_path)
 
-    def fetch_file(self, in_path: str, out_path: str) -> Tuple[int, str, str]:
+    def fetch_file(self, in_path: str, out_path: str) -> CommandResult:
         """fetch a file from remote to local"""
 
         super().fetch_file(in_path, out_path)
 
         self.verbosity_display(3, f"FETCH {in_path} TO {out_path}")
-        return self._file_transport_command(in_path, out_path, "get")
+
+        s3_path, command, put_args = self.generate_commands(in_path, out_path, "get")
+        return self.file_transfer_manager._file_transport_command(in_path, out_path, "get", command, put_args, s3_path)
 
     def close(self) -> None:
         """terminate the connection"""
