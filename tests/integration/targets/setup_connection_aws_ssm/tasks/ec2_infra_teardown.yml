@@ -12,13 +12,14 @@
     - name: Set variable for vpc id
       ansible.builtin.set_fact:
         vpc_id: "{{ vpc_info.vpcs.0.vpc_id }}"
-    
+
     - name: Delete resource group attached to the VPC
       amazon.aws.ec2_security_group:
         name: "{{ ec2_infra_security_group_name }}"
         vpc_id: "{{ vpc_id }}"
         state: absent
-    
+      ignore_errors: true
+
     - name: List subnets attached to the VPC
       amazon.aws.ec2_vpc_subnet_info:
         filters:
@@ -66,11 +67,13 @@
         public_ip: "{{ item.public_ip }}"
         state: absent
       with_items: "{{ eips.addresses }}"
+      ignore_errors: true
 
     - name: Delete internet gateway
       amazon.aws.ec2_vpc_igw:
         vpc_id: "{{ vpc_id }}"
         state: absent
+      ignore_errors: true
 
     - name: Delete subnets
       amazon.aws.ec2_vpc_subnet:
@@ -79,8 +82,10 @@
         vpc_id: "{{ vpc_id }}"
         cidr: "{{ item.cidr_block }}"
       with_items: "{{ vpc_subnets.subnets }}"
+      ignore_errors: true
 
     - name: Delete VPC
       amazon.aws.ec2_vpc_net:
         state: absent
         vpc_id: "{{ vpc_id }}"
+      ignore_errors: true

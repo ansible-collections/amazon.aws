@@ -21,7 +21,6 @@
   tags: setup_infra
 
 - name: Run the install command
-  become: true
   ansible.builtin.shell: >-
     /tmp/sessionmanager-bundle/install -i /usr/local/sessionmanagerplugin -b /usr/local/bin/session-manager-plugin
 
