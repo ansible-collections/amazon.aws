@@ -848,7 +848,7 @@ def get_create_options(params_dict):
         "DatabaseName",
         "EnableCloudwatchLogsExports",
         "EnableIAMDatabaseAuthentication",
-        "PerformanceInsightsEnabled",
+        "EnablePerformanceInsights",
         "KmsKeyId",
         "Engine",
         "EngineMode",
@@ -895,7 +895,7 @@ def get_modify_options(params_dict, force_update_password):
         "DBClusterIdentifier",
         "DBClusterParameterGroupName",
         "EnableIAMDatabaseAuthentication",
-        "PerformanceInsightsEnabled",
+        "EnablePerformanceInsights",
         "EngineVersion",
         "PreferredMaintenanceWindow",
         "MasterUserPassword",
@@ -943,15 +943,12 @@ def get_restore_s3_options(params_dict):
         "DatabaseName",
         "EnableCloudwatchLogsExports",
         "EnableIAMDatabaseAuthentication",
-        "PerformanceInsightsEnabled",
         "Engine",
         "EngineVersion",
         "KmsKeyId",
         "MasterUserPassword",
         "MasterUsername",
         "OptionGroupName",
-        "PerformanceInsightsKMSKeyId",
-        "PerformanceInsightsRetentionPeriod",
         "Port",
         "PreferredBackupWindow",
         "PreferredMaintenanceWindow",
@@ -967,11 +964,7 @@ def get_restore_s3_options(params_dict):
         "EnableHttpEndpoint",
         "CopyTagsToSnapshot",
         "Domain",
-        "DomainIAMRoleName",
-        "DatabaseInsightsMode",
-        "PerformanceInsightsEnabled",
-        "PerformanceInsightsKMSKeyId",
-        "PerformanceInsightsRetentionPeriod",
+        "DomainIAMRoleName"
     ]
 
     return dict((k, v) for k, v in params_dict.items() if k in options and v is not None)
@@ -986,7 +979,7 @@ def get_restore_snapshot_options(params_dict):
         "DatabaseName",
         "EnableCloudwatchLogsExports",
         "EnableIAMDatabaseAuthentication",
-        "PerformanceInsightsEnabled",
+        "EnablePerformanceInsights",
         "Engine",
         "EngineVersion",
         "KmsKeyId",
@@ -1013,7 +1006,7 @@ def get_restore_cluster_options(params_dict):
         "DBSubnetGroupName",
         "EnableCloudwatchLogsExports",
         "EnableIAMDatabaseAuthentication",
-        "PerformanceInsightsEnabled",
+        "EnablePerformanceInsights",
         "KmsKeyId",
         "OptionGroupName",
         "PerformanceInsightsKMSKeyId",
@@ -1136,9 +1129,9 @@ def changing_cluster_options(modify_params, current_cluster):
     ]:
         changing_params["OptionGroupName"] = option_group
         
-    enable_performance_insights = modify_params.pop("PerformanceInsightsEnabled", None)
-    if enable_performance_insights != current_cluster["PerformanceInsightsEnabled"]:
-        changing_params["PerformanceInsightsEnabled"] = enable_performance_insights
+    enable_performance_insights = modify_params.pop("EnablePerformanceInsights", None)
+    if enable_performance_insights != current_cluster["EnablePerformanceInsights"]:
+        changing_params["EnablePerformanceInsights"] = enable_performance_insights
     
     performance_insights_kms_key_id = modify_params.pop("PerformanceInsightsKMSKeyId", None)
     if performance_insights_kms_key_id != current_cluster["PerformanceInsightsKMSKeyId"]:
