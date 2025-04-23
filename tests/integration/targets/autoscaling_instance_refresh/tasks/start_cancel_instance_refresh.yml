@@ -9,7 +9,7 @@
 - name: Assert that module failed with proper message
   ansible.builtin.assert:
     that:
-      - "'An error occurred (ActiveInstanceRefreshNotFound) when calling the CancelInstanceRefresh operation: No in progress, baking, or pending Instance Refresh found for 
+      - "'An error occurred (ActiveInstanceRefreshNotFound) when calling the CancelInstanceRefresh operation: No in progress, baking, or pending Instance Refresh found for
         Auto Scaling group ' ~ resource_prefix ~ '-asg' in result.msg"
 
 - name: Test starting a refresh with a valid ASG name - check_mode
