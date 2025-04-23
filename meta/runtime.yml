@@ -2,10 +2,10 @@
 requires_ansible: ">=2.15.0"
 action_groups:
   aws:
-    - autoscaling_group
-    - autoscaling_group_info
     - autoscaling_instance
     - autoscaling_instance_info
+    - autoscaling_group
+    - autoscaling_group_info
     - autoscaling_instance_refresh
     - autoscaling_instance_refresh_info
     - aws_az_info
@@ -13,7 +13,7 @@ action_groups:
     - aws_region_info
     - aws_s3
     - aws_s3_bucket_info
-    - aws_ssm_parameter_store
+    - aws_ssm
     - backup_plan
     - backup_plan_info
     - backup_selection
@@ -63,9 +63,9 @@ action_groups:
     - ec2_tag
     - ec2_tag_info
     - ec2_transit_gateway
-    - ec2_transit_gateway_info
     - ec2_transit_gateway_vpc_attachment
     - ec2_transit_gateway_vpc_attachment_info
+    - ec2_transit_gateway_info
     - ec2_vol
     - ec2_vol_info
     - ec2_vpc_dhcp_option
