@@ -23,7 +23,7 @@ if not HAS_BOTO3:
 
 @pytest.fixture(name="loaded_aws_ssm")
 def fixture_loaded_aws_ssm():
-    conn = connection_loader.get("community.aws.aws_ssm", PlayContext(), StringIO())
+    conn = connection_loader.get("amazon.aws.aws_ssm", PlayContext(), StringIO())
     # conn.verbosity_display = MagicMock()
     conn._connect = MagicMock()
     conn.test_options = {
