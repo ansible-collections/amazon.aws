@@ -12,8 +12,8 @@ import pytest
 
 from ansible.errors import AnsibleError
 
-from ansible_collections.community.aws.plugins.plugin_utils.ssm.filetransfermanager import CommandResult
-from ansible_collections.community.aws.plugins.plugin_utils.ssm.filetransfermanager import FileTransferManager
+from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.filetransfermanager import CommandResult
+from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.filetransfermanager import FileTransferManager
 
 
 class TestFileTransferManager:
