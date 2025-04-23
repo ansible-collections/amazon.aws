@@ -27,7 +27,7 @@ aws_ssm_linux
 aws_ssm_windows
 
 [aws_ssm:vars]
-ansible_connection=community.aws.aws_ssm
+ansible_connection=amazon.aws.aws_ssm
 ansible_aws_ssm_plugin=/usr/local/sessionmanagerplugin/bin/session-manager-plugin
 ansible_python_interpreter={{ os_python_path | default('/usr/bin/python3') }}
 local_tmp=/tmp/ansible-local-{{ tiny_prefix }}
