@@ -17,7 +17,7 @@ short_description: connect to EC2 instances via AWS Systems Manager
 description:
   - This connection plugin allows Ansible to execute tasks on an EC2 instance via an AWS SSM Session.
 notes:
-  - The C(community.aws.aws_ssm) connection plugin does not support using the ``remote_user`` and
+  - The C(amazon.aws.aws_ssm) connection plugin does not support using the ``remote_user`` and
     ``ansible_user`` variables to configure the remote user.  The ``become_user`` parameter should
     be used to configure which user to run commands as.  Remote commands will often default to
     running as the ``ssm-agent`` user, however this will also depend on how SSM has been configured.
@@ -298,7 +298,7 @@ EXAMPLES = r"""
 # linux ansible_aws_ssm_instance_id=i-01234567829abcdef ansible_aws_ssm_region=us-east-1
 
 # [all:vars]
-# ansible_connection=community.aws.aws_ssm
+# ansible_connection=amazon.aws.aws_ssm
 # ansible_python_interpreter=/usr/bin/python3
 # local_tmp=/tmp/ansible-local-ssm-0123456
 # ansible_aws_ssm_bucket_name=my-test-bucket
@@ -398,7 +398,7 @@ def escape_path(path: str) -> str:
 class Connection(ConnectionBase, AwsConnectionPluginBase):
     """AWS SSM based connections"""
 
-    transport = "community.aws.aws_ssm"
+    transport = "amazon.aws.aws_ssm"
     default_user = ""
 
     allow_executable = False
