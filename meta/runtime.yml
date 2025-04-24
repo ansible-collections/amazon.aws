@@ -13,7 +13,6 @@ action_groups:
     - aws_region_info
     - aws_s3
     - aws_s3_bucket_info
-    - aws_ssm_parameter_store
     - backup_plan
     - backup_plan_info
     - backup_selection
