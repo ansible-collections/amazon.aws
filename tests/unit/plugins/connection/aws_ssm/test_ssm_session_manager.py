@@ -20,9 +20,9 @@ import pytest
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOTO3
 
-from ansible_collections.community.aws.plugins.plugin_utils.ssm.sessionmanager import ProcessManager
-from ansible_collections.community.aws.plugins.plugin_utils.ssm.sessionmanager import SSMProcessManagerTimeOutFailure
-from ansible_collections.community.aws.plugins.plugin_utils.ssm.sessionmanager import SSMSessionManager
+from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.sessionmanager import ProcessManager
+from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.sessionmanager import SSMProcessManagerTimeOutFailure
+from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.sessionmanager import SSMSessionManager
 
 if not HAS_BOTO3:
     pytestmark = pytest.mark.skip("test_poll.py requires the python modules 'boto3' and 'botocore'")
@@ -39,7 +39,7 @@ def verbosity_display(verbose, message):
         (5, 4),
     ],
 )
-@patch("ansible_collections.community.aws.plugins.plugin_utils.ssm.sessionmanager._create_polling_obj")
+@patch("ansible_collections.amazon.aws.plugins.plugin_utils.ssm.sessionmanager._create_polling_obj")
 def test_process_manager_poll(m_create_polling_obj, timeout, number_poll_false):
     session = MagicMock()
     stdout = MagicMock()
@@ -57,7 +57,7 @@ def test_process_manager_poll(m_create_polling_obj, timeout, number_poll_false):
 
 
 @patch("time.time")
-@patch("ansible_collections.community.aws.plugins.plugin_utils.ssm.sessionmanager._create_polling_obj")
+@patch("ansible_collections.amazon.aws.plugins.plugin_utils.ssm.sessionmanager._create_polling_obj")
 def test_process_manager_poll_with_timeout(m_create_polling_obj, time_time):
     session = MagicMock()
     stdout = MagicMock()
@@ -83,7 +83,7 @@ def test_process_manager_poll_with_timeout(m_create_polling_obj, time_time):
     m_create_polling_obj.assert_called_once_with(stdout)
 
 
-@patch("ansible_collections.community.aws.plugins.plugin_utils.ssm.sessionmanager._create_polling_obj")
+@patch("ansible_collections.amazon.aws.plugins.plugin_utils.ssm.sessionmanager._create_polling_obj")
 def test_process_manager_flush_stderr(m_create_polling_obj):
     session = MagicMock()
     stdout = MagicMock()
@@ -118,7 +118,7 @@ def test_process_manager_flush_stderr(m_create_polling_obj):
         (["ansible", " is ", "super"], lambda t: t.replace(" ", "").split("is") == ["ansible", "super"]),
     ],
 )
-@patch("ansible_collections.community.aws.plugins.plugin_utils.ssm.sessionmanager._create_polling_obj")
+@patch("ansible_collections.amazon.aws.plugins.plugin_utils.ssm.sessionmanager._create_polling_obj")
 def test_process_manager_wait_for_match(m_create_polling_obj, stdout_text, match):
     session = MagicMock()
     stdout = MagicMock()
@@ -146,7 +146,7 @@ def test_process_manager_wait_for_match(m_create_polling_obj, stdout_text, match
     proc_mgr.wait_for_match(label=label, cmd=cmd, match=match)
 
 
-@patch("ansible_collections.community.aws.plugins.plugin_utils.ssm.sessionmanager._create_polling_obj")
+@patch("ansible_collections.amazon.aws.plugins.plugin_utils.ssm.sessionmanager._create_polling_obj")
 def test_process_manager_wait_for_match_failure(m_create_polling_obj):
     session = MagicMock()
     stdout = MagicMock()
@@ -181,7 +181,7 @@ def test_process_manager_wait_for_match_failure(m_create_polling_obj):
 
 
 @pytest.mark.parametrize("has_timeout", [True, False])
-@patch("ansible_collections.community.aws.plugins.plugin_utils.ssm.sessionmanager._create_polling_obj")
+@patch("ansible_collections.amazon.aws.plugins.plugin_utils.ssm.sessionmanager._create_polling_obj")
 def test_process_manager_terminate(m_create_polling_obj, has_timeout):
     session = MagicMock()
     stdout = MagicMock()
@@ -248,11 +248,11 @@ class TestSSMSessionManager:
     @patch("json.dumps")
     @patch("os.fdopen")
     @patch("os.close")
-    @patch("ansible_collections.community.aws.plugins.plugin_utils.ssm.sessionmanager.ProcessManager")
-    @patch("ansible_collections.community.aws.plugins.plugin_utils.ssm.sessionmanager.Popen")
-    @patch("ansible_collections.community.aws.plugins.plugin_utils.ssm.sessionmanager.openpty")
-    @patch("ansible_collections.community.aws.plugins.plugin_utils.ssm.sessionmanager.to_text")
-    @patch("ansible_collections.community.aws.plugins.plugin_utils.ssm.sessionmanager._create_polling_obj")
+    @patch("ansible_collections.amazon.aws.plugins.plugin_utils.ssm.sessionmanager.ProcessManager")
+    @patch("ansible_collections.amazon.aws.plugins.plugin_utils.ssm.sessionmanager.Popen")
+    @patch("ansible_collections.amazon.aws.plugins.plugin_utils.ssm.sessionmanager.openpty")
+    @patch("ansible_collections.amazon.aws.plugins.plugin_utils.ssm.sessionmanager.to_text")
+    @patch("ansible_collections.amazon.aws.plugins.plugin_utils.ssm.sessionmanager._create_polling_obj")
     def test_start_session(
         self,
         m_create_polling_obj,

@@ -342,16 +342,16 @@ from ansible.plugins.connection import ConnectionBase
 from ansible.utils.display import Display
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOTO3
-from ansible_collections.community.aws.plugins.plugin_utils.ssm.base import AwsConnectionPluginBase
-from ansible_collections.community.aws.plugins.plugin_utils.ssm.s3clientmanager import S3ClientManager
-from ansible_collections.community.aws.plugins.plugin_utils.ssm.terminalmanager import TerminalManager
-from ansible_collections.community.aws.plugins.plugin_utils.ssm.sessionmanager import (
+from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.base import AwsConnectionPluginBase
+from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.s3clientmanager import S3ClientManager
+from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.terminalmanager import TerminalManager
+from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.sessionmanager import (
     SSMSessionManager,
 )
 
-from ansible_collections.community.aws.plugins.plugin_utils.ssm.filetransfermanager import FileTransferManager
-from ansible_collections.community.aws.plugins.plugin_utils.ssm.common import ssm_retry
-from ansible_collections.community.aws.plugins.plugin_utils.ssm.common import CommandResult
+from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.filetransfermanager import FileTransferManager
+from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.common import ssm_retry
+from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.common import CommandResult
 
 
 display = Display()

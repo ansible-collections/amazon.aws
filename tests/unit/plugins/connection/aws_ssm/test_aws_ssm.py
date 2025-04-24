@@ -14,8 +14,8 @@ from ansible.plugins.loader import connection_loader
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOTO3
 
-from ansible_collections.community.aws.plugins.plugin_utils.ssm.s3clientmanager import S3ClientManager
-from ansible_collections.community.aws.plugins.plugin_utils.ssm.s3clientmanager import generate_encryption_settings
+from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.s3clientmanager import S3ClientManager
+from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.s3clientmanager import generate_encryption_settings
 
 if not HAS_BOTO3:
     pytestmark = pytest.mark.skip("test_data_pipeline.py requires the python modules 'boto3' and 'botocore'")
@@ -23,7 +23,7 @@ if not HAS_BOTO3:
 
 @pytest.fixture(name="loaded_aws_ssm")
 def fixture_loaded_aws_ssm():
-    conn = connection_loader.get("community.aws.aws_ssm", PlayContext(), StringIO())
+    conn = connection_loader.get("amazon.aws.aws_ssm", PlayContext(), StringIO())
     # conn.verbosity_display = MagicMock()
     conn._connect = MagicMock()
     conn.test_options = {
@@ -39,7 +39,7 @@ def fixture_loaded_aws_ssm():
 
 class TestConnectionBaseClass:
     @patch(
-        "ansible_collections.community.aws.plugins.plugin_utils.ssm.s3clientmanager.S3ClientManager.get_bucket_endpoint",
+        "ansible_collections.amazon.aws.plugins.plugin_utils.ssm.s3clientmanager.S3ClientManager.get_bucket_endpoint",
         return_value=("fake-s3-endpoint", "fake-region"),
     )
     def test_init_clients(self, mock_get_bucket_endpoint, loaded_aws_ssm):
@@ -190,7 +190,7 @@ class TestS3ClientManager:
 
     @pytest.mark.parametrize("method", ["get", "put", "fake"])
     @pytest.mark.parametrize("is_windows", [False, True])
-    @patch("ansible_collections.community.aws.plugins.plugin_utils.ssm.s3clientmanager.generate_encryption_settings")
+    @patch("ansible_collections.amazon.aws.plugins.plugin_utils.ssm.s3clientmanager.generate_encryption_settings")
     def test_generate_host_commands(self, m_generate_encryption_settings, method, is_windows):
         """Testing command generation on both Windows and non-Windows systems"""
         s3_client_manager = self.create_object()
@@ -256,7 +256,7 @@ class TestS3ClientManager:
             ("eu-west", "eu-west-2"),
         ],
     )
-    @patch("ansible_collections.community.aws.plugins.plugin_utils.ssm.s3clientmanager.S3ClientManager._get_s3_client")
+    @patch("ansible_collections.amazon.aws.plugins.plugin_utils.ssm.s3clientmanager.S3ClientManager._get_s3_client")
     def test_get_bucket_endpoint(self, mock__get_s3_client, bucket_endpoint_url, region_name, bucket_region):
         tmp_s3_1 = MagicMock()
         tmp_s3_2 = MagicMock()
