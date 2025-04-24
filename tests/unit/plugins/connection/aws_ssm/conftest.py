@@ -7,8 +7,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from ansible_collections.community.aws.plugins.connection.aws_ssm import Connection
-from ansible_collections.community.aws.plugins.connection.aws_ssm import ConnectionBase
+from ansible_collections.amazon.aws.plugins.connection.aws_ssm import Connection
+from ansible_collections.amazon.aws.plugins.connection.aws_ssm import ConnectionBase
 
 
 @pytest.fixture(name="connection_aws_ssm")
