@@ -34,7 +34,7 @@ from ansible.errors import AnsibleConnectionFailure
         ),
     ],
 )
-@patch("ansible_collections.community.aws.plugins.connection.aws_ssm.filter_ansi")
+@patch("ansible_collections.amazon.aws.plugins.connection.aws_ssm.filter_ansi")
 def test_connection_aws_ssm_exec_communicate(
     m_filter_ansi, connection_aws_ssm, mark_start, mark_end, stdout_lines, expected_stdout
 ):
@@ -75,7 +75,7 @@ def test_connection_aws_ssm_exec_communicate_with_exception(connection_aws_ssm):
 
 
 @pytest.mark.parametrize("is_windows", [True, False])
-@patch("ansible_collections.community.aws.plugins.connection.aws_ssm.chunks")
+@patch("ansible_collections.amazon.aws.plugins.connection.aws_ssm.chunks")
 def test_connection_aws_ssm_exec_command(m_chunks, connection_aws_ssm, is_windows):
     connection_aws_ssm.is_windows = is_windows
     connection_aws_ssm.exec_communicate = MagicMock()

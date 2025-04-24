@@ -94,7 +94,7 @@ class TestConnectionBaseClass:
         assert loaded_aws_ssm._client == boto_clients["ssm"]
 
     @pytest.mark.parametrize("path_exists", [True, False])
-    @patch("ansible_collections.community.aws.plugins.connection.aws_ssm.to_bytes")
+    @patch("ansible_collections.amazon.aws.plugins.connection.aws_ssm.to_bytes")
     @patch("os.path.exists")
     def test_plugins_connection_aws_ssm_put_file(self, mock_os_path_exists, mock_to_bytes, loaded_aws_ssm, path_exists):
         mock_os_path_exists.return_value = path_exists
@@ -146,7 +146,7 @@ class TestConnectionBaseClass:
         assert loaded_aws_ssm.session_manager is None
 
     @pytest.mark.parametrize("level", ["invalid value", 5, -1])
-    @patch("ansible_collections.community.aws.plugins.connection.aws_ssm.display")
+    @patch("ansible_collections.amazon.aws.plugins.connection.aws_ssm.display")
     def test_verbosity_diplay_invalid_level(self, mock_display, loaded_aws_ssm, level):
         """Testing verbosity levels"""
         # Test exception is raised when verbosity level is not an accepted value
@@ -166,7 +166,7 @@ class TestConnectionBaseClass:
             (4, "vvvv"),
         ],
     )
-    @patch("ansible_collections.community.aws.plugins.connection.aws_ssm.display")
+    @patch("ansible_collections.amazon.aws.plugins.connection.aws_ssm.display")
     def test_verbosity_diplay(self, mock_display, loaded_aws_ssm, host, level, method):
         """Testing verbosity levels"""
         loaded_aws_ssm.host = host

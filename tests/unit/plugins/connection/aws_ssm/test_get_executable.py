@@ -12,8 +12,8 @@ from ansible.errors import AnsibleError
 
 
 @pytest.mark.parametrize("executable_path_exists", [True, False])
-@patch("ansible_collections.community.aws.plugins.connection.aws_ssm.os")
-@patch("ansible_collections.community.aws.plugins.connection.aws_ssm.to_bytes")
+@patch("ansible_collections.amazon.aws.plugins.connection.aws_ssm.os")
+@patch("ansible_collections.amazon.aws.plugins.connection.aws_ssm.to_bytes")
 def test_get_executable_user_provided(m_to_bytes, m_os, connection_aws_ssm, executable_path_exists):
     ssm_plugin = MagicMock()
     connection_aws_ssm.get_option.return_value = ssm_plugin
@@ -35,9 +35,9 @@ def test_get_executable_user_provided(m_to_bytes, m_os, connection_aws_ssm, exec
     m_os.path.exists.assert_called_once_with(b_ssm_plugin)
 
 
-@patch("ansible_collections.community.aws.plugins.connection.aws_ssm.get_bin_path")
-@patch("ansible_collections.community.aws.plugins.connection.aws_ssm.os")
-@patch("ansible_collections.community.aws.plugins.connection.aws_ssm.to_bytes")
+@patch("ansible_collections.amazon.aws.plugins.connection.aws_ssm.get_bin_path")
+@patch("ansible_collections.amazon.aws.plugins.connection.aws_ssm.os")
+@patch("ansible_collections.amazon.aws.plugins.connection.aws_ssm.to_bytes")
 def test_get_executable_default_value_exists(m_to_bytes, m_os, m_get_bin_path, connection_aws_ssm):
     connection_aws_ssm.get_option.return_value = None
     b_ssm_plugin = MagicMock()
@@ -56,9 +56,9 @@ def test_get_executable_default_value_exists(m_to_bytes, m_os, m_get_bin_path, c
     m_get_bin_path.assert_not_called()
 
 
-@patch("ansible_collections.community.aws.plugins.connection.aws_ssm.get_bin_path")
-@patch("ansible_collections.community.aws.plugins.connection.aws_ssm.os")
-@patch("ansible_collections.community.aws.plugins.connection.aws_ssm.to_bytes")
+@patch("ansible_collections.amazon.aws.plugins.connection.aws_ssm.get_bin_path")
+@patch("ansible_collections.amazon.aws.plugins.connection.aws_ssm.os")
+@patch("ansible_collections.amazon.aws.plugins.connection.aws_ssm.to_bytes")
 def test_get_executable_default_from_path(m_to_bytes, m_os, m_get_bin_path, connection_aws_ssm):
     connection_aws_ssm.get_option.return_value = None
     b_ssm_plugin = MagicMock()
@@ -79,9 +79,9 @@ def test_get_executable_default_from_path(m_to_bytes, m_os, m_get_bin_path, conn
     m_get_bin_path.assert_called_once_with("session-manager-plugin")
 
 
-@patch("ansible_collections.community.aws.plugins.connection.aws_ssm.get_bin_path")
-@patch("ansible_collections.community.aws.plugins.connection.aws_ssm.os")
-@patch("ansible_collections.community.aws.plugins.connection.aws_ssm.to_bytes")
+@patch("ansible_collections.amazon.aws.plugins.connection.aws_ssm.get_bin_path")
+@patch("ansible_collections.amazon.aws.plugins.connection.aws_ssm.os")
+@patch("ansible_collections.amazon.aws.plugins.connection.aws_ssm.to_bytes")
 def test_get_executable_default_missing_from_path(m_to_bytes, m_os, m_get_bin_path, connection_aws_ssm):
     connection_aws_ssm.get_option.return_value = None
     b_ssm_plugin = MagicMock()
