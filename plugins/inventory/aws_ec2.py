@@ -679,16 +679,14 @@ class InventoryModule(AWSInventoryBase):
         :param hostnames: a list of hostname destination variables
         :return all the candidats matching the expectation
         """
+        hostname_list = []
         if self.route53_enabled:
             hostname_list = [self._sanitize_hostname(name) for name in self._get_instance_route53_hostnames(instance)]
-            if hostname_list:
-                return hostname_list
 
         if not hostnames:
             hostnames = ["dns-name", "private-dns-name"]
 
         hostname = None
-        hostname_list = []
         for preference in hostnames:
             if isinstance(preference, dict):
                 if "name" not in preference:
