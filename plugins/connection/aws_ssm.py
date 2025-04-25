@@ -13,6 +13,8 @@ author:
   - HanumanthaRao MVL (@hanumantharaomvl) <hanumanth@flux7.com>
   - Gaurav Ashtikar (@gau1991) <gaurav.ashtikar@flux7.com>
 
+version_added: 1.0.0
+version_added_collection: community.aws
 short_description: connect to EC2 instances via AWS Systems Manager
 description:
   - This connection plugin allows Ansible to execute tasks on an EC2 instance via an AWS SSM Session.
