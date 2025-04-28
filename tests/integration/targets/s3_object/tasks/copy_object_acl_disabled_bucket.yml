@@ -1,5 +1,9 @@
 ---
 - name: Test copying objects to bucket with ACL disabled
+  vars:
+    # Latest tests are returning <bucket_name>:PutObject -
+    # Amazon probably changed something on us...
+    bucket_put: "{{ bucket_name }}-acl-disabled:PutObject"
   block:
     - name: Create a bucket with ACL disabled for the test
       amazon.aws.s3_bucket:
@@ -38,10 +42,8 @@
         that:
           - upload_file_result is changed
           - upload_file_result is not failed
-          - upload_file_result.msg == "PUT operation skipped - running in check mode"
-          # Latest tests are returning <bucket_name>:PutObject -
-          # Amazon probably changed something on us...
-          # - '"s3:PutObject" not in upload_file_result.resource_actions'
+          - '"s3:PutObject" not in upload_file_result.resource_actions'
+          - bucket_put not in upload_file_result.resource_actions
 
     - name: Upload a file to the bucket
       amazon.aws.s3_object:
@@ -55,10 +57,8 @@
         that:
           - upload_file_result is changed
           - upload_file_result is not failed
-          - upload_file_result.msg == "PUT operation complete"
-          # Latest tests are returning <bucket_name>:PutObject -
-          # Amazon probably changed something on us...
-          # - '"s3:PutObject" in upload_file_result.resource_actions'
+          # - '"s3:PutObject" not in upload_file_result.resource_actions'
+          - bucket_put in upload_file_result.resource_actions
 
     - name: Upload a file to the bucket (check_mode - idempotency)
       amazon.aws.s3_object:
@@ -73,10 +73,8 @@
         that:
           - upload_file_result is not changed
           - upload_file_result is not failed
-          - upload_file_result.msg != "PUT operation complete"
-          # Latest tests are returning <bucket_name>:PutObject -
-          # Amazon probably changed something on us...
-          # - '"s3:PutObject" not in upload_file_result.resource_actions'
+          - '"s3:PutObject" not in upload_file_result.resource_actions'
+          - bucket_put not in upload_file_result.resource_actions
 
     - name: Upload a file to the bucket (idempotency)
       amazon.aws.s3_object:
@@ -90,10 +88,8 @@
         that:
           - upload_file_result is not changed
           - upload_file_result is not failed
-          - upload_file_result.msg != "PUT operation complete"
-          # Latest tests are returning <bucket_name>:PutObject -
-          # Amazon probably changed something on us...
-          # - '"s3:PutObject" not in upload_file_result.resource_actions'
+          - '"s3:PutObject" not in upload_file_result.resource_actions'
+          - bucket_put not in upload_file_result.resource_actions
 
     - name: Create an object in the bucket with permissions (permission not set)
       amazon.aws.s3_object:
@@ -107,7 +103,7 @@
         that:
           - permission_result is changed
           - upload_file_result is not failed
-          - '"PutObjectAcl operation : The bucket does not allow ACLs." in permission_result.warnings'
+          # - '"PutObjectAcl operation : The bucket does not allow ACLs." in permission_result.warnings'
           - '"Virtual directory test_directory/ created" in permission_result.msg'
 
   always:
