@@ -4,9 +4,6 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 import json
-import os
-from unittest import mock
-
 import pytest
 
 try:
@@ -70,7 +67,6 @@ class TestFailJsonAwsTestSuite:
 
         # Create a minimal module that we can call
         module = AnsibleAWSModule(argument_spec=dict())
-
         try:
             raise botocore.exceptions.ClientError(self.EXAMPLE_EXCEPTION_DATA, "testCall")
         except botocore.exceptions.ClientError as e:

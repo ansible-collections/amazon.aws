@@ -14,7 +14,6 @@ try:
 except ImportError:
     pass
 
-
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOTO3
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 
@@ -176,14 +175,15 @@ class TestMinimalVersionTestSuite:
 
         warning_dict = dict()
         for warning in warnings:
-            if "boto3" in str(warning):
-                warning_dict["boto3"] = str(warning)
+            warning = str(warning)
+            if "boto3" in warning:
+                warning_dict["boto3"] = warning
             if "botocore" in str(warning):
-                warning_dict["botocore"] = str(warning)
+                warning_dict["botocore"] = warning
 
         # Assert that we have a warning about the version but be
         # relaxed about the exact message
-        # assert warning_dict.get("boto3") is not None
+        assert warning_dict.get("boto3") is not None
         assert self.MINIMAL_BOTO3 in warning_dict.get("boto3")
         assert warning_dict.get("botocore") is not None
         assert self.MINIMAL_BOTOCORE in warning_dict.get("botocore")
