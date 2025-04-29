@@ -4,6 +4,8 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 import json
+import os
+from unittest import mock
 
 import pytest
 
@@ -20,6 +22,12 @@ from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleA
 
 if not HAS_BOTO3:
     pytestmark = pytest.mark.skip("test_fail_json_aws.py requires the python modules 'boto3' and 'botocore'")
+
+
+@pytest.fixture(autouse=True)
+def set_ansible_traceback_env(monkeypatch):
+    monkeypatch.setenv("ANSIBLE_DISPLAY_TRACEBACK", "always")
+    yield
 
 
 class TestFailJsonAwsTestSuite:
@@ -62,6 +70,7 @@ class TestFailJsonAwsTestSuite:
 
         # Create a minimal module that we can call
         module = AnsibleAWSModule(argument_spec=dict())
+
         try:
             raise botocore.exceptions.ClientError(self.EXAMPLE_EXCEPTION_DATA, "testCall")
         except botocore.exceptions.ClientError as e:
