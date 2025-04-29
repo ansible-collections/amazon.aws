@@ -4,6 +4,7 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 import json
+import os
 
 import pytest
 
@@ -40,6 +41,12 @@ TEST_VERSIONS = [
 
 if not HAS_BOTO3:
     pytestmark = pytest.mark.skip("test_require_at_least.py requires the python modules 'boto3' and 'botocore'")
+
+
+@pytest.fixture(autouse=True)
+def set_ansible_traceback_env(monkeypatch):
+    os.environ["ANSIBLE_DISPLAY_TRACEBACK"] = "never"
+    yield
 
 
 class TestRequireAtLeastTestSuite:

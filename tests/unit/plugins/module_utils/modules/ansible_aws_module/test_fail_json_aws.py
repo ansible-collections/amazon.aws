@@ -22,6 +22,12 @@ if not HAS_BOTO3:
     pytestmark = pytest.mark.skip("test_fail_json_aws.py requires the python modules 'boto3' and 'botocore'")
 
 
+@pytest.fixture(autouse=True)
+def set_ansible_traceback_env(monkeypatch):
+    monkeypatch.setenv("ANSIBLE_DISPLAY_TRACEBACK", "always")
+    yield
+
+
 class TestFailJsonAwsTestSuite:
     # ========================================================
     # Prepare some data for use in our testing
