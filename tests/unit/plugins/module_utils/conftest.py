@@ -27,7 +27,8 @@ def fixture_stdin(mocker, request):
 
     for var in ["_global_warnings", "_global_deprecations"]:
         if hasattr(ansible.module_utils.common.warnings, var):
-            setattr(ansible.module_utils.common.warnings, var, [])
+            vtype = type(getattr(ansible.module_utils.common.warnings, var))
+            setattr(ansible.module_utils.common.warnings, var, vtype())
         else:
             # No need to reset the value
             warnings.warn("deprecated")
