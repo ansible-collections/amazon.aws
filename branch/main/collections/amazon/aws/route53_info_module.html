@@ -508,7 +508,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <span class="w">    </span><span class="nt">query</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hosted_zone</span>
 <span class="w">    </span><span class="nt">next_marker</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">first_info.NextMarker</span> <span class="cp">}}</span><span class="s">&quot;</span>
 <span class="w">    </span><span class="nt">max_items</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
-<span class="w">  </span><span class="nt">when</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="s1">&#39;NextMarker&#39;</span> <span class="k">in</span> <span class="nv">first_info</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">  </span><span class="nt">when</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&#39;NextMarker&#39;</span><span class="nv"> </span><span class="s">in</span><span class="nv"> </span><span class="s">first_info&quot;</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">retrieve host entries starting with host1.workshop.test.io</span>
 <span class="w">  </span><span class="nt">block</span><span class="p">:</span>
