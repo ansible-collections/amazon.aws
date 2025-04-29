@@ -186,7 +186,7 @@ EXAMPLES = r"""
     query: hosted_zone
     next_marker: "{{ first_info.NextMarker }}"
     max_items: 1
-  when: "{{ 'NextMarker' in first_info }}"
+  when: "'NextMarker' in first_info"
 
 - name: retrieve host entries starting with host1.workshop.test.io
   block:
