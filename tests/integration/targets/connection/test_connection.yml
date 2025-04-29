@@ -1,0 +1,93 @@
+- hosts: "{{ target_hosts }}"
+  gather_facts: no
+  strategy: free
+  vars:
+    local_dir: '{{ local_tmp }}-{{ inventory_hostname }}-汉语'
+    local_file: '{{ local_dir }}/汉语.txt'
+    remote_dir: '{{ remote_tmp }}-汉语'
+    remote_file: '{{ remote_dir }}/汉语.txt'
+    remote_empty_file: '{{ remote_dir }}/empty.txt'
+  tasks:
+
+  ### test wait_for_connection plugin
+
+  - wait_for_connection:
+      timeout: '{{ wait_for_timeout | default(100) }}'
+      sleep: 10
+
+  ### Try to gather the default facts from the host
+
+  - name: Gather facts
+    ansible.builtin.setup:
+
+  ### raw with unicode arg and output
+
+  - name: raw with unicode arg and output
+    raw: echo 汉语
+    register: command
+  - name: check output of raw with unicode arg and output
+    assert:
+      that:
+      - "'汉语' in command.stdout"
+      - command is changed # as of 2.2, raw should default to changed: true for consistency w/ shell/command/script modules
+
+  ### copy local file with unicode filename and content
+
+  - name: create local file with unicode filename and content
+    local_action: lineinfile dest={{ local_file }} create=true line=汉语
+  - name: remove remote file with unicode filename and content
+    action: "{{ action_prefix }}file path={{ remote_file }} state=absent"
+  - name: create remote directory with unicode name
+    action: "{{ action_prefix }}file path={{ remote_dir }} state=directory"
+  - name: copy local file with unicode filename and content
+    action: "{{ action_prefix }}copy src={{ local_file }} dest={{ remote_file }}"
+
+  ### fetch remote file with unicode filename and content
+
+  - name: remove local file with unicode filename and content
+    local_action: file path={{ local_file }} state=absent
+  - name: fetch remote file with unicode filename and content
+    fetch: src={{ remote_file }} dest={{ local_file }} fail_on_missing=true validate_checksum=true flat=true
+
+  ### remove local and remote temp files
+
+  - name: remove local temp file
+    local_action: file path={{ local_file }} state=absent
+  - name: remove remote temp file
+    action: "{{ action_prefix }}file path={{ remote_file }} state=absent"
+
+  ### Test that we're the user we expect to be and can change where appropriate
+  # Regression - https://github.com/ansible-collections/community.aws/issues/853
+
+  - name: Test user manipulaton
+    when:
+      - '"aws_ssm_linux" in group_names'
+    block:
+      - name: 'Find ID when become=False'
+        become: False
+        command: 'id -u -n'
+        register: id_cmd
+
+      - assert:
+          that:
+            - id_cmd.stdout == 'ssm-user'
+
+      - include_tasks: 'test_assume.yml'
+        loop:
+          - ssm-agent
+          - zuul
+          - root
+        loop_control:
+          loop_var: user_name
+  
+  ### copy an empty file
+  - name: copy an empty file
+    action: "{{ action_prefix }}copy content= dest={{ remote_empty_file }}"
+  - name: stat empty file
+    action: "{{ action_prefix }}stat path={{ remote_empty_file }}"
+    register: stat_empty_file_cmd
+  - name: check that empty file exists
+    assert:
+      that:
+        - stat_empty_file_cmd.stat.isreg # it is a regular file
+        - stat_empty_file_cmd.stat.size == 0
