@@ -311,6 +311,7 @@ from collections import defaultdict
 from typing import Any
 from typing import Dict
 from typing import List
+from typing import Set
 
 from ansible.module_utils._text import to_text
 
@@ -756,7 +757,7 @@ class InventoryModule(AWSInventoryBase):
                         x["SsmInventory"] = content[0]
                     break
 
-    def _map_route53_records(self):
+    def _map_route53_records(self) -> Dict[str, Set[str]]:
         """Get and store the map of resource records to domain names that point to them."""
         route53_excluded_zones = [_remove_trailing_dot(zone) for zone in self.get_option("route53_excluded_zones")]
         route53_map = defaultdict(set)

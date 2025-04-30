@@ -12,9 +12,6 @@
         private_ip_hostname: "private_ip.{{ route53_hosted_zone }}"
         cname_hostname: "cname.{{ route53_hosted_zone }}"
 
-    - ansible.builtin.debug: 
-        var: groups
-
     - name: Assert inventory was populated with Route53 hostnames (only one hostname)
       ansible.builtin.assert:
         that:
