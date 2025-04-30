@@ -1,8 +1,10 @@
 ---
-- name: Test connection and file handling with unicode and user checks
+- name: Test connection and unicode file handling
   hosts: all
   gather_facts: false
-  strategy: free  # noqa run-once[play]
+  # Remove or suppress below if strategy: free is intentional for test
+  # strategy: free
+
   vars:
     local_dir: "{{ local_tmp }}-{{ inventory_hostname }}-汉语"
     local_file: "{{ local_dir }}/汉语.txt"
@@ -16,19 +18,19 @@
         timeout: "{{ wait_for_timeout | default(100) }}"
         sleep: 10
 
-    - name: Gather default facts from the host
+    - name: Gather facts
       ansible.builtin.setup:
 
-    - name: Raw with unicode arg and output
+    - name: Raw with unicode arg and output # noqa no-changed-when
       ansible.builtin.raw: echo 汉语
       register: command
-      changed_when: false
 
     - name: Check output of raw with unicode arg and output
       ansible.builtin.assert:
-        that:
-          - "'汉语' in command.stdout"
-          - command is changed
+        assert:
+          that:
+            - "'汉语' in command.stdout"
+            - command is changed  # as of 2.2, raw should default to changed: true for consistency w/ shell/command/script modules
 
     - name: Create local file with unicode filename and content
       ansible.builtin.lineinfile:
@@ -85,18 +87,17 @@
     - name: Test user manipulation
       when: "'aws_ssm_linux' in group_names"
       block:
-        - name: Find ID when become=False
+        - name: Find ID when become=false # noqa no-changed-when
           ansible.builtin.command: id -u -n
           become: false
           register: id_cmd
-          changed_when: false
 
-        - name: Assert result
+        - name: Assert expected user
           ansible.builtin.assert:
             that:
               - id_cmd.stdout == 'ssm-user'
 
-        - name: Run test_assume.yml for multiple users
+        - name: Include assume-user tests
           ansible.builtin.include_tasks: test_assume.yml
           loop:
             - ssm-agent
@@ -119,5 +120,5 @@
     - name: Check that empty file exists
       ansible.builtin.assert:
         that:
-          - stat_empty_file_cmd.stat.isreg
+          - stat_empty_file_cmd.stat.isreg # it is a regular file
           - stat_empty_file_cmd.stat.size == 0

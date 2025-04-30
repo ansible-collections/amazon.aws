@@ -6,12 +6,11 @@
   become: true
   become_user: root
 
-- name: Attempt to run a shell command as the user
+- name: Attempt to run a shell command as the user # noqa no-changed-when
   ansible.builtin.command: id -u -n
   become: true
   become_user: "{{ user_name }}"
   register: id_cmd
-  changed_when: false
 
 - name: Assert result matches user_name
   ansible.builtin.assert:
