@@ -27,7 +27,6 @@
 
     - name: Check output of raw with unicode arg and output
       ansible.builtin.assert:
-        assert:
           that:
             - "'汉语' in command.stdout"
             - command is changed  # as of 2.2, raw should default to changed: true for consistency w/ shell/command/script modules
