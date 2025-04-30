@@ -1,3 +1,4 @@
+---
 - name: Tear down Route53 configuration
   vars:
     route53_hosted_zone: '{{ resource_prefix | replace("-", "") }}.ansible.test.'
