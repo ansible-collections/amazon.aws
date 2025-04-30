@@ -1,0 +1,3 @@
+---
+trivial:
+  - Update assertion check of cancel autoscaling instance refresh error message (https://github.com/ansible-collections/amazon.aws/pull/2582).
