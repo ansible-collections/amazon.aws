@@ -1,16 +1,19 @@
-- name: 'Ensure remote user exists'
+---
+- name: Ensure remote user exists
   ansible.builtin.user:
-    name: '{{ user_name }}'
+    name: "{{ user_name }}"
     shell: /bin/bash
-  become_user: 'root'
-  become: True
+  become: true
+  become_user: root
 
-- name: 'Attempt to run a shell command as the user ({{ user_name }})'
-  become_user: '{{ user_name }}'
-  become: True
-  command: 'id -u -n'
+- name: Attempt to run a shell command as the user
+  ansible.builtin.command: id -u -n
+  become: true
+  become_user: "{{ user_name }}"
   register: id_cmd
+  changed_when: false
 
-- assert:
+- name: Assert result matches user_name
+  ansible.builtin.assert:
     that:
       - id_cmd.stdout == user_name
