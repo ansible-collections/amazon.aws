@@ -329,7 +329,8 @@ import os
 import random
 import re
 import string
-from typing import Any, Dict
+from typing import Any
+from typing import Dict
 from typing import Iterator
 from typing import List
 from typing import Tuple
@@ -345,16 +346,12 @@ from ansible.utils.display import Display
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOTO3
 from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.base import AwsConnectionPluginBase
-from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.s3clientmanager import S3ClientManager
-from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.terminalmanager import TerminalManager
-from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.sessionmanager import (
-    SSMSessionManager,
-)
-
-from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.filetransfermanager import FileTransferManager
-from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.common import ssm_retry
 from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.common import CommandResult
-
+from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.common import ssm_retry
+from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.filetransfermanager import FileTransferManager
+from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.s3clientmanager import S3ClientManager
+from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.sessionmanager import SSMSessionManager
+from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.terminalmanager import TerminalManager
 
 display = Display()
 

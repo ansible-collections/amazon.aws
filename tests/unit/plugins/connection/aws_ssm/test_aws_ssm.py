@@ -13,7 +13,6 @@ from ansible.playbook.play_context import PlayContext
 from ansible.plugins.loader import connection_loader
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOTO3
-
 from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.s3clientmanager import S3ClientManager
 from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.s3clientmanager import generate_encryption_settings
 

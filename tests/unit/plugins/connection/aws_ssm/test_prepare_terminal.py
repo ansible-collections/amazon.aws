@@ -16,9 +16,8 @@ from unittest.mock import patch
 
 import pytest
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOTO3
-
 from ansible_collections.amazon.aws.plugins.connection.aws_ssm import TerminalManager
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOTO3
 
 if not HAS_BOTO3:
     pytestmark = pytest.mark.skip("test_poll.py requires the python modules 'boto3' and 'botocore'")

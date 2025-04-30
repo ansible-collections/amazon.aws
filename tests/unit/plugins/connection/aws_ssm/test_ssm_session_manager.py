@@ -19,7 +19,6 @@ from unittest.mock import patch
 import pytest
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOTO3
-
 from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.sessionmanager import ProcessManager
 from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.sessionmanager import SSMProcessManagerTimeOutFailure
 from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.sessionmanager import SSMSessionManager
