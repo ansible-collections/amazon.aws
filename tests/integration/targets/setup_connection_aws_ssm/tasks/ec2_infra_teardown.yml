@@ -7,7 +7,7 @@
   register: vpc_info
 
 - name: Delete VPC resources
-  when: vpc_info.vpcs | length is 1
+  when: vpc_info.vpcs | length == 1
   block:
 
     - name: Set variable for vpc id
