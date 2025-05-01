@@ -16,7 +16,7 @@
 
 - name: Install SSM Plugin
   become: true
-  ansible.builtin.yum:
+  ansible.builtin.dnf:
     name: /tmp/session-manager-plugin.rpm
     state: present
     disable_gpg_check: true

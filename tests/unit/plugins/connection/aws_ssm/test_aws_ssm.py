@@ -218,7 +218,7 @@ class TestS3ClientManager:
 
         if method not in ("get", "put"):
             assert put_args is None
-            test_command_generation is None
+            assert test_command_generation is None
         else:
             assert isinstance(test_command_generation, str)
             print(m_generate_encryption_settings.mock_calls)

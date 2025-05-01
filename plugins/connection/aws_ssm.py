@@ -507,10 +507,10 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
         self.verbosity_display(4, "INITIALIZE BOTO3 CLIENTS")
 
         # Initialize S3 client
-        self.s3_manager
+        self.s3_manager  # pylint: disable=pointless-statement
 
         # Initialize SSM client
-        self.ssm_client
+        self.ssm_client  # pylint: disable=pointless-statement
 
         # Initialize FileTransferManager
         self.file_transfer_manager = FileTransferManager(
