@@ -94,6 +94,7 @@
 <p class="caption" role="heading"><span class="caption-text">Plugin indexes:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../index_callback.html">Index of all Callback Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_connection.html">Index of all Connection Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../index_inventory.html">Index of all Inventory Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../index_lookup.html">Index of all Lookup Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../index_module.html">Index of all Modules</a></li>
@@ -350,7 +351,7 @@ The prefix will be the name of the host group that is to be concatenated with th
 
 <span class="w">  </span><span class="c1"># This lets you connect over SSM to the instance id.</span>
 <span class="w">  </span><span class="nt">ansible_host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">instance_id</span>
-<span class="w">  </span><span class="nt">ansible_connection</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;community.aws.aws_ssm&#39;</span>
+<span class="w">  </span><span class="nt">ansible_connection</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;amazon.aws.aws_ssm&#39;</span>
 
 <span class="w">  </span><span class="c1"># This defines combinations of host servers, IP addresses, and related SSH private keys.</span>
 <span class="w">  </span><span class="nt">ansible_host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">private_ip_address</span>
@@ -362,7 +363,7 @@ The prefix will be the name of the host group that is to be concatenated with th
 
 <span class="w">  </span><span class="c1"># Host variables that are strings need to be wrapped with two sets of quotes.</span>
 <span class="w">  </span><span class="c1"># See https://docs.ansible.com/ansible/latest/plugins/inventory.html#using-inventory-plugins for details.</span>
-<span class="w">  </span><span class="nt">ansible_connection</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;&quot;community.aws.aws_ssm&quot;&#39;</span>
+<span class="w">  </span><span class="nt">ansible_connection</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;&quot;amazon.aws.aws_ssm&quot;&#39;</span>
 <span class="w">  </span><span class="nt">ansible_user</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;&quot;ssm-user&quot;&#39;</span>
 </pre></div>
 </div>
