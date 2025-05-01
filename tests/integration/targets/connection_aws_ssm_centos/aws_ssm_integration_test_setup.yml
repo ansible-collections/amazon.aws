@@ -1,5 +1,7 @@
-- hosts: localhost
+---
+- name: Setup connection for AWS SSM CentOS test
+  hosts: localhost
   roles:
-    - role: ../setup_connection_aws_ssm
+    - role: ../setup_connection_aws_ssm  # noqa role-name[path]
       vars:
         target_os: centos
