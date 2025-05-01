@@ -1,0 +1,92 @@
+---
+- name: Get VPC information
+  amazon.aws.ec2_vpc_net_info:
+    filters:
+      cidr: "{{ ec2_infra_vpc_cidr_block }}"
+      tag:Name: "{{ ec2_infra_vpc_name }}"
+  register: vpc_info
+
+- name: Delete VPC resources
+  when: vpc_info.vpcs | length == 1
+  block:
+
+    - name: Set variable for vpc id
+      ansible.builtin.set_fact:
+        vpc_id: "{{ vpc_info.vpcs.0.vpc_id }}"
+
+    - name: Delete resource group attached to the VPC
+      amazon.aws.ec2_security_group:
+        name: "{{ ec2_infra_security_group_name }}"
+        vpc_id: "{{ vpc_id }}"
+        state: absent
+      ignore_errors: true  # noqa: ignore-errors
+
+    - name: List subnets attached to the VPC
+      amazon.aws.ec2_vpc_subnet_info:
+        filters:
+          vpc-id: "{{ vpc_id }}"
+      register: vpc_subnets
+
+    - name: List route tables attached to the VPC
+      amazon.aws.ec2_vpc_route_table_info:
+        filters:
+          vpc-id: "{{ vpc_id }}"
+      register: route_tables
+
+    - name: Delete route tables
+      amazon.aws.ec2_vpc_route_table:
+        route_table_id: "{{ item.id }}"
+        lookup: id
+        state: absent
+      with_items: "{{ route_tables.route_tables }}"
+      ignore_errors: true  # noqa: ignore-errors
+
+    - name: List NAT gateway
+      amazon.aws.ec2_vpc_nat_gateway_info:
+        filters:
+          vpc-id: "{{ vpc_id }}"
+          state: ['available', 'pending']
+      register: nat_gateways
+
+    - name: Delete nat gateway
+      amazon.aws.ec2_vpc_nat_gateway:
+        state: absent
+        nat_gateway_id: "{{ item.nat_gateway_id }}"
+        wait: true
+        wait_timeout: 600
+      with_items: "{{ nat_gateways.result }}"
+      ignore_errors: true  # noqa: ignore-errors
+
+    - name: List Elastic IP
+      amazon.aws.ec2_eip_info:
+        filters:
+          tag:ResourcePrefix: "{{ resource_prefix }}"
+      register: eips
+
+    - name: Delete Elastic IP
+      amazon.aws.ec2_eip:
+        public_ip: "{{ item.public_ip }}"
+        state: absent
+      with_items: "{{ eips.addresses }}"
+      ignore_errors: true  # noqa: ignore-errors
+
+    - name: Delete internet gateway
+      amazon.aws.ec2_vpc_igw:
+        vpc_id: "{{ vpc_id }}"
+        state: absent
+      ignore_errors: true  # noqa: ignore-errors
+
+    - name: Delete subnets
+      amazon.aws.ec2_vpc_subnet:
+        state: absent
+        wait: true
+        vpc_id: "{{ vpc_id }}"
+        cidr: "{{ item.cidr_block }}"
+      with_items: "{{ vpc_subnets.subnets }}"
+      ignore_errors: true  # noqa: ignore-errors
+
+    - name: Delete VPC
+      amazon.aws.ec2_vpc_net:
+        state: absent
+        vpc_id: "{{ vpc_id }}"
+      ignore_errors: true  # noqa: ignore-errors

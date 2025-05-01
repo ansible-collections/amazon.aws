@@ -265,7 +265,7 @@ Some examples are shown below:
 
     # This lets you connect over SSM to the instance id.
     ansible_host: instance_id
-    ansible_connection: 'community.aws.aws_ssm'
+    ansible_connection: 'amazon.aws.aws_ssm'
 
     # This defines combinations of host servers, IP addresses, and related SSH private keys.
     ansible_host: private_ip_address
@@ -277,7 +277,7 @@ Some examples are shown below:
 
     # Host variables that are strings need to be wrapped with two sets of quotes.
     # See https://docs.ansible.com/ansible/latest/plugins/inventory.html#using-inventory-plugins for details.
-    ansible_connection: '"community.aws.aws_ssm"'
+    ansible_connection: '"amazon.aws.aws_ssm"'
     ansible_user: '"ssm-user"'
 
 

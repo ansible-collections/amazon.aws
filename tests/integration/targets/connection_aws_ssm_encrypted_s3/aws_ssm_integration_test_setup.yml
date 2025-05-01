@@ -1,0 +1,9 @@
+---
+- name: Setup connection for AWS SSM encrypted S3 test
+  hosts: localhost
+  roles:
+    - role: ../setup_connection_aws_ssm  # noqa role-name[path]
+      vars:
+        target_os: centos
+        encrypted_bucket: true
+        test_suffix: encrypteds3

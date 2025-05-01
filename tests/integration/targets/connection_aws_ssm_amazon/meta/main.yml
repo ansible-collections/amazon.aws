@@ -1,0 +1,4 @@
+---
+dependencies:
+  - connection
+  - setup_connection_aws_ssm

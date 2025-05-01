@@ -1,0 +1,17 @@
+---
+- name: Block to create and track custom SSM document
+  block:
+    - name: Create custom SSM document  # noqa no-changed-when
+      ansible.builtin.command: >
+        aws ssm create-document
+        --content file://{{ role_path }}/files/ssm-document.json
+        --name {{ ssm_document_name }}
+        --document-type Session
+      environment: "{{ connection_env }}"
+  always:
+    - name: Create SSM vars_to_delete.yml
+      ansible.builtin.template:
+        dest: "{{ playbook_dir }}/ssm_vars_to_delete.yml"
+        src: ssm_vars_to_delete.yml.j2
+        mode: "0600"
+      ignore_errors: true  # noqa: ignore-errors

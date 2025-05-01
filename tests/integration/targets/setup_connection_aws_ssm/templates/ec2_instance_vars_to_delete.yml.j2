@@ -1,0 +1,7 @@
+---
+created_instance_ids:
+{% if instance_output | default(False) %}
+{% for instance_id in instance_output.instance_ids %}
+- {{ instance_id }}
+{% endfor %}
+{% endif %}

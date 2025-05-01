@@ -1,0 +1,9 @@
+---
+- name: Setup connection for AWS SSM document test
+  hosts: localhost
+  roles:
+    - role: ../setup_connection_aws_ssm  # noqa role-name[path]
+      vars:
+        target_os: centos
+        use_ssm_document: true
+        test_suffix: document
