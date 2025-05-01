@@ -1,5 +1,6 @@
 ---
-- set_fact:
+- name: Set connection arguments and environment
+  ansible.builtin.set_fact:
     # As a lookup plugin we don't have access to module_defaults
     connection_args:
       region: "{{ aws_region }}"
@@ -11,4 +12,4 @@
       AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
       AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
       AWS_SESSION_TOKEN: "{{ security_token | default(omit) }}"
-  no_log: True
+  no_log: true

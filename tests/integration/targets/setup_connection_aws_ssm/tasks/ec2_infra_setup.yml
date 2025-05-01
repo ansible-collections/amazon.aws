@@ -49,7 +49,7 @@
     wait_timeout: 600
   register: natgateway
 
-- name: Create Route table for public subnet
+- name: Create route table for public subnet
   amazon.aws.ec2_vpc_route_table:
     vpc_id: "{{ vpc.vpc.id }}"
     subnets:
@@ -63,7 +63,7 @@
       route: internet
     state: present
 
-- name: Create Route table for private subnet
+- name: Create route table for private subnet
   amazon.aws.ec2_vpc_route_table:
     vpc_id: "{{ vpc.vpc.id }}"
     subnets:

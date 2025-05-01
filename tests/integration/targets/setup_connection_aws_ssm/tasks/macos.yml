@@ -8,10 +8,10 @@
     ssm_plugin_url: "{{ (ansible_architecture in ['aarch64', 'arm64']) | ternary('mac_arm64', 'mac') }}"
 
 - name: Download SSM plugin (x86_64 architecture)
-  get_url:
+  ansible.builtin.get_url:
     url: https://s3.amazonaws.com/session-manager-downloads/plugin/latest/{{ ssm_plugin_url }}/sessionmanager-bundle.zip
     dest: /tmp/sessionmanager-bundle.zip
-    mode: '0440'
+    mode: "0440"
   tags: setup_infra
 
 - name: Unzip the package
@@ -20,10 +20,10 @@
     src: /tmp/sessionmanager-bundle.zip
   tags: setup_infra
 
-- name: Run the install command
-  ansible.builtin.shell: >-
+- name: Run the install command  # noqa no-changed-when
+  ansible.builtin.command: >-
     /tmp/sessionmanager-bundle/install -i /usr/local/sessionmanagerplugin -b /usr/local/bin/session-manager-plugin
 
-- name: Check the SSM Plugin
-  ansible.builtin.shell: /usr/local/sessionmanagerplugin/bin/session-manager-plugin --version
+- name: Check the SSM Plugin  # noqa no-changed-when
+  ansible.builtin.command: /usr/local/sessionmanagerplugin/bin/session-manager-plugin --version
   tags: setup_infra

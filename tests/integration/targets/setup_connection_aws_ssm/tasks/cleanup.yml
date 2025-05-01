@@ -1,5 +1,5 @@
 ---
-- name: 'aws_ssm connection plugin integration test resource cleanup'
+- name: "Aws_ssm connection plugin integration test resource cleanup"
   collections:
     - amazon.aws
   module_defaults:
@@ -10,83 +10,83 @@
       region: '{{ aws_region }}'
   block:
 
-    - name: setup connection argments fact
-      include_tasks: 'connection_args.yml'
+    - name: Setup connection arguments fact
+      ansible.builtin.include_tasks: 'connection_args.yml'
 
     - name: Check if instance_vars_to_delete.yml is present
-      stat:
+      ansible.builtin.stat:
         path: "{{ playbook_dir }}/instance_vars_to_delete.yml"
       register: ec2_vars_file
 
     - name: Include variable file to delete EC2 infra
-      include_vars: "{{ playbook_dir }}/instance_vars_to_delete.yml"
-      when: ec2_vars_file.stat.exists == true
+      ansible.builtin.include_vars: "{{ playbook_dir }}/instance_vars_to_delete.yml"
+      when: ec2_vars_file.stat.exists is true
 
     - name: Check if s3_vars_to_delete.yml is present
-      stat:
-        path: "{{playbook_dir}}/s3_vars_to_delete.yml"
+      ansible.builtin.stat:
+        path: "{{ playbook_dir }}/s3_vars_to_delete.yml"
       register: s3_vars_file
 
-    - name: Include variable file to delete S3 Infra infra
-      include_vars: "{{playbook_dir}}/s3_vars_to_delete.yml"
-      when: s3_vars_file.stat.exists == true
+    - name: Include variable file to delete S3 infra
+      ansible.builtin.include_vars: "{{ playbook_dir }}/s3_vars_to_delete.yml"
+      when: s3_vars_file.stat.exists is true
 
     - name: Check if iam_role_vars_to_delete.yml is present
-      stat:
+      ansible.builtin.stat:
         path: "{{ playbook_dir }}/iam_role_vars_to_delete.yml"
       register: iam_role_vars_file
 
-    - name: Include variable file to delete IAM Role infra
-      include_vars: "{{ playbook_dir }}/iam_role_vars_to_delete.yml"
-      when: iam_role_vars_file.stat.exists == true
+    - name: Include variable file to delete IAM role infra
+      ansible.builtin.include_vars: "{{ playbook_dir }}/iam_role_vars_to_delete.yml"
+      when: iam_role_vars_file.stat.exists is true
 
     - name: Check if ssm_vars_to_delete.yml is present
-      stat:
+      ansible.builtin.stat:
         path: "{{ playbook_dir }}/ssm_vars_to_delete.yml"
       register: ssm_vars_file
 
     - name: Include variable file to delete SSM infra
-      include_vars: "{{ playbook_dir }}/ssm_vars_to_delete.yml"
-      when: ssm_vars_file.stat.exists == true
+      ansible.builtin.include_vars: "{{ playbook_dir }}/ssm_vars_to_delete.yml"
+      when: ssm_vars_file.stat.exists is true
 
     - name: Terminate EC2 instances that were previously launched
-      ec2_instance:
+      amazon.aws.ec2_instance:
         instance_ids: "{{ created_instance_ids }}"
         state: absent
-        wait: True
-      ignore_errors: true
-      when: ec2_vars_file.stat.exists == true
+        wait: true
+      ignore_errors: true  # noqa: ignore-errors
+      when: ec2_vars_file.stat.exists is true
 
     - name: Delete EC2 infrastructure
-      include_tasks: 'ec2_infra_teardown.yml'
+      ansible.builtin.include_tasks: 'ec2_infra_teardown.yml'
 
     - name: Delete S3 bucket
-      include_tasks: 'delete_bucket.yml'
-      loop:
-        - "{{ bucket_name }}"
-      when: s3_vars_file.stat.exists == true
-      ignore_errors: true
+      ansible.builtin.include_tasks: 'delete_bucket.yml'
+      loop: "{{ bucket_name }}"
+      when: s3_vars_file.stat.exists is true
+      ignore_errors: true  # noqa: ignore-errors
 
     - name: Delete IAM role
-      iam_role:
+      amazon.aws.iam_role:
         name: "{{ iam_role_name }}"
         state: absent
-        delete_instance_profile: True
-      ignore_errors: true
-      when: iam_role_vars_file.stat.exists == true
+        delete_instance_profile: true
+      ignore_errors: true  # noqa: ignore-errors
+      when: iam_role_vars_file.stat.exists is true
 
     - name: Delete the KMS key
-      kms_key:
+      amazon.aws.kms_key:
         state: absent
         alias: '{{ kms_key_name }}'
 
-    - name: Delete SSM document
-      command: "aws ssm delete-document --name {{ ssm_document_name }}"
+    - name: Delete SSM document  # noqa no-changed-when
+      ansible.builtin.command: "aws ssm delete-document --name {{ ssm_document_name }}"
       environment: "{{ connection_env }}"
-      ignore_errors: true
+      ignore_errors: true  # noqa: ignore-errors
 
-    - name: Delete AWS keys environement
-      file:
+    - name: Delete AWS keys environment
+      ansible.builtin.file:
         path: "{{ playbook_dir }}/aws-env-vars.sh"
         state: absent
-      ignore_errors: true
+        mode: "0600"
+      ignore_errors: true  # noqa: ignore-errors
