@@ -148,9 +148,11 @@ options:
     version_added: 10.0.0
   route53_hostnames:
     description:
-      - Specifies the Route53 DNS name to consider.
+      - Specifies the Route53 DNS name suffix to consider.
       - Consider only Route53 zone with name ending with the value specified here.
-    type: str
+    type: list
+    elements: str
+    default: []
     version_added: 10.0.0
   route53_excluded_zones:
     description:
@@ -298,6 +300,28 @@ regions:
   - us-east-1
 hostnames:
   - "tag:Name | replace('test', 'prod')"
+
+---
+
+# Define inventory with Route53 enabled and filtering specific route53 host names suffix.
+plugin: amazon.aws.aws_ec2
+regions:
+  - us-east-1
+route53_enabled: true
+route53_hostnames:
+  - .example.com
+  - .another_example.org
+
+---
+
+# Define inventory with Route53 enabled and excluded zones.
+plugin: amazon.aws.aws_ec2
+regions:
+  - us-east-1
+route53_enabled: true
+route53_excluded_zones:
+  - ansible.bar.net
+  - ansible.foo.net
 """
 
 import re
@@ -772,7 +796,10 @@ class InventoryModule(AWSInventoryBase):
 
     def _is_matching_route53_hostname(self, hostname: str) -> bool:
         route53_hostnames = self.get_option("route53_hostnames")
-        return (route53_hostnames is None) or (hostname.endswith(route53_hostnames))
+        result = True
+        if route53_hostnames:
+          result = any((hostname.endswith(name) for name in route53_hostnames))
+        return result
 
     def _get_instance_route53_hostnames(self, instance: Dict[str, Any]) -> List[str]:
         """Check if an instance is referenced in the records we have from

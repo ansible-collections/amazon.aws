@@ -15,7 +15,8 @@ route53_excluded_zones:
   - {{ resource_prefix | replace("-", "") }}.ansible.test.
 {% endif %}
 {% if route53_hostname is defined %}
-route53_hostnames: {{ route53_hostname }}
+route53_hostnames:
+  - {{ route53_hostname }}
 {% endif %}
 {% if allow_duplicated_hosts | default(false) %}
 allow_duplicated_hosts: true
