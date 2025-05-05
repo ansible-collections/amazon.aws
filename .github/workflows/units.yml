@@ -11,5 +11,5 @@ jobs:
           [
             {
               "ansible-version": "stable-2.16"
-            },
+            }
          ]
