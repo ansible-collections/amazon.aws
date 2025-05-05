@@ -195,11 +195,6 @@ plugin_routing:
       redirect: amazon.aws.lambda_execute
     rds_param_group:
       redirect: amazon.aws.rds_instance_param_group
-      deprecation:
-        removal_version: 10.0.0
-        warning_text: >-
-          rds_param_group has been renamed to rds_instance_param_group.
-          Please update your tasks.
     ec2_vpc_peer:
       redirect: amazon.aws.ec2_vpc_peering
       deprecation:
