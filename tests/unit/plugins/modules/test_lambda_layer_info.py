@@ -191,7 +191,7 @@ def raise_botocore_exception():
 
 def test_get_layer_version_success():
     aws_layer_version = {
-        "CompatibleRuntimes": ["python3.8"],
+        "CompatibleRuntimes": ["python3.9"],
         "Content": {
             "CodeSha256": "vqxKx6nTW31obVcB4MYaTWv5H3fBQTn2PHklL9+mF9E=",
             "CodeSize": 9492621,
@@ -207,7 +207,7 @@ def test_get_layer_version_success():
     }
 
     ansible_layer_version = {
-        "compatible_runtimes": ["python3.8"],
+        "compatible_runtimes": ["python3.9"],
         "content": {
             "code_sha256": "vqxKx6nTW31obVcB4MYaTWv5H3fBQTn2PHklL9+mF9E=",
             "code_size": 9492621,
