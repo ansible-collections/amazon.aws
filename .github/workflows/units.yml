@@ -6,3 +6,10 @@ on: [workflow_call] # allow this workflow to be called from other workflows
 jobs:
   unit-source:
     uses: ansible-network/github_actions/.github/workflows/unit_source.yml@main
+    with:
+      matrix_exclude: >-
+          [
+            {
+              "ansible-version": "stable-2.16"
+            },
+         ]
