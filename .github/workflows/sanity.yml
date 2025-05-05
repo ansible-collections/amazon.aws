@@ -10,6 +10,26 @@ jobs:
       matrix_exclude: >-
           [
             {
+              "ansible-version": "devel",
+              "python-version": "3.10"
+            },
+            {
+              "ansible-version": "milestone",
+              "python-version": "3.10"
+            },
+            {
+              "ansible-version": "stable-2.19",
+              "python-version": "3.10"
+            },
+            {
+              "ansible-version": "stable-2.18",
+              "python-version": "3.10"
+            },
+            {
+              "ansible-version": "stable-2.17",
+              "python-version": "3.13"
+            },
+            {
               "ansible-version": "stable-2.16"
             }
           ]
