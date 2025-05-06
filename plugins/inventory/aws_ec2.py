@@ -798,7 +798,7 @@ class InventoryModule(AWSInventoryBase):
         route53_hostnames = self.get_option("route53_hostnames")
         result = True
         if route53_hostnames:
-          result = any((hostname.endswith(name) for name in route53_hostnames))
+            result = any((hostname.endswith(name) for name in route53_hostnames))
         return result
 
     def _get_instance_route53_hostnames(self, instance: Dict[str, Any]) -> List[str]:
