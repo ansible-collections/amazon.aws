@@ -45,7 +45,7 @@ from typing import List
 from typing import Optional
 from typing import Union
 
-import ansible.module_utils.common.warnings as ansible_warnings
+import ansible.module_utils.common.warnings as ansible_warnings  # pylint: disable=unused-import
 from ansible.module_utils.ansible_release import __version__
 
 # Used to live here, moved into ansible.module_utils.common.dict_transformations
