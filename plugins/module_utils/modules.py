@@ -153,10 +153,10 @@ class AnsibleAWSModule:
     def warn(self, *args, **kwargs) -> None:
         return self._module.warn(*args, **kwargs)
 
-    def deprecate(self, *args, **kwargs) -> None:
-        return self._module.deprecate(  # pylint: disable=ansible-deprecated-no-collection-name, ansible-deprecated-no-version
-            *args, **kwargs
-        )
+    def __getattr__(self, attr):
+        if hasattr(self._module, attr):
+            return getattr(self._module, attr)
+        raise AttributeError(f"AnsibleAWSModule has no attribute '{attr}'")
 
     def boolean(self, *args, **kwargs) -> bool:
         return self._module.boolean(*args, **kwargs)
