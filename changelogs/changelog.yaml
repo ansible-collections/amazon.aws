@@ -3830,4 +3830,4 @@ releases:
     - migrate_aws_ssm.yml
     - s3_bucket-501.yml
     - update_ansible-lint.yml
-    release_date: '2025-05-05'
+    release_date: '2025-05-06'
