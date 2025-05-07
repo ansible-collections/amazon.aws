@@ -84,7 +84,7 @@
           - backup_plan_idempotency_result.version_id == backup_plan_info.backup_plans[0].version_id
           - backup_plan_idempotency_result.creation_date == backup_plan_info.backup_plans[0].creation_date
           - backup_plan_idempotency_result.backup_plan.rules != []
-          - "backup_plan_idempotency_result.backup_plan.rules | selectattr('schedule_expression_timezone', 'match', 'Etc/UTC') | list"
+          - "backup_plan_idempotency_result.backup_plan.rules | selectattr('schedule_expression_timezone', 'match', 'Etc/UTC') | list | length > 0"
 
     - name: Update backup plan in check mode
       amazon.aws.backup_plan:
