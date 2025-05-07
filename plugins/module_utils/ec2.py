@@ -1284,9 +1284,10 @@ def create_egress_only_internet_gateway(
         error_code = e.response["Error"]["Code"]
         error_message = e.response["Error"]["Message"]
         if error_code == "InvalidVpcID.NotFound":
-            module.fail_json_aws(msg=error_message, exception= f"The vpc ID '{vpc_id}' does not exist")
+            module.fail_json_aws(msg=error_message, exception=f"The vpc ID '{vpc_id}' does not exist")
         else:
             module.fail_json_aws(msg=error_message, exception=f"AWS ClientError: {error_message}")
+
 
 # EC2 Network ACL
 class EC2NetworkAclErrorHandler(AWSErrorHandler):
