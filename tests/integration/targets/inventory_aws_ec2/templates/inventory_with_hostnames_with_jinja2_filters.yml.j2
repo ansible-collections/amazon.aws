@@ -9,6 +9,9 @@ allow_duplicated_hosts: True
 {% endif %}
 regions:
 - '{{ aws_region }}'
+filters:
+  tag:Name:
+  - '{{ resource_prefix }}'
 hostnames:
 {% if search_multiple_tags | default(false) %}
 - "tag:Tag1,Tag2 | map('replace', 'test', 'prod') | map('title')"
