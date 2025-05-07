@@ -150,7 +150,7 @@
       ansible.builtin.assert:
         that:
           - _copy is changed
-          - obj_info_1.object_info.0.object_data.version_id
+          - obj_info_1.object_info.0.object_data.version_id is defined
 
     # test copy idempotency with versioned bucket
     - name: Copy object into bucket with versioning activated (once again)

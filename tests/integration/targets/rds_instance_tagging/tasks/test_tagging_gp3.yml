@@ -53,7 +53,7 @@
           - result.tags | length == 2
           - result.tags.Name == instance_id_gp3
           - result.tags.Created_by == 'Ansible rds_instance tests'
-          - result.kms_key_id
+          - result.kms_key_id is defined
           - result.storage_encrypted == true
 
     - name: Test idempotency omitting tags - check_mode

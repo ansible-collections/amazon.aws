@@ -64,7 +64,7 @@
           - result.tags | length == 2
           - result.tags.Name == instance_id
           - result.tags.Created_by == 'Ansible rds_instance tests'
-          - result.kms_key_id
+          - result.kms_key_id is defined
           - result.storage_encrypted == true
 
     - name: Test impotency omitting tags - check_mode
@@ -97,7 +97,7 @@
     - ansible.builtin.assert:
         that:
           - not result.changed
-          - result.db_instance_identifier
+          - result.db_instance_identifier is defined
           - result.tags | length == 2
 
     - name: Idempotence with minimal options
@@ -109,7 +109,7 @@
     - ansible.builtin.assert:
         that:
           - not result.changed
-          - result.db_instance_identifier
+          - result.db_instance_identifier is defined
           - result.tags | length == 2
 
     - name: Test tags are not purged if purge_tags is False

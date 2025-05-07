@@ -170,7 +170,7 @@
     - ansible.builtin.assert:
         that:
           - dhcp_options.changed
-          - dhcp_options.dhcp_config
+          - dhcp_options.dhcp_config is defined
           - dhcp_options.dhcp_config.keys() | list | sort == ['domain-name', 'domain-name-servers', 'netbios-name-servers', 'netbios-node-type', 'ntp-servers']
           - dhcp_options.dhcp_config['ntp-servers'] | sort == ['10.0.0.2', '10.0.1.2']
           - dhcp_options.dhcp_config['netbios-name-servers'] | sort == ['10.0.0.1', '10.0.1.1']
@@ -273,7 +273,7 @@
     - ansible.builtin.assert:
         that:
           - dhcp_options.changed
-          - dhcp_options.dhcp_config
+          - dhcp_options.dhcp_config is defined
           - dhcp_options.dhcp_config.keys() | list | sort == ['netbios-name-servers', 'netbios-node-type', 'ntp-servers']
           - dhcp_options.dhcp_config['ntp-servers'] | sort == ['10.0.0.2', '10.0.1.2']
           - dhcp_options.dhcp_config['netbios-name-servers'] | sort == ['10.0.0.1', '10.0.1.1']
@@ -354,7 +354,7 @@
     - ansible.builtin.assert:
         that:
           - dhcp_options.changed
-          - dhcp_options.dhcp_config
+          - dhcp_options.dhcp_config is defined
           - dhcp_options.dhcp_config.keys() | list | sort == ['domain-name', 'domain-name-servers', 'netbios-name-servers', 'netbios-node-type', 'ntp-servers']
           - dhcp_options.dhcp_config['ntp-servers'] | sort == ['10.0.0.2', '10.0.1.2']
           - dhcp_options.dhcp_config['netbios-name-servers'] | sort == ['10.0.0.1', '10.0.1.1']
@@ -429,7 +429,7 @@
 
     - ansible.builtin.assert:
         that:
-          - dhcp_options.dhcp_config
+          - dhcp_options.dhcp_config is defined
           - dhcp_options.dhcp_config.keys() | list | sort is superset(['domain-name', 'domain-name-servers'])
           - dhcp_options.dhcp_config['domain-name'] == [aws_domain_name]
           - dhcp_options.dhcp_config['domain-name-servers'] == ['AmazonProvidedDNS']
