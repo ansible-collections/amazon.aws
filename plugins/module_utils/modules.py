@@ -154,7 +154,9 @@ class AnsibleAWSModule:
         return self._module.warn(*args, **kwargs)
 
     def deprecate(self, *args, **kwargs) -> None:
-        return self._module.deprecate(*args, **kwargs)  # pylint: disable=ansible-deprecated-no-collection-name, ansible-deprecated-no-version
+        return self._module.deprecate(  # pylint: disable=ansible-deprecated-no-collection-name, ansible-deprecated-no-version
+            *args, **kwargs
+        )
 
     def boolean(self, *args, **kwargs) -> bool:
         return self._module.boolean(*args, **kwargs)
