@@ -122,7 +122,9 @@ def create_eigw(module: AnsibleAWSModule, connection, vpc_id: str) -> Dict[str, 
     changed = False
 
     try:
-        response = create_egress_only_internet_gateway(connection, vpc_id=vpc_id, tags=module.params.get("tags"))
+        response = create_egress_only_internet_gateway(
+            connection, module, vpc_id=vpc_id, tags=module.params.get("tags")
+        )
         changed = True
     except AnsibleEC2Error as e:
         module.fail_json_aws(e)
