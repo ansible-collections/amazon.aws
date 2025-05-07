@@ -56,6 +56,8 @@
           - backup_plan_create_result.exists is true
           - backup_plan_create_result.changed is true
           - backup_plan_create_result.backup_plan_name == backup_plan_name
+          - backup_plan_create_result.backup_plan.rules != []
+          - "backup_plan_create_result.backup_plan.rules | selectattr('schedule_expression_timezone', 'match', 'Etc/UTC') | list | length > 0"
 
     - name: Get backup plan info
       amazon.aws.backup_plan_info:
@@ -81,6 +83,8 @@
           - backup_plan_idempotency_result.backup_plan_id == backup_plan_info.backup_plans[0].backup_plan_id
           - backup_plan_idempotency_result.version_id == backup_plan_info.backup_plans[0].version_id
           - backup_plan_idempotency_result.creation_date == backup_plan_info.backup_plans[0].creation_date
+          - backup_plan_idempotency_result.backup_plan.rules != []
+          - "backup_plan_idempotency_result.backup_plan.rules | selectattr('schedule_expression_timezone', 'match', 'Etc/UTC') | list | length > 0"
 
     - name: Update backup plan in check mode
       amazon.aws.backup_plan:
@@ -324,7 +328,7 @@
           - backup_plan_create_result.changed is true
           - backup_plan_create_result.backup_plan_name == backup_plan_name
           - backup_plan_create_result.backup_plan.rules != []
-          - "backup_plan_create_result.backup_plan.rules | selectattr('schedule_expression_timezone', 'match', 'Etc/UTC') | list"
+          - "backup_plan_create_result.backup_plan.rules | selectattr('schedule_expression_timezone', 'match', 'Etc/UTC') | list | length > 0"
 
     - name: Create a backup plan using specific botocore version (idempotency)
       amazon.aws.backup_plan:

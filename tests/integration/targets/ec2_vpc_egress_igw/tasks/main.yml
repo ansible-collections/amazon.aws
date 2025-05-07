@@ -31,9 +31,9 @@
       ansible.builtin.assert:
         that:
           - result is failed
-          - e_msg in result.exception
+          - e_msg in result.msg
       vars:
-        e_msg: "The vpc ID 'vpc-02394e50abc1807e8' does not exist"
+        e_msg: "Failed to create egress only internet gateway"
 
     # ============================================================
     - name: Create a VPC
