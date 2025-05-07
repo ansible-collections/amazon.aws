@@ -53,7 +53,7 @@
             - search_multiple_tags | default(false) | bool
             - not (allow_duplicated_hosts | default(false) | bool)
 
-        - name: Assert that aws_ec2 group contain only 1 hostname (hostnames with single tag)
+        - name: Assert that aws_ec2 group contain only 1 hostname (hostnames with a single tag)
           ansible.builtin.assert:
             that:
               - groups["aws_ec2"] | list == ["TAG1.PROD-ANSIBLE"]
