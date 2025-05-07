@@ -1275,19 +1275,10 @@ def delete_egress_only_internet_gateway(client, egress_only_internet_gateway_id:
 def create_egress_only_internet_gateway(
     client, module, vpc_id: str, tags: Optional[EC2TagSpecifications] = None
 ) -> Dict[str, Any]:
-    try:
-        params = {"VpcId": vpc_id}
-        if tags:
-            params["TagSpecifications"] = boto3_tag_specifications(tags, types="egress-only-internet-gateway")
-        return client.create_egress_only_internet_gateway(**params)
-    except botocore.exceptions.ClientError as e:
-        error_code = e.response["Error"]["Code"]
-        error_message = e.response["Error"]["Message"]
-        if error_code == "InvalidVpcID.NotFound":
-            module.fail_json_aws(msg=error_message, exception=f"The vpc ID '{vpc_id}' does not exist")
-        else:
-            module.fail_json_aws(msg=error_message, exception=f"AWS ClientError: {error_message}")
-
+    params = {"VpcId": vpc_id}
+    if tags:
+        params["TagSpecifications"] = boto3_tag_specifications(tags, types="egress-only-internet-gateway")
+    return client.create_egress_only_internet_gateway(**params)
 
 # EC2 Network ACL
 class EC2NetworkAclErrorHandler(AWSErrorHandler):
