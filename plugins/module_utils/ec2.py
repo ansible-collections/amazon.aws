@@ -1273,12 +1273,13 @@ def delete_egress_only_internet_gateway(client, egress_only_internet_gateway_id:
 @EC2EgressOnlyInternetGatewayErrorHandler.common_error_handler("create egress only internet gateway")
 @AWSRetry.jittered_backoff()
 def create_egress_only_internet_gateway(
-    client, module, vpc_id: str, tags: Optional[EC2TagSpecifications] = None
+    client, vpc_id: str, tags: Optional[EC2TagSpecifications] = None
 ) -> Dict[str, Any]:
     params = {"VpcId": vpc_id}
     if tags:
         params["TagSpecifications"] = boto3_tag_specifications(tags, types="egress-only-internet-gateway")
     return client.create_egress_only_internet_gateway(**params)
+
 
 # EC2 Network ACL
 class EC2NetworkAclErrorHandler(AWSErrorHandler):
