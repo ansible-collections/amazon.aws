@@ -80,7 +80,7 @@
     - ansible.builtin.assert:
         that:
           - output is changed
-          - not output.public_access_block|bool
+          - not output.public_access_block
 
     - name: Delete public access block configuration (idempotency)
       amazon.aws.s3_bucket:
@@ -92,7 +92,7 @@
     - ansible.builtin.assert:
         that:
           - output is not changed
-          - not output.public_access_block|bool
+          - not output.public_access_block
 
     # ============================================================
 
