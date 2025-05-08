@@ -136,7 +136,6 @@ action_groups:
     - rds_instance_snapshot
     - rds_option_group
     - rds_option_group_info
-    - rds_param_group
     - rds_snapshot_info
     - rds_subnet_group
     - route53
