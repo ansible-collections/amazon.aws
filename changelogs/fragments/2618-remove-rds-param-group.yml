@@ -1,0 +1,2 @@
+breaking_changes:
+  - rds_param_group - the redirect has been removed and playbooks should be updated to use rds_instance_param_group (https://github.com/ansible-collections/amazon.aws/pull/2618).
