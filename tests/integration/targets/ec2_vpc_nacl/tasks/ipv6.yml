@@ -23,7 +23,7 @@
     - name: Assert that module returned the Network ACL id
       ansible.builtin.assert:
         that:
-          - nacl.nacl_id
+          - nacl.nacl_id != ""
 
     - name: Set fact for Network ACL ID
       ansible.builtin.set_fact:
