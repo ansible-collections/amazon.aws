@@ -1,3 +1,0 @@
----
-minor_changes:
-  - iam_user_info - Return empty user list when invalid group name is provided instead of python error (https://github.com/ansible-collections/amazon.aws/pull/2567).

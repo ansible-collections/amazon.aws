@@ -1,3 +1,0 @@
----
-minor_changes:
-  - module_utils/s3 - add initial ErrorHandler for S3 modules (https://github.com/ansible-collections/amazon.aws/pull/2060).

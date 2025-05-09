@@ -1,2 +1,0 @@
-minor_changes:
-  - module_utils.s3 - added "501" to the list of error codes thrown by S3 replacements (https://github.com/ansible-collections/amazon.aws/issues/2447).

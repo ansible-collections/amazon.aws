@@ -49,7 +49,7 @@
     - name: Update lambda (version 2)
       amazon.aws.lambda:
         name: "{{ lambda_function_name }}"
-        runtime: python3.8
+        runtime: python3.9
         handler: mini_lambda.handler
         role: "{{ lambda_role_name }}"
       register: lambda_b
