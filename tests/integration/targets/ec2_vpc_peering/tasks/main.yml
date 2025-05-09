@@ -25,7 +25,7 @@
       ansible.builtin.assert:
         that:
           - peers_info is successful
-          - '"result" in peers_info'
+          - '"vpc_peering_connections" in peers_info'
 
     # ============================================================
     - name: Create VPC 1
@@ -177,7 +177,6 @@
         that:
           - peer_info is successful
           - "'vpc_peering_connections' in peer_info"
-          - "'result' in peer_info"
           - "'accepter_vpc_info' in peer_details"
           - "'requester_vpc_info' in peer_details"
           - "'status' in peer_details"
@@ -230,7 +229,6 @@
         # Not guaranteed to just be us, only assert the shape
           - pending_vpc_peers is successful
           - "'vpc_peering_connections' in peer_info"
-          - "'result' in peer_info"
           - "'accepter_vpc_info' in peer_details"
           - "'requester_vpc_info' in peer_details"
           - "'status' in peer_details"
@@ -383,7 +381,6 @@
         that:
           - peer_info is successful
           - "'vpc_peering_connections' in peer_info"
-          - "'result' in peer_info"
           - "'accepter_vpc_info' in peer_details"
           - "'requester_vpc_info' in peer_details"
           - "'status' in peer_details"
@@ -492,7 +489,6 @@
         that:
           - peer_info is successful
           - "'vpc_peering_connections' in peer_info"
-          - "'result' in peer_info"
           - "'accepter_vpc_info' in peer_details"
           - "'requester_vpc_info' in peer_details"
           - "'status' in peer_details"
