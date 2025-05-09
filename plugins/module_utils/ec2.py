@@ -1528,7 +1528,7 @@ def get_ec2_security_group_ids_from_names(sec_group_list, ec2_connection, vpc_id
                 "The boto3 parameter for get_ec2_security_group_ids_from_names() has been deprecated."
                 "The parameter has been ignored since release 4.0.0."
             ),
-            date="2025-05-01",
+            version="10.0.0",
             collection_name="amazon.aws",
         )
 
