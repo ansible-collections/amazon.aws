@@ -120,7 +120,7 @@ class AnsibleAWSModule:
                     "'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN', and 'AWS_URL' "
                     "environment variables can be used instead."
                 ),
-                date="2024-12-01",
+                version="10.0.0",
                 collection_name="amazon.aws",
             )
 
@@ -134,7 +134,7 @@ class AnsibleAWSModule:
                     "or alternatively the 'AWS_SESSION_TOKEN' environment variable "
                     "can be used instead."
                 ),
-                date="2024-12-01",
+                version="10.0.0",
                 collection_name="amazon.aws",
             )
 
