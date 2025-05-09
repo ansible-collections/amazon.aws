@@ -4,6 +4,29 @@ amazon.aws Release Notes
 
 .. contents:: Topics
 
+v9.5.0
+======
+
+Release Summary
+---------------
+
+This minor release includes several bugfixes and new features for the ``route53_info`` and ``iam_user_info`` modules.
+
+Minor Changes
+-------------
+
+- Bump version of ansible-lint to 25.1.2 (https://github.com/ansible-collections/amazon.aws/pull/2590).
+- iam_user_info - Add tags to ListUsers or GetGroup results (https://github.com/ansible-collections/amazon.aws/pull/2567).
+- iam_user_info - Return empty user list when invalid group name is provided instead of python error (https://github.com/ansible-collections/amazon.aws/pull/2567).
+- module_utils/modules.py - call to ``deprecate()`` without specifying ``collection_name``, ``version`` or ``date`` arguments raises a sanity errors (https://github.com/ansible-collections/amazon.aws/pull/2607).
+
+Bugfixes
+--------
+
+- iam_user_info - Actually call GetUser when only user name is supplied instead of listing and filtering from all users (https://github.com/ansible-collections/amazon.aws/pull/2567).
+- iam_user_info - Actually filter users by path prefix when one is provided (https://github.com/ansible-collections/amazon.aws/pull/2567).
+- route53_info - removes jijna delimiters from example using when (https://github.com/ansible-collections/amazon.aws/issues/2594).
+
 v9.4.0
 ======
 
@@ -298,7 +321,7 @@ This release includes bugfixes for the  ``ec2_instance`` and ``s3_bucket`` modul
 Bugfixes
 --------
 
-- ec2_instance - Fix issue where EC2 instance module failed to apply security groups when both `network` and `vpc_subnet_id` were specified, caused by passing `None` to discover_security_groups() (https://github.com/ansible-collections/amazon.aws/pull/2488).
+- ec2_instance - Fix issue where EC2 instance module failed to apply security groups when both ``network`` and ``vpc_subnet_id`` were specified, caused by passing ``None`` to discover_security_groups() (https://github.com/ansible-collections/amazon.aws/pull/2488).
 - s3_bucket - Do not use default region as location constraint when creating bucket on ceph cluster (https://github.com/ansible-collections/amazon.aws/issues/2420).
 
 v8.2.2
@@ -307,7 +330,7 @@ v8.2.2
 Release Summary
 ---------------
 
-This release includes bugfixes for the ``aws_ec2`` inventory plugin and the ``cloudformation``, ``ec2_security_group``, ``ec2_vol``, ``ec2_vpc_net``, ``lambda``, ``rds_cluster``, and ``s3_bucket`` modules.
+This release includes bugfixes for the aws_ec2 inventory plugin and the cloudformation, ec2_security_group, ec2_vol, ec2_vpc_net, lambda, rds_cluster, and s3_bucket modules.
 
 Bugfixes
 --------

@@ -1,3 +1,0 @@
----
-bugfixes:
-- route53_info - removes jijna delimiters from example using when (https://github.com/ansible-collections/amazon.aws/issues/2594).

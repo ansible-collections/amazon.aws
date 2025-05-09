@@ -1,3 +1,0 @@
----
-bugfixes:
-  - iam_user_info - Actually filter users by path prefix when one is provided (https://github.com/ansible-collections/amazon.aws/pull/2567).
