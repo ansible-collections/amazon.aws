@@ -86,7 +86,7 @@ EXAMPLES = r"""
           Application: parrot
 
 - name: Remove a parameter group
-  amazon.aws.rds_param_group:
+  amazon.aws.rds_cluster_param_group:
       state: absent
       name: test-cluster-group
 """
