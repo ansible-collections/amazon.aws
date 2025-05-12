@@ -1,3 +1,0 @@
----
-bugfixes:
-  - iam_user_info - Actually call GetUser when only user name is supplied instead of listing and filtering from all users (https://github.com/ansible-collections/amazon.aws/pull/2567).
