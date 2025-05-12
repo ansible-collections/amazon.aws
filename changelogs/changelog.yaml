@@ -3749,4 +3749,4 @@ releases:
     - 2594-route53_info_docs.yml
     - release_summary.yml
     - update_ansible-lint.yml
-    release_date: '2025-05-09'
+    release_date: '2025-05-12'
