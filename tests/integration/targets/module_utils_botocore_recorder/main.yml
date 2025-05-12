@@ -12,4 +12,4 @@
         that:
           - result.user_id == "AIDA12345EXAMPLE54321"
       when:
-        - lookup('ansible.builtin.env', '_ANSIBLE_PLACEBO_REPLAY')
+        - lookup('ansible.builtin.env', '_ANSIBLE_PLACEBO_REPLAY') | length > 0

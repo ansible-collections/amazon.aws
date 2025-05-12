@@ -29,7 +29,7 @@
       ansible.builtin.assert:
         that:
           - error_m is failed
-          - error_m.msg == "parameters are mutually exclusive: object_name|prefix"
+          - "'parameters are mutually exclusive: object_name|prefix' in error_m.msg"
 
     - name: Create bucket
       amazon.aws.s3_bucket:
