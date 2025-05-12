@@ -11,6 +11,9 @@
           secret_key: "{{ aws_secret_key }}"
           session_token: "{{ security_token | default(omit) }}"
           region: "{{ aws_region }}"
+        amazon.aws.route53:
+          # Route53 is explicitly a global service
+          region:
       block:
         - ansible.builtin.include_tasks: tasks/setup.yml
           vars:

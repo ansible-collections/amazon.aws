@@ -15,7 +15,6 @@
         record: "{{ item.record }}.{{ route53_hosted_zone }}"
         type: "{{ item.type }}"
         value: "{{ item.value }}"
-        region:
       with_items:
         - record: private_ip
           type: A

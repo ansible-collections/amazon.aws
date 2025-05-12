@@ -145,7 +145,7 @@ options:
       - When set to V(true), Route53 hostnames will be included.
     type: bool
     default: false
-    version_added: 10.0.0
+    version_added: 10.1.0
   route53_hostnames:
     description:
       - Specifies the Route53 DNS name suffix to consider.
@@ -153,14 +153,14 @@ options:
     type: list
     elements: str
     default: []
-    version_added: 10.0.0
+    version_added: 10.1.0
   route53_excluded_zones:
     description:
       - A list of Route53 zones to exclude.
     type: list
     elements: str
     default: []
-    version_added: 10.0.0
+    version_added: 10.1.0
 """
 
 EXAMPLES = r"""
@@ -569,12 +569,27 @@ def _get_ssm_information(client, filters):
 
 @AWSRetry.jittered_backoff()
 def _list_hosted_zones(client: Any, **kwargs: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """
+    List all hosted zones using the given boto3 Route53 client.
+
+    :param client: boto3 client for Route53
+    :param kwargs: Additional parameters for the paginator
+    :return: List of hosted zones
+    """
     paginator = client.get_paginator("list_hosted_zones")
     return paginator.paginate(**kwargs).build_full_result()["HostedZones"]
 
 
 @AWSRetry.jittered_backoff()
 def _list_resource_record_sets(client: Any, hosted_zone_id: str, **kwargs: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """
+    Retrieve all resource record sets for a specific hosted zone in Route53.
+
+    :param client: A boto3 Route53 client.
+    :param hosted_zone_id: The ID of the hosted zone whose records should be listed.
+    :param kwargs: Optional keyword arguments to pass to the paginator.
+    :return: A list of dictionaries representing resource record sets.
+    """
     paginator = client.get_paginator("list_resource_record_sets")
     return paginator.paginate(HostedZoneId=hosted_zone_id, **kwargs).build_full_result()["ResourceRecordSets"]
 

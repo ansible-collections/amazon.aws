@@ -10,7 +10,6 @@
         record: "private_ip.{{ route53_hosted_zone }}"
         type: A
         value: "{{ item.private_ip_address }}"
-        region:
       with_items: "{{ test_instances }}"
       ignore_errors: true
 
@@ -21,7 +20,6 @@
         record: "cname.{{ route53_hosted_zone }}"
         type: CNAME
         value: "{{ item.private_dns_name }}"
-        region:
       with_items: "{{ test_instances }}"
       ignore_errors: true
 
