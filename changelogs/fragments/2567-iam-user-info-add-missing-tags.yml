@@ -1,3 +1,0 @@
----
-minor_changes:
-  - iam_user_info - Add tags to ListUsers or GetGroup results (https://github.com/ansible-collections/amazon.aws/pull/2567).
