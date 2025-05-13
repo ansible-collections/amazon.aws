@@ -21,12 +21,12 @@
       - want_list is iterable
       - want_list is not string
       - want_list | length > 1
-      - want_list[0] | ansible.utils.ipv4
+      - want_list[0] is defined and want_list[0] is ansible.utils.ipv4
       - want_ipv6_list is defined
       - want_ipv6_list is iterable
       - want_ipv6_list is not string
       - want_ipv6_list | length > 1
-      - want_ipv6_list[0] | ansible.utils.ipv6
+      - want_ipv6_list[0] is defined and want_ipv6_list[0] is ansible.utils.ipv6
 
 - name: Lookup range with service
   ansible.builtin.set_fact:
@@ -40,12 +40,12 @@
       - s3_ips is iterable
       - s3_ips is not string
       - s3_ips | length > 1
-      - s3_ips[0] | ansible.utils.ipv4
+      - s3_ips[0] is defined and s3_ips[0] is ansible.utils.ipv4
       - s3_ipv6s is defined
       - s3_ipv6s is iterable
       - s3_ipv6s is not string
       - s3_ipv6s | length > 1
-      - s3_ipv6s[0] | ansible.utils.ipv6
+      - s3_ipv6s[0] is defined and s3_ipv6s[0] is ansible.utils.ipv6
 
 - name: Lookup range with a different service
   ansible.builtin.set_fact:
@@ -59,12 +59,12 @@
       - route53_ips is iterable
       - route53_ips is not string
       - route53_ips | length > 1
-      - route53_ips[0] | ansible.utils.ipv4
+      - route53_ips[0] is defined and route53_ips[0] is ansible.utils.ipv4
       - route53_ipv6s is defined
       - route53_ipv6s is iterable
       - route53_ipv6s is not string
       - route53_ipv6s | length > 1
-      - route53_ipv6s[0] | ansible.utils.ipv6
+      - route53_ipv6s[0] is defined and route53_ipv6s[0] is ansible.utils.ipv6
 
 - name: Assert that service IPV4s and IPV6s do not overlap
   ansible.builtin.assert:
@@ -87,12 +87,12 @@
       - us_east_1_ips is iterable
       - us_east_1_ips is not string
       - us_east_1_ips | length > 1
-      - us_east_1_ips[0] | ansible.utils.ipv4
+      - us_east_1_ips[0] is defined and us_east_1_ips[0] is ansible.utils.ipv4
       - us_east_1_ipv6s is defined
       - us_east_1_ipv6s is iterable
       - us_east_1_ipv6s is not string
       - us_east_1_ipv6s | length > 1
-      - us_east_1_ipv6s[0] | ansible.utils.ipv6
+      - us_east_1_ipv6s[0] is defined and us_east_1_ipv6s[0] is ansible.utils.ipv6
 
 - name: Lookup range with a different region
   ansible.builtin.set_fact:
@@ -106,12 +106,12 @@
       - eu_central_1_ips is iterable
       - eu_central_1_ips is not string
       - eu_central_1_ips | length > 1
-      - eu_central_1_ips[0] | ansible.utils.ipv4
+      - eu_central_1_ips[0] is defined and eu_central_1_ips[0] is ansible.utils.ipv4
       - eu_central_1_ipv6s is defined
       - eu_central_1_ipv6s is iterable
       - eu_central_1_ipv6s is not string
       - eu_central_1_ipv6s | length > 1
-      - eu_central_1_ipv6s[0] | ansible.utils.ipv6
+      - eu_central_1_ipv6s[0] is defined and eu_central_1_ipv6s[0] is ansible.utils.ipv6
 
 - name: Assert that regional IPs don't overlap
   ansible.builtin.assert:
@@ -131,12 +131,12 @@
       - s3_us_ips is iterable
       - s3_us_ips is not string
       - s3_us_ips | length > 1
-      - s3_us_ips[0] | ansible.utils.ipv4
+      - s3_us_ips[0] is defined and s3_us_ips[0] is ansible.utils.ipv4
       - s3_us_ipv6s is defined
       - s3_us_ipv6s is iterable
       - s3_us_ipv6s is not string
       - s3_us_ipv6s | length > 1
-      - s3_us_ipv6s[0] | ansible.utils.ipv6
+      - s3_us_ipv6s[0] is defined and s3_us_ipv6s[0] is ansible.utils.ipv6
 
 - name: Assert that the regional service IPs are a subset of the regional IPs and service IPs.
   ansible.builtin.assert:
