@@ -1,2 +1,2 @@
 ---
-json_secret: '{"resource_prefix": "{{ resource_prefix }}"}'
+json_secret: {"resource_prefix": "{{ resource_prefix }}"}
