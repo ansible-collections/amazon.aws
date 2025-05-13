@@ -32,7 +32,7 @@ Tested with the Ansible Core >= 2.17.0 versions, and the current development ver
 
 This collection depends on the AWS SDK for Python (Boto3 and Botocore).  Due to the
 [AWS SDK Python Support Policy](https://aws.amazon.com/blogs/developer/python-support-policy-updates-for-aws-sdks-and-tools/)
-this collection requires Python 3.9 or greater.
+this collection requires Python 3.8 or greater.
 
 Amazon has also announced the planned end of support for
 [Python less than 3.9](https://aws.amazon.com/blogs/developer/python-support-policy-updates-for-aws-sdks-and-tools/).
