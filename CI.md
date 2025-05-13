@@ -8,6 +8,6 @@ GitHub Actions are used to run the Continuous Integration for amazon.aws collect
 | ------ |-------| ------ | -----------|
 | changelog |Checks for the presence of Changelog fragments | 3.9 | devel |
 | Linters | Runs `black` and `flake8` on plugins and tests | 3.9 | devel |
-| Sanity | Runs ansible sanity checks | 3.10, 3.13 | devel, milestone, stable-2.16, stable-2.17 (Python 3.13), stable-2.18, stable-2.19 |
-| Unit tests | Executes the unit test cases | 3.10, 3.13 | evel, milestone, stable-2.16, stable-2.17 (Python 3.13), stable-2.18, stable-2.19 |
+| Sanity | Runs ansible sanity checks | 3.11, 3.12, 3.13 | devel, milestone, stable-2.17 (Also 3.10, Not 3.13), stable-2.18, stable-2.19 |
+| Unit tests | Executes the unit test cases | 3.11, 3.12, 3.13 | devel, milestone, stable-2.17 (Also 3.10, Not 3.13), stable-2.18, stable-2.19 |
 | Integration tests | Executes the integration test suites| <TBA> | <TBA> |
