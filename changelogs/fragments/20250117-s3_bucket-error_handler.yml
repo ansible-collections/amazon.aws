@@ -1,5 +1,0 @@
-minor_changes:
-- s3_bucket - migrated to use updated error handlers for better handling of non-AWS errors (https://github.com/ansible-collections/amazon.aws/pull/2478).
-bugfixes:
-- s3_bucket - fixed idempotency when setting bucket ACLs (https://github.com/ansible-collections/amazon.aws/pull/2478).
-- s3_bucket - bucket ACLs now consistently returned (https://github.com/ansible-collections/amazon.aws/pull/2478).
