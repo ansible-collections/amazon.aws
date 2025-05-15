@@ -1,0 +1,24 @@
+---
+- name: Create Route53 resource
+  vars:
+    route53_hosted_zone: '{{ resource_prefix | replace("-", "") }}.ansible.test.'
+  block:
+    - name: Create a Route53 zone
+      amazon.aws.route53_zone:
+        zone: "{{ route53_hosted_zone }}"
+        comment: "Created in Ansible test {{ resource_prefix }}"
+
+    - name: Create Resource records
+      amazon.aws.route53:
+        state: present
+        zone: "{{ route53_hosted_zone }}"
+        record: "{{ item.record }}.{{ route53_hosted_zone }}"
+        type: "{{ item.type }}"
+        value: "{{ item.value }}"
+      with_items:
+        - record: private_ip
+          type: A
+          value: "{{ instance_info.private_ip_address }}"
+        - record: cname
+          type: CNAME
+          value: "{{ instance_info.private_dns_name }}"

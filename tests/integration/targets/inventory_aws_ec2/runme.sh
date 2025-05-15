@@ -10,7 +10,7 @@ function cleanup() {
     set +x
     source access_key.sh
     set -x
-    ansible-playbook playbooks/manage_ec2_instances.yml -e "task=tear_down" "$@"
+    ansible-playbook playbooks/manage_ec2_instances.yml -e "task=tear_down" -e "teardown_route53=true" "$@"
     exit 1
 }
 
@@ -30,9 +30,6 @@ export ANSIBLE_INVENTORY=test.aws_ec2.yml
 
 # test empty inventory config
 ansible-playbook playbooks/test_invalid_aws_ec2_inventory_config.yml "$@"
-
-# We're not supposed to have symlinks committed to the repo, add the symlink to make life easier
-ln -s ../tasks playbooks/tasks
 
 # create minimal config for tests
 ansible-playbook playbooks/manage_ec2_instances.yml -e "task=setup" "$@"
@@ -95,6 +92,19 @@ ansible-playbook playbooks/test_populating_inventory_with_hostnames_with_jinja2_
 ansible-playbook playbooks/create_inventory_config.yml -e "template='inventory_with_hostnames_with_jinja2_filters.yml.j2'" "$@"
 ansible-playbook playbooks/test_populating_inventory_with_hostnames_with_jinja2_filters.yml "$@"
 
+# generate inventory config with route53 enabled
+ansible-playbook playbooks/test_populating_inventory_with_route53.yml "$@"
+ansible-playbook playbooks/create_inventory_config.yml -e "template='inventory_with_route53.yml.j2'" "$@"
+ansible-playbook playbooks/test_inventory_route53.yml "$@"
+ansible-playbook playbooks/create_inventory_config.yml -e "template='inventory_with_route53.yml.j2'" -e "route53_excluded_zone=true" "$@"
+ansible-playbook playbooks/test_inventory_route53.yml -e "match_route53_hostname=false" "$@"
+ansible-playbook playbooks/create_inventory_config.yml -e "template='inventory_with_route53.yml.j2'" -e "route53_hostname=.ansible.test.org" "$@"
+ansible-playbook playbooks/test_inventory_route53.yml -e "match_route53_hostname=false" "$@"
+ansible-playbook playbooks/create_inventory_config.yml -e "template='inventory_with_route53.yml.j2'" -e "route53_hostname=.ansible.test" "$@"
+ansible-playbook playbooks/test_inventory_route53.yml "$@"
+ansible-playbook playbooks/create_inventory_config.yml -e "template='inventory_with_route53.yml.j2'" -e "allow_duplicated_hosts=true" "$@"
+ansible-playbook playbooks/test_inventory_route53.yml -e "allow_duplicated_hosts=true" "$@"
+
 # remove inventory cache
 rm -r aws_ec2_cache_dir/
 
@@ -102,4 +112,4 @@ rm -r aws_ec2_cache_dir/
 ansible-playbook playbooks/empty_inventory_config.yml "$@"
 
 # cleanup testing environment
-ansible-playbook playbooks/manage_ec2_instances.yml -e "task=tear_down" "$@"
+ansible-playbook playbooks/manage_ec2_instances.yml -e "task=tear_down" -e "teardown_route53=true" "$@"
