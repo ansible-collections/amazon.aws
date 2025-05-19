@@ -1,0 +1,30 @@
+---
+- name: Tear down Route53 configuration
+  vars:
+    route53_hosted_zone: '{{ resource_prefix | replace("-", "") }}.ansible.test.'
+  block:
+    - name: Delete records of type A
+      amazon.aws.route53:
+        state: absent
+        zone: "{{ route53_hosted_zone }}"
+        record: "private_ip.{{ route53_hosted_zone }}"
+        type: A
+        value: "{{ item.private_ip_address }}"
+      with_items: "{{ test_instances }}"
+      ignore_errors: true
+
+    - name: Delete CNAME records
+      amazon.aws.route53:
+        state: absent
+        zone: "{{ route53_hosted_zone }}"
+        record: "cname.{{ route53_hosted_zone }}"
+        type: CNAME
+        value: "{{ item.private_dns_name }}"
+      with_items: "{{ test_instances }}"
+      ignore_errors: true
+
+    - name: Delete Route53 zone
+      amazon.aws.route53_zone:
+        zone: "{{ route53_hosted_zone }}"
+        state: absent
+      ignore_errors: true

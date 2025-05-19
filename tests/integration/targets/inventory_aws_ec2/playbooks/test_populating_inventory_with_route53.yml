@@ -1,0 +1,20 @@
+---
+- name: Populate inventory with Route53 configuration
+  hosts: 127.0.0.1
+  connection: local
+  gather_facts: false
+  environment: "{{ ansible_test.environment }}"
+  tasks:
+    - module_defaults:
+        group/aws:
+          access_key: "{{ aws_access_key }}"
+          secret_key: "{{ aws_secret_key }}"
+          session_token: "{{ security_token | default(omit) }}"
+          region: "{{ aws_region }}"
+        amazon.aws.route53:
+          # Route53 is explicitly a global service
+          region:
+      block:
+        - ansible.builtin.include_tasks: tasks/setup.yml
+          vars:
+            setup_route53: true
