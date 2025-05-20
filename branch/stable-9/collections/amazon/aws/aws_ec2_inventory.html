@@ -477,7 +477,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <a class="ansibleOptionLink" href="#parameter-keyed_groups/default_value" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 <p><em class="ansible-option-versionadded">added in ansible-core 2.12</em></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The default value when the host variable’s value is an empty string.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The default value when the host variable’s value is <code class="ansible-value docutils literal notranslate"><span class="pre">None</span></code> or an empty string.</p>
 <p>This option is mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-inventory-parameter-keyed-groups-trailing-separator"><span class="std std-ref"><span class="pre">keyed_groups[].trailing_separator</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
@@ -516,7 +516,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <a class="ansibleOptionLink" href="#parameter-keyed_groups/trailing_separator" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 <p><em class="ansible-option-versionadded">added in ansible-core 2.12</em></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Set this option to <code class="ansible-value docutils literal notranslate"><span class="pre">false</span></code> to omit the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-inventory-parameter-keyed-groups-separator"><span class="std std-ref"><span class="pre">keyed_groups[].separator</span></span></a></strong></code> after the host variable when the value is an empty string.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Set this option to <code class="ansible-value docutils literal notranslate"><span class="pre">false</span></code> to omit the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-inventory-parameter-keyed-groups-separator"><span class="std std-ref"><span class="pre">keyed_groups[].separator</span></span></a></strong></code> after the host variable when the value is <code class="ansible-value docutils literal notranslate"><span class="pre">None</span></code> or an empty string.</p>
 <p>This option is mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-inventory-parameter-keyed-groups-default-value"><span class="std std-ref"><span class="pre">keyed_groups[].default_value</span></span></a></strong></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
