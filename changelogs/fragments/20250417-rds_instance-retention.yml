@@ -1,0 +1,2 @@
+bugfixes:
+  - rds_instance - Allow modifying the ``backup_retention_period`` option. When it was set, the value provided was ignored (https://github.com/ansible-collections/amazon.aws/pull/2579).
