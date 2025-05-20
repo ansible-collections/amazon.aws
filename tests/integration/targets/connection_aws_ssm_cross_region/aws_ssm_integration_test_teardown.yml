@@ -1,0 +1,8 @@
+---
+- name: Teardown setup connection for AWS SSM cross-region test
+  hosts: localhost
+  tasks:
+    - name: Include cleanup role
+      ansible.builtin.include_role:  # noqa role-name[path]
+        name: ../setup_connection_aws_ssm
+        tasks_from: cleanup.yml

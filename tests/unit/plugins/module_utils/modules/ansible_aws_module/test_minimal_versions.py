@@ -107,8 +107,9 @@ class TestMinimalVersionTestSuite:
         assert len(warnings) == 1
         # Assert that we have a warning about the version but be
         # relaxed about the exact message
-        assert "boto3" in warnings[0]
-        assert self.MINIMAL_BOTO3 in warnings[0]
+        warning = str(warnings[0])
+        assert "boto3" in warning
+        assert self.MINIMAL_BOTO3 in warning
 
     # ========================================================
     #   Test we warn when using an old version of botocore
@@ -140,8 +141,9 @@ class TestMinimalVersionTestSuite:
         assert len(warnings) == 1
         # Assert that we have a warning about the version but be
         # relaxed about the exact message
-        assert "botocore" in warnings[0]
-        assert self.MINIMAL_BOTOCORE in warnings[0]
+        warning = str(warnings[0])
+        assert "botocore" in warning
+        assert self.MINIMAL_BOTOCORE in warning
 
     # ========================================================
     #   Test we warn when using an old version of botocore and boto3
@@ -175,6 +177,7 @@ class TestMinimalVersionTestSuite:
 
         warning_dict = dict()
         for warning in warnings:
+            warning = str(warning)
             if "boto3" in warning:
                 warning_dict["boto3"] = warning
             if "botocore" in warning:

@@ -26,7 +26,7 @@ For more information about communication, see the [Ansible communication guide](
 
 ### Ansible version compatibility
 
-Tested with the Ansible Core >= 2.15.0 versions, and the current development version of Ansible. Ansible Core versions prior to 2.15.0 are not supported.
+Tested with the Ansible Core >= 2.17.0 versions, and the current development version of Ansible. Ansible Core versions prior to 2.17.0 are not supported.
 
 ### Python version compatibility
 

@@ -1,0 +1,43 @@
+---
+- name: Run inventory test using Route53 information
+  hosts: 127.0.0.1
+  connection: local
+  gather_facts: false
+
+  vars:
+    route53_hosted_zone: '{{ resource_prefix | replace("-", "") }}.ansible.test'
+
+  tasks:
+    - ansible.builtin.set_fact:
+        private_ip_hostname: "private_ip.{{ route53_hosted_zone }}"
+        cname_hostname: "cname.{{ route53_hosted_zone }}"
+
+    - name: Assert inventory was populated with Route53 hostnames (only one hostname)
+      ansible.builtin.assert:
+        that:
+          - '"aws_ec2" in groups'
+          - cname_hostname in groups['aws_ec2']
+          - private_ip_hostname not in groups['aws_ec2']
+      when:
+        - match_route53_hostname | default(true) | bool
+        - not (allow_duplicated_hosts | default(false) | bool)
+
+    - name: Assert inventory was populated with Route53 hostnames (multiple hostnames)
+      ansible.builtin.assert:
+        that:
+          - '"aws_ec2" in groups'
+          - cname_hostname in groups['aws_ec2']
+          - private_ip_hostname in groups['aws_ec2']
+      when:
+        - match_route53_hostname | default(true) | bool
+        - allow_duplicated_hosts | default(false) | bool
+
+    - name: Assert inventory was not populated with Route53 hostnames
+      ansible.builtin.assert:
+        that:
+          - '"aws_ec2" in groups'
+          - cname_hostname not in groups['aws_ec2']
+          - private_ip_hostname not in groups['aws_ec2']
+      when:
+        - not (match_route53_hostname | default(true) | bool)
+        - not (allow_duplicated_hosts | default(false) | bool)

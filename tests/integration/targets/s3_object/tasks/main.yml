@@ -12,7 +12,7 @@
     - name: Set async_dir for HOME env
       ansible.builtin.set_fact:
         ansible_async_dir: "{{ lookup('env', 'HOME') }}/.ansible_async_{{ tiny_prefix }}/"
-      when: (lookup('env', 'HOME'))
+      when: (lookup('env', 'HOME')) is defined
 
     - name: Get ARN of calling user
       amazon.aws.aws_caller_info:

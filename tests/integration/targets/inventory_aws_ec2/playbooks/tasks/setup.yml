@@ -1,0 +1,65 @@
+---
+- ansible.builtin.include_role:
+    name: setup_ec2_facts
+
+- name: Set image id, vpc cidr and subnet cidr
+  ansible.builtin.set_fact:
+    image_id: "{{ ec2_ami_id }}"
+    vpc_cidr: 10.{{ 256 | random(seed=resource_prefix) }}.0.0/16
+    subnet_cidr: 10.{{ 256 | random(seed=resource_prefix) }}.0.0/24
+
+- name: Create a VPC to work in
+  amazon.aws.ec2_vpc_net:
+    cidr_block: "{{ vpc_cidr }}"
+    state: present
+    name: "{{ resource_prefix }}_setup"
+    resource_tags:
+      Name: "{{ resource_prefix }}_setup"
+  register: setup_vpc
+
+- name: Set vpc id
+  ansible.builtin.set_fact:
+    vpc_id: "{{ setup_vpc.vpc.id }}"
+
+- name: Create a subnet to use for creating an ec2 instance
+  amazon.aws.ec2_vpc_subnet:
+    az: "{{ aws_region }}a"
+    vpc_id: "{{ setup_vpc.vpc.id }}"
+    cidr: "{{ subnet_cidr }}"
+    state: present
+    resource_tags:
+      Name: "{{ resource_prefix }}_setup"
+  register: setup_subnet
+
+- name: Set subnet id
+  ansible.builtin.set_fact:
+    subnet_id: "{{ setup_subnet.subnet.id }}"
+
+- name: Create a security group to use for creating an ec2 instance
+  amazon.aws.ec2_security_group:
+    name: "{{ resource_prefix }}_setup"
+    description: created by Ansible integration tests
+    state: present
+    vpc_id: "{{ setup_vpc.vpc.id }}"
+  register: setup_sg
+
+- name: Set sg id
+  ansible.builtin.set_fact:
+    sg_id: "{{ setup_sg.group_id }}"
+
+- name: Create ec2 instance
+  amazon.aws.ec2_instance:
+    image_id: "{{ image_id }}"
+    name: "{{ resource_prefix }}"
+    instance_type: t2.micro
+    security_groups: "{{ sg_id }}"
+    vpc_subnet_id: "{{ subnet_id }}"
+    wait: true
+    state: running
+  register: setup_instance
+
+- name: Create Route53 configuration
+  ansible.builtin.include_tasks: setup_route53.yml
+  vars:
+    instance_info: "{{ setup_instance.instances.0 }}"
+  when: setup_route53 | default(false)

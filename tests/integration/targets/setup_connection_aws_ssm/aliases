@@ -1,0 +1,3 @@
+# Used by the connection_amazon_aws plugins to build/destroy test infrastructure
+hidden
+disabled

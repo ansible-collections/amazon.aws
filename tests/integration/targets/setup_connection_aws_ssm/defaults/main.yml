@@ -1,0 +1,70 @@
+---
+instance_type: t3.micro
+
+ami_details:
+    fedora:
+        owner: 125523088429
+        name: 'Fedora-Cloud-Base-41-1.2.x86_64*'
+        user_data: |
+            #!/bin/sh
+            sudo dnf install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
+            sudo systemctl start amazon-ssm-agent
+        os_type: linux
+    centos:
+        owner: 125523088429
+        name: 'CentOS Stream 9 x86_64*'
+        user_data: |
+            #!/bin/sh
+            sudo dnf install -y python3 https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
+            sudo systemctl start amazon-ssm-agent
+        os_type: linux
+    amazon:
+        ssm_parameter: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
+        # owner: amazon
+        # name: amzn2-ami-kernel-5.10-hvm-*-x86_64-gp2
+        user_data: |
+            #!/bin/sh
+            # Install Python3.11
+            yum -y groupinstall "Development Tools"
+            yum -y install gcc devel libffi-devel openssl11-1.1.1g openssl11-libs-1.1.1g openssl11-devel-1.1.1g wget
+            wget https://www.python.org/ftp/python/3.11.9/Python-3.11.9.tgz
+            tar zxvf Python-3.11.9.tgz
+            cd Python-3.11.9/
+            ./configure --enable-optimizations
+            make -j4
+            make altinstall -j4
+            # Pre-Installed just needs started
+            systemctl start amazon-ssm-agent
+        os_type: linux
+    ubuntu:
+        ssm_parameter: /aws/service/canonical/ubuntu/server-minimal/jammy/stable/current/amd64/hvm/ebs-gp2/ami-id
+        # owner: amazon
+        # name: ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server*
+        user_data: |
+            #!/bin/sh
+            apt-get update
+            apt-get --yes install acl
+            # Pre-Installed just needs started
+            sudo systemctl start amazon-ssm-agent
+        os_type: linux
+    windows:
+        ssm_parameter: /aws/service/ami-windows-latest/Windows_Server-2022-English-Full-Base
+        # owner: amazon
+        # name: Windows_Server-2022-English-Full-Base-*
+        user_data: |
+            <powershell>
+            Invoke-WebRequest -Uri "https://amazon-ssm-us-east-1.s3.amazonaws.com/latest/windows_amd64/AmazonSSMAgentSetup.exe"
+            -OutFile "C:\AmazonSSMAgentSetup.exe"
+            Start-Process -FilePath C:\AmazonSSMAgentSetup.exe -ArgumentList "/S","/v","/qn" -Wait
+            Restart-Service AmazonSSMAgent
+            </powershell>
+        os_type: windows
+
+s3_bucket_name: "{{ tiny_prefix }}-connection-ssm-{{ test_suffix | default(target_os) }}"
+kms_key_name: "{{ resource_prefix }}-connection-ssm"
+ssm_document_name: "{{ resource_prefix }}-connection-ssm"
+ec2_infra_vpc_name: "{{ resource_prefix }}-vpc"
+ec2_infra_vpc_cidr_block: '172.10.0.0/16'
+ec2_infra_public_subnet_cidr_block: '172.10.1.0/24'
+ec2_infra_private_subnet_cidr_block: '172.10.3.0/24'
+ec2_infra_security_group_name: "{{ resource_prefix }}-sg"

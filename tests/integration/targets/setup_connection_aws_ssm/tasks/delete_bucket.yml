@@ -1,0 +1,26 @@
+---
+- name: Delete bucket at the end of integration tests
+  block:
+    - name: List bucket objects
+      amazon.aws.s3_object:
+        bucket: "{{ item }}"
+        mode: list
+      register: objects
+      ignore_errors: true # noqa ignore-errors
+
+    - name: Remove objects from bucket
+      amazon.aws.s3_object:
+        bucket: "{{ item }}"
+        mode: delobj
+        object: "{{ obj }}"
+      loop: "{{ objects.s3_keys }}"
+      loop_control:
+        loop_var: obj
+      when: "'s3_keys' in objects"
+      ignore_errors: true # noqa ignore-errors
+
+    - name: Delete the bucket
+      amazon.aws.s3_bucket:
+        name: "{{ item }}"
+        state: absent
+      ignore_errors: true # noqa ignore-errors

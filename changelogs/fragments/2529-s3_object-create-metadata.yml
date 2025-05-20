@@ -1,3 +1,0 @@
----
-minor_changes:
-  - s3_object - support passing metadata in ``create`` mode (https://github.com/ansible-collections/amazon.aws/pull/2529).

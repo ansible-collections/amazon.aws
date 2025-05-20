@@ -265,7 +265,7 @@ Some examples are shown below:
 
     # This lets you connect over SSM to the instance id.
     ansible_host: instance_id
-    ansible_connection: 'community.aws.aws_ssm'
+    ansible_connection: 'amazon.aws.aws_ssm'
 
     # This defines combinations of host servers, IP addresses, and related SSH private keys.
     ansible_host: private_ip_address
@@ -277,7 +277,7 @@ Some examples are shown below:
 
     # Host variables that are strings need to be wrapped with two sets of quotes.
     # See https://docs.ansible.com/ansible/latest/plugins/inventory.html#using-inventory-plugins for details.
-    ansible_connection: '"community.aws.aws_ssm"'
+    ansible_connection: '"amazon.aws.aws_ssm"'
     ansible_user: '"ssm-user"'
 
 
@@ -487,6 +487,26 @@ Now the output of ``ansible-inventory -i demo.aws_ec2.yml --list``:
 ``use_ssm_inventory: True`` enables fetching additional EC2 instance information from the AWS Systems Manager (SSM) inventory service into hostvars. By leveraging the SSM inventory data, the ``use_ssm_inventory`` option provides additional details and attributes about the EC2 instances in your inventory.
 These details can include operating system information, installed software, network configurations, and custom inventory attributes defined in SSM.
 
+
+``route53_enabled``
+---------------------
+
+``route53_enabled: True`` enables to use the Route 53 DNS information as host name. The ``route53_hostnames`` option specifies the list of Route 53 DNS name suffix to consider while filtering host names while the ``route53_excluded_zones`` option specifies the list of Route53 host zones to exclude.
+
+ .. code-block:: yaml
+
+    # route53_inventory.aws_ec2.yml
+    plugin: aws_ec2
+    # This enables Route53 DNS information
+    route53_enabled: true
+    # Specifies the list of Route53 DNS zones to exclude
+    route53_excluded_zones:
+    - foo.bar.zone1
+    - foo.bar.zone2
+    # Specifies the list of Route53 DNS suffix to consider
+    route53_hostnames:
+    - example.net
+    - example.org
 
 ``cache``
 ---------

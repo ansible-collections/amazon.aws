@@ -4,6 +4,9 @@ files:
   maintainers: $team_aws
   docs/:
     labels: docs
+  $connection/:
+    labels: connection
+  $connection/aws_ssm.py:
   $action/:
     labels: action
   $action/aws_s3.py:

@@ -36,6 +36,7 @@ from ansible_collections.amazon.aws.plugins.inventory.aws_ec2 import _compile_va
 from ansible_collections.amazon.aws.plugins.inventory.aws_ec2 import _get_boto_attr_chain
 from ansible_collections.amazon.aws.plugins.inventory.aws_ec2 import _get_tag_hostname
 from ansible_collections.amazon.aws.plugins.inventory.aws_ec2 import _prepare_host_vars
+from ansible_collections.amazon.aws.plugins.inventory.aws_ec2 import _remove_trailing_dot
 
 
 @pytest.fixture(name="inventory")
@@ -63,8 +64,11 @@ def fixture_inventory():
         "allow_duplicated_hosts": False,
         "cache": False,
         "use_contrib_script_compatible_sanitization": False,
+        "route53_enabled": False,
     }
     inventory.inventory = MagicMock()
+    inventory.get_option = MagicMock()
+    inventory.get_option.side_effect = inventory._options.get
     return inventory
 
 
@@ -192,10 +196,10 @@ def test_inventory_verify_file(m_base_verify_file, inventory, base_verify_file_r
     [
         ("tag:os_provider", {"Tags": []}, []),
         ("tag:os_provider", {}, []),
-        ("tag:os_provider", {"Tags": [{"Key": "os_provider", "Value": "RedHat"}]}, ["RedHat"]),
+        ("tag:os_provider", {"Tags": [{"Key": "os_provider", "Value": "RedHat"}]}, "RedHat"),
         ("tag:OS_Provider", {"Tags": [{"Key": "os_provider", "Value": "RedHat"}]}, []),
         ("tag:tag:os_provider", {"Tags": [{"Key": "os_provider", "Value": "RedHat"}]}, []),
-        ("tag:os_provider=RedHat", {"Tags": [{"Key": "os_provider", "Value": "RedHat"}]}, ["os_provider_RedHat"]),
+        ("tag:os_provider=RedHat", {"Tags": [{"Key": "os_provider", "Value": "RedHat"}]}, "os_provider_RedHat"),
         ("tag:os_provider=CoreOS", {"Tags": [{"Key": "os_provider", "Value": "RedHat"}]}, []),
         (
             "tag:os_provider=RedHat,os_release=7",
@@ -238,8 +242,8 @@ def test_get_tag_hostname(preference, instance, expected):
     ],
 )
 def test_inventory_build_include_filters(inventory, _options, expected):
-    inventory._options = _options
-    inventory.templar = None
+    inventory.get_option = MagicMock()
+    inventory.get_option.side_effect = _options.get
     assert inventory.build_include_filters() == expected
 
 
@@ -687,3 +691,100 @@ def test_inventory__get_multiple_ssm_inventories(m_get_ssm_information, inventor
     assert expected == instances
 
     assert 2 == m_get_ssm_information.call_count
+
+
+@pytest.mark.parametrize(
+    "data,expected",
+    [
+        ("an.example.com.", "an.example.com"),
+        ("an.example.com..", "an.example.com."),
+        ("an.example.com", "an.example.com"),
+    ],
+)
+def test__remove_trailing_dot(data, expected):
+    assert expected == _remove_trailing_dot(data)
+
+
+@pytest.mark.parametrize(
+    "route53_excluded_zones,expected",
+    [
+        (
+            [],
+            {
+                "cloud.org": set(("ansible.test.aaa", "ansible.test.bbb")),
+                "cloud.com": set(("ansible.test.ccc", "ansible.test.aaa")),
+                "cloud.net": set(("ansible.test.ccc",)),
+            },
+        ),
+        (
+            ["ansible.test.ccc"],
+            {"cloud.org": set(("ansible.test.aaa", "ansible.test.bbb")), "cloud.com": set(("ansible.test.aaa",))},
+        ),
+    ],
+)
+@patch("ansible_collections.amazon.aws.plugins.inventory.aws_ec2._list_hosted_zones")
+@patch("ansible_collections.amazon.aws.plugins.inventory.aws_ec2._list_resource_record_sets")
+def test___map_route53_records(
+    m__list_resource_record_sets, m__list_hosted_zones, inventory, route53_excluded_zones, expected
+):
+    inventory._options.update({"route53_excluded_zones": route53_excluded_zones})
+    connection = MagicMock()
+    region = MagicMock()
+    inventory.all_clients = MagicMock()
+    inventory.all_clients.return_value = [(connection, region)]
+
+    hosted_zones = [
+        {"Name": "ansible.test.aaa", "Id": "/hostedzone/aaa"},
+        {"Name": "ansible.test.bbb.", "Id": "/hostedzone/bbb"},
+        {"Name": "ansible.test.ccc.", "Id": "/hostedzone/ccc"},
+    ]
+    m__list_hosted_zones.return_value = hosted_zones
+    rr_sets = {
+        "/hostedzone/aaa": [
+            {"Name": "ansible.test.aaa", "ResourceRecords": [{"Value": "cloud.org."}, {"Value": "cloud.com."}]},
+            {"Name": "ansible.test.aaa"},
+        ],
+        "/hostedzone/bbb": [
+            {"Name": "ansible.test.bbb", "ResourceRecords": [{"Value": "cloud.org"}]},
+        ],
+        "/hostedzone/ccc": [
+            {"Name": "ansible.test.ccc", "ResourceRecords": [{"Value": "cloud.com."}]},
+            {"Name": "ansible.test.ccc", "ResourceRecords": [{"Value": "cloud.net."}]},
+        ],
+    }
+    m__list_resource_record_sets.side_effect = lambda client, hosted_zone_id: rr_sets.get(hosted_zone_id)
+
+    assert inventory._map_route53_records() == expected
+    inventory.all_clients.assert_called_once_with("route53")
+    m__list_hosted_zones.assert_called_once_with(connection)
+
+
+@pytest.mark.parametrize(
+    "instance,hostnames",
+    [
+        ({"PublicDnsName": "", "PrivateDnsName": "", "PrivateIpAddress": "10.1.0.92"}, ["ansible.test.local"]),
+        (
+            {"PublicDnsName": "instance.public.dns.com", "PrivateDnsName": "", "PrivateIpAddress": "10.1.0.92"},
+            ["ansible.test.local", "ansible.test.public.dns"],
+        ),
+        (
+            {"PublicDnsName": "", "PrivateDnsName": "cloud.com", "PrivateIpAddress": "10.1.0.92"},
+            ["ansible.test.com", "ansible.test.local", "ansible.test.org"],
+        ),
+        (
+            {"PublicIpAddress": "172.13.1.0", "PrivateDnsName": "", "PrivateIpAddress": "10.1.0.92"},
+            ["ansible.test.local"],
+        ),
+    ],
+)
+def test__get_instance_route53_hostnames(inventory, instance, hostnames):
+    inventory._is_matching_route53_hostname = MagicMock()
+    inventory._is_matching_route53_hostname.side_effect = lambda x: True
+
+    inventory.route53_resource_record_mapping = {
+        "cloud.com": set(("ansible.test.com", "ansible.test.org")),
+        "10.1.0.92": set(("ansible.test.local",)),
+        "instance.public.dns.com": set(("ansible.test.public.dns",)),
+    }
+    result = inventory._get_instance_route53_hostnames(instance)
+    assert sorted(hostnames) == sorted(result)

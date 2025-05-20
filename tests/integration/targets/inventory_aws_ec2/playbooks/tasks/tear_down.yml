@@ -1,0 +1,64 @@
+---
+- name: Set facts vpc_cidr, subnet_cidr
+  ansible.builtin.set_fact:
+    vpc_cidr: 10.{{ 256 | random(seed=resource_prefix) }}.0.0/16
+    subnet_cidr: 10.{{ 256 | random(seed=resource_prefix) }}.0.0/24
+
+- name: Describe vpc
+  amazon.aws.ec2_vpc_net_info:
+    filters:
+      tag:Name: "{{ resource_prefix }}_setup"
+  register: vpc_info
+
+- name: Tear down
+  when: vpc_info.vpcs | length > 0
+  block:
+    - name: Set facts vpc_cidr, subnet_cidr
+      ansible.builtin.set_fact:
+        vpc_id: "{{ vpc_info.vpcs.0.vpc_id }}"
+
+    - name: List existing instances
+      amazon.aws.ec2_instance_info:
+        filters:
+          vpc-id: "{{ vpc_id }}"
+      register: existing
+
+    - name: Delete Route53 configuration
+      ansible.builtin.include_tasks: teardown_route53.yml
+      vars:
+        test_instances: "{{ existing.instances }}"
+      when: teardown_route53 | default(false) | bool
+
+    - name: Remove ec2 instances
+      amazon.aws.ec2_instance:
+        instance_ids: "{{ existing.instances | map(attribute='instance_id') | list }}"
+        wait: true
+        state: absent
+
+    - name: Remove setup security group
+      amazon.aws.ec2_security_group:
+        name: "{{ resource_prefix }}_setup"
+        description: created by Ansible integration tests
+        state: absent
+        vpc_id: "{{ vpc_id }}"
+      ignore_errors: true
+
+    - name: Remove setup subnet
+      amazon.aws.ec2_vpc_subnet:
+        az: "{{ aws_region }}a"
+        tags: "{{ resource_prefix }}_setup"
+        vpc_id: "{{ vpc_id }}"
+        cidr: "{{ subnet_cidr }}"
+        state: absent
+        resource_tags:
+          Name: "{{ resource_prefix }}_setup"
+      ignore_errors: true
+
+    - name: Remove setup VPC
+      amazon.aws.ec2_vpc_net:
+        cidr_block: "{{ vpc_cidr }}"
+        state: absent
+        name: "{{ resource_prefix }}_setup"
+        resource_tags:
+          Name: "{{ resource_prefix }}_setup"
+      ignore_errors: true

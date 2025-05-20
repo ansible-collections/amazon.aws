@@ -1,0 +1,44 @@
+---
+## Task file for setup/teardown AWS resources for aws_ssm integration testing
+
+- name: Create a KMS key
+  amazon.aws.kms_key:
+    alias: '{{ kms_key_name }}'
+    grants:
+      - name: SSM-Agent-Access
+        grantee_principal: '{{ role_output.iam_role.arn }}'
+        retiring_principal: '{{ aws_caller_info.arn }}'
+        operations:
+          - Decrypt
+          - Encrypt
+          - GenerateDataKey
+          - GenerateDataKeyWithoutPlaintext
+          - DescribeKey
+          - Verify
+          - Sign
+          - RetireGrant
+      - name: Ansible-Test-Access
+        grantee_principal: '{{ aws_caller_info.arn }}'
+        retiring_principal: '{{ aws_caller_info.arn }}'
+        operations:
+          - Decrypt
+          - Encrypt
+          - GenerateDataKey
+          - GenerateDataKeyWithoutPlaintext
+          - DescribeKey
+          - Verify
+          - Sign
+          - RetireGrant
+    tags:
+      ansible-test: '{{ resource_prefix }}-connection-ssm'
+  register: cmk_setup
+
+- name: Ensure bucket is configured for encryption
+  amazon.aws.s3_bucket:
+    name: "{{ s3_bucket_name }}"
+    region: "{{ s3_bucket_region | default(omit) }}"
+    encryption: "aws:kms"
+    encryption_key_id: "{{ cmk_setup.key_arn }}"
+    bucket_key_enabled: "{{ s3_bucket_encryption | default(false) }}"
+  when:
+    - encrypted_bucket | default(false)

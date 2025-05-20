@@ -67,7 +67,7 @@
     - name: Assert creation happened (expected changed=true)
       ansible.builtin.assert:
         that:
-          - vpc_subnet_create
+          - vpc_subnet_create is changed
           - "'ec2:CreateTags' not in vpc_subnet_create.resource_actions"
           - "'ec2:DeleteTags' not in vpc_subnet_create.resource_actions"
           - vpc_subnet_create.subnet.id.startswith("subnet-")

@@ -1,0 +1,23 @@
+plugin: amazon.aws.aws_ec2
+access_key: '{{ aws_access_key }}'
+secret_key: '{{ aws_secret_key }}'
+{% if security_token | default(false) %}
+session_token: '{{ security_token }}'
+{% endif %}
+regions:
+- '{{ aws_region }}'
+filters:
+  tag:Name:
+  - '{{ resource_prefix }}'
+route53_enabled: true
+{% if route53_excluded_zone | default(false) %}
+route53_excluded_zones:
+  - {{ resource_prefix | replace("-", "") }}.ansible.test.
+{% endif %}
+{% if route53_hostname is defined %}
+route53_hostnames:
+  - {{ route53_hostname }}
+{% endif %}
+{% if allow_duplicated_hosts | default(false) %}
+allow_duplicated_hosts: true
+{% endif %}

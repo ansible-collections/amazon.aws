@@ -139,6 +139,28 @@ options:
     type: bool
     default: false
     version_added: 6.0.0
+  route53_enabled:
+    description:
+      - Whether or not to use the Route53 DNS as host name.
+      - When set to V(true), Route53 hostnames will be included.
+    type: bool
+    default: false
+    version_added: 10.1.0
+  route53_hostnames:
+    description:
+      - Specifies the Route53 DNS name suffix to consider.
+      - Consider only Route53 zone with name ending with the value specified here.
+    type: list
+    elements: str
+    default: []
+    version_added: 10.1.0
+  route53_excluded_zones:
+    description:
+      - A list of Route53 zones to exclude.
+    type: list
+    elements: str
+    default: []
+    version_added: 10.1.0
 """
 
 EXAMPLES = r"""
@@ -278,6 +300,28 @@ regions:
   - us-east-1
 hostnames:
   - "tag:Name | replace('test', 'prod')"
+
+---
+
+# Define inventory with Route53 enabled and filtering specific route53 host names suffix.
+plugin: amazon.aws.aws_ec2
+regions:
+  - us-east-1
+route53_enabled: true
+route53_hostnames:
+  - .example.com
+  - .another_example.org
+
+---
+
+# Define inventory with Route53 enabled and excluded zones.
+plugin: amazon.aws.aws_ec2
+regions:
+  - us-east-1
+route53_enabled: true
+route53_excluded_zones:
+  - ansible.bar.net
+  - ansible.foo.net
 """
 
 import re
@@ -287,10 +331,22 @@ try:
 except ImportError:
     pass  # will be captured by imported HAS_BOTO3
 
+from collections import defaultdict
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Set
+
 from ansible.module_utils._text import to_text
+
+try:
+    from ansible.template import trust_as_template
+except ImportError:
+    trust_as_template = None
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.plugin_utils.inventory import AWSInventoryBase
@@ -400,9 +456,11 @@ instance_data_filter_to_boto_attr = {
 
 def _get_tag_hostname(preference, instance):
     tag_hostnames = preference.split("tag:", 1)[1]
+    expected_single_value = False
     if "," in tag_hostnames:
         tag_hostnames = tag_hostnames.split(",")
     else:
+        expected_single_value = True
         tag_hostnames = [tag_hostnames]
 
     tags = boto3_tag_list_to_ansible_dict(instance.get("Tags", []))
@@ -416,6 +474,8 @@ def _get_tag_hostname(preference, instance):
             tag_value = tags.get(v)
             if tag_value:
                 tag_values.append(to_text(tag_value))
+    if expected_single_value and len(tag_values) > 0:
+        tag_values = tag_values[0]
     return tag_values
 
 
@@ -507,6 +567,40 @@ def _get_ssm_information(client, filters):
     return paginator.paginate(Filters=filters).build_full_result()
 
 
+@AWSRetry.jittered_backoff()
+def _list_hosted_zones(client: Any, **kwargs: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """
+    List all hosted zones using the given boto3 Route53 client.
+
+    :param client: boto3 client for Route53
+    :param kwargs: Additional parameters for the paginator
+    :return: List of hosted zones
+    """
+    paginator = client.get_paginator("list_hosted_zones")
+    return paginator.paginate(**kwargs).build_full_result()["HostedZones"]
+
+
+@AWSRetry.jittered_backoff()
+def _list_resource_record_sets(client: Any, hosted_zone_id: str, **kwargs: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """
+    Retrieve all resource record sets for a specific hosted zone in Route53.
+
+    :param client: A boto3 Route53 client.
+    :param hosted_zone_id: The ID of the hosted zone whose records should be listed.
+    :param kwargs: Optional keyword arguments to pass to the paginator.
+    :return: A list of dictionaries representing resource record sets.
+    """
+    paginator = client.get_paginator("list_resource_record_sets")
+    return paginator.paginate(HostedZoneId=hosted_zone_id, **kwargs).build_full_result()["ResourceRecordSets"]
+
+
+def _remove_trailing_dot(data: str) -> str:
+    """Remove the trailing dot from a string"""
+    if data.endswith("."):
+        return data[:-1]
+    return data
+
+
 class InventoryModule(AWSInventoryBase):
     NAME = "amazon.aws.aws_ec2"
     INVENTORY_FILE_SUFFIXES = ("aws_ec2.yml", "aws_ec2.yaml")
@@ -574,10 +668,16 @@ class InventoryModule(AWSInventoryBase):
             template_var = "{{'%s'|%s}}" % (hostname, jinja2_filter)
             if isinstance(hostname, list):
                 template_var = "{{%s|%s}}" % (hostname, jinja2_filter)
+            if trust_as_template:
+                template_var = trust_as_template(template_var)
             hostname = self.templar.template(variable=template_var, disable_lookups=False)
         if isinstance(hostname, list) and return_single_hostname:
             hostname = hostname[0] if hostname else None
         return hostname
+
+    @property
+    def route53_enabled(self) -> bool:
+        return self.get_option("route53_enabled")
 
     def _get_preferred_hostname(self, instance, hostnames):
         """
@@ -585,6 +685,12 @@ class InventoryModule(AWSInventoryBase):
         :param hostnames: a list of hostname destination variables in order of preference
         :return the preferred identifer for the host
         """
+        if self.route53_enabled:
+            route53_hostnames = self._get_instance_route53_hostnames(instance)
+            if route53_hostnames:
+                # This method returns only one hostname
+                return self._sanitize_hostname(sorted(route53_hostnames)[0])
+
         if not hostnames:
             hostnames = ["dns-name", "private-dns-name"]
 
@@ -613,11 +719,14 @@ class InventoryModule(AWSInventoryBase):
         :param hostnames: a list of hostname destination variables
         :return all the candidats matching the expectation
         """
+        hostname_list = []
+        if self.route53_enabled:
+            hostname_list = [self._sanitize_hostname(name) for name in self._get_instance_route53_hostnames(instance)]
+
         if not hostnames:
             hostnames = ["dns-name", "private-dns-name"]
 
         hostname = None
-        hostname_list = []
         for preference in hostnames:
             if isinstance(preference, dict):
                 if "name" not in preference:
@@ -686,6 +795,37 @@ class InventoryModule(AWSInventoryBase):
                     if content:
                         x["SsmInventory"] = content[0]
                     break
+
+    def _map_route53_records(self) -> Dict[str, Set[str]]:
+        """Get and store the map of resource records to domain names that point to them."""
+        route53_excluded_zones = [_remove_trailing_dot(zone) for zone in self.get_option("route53_excluded_zones")]
+        route53_map = defaultdict(set)
+        for connection, _region in self.all_clients("route53"):
+            for zone in _list_hosted_zones(connection):
+                if _remove_trailing_dot(zone["Name"]) in route53_excluded_zones:
+                    continue
+                for record in _list_resource_record_sets(client=connection, hosted_zone_id=zone["Id"]):
+                    for resource in record.get("ResourceRecords", []):
+                        route53_map[_remove_trailing_dot(resource["Value"])].add(_remove_trailing_dot(record["Name"]))
+        return route53_map
+
+    def _is_matching_route53_hostname(self, hostname: str) -> bool:
+        route53_hostnames = self.get_option("route53_hostnames")
+        result = True
+        if route53_hostnames:
+            result = any((hostname.endswith(name) for name in route53_hostnames))
+        return result
+
+    def _get_instance_route53_hostnames(self, instance: Dict[str, Any]) -> List[str]:
+        """Check if an instance is referenced in the records we have from
+        Route53. If it is, return the list of domain names pointing to that
+        instance. If nothing points to it, return an empty list."""
+
+        hostnames = set()
+        for attr in ("PublicDnsName", "PrivateDnsName", "PublicIpAddress", "PrivateIpAddress"):
+            if (attr_value := instance.get(attr)) and attr_value in self.route53_resource_record_mapping:
+                hostnames.update(self.route53_resource_record_mapping[attr_value])
+        return [name for name in hostnames if self._is_matching_route53_hostname(name)]
 
     def _get_multiple_ssm_inventories(self, connection, instance_ids):
         result = []
@@ -825,6 +965,9 @@ class InventoryModule(AWSInventoryBase):
 
         if not result_was_cached:
             results = self._query(regions, include_filters, exclude_filters, strict_permissions, use_ssm_inventory)
+
+        if self.route53_enabled:
+            self.route53_resource_record_mapping = self._map_route53_records()
 
         self._populate(
             results,

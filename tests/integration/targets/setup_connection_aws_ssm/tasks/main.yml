@@ -1,0 +1,166 @@
+---
+## Task file for setup/teardown AWS resources for aws_ssm integration testing
+- name: "Aws_ssm connection plugin integration test resource creation"
+  collections:
+    - amazon.aws
+  module_defaults:
+    group/aws:
+      access_key: '{{ aws_access_key }}'
+      secret_key: '{{ aws_secret_key }}'
+      session_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+  block:
+    - name: Get ARN of calling user
+      amazon.aws.aws_caller_info:
+      register: aws_caller_info
+
+    - name: Setup connection arguments fact
+      ansible.builtin.include_tasks: connection_args.yml
+
+    - name: Ensure IAM instance role exists
+      amazon.aws.iam_role:
+        name: "ansible-test-{{ tiny_prefix }}-aws-ssm-role"
+        assume_role_policy_document: "{{ lookup('file', 'ec2-trust-policy.json') }}"
+        state: present
+        create_instance_profile: true
+        managed_policy:
+          - AmazonSSMManagedInstanceCore
+        wait: true
+      register: role_output
+
+    - name: Lookup AMI configuration
+      ansible.builtin.set_fact:
+        ami_configuration: "{{ ami_details[(target_os | default('fedora'))] }}"
+
+    - name: AMI Lookup (ami_info)
+      amazon.aws.ec2_ami_info:
+        owners: "{{ ami_configuration.owner | default('amazon') }}"
+        filters:
+          name: "{{ ami_configuration.name }}"
+      register: ec2_amis
+      when: ami_configuration.name is defined
+
+    - name: AMI Lookup (SSM Parameter)
+      when: ami_configuration.ssm_parameter is defined
+      block:
+        - name: Set fact from SSM parameter
+          ansible.builtin.set_fact:
+            ssm_amis: "{{ lookup('amazon.aws.ssm_parameter', ami_configuration.ssm_parameter, **connection_args) }}"
+
+    - name: Set facts with latest AMIs
+      vars:
+        latest_ami: "{{ ec2_amis.images | default([]) | sort(attribute='creation_date') | last }}"
+      ansible.builtin.set_fact:
+        latest_ami_id: "{{ ssm_amis | default(latest_ami.image_id) }}"
+
+    - name: Install Session Manager Client for Debian/Ubuntu
+      ansible.builtin.include_tasks: debian.yml
+      when: ansible_distribution in ['Ubuntu', 'Debian']
+      register: install_plugin_debian
+
+    - name: Install Session Manager Client for RedHat/Amazon
+      ansible.builtin.include_tasks: redhat.yml
+      when: ansible_distribution in ['CentOS', 'RedHat', 'Amazon', 'Fedora']
+      register: install_plugin_redhat
+
+    - name: Install Session Manager Client for MacOS
+      ansible.builtin.include_tasks: macos.yml
+      when: ansible_distribution in ['MacOSX']
+      register: install_plugin_macos
+
+    - name: Fail if the plugin was not installed
+      block:
+        - name: Fail on missing plugin
+          ansible.builtin.fail:
+            msg: The distribution does not contain the required Session Manager Plugin
+          when:
+            - install_plugin_debian is skipped
+            - install_plugin_redhat is skipped
+            - install_plugin_macos is skipped
+      always:
+        - name: Debug distribution
+          ansible.builtin.debug:
+            var: ansible_distribution
+
+    - name: Create EC2 infrastructure
+      ansible.builtin.include_tasks: ec2_infra_setup.yml
+
+    - name: Create EC2 instance
+      amazon.aws.ec2_instance:
+        instance_type: "{{ instance_type }}"
+        ebs_optimized: true
+        image_id: "{{ latest_ami_id }}"
+        wait: true
+        instance_role: "{{ role_output.iam_role.role_name }}"
+        name: "{{ resource_prefix }}-connection-aws-ssm"
+        user_data: "{{ ami_configuration.user_data }}"
+        state: started
+        subnet_id: "{{ private_subnet_id }}"
+        tags:
+          TestPrefix: "{{ resource_prefix }}"
+      register: instance_output
+
+    - name: Setup SSM document
+      ansible.builtin.include_tasks: ssm_document.yml
+      when: use_ssm_document | default(false)
+
+    - name: Create S3 bucket
+      amazon.aws.s3_bucket:
+        name: "{{ s3_bucket_name }}"
+        region: "{{ s3_bucket_region | default(omit) }}"
+      register: s3_output
+
+    - name: Setup encryption
+      ansible.builtin.include_tasks: encryption.yml
+      when: encrypted_bucket | default(false)
+
+    - name: Create Inventory file
+      ansible.builtin.template:
+        dest: "{{ playbook_dir }}/ssm_inventory"
+        src: inventory-combined.aws_ssm.j2
+        mode: "0600"
+
+    - name: Create AWS keys environment
+      ansible.builtin.template:
+        dest: "{{ playbook_dir }}/aws-env-vars.sh"
+        src: aws-env-vars.j2
+        mode: "0600"
+      no_log: true
+
+    - name: Create boto3 config file
+      ansible.builtin.template:
+        dest: "{{ playbook_dir }}/boto3_config"
+        src: boto_config.j2
+        mode: "0600"
+
+  always:
+    - name: Create EC2 Linux vars_to_delete.yml
+      ansible.builtin.template:
+        dest: "{{ playbook_dir }}/instance_vars_to_delete.yml"
+        src: ec2_instance_vars_to_delete.yml.j2
+        mode: "0600"
+      ignore_errors: true  # noqa: ignore-errors
+      when: instance_output is successful
+
+    - name: Create IAM Role vars_to_delete.yml
+      ansible.builtin.template:
+        dest: "{{ playbook_dir }}/iam_role_vars_to_delete.yml"
+        src: iam_role_vars_to_delete.yml.j2
+        mode: "0600"
+      ignore_errors: true  # noqa: ignore-errors
+      when: role_output is successful
+
+    - name: Create S3.yml
+      ansible.builtin.template:
+        dest: "{{ playbook_dir }}/s3_vars_to_delete.yml"
+        src: s3_vars_to_delete.yml.j2
+        mode: "0600"
+      ignore_errors: true  # noqa: ignore-errors
+      when: s3_output is successful
+
+    - name: Create SSM vars_to_delete.yml
+      ansible.builtin.template:
+        dest: "{{ playbook_dir }}/ssm_vars_to_delete.yml"
+        src: ssm_vars_to_delete.yml.j2
+        mode: "0600"
+      ignore_errors: true  # noqa: ignore-errors
