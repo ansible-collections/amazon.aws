@@ -1,0 +1,2 @@
+minor_changes:
+  - autoscaling_group - Added a boolean parameter ``protected_from_scale_in`` to toggle protection from scale-in. This allows users to enable or disable scale-in protection for instances in an autoscaling group. (https://github.com/ansible-collections/amazon.aws/pull/2207)
