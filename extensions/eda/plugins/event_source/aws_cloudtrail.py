@@ -1,10 +1,13 @@
 import asyncio
 import json
 from datetime import datetime
-from typing import Any, Awaitable, Dict, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from aiobotocore.session import get_session
 from botocore.client import BaseClient
+
+if TYPE_CHECKING:
+    from collections.abc import Awaitable
 
 DOCUMENTATION = r"""
 ---
@@ -73,7 +76,8 @@ def _cloudtrail_event_to_dict(event: dict[str, Any]) -> dict[str, Any]:
 
 
 def _get_events(
-    events: list[dict[str, Any]], last_event_ids: list[str]
+    events: list[dict[str, Any]],
+    last_event_ids: list[str],
 ) -> tuple[list[dict[str, Any]], Any, list[str]]:
     event_time = None
     event_ids = []
@@ -92,19 +96,23 @@ def _get_events(
 
 
 async def _get_cloudtrail_events(
-    client: BaseClient, params: dict[str, Any]
+    client: BaseClient,
+    params: dict[str, Any],
 ) -> list[dict[str, Any]]:
     paginator = client.get_paginator("lookup_events")
-    results: Dict[str, Any] = await cast(
-        Awaitable[Dict[str, Any]], paginator.paginate(**params).build_full_result()
+    results: dict[str, Any] = await cast(
+        "Awaitable[dict[str, Any]]",
+        paginator.paginate(**params).build_full_result(),
     )
     events = results.get("Events", [])
     # type guards:
     if not isinstance(events, list):
-        raise ValueError("Events is not a list")
+        err_msg = "Events is not a list"
+        raise TypeError(err_msg)
     for event in events:
         if not isinstance(event, dict):
-            raise ValueError("Event is not a dictionary")
+            err_msg = "Event is not a dictionary"
+            raise TypeError(err_msg)
     return events
 
 

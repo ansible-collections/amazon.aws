@@ -71,13 +71,18 @@ EXAMPLES = r"""
 """
 
 
-DeleteMessageBatchRequestEntryTypeDef = TypedDict(
-    "DeleteMessageBatchRequestEntryTypeDef", {"Id": str, "ReceiptHandle": str}
-)
+class DeleteMessageBatchRequestEntryTypeDef(TypedDict):
+    """Custom TypedDict for Delete Message Batch Request Entry."""
+
+    Id: str
+    ReceiptHandle: str
 
 
 # pylint: disable=too-many-locals
-async def main(queue: asyncio.Queue[Any], args: dict[str, Any]) -> None:
+async def main(  # noqa: C901, PLR0912
+    queue: asyncio.Queue[Any],
+    args: dict[str, Any],
+) -> None:
     """Receive events via an AWS SQS queue."""
     logger = logging.getLogger()
 
@@ -130,8 +135,9 @@ async def main(queue: asyncio.Queue[Any], args: dict[str, Any]) -> None:
                         raise ValueError(err_msg)
                     entries.append(
                         DeleteMessageBatchRequestEntryTypeDef(
-                            Id=entry["MessageId"], ReceiptHandle=entry["ReceiptHandle"]
-                        )
+                            Id=entry["MessageId"],
+                            ReceiptHandle=entry["ReceiptHandle"],
+                        ),
                     )
                     meta = {"MessageId": entry["MessageId"]}
                     try:
@@ -144,14 +150,16 @@ async def main(queue: asyncio.Queue[Any], args: dict[str, Any]) -> None:
 
                 # Need to remove msg from queue or else it'll reappear
                 delete_results = await client.delete_message_batch(
-                    QueueUrl=queue_url, Entries=entries
+                    QueueUrl=queue_url,
+                    Entries=entries,
                 )
 
                 # Check if the deletion was successful
                 if "Successful" in delete_results:
                     for item in delete_results["Successful"]:
                         logger.debug(
-                            "Message with ID %s deleted successfully", item["Id"]
+                            "Message with ID %s deleted successfully",
+                            item["Id"],
                         )
                 # Log a error if any message failed deletions
                 if "Failed" in delete_results:
