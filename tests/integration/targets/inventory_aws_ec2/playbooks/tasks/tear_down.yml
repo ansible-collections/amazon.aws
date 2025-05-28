@@ -23,6 +23,12 @@
           vpc-id: "{{ vpc_id }}"
       register: existing
 
+    - name: Delete Route53 configuration
+      ansible.builtin.include_tasks: teardown_route53.yml
+      vars:
+        test_instances: "{{ existing.instances }}"
+      when: teardown_route53 | default(false) | bool
+
     - name: Remove ec2 instances
       amazon.aws.ec2_instance:
         instance_ids: "{{ existing.instances | map(attribute='instance_id') | list }}"

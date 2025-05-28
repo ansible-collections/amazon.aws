@@ -488,6 +488,26 @@ Now the output of ``ansible-inventory -i demo.aws_ec2.yml --list``:
 These details can include operating system information, installed software, network configurations, and custom inventory attributes defined in SSM.
 
 
+``route53_enabled``
+---------------------
+
+``route53_enabled: True`` enables to use the Route 53 DNS information as host name. The ``route53_hostnames`` option specifies the list of Route 53 DNS name suffix to consider while filtering host names while the ``route53_excluded_zones`` option specifies the list of Route53 host zones to exclude.
+
+ .. code-block:: yaml
+
+    # route53_inventory.aws_ec2.yml
+    plugin: aws_ec2
+    # This enables Route53 DNS information
+    route53_enabled: true
+    # Specifies the list of Route53 DNS zones to exclude
+    route53_excluded_zones:
+    - foo.bar.zone1
+    - foo.bar.zone2
+    # Specifies the list of Route53 DNS suffix to consider
+    route53_hostnames:
+    - example.net
+    - example.org
+
 ``cache``
 ---------
 
