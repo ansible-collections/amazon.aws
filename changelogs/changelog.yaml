@@ -3867,8 +3867,7 @@ releases:
     changes:
       minor_changes:
       - inventory/aws_ec2 - Adding support for Route53 as hostname (https://github.com/ansible-collections/amazon.aws/pull/2580).
-      release_summary:
-      - This minor release adds support for ``Route53`` as a hostname.
+      release_summary: This minor release adds support for ``Route53`` as a hostname.
     fragments:
     - 20250321-inventory_aws_ec2-add-support-for-route53.yml
     release_date: '2025-06-03'
