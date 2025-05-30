@@ -1,3 +1,0 @@
----
-minor_changes:
-  - inventory/aws_ec2 - Adding support for Route53 as hostname (https://github.com/ansible-collections/amazon.aws/pull/2580).
