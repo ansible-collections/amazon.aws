@@ -3750,7 +3750,7 @@ releases:
     - release_summary.yml
     - update_ansible-lint.yml
     release_date: '2025-05-12'
-10.0.0:
+  10.0.0:
     changes:
       breaking_changes:
       - amazon.aws collection - Support for ansible-core < 2.17 has been dropped (https://github.com/ansible-collections/amazon.aws/pull/2601).
