@@ -4,6 +4,19 @@ amazon.aws Release Notes
 
 .. contents:: Topics
 
+v10.1.0
+=======
+
+Release Summary
+---------------
+
+This minor release adds support for ``Route53`` as a hostname.
+
+Minor Changes
+-------------
+
+- inventory/aws_ec2 - Adding support for ``Route53`` as hostname (https://github.com/ansible-collections/amazon.aws/pull/2580).
+
 v10.0.0
 ============
 
