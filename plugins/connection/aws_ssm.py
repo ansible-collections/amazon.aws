@@ -232,22 +232,20 @@ EXAMPLES = r"""
       raw: yum install -y awscli
       tags: aws-cli
 
-# Optionally, you can show some tag as hostname instead of InstanceID
+# Alternatively, you can use a tag (eg. Name) as hostname instead of InstanceID.
+# However,  "ansible_host" must still be set to the instance_id
 # =======================================
 # # aws_ec2.yml (Dynamic Inventory - Linux)
 # plugin: aws_ec2
 # regions:
 #   - us-east-1
-# # This will return the Instances with the tag "SSMTag" set to "ssmlinux"
-# filters:
-#   tag:SSMTag: ssmlinux
 # hostnames:
 #   - tag:Name # will return `tag:Name` for hostname
 # compose:
 #   ansible_host: instance_id # but connection will be done to InstanceID
 ---
 
-# Execution: ansible-playbook linux.yaml -i aws_ec2.yml
+# Execution: ansible-playbook windows.yaml -i aws_ec2.yml
 # =====================================================
 # # aws_ec2.yml (Dynamic Inventory - Windows)
 # plugin: aws_ec2
