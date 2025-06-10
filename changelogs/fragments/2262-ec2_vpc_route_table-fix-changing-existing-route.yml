@@ -1,0 +1,2 @@
+bugfixes:
+  - ec2_vpc_route_table - Fix changing an existing route tied to a IPv6 CIDR blocks (https://github.com/ansible-collections/amazon.aws/pull/2662).
