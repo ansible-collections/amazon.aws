@@ -110,6 +110,13 @@ options:
           - Whether or not to copy all tags from the DB instance to snapshots of the instance. When initially creating
             a DB instance the RDS API defaults this to V(false) if unspecified.
         type: bool
+    database_insights_mode:
+        description:
+          - Indicates which mode of Database Insights to enable for the target DB cluster.
+        choices:
+          - standard
+          - advanced
+        type: str
     db_cluster_identifier:
         description:
           - The DB cluster (lowercase) identifier to add the aurora DB instance to. The identifier must contain from 1 to
@@ -1628,6 +1635,7 @@ def main():
         ca_certificate_identifier=dict(type="str"),
         character_set_name=dict(),
         copy_tags_to_snapshot=dict(type="bool"),
+        database_insights_mode=dict(choices=["standard", "advanced"]),
         db_cluster_identifier=dict(aliases=["cluster_id"]),
         db_instance_class=dict(aliases=["class", "instance_type"]),
         db_instance_identifier=dict(required=True, aliases=["instance_id", "id"]),
