@@ -112,7 +112,7 @@ options:
         type: bool
     database_insights_mode:
         description:
-          - Indicates which mode of Database Insights to enable for the target DB cluster.
+          - Indicates which mode of Database Insights to enable for the target DB instance.
         choices:
           - standard
           - advanced
