@@ -69,6 +69,10 @@ options:
     description:
       - Snapshot ID on which to base the volume.
     type: str
+  volume_initialization_rate:
+    description: 
+      - Rate at which to initiliaze the volume from a snapshot.
+    type: int
   state:
     description:
       - Whether to ensure the volume is present or absent.
@@ -492,6 +496,7 @@ def create_volume(module: AnsibleAWSModule, ec2_conn, zone: str) -> Tuple[Dict[s
     outpost_arn = module.params.get("outpost_arn")
     tags = module.params.get("tags") or {}
     name = module.params.get("name")
+    volume_initialization_rate = module.params.get("volume_initialization_rate")
 
     volume = get_volume(module, ec2_conn)
 
@@ -510,6 +515,9 @@ def create_volume(module: AnsibleAWSModule, ec2_conn, zone: str) -> Tuple[Dict[s
 
         if snapshot:
             additional_params["SnapshotId"] = snapshot
+        
+        if volume_initialization_rate:
+            additional_params["VolumeInitializationRate"] = int(volume_initialization_rate)
 
         if iops:
             additional_params["Iops"] = int(iops)
@@ -857,6 +865,7 @@ def main():
         outpost_arn=dict(type="str"),
         purge_tags=dict(type="bool", default=True),
         multi_attach=dict(type="bool"),
+        volume_initialization_rate=dict(type="int", default=None),
     )
 
     module = AnsibleAWSModule(
@@ -877,6 +886,7 @@ def main():
     volume_type = module.params.get("volume_type")
     throughput = module.params.get("throughput")
     multi_attach = module.params.get("multi_attach")
+    volume_initialization_rate = module.params.get("volume_initialization_rate")
 
     if iops:
         if volume_type in ("gp2", "st1", "sc1", "standard"):
@@ -896,6 +906,12 @@ def main():
 
     if multi_attach is True and volume_type not in ("io1", "io2"):
         module.fail_json(msg="multi_attach is only supported for io1 and io2 volumes.")
+    
+    if volume_initialization_rate: 
+        if not snapshot:
+            module.fail_json(msg="Volume initialization rate is only supported when creating a volume from snapshot.")
+        if int(volume_initialization_rate) < 100 or int(volume_initialization_rate) > 3000:
+            module.fail_json(msg="Volume initialization rate must be between 100 and 3000 MiB/s.")
 
     ec2_conn = module.client("ec2")
 
