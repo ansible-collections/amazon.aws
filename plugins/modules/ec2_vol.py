@@ -910,7 +910,7 @@ def main():
     if volume_initialization_rate: 
         if not snapshot:
             module.fail_json(msg="Volume initialization rate is only supported when creating a volume from snapshot.")
-        if int(volume_initialization_rate) < 100 or int(volume_initialization_rate) > 3000:
+        if int(volume_initialization_rate) < 100 or int(volume_initialization_rate) > 300:
             module.fail_json(msg="Volume initialization rate must be between 100 and 3000 MiB/s.")
 
     ec2_conn = module.client("ec2")
