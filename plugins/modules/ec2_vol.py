@@ -865,7 +865,7 @@ def main():
         outpost_arn=dict(type="str"),
         purge_tags=dict(type="bool", default=True),
         multi_attach=dict(type="bool"),
-        volume_initialization_rate=dict(type="int", default=None),
+        volume_initialization_rate=dict(type="int"),
     )
 
     module = AnsibleAWSModule(
