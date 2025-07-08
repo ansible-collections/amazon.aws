@@ -1515,7 +1515,7 @@ Minor Changes
 - ec2_group - The ``ec2_group`` module has been renamed to ``ec2_security_group``, ``ec2_group`` remains as an alias (https://github.com/ansible-collections/amazon.aws/pull/897).
 - ec2_group_info - The ``ec2_group_info`` module has been renamed to ``ec2_security_group_info``, ``ec2_group_info`` remains as an alias (https://github.com/ansible-collections/amazon.aws/pull/897).
 - ec2_instance - Add hibernation_options and volumes->ebs->encrypted keys to support stop-hibernate instance (https://github.com/ansible-collections/amazon.aws/pull/972).
-- ec2_instance - expanded the use of the automatic retries to ``InsufficientInstanceCapacity`` (https://github.com/ansible-collections/amazon.aws/issues/1038).
+- ec2_instance - expanded the use of the automatic retries to ``InsuffienctInstanceCapacity`` (https://github.com/ansible-collections/amazon.aws/issues/1038).
 - ec2_metadata_facts - avoid catching ``Exception``, catch more specific errors instead (https://github.com/ansible-collections/amazon.aws/pull/968).
 - ec2_security_group - minor linting fixes (https://github.com/ansible-collections/amazon.aws/pull/968).
 - ec2_vpc_endpoint - avoid catching ``Exception``, catch more specific errors instead (https://github.com/ansible-collections/amazon.aws/pull/968).
@@ -1629,7 +1629,7 @@ security issues and bugfixes.
 Minor Changes
 -------------
 
-- ec2_instance - expanded the use of the automatic retries to ``InsufficientInstanceCapacity`` (https://github.com/ansible-collections/amazon.aws/issues/1038).
+- ec2_instance - expanded the use of the automatic retries to ``InsuffienctInstanceCapacity`` (https://github.com/ansible-collections/amazon.aws/issues/1038).
 
 Bugfixes
 --------

@@ -1105,7 +1105,7 @@ releases:
       - 'module_utils/cloud - Fix ``ValueError: ansible_collections.amazon.aws.plugins.module_utils.core.__spec__
         is None`` error on Ansible 2.9 (https://github.com/ansible-collections/amazon.aws/issues/1083).'
       minor_changes:
-      - ec2_instance - expanded the use of the automatic retries to ``InsufficientInstanceCapacity``
+      - ec2_instance - expanded the use of the automatic retries to ``InsuffienctInstanceCapacity``
         (https://github.com/ansible-collections/amazon.aws/issues/1038).
       release_summary: 'The amazon.aws 4.3.0 release includes a number of minor bug
         fixes and improvements.
@@ -1367,7 +1367,7 @@ releases:
         ``ec2_group_info`` remains as an alias (https://github.com/ansible-collections/amazon.aws/pull/897).
       - ec2_instance - Add hibernation_options and volumes->ebs->encrypted keys to
         support stop-hibernate instance (https://github.com/ansible-collections/amazon.aws/pull/972).
-      - ec2_instance - expanded the use of the automatic retries to ``InsufficientInstanceCapacity``
+      - ec2_instance - expanded the use of the automatic retries to ``InsuffienctInstanceCapacity``
         (https://github.com/ansible-collections/amazon.aws/issues/1038).
       - ec2_metadata_facts - avoid catching ``Exception``, catch more specific errors
         instead (https://github.com/ansible-collections/amazon.aws/pull/968).
