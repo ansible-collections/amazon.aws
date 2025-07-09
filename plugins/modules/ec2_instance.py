@@ -57,6 +57,14 @@ options:
       - When the instance is present and the O(instance_type) specified value is different from the current value,
         the instance will be stopped and the instance type will be updated.
     type: str
+  alternate_instance_types:
+    description:
+      - A list of alternate instance types to try if the primary O(instance_type) fails with V(InsufficientInstanceCapacity).
+      - The module will attempt to launch with each alternate type in order until one succeeds or all are exhausted.
+      - Only used when launching new instances, not when modifying existing instances.
+    type: list
+    elements: str
+    version_added: 8.3.0
   count:
     description:
       - Number of instances to launch.
@@ -641,6 +649,21 @@ EXAMPLES = r"""
           delete_on_termination: true
     instance_type: t2.micro
     image_id: ami-123456
+
+- name: start an instance with alternate instance types for capacity failures
+  amazon.aws.ec2_instance:
+    name: "resilient-instance"
+    vpc_subnet_id: subnet-5ca1ab1e
+    instance_type: t3.medium
+    alternate_instance_types:
+      - t3.small
+      - t2.medium
+      - t2.small
+    image_id: ami-123456
+    key_name: "prod-ssh-key"
+    security_group: default
+    tags:
+      Environment: Testing
 
 - name: add second ENI interface
   amazon.aws.ec2_instance:
@@ -1320,6 +1343,7 @@ instances:
 
 import time
 import uuid
+import copy
 from collections import namedtuple
 from typing import Any
 from typing import Dict
@@ -2517,7 +2541,7 @@ def ensure_present(
                 spec=instance_spec,
                 msg="Would have launched instances if not in check_mode.",
             )
-    instance_response = run_instances(client, **instance_spec)
+    instance_response = run_instances(client, module, **instance_spec)
     instances = instance_response["Instances"]
     instance_ids = [i["InstanceId"] for i in instances]
 
@@ -2578,14 +2602,95 @@ def ensure_present(
         )
 
 
-def run_instances(client, **instance_spec: Dict[str, Any]) -> Dict[str, Any]:
-    try:
-        return run_ec2_instances(client, **instance_spec)
-    except is_ansible_aws_error_message("Invalid IAM Instance Profile ARN"):
-        # If the instance profile has just been created, it takes some time to be visible by ec2
-        # So we wait 10 second and retry the run_instances
-        time.sleep(10)
-        return run_ec2_instances(client, **instance_spec)
+def run_instances(client, module: AnsibleAWSModule, **instance_spec: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Run EC2 instances with retry logic for InsufficientInstanceCapacity errors.
+    
+    If the primary instance type fails with InsufficientInstanceCapacity,
+    try alternate instance types specified in the module parameters.
+    """
+    # Get the primary instance type and alternate types
+    primary_instance_type = instance_spec.get("InstanceType")
+    alternate_instance_types = module.params.get("alternate_instance_types", [])
+    
+    # List of instance types to try (primary first, then alternates)
+    instance_types_to_try = [primary_instance_type] if primary_instance_type else []
+    if alternate_instance_types:
+        instance_types_to_try.extend(alternate_instance_types)
+    
+    # If no instance types to try, fallback to original behavior
+    if not instance_types_to_try:
+        try:
+            return run_ec2_instances(client, **instance_spec)
+        except is_ansible_aws_error_message("Invalid IAM Instance Profile ARN"):
+            # If the instance profile has just been created, it takes some time to be visible by ec2
+            # So we wait 10 second and retry the run_instances
+            time.sleep(10)
+            return run_ec2_instances(client, **instance_spec)
+    
+    last_error = None
+    
+    for i, instance_type in enumerate(instance_types_to_try):
+        # Create a copy of the instance spec with the current instance type
+        current_spec = copy.deepcopy(instance_spec)
+        current_spec["InstanceType"] = instance_type
+        
+        try:
+            result = run_ec2_instances(client, **current_spec)
+            
+            # If we successfully launched with an alternate instance type, update the module params
+            # to reflect the actually used instance type to prevent later modification attempts
+            if i > 0:
+                module.warn(f"Successfully launched instance with alternate instance type '{instance_type}' "
+                           f"after primary instance type '{primary_instance_type}' failed with InsufficientInstanceCapacity")
+                # Update the module parameters to reflect the actually used instance type
+                module.params["instance_type"] = instance_type
+            
+            return result
+            
+        except is_ansible_aws_error_message("Invalid IAM Instance Profile ARN"):
+            # If the instance profile has just been created, it takes some time to be visible by ec2
+            # So we wait 10 second and retry with the same instance type
+            time.sleep(10)
+            try:
+                result = run_ec2_instances(client, **current_spec)
+                
+                # If we successfully launched with an alternate instance type, update the module params
+                # to reflect the actually used instance type to prevent later modification attempts
+                if i > 0:
+                    module.warn(f"Successfully launched instance with alternate instance type '{instance_type}' "
+                               f"after primary instance type '{primary_instance_type}' failed with InsufficientInstanceCapacity")
+                    # Update the module parameters to reflect the actually used instance type
+                    module.params["instance_type"] = instance_type
+                
+                return result
+                
+            except is_ansible_aws_error_code("InsufficientInstanceCapacity") as e:
+                last_error = e
+                # If this is not the last instance type to try, continue to the next one
+                if i < len(instance_types_to_try) - 1:
+                    continue
+                else:
+                    # This was the last instance type to try, re-raise the error
+                    raise
+            except Exception as e:
+                # For any other error, re-raise immediately
+                raise
+                
+        except is_ansible_aws_error_code("InsufficientInstanceCapacity") as e:
+            last_error = e
+            # If this is not the last instance type to try, continue to the next one
+            if i < len(instance_types_to_try) - 1:
+                continue
+            else:
+                # This was the last instance type to try, re-raise the error
+                raise
+        except Exception as e:
+            # For any other error, re-raise immediately
+            raise
+    
+    # If we get here, all instance types failed with InsufficientInstanceCapacity
+    raise last_error
 
 
 def describe_default_subnet(client, module: AnsibleAWSModule, use_availability_zone: bool = True) -> str:
@@ -2679,6 +2784,7 @@ def main():
         ),
         image_id=dict(type="str"),
         instance_type=dict(type="str"),
+        alternate_instance_types=dict(type="list", elements="str"),
         user_data=dict(type="str"),
         aap_callback=dict(
             type="dict",
