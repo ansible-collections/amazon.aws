@@ -2853,7 +2853,7 @@ def main():
     retry_decorator = AWSRetry.jittered_backoff(
         catch_extra_error_codes=[
             "IncorrectState",
-            "InsuffienctInstanceCapacity",
+            "InsufficientInstanceCapacity",
             "InvalidInstanceID.NotFound",
         ]
     )

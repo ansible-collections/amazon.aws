@@ -746,7 +746,7 @@ def detach_volume(client, volume_id: str, **params: Dict[str, Union[str, bool]])
 # EC2 Instance
 EC2_INSTANCE_CATCH_EXTRA_CODES = [
     "IncorrectState",
-    "InsuffienctInstanceCapacity",
+    "InsufficientInstanceCapacity",
     "InvalidInstanceID.NotFound",
 ]
 
