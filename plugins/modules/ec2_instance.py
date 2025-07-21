@@ -2617,27 +2617,14 @@ def run_instances(client, module: AnsibleAWSModule, **instance_spec: Dict[str, A
     instance_types_to_try = [primary_instance_type] if primary_instance_type else []
     if alternate_instance_types:
         instance_types_to_try.extend(alternate_instance_types)
-    
-    # If no instance types to try, fallback to original behavior
-    if not instance_types_to_try:
-        try:
-            return run_ec2_instances(client, **instance_spec)
-        except is_ansible_aws_error_message("Invalid IAM Instance Profile ARN"):
-            # If the instance profile has just been created, it takes some time to be visible by ec2
-            # So we wait 10 second and retry the run_instances
-            time.sleep(10)
-            return run_ec2_instances(client, **instance_spec)
-    
     last_error = None
     
     for i, instance_type in enumerate(instance_types_to_try):
-        # Create a copy of the instance spec with the current instance type
+        # Create a copy of the instance spec with the current instance type to maintain original values
         current_spec = copy.deepcopy(instance_spec)
         current_spec["InstanceType"] = instance_type
-        
         try:
             result = run_ec2_instances(client, **current_spec)
-            
             # If we successfully launched with an alternate instance type, update the module params
             # to reflect the actually used instance type to prevent later modification attempts
             if i > 0:
@@ -2648,10 +2635,14 @@ def run_instances(client, module: AnsibleAWSModule, **instance_spec: Dict[str, A
             
             return result
             
-        except is_ansible_aws_error_message("Invalid IAM Instance Profile ARN"):
-            # If the instance profile has just been created, it takes some time to be visible by ec2
-            # So we wait 10 second and retry with the same instance type
-            time.sleep(10)
+        except AnsibleAWSError as e:
+            except is_ansible_aws_error_message("Invalid IAM Instance Profile ARN"):
+                # Check if this is an IAM instance profile error
+            if is_ansible_aws_error_message("Invalid IAM Instance Profile ARN")(e):
+                # IAM instance profile error - likely due to eventual consistency
+                # If the instance profile has just been created, it takes some time
+                # to be visible by EC2. Wait 10 seconds and retry with the same instance type
+                time.sleep(10)
             try:
                 result = run_ec2_instances(client, **current_spec)
                 
@@ -2666,27 +2657,30 @@ def run_instances(client, module: AnsibleAWSModule, **instance_spec: Dict[str, A
                 return result
                 
             except is_ansible_aws_error_code("InsufficientInstanceCapacity") as e:
+                # InsufficientInstanceCapacity occurred during IAM retry attempt
+                # This handles the case where IAM profile propagation succeeded but
+                # the instance type still has insufficient capacity
                 last_error = e
-                # If this is not the last instance type to try, continue to the next one
                 if i < len(instance_types_to_try) - 1:
+                    # More instance types available, continue to next one
                     continue
                 else:
                     # This was the last instance type to try, re-raise the error
                     raise
-            except Exception as e:
-                # For any other error, re-raise immediately
-                raise
                 
         except is_ansible_aws_error_code("InsufficientInstanceCapacity") as e:
+            # InsufficientInstanceCapacity occurred on initial attempt
+            # This handles the primary failure scenario for capacity issues
             last_error = e
-            # If this is not the last instance type to try, continue to the next one
             if i < len(instance_types_to_try) - 1:
+                # More instance types available, continue to next one
                 continue
             else:
                 # This was the last instance type to try, re-raise the error
                 raise
         except Exception as e:
-            # For any other error, re-raise immediately
+            # For any other error (not IAM or capacity related), re-raise immediately
+            # These errors are not retryable and should fail fast
             raise
     
     # If we get here, all instance types failed with InsufficientInstanceCapacity
