@@ -3759,4 +3759,4 @@ releases:
     fragments:
     - 2674-fix-errorcode-typo.yml
     - 9.5.1.yml
-    release_date: '2025-07-29'
+    release_date: '2025-08-05'
