@@ -102,7 +102,7 @@ class TestMinimalVersionTestSuite:
         assert return_val.get("invocation") is not None
         assert return_val.get("failed") is None
         assert return_val.get("error") is None
-        assert str(return_val.get("warnings")) is not None
+        assert return_val.get("warnings") is not None
         warnings = return_val.get("warnings")
         assert len(warnings) == 1
         # Assert that we have a warning about the version but be
@@ -136,7 +136,7 @@ class TestMinimalVersionTestSuite:
         assert return_val.get("invocation") is not None
         assert return_val.get("failed") is None
         assert return_val.get("error") is None
-        assert str(return_val.get("warnings")) is not None
+        aassert return_val.get("warnings") is not None
         warnings = return_val.get("warnings")
         assert len(warnings) == 1
         # Assert that we have a warning about the version but be
@@ -170,7 +170,8 @@ class TestMinimalVersionTestSuite:
         assert return_val.get("invocation") is not None
         assert return_val.get("failed") is None
         assert return_val.get("error") is None
-        assert str(return_val.get("warnings")) is not None
+        assert return_val.get("warnings") is not None
+
         warnings = return_val.get("warnings")
         assert len(warnings) == 2
 
