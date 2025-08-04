@@ -4,7 +4,7 @@
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta content="2.18.0" name="antsibull-docs" />
+<meta content="2.20.0" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>amazon.aws.aws_account_attribute lookup – Look up AWS account attributes &mdash; Ansible collections  documentation</title>
@@ -340,6 +340,13 @@ examples: <code class="docutils literal notranslate"><span class="pre">lookup('a
 </tr>
 </tbody>
 </table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Configuration entries listed above for each entry type (Ansible variable, environment variable, and so on) have a low to high priority order.
+For example, a variable that is lower in the list will override a variable that is higher up.
+The entry types are also ordered by precedence from low to high priority order.
+For example, an ansible.cfg entry (further up in the list) is overwritten by an Ansible variable (further down in the list).</p>
+</div>
 </section>
 <section id="notes">
 <h2><a class="toc-backref" href="#id4" role="doc-backlink">Notes</a><a class="headerlink" href="#notes" title="Link to this heading"></a></h2>
@@ -390,10 +397,6 @@ examples: <code class="docutils literal notranslate"><span class="pre">lookup('a
 <ul class="simple">
 <li><p>Sloane Hertel (&#64;s-hertel)</p></li>
 </ul>
-<div class="admonition hint">
-<p class="admonition-title">Hint</p>
-<p>Configuration entries for each entry type have a low to high priority order. For example, a variable that is lower in the list will override a variable that is higher up.</p>
-</div>
 </section>
 <section id="collection-links">
 <h3>Collection links<a class="headerlink" href="#collection-links" title="Link to this heading"></a></h3>
