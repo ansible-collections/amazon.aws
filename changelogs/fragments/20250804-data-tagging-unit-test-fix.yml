@@ -1,0 +1,3 @@
+---
+minor_changes:
+  - test_minimal_versions.py - Make ``boto3``/``botocore`` deprecation warning unit tests compatible with ``ansible-core>=2.19`` data tagging feature (https://github.com/ansible-collections/amazon.aws/pull/2691).
