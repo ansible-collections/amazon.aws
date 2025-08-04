@@ -20,6 +20,27 @@ from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleA
 if not HAS_BOTO3:
     pytestmark = pytest.mark.skip("test_minimal_versions.py requires the python modules 'boto3' and 'botocore'")
 
+# Compatibility utility for Ansible 2.19 warning format changes
+try:
+    from ansible.module_utils.common.messages import WarningSummary as _WarningSummary
+except ImportError:
+    _WarningSummary = None
+
+
+def extract_warnings_texts(result):
+    """
+    Given the results dictionary of a module, extracts the warnings as a list of strings.
+    This handles both pre-2.19 (list of strings) and 2.19+ (list of WarningSummary objects) formats.
+    """
+    warnings = []
+    if result.get('warnings'):
+        for warning in result['warnings']:
+            if _WarningSummary and isinstance(warning, _WarningSummary):
+                warnings.append(warning.details[0].msg)
+                continue
+            warnings.append(warning)
+    return warnings
+
 
 class TestMinimalVersionTestSuite:
     # ========================================================
@@ -103,7 +124,8 @@ class TestMinimalVersionTestSuite:
         assert return_val.get("failed") is None
         assert return_val.get("error") is None
         assert return_val.get("warnings") is not None
-        warnings = return_val.get("warnings")
+
+        warnings = extract_warnings_texts(return_val)
         assert len(warnings) == 1
         # Assert that we have a warning about the version but be
         # relaxed about the exact message
@@ -137,7 +159,8 @@ class TestMinimalVersionTestSuite:
         assert return_val.get("failed") is None
         assert return_val.get("error") is None
         assert return_val.get("warnings") is not None
-        warnings = return_val.get("warnings")
+
+        warnings = extract_warnings_texts(return_val)
         assert len(warnings) == 1
         # Assert that we have a warning about the version but be
         # relaxed about the exact message
@@ -172,7 +195,7 @@ class TestMinimalVersionTestSuite:
         assert return_val.get("error") is None
         assert return_val.get("warnings") is not None
 
-        warnings = return_val.get("warnings")
+        warnings = extract_warnings_texts(return_val)
         assert len(warnings) == 2
 
         warning_dict = dict()
