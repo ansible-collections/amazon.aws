@@ -14,4 +14,4 @@ storage_type: io1
 iops: 1000
 
 # For mariadb tests
-mariadb_engine_version: 10.11.7
+mariadb_engine_version: 11.4.7
