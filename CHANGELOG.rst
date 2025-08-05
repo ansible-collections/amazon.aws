@@ -4,6 +4,19 @@ amazon.aws Release Notes
 
 .. contents:: Topics
 
+v9.5.1
+======
+
+Release Summary
+---------------
+
+This release includes a bugfix and a documentation update.
+
+Bugfixes
+--------
+
+- ec2_instance - corrected typo for InsufficientInstanceCapacity. Fix now will retry Ec2 creation when InsufficientInstanceCapacity error occurs (https://github.com/ansible-collections/amazon.aws/issues/1038).
+
 v9.5.0
 ======
 

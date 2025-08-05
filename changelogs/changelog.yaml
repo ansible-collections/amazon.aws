@@ -3750,3 +3750,13 @@ releases:
     - release_summary.yml
     - update_ansible-lint.yml
     release_date: '2025-05-12'
+  9.5.1:
+    changes:
+      bugfixes:
+      - ec2_instance - corrected typo for InsufficientInstanceCapacity. Fix now will
+        retry Ec2 creation when InsufficientInstanceCapacity error occurs (https://github.com/ansible-collections/amazon.aws/issues/1038).
+      release_summary: This release includes a bugfix and a documentation update.
+    fragments:
+    - 2674-fix-errorcode-typo.yml
+    - 9.5.1.yml
+    release_date: '2025-08-05'
