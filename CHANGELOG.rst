@@ -4,6 +4,19 @@ amazon.aws Release Notes
 
 .. contents:: Topics
 
+v10.1.1
+=======
+
+Release Summary
+---------------
+
+This release includes a bugfix and a documentation update.
+
+Bugfixes
+--------
+
+- ec2_instance - corrected typo for InsufficientInstanceCapacity. Fix now will retry Ec2 creation when InsufficientInstanceCapacity error occurs (https://github.com/ansible-collections/amazon.aws/issues/1038).
+
 v10.1.0
 =======
 
@@ -18,7 +31,7 @@ Minor Changes
 - inventory/aws_ec2 - Adding support for ``Route53`` as hostname (https://github.com/ansible-collections/amazon.aws/pull/2580).
 
 v10.0.0
-============
+=======
 
 Release Summary
 ---------------
