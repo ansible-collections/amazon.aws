@@ -3881,3 +3881,13 @@ releases:
     fragments:
     - 20250321-inventory_aws_ec2-add-support-for-route53.yml
     release_date: '2025-06-03'
+  10.1.1:
+    changes:
+      bugfixes:
+      - ec2_instance - corrected typo for InsufficientInstanceCapacity. Fix now will
+        retry Ec2 creation when InsufficientInstanceCapacity error occurs (https://github.com/ansible-collections/amazon.aws/issues/1038).
+      release_summary: This release includes a bugfix and a documentation update.
+    fragments:
+    - 10.1.1.yml
+    - 2674-fix-errorcode-typo.yml
+    release_date: '2025-08-06'
