@@ -38,6 +38,7 @@ Release Summary
 
 This major release introduces new support with the ``aws_ssm`` connection plugin, which has been promoted from ``community.aws``, several bugfixes, minor changes and deprecated features.
 Additionally, this release increases the minimum required versions of ``boto3`` and ``botocore`` to 1.34.0 to align with updated AWS SDK support and support for ansible-core < 2.17 has been dropped.
+Due to the AWS SDKs announcing the end of support for Python less than 3.8 (https://aws.amazon.com/blogs/developer/python-support-policy-updates-for-aws-sdks-and-tools/), support for Python less than 3.8 by this collection was deprecated in 9.0.0 release and is removed in this 10.0.0 release.
 
 Major Changes
 -------------
