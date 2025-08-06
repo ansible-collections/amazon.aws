@@ -4,6 +4,19 @@ amazon.aws Release Notes
 
 .. contents:: Topics
 
+v10.1.1
+=======
+
+Release Summary
+---------------
+
+This release includes a bugfix and a documentation update.
+
+Bugfixes
+--------
+
+- ec2_instance - corrected typo for InsufficientInstanceCapacity. Fix now will retry Ec2 creation when InsufficientInstanceCapacity error occurs (https://github.com/ansible-collections/amazon.aws/issues/1038).
+
 v10.1.0
 =======
 
@@ -15,16 +28,16 @@ This minor release adds support for ``Route53`` as a hostname.
 Minor Changes
 -------------
 
-- inventory/aws_ec2 - Adding support for ``Route53`` as hostname (https://github.com/ansible-collections/amazon.aws/pull/2580).
+- inventory/aws_ec2 - Adding support for Route53 as hostname (https://github.com/ansible-collections/amazon.aws/pull/2580).
 
 v10.0.0
-============
+=======
 
 Release Summary
 ---------------
 
-This major release introduces new support with the ``aws_ssm`` connection plugin, which has been promoted from ``community.aws``, several bugfixes, minor changes and deprecated features.
-Additionally, this release increases the minimum required versions of ``boto3`` and ``botocore`` to 1.34.0 to align with updated AWS SDK support and support for ansible-core < 2.17 has been dropped.
+This major release introduces new support with the aws_ssm connection plugin, which has been promoted from community.aws, several bugfixes, minor changes and deprecated features.
+Additionally, this release increases the minimum required versions of boto3 and botocore to 1.34.0 to align with updated AWS SDK support.
 Due to the AWS SDKs announcing the end of support for Python less than 3.8 (https://aws.amazon.com/blogs/developer/python-support-policy-updates-for-aws-sdks-and-tools/), support for Python less than 3.8 by this collection was deprecated in 9.0.0 release and is removed in this 10.0.0 release.
 
 Major Changes
