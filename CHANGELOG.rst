@@ -61,6 +61,7 @@ Bugfixes
 - cloudwatchevent_rule - Fix to avoid adding quotes to JSON input for provided input_template (https://github.com/ansible-collections/amazon.aws/pull/1883).
 - lookup/secretsmanager_secret - fix the issue when the nested secret is missing and on_missing is set to warn, the lookup was raising an error instead of a warning message (https://github.com/ansible-collections/amazon.aws/issues/1781).
 - module_utils/elbv2 - Fix issue when creating or modifying Load balancer rule type authenticate-oidc using ``ClientSecret`` parameter and ``UseExistingClientSecret=true`` (https://github.com/ansible-collections/amazon.aws/issues/1877).
+- amazon.aws.cloudformation - Fixed an issue where creating a changeset in check mode would fail if the stack is not in a ready state (e.g., UPDATE_IN_PROGRESS). The module now waits for the stack to be in a ready state (UPDATE_COMPLETE) before creating the changeset (https://github.com/ansible-collections/amazon.aws/pull/1910)
 
 v7.3.0
 ======
