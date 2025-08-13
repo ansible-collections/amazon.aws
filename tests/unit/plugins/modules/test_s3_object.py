@@ -155,7 +155,7 @@ def test_upload_content_headers_promoted_to_extraargs():
 
     assert s3.upload_fileobj.call_count == 1
     # Extract kwargs for verification
-    _, kwargs = s3.upload_fileobj.call_args
+    call_args, kwargs = s3.upload_fileobj.call_args
     extra = kwargs.get("ExtraArgs")
 
     assert extra["ContentType"] == headers["ContentType"]
@@ -187,7 +187,7 @@ def test_upload_src_headers_promoted_to_extraargs():
     )
 
     assert s3.upload_file.call_count == 1
-    _, kwargs = s3.upload_file.call_args
+    call_args, kwargs = s3.upload_file.call_args
     extra = kwargs.get("ExtraArgs")
 
     assert extra["ContentType"] == headers["ContentType"]
