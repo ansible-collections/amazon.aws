@@ -110,3 +110,89 @@ def test_populate_params(m_get_aws_connection_info):
     module.params.update({"object": "example.txt", "mode": "delete"})
     result = s3_object.populate_params(module)
     module.fail_json.assert_called_with(msg="Parameter object cannot be used with mode=delete")
+
+
+def _base_module_mock():
+    module = MagicMock()
+    module.check_mode = False
+    module.params = {
+        "permission": ["private"],
+        "encryption_mode": "AES256",
+        "encryption_kms_key_id": None,
+        "tags": None,
+    }
+    return module
+
+
+def _headers_fixture():
+    return {
+        "ContentType": "text/html; charset=utf-8",
+        "ContentDisposition": "inline",
+        "CacheControl": "max-age=0",
+        "X-Custom-Header": "custom",
+    }
+
+
+def test_upload_content_headers_promoted_to_extraargs():
+    module = _base_module_mock()
+    s3 = MagicMock()
+
+    headers = _headers_fixture()
+
+    s3_object.upload_s3file(
+        module,
+        s3,
+        bucket="my-bucket",
+        obj="index.html",
+        expiry=600,
+        metadata=None,
+        encrypt=True,
+        headers=headers,
+        src=None,
+        content=b"<html></html>",
+        acl_disabled=False,
+    )
+
+    assert s3.upload_fileobj.call_count == 1
+    # Extract kwargs for verification
+    _, kwargs = s3.upload_fileobj.call_args
+    extra = kwargs.get("ExtraArgs")
+
+    assert extra["ContentType"] == headers["ContentType"]
+    assert extra["ContentDisposition"] == headers["ContentDisposition"]
+    assert extra["CacheControl"] == headers["CacheControl"]
+    assert extra["ServerSideEncryption"] == "AES256"
+    assert extra.get("Metadata") is not None
+    assert extra["Metadata"]["X-Custom-Header"] == "custom"
+
+
+def test_upload_src_headers_promoted_to_extraargs():
+    module = _base_module_mock()
+    s3 = MagicMock()
+
+    headers = _headers_fixture()
+
+    s3_object.upload_s3file(
+        module,
+        s3,
+        bucket="my-bucket",
+        obj="index.html",
+        expiry=600,
+        metadata=None,
+        encrypt=True,
+        headers=headers,
+        src="/tmp/index.html",
+        content=None,
+        acl_disabled=False,
+    )
+
+    assert s3.upload_file.call_count == 1
+    _, kwargs = s3.upload_file.call_args
+    extra = kwargs.get("ExtraArgs")
+
+    assert extra["ContentType"] == headers["ContentType"]
+    assert extra["ContentDisposition"] == headers["ContentDisposition"]
+    assert extra["CacheControl"] == headers["CacheControl"]
+    assert extra["ServerSideEncryption"] == "AES256"
+    assert extra.get("Metadata") is not None
+    assert extra["Metadata"]["X-Custom-Header"] == "custom"
