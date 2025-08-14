@@ -163,7 +163,8 @@ class AnsibleAWSModule:
             if not hasattr(self, "_warnings"):
                 self._warnings = []
             self._warnings.append(args[0])
-        return self._module.warn(*args, **kwargs)
+        # Do not forward to underlying AnsibleModule.warn() to avoid duplicate entries
+        return None
 
     def __getattr__(self, attr):
         if hasattr(self._module, attr):

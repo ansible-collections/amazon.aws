@@ -153,9 +153,10 @@ def test_upload_content_headers_promoted_to_extraargs():
         acl_disabled=False,
     )
 
-    assert s3.upload_fileobj.call_count == 1
+    # With in-memory content we now use put_object to ensure headers are honored
+    assert s3.put_object.call_count == 1
     # Extract kwargs for verification
-    call_args, kwargs = s3.upload_fileobj.call_args
+    call_args, kwargs = s3.put_object.call_args
     extra = kwargs.get("ExtraArgs")
 
     assert extra["ContentType"] == headers["ContentType"]
