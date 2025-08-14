@@ -98,6 +98,8 @@ class AnsibleAWSModule:
             kwargs["argument_spec"] = argument_spec_full
 
         self._module = AnsibleAWSModule.default_settings["module_class"](**kwargs)
+        # Initialize warnings buffer early, before any code invokes self.warn()
+        self._warnings = []
 
         if local_settings["check_boto3"]:
             try:
@@ -111,7 +113,6 @@ class AnsibleAWSModule:
 
         self._botocore_endpoint_log_stream = StringIO()
         self.logger = None
-        self._warnings = []
         if self.params.get("debug_botocore_endpoint_logs"):
             self.logger = logging.getLogger("botocore.endpoint")
             self.logger.setLevel(logging.DEBUG)
@@ -159,6 +160,8 @@ class AnsibleAWSModule:
     def warn(self, *args, **kwargs) -> None:
         # Record warnings so unit tests can assert on them and include in JSON result
         if args and isinstance(args[0], str):
+            if not hasattr(self, "_warnings"):
+                self._warnings = []
             self._warnings.append(args[0])
         return self._module.warn(*args, **kwargs)
 
