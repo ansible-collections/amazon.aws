@@ -142,19 +142,11 @@ class AnsibleAWSModule:
     def exit_json(self, *args, **kwargs) -> NoReturn:
         if self.params.get("debug_botocore_endpoint_logs"):
             kwargs["resource_actions"] = self._get_resource_action_list()
-        # Ensure warnings collected via self.warn are included in the module result
-        if getattr(self, "_warnings", None) and "warnings" not in kwargs:
-            # De-duplicate in original order
-            unique_warnings = list(dict.fromkeys(self._warnings))
-            kwargs["warnings"] = unique_warnings
         self._module.exit_json(*args, **kwargs)
 
     def fail_json(self, *args, **kwargs) -> NoReturn:
         if self.params.get("debug_botocore_endpoint_logs"):
             kwargs["resource_actions"] = self._get_resource_action_list()
-        if getattr(self, "_warnings", None) and "warnings" not in kwargs:
-            unique_warnings = list(dict.fromkeys(self._warnings))
-            kwargs["warnings"] = unique_warnings
         self._module.fail_json(*args, **kwargs)
 
     def debug(self, *args, **kwargs) -> None:
