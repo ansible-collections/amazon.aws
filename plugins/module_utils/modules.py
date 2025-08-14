@@ -51,6 +51,7 @@ from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.basic import env_fallback
 from ansible.module_utils.basic import missing_required_lib
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+from ansible.module_utils.ansible_release import __version__ as _ANSIBLE_CORE_VERSION
 
 from .botocore import boto3_at_least
 from .botocore import boto3_conn
@@ -118,6 +119,16 @@ class AnsibleAWSModule:
             self.logger.setLevel(logging.DEBUG)
             self.logger.addHandler(logging.StreamHandler(self._botocore_endpoint_log_stream))
 
+    def _should_inject_warnings(self) -> bool:
+        # Inject warnings into the JSON result for ansible-core versions that
+        # do not include them automatically (>=2.19 based on CI behavior).
+        try:
+            parts = [int(p) for p in _ANSIBLE_CORE_VERSION.split(".")[:2]]
+            major, minor = (parts + [0, 0])[:2]
+            return (major, minor) >= (2, 19)
+        except Exception:
+            return False
+
     @property
     def params(self) -> Dict[str, Any]:
         return self._module.params
@@ -142,11 +153,15 @@ class AnsibleAWSModule:
     def exit_json(self, *args, **kwargs) -> NoReturn:
         if self.params.get("debug_botocore_endpoint_logs"):
             kwargs["resource_actions"] = self._get_resource_action_list()
+        if self._should_inject_warnings() and getattr(self, "_warnings", None) and "warnings" not in kwargs:
+            kwargs["warnings"] = list(dict.fromkeys(self._warnings))
         self._module.exit_json(*args, **kwargs)
 
     def fail_json(self, *args, **kwargs) -> NoReturn:
         if self.params.get("debug_botocore_endpoint_logs"):
             kwargs["resource_actions"] = self._get_resource_action_list()
+        if self._should_inject_warnings() and getattr(self, "_warnings", None) and "warnings" not in kwargs:
+            kwargs["warnings"] = list(dict.fromkeys(self._warnings))
         self._module.fail_json(*args, **kwargs)
 
     def debug(self, *args, **kwargs) -> None:
