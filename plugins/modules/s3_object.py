@@ -438,7 +438,6 @@ tags:
 
 import base64
 import copy
-import io
 import mimetypes
 import os
 import time
