@@ -601,4 +601,4 @@
     - name: Assert ASG modification
       ansible.builtin.assert:
         that:
-          - protected_from_scale_in.changed == true
+          - modified_output.changed
