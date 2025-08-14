@@ -52,6 +52,15 @@ options:
   headers:
     description:
       - Custom headers to use when O(mode=put) as a dictionary of key value pairs.
+      - Keys that match supported S3 object arguments are promoted to top‑level ExtraArgs. Supported keys include
+        C(ContentType), C(Content-Disposition), C(ContentEncoding), C(ContentLanguage), C(CacheControl), C(Expires),
+        C(ACL), C(GrantFullControl), C(GrantRead), C(GrantReadACP), C(GrantWriteACP), C(StorageClass),
+        C(ServerSideEncryption), C(SSECustomerAlgorithm), C(SSECustomerKey), C(SSECustomerKeyMD5), C(SSEKMSKeyId),
+        and C(WebsiteRedirectLocation). Remaining keys are stored under C(Metadata).
+      - Both header name styles C(ContentType) and C(Content-Type) are supported. Underscore variants like
+        C(content_type) are not promoted and will be placed under C(Metadata).
+      - If C(ContentType) is not provided, a type is guessed from C(src) when uploading from a file. When uploading
+        using C(content) or C(content_base64) the default is C(binary/octet-stream).
       - Ignored when O(mode) is not V(put).
     type: dict
   marker:
@@ -68,6 +77,8 @@ options:
   metadata:
     description:
       - Metadata to use when O(mode=copy), O(mode=create) or O(mode=put) as a dictionary of key value pairs.
+      - Keys that match supported S3 object arguments are promoted to top‑level ExtraArgs (for example C(ContentType)).
+        Remaining keys are applied as user metadata under C(Metadata).
     type: dict
   mode:
     description:
@@ -287,6 +298,16 @@ EXAMPLES = r"""
     content: "{{ lookup('template', 'templates/object.yaml.j2') }}"
     mode: put
 
+- name: PUT content with explicit ContentType and ContentDisposition
+  amazon.aws.s3_object:
+    bucket: mybucket
+    object: /index.html
+    content: "<html>Hello</html>\n"
+    mode: put
+    headers:
+      ContentType: "text/html; charset=utf-8"
+      ContentDisposition: inline
+
 - name: Simple PUT operation in Ceph RGW S3
   amazon.aws.s3_object:
     bucket: mybucket
@@ -327,7 +348,8 @@ EXAMPLES = r"""
     object: /my/desired/key.txt
     src: /usr/local/myfile.txt
     mode: put
-    headers: 'x-amz-grant-full-control=emailAddress=owner@example.com'
+    headers:
+      GrantFullControl: "emailAddress=owner@example.com"
 
 - name: List keys simple
   amazon.aws.s3_object:
@@ -416,7 +438,6 @@ tags:
 
 import base64
 import copy
-import io
 import mimetypes
 import os
 import time
@@ -740,6 +761,19 @@ def upload_s3file(
             module.params.get("encryption_kms_key_id"),
             metadata,
         )
+        # Promote supported headers to boto3 ExtraArgs and place unknown ones under Metadata
+        if headers:
+            if not isinstance(headers, dict):
+                module.warn("'headers' must be a dict; ignoring non-dict value")
+            else:
+                for option, value in headers.items():
+                    extra_arg_key = option_in_extra_args(option)
+                    if extra_arg_key:
+                        extra[extra_arg_key] = value
+                    else:
+                        # Fall back to Metadata for non-ExtraArgs headers
+                        extra.setdefault("Metadata", {})
+                        extra["Metadata"][option] = value
         if module.params.get("permission"):
             permissions = module.params["permission"]
             if isinstance(permissions, str):
@@ -753,8 +787,11 @@ def upload_s3file(
         if src:
             s3.upload_file(aws_retry=True, Filename=src, Bucket=bucket, Key=obj, ExtraArgs=extra)
         else:
-            f = io.BytesIO(content)
-            s3.upload_fileobj(aws_retry=True, Fileobj=f, Bucket=bucket, Key=obj, ExtraArgs=extra)
+            # For in-memory content uploads, use put_object so promoted headers
+            # (e.g. ContentType, ContentDisposition, CacheControl) are applied consistently
+            params = {"Bucket": bucket, "Key": obj, "Body": content}
+            params.update(extra)
+            s3.put_object(aws_retry=True, **params)
     except (
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
