@@ -143,15 +143,18 @@ class AnsibleAWSModule:
         if self.params.get("debug_botocore_endpoint_logs"):
             kwargs["resource_actions"] = self._get_resource_action_list()
         # Ensure warnings collected via self.warn are included in the module result
-        if self._warnings and "warnings" not in kwargs:
-            kwargs["warnings"] = self._warnings
+        if getattr(self, "_warnings", None) and "warnings" not in kwargs:
+            # De-duplicate in original order
+            unique_warnings = list(dict.fromkeys(self._warnings))
+            kwargs["warnings"] = unique_warnings
         self._module.exit_json(*args, **kwargs)
 
     def fail_json(self, *args, **kwargs) -> NoReturn:
         if self.params.get("debug_botocore_endpoint_logs"):
             kwargs["resource_actions"] = self._get_resource_action_list()
-        if self._warnings and "warnings" not in kwargs:
-            kwargs["warnings"] = self._warnings
+        if getattr(self, "_warnings", None) and "warnings" not in kwargs:
+            unique_warnings = list(dict.fromkeys(self._warnings))
+            kwargs["warnings"] = unique_warnings
         self._module.fail_json(*args, **kwargs)
 
     def debug(self, *args, **kwargs) -> None:
@@ -163,8 +166,8 @@ class AnsibleAWSModule:
             if not hasattr(self, "_warnings"):
                 self._warnings = []
             self._warnings.append(args[0])
-        # Do not forward to underlying AnsibleModule.warn() to avoid duplicate entries
-        return None
+        # Forward to underlying AnsibleModule.warn to emit warnings
+        return self._module.warn(*args, **kwargs)
 
     def __getattr__(self, attr):
         if hasattr(self._module, attr):
