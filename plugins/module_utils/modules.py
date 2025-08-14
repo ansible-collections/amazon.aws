@@ -111,6 +111,7 @@ class AnsibleAWSModule:
 
         self._botocore_endpoint_log_stream = StringIO()
         self.logger = None
+        self._warnings = []
         if self.params.get("debug_botocore_endpoint_logs"):
             self.logger = logging.getLogger("botocore.endpoint")
             self.logger.setLevel(logging.DEBUG)
@@ -140,17 +141,25 @@ class AnsibleAWSModule:
     def exit_json(self, *args, **kwargs) -> NoReturn:
         if self.params.get("debug_botocore_endpoint_logs"):
             kwargs["resource_actions"] = self._get_resource_action_list()
+        # Ensure warnings collected via self.warn are included in the module result
+        if self._warnings and "warnings" not in kwargs:
+            kwargs["warnings"] = self._warnings
         self._module.exit_json(*args, **kwargs)
 
     def fail_json(self, *args, **kwargs) -> NoReturn:
         if self.params.get("debug_botocore_endpoint_logs"):
             kwargs["resource_actions"] = self._get_resource_action_list()
+        if self._warnings and "warnings" not in kwargs:
+            kwargs["warnings"] = self._warnings
         self._module.fail_json(*args, **kwargs)
 
     def debug(self, *args, **kwargs) -> None:
         return self._module.debug(*args, **kwargs)
 
     def warn(self, *args, **kwargs) -> None:
+        # Record warnings so unit tests can assert on them and include in JSON result
+        if args and isinstance(args[0], str):
+            self._warnings.append(args[0])
         return self._module.warn(*args, **kwargs)
 
     def __getattr__(self, attr):
