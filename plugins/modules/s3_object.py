@@ -788,8 +788,11 @@ def upload_s3file(
         if src:
             s3.upload_file(aws_retry=True, Filename=src, Bucket=bucket, Key=obj, ExtraArgs=extra)
         else:
-            f = io.BytesIO(content)
-            s3.upload_fileobj(aws_retry=True, Fileobj=f, Bucket=bucket, Key=obj, ExtraArgs=extra)
+            # For in-memory content uploads, use put_object so promoted headers
+            # (e.g. ContentType, ContentDisposition, CacheControl) are applied consistently
+            params = {"Bucket": bucket, "Key": obj, "Body": content}
+            params.update(extra)
+            s3.put_object(aws_retry=True, **params)
     except (
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
