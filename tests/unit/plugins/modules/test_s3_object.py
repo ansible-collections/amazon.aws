@@ -157,14 +157,12 @@ def test_upload_content_headers_promoted_to_extraargs():
     assert s3.put_object.call_count == 1
     # Extract kwargs for verification
     call_args, kwargs = s3.put_object.call_args
-    extra = kwargs.get("ExtraArgs")
-
-    assert extra["ContentType"] == headers["ContentType"]
-    assert extra["ContentDisposition"] == headers["ContentDisposition"]
-    assert extra["CacheControl"] == headers["CacheControl"]
-    assert extra["ServerSideEncryption"] == "AES256"
-    assert extra.get("Metadata") is not None
-    assert extra["Metadata"]["X-Custom-Header"] == "custom"
+    # With put_object, promoted headers are top-level kwargs, not under ExtraArgs
+    assert kwargs["ContentType"] == headers["ContentType"]
+    assert kwargs["ContentDisposition"] == headers["ContentDisposition"]
+    assert kwargs["CacheControl"] == headers["CacheControl"]
+    assert kwargs["ServerSideEncryption"] == "AES256"
+    assert "Metadata" in kwargs and kwargs["Metadata"]["X-Custom-Header"] == "custom"
 
 
 def test_upload_src_headers_promoted_to_extraargs():
