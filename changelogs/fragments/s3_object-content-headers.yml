@@ -1,0 +1,5 @@
+bugfixes:
+  - s3_object - Honor headers for content and content_base64 uploads by promoting supported keys
+    (e.g. ContentType, ContentDisposition, CacheControl) to top-level S3 arguments and placing
+    remaining keys under Metadata. This makes content uploads consistent with src uploads.
+    (https://github.com/ansible-collections/amazon.aws)
