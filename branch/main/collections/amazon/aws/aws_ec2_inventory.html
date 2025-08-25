@@ -4,7 +4,7 @@
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta content="2.16.3" name="antsibull-docs" />
+<meta content="2.21.0" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>amazon.aws.aws_ec2 inventory – EC2 inventory source &mdash; Ansible collections  documentation</title>
@@ -464,7 +464,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <a class="ansibleOptionLink" href="#parameter-keyed_groups/default_value" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 <p><em class="ansible-option-versionadded">added in ansible-core 2.12</em></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The default value when the host variable’s value is an empty string.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The default value when the host variable’s value is <code class="ansible-value docutils literal notranslate"><span class="pre">None</span></code> or an empty string.</p>
 <p>This option is mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-inventory-parameter-keyed-groups-trailing-separator"><span class="std std-ref"><span class="pre">keyed_groups[].trailing_separator</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
@@ -503,7 +503,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <a class="ansibleOptionLink" href="#parameter-keyed_groups/trailing_separator" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 <p><em class="ansible-option-versionadded">added in ansible-core 2.12</em></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Set this option to <code class="ansible-value docutils literal notranslate"><span class="pre">false</span></code> to omit the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-inventory-parameter-keyed-groups-separator"><span class="std std-ref"><span class="pre">keyed_groups[].separator</span></span></a></strong></code> after the host variable when the value is an empty string.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Set this option to <code class="ansible-value docutils literal notranslate"><span class="pre">false</span></code> to omit the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-inventory-parameter-keyed-groups-separator"><span class="std std-ref"><span class="pre">keyed_groups[].separator</span></span></a></strong></code> after the host variable when the value is <code class="ansible-value docutils literal notranslate"><span class="pre">None</span></code> or an empty string.</p>
 <p>This option is mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-inventory-parameter-keyed-groups-default-value"><span class="std std-ref"><span class="pre">keyed_groups[].default_value</span></span></a></strong></code>.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
@@ -570,6 +570,39 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-route53_enabled"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-route53-enabled"><strong>route53_enabled</strong></p>
+<a class="ansibleOptionLink" href="#parameter-route53_enabled" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 10.1.0</em></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Whether or not to use the Route53 DNS as host name.</p>
+<p>When set to <code class="ansible-value docutils literal notranslate"><span class="pre">true</span></code>, Route53 hostnames will be included.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-route53_excluded_zones"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-route53-excluded-zones"><strong>route53_excluded_zones</strong></p>
+<a class="ansibleOptionLink" href="#parameter-route53_excluded_zones" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 10.1.0</em></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>A list of Route53 zones to exclude.</p>
+<p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[]</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-route53_hostnames"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-route53-hostnames"><strong>route53_hostnames</strong></p>
+<a class="ansibleOptionLink" href="#parameter-route53_hostnames" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 10.1.0</em></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Specifies the Route53 DNS name suffix to consider.</p>
+<p>Consider only Route53 zone with name ending with the value specified here.</p>
+<p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[]</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-secret_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_secret_access_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_secret_key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-secret-key"><span id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-aws-secret-key"></span><span id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-aws-secret-access-key"></span><strong>secret_key</strong></p>
@@ -587,7 +620,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-session_token"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_session_token"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-session-token"><span id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-aws-session-token"></span><strong>session_token</strong></p>
 <a class="ansibleOptionLink" href="#parameter-session_token" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_session_token</span></p>
@@ -602,7 +635,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-strict"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-strict"><strong>strict</strong></p>
 <a class="ansibleOptionLink" href="#parameter-strict" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -615,7 +648,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-strict_permissions"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-strict-permissions"><strong>strict_permissions</strong></p>
 <a class="ansibleOptionLink" href="#parameter-strict_permissions" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -628,7 +661,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-use_contrib_script_compatible_ec2_tag_keys"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-use-contrib-script-compatible-ec2-tag-keys"><strong>use_contrib_script_compatible_ec2_tag_keys</strong></p>
 <a class="ansibleOptionLink" href="#parameter-use_contrib_script_compatible_ec2_tag_keys" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 <p><em class="ansible-option-versionadded">added in amazon.aws 1.5.0</em></p>
@@ -642,7 +675,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-use_contrib_script_compatible_sanitization"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-use-contrib-script-compatible-sanitization"><strong>use_contrib_script_compatible_sanitization</strong></p>
 <a class="ansibleOptionLink" href="#parameter-use_contrib_script_compatible_sanitization" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -656,7 +689,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-use_extra_vars"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-use-extra-vars"><strong>use_extra_vars</strong></p>
 <a class="ansibleOptionLink" href="#parameter-use_extra_vars" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 <p><em class="ansible-option-versionadded">added in ansible-core 2.11</em></p>
@@ -679,7 +712,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-use_ssm_inventory"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-use-ssm-inventory"><strong>use_ssm_inventory</strong></p>
 <a class="ansibleOptionLink" href="#parameter-use_ssm_inventory" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 <p><em class="ansible-option-versionadded">added in amazon.aws 6.0.0</em></p>
@@ -695,6 +728,13 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 </tr>
 </tbody>
 </table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Configuration entries listed above for each entry type (Ansible variable, environment variable, and so on) have a low to high priority order.
+For example, a variable that is lower in the list will override a variable that is higher up.
+The entry types are also ordered by precedence from low to high priority order.
+For example, an ansible.cfg entry (further up in the list) is overwritten by an Ansible variable (further down in the list).</p>
+</div>
 </section>
 <section id="notes">
 <h2><a class="toc-backref" href="#id4" role="doc-backlink">Notes</a><a class="headerlink" href="#notes" title="Link to this heading"></a></h2>
@@ -847,6 +887,28 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-1</span>
 <span class="nt">hostnames</span><span class="p">:</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;tag:Name</span><span class="nv"> </span><span class="s">|</span><span class="nv"> </span><span class="s">replace(&#39;test&#39;,</span><span class="nv"> </span><span class="s">&#39;prod&#39;)&quot;</span>
+
+<span class="nn">---</span>
+
+<span class="c1"># Define inventory with Route53 enabled and filtering specific route53 host names suffix.</span>
+<span class="nt">plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">amazon.aws.aws_ec2</span>
+<span class="nt">regions</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-1</span>
+<span class="nt">route53_enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="nt">route53_hostnames</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.example.com</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.another_example.org</span>
+
+<span class="nn">---</span>
+
+<span class="c1"># Define inventory with Route53 enabled and excluded zones.</span>
+<span class="nt">plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">amazon.aws.aws_ec2</span>
+<span class="nt">regions</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-1</span>
+<span class="nt">route53_enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="nt">route53_excluded_zones</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ansible.bar.net</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ansible.foo.net</span>
 </pre></div>
 </div>
 <section id="authors">
@@ -854,10 +916,6 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <ul class="simple">
 <li><p>Sloane Hertel (&#64;s-hertel)</p></li>
 </ul>
-<div class="admonition hint">
-<p class="admonition-title">Hint</p>
-<p>Configuration entries for each entry type have a low to high priority order. For example, a variable that is lower in the list will override a variable that is higher up.</p>
-</div>
 </section>
 <section id="collection-links">
 <h3>Collection links<a class="headerlink" href="#collection-links" title="Link to this heading"></a></h3>
