@@ -4,7 +4,7 @@
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta content="2.16.3" name="antsibull-docs" />
+<meta content="2.21.0" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>amazon.aws.s3_object module – Manage objects in S3 &mdash; Ansible collections  documentation</title>
@@ -140,7 +140,7 @@
 <h1>amazon.aws.s3_object module – Manage objects in S3<a class="headerlink" href="#amazon-aws-s3-object-module-manage-objects-in-s3" title="Link to this heading"></a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This module is part of the <a class="reference external" href="https://galaxy.ansible.com/ui/repo/published/amazon/aws/">amazon.aws collection</a> (version 11.0.0-dev0).</p>
+<p>This module is part of the <a class="reference external" href="https://galaxy.ansible.com/ui/repo/published/amazon/aws/">amazon.aws collection</a> (version 10.1.1).</p>
 <p>It is not included in <code class="docutils literal notranslate"><span class="pre">ansible-core</span></code>.
 To check whether it is installed, run <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">list</span></code>.</p>
 <p>To install it, use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">amazon.aws</span></code>.
@@ -408,6 +408,9 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <a class="ansibleOptionLink" href="#parameter-headers" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Custom headers to use when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-mode"><span class="std std-ref"><span class="pre">mode=put</span></span></a></code> as a dictionary of key value pairs.</p>
+<p>Keys that match supported S3 object arguments are promoted to top‑level ExtraArgs. Supported keys include <code class="docutils literal notranslate"><span class="pre">ContentType</span></code>, <code class="docutils literal notranslate"><span class="pre">Content-Disposition</span></code>, <code class="docutils literal notranslate"><span class="pre">ContentEncoding</span></code>, <code class="docutils literal notranslate"><span class="pre">ContentLanguage</span></code>, <code class="docutils literal notranslate"><span class="pre">CacheControl</span></code>, <code class="docutils literal notranslate"><span class="pre">Expires</span></code>, <code class="docutils literal notranslate"><span class="pre">ACL</span></code>, <code class="docutils literal notranslate"><span class="pre">GrantFullControl</span></code>, <code class="docutils literal notranslate"><span class="pre">GrantRead</span></code>, <code class="docutils literal notranslate"><span class="pre">GrantReadACP</span></code>, <code class="docutils literal notranslate"><span class="pre">GrantWriteACP</span></code>, <code class="docutils literal notranslate"><span class="pre">StorageClass</span></code>, <code class="docutils literal notranslate"><span class="pre">ServerSideEncryption</span></code>, <code class="docutils literal notranslate"><span class="pre">SSECustomerAlgorithm</span></code>, <code class="docutils literal notranslate"><span class="pre">SSECustomerKey</span></code>, <code class="docutils literal notranslate"><span class="pre">SSECustomerKeyMD5</span></code>, <code class="docutils literal notranslate"><span class="pre">SSEKMSKeyId</span></code>, and <code class="docutils literal notranslate"><span class="pre">WebsiteRedirectLocation</span></code>. Remaining keys are stored under <code class="docutils literal notranslate"><span class="pre">Metadata</span></code>.</p>
+<p>Both header name styles <code class="docutils literal notranslate"><span class="pre">ContentType</span></code> and <code class="docutils literal notranslate"><span class="pre">Content-Type</span></code> are supported. Underscore variants like <code class="docutils literal notranslate"><span class="pre">content_type</span></code> are not promoted and will be placed under <code class="docutils literal notranslate"><span class="pre">Metadata</span></code>.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">ContentType</span></code> is not provided, a type is guessed from <code class="docutils literal notranslate"><span class="pre">src</span></code> when uploading from a file. When uploading using <code class="docutils literal notranslate"><span class="pre">content</span></code> or <code class="docutils literal notranslate"><span class="pre">content_base64</span></code> the default is <code class="docutils literal notranslate"><span class="pre">binary/octet-stream</span></code>.</p>
 <p>Ignored when <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-mode"><span class="std std-ref"><span class="pre">mode</span></span></a></strong></code> is not <code class="ansible-value docutils literal notranslate"><span class="pre">put</span></code>.</p>
 </div></td>
 </tr>
@@ -445,6 +448,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <a class="ansibleOptionLink" href="#parameter-metadata" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Metadata to use when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-mode"><span class="std std-ref"><span class="pre">mode=copy</span></span></a></code>, <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-mode"><span class="std std-ref"><span class="pre">mode=create</span></span></a></code> or <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-s3-object-module-parameter-mode"><span class="std std-ref"><span class="pre">mode=put</span></span></a></code> as a dictionary of key value pairs.</p>
+<p>Keys that match supported S3 object arguments are promoted to top‑level ExtraArgs (for example <code class="docutils literal notranslate"><span class="pre">ContentType</span></code>). Remaining keys are applied as user metadata under <code class="docutils literal notranslate"><span class="pre">Metadata</span></code>.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -702,6 +706,16 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <span class="w">    </span><span class="nt">content</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">&#39;template&#39;</span><span class="o">,</span> <span class="s1">&#39;templates/object.yaml.j2&#39;</span><span class="o">)</span> <span class="cp">}}</span><span class="s">&quot;</span>
 <span class="w">    </span><span class="nt">mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">put</span>
 
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PUT content with explicit ContentType and ContentDisposition</span>
+<span class="w">  </span><span class="nt">amazon.aws.s3_object</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">bucket</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mybucket</span>
+<span class="w">    </span><span class="nt">object</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/index.html</span>
+<span class="w">    </span><span class="nt">content</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&lt;html&gt;Hello&lt;/html&gt;\n&quot;</span>
+<span class="w">    </span><span class="nt">mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">put</span>
+<span class="w">    </span><span class="nt">headers</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">ContentType</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;text/html;</span><span class="nv"> </span><span class="s">charset=utf-8&quot;</span>
+<span class="w">      </span><span class="nt">ContentDisposition</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">inline</span>
+
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Simple PUT operation in Ceph RGW S3</span>
 <span class="w">  </span><span class="nt">amazon.aws.s3_object</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">bucket</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mybucket</span>
@@ -742,7 +756,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-s3-objec
 <span class="w">    </span><span class="nt">object</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/my/desired/key.txt</span>
 <span class="w">    </span><span class="nt">src</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/usr/local/myfile.txt</span>
 <span class="w">    </span><span class="nt">mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">put</span>
-<span class="w">    </span><span class="nt">headers</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;x-amz-grant-full-control=emailAddress=owner@example.com&#39;</span>
+<span class="w">    </span><span class="nt">headers</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">GrantFullControl</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;emailAddress=owner@example.com&quot;</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">List keys simple</span>
 <span class="w">  </span><span class="nt">amazon.aws.s3_object</span><span class="p">:</span>

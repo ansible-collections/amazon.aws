@@ -549,6 +549,26 @@ To replicate behavior of replace_dash_in_groups = True with constructed groups, 
 <p><code class="docutils literal notranslate"><span class="pre">use_ssm_inventory:</span> <span class="pre">True</span></code> enables fetching additional EC2 instance information from the AWS Systems Manager (SSM) inventory service into hostvars. By leveraging the SSM inventory data, the <code class="docutils literal notranslate"><span class="pre">use_ssm_inventory</span></code> option provides additional details and attributes about the EC2 instances in your inventory.
 These details can include operating system information, installed software, network configurations, and custom inventory attributes defined in SSM.</p>
 </section>
+<section id="route53-enabled">
+<h2><code class="docutils literal notranslate"><span class="pre">route53_enabled</span></code><a class="headerlink" href="#route53-enabled" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">route53_enabled:</span> <span class="pre">True</span></code> enables to use the Route 53 DNS information as host name. The <code class="docutils literal notranslate"><span class="pre">route53_hostnames</span></code> option specifies the list of Route 53 DNS name suffix to consider while filtering host names while the <code class="docutils literal notranslate"><span class="pre">route53_excluded_zones</span></code> option specifies the list of Route53 host zones to exclude.</p>
+<blockquote>
+<div><div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># route53_inventory.aws_ec2.yml</span>
+<span class="nt">plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aws_ec2</span>
+<span class="c1"># This enables Route53 DNS information</span>
+<span class="nt">route53_enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="c1"># Specifies the list of Route53 DNS zones to exclude</span>
+<span class="nt">route53_excluded_zones</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">foo.bar.zone1</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">foo.bar.zone2</span>
+<span class="c1"># Specifies the list of Route53 DNS suffix to consider</span>
+<span class="nt">route53_hostnames</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example.net</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example.org</span>
+</pre></div>
+</div>
+</div></blockquote>
+</section>
 <section id="cache">
 <h2><code class="docutils literal notranslate"><span class="pre">cache</span></code><a class="headerlink" href="#cache" title="Link to this heading"></a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">aws_ec2</span></code> inventory plugin support caching can use the general settings for the fact cache defined in the <code class="docutils literal notranslate"><span class="pre">ansible.cfg</span></code> file’s <code class="docutils literal notranslate"><span class="pre">[defaults]</span></code> section or define inventory-specific settings in the <code class="docutils literal notranslate"><span class="pre">[inventory]</span></code> section.
