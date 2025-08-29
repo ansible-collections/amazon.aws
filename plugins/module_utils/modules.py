@@ -48,6 +48,7 @@ from typing import NoReturn
 from typing import Optional
 
 from ansible.module_utils._text import to_native
+from ansible.module_utils.ansible_release import __version__ as _ANSIBLE_CORE_VERSION
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.basic import env_fallback
 from ansible.module_utils.basic import missing_required_lib
@@ -99,6 +100,8 @@ class AnsibleAWSModule:
             kwargs["argument_spec"] = argument_spec_full
 
         self._module = AnsibleAWSModule.default_settings["module_class"](**kwargs)
+        # Initialize warnings buffer early, before any code invokes self.warn()
+        self._warnings = []
 
         if local_settings["check_boto3"]:
             try:
@@ -148,6 +151,16 @@ class AnsibleAWSModule:
             self.logger.setLevel(logging.DEBUG)
             self.logger.addHandler(logging.StreamHandler(self._botocore_endpoint_log_stream))
 
+    def _should_inject_warnings(self) -> bool:
+        # Inject warnings into the JSON result for ansible-core versions that
+        # do not include them automatically (>=2.19 based on CI behavior).
+        try:
+            parts = [int(p) for p in _ANSIBLE_CORE_VERSION.split(".")[:2]]
+            major, minor = (parts + [0, 0])[:2]
+            return (major, minor) >= (2, 19)
+        except Exception:
+            return False
+
     @property
     def params(self) -> Dict[str, Any]:
         return self._module.params
@@ -172,17 +185,27 @@ class AnsibleAWSModule:
     def exit_json(self, *args, **kwargs) -> NoReturn:
         if self.params.get("debug_botocore_endpoint_logs"):
             kwargs["resource_actions"] = self._get_resource_action_list()
+        if self._should_inject_warnings() and getattr(self, "_warnings", None) and "warnings" not in kwargs:
+            kwargs["warnings"] = list(dict.fromkeys(self._warnings))
         self._module.exit_json(*args, **kwargs)
 
     def fail_json(self, *args, **kwargs) -> NoReturn:
         if self.params.get("debug_botocore_endpoint_logs"):
             kwargs["resource_actions"] = self._get_resource_action_list()
+        if self._should_inject_warnings() and getattr(self, "_warnings", None) and "warnings" not in kwargs:
+            kwargs["warnings"] = list(dict.fromkeys(self._warnings))
         self._module.fail_json(*args, **kwargs)
 
     def debug(self, *args, **kwargs) -> None:
         return self._module.debug(*args, **kwargs)
 
     def warn(self, *args, **kwargs) -> None:
+        # Record warnings so unit tests can assert on them and include in JSON result
+        if args and isinstance(args[0], str):
+            if not hasattr(self, "_warnings"):
+                self._warnings = []
+            self._warnings.append(args[0])
+        # Forward to underlying AnsibleModule.warn to emit warnings
         return self._module.warn(*args, **kwargs)
 
     def __getattr__(self, attr):
