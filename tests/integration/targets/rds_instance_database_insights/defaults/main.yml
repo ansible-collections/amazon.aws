@@ -2,7 +2,7 @@
 instance_id: ansible-test-{{ tiny_prefix }}
 username: test
 password: test12345678
-db_instance_class: db.t3.micro
+db_instance_class: db.t4g.medium
 allocated_storage: 20
 
 database_insights_standard_mode: standard
