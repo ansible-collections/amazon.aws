@@ -14,6 +14,8 @@ preferred_maintenance_window: mon:06:20-mon:06:50
 storage_type: io1
 new_storage_type: io2
 iops: 1000
+database_insights_standard_mode: standard
+database_insights_advanced_mode: advanced
 
 # For mariadb tests
 mariadb_engine_version: 11.4.7
