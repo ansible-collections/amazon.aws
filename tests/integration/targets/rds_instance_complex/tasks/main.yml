@@ -43,7 +43,6 @@
         allocated_storage: "{{ io1_allocated_storage }}"
         storage_type: "{{ storage_type }}"
         iops: "{{ iops }}"
-        database_insights_mode: "{{ database_insights_standard_mode }}"
       register: result
 
     - ansible.builtin.assert:
@@ -94,7 +93,6 @@
         monitoring_interval: "{{ monitoring_interval }}"
         monitoring_role_arn: "{{ enhanced_monitoring_role.iam_role.arn }}"
         iops: "{{ iops }}"
-        database_insights_mode: "{{ database_insights_advanced_mode }}"
         port: 1150
         max_allocated_storage: 150
         apply_immediately: true
@@ -119,7 +117,6 @@
         monitoring_interval: "{{ monitoring_interval }}"
         monitoring_role_arn: "{{ enhanced_monitoring_role.iam_role.arn }}"
         iops: "{{ iops }}"
-        database_insights_mode: "{{ database_insights_advanced_mode }}"
         port: 1150
         max_allocated_storage: 150
         apply_immediately: true
@@ -133,7 +130,6 @@
           - '"port" in result.pending_modified_values or result.endpoint.port == 1150'
           - '"db_instance_class" in result.pending_modified_values or result.db_instance_class == modified_db_instance_class'
           - '"monitoring_interval" in result.pending_modified_values or result.monitoring_interval == monitoring_interval'
-          - '"database_insights_mode" in result.pending_modified_values or result.database_insights_mode == "advanced"'
 
     - name: Idempotence modifying several pending attributes - check_mode
       amazon.aws.rds_instance:
@@ -149,7 +145,6 @@
         monitoring_interval: "{{ monitoring_interval }}"
         monitoring_role_arn: "{{ enhanced_monitoring_role.iam_role.arn }}"
         iops: "{{ iops }}"
-        database_insights_mode: "{{ database_insights_advanced_mode }}"
         port: 1150
         max_allocated_storage: 150
       register: result
@@ -173,7 +168,6 @@
         monitoring_interval: "{{ monitoring_interval }}"
         monitoring_role_arn: "{{ enhanced_monitoring_role.iam_role.arn }}"
         iops: "{{ iops }}"
-        database_insights_mode: "{{ database_insights_advanced_mode }}"
         port: 1150
         max_allocated_storage: 150
       register: result
@@ -185,7 +179,6 @@
           - '"max_allocated_storage" in result.pending_modified_values or result.max_allocated_storage == 150'
           - '"port" in result.pending_modified_values or result.endpoint.port == 1150'
           - '"db_instance_class" in result.pending_modified_values or result.db_instance_class == modified_db_instance_class'
-          - '"database_insights_mode" in result.pending_modified_values or result.database_insights_mode == "advanced"'
 
   always:
     - name: Delete the instance
