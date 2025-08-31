@@ -42,7 +42,7 @@
         that:
           - result.changed
           - result.db_instance_identifier == instance_id
-          - result.database_insights_mode == "advanced"'
+          - result.database_insights_mode == 'advanced'
 
   always:
     - name: Delete the instance
