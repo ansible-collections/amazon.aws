@@ -9,4 +9,4 @@ database_insights_standard_mode: standard
 database_insights_advanced_mode: advanced
 
 # For mariadb tests
-mariadb_engine_version: 10.11.14
+mariadb_engine_version: 11.4.8
