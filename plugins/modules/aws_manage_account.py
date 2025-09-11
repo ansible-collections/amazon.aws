@@ -25,33 +25,39 @@ description:
   - It also supports moving existing accounts between Organizational Units.
 options:
     action:
-        description: Action to be performed: create or move an account.
+        description: Action to be performed create or move an account.
         required: true
         type: str
         choices: ['create_account', 'move_account']
     email:
-        description: Email for the account to be created. Required for create_account.
+        description:
+          - Email for the account to be created. Required for create_account.
         required: false
         type: str
     account_name:
-        description: Name of the account to be created. Required for create_account.
+        description:
+          - Name of the account to be created. Required for create_account.
         required: false
         type: str
     role_name:
-        description: Name of the IAM role to be created by default in the new account (e.g., 'OrganizationAccountAccessRole').
+        description:
+          - Name of the IAM role to be created by default in the new account (e.g., 'OrganizationAccountAccessRole').
         required: false
         type: str
     account_tags:
-        description: A list of tags (key/value) to apply to the new account.
+        description:
+          - A list of tags (key/value) to apply to the new account.
         required: false
         type: list
         elements: dict
     account_id:
-        description: ID of the account to be moved. Required for move_account.
+        description:
+          - ID of the account to be moved. Required for move_account.
         required: false
         type: str
     destination_ou_id:
-        description: ID of the destination OU. Required for move_account.
+        description:
+          - ID of the destination OU. Required for move_account.
         required: false
         type: str
 extends_documentation_fragment:
