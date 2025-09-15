@@ -99,14 +99,14 @@ author:
 EXAMPLES = r'''
 
 - name: Create new AWS account (simple)
-  community.aws.organization_account:
+  amazon.aws.organization_account:
     state: present
     email: "admin@company.com"
     name: "DemoProject"
   register: create_account_result
 
 - name: Create new AWS account with custom Role and Tags
-  community.aws.organization_account:
+  amazon.aws.organization_account:
     state: present
     email: "admin@company.com"
     name: "DemoProjectWithTags"
@@ -119,7 +119,7 @@ EXAMPLES = r'''
   register: create_account_custom_result
 
 - name: Create new AWS account and move to specific OU
-  community.aws.organization_account:
+  amazon.aws.organization_account:
     state: present
     email: "admin@company.com"
     name: "DemoProjectInOU"
