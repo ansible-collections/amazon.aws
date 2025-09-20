@@ -10,23 +10,8 @@
 
   block:
     - name: Install specific boto3 and botocore versions - database_insights available starting 1.35.72
-      ansible.builtin.pip:
-        name:
-          - boto3{{ _boto3_comparison }}{{ _boto3_version }}
-          - botocore{{ _botocore_comparison }}{{ _botocore_version }}
-        virtualenv: "{{ botocore_virtualenv }}"
-        virtualenv_command: "{{ botocore_virtualenv_command }}"
-        virtualenv_site_packages: false
-      vars:
-        _boto3_version: "{{ boto3_version | default(default_boto3_version) }}"
-        _botocore_version: "{{ botocore_version | default(default_botocore_version) }}"
-        _is_default_boto3: "{{ _boto3_version == default_boto3_version }}"
-        _is_default_botocore: "{{ _botocore_version == default_botocore_version }}"
-        # Only set the default to >= if the other dep has been updated and the dep has not been set
-        _default_boto3_comparison: "{% if _is_default_boto3 and not _is_default_botocore %}>={% else %}=={% endif %}"
-        _default_botocore_comparison: "{% if _is_default_botocore and not _is_default_boto3 %}>={% else %}=={% endif %}"
-        _boto3_comparison: "{{ boto3_comparison | default(_default_boto3_comparison) }}"
-        _botocore_comparison: "{{ botocore_comparison | default(_default_botocore_comparison) }}"
+      ansible.builtin.include_role:
+        name: setup_botocore_pip
 
     - name: Ensure the resource doesn't exist
       amazon.aws.rds_instance:
