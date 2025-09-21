@@ -271,13 +271,15 @@ def _attach_instances(client: RetryingBotoClientWrapper, instance_ids: Set[str],
 @AutoScalingErrorHandler.common_error_handler("terminate auto scaling instances")
 @AWSRetry.jittered_backoff()
 def _terminate_instances(
-    client: RetryingBotoClientWrapper, instance_ids: Set[str], group_name: str, decrement_capacity: bool
+    client: RetryingBotoClientWrapper, instance_ids: Set[str], decrement_capacity: bool
 ):
-    return client.terminate_instance_in_auto_scaling_group(
-        InstanceIds=list(instance_ids),
-        AutoScalingGroupName=group_name,
-        ShouldDecrementDesiredCapacity=decrement_capacity,
-    )
+    responses = []
+    for instance_id in instance_ids:
+        responses += client.terminate_instance_in_auto_scaling_group(
+            InstanceId=instance_id,
+            ShouldDecrementDesiredCapacity=decrement_capacity,
+        )
+    return responses
 
 
 @AutoScalingErrorHandler.common_error_handler("place auto scaling instances into standby")
@@ -384,7 +386,7 @@ def ensure_instance_terminated(
     ready_ids |= entering_ids | pending_ids
 
     if ready_ids:
-        _terminate_instances(client, ready_ids, group_name, decrement_desired_capacity)
+        _terminate_instances(client, ready_ids, decrement_desired_capacity)
 
     terminating_ids |= ready_ids
     wait_instance_state(client, "Terminated", check_mode, group_name, terminating_ids, wait, wait_timeout)
@@ -490,7 +492,7 @@ def ensure_instance_attached(
     # Add/Wait/Terminate is the order least likely to result in 0 available
     # instances, so we do any termination after ensuring instances are InService.
     if purge_ids:
-        _terminate_instances(client, purge_ids, group_name, decrement_desired_capacity)
+        _terminate_instances(client, purge_ids, decrement_desired_capacity)
         terminating_ids |= purge_ids
         wait_instance_state(client, "Terminated", check_mode, group_name, terminating_ids, wait, wait_timeout)
 
@@ -558,7 +560,7 @@ def ensure_instance_present(
     # Add/Wait/Terminate is the order least likely to result in 0 available
     # instances, so we do any termination after ensuring instances are InService.
     if purge_ids:
-        _terminate_instances(client, purge_ids, group_name, decrement_desired_capacity)
+        _terminate_instances(client, purge_ids, decrement_desired_capacity)
         wait_instance_state(client, "Terminated", check_mode, group_name, detaching_ids, wait, wait_timeout)
 
     instances_complete = get_autoscaling_instances(client, group_name=group_name)
@@ -742,6 +744,18 @@ def ensure_instance_pool(
             instance_ids,
             decrement_desired_capacity,
             purge_instances,
+            wait,
+            wait_timeout,
+        )
+
+    if state == "terminated":
+        return ensure_instance_terminated(
+            client,
+            check_mode,
+            instances_start,
+            group_name,
+            instance_ids,
+            decrement_desired_capacity,
             wait,
             wait_timeout,
         )
