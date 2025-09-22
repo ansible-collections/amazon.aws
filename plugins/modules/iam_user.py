@@ -39,7 +39,7 @@ options:
   boundary:
     description:
       - The ARN of an IAM managed policy to apply as a boundary policy for this user.
-      - Boundary policies can be used to restrict the permissions a user can excercise, but does not
+      - Boundary policies can be used to restrict the permissions a user can exercise, but does not
         grant any policies in and of itself.
       - For more information on boundaries, see
         U(https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_boundaries.html).
