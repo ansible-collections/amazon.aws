@@ -270,9 +270,7 @@ def _attach_instances(client: RetryingBotoClientWrapper, instance_ids: Set[str],
 
 @AutoScalingErrorHandler.common_error_handler("terminate auto scaling instances")
 @AWSRetry.jittered_backoff()
-def _terminate_instances(
-    client: RetryingBotoClientWrapper, instance_ids: Set[str], decrement_capacity: bool
-):
+def _terminate_instances(client: RetryingBotoClientWrapper, instance_ids: Set[str], decrement_capacity: bool):
     responses = []
     for instance_id in instance_ids:
         responses += client.terminate_instance_in_auto_scaling_group(
