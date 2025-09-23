@@ -114,7 +114,8 @@ or:
 
     pip install boto3 botocore
 
-Refer the following for more details.
+Refer the following for more details:
+
 * [Amazon Web Services Guide](https://docs.ansible.com/ansible/latest/collections/amazon/aws/docsite/guide_aws.html)
 * [using Ansible collections](https://docs.ansible.com/ansible/latest/user_guide/collections_using.html) for more details.
 
