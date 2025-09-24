@@ -13,7 +13,6 @@ import pytest
 
 import ansible.plugins.inventory as base_inventory
 from ansible.errors import AnsibleError
-from ansible.module_utils.six import string_types
 
 import ansible_collections.amazon.aws.plugins.plugin_utils.inventory as utils_inventory
 
@@ -79,7 +78,7 @@ class AwsUnitTestTemplar:
         return bool(m)
 
     def is_template(self, data):
-        if isinstance(data, string_types):
+        if isinstance(data, str):
             return self.is_template_string(data)
         elif isinstance(data, (list, tuple)):
             for v in data:
