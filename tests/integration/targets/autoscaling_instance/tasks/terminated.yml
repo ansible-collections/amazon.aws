@@ -35,9 +35,11 @@
       - specific_instance_info.lifecycle_state == "InService"
       - "'protected_from_scale_in' in specific_instance_info"
       - specific_instance_info.protected_from_scale_in == False
+      - "(initial_instances[0] not in listed_instance_ids) or (removed_instance_info.lifecycle_state in ['Terminating', 'Terminated'])"
   vars:
     listed_instance_ids: "{{ terminated_one.auto_scaling_instances | map(attribute='instance_id') | list }}"
     specific_instance_info: "{{ terminated_one.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[1]) | first }}"
+    removed_instance_info:  "{{ terminated_one.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[0]) | first }}"
 
 - name: Instance_ids - single instance - terminated
   amazon.aws.autoscaling_instance:
@@ -68,6 +70,8 @@
       - specific_instance_info.lifecycle_state == "InService"
       - "'protected_from_scale_in' in specific_instance_info"
       - specific_instance_info.protected_from_scale_in == False
+      - "(initial_instances[0] not in listed_instance_ids) or (removed_instance_info.lifecycle_state in ['Terminating', 'Terminated'])"
   vars:
     listed_instance_ids: "{{ terminated_one.auto_scaling_instances | map(attribute='instance_id') | list }}"
     specific_instance_info: "{{ terminated_one.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[1]) | first }}"
+    removed_instance_info:  "{{ terminated_one.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[0]) | first }}"
