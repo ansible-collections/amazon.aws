@@ -1,0 +1,77 @@
+---
+### Simple _info tests
+### instance_ids - idempotency
+
+### instance_ids - terminated
+#  Terminate specific instances
+- name: Instance_ids - single instance - terminated - check_mode
+  amazon.aws.autoscaling_instance:
+    instance_ids: "{{ initial_instances[0] }}"
+    group_name: "{{ default_resource_name }}"
+    state: terminated
+    decrement_desired_capacity: true
+  diff: true
+  register: terminated_one
+  check_mode: true
+
+- ansible.builtin.assert:
+    that:
+      - terminated_one is changed
+      - "'autoscaling:TerminateInstanceInAutoScalingGroup' not in terminated_one.resource_actions" # CHECK_MODE
+      - "'auto_scaling_instances' in terminated_one"
+      - initial_instances[1] in listed_instance_ids
+      - "'auto_scaling_group_name' in specific_instance_info"
+      - specific_instance_info.auto_scaling_group_name == default_resource_name
+      - "'availability_zone' in specific_instance_info"
+      - "'health_status' in specific_instance_info"
+      - specific_instance_info.health_status == "HEALTHY"
+      - "'instance_id' in specific_instance_info"
+      - specific_instance_info.instance_id == initial_instances[1]
+      - "'instance_type' in specific_instance_info"
+      - specific_instance_info.instance_type == "t3.micro"
+      - "'launch_template' in specific_instance_info"
+      - specific_instance_info.launch_template.launch_template_name.startswith(default_resource_name)
+      - "'lifecycle_state' in specific_instance_info"
+      - specific_instance_info.lifecycle_state == "InService"
+      - "'protected_from_scale_in' in specific_instance_info"
+      - specific_instance_info.protected_from_scale_in == False
+      - "(initial_instances[0] not in listed_instance_ids) or (removed_instance_info.lifecycle_state in ['Terminating', 'Terminated'])"
+  vars:
+    listed_instance_ids: "{{ terminated_one.auto_scaling_instances | map(attribute='instance_id') | list }}"
+    specific_instance_info: "{{ terminated_one.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[1]) | first }}"
+    removed_instance_info:  "{{ terminated_one.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[0]) | first }}"
+
+- name: Instance_ids - single instance - terminated
+  amazon.aws.autoscaling_instance:
+    instance_ids: "{{ initial_instances[0] }}"
+    group_name: "{{ default_resource_name }}"
+    state: terminated
+    decrement_desired_capacity: true
+  diff: true
+  register: terminated_one
+
+- ansible.builtin.assert:
+    that:
+      - terminated_one is changed
+      - "'auto_scaling_instances' in terminated_one"
+      - initial_instances[1] in listed_instance_ids
+      - "'auto_scaling_group_name' in specific_instance_info"
+      - specific_instance_info.auto_scaling_group_name == default_resource_name
+      - "'availability_zone' in specific_instance_info"
+      - "'health_status' in specific_instance_info"
+      - specific_instance_info.health_status == "HEALTHY"
+      - "'instance_id' in specific_instance_info"
+      - specific_instance_info.instance_id == initial_instances[1]
+      - "'instance_type' in specific_instance_info"
+      - specific_instance_info.instance_type == "t3.micro"
+      - "'launch_template' in specific_instance_info"
+      - specific_instance_info.launch_template.launch_template_name.startswith(default_resource_name)
+      - "'lifecycle_state' in specific_instance_info"
+      - specific_instance_info.lifecycle_state == "InService"
+      - "'protected_from_scale_in' in specific_instance_info"
+      - specific_instance_info.protected_from_scale_in == False
+      - "(initial_instances[0] not in listed_instance_ids) or (removed_instance_info.lifecycle_state in ['Terminating', 'Terminated'])"
+  vars:
+    listed_instance_ids: "{{ terminated_one.auto_scaling_instances | map(attribute='instance_id') | list }}"
+    specific_instance_info: "{{ terminated_one.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[1]) | first }}"
+    removed_instance_info:  "{{ terminated_one.auto_scaling_instances | selectattr('instance_id', 'equalto', initial_instances[0]) | first }}"
