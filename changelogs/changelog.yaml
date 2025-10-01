@@ -3760,3 +3760,21 @@ releases:
     - 2674-fix-errorcode-typo.yml
     - 9.5.1.yml
     release_date: '2025-08-05'
+  9.5.2:
+    changes:
+      bugfixes:
+      - amazon.aws.autoscaling_instance - setting the state to ``terminated`` had
+        no effect. The fix implements missing instance termination state (https://github.com/ansible-collections/amazon.aws/issues/2719).
+      - ec2_vpc_nacl - Fix issue when trying to update existing Network ACL rule (https://github.com/ansible-collections/amazon.aws/issues/2592).
+      - s3_object - Honor headers for content and content_base64 uploads by promoting
+        supported keys (e.g. ContentType, ContentDisposition, CacheControl) to top-level
+        S3 arguments and placing remaining keys under Metadata. This makes content
+        uploads consistent with src uploads. (https://github.com/ansible-collections/amazon.aws)
+      release_summary: This release includes bugfixes to ec2_vpc_nacl, autoscaling_instance
+        and s3_object modules.
+    fragments:
+    - 20250513-ec2_vpc_nacl-fix-issue-when-updating-rules.yml
+    - 2720-autoscaling_instance-implements-missing-instance-termination-state.yaml
+    - 9.5.2.yml
+    - s3_object-content-headers.yml
+    release_date: '2025-10-07'
