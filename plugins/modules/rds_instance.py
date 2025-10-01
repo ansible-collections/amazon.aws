@@ -889,7 +889,6 @@ from typing import Optional
 
 from ansible.module_utils._text import to_text
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
-from ansible.module_utils.six import string_types
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_message
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
@@ -1306,7 +1305,7 @@ def get_changing_options_with_inconsistent_keys(
                 elif set(desired_option) <= set(current_option):
                     # Desired option set is entirely contained within current option set and purge is False, nothing to change
                     continue
-            elif isinstance(desired_option, string_types):
+            elif isinstance(desired_option, str):
                 # Current option is a list and desired option is a string
                 if desired_option in current_option:
                     # Desired option is in current options, nothing to change

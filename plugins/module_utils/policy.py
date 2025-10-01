@@ -31,8 +31,6 @@
 from functools import cmp_to_key
 
 from ansible.module_utils._text import to_text
-from ansible.module_utils.six import binary_type
-from ansible.module_utils.six import string_types
 
 
 def _canonify_root_arn(arn):
@@ -91,7 +89,7 @@ def _hashable_policy(policy, policy_list):
             hashed_policy = _hashable_policy(each, [])
             tupleified = _tuplify_list(hashed_policy)
             policy_list.append(tupleified)
-    elif isinstance(policy, string_types) or isinstance(policy, binary_type):
+    elif isinstance(policy, str) or isinstance(policy, bytes):
         policy = to_text(policy)
         # convert root account ARNs to just account IDs
         policy = _canonify_root_arn(policy)

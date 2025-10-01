@@ -555,7 +555,6 @@ if typing.TYPE_CHECKING:
     from ansible_collections.amazon.aws.plugins.module_utils.botocore import ClientType
 
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
-from ansible.module_utils.six import string_types
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
@@ -743,7 +742,7 @@ def handle_bucket_policy(s3_client: ClientType, module: AnsibleAWSModule, name: 
     if policy is None:
         return False, current_policy
 
-    if isinstance(policy, string_types):
+    if isinstance(policy, str):
         try:
             policy = json.loads(policy)
         except ValueError as e:
