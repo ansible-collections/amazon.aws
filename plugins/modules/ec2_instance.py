@@ -1338,7 +1338,6 @@ except ImportError:
 from ansible.module_utils._text import to_native
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
-from ansible.module_utils.six import string_types
 
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleEC2Error
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import associate_iam_instance_profile
@@ -1580,7 +1579,7 @@ def build_network_spec(client, module: AnsibleAWSModule) -> List[Dict[str, Any]]
         # handle list of `network.interfaces` options
         interfaces.extend(
             [
-                {"DeviceIndex": idx, "NetworkInterfaceId": inty if isinstance(inty, string_types) else inty.get("id")}
+                {"DeviceIndex": idx, "NetworkInterfaceId": inty if isinstance(inty, str) else inty.get("id")}
                 for idx, inty in enumerate(network.get("interfaces", []))
             ]
         )
@@ -2634,7 +2633,7 @@ def build_filters(client, module: AnsibleAWSModule) -> Dict[str, Any]:
     instance_state_names = ["pending", "running", "stopping", "stopped"]
     filters = {}
     instance_ids = module.params.get("instance_ids")
-    if isinstance(instance_ids, string_types):
+    if isinstance(instance_ids, str):
         filters = {"instance-id": [instance_ids], "instance-state-name": instance_state_names}
     elif isinstance(instance_ids, list) and len(instance_ids):
         filters = {"instance-id": instance_ids, "instance-state-name": instance_state_names}

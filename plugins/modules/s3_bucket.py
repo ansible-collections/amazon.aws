@@ -555,7 +555,6 @@ except ImportError:
 
 from ansible.module_utils.basic import to_text
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
-from ansible.module_utils.six import string_types
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
@@ -758,7 +757,7 @@ def handle_bucket_policy(s3_client, module: AnsibleAWSModule, name: str) -> Tupl
         module.fail_json_aws(e, msg="Failed to get bucket policy")
     else:
         if policy is not None:
-            if isinstance(policy, string_types):
+            if isinstance(policy, str):
                 policy = json.loads(policy)
 
             if not policy and current_policy:
