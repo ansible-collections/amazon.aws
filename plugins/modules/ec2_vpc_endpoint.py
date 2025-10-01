@@ -261,7 +261,6 @@ except ImportError:
     pass  # Handled by AnsibleAWSModule
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
-from ansible.module_utils.six import string_types
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import normalize_boto3_result
@@ -430,7 +429,7 @@ def setup_removal(client, module: AnsibleAWSModule) -> Tuple[bool, Dict[str, Any
         return changed, result
 
     vpc_endpoint_ids = module.params.get("vpc_endpoint_id")
-    if isinstance(vpc_endpoint_ids, string_types):
+    if isinstance(vpc_endpoint_ids, str):
         vpc_endpoint_ids = [vpc_endpoint_ids]
 
     try:

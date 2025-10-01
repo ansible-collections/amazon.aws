@@ -146,7 +146,6 @@ except ImportError:
 
 from ansible.errors import AnsibleLookupError
 from ansible.module_utils._text import to_native
-from ansible.module_utils.six import string_types
 from ansible.utils.display import Display
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
@@ -173,13 +172,13 @@ class LookupModule(AWSLookupBase):
 
         # validate arguments 'on_missing' and 'on_denied'
         if on_missing is not None and (
-            not isinstance(on_missing, string_types) or on_missing.lower() not in ["error", "warn", "skip"]
+            not isinstance(on_missing, str) or on_missing.lower() not in ["error", "warn", "skip"]
         ):
             raise AnsibleLookupError(
                 f'"on_missing" must be a string and one of "error", "warn" or "skip", not {on_missing}'
             )
         if on_denied is not None and (
-            not isinstance(on_denied, string_types) or on_denied.lower() not in ["error", "warn", "skip"]
+            not isinstance(on_denied, str) or on_denied.lower() not in ["error", "warn", "skip"]
         ):
             raise AnsibleLookupError(
                 f'"on_denied" must be a string and one of "error", "warn" or "skip", not {on_denied}'

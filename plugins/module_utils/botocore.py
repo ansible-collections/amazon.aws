@@ -81,8 +81,6 @@ except ImportError:
 from ansible.module_utils._text import to_native
 from ansible.module_utils.ansible_release import __version__
 from ansible.module_utils.basic import missing_required_lib
-from ansible.module_utils.six import binary_type
-from ansible.module_utils.six import text_type
 
 from .common import get_collection_info
 from .exceptions import AnsibleBotocoreError
@@ -293,8 +291,8 @@ def _aws_connection_info(params: Dict) -> Tuple[Optional[str], Optional[str], Di
         boto_params["aws_config"] = botocore.config.Config(**config)
 
     for param, value in boto_params.items():
-        if isinstance(value, binary_type):
-            boto_params[param] = text_type(value, "utf-8", "strict")
+        if isinstance(value, bytes):
+            boto_params[param] = str(value, "utf-8", "strict")
 
     return region, endpoint_url, boto_params
 
