@@ -581,7 +581,6 @@ from ansible.module_utils._text import to_text
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils.common.network import to_ipv6_subnet
 from ansible.module_utils.common.network import to_subnet
-from ansible.module_utils.six import string_types
 
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleEC2Error
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import authorize_security_group_egress
@@ -1326,10 +1325,10 @@ def get_diff_final_resource(client, module, security_group):
                 format_rule.pop("from_port")
                 format_rule.pop("to_port")
             elif rule.get("ports"):
-                if rule.get("ports") and (isinstance(rule["ports"], string_types) or isinstance(rule["ports"], int)):
+                if rule.get("ports") and (isinstance(rule["ports"], str) or isinstance(rule["ports"], int)):
                     rule["ports"] = [rule["ports"]]
                 for port in rule.get("ports"):
-                    if isinstance(port, string_types) and "-" in port:
+                    if isinstance(port, str) and "-" in port:
                         format_rule["from_port"], format_rule["to_port"] = port.split("-")
                     else:
                         format_rule["from_port"] = format_rule["to_port"] = port
@@ -1428,7 +1427,7 @@ def flatten_nested_targets(module, rules):
                     collection_name="amazon.aws",
                 )
                 yield from _flatten(target)
-            elif isinstance(target, string_types):
+            elif isinstance(target, str):
                 yield target
 
     if rules is not None:

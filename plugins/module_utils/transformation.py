@@ -39,8 +39,6 @@ from typing import Sequence
 from typing import Union
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
-from ansible.module_utils.six import integer_types
-from ansible.module_utils.six import string_types
 
 from .botocore import normalize_boto3_result
 from .tagging import boto3_tag_list_to_ansible_dict
@@ -78,9 +76,9 @@ def ansible_dict_to_boto3_filter_list(filters_dict):
         filter_dict = {"Name": k}
         if isinstance(v, bool):
             filter_dict["Values"] = [str(v).lower()]
-        elif isinstance(v, integer_types):
+        elif isinstance(v, int):
             filter_dict["Values"] = [str(v)]
-        elif isinstance(v, string_types):
+        elif isinstance(v, str):
             filter_dict["Values"] = [v]
         else:
             filter_dict["Values"] = v
