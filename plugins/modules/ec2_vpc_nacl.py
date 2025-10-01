@@ -298,6 +298,13 @@ def rules_changed(
     removed_rules = find_added_rules(aws_rules, ansible_rules)
 
     changed = False
+    # Removed Rules
+    for rule in removed_rules:
+        changed = True
+        if not check_mode:
+            delete_network_acl_entry(client, network_acl_id=nacl_id, rule_number=rule["RuleNumber"], egress=egress)
+
+    # Added Rules
     for rule in added_rules:
         changed = True
         if not check_mode:
@@ -314,12 +321,6 @@ def rules_changed(
                 rule_number=rule_number,
                 **rule,
             )
-
-    # Removed Rules
-    for rule in removed_rules:
-        changed = True
-        if not check_mode:
-            delete_network_acl_entry(client, network_acl_id=nacl_id, rule_number=rule["RuleNumber"], egress=egress)
 
     return changed
 
