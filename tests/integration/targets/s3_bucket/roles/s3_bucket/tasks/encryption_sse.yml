@@ -43,6 +43,20 @@
           - output.encryption != {}
           - output.encryption.SSEAlgorithm == 'AES256'
 
+    - name: Re-enable AES256 encryption with bucket_key_enabled=False (Issue 2734)
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
+        state: present
+        encryption: AES256
+        bucket_key_enabled: false
+      register: output
+
+    - ansible.builtin.assert:
+        that:
+          - not output.changed
+          - output.encryption != {}
+          - output.encryption.SSEAlgorithm == 'AES256'
+
     ## # ============================================================
     ##
     ## AWS S3 no longer supports disabling S3 encryption
