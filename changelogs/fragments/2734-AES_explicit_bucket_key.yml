@@ -1,0 +1,2 @@
+bugfixes:
+- s3_bucket - fix error when configuring AES256 bucket encryption with ``bucket_key_enabled`` explicitly set to ``false`` (https://github.com/ansible-collections/amazon.aws/issues/2734).
