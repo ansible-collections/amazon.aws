@@ -861,9 +861,11 @@ def _handle_bucket_key_encryption(
     current_encryption_algorithm = current_encryption.get("SSEAlgorithm") if current_encryption else None
 
     if current_encryption_algorithm != "aws:kms":
-        raise AnsibleS3Error(
-            f'Unable to set bucket key: current encryption algorith ("{current_encryption_algorithm}") is not "aws:kms"'
-        )
+        if bucket_key_enabled:
+            raise AnsibleS3Error(
+                f'Unable to set bucket key: current encryption algorithm ("{current_encryption_algorithm}") is not "aws:kms"'
+            )
+        return False, current_encryption
 
     if get_bucket_key_enabled(s3_client, name) == bucket_key_enabled:
         return False, current_encryption
