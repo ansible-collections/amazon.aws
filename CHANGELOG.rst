@@ -4,6 +4,22 @@ amazon.aws Release Notes
 
 .. contents:: Topics
 
+v10.1.2
+=======
+
+Release Summary
+---------------
+
+This release includes multiple bug fixes.
+
+Bugfixes
+--------
+
+- Remove ``ansible.module_utils.six`` imports to avoid warnings (https://github.com/ansible-collections/amazon.aws/pull/2727).
+- amazon.aws.autoscaling_instance - setting the state to ``terminated`` had no effect. The fix implements missing instance termination state (https://github.com/ansible-collections/amazon.aws/issues/2719).
+- ec2_vpc_nacl - Fix issue when trying to update existing Network ACL rule (https://github.com/ansible-collections/amazon.aws/issues/2592).
+- s3_object - Honor headers for content and content_base64 uploads by promoting supported keys (e.g. ContentType, ContentDisposition, CacheControl) to top-level S3 arguments and placing remaining keys under Metadata. This makes content uploads consistent with src uploads. (https://github.com/ansible-collections/amazon.aws)
+
 v10.1.1
 =======
 
@@ -83,6 +99,23 @@ Bugfixes
 
 - s3_bucket - bucket ACLs now consistently returned (https://github.com/ansible-collections/amazon.aws/pull/2478).
 - s3_bucket - fixed idempotency when setting bucket ACLs (https://github.com/ansible-collections/amazon.aws/pull/2478).
+
+
+v9.5.2
+======
+
+Release Summary
+---------------
+
+This release includes bugfixes to ``ec2_vpc_nacl``, ``autoscaling_instance``, ``s3_object`` modules and sanity failure fixes.
+
+Bugfixes
+--------
+
+- Remove ``ansible.module_utils.six`` imports to avoid warnings (https://github.com/ansible-collections/amazon.aws/pull/2727).
+- amazon.aws.autoscaling_instance - setting the state to ``terminated`` had no effect. The fix implements missing instance termination state (https://github.com/ansible-collections/amazon.aws/issues/2719).
+- ec2_vpc_nacl - Fix issue when trying to update existing Network ACL rule (https://github.com/ansible-collections/amazon.aws/issues/2592).
+- s3_object - Honor headers for content and content_base64 uploads by promoting supported keys (e.g. ContentType, ContentDisposition, CacheControl) to top-level S3 arguments and placing remaining keys under Metadata. This makes content uploads consistent with src uploads. (https://github.com/ansible-collections/amazon.aws)
 
 v9.5.1
 ======
