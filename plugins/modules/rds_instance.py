@@ -1116,7 +1116,7 @@ def get_options_with_changing_values(client, module: AnsibleAWSModule, parameter
             )
 
     # Validate changes to storage type options
-    if instance.get("StorageType") == "io1":
+    if instance.get("StorageType") in ["io1", "io2"]:
         # Bundle Iops and AllocatedStorage while updating io1 RDS Instance
         current_iops = instance.get("PendingModifiedValues", {}).get("Iops", instance["Iops"])
         current_allocated_storage = instance.get("PendingModifiedValues", {}).get(
@@ -1129,18 +1129,6 @@ def get_options_with_changing_values(client, module: AnsibleAWSModule, parameter
             parameters["AllocatedStorage"] = new_allocated_storage
             parameters["Iops"] = new_iops
             
-    if instance.get("StorageType") == "io2":
-        # Bundle Iops and AllocatedStorage while updating io2 RDS Instance
-        current_iops = instance.get("PendingModifiedValues", {}).get("Iops", instance["Iops"])
-        current_allocated_storage = instance.get("PendingModifiedValues", {}).get(
-            "AllocatedStorage", instance["AllocatedStorage"]
-        )
-        new_iops = module.params.get("iops")
-        new_allocated_storage = module.params.get("allocated_storage")
-
-        if current_iops != new_iops or current_allocated_storage != new_allocated_storage:
-            parameters["AllocatedStorage"] = new_allocated_storage
-            parameters["Iops"] = new_iops
 
     if instance.get("StorageType") == "gp3":
         GP3_THROUGHPUT = True
