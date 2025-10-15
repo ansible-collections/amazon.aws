@@ -1678,7 +1678,7 @@ def main():
         source_engine_version=dict(),
         source_region=dict(),
         storage_encrypted=dict(type="bool"),
-        storage_type=dict(choices=["standard", "gp2", "gp3", "io1," "io2"]),
+        storage_type=dict(choices=["standard", "gp2", "gp3", "io1" , "io2"]),
         storage_throughput=dict(type="int"),
         tags=dict(type="dict", aliases=["resource_tags"]),
         tde_credential_arn=dict(aliases=["transparent_data_encryption_arn"]),
