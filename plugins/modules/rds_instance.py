@@ -1129,7 +1129,6 @@ def get_options_with_changing_values(client, module: AnsibleAWSModule, parameter
             parameters["AllocatedStorage"] = new_allocated_storage
             parameters["Iops"] = new_iops
 
-
     if instance.get("StorageType") == "gp3":
         GP3_THROUGHPUT = True
         current_storage_throughput = instance.get("PendingModifiedValues", {}).get(
