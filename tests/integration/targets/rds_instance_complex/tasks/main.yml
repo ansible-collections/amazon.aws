@@ -136,8 +136,8 @@
       amazon.aws.rds_instance:
         id: "{{ instance_id }}"
         state: present
-        allocated_storage: "{{ io1_modified_allocated_storage }}"
-        storage_type: "{{ storage_type }}"
+        allocated_storage: "{{ io2_modified_allocated_storage }}"
+        storage_type: "{{ new_storage_type }}"
         db_instance_class: "{{ modified_db_instance_class }}"
         backup_retention_period: 2
         preferred_backup_window: "05:00-06:00"
@@ -159,8 +159,8 @@
       amazon.aws.rds_instance:
         id: "{{ instance_id }}"
         state: present
-        allocated_storage: "{{ io1_modified_allocated_storage }}"
-        storage_type: "{{ storage_type }}"
+        allocated_storage: "{{ io2_modified_allocated_storage }}"
+        storage_type: "{{ new_storage_type }}"
         db_instance_class: "{{ modified_db_instance_class }}"
         backup_retention_period: 2
         preferred_backup_window: "05:00-06:00"
