@@ -1128,7 +1128,7 @@ def get_options_with_changing_values(client, module: AnsibleAWSModule, parameter
         if current_iops != new_iops or current_allocated_storage != new_allocated_storage:
             parameters["AllocatedStorage"] = new_allocated_storage
             parameters["Iops"] = new_iops
-            
+
 
     if instance.get("StorageType") == "gp3":
         GP3_THROUGHPUT = True
@@ -1704,7 +1704,7 @@ def main():
         ["engine", "aurora-mysql", ["db_cluster_identifier"]],
         ["engine", "aurora-postresql", ["db_cluster_identifier"]],
         ["storage_type", "io1", ["iops", "allocated_storage"]],
-        ["storage_type", "io2", ["iops", "allocated_storage"]],        
+        ["storage_type", "io2", ["iops", "allocated_storage"]],
         ["creation_source", "snapshot", ["db_snapshot_identifier", "engine"]],
         ["creation_source", "s3", required_if_s3_creation_source],
     ]
