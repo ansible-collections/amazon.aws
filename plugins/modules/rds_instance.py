@@ -234,7 +234,7 @@ options:
         version_added_collection: community.aws
     iops:
         description:
-          - The Provisioned IOPS (I/O operations per second) value. Is only set when using O(storage_type) is set to io1 or io2.
+          - The Provisioned IOPS (I/O operations per second) value. Is only set when using O(storage_type) is set to V(io1) or V(io2).
         type: int
     kms_key_id:
         description:
