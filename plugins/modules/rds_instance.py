@@ -1116,7 +1116,7 @@ def get_options_with_changing_values(client, module: AnsibleAWSModule, parameter
             )
 
     # Validate changes to storage type options
-    if instance.get("StorageType") in ["io1", "io2"]:
+    if instance.get("StorageType") in ("io1", "io2"):
         # Bundle Iops and AllocatedStorage while updating io1 RDS Instance
         current_iops = instance.get("PendingModifiedValues", {}).get("Iops", instance["Iops"])
         current_allocated_storage = instance.get("PendingModifiedValues", {}).get(
