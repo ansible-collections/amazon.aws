@@ -8,9 +8,11 @@ modified_db_instance_class: db.t3.medium
 allocated_storage: 20
 io1_allocated_storage: 100
 io1_modified_allocated_storage: 110
+io2_modified_allocated_storage: 120
 monitoring_interval: 60
 preferred_maintenance_window: mon:06:20-mon:06:50
 storage_type: io1
+new_storage_type: io2
 iops: 1000
 
 # For mariadb tests
