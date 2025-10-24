@@ -38,7 +38,7 @@ Features and functionality that require newer versions of the SDK can be contrib
       description:
         - Volume throughput in MB/s.
         - This parameter is only valid for gp3 volumes.
-        - Valid range is from 125 to 1000.
+        - Valid range is from 125 to 2000.
         - Requires at least botocore version 1.19.27.
       type: int
       version_added: 1.4.0

@@ -133,8 +133,8 @@ options:
             type: str
           throughput:
             description: >
-              The throughput to provision for a gp3 volume, with a maximum of 1,000 MiB/s.
-              Valid Range - Minimum value of V(125). Maximum value of V(1000).
+              The throughput to provision for a gp3 volume, with a maximum of 2,000 MiB/s.
+              Valid Range - Minimum value of V(125). Maximum value of V(2000).
             type: int
             version_added: 9.0.0
   cpu_options:
