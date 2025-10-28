@@ -234,7 +234,7 @@ options:
         version_added_collection: community.aws
     iops:
         description:
-          - The Provisioned IOPS (I/O operations per second) value. Is only set when using O(storage_type) is set to io1.
+          - The Provisioned IOPS (I/O operations per second) value. Is only set when using O(storage_type) is set to V(io1) or V(io2).
         type: int
     kms_key_id:
         description:
@@ -416,6 +416,7 @@ options:
           - gp2
           - gp3
           - io1
+          - io2
         type: str
     storage_throughput:
       description:
@@ -1115,7 +1116,7 @@ def get_options_with_changing_values(client, module: AnsibleAWSModule, parameter
             )
 
     # Validate changes to storage type options
-    if instance.get("StorageType") == "io1":
+    if instance.get("StorageType") in ("io1", "io2"):
         # Bundle Iops and AllocatedStorage while updating io1 RDS Instance
         current_iops = instance.get("PendingModifiedValues", {}).get("Iops", instance["Iops"])
         current_allocated_storage = instance.get("PendingModifiedValues", {}).get(
@@ -1676,7 +1677,7 @@ def main():
         source_engine_version=dict(),
         source_region=dict(),
         storage_encrypted=dict(type="bool"),
-        storage_type=dict(choices=["standard", "gp2", "gp3", "io1"]),
+        storage_type=dict(choices=["standard", "gp2", "gp3", "io1", "io2"]),
         storage_throughput=dict(type="int"),
         tags=dict(type="dict", aliases=["resource_tags"]),
         tde_credential_arn=dict(aliases=["transparent_data_encryption_arn"]),
@@ -1702,6 +1703,7 @@ def main():
         ["engine", "aurora-mysql", ["db_cluster_identifier"]],
         ["engine", "aurora-postresql", ["db_cluster_identifier"]],
         ["storage_type", "io1", ["iops", "allocated_storage"]],
+        ["storage_type", "io2", ["iops", "allocated_storage"]],
         ["creation_source", "snapshot", ["db_snapshot_identifier", "engine"]],
         ["creation_source", "s3", required_if_s3_creation_source],
     ]
