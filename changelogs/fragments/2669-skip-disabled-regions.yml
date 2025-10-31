@@ -1,0 +1,4 @@
+---
+bugfixes:
+  - gracefully skip AWS regions that are not opted-in (fix misleading AuthFailure) in aws_ec2 inventory plugin
+
