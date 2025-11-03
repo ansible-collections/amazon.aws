@@ -499,7 +499,10 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
         self._instance_id = instance_id
 
     def __del__(self) -> None:
-        self.close()
+        try:
+            self.close()
+        except Exception:
+            pass
 
     def _connect(self) -> Any:
         """connect to the host via ssm"""
