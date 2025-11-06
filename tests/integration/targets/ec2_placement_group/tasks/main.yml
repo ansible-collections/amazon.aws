@@ -24,6 +24,12 @@
           - pg_1_create_check_mode is changed
           - pg_1_create_check_mode.placement_group.name == resource_prefix ~ '-pg1'
 
+    - name: Assert that placement group data is returned (check mode)
+      ansible.builtin.assert:
+        that:
+          - pg_1_create_check_mode is changed
+          - pg_1_create_check_mode.placement_group.name == resource_prefix ~ '-pg1'
+
     - name: Create a placement group 1
       amazon.aws.ec2_placement_group:
         name: "{{ resource_prefix }}-pg1"
