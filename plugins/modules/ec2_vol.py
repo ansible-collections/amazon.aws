@@ -756,6 +756,8 @@ def ensure_present(ec2_conn, module: AnsibleAWSModule, volume: Optional[Dict[str
     inst = None
     if instance:
         inst = get_instance(module, ec2_conn, instance_id=instance)
+        if not inst: # FIXME: Unsure if this is supposed to be `if not isnt` or `if inst is []` or something along those lines. I basically just want it to know if we couldnt find the instance 
+          module.fail_json(msg="Could not find instance, make sure the region is correct") # TODO, print the region that we _think_ the instance is in to help the user see if they've entered the wrong region 
         zone = inst["placement"]["availability_zone"]
 
         # Use platform attribute to guess whether the instance is Windows or Linux
