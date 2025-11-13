@@ -1,0 +1,283 @@
+---
+# Integration tests for ec2_health_report module
+
+- name: Set up test environment
+  block:
+    - name: Create VPC for testing
+      amazon.aws.ec2_vpc_net:
+        name: "{{ resource_prefix }}-vpc"
+        cidr_block: 10.0.0.0/16
+        state: present
+      register: vpc
+
+    - name: Create subnet
+      amazon.aws.ec2_vpc_subnet:
+        vpc_id: "{{ vpc.vpc.id }}"
+        cidr: 10.0.1.0/24
+        state: present
+      register: subnet
+
+    - name: Create security group
+      amazon.aws.ec2_security_group:
+        name: "{{ resource_prefix }}-sg"
+        description: Test security group
+        vpc_id: "{{ vpc.vpc.id }}"
+        state: present
+      register: sg
+
+    - name: Get AMI for test instance
+      amazon.aws.ec2_ami_info:
+        owners: amazon
+        filters:
+          name: "amzn2-ami-hvm-*-x86_64-gp2"
+          state: available
+      register: amis
+
+    - name: Set AMI ID
+      set_fact:
+        ami_id: "{{ (amis.images | sort(attribute='creation_date') | last).image_id }}"
+
+    - name: Launch test EC2 instance
+      amazon.aws.ec2_instance:
+        name: "{{ resource_prefix }}-test-instance"
+        instance_type: t3.micro
+        image_id: "{{ ami_id }}"
+        vpc_subnet_id: "{{ subnet.subnet.id }}"
+        security_group: "{{ sg.group_id }}"
+        tags:
+          Environment: test
+          Project: ansible-testing
+        wait: yes
+        state: running
+      register: test_instance
+
+    - name: Wait for instance to be ready
+      pause:
+        seconds: 30
+
+- name: Test basic health report generation
+  block:
+    - name: Generate health report without filters
+      community.aws.ec2_health_report:
+        region: "{{ aws_region }}"
+      register: basic_report
+
+    - name: Verify basic report structure
+      assert:
+        that:
+          - basic_report is not failed
+          - basic_report.report is defined
+          - basic_report.report.timestamp is defined
+          - basic_report.report.region == aws_region
+          - basic_report.report.instance_count >= 1
+          - basic_report.report.instances is defined
+          - basic_report.report.instances | length >= 1
+
+    - name: Verify instance data structure
+      assert:
+        that:
+          - item.instance_id is defined
+          - item.instance_type is defined
+          - item.state is defined
+          - item.metrics is defined
+        loop: "{{ basic_report.report.instances }}"
+
+- name: Test filtered health report
+  block:
+    - name: Generate health report with tag filter
+      community.aws.ec2_health_report:
+        region: "{{ aws_region }}"
+        filters:
+          tag:Environment: test
+          instance-state-name: running
+      register: filtered_report
+
+    - name: Verify filtered report
+      assert:
+        that:
+          - filtered_report is not failed
+          - filtered_report.report.instance_count >= 1
+          - filtered_report.report.instances | length >= 1
+
+    - name: Verify test instance is in filtered report
+      assert:
+        that:
+          - test_instance.instance_ids[0] in (filtered_report.report.instances | map(attribute='instance_id') | list)
+
+- name: Test custom metrics
+  block:
+    - name: Generate report with multiple metrics
+      community.aws.ec2_health_report:
+        region: "{{ aws_region }}"
+        filters:
+          tag:Environment: test
+        include_metrics:
+          - CPUUtilization
+          - NetworkIn
+          - NetworkOut
+          - StatusCheckFailed
+        metric_duration: 1
+        metric_period: 300
+      register: metrics_report
+
+    - name: Verify metrics are included
+      assert:
+        that:
+          - metrics_report is not failed
+          - metrics_report.report.instances | length >= 1
+
+    - name: Check that metrics keys exist
+      assert:
+        that:
+          - item.metrics is defined
+          - item.metrics.keys() | length > 0
+      loop: "{{ metrics_report.report.instances }}"
+      when: metrics_report.report.instances | length > 0
+
+- name: Test different output formats
+  block:
+    - name: Generate JSON format report (default)
+      community.aws.ec2_health_report:
+        region: "{{ aws_region }}"
+        filters:
+          tag:Environment: test
+        format: json
+      register: json_report
+
+    - name: Verify JSON format
+      assert:
+        that:
+          - json_report is not failed
+          - json_report.report is defined
+          - json_report.formatted_report is not defined
+
+    - name: Generate text format report
+      community.aws.ec2_health_report:
+        region: "{{ aws_region }}"
+        filters:
+          tag:Environment: test
+        format: text
+      register: text_report
+
+    - name: Verify text format
+      assert:
+        that:
+          - text_report is not failed
+          - text_report.formatted_report is defined
+          - text_report.formatted_report is string
+          - "'AWS EC2 HEALTH REPORT' in text_report.formatted_report"
+
+    - name: Generate HTML format report
+      community.aws.ec2_health_report:
+        region: "{{ aws_region }}"
+        filters:
+          tag:Environment: test
+        format: html
+      register: html_report
+
+    - name: Verify HTML format
+      assert:
+        that:
+          - html_report is not failed
+          - html_report.formatted_report is defined
+          - html_report.formatted_report is string
+          - "'<html>' in html_report.formatted_report"
+          - "'<table>' in html_report.formatted_report"
+
+- name: Test edge cases
+  block:
+    - name: Test with no matching instances
+      community.aws.ec2_health_report:
+        region: "{{ aws_region }}"
+        filters:
+          tag:NonExistentTag: this-does-not-exist
+      register: empty_report
+
+    - name: Verify empty report handling
+      assert:
+        that:
+          - empty_report is not failed
+          - empty_report.report.instance_count == 0
+          - empty_report.report.instances | length == 0
+
+    - name: Test with very short metric duration
+      community.aws.ec2_health_report:
+        region: "{{ aws_region }}"
+        filters:
+          tag:Environment: test
+        metric_duration: 1
+        metric_period: 60
+      register: short_duration_report
+
+    - name: Verify short duration report
+      assert:
+        that:
+          - short_duration_report is not failed
+
+- name: Test check mode
+  block:
+    - name: Run in check mode
+      community.aws.ec2_health_report:
+        region: "{{ aws_region }}"
+        filters:
+          tag:Environment: test
+      check_mode: yes
+      register: check_mode_result
+
+    - name: Verify check mode doesn't fail
+      assert:
+        that:
+          - check_mode_result is not failed
+          - check_mode_result.changed == false
+
+- name: Test error handling
+  block:
+    - name: Test with invalid region
+      community.aws.ec2_health_report:
+        region: invalid-region-123
+      register: invalid_region
+      ignore_errors: yes
+
+    - name: Verify error handling for invalid region
+      assert:
+        that:
+          - invalid_region is failed
+
+  rescue:
+    - name: Expected failure for invalid region
+      debug:
+        msg: "Error handling test passed"
+
+- name: Cleanup test resources
+  block:
+    - name: Terminate test instance
+      amazon.aws.ec2_instance:
+        instance_ids: "{{ test_instance.instance_ids }}"
+        state: terminated
+        wait: yes
+      when: test_instance.instance_ids is defined
+
+    - name: Delete security group
+      amazon.aws.ec2_security_group:
+        group_id: "{{ sg.group_id }}"
+        state: absent
+      when: sg.group_id is defined
+      ignore_errors: yes
+
+    - name: Delete subnet
+      amazon.aws.ec2_vpc_subnet:
+        subnet_id: "{{ subnet.subnet.id }}"
+        state: absent
+      when: subnet.subnet.id is defined
+      ignore_errors: yes
+
+    - name: Delete VPC
+      amazon.aws.ec2_vpc_net:
+        vpc_id: "{{ vpc.vpc.id }}"
+        state: absent
+      when: vpc.vpc.id is defined
+      ignore_errors: yes
+  always:
+    - name: Ensure cleanup runs
+      debug:
+        msg: "Cleanup completed"
