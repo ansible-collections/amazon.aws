@@ -1,6 +1,5 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-
 # Copyright: (c) 2025
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
@@ -93,7 +92,6 @@ options:
         description: SMTP password for authentication.
         type: str
         required: true
-        no_log: true
       from_addr:
         description: Email sender address.
         type: str
