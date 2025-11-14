@@ -58,7 +58,7 @@
 - name: Test basic health report generation
   block:
     - name: Generate health report without filters
-      community.aws.ec2_health_report:
+      amazon.aws.ec2_health_report:
         region: "{{ aws_region }}"
       register: basic_report
 
