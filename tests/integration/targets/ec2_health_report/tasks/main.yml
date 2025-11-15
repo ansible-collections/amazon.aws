@@ -85,7 +85,7 @@
 - name: Test filtered health report
   block:
     - name: Generate health report with tag filter
-      community.aws.ec2_health_report:
+      amazon.aws.ec2_health_report:
         region: "{{ aws_region }}"
         filters:
           tag:Environment: test
@@ -107,7 +107,7 @@
 - name: Test custom metrics
   block:
     - name: Generate report with multiple metrics
-      community.aws.ec2_health_report:
+      amazon.aws.ec2_health_report:
         region: "{{ aws_region }}"
         filters:
           tag:Environment: test
@@ -137,7 +137,7 @@
 - name: Test different output formats
   block:
     - name: Generate JSON format report (default)
-      community.aws.ec2_health_report:
+      amazon.aws.ec2_health_report:
         region: "{{ aws_region }}"
         filters:
           tag:Environment: test
@@ -152,7 +152,7 @@
           - json_report.formatted_report is not defined
 
     - name: Generate text format report
-      community.aws.ec2_health_report:
+      amazon.aws.ec2_health_report:
         region: "{{ aws_region }}"
         filters:
           tag:Environment: test
@@ -168,7 +168,7 @@
           - "'AWS EC2 HEALTH REPORT' in text_report.formatted_report"
 
     - name: Generate HTML format report
-      community.aws.ec2_health_report:
+      amazon.aws.ec2_health_report:
         region: "{{ aws_region }}"
         filters:
           tag:Environment: test
@@ -187,7 +187,7 @@
 - name: Test edge cases
   block:
     - name: Test with no matching instances
-      community.aws.ec2_health_report:
+      amazon.aws.ec2_health_report:
         region: "{{ aws_region }}"
         filters:
           tag:NonExistentTag: this-does-not-exist
@@ -201,7 +201,7 @@
           - empty_report.report.instances | length == 0
 
     - name: Test with very short metric duration
-      community.aws.ec2_health_report:
+      amazon.aws.ec2_health_report:
         region: "{{ aws_region }}"
         filters:
           tag:Environment: test
@@ -217,7 +217,7 @@
 - name: Test check mode
   block:
     - name: Run in check mode
-      community.aws.ec2_health_report:
+      amazon.aws.ec2_health_report:
         region: "{{ aws_region }}"
         filters:
           tag:Environment: test
@@ -233,7 +233,7 @@
 - name: Test error handling
   block:
     - name: Test with invalid region
-      community.aws.ec2_health_report:
+      amazon.aws.ec2_health_report:
         region: invalid-region-123
       register: invalid_region
       ignore_errors: yes
