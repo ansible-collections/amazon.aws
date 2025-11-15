@@ -1,5 +1,28 @@
 ---
+
 # Integration tests for ec2_health_report module
+# Note: These tests require AWS credentials and will be skipped in CI
+# Maintainers: Please configure integration_config.yml for full test coverage
+
+- name: Check if integration config exists
+  stat:
+    path: "{{ lookup('env', 'HOME') }}/.ansible/collections/ansible_collections/amazon/aws/tests/integration/integration_config.yml"
+  register: config_check
+  delegate_to: localhost
+
+- name: Skip tests if no AWS credentials configured
+  meta: end_play
+  when: not config_check.stat.exists
+
+- name: Load integration config
+  include_vars:
+    file: "{{ lookup('env', 'HOME') }}/.ansible/collections/ansible_collections/amazon/aws/tests/integration/integration_config.yml"
+  when: config_check.stat.exists
+
+- name: Set default region if not configured
+  set_fact:
+    aws_region: "{{ aws_region | default('us-east-1') }}"
+
 
 - name: Set up test environment
   block:
