@@ -64,7 +64,7 @@ options:
       - Only used when launching new instances, not when modifying existing instances.
     type: list
     elements: str
-    version_added: 8.3.0
+    version_added: 10.2.0
   count:
     description:
       - Number of instances to launch.
