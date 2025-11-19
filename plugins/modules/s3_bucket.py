@@ -688,7 +688,7 @@ def handle_bucket_public_access_config(s3_client, module: AnsibleAWSModule, name
 
     try:
         current_public_access = get_bucket_public_access(s3_client, name)
-    except is_boto3_error_code(["NotImplemented", "XNotImplemented"]) as e:
+    except is_boto3_error_code(["NotImplemented", "XNotImplemented", "NotSupported"]) as e:
         if public_access is not None:
             module.fail_json_aws(e, msg="Bucket public access settings are not supported by the current S3 Endpoint")
     except is_boto3_error_code("AccessDenied") as e:
