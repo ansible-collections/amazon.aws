@@ -194,6 +194,6 @@ class SSMSessionManager:
         if self._session_id and self._client:
             try:
                 self._client.terminate_session(SessionId=self._session_id)
-            except Exception:
+            except ReferenceError:
                 pass
             self._session_id = None
