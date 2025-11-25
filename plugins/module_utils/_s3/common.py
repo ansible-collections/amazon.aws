@@ -22,7 +22,13 @@ from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto
 from ansible_collections.amazon.aws.plugins.module_utils.errors import AWSErrorHandler
 from ansible_collections.amazon.aws.plugins.module_utils.exceptions import AnsibleAWSError
 
-IGNORE_S3_DROP_IN_EXCEPTIONS = ["XNotImplemented", "NotImplemented", "AccessControlListNotSupported", "501"]
+IGNORE_S3_DROP_IN_EXCEPTIONS = [
+    "NotSupported",
+    "XNotImplemented",
+    "NotImplemented",
+    "AccessControlListNotSupported",
+    "501",
+]
 
 
 class AnsibleS3Error(AnsibleAWSError):
