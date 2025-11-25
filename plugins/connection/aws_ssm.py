@@ -501,7 +501,7 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
     def __del__(self) -> None:
         try:
             self.close()
-        except Exception:
+        except ReferenceError:
             pass
 
     def _connect(self) -> Any:
