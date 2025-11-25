@@ -192,5 +192,8 @@ class SSMSessionManager:
         if self._process_mgr:
             self._process_mgr.terminate()
         if self._session_id and self._client:
-            self._client.terminate_session(SessionId=self._session_id)
+            try:
+                self._client.terminate_session(SessionId=self._session_id)
+            except Exception:
+                pass
             self._session_id = None

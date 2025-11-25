@@ -1,0 +1,2 @@
+bugfixes:
+- connection/aws_ssm - fixed ReferenceError in aws_ssm connection plugin destructor during interpreter shutdown (https://github.com/ansible-collections/amazon.aws/issues/2728).

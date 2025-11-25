@@ -144,6 +144,12 @@ class TestConnectionBaseClass:
             session_manager.terminate.assert_not_called()
         assert loaded_aws_ssm.session_manager is None
 
+    def test_plugins_connection_aws_ssm_del_handles_exceptions(self, loaded_aws_ssm):
+        """Test that __del__ handles exceptions gracefully during shutdown"""
+        loaded_aws_ssm.close = MagicMock(side_effect=ReferenceError("weakly-referenced object no longer exists"))
+        loaded_aws_ssm.__del__()
+        loaded_aws_ssm.close.assert_called_once()
+
     @pytest.mark.parametrize("level", ["invalid value", 5, -1])
     @patch("ansible_collections.amazon.aws.plugins.connection.aws_ssm.display")
     def test_verbosity_diplay_invalid_level(self, mock_display, loaded_aws_ssm, level):
