@@ -72,21 +72,6 @@ dhcp_options:
             description: The DHCP configuration for the option set.
             type: list
             elements: dict
-            contains:
-                key:
-                    description: The name of a DHCP option.
-                    returned: always
-                    type: str
-                values:
-                    description: List of values for the DHCP option.
-                    returned: always
-                    type: list
-                    elements: dict
-                    contains:
-                        value:
-                            description: The attribute value. This value is case-sensitive.
-                            returned: always
-                            type: str
             sample:
               - '{"key": "ntp-servers", "values": [{"value": "10.0.0.2" , "value": "10.0.1.2"}]}'
               - '{"key": "netbios-name-servers", "values": [{value": "10.0.0.1"}, {"value": "10.0.1.1" }]}'
@@ -106,40 +91,89 @@ dhcp_options:
               - '{"Key": "CreatedBy", "Value": "ansible-test"}'
               - '{"Key": "Collection", "Value": "amazon.aws"}'
 dhcp_config:
-    description: The boto2-style DHCP options created, associated or found. Provided for consistency with ec2_vpc_dhcp_option's C(dhcp_config).
+    description:
+      - The boto2-style DHCP options created, associated or found.
+      - Provided for consistency with M(amazon.aws.ec2_vpc_dhcp_option)'s C(dhcp_config).
     returned: always
     type: list
     elements: dict
     contains:
-      domain-name-servers:
+      domain_name_servers:
         description: The IP addresses of up to four domain name servers, or AmazonProvidedDNS.
         returned: when available
         type: list
         sample:
           - 10.0.0.1
           - 10.0.1.1
-      domain-name:
+      domain_name:
         description: The domain name for hosts in the DHCP option sets.
         returned: when available
         type: list
         sample:
           - "my.example.com"
-      ntp-servers:
+      ntp_servers:
         description: The IP addresses of up to four Network Time Protocol (NTP) servers.
         returned: when available
         type: list
         sample:
           - 10.0.0.1
           - 10.0.1.1
-      netbios-name-servers:
+      netbios_name_servers:
         description: The IP addresses of up to four NetBIOS name servers.
         returned: when available
         type: list
         sample:
           - 10.0.0.1
           - 10.0.1.1
-      netbios-node-type:
+      netbios_node_type:
         description: The NetBIOS node type (1, 2, 4, or 8).
+        returned: when available
+        type: str
+        sample: 2
+      domain-name-servers:
+        description:
+          - The IP addresses of up to four domain name servers, or AmazonProvidedDNS.
+          - This return value has been deprecated and will be removed in a release after
+            2026-12-01. Use RV(dhcp_config[].domain_name_servers) instead.
+        returned: when available
+        type: list
+        sample:
+          - 10.0.0.1
+          - 10.0.1.1
+      domain-name:
+        description:
+          - The domain name for hosts in the DHCP option sets.
+          - This return value has been deprecated and will be removed in a release after
+            2026-12-01. Use RV(dhcp_config[].domain_name) instead.
+        returned: when available
+        type: list
+        sample:
+          - "my.example.com"
+      ntp-servers:
+        description:
+          - The IP addresses of up to four Network Time Protocol (NTP) servers.
+          - This return value has been deprecated and will be removed in a release after
+            2026-12-01. Use RV(dhcp_config[].ntp_servers) instead.
+        returned: when available
+        type: list
+        sample:
+          - 10.0.0.1
+          - 10.0.1.1
+      netbios-name-servers:
+        description:
+          - The IP addresses of up to four NetBIOS name servers.
+          - This return value has been deprecated and will be removed in a release after
+            2026-12-01. Use RV(dhcp_config[].netbios_name_servers) instead.
+        returned: when available
+        type: list
+        sample:
+          - 10.0.0.1
+          - 10.0.1.1
+      netbios-node-type:
+        description:
+          - The NetBIOS node type (1, 2, 4, or 8).
+          - This return value has been deprecated and will be removed in a release after
+            2026-12-01. Use RV(dhcp_config[].netbios_node_type) instead.
         returned: when available
         type: str
         sample: 2
@@ -200,6 +234,15 @@ def main() -> None:
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
+
+    module.deprecate(
+        "The dhcp_config return value's hyphenated keys (domain-name, domain-name-servers, "
+        "ntp-servers, netbios-name-servers, netbios-node-type) are deprecated. "
+        "Use the underscore versions (domain_name, domain_name_servers, ntp_servers, "
+        "netbios_name_servers, netbios_node_type) instead.",
+        date="2026-12-01",
+        collection_name="amazon.aws",
+    )
 
     client = module.client("ec2")
 

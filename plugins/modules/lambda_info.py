@@ -75,14 +75,10 @@ RETURN = r"""
 ---
 function:
     description:
-        - Lambda function list.
-        - RV(function) has been deprecated in will be removed in the next major release after 2025-01-01.
-    returned: success
-    type: dict
-function.TheName:
-    description:
-        - Lambda function information, including event, mapping, and version information.
-        - RV(function) has been deprecated in will be removed in the next major release after 2025-01-01.
+        - Lambda function list, keyed by function name.
+        - Each key is a function name with a value containing the function information,
+          including event, mapping, and version information.
+        - RV(function) has been deprecated and will be removed in a release after 2025-01-01.
     returned: success
     type: dict
 functions:

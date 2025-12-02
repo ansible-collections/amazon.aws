@@ -130,39 +130,86 @@ dhcp_options_id:
     type: str
     returned: when available
 dhcp_config:
-    description: The boto2-style DHCP options created, associated or found
+    description: The boto2-style DHCP options created, associated or found.
     returned: when available
     type: dict
     contains:
-      domain-name-servers:
+      domain_name_servers:
         description: The IP addresses of up to four domain name servers, or AmazonProvidedDNS.
         returned: when available
         type: list
         sample:
           - 10.0.0.1
           - 10.0.1.1
-      domain-name:
-        description: The domain name for hosts in the DHCP option sets
+      domain_name:
+        description: The domain name for hosts in the DHCP option sets.
         returned: when available
         type: list
         sample:
           - "my.example.com"
-      ntp-servers:
+      ntp_servers:
         description: The IP addresses of up to four Network Time Protocol (NTP) servers.
         returned: when available
         type: list
         sample:
           - 10.0.0.1
           - 10.0.1.1
-      netbios-name-servers:
+      netbios_name_servers:
         description: The IP addresses of up to four NetBIOS name servers.
         returned: when available
         type: list
         sample:
           - 10.0.0.1
           - 10.0.1.1
-      netbios-node-type:
+      netbios_node_type:
         description: The NetBIOS node type (1, 2, 4, or 8).
+        returned: when available
+        type: str
+        sample: 2
+      domain-name-servers:
+        description:
+          - The IP addresses of up to four domain name servers, or AmazonProvidedDNS.
+          - This return value has been deprecated and will be removed in a release after
+            2026-12-01. Use RV(dhcp_config.domain_name_servers) instead.
+        returned: when available
+        type: list
+        sample:
+          - 10.0.0.1
+          - 10.0.1.1
+      domain-name:
+        description:
+          - The domain name for hosts in the DHCP option sets.
+          - This return value has been deprecated and will be removed in a release after
+            2026-12-01. Use RV(dhcp_config.domain_name) instead.
+        returned: when available
+        type: list
+        sample:
+          - "my.example.com"
+      ntp-servers:
+        description:
+          - The IP addresses of up to four Network Time Protocol (NTP) servers.
+          - This return value has been deprecated and will be removed in a release after
+            2026-12-01. Use RV(dhcp_config.ntp_servers) instead.
+        returned: when available
+        type: list
+        sample:
+          - 10.0.0.1
+          - 10.0.1.1
+      netbios-name-servers:
+        description:
+          - The IP addresses of up to four NetBIOS name servers.
+          - This return value has been deprecated and will be removed in a release after
+            2026-12-01. Use RV(dhcp_config.netbios_name_servers) instead.
+        returned: when available
+        type: list
+        sample:
+          - 10.0.0.1
+          - 10.0.1.1
+      netbios-node-type:
+        description:
+          - The NetBIOS node type (1, 2, 4, or 8).
+          - This return value has been deprecated and will be removed in a release after
+            2026-12-01. Use RV(dhcp_config.netbios_node_type) instead.
         returned: when available
         type: str
         sample: 2
@@ -532,6 +579,16 @@ def main() -> None:
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, check_boto3=False, supports_check_mode=True)
+
+    module.deprecate(
+        "The dhcp_config return value's hyphenated keys (domain-name, domain-name-servers, "
+        "ntp-servers, netbios-name-servers, netbios-node-type) are deprecated. "
+        "Use the underscore versions (domain_name, domain_name_servers, ntp_servers, "
+        "netbios_name_servers, netbios_node_type) instead.",
+        date="2026-12-01",
+        collection_name="amazon.aws",
+    )
+
     state = module.params["state"]
     new_config = create_dhcp_config(module.params)
 

@@ -241,8 +241,17 @@ resource_record_sets:
       returned: always
       type: str
       sample: "52.43.18.27"
+    record_values:
+      description: Record values as a list.
+      returned: always
+      type: list
+      sample:
+      - 52.43.18.27
     values:
-      description: Record Values.
+      description:
+        - Record values as a list.
+        - This return value has been deprecated and will be removed in a release after
+          2026-12-01. Use RV(resource_record_sets.record_values) instead.
       returned: always
       type: list
       sample:
@@ -556,14 +565,18 @@ def format_record(record_in, zone_in, zone_id):
     if record_in.get("AliasTarget"):
         record["alias"] = True
         record["value"] = record_in["AliasTarget"].get("DNSName")
-        record["values"] = [record_in["AliasTarget"].get("DNSName")]
+        # record_values is the new key, values is deprecated but kept for backward compatibility
+        record["record_values"] = [record_in["AliasTarget"].get("DNSName")]
+        record["values"] = record["record_values"]
         record["alias_hosted_zone_id"] = record_in["AliasTarget"].get("HostedZoneId")
         record["alias_evaluate_target_health"] = record_in["AliasTarget"].get("EvaluateTargetHealth")
     else:
         record["alias"] = False
         records = [r.get("Value") for r in record_in.get("ResourceRecords")]
         record["value"] = ",".join(sorted(records))
-        record["values"] = sorted(records)
+        # record_values is the new key, values is deprecated but kept for backward compatibility
+        record["record_values"] = sorted(records)
+        record["values"] = record["record_values"]
 
     return record
 
@@ -640,6 +653,13 @@ def main():
             weight=("identifier",),
             geo_location=("identifier",),
         ),
+    )
+
+    module.deprecate(
+        "The 'values' key in resource_record_sets return value is deprecated. "
+        "Use 'record_values' instead.",
+        date="2026-12-01",
+        collection_name="amazon.aws",
     )
 
     if module.params["state"] in ("present", "create"):
@@ -791,7 +811,7 @@ def main():
 
     if command_in == "get":
         if type_in == "NS":
-            ns = aws_record.get("values", [])
+            ns = aws_record.get("record_values", [])
         else:
             # Retrieve name servers associated to the zone.
             ns = get_hosted_zone_nameservers(route53, zone_id)

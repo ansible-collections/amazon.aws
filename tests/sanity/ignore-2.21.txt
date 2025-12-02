@@ -1,1 +1,4 @@
 plugins/modules/route53.py validate-modules:parameter-state-invalid-choice # route53_info needs improvements before we can deprecate this
+plugins/modules/ec2_vpc_dhcp_option.py validate-modules:bad-return-value-key # deprecated keys kept for backward compatibility until 2026-12-01
+plugins/modules/ec2_vpc_dhcp_option_info.py validate-modules:bad-return-value-key # deprecated keys kept for backward compatibility until 2026-12-01
+plugins/modules/route53.py validate-modules:bad-return-value-key # deprecated 'values' key kept for backward compatibility until 2026-12-01
