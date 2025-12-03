@@ -656,8 +656,7 @@ def main():
     )
 
     module.deprecate(
-        "The 'values' key in resource_record_sets return value is deprecated. "
-        "Use 'record_values' instead.",
+        "The 'values' key in resource_record_sets return value is deprecated. Use 'record_values' instead.",
         date="2026-12-01",
         collection_name="amazon.aws",
     )
