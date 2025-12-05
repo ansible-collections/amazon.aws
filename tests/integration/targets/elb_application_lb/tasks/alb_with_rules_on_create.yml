@@ -1,0 +1,194 @@
+---
+# Test creating an ALB with listener rules specified at initial creation time
+# This tests that rules can be defined when the ALB is first created,
+# rather than requiring a separate update after creation.
+
+- name: Run tests for creating ALB with listener rules on initial creation
+  block:
+    - name: Create an ALB with listener rules on initial creation - check_mode
+      amazon.aws.elb_application_lb:
+        name: "{{ alb_name_rules_on_create_test }}"
+        subnets: "{{ public_subnets }}"
+        security_groups: "{{ sec_group.group_id }}"
+        state: present
+        listeners:
+          - Protocol: HTTP
+            Port: 80
+            DefaultActions:
+              - Type: forward
+                TargetGroupName: "{{ tg_name }}"
+            Rules:
+              - Conditions:
+                  - Field: path-pattern
+                    Values:
+                      - /api/*
+                Priority: "1"
+                Actions:
+                  - TargetGroupName: "{{ tg_name }}"
+                    Type: forward
+              - Conditions:
+                  - Field: path-pattern
+                    Values:
+                      - /health
+                Priority: "2"
+                Actions:
+                  - Type: fixed-response
+                    FixedResponseConfig:
+                      ContentType: text/plain
+                      MessageBody: OK
+                      StatusCode: "200"
+      register: alb
+      check_mode: true
+
+    - name: Assert check_mode result for ALB with rules on create
+      ansible.builtin.assert:
+        that:
+          - alb is changed
+          - alb.msg is match('Would have created ALB if not in check mode.')
+
+    - name: Create an ALB with listener rules on initial creation
+      amazon.aws.elb_application_lb:
+        name: "{{ alb_name_rules_on_create_test }}"
+        subnets: "{{ public_subnets }}"
+        security_groups: "{{ sec_group.group_id }}"
+        state: present
+        listeners:
+          - Protocol: HTTP
+            Port: 80
+            DefaultActions:
+              - Type: forward
+                TargetGroupName: "{{ tg_name }}"
+            Rules:
+              - Conditions:
+                  - Field: path-pattern
+                    Values:
+                      - /api/*
+                Priority: "1"
+                Actions:
+                  - TargetGroupName: "{{ tg_name }}"
+                    Type: forward
+              - Conditions:
+                  - Field: path-pattern
+                    Values:
+                      - /health
+                Priority: "2"
+                Actions:
+                  - Type: fixed-response
+                    FixedResponseConfig:
+                      ContentType: text/plain
+                      MessageBody: OK
+                      StatusCode: "200"
+      register: alb
+
+    - name: Assert ALB was created with rules
+      ansible.builtin.assert:
+        that:
+          - alb is changed
+          - alb.listeners | length == 1
+          - alb.listeners[0].rules | length == 3  # 2 custom rules + 1 default rule
+          - "'1' in alb.listeners[0].rules | map(attribute='priority')"
+          - "'2' in alb.listeners[0].rules | map(attribute='priority')"
+
+    - name: Create an ALB with listener rules on initial creation (idempotence) - check_mode
+      amazon.aws.elb_application_lb:
+        name: "{{ alb_name_rules_on_create_test }}"
+        subnets: "{{ public_subnets }}"
+        security_groups: "{{ sec_group.group_id }}"
+        state: present
+        listeners:
+          - Protocol: HTTP
+            Port: 80
+            DefaultActions:
+              - Type: forward
+                TargetGroupName: "{{ tg_name }}"
+            Rules:
+              - Conditions:
+                  - Field: path-pattern
+                    Values:
+                      - /api/*
+                Priority: "1"
+                Actions:
+                  - TargetGroupName: "{{ tg_name }}"
+                    Type: forward
+              - Conditions:
+                  - Field: path-pattern
+                    Values:
+                      - /health
+                Priority: "2"
+                Actions:
+                  - Type: fixed-response
+                    FixedResponseConfig:
+                      ContentType: text/plain
+                      MessageBody: OK
+                      StatusCode: "200"
+      register: alb
+      check_mode: true
+
+    - name: Assert check_mode idempotence result
+      ansible.builtin.assert:
+        that:
+          - alb is not changed
+          - alb.msg is match('IN CHECK MODE - no changes to make to ALB specified.')
+
+    - name: Create an ALB with listener rules on initial creation (idempotence)
+      amazon.aws.elb_application_lb:
+        name: "{{ alb_name_rules_on_create_test }}"
+        subnets: "{{ public_subnets }}"
+        security_groups: "{{ sec_group.group_id }}"
+        state: present
+        listeners:
+          - Protocol: HTTP
+            Port: 80
+            DefaultActions:
+              - Type: forward
+                TargetGroupName: "{{ tg_name }}"
+            Rules:
+              - Conditions:
+                  - Field: path-pattern
+                    Values:
+                      - /api/*
+                Priority: "1"
+                Actions:
+                  - TargetGroupName: "{{ tg_name }}"
+                    Type: forward
+              - Conditions:
+                  - Field: path-pattern
+                    Values:
+                      - /health
+                Priority: "2"
+                Actions:
+                  - Type: fixed-response
+                    FixedResponseConfig:
+                      ContentType: text/plain
+                      MessageBody: OK
+                      StatusCode: "200"
+      register: alb
+
+    - name: Assert idempotence result
+      ansible.builtin.assert:
+        that:
+          - alb is not changed
+          - alb.listeners | length == 1
+          - alb.listeners[0].rules | length == 3
+
+    - name: Gather information about the ALB to verify rules
+      amazon.aws.elb_application_lb_info:
+        load_balancer_arns:
+          - "{{ alb.load_balancer_arn }}"
+      register: alb_info
+
+    - name: Assert ALB info contains expected rules
+      ansible.builtin.assert:
+        that:
+          - alb_info.load_balancers | length == 1
+          - alb_info.load_balancers[0].listeners | length == 1
+          - alb_info.load_balancers[0].listeners[0].rules | length == 3
+
+  always:
+    - name: Delete test ALB with rules on create
+      amazon.aws.elb_application_lb:
+        name: "{{ alb_name_rules_on_create_test }}"
+        state: absent
+        wait: true
+        wait_timeout: 600
+      ignore_errors: true
