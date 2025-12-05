@@ -1,0 +1,3 @@
+---
+major_changes:
+  - amazon.aws collection - ``botocore`` and ``boto3`` versions have been bumped to 1.35.0 (https://github.com/ansible-collections/amazon.aws/pull/2774).
