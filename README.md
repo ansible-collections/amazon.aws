@@ -58,7 +58,7 @@ As such support for Python less than 3.9 will be removed in a release after 2026
 
 Starting with the 2.0.0 releases of amazon.aws and community.aws, it is generally the collection's policy to support the versions of `botocore` and `boto3` that were released 12 months prior to the most recent major collection release, following semantic versioning (for example, 2.0.0, 3.0.0).
 
-Version 10.0.0 of this collection supports `boto3 >= 1.34.0` and `botocore >= 1.34.0`
+Version 11.0.0 of this collection supports `boto3 >= 1.35.0` and `botocore >= 1.35.0`
 
 All support for the original AWS SDK `boto` was removed in release 4.0.0.
 
