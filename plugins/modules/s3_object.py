@@ -490,9 +490,9 @@ def key_check(module, s3, bucket, obj, version=None, validate=True):
     try:
         exists = s3_object_exists(s3, bucket, obj, version_id=version)
         return exists
-    except AnsibleS3PermissionsError as e:
+    except AnsibleS3PermissionsError:
         if validate:
-            module.fail_json_aws(e, msg=f"Failed while looking up object {obj} (permission denied).")
+            raise  # Let the original AnsibleS3PermissionsError propagate
         return False  # If not validating, treat permission errors as "doesn't exist"
     # Let other AnsibleS3Error exceptions propagate naturally
 
