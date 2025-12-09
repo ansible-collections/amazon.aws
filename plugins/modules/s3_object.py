@@ -1445,7 +1445,9 @@ def populate_params(module):
             module.fail_json(msg="Parameter object cannot be used with mode=delete")
         obj = variable_dict["object"]
         if obj.startswith("/"):
-            module.fail_json(msg="Parameter 'object' should not start with a leading '/'. See https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-keys.html")
+            module.fail_json(
+                msg="Parameter 'object' should not start with a leading '/'. See https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-keys.html"
+            )
 
     variable_dict["validate"] = not variable_dict["ignore_nonexistent_bucket"]
     variable_dict["acl_disabled"] = False
