@@ -481,13 +481,6 @@ class Sigv4Required(Exception):
     pass
 
 
-class S3ObjectFailure(Exception):
-    def __init__(self, message=None, original_e=None):
-        super().__init__(message)
-        self.original_e = original_e
-        self.message = message
-
-
 def key_check(module, s3, bucket, obj, version=None, validate=True):
     """Check if object exists with optional validation."""
     try:
@@ -498,7 +491,7 @@ def key_check(module, s3, bucket, obj, version=None, validate=True):
             module.fail_json_aws(e, msg=f"Failed while looking up object {obj} (permission denied).")
         return False  # If not validating, treat permission errors as "doesn't exist"
     except AnsibleS3Error as e:
-        raise S3ObjectFailure(f"Failed while looking up object {obj}.", e)
+        raise AnsibleS3Error(message=f"Failed while looking up object {obj}.", exception=e)
 
 
 def etag_compare(module, s3, bucket, obj, version=None, local_file=None, content=None):
@@ -550,17 +543,16 @@ def bucket_check(module, s3, bucket, validate=True):
     try:
         exists = s3_bucket_exists(s3, bucket)
         if not exists and validate:
-            raise S3ObjectFailure(
-                f"Bucket '{bucket}' not found. "
+            raise AnsibleS3Error(
+                message=f"Bucket '{bucket}' not found. "
                 "Support for automatically creating buckets was removed in release 6.0.0. "
-                "The amazon.aws.s3_bucket module can be used to create buckets.",
-                None,
+                "The amazon.aws.s3_bucket module can be used to create buckets."
             )
     except AnsibleS3PermissionsError as e:
         if validate:
-            raise S3ObjectFailure(f"Permission denied accessing bucket '{bucket}'.", e)
+            raise AnsibleS3Error(message=f"Permission denied accessing bucket '{bucket}'.", exception=e)
     except AnsibleS3Error as e:
-        raise S3ObjectFailure(f"Failed while looking up bucket '{bucket}'.", e)
+        raise AnsibleS3Error(message=f"Failed while looking up bucket '{bucket}'.", exception=e)
 
 
 def list_keys(s3, bucket, prefix=None, marker=None, max_keys=None):
@@ -571,7 +563,7 @@ def list_keys(s3, bucket, prefix=None, marker=None, max_keys=None):
         botocore.exceptions.BotoCoreError,
         boto3.exceptions.Boto3Error,
     ) as e:
-        raise S3ObjectFailure(f"Failed while listing the keys in the bucket {bucket}", e)
+        raise AnsibleS3Error(message=f"Failed while listing the keys in the bucket {bucket}", exception=e)
 
 
 def delete_key(module, s3, bucket, obj):
@@ -588,7 +580,7 @@ def delete_key(module, s3, bucket, obj):
         botocore.exceptions.BotoCoreError,
         boto3.exceptions.Boto3Error,
     ) as e:
-        raise S3ObjectFailure(f"Failed while trying to delete {obj}.", e)
+        raise AnsibleS3Error(message=f"Failed while trying to delete {obj}.", exception=e)
 
 
 def put_object_acl(module, s3, bucket, obj, params=None):
@@ -609,7 +601,7 @@ def put_object_acl(module, s3, bucket, obj, params=None):
         botocore.exceptions.ClientError,
         boto3.exceptions.Boto3Error,
     ) as e:  # pylint: disable=duplicate-except
-        raise S3ObjectFailure(f"Failed while creating object {obj}.", e)
+        raise AnsibleS3Error(message=f"Failed while creating object {obj}.", exception=e)
 
 
 def create_dirkey(module, s3, bucket, obj, encrypt, expiry, metadata):
@@ -764,7 +756,7 @@ def upload_s3file(
         botocore.exceptions.BotoCoreError,
         boto3.exceptions.Boto3Error,
     ) as e:
-        raise S3ObjectFailure("Unable to complete PUT operation.", e)
+        raise AnsibleS3Error(message="Unable to complete PUT operation.", exception=e)
 
     if not acl_disabled:
         put_object_acl(module, s3, bucket, obj)
@@ -793,7 +785,7 @@ def download_s3file(module, s3, bucket, obj, dest, retries, version=None):
         ) as e:
             # actually fail on last pass through the loop.
             if x >= retries:
-                raise S3ObjectFailure(f"Failed while downloading {obj}.", e)
+                raise AnsibleS3Error(message=f"Failed while downloading {obj}.", exception=e)
             # otherwise, try again, this may be a transient timeout.
         except SSLError as e:  # will ClientError catch SSLError?
             # actually fail on last pass through the loop.
@@ -829,7 +821,7 @@ def get_download_url(module, s3, bucket, obj, expiry, tags=None, changed=True):
         botocore.exceptions.BotoCoreError,
         boto3.exceptions.Boto3Error,
     ) as e:
-        raise S3ObjectFailure("Failed while getting download url.", e)
+        raise AnsibleS3Error(message="Failed while getting download url.", exception=e)
 
 
 def put_download_url(s3, bucket, obj, expiry):
@@ -845,7 +837,7 @@ def put_download_url(s3, bucket, obj, expiry):
         botocore.exceptions.BotoCoreError,
         boto3.exceptions.Boto3Error,
     ) as e:
-        raise S3ObjectFailure("Unable to generate presigned URL", e)
+        raise AnsibleS3Error(message="Unable to generate presigned URL", exception=e)
 
     return url
 
@@ -862,7 +854,7 @@ def get_current_object_tags_dict(module, s3, bucket, obj, version=None):
         module.warn("GetObjectTagging is not implemented by your storage provider.")
         return {}
     except AnsibleS3Error as e:
-        raise S3ObjectFailure("Failed to get object tags.", e)
+        raise AnsibleS3Error(message="Failed to get object tags.", exception=e)
 
 
 @AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
@@ -888,7 +880,7 @@ def wait_tags_are_applied(module, s3, bucket, obj, expected_tags_dict, version=N
             botocore.exceptions.BotoCoreError,
             boto3.exceptions.Boto3Error,
         ) as e:
-            raise S3ObjectFailure("Failed to get object tags.", e)
+            raise AnsibleS3Error(message="Failed to get object tags.", exception=e)
 
         if current_tags_dict != expected_tags_dict:
             time.sleep(5)
@@ -914,7 +906,7 @@ def ensure_tags(client, module, bucket, obj):
         botocore.exceptions.ClientError,
         boto3.exceptions.Boto3Error,
     ) as e:  # pylint: disable=duplicate-except
-        raise S3ObjectFailure("Failed to get object tags.", e)
+        raise AnsibleS3Error(message="Failed to get object tags.", exception=e)
 
     # Tags is None, we shouldn't touch anything
     if tags is None:
@@ -938,7 +930,7 @@ def ensure_tags(client, module, bucket, obj):
             botocore.exceptions.ClientError,
             boto3.exceptions.Boto3Error,
         ) as e:
-            raise S3ObjectFailure("Failed to update object tags.", e)
+            raise AnsibleS3Error(message="Failed to update object tags.", exception=e)
     else:
         try:
             delete_object_tagging(client, bucket, obj)
@@ -947,7 +939,7 @@ def ensure_tags(client, module, bucket, obj):
             botocore.exceptions.ClientError,
             boto3.exceptions.Boto3Error,
         ) as e:
-            raise S3ObjectFailure("Failed to delete object tags.", e)
+            raise AnsibleS3Error(message="Failed to delete object tags.", exception=e)
 
     current_tags_dict = wait_tags_are_applied(module, client, bucket, obj, tags)
     changed = True
@@ -1325,9 +1317,9 @@ def copy_object_to_bucket(module, s3, bucket, obj, encrypt, metadata, validate, 
         botocore.exceptions.ClientError,
         boto3.exceptions.Boto3Error,
     ) as e:  # pylint: disable=duplicate-except
-        raise S3ObjectFailure(
-            f"Failed while copying object {obj} from bucket {module.params['copy_src'].get('Bucket')}.",
-            e,
+        raise AnsibleS3Error(
+            message=f"Failed while copying object {obj} from bucket {module.params['copy_src'].get('Bucket')}.",
+            exception=e,
         )
 
 
@@ -1587,11 +1579,8 @@ def main():
         func(module, s3, s3_v4, s3_object_params)
     except botocore.exceptions.EndpointConnectionError as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Invalid endpoint provided")
-    except S3ObjectFailure as e:
-        if e.original_e:
-            module.fail_json_aws(e.original_e, e.message)
-        else:
-            module.fail_json(e.message)
+    except AnsibleS3Error as e:
+        module.fail_json_aws(e, msg=str(e))
 
     module.exit_json(failed=False)
 
