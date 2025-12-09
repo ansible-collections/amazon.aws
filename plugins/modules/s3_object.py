@@ -592,18 +592,17 @@ def put_object_acl(module, s3, bucket, obj, params=None):
         for acl in module.params.get("permission"):
             s3.put_object_acl(aws_retry=True, ACL=acl, Bucket=bucket, Key=obj)
     except is_boto3_error_code(IGNORE_S3_DROP_IN_EXCEPTIONS):
+        # S3 drop-ins (MinIO, Ceph, etc.) may not support ACL operations
         module.warn(
-            "PutObjectAcl is not implemented by your storage provider. Set the permissions parameters to the empty list"
-            " to avoid this warning"
+            "Setting object ACLs is not supported by your storage provider. "
+            "Set the 'permission' parameter to an empty list to avoid this warning."
         )
-    except is_boto3_error_code("AccessControlListNotSupported"):  # pylint: disable=duplicate-except
-        module.warn("PutObjectAcl operation : The bucket does not allow ACLs.")
     except (
         botocore.exceptions.BotoCoreError,
         botocore.exceptions.ClientError,
         boto3.exceptions.Boto3Error,
-    ) as e:  # pylint: disable=duplicate-except
-        raise AnsibleS3Error(message=f"Failed while creating object {obj}.", exception=e)
+    ) as e:
+        raise AnsibleS3Error(message=f"Failed to set ACL on object {obj}.", exception=e)
 
 
 def create_dirkey(module, s3, bucket, obj, encrypt, expiry, metadata):
