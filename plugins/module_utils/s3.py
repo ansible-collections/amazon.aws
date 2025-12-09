@@ -450,7 +450,10 @@ def get_s3_object_attributes(
 
 
 def s3_object_exists(
-    client: ClientType, bucket_name: str, object_key: str, version_id: Optional[str] = None
+    client: ClientType,
+    bucket_name: str,
+    object_key: str,
+    version_id: Optional[str] = None,
 ) -> bool:
     """
     Check if an S3 object exists.
@@ -514,7 +517,11 @@ def delete_s3_object(client: ClientType, bucket_name: str, object_key: str, **kw
 @S3ErrorHandler.common_error_handler("update object tags")
 @AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
 def put_s3_object_tagging(
-    client: ClientType, bucket_name: str, object_key: str, tags: Dict, **kwargs
+    client: ClientType,
+    bucket_name: str,
+    object_key: str,
+    tags: Dict,
+    **kwargs,
 ) -> Dict:
     """
     Set tags on an S3 object.
@@ -845,7 +852,11 @@ def _list_objects_v2(client: ClientType, **params) -> Dict:
 
 @S3ErrorHandler.list_error_handler("list bucket objects", [])
 def list_bucket_object_keys(
-    client: ClientType, bucket: str, prefix: Optional[str] = None, max_keys: Optional[int] = None, start_after: Optional[str] = None
+    client: ClientType,
+    bucket: str,
+    prefix: Optional[str] = None,
+    max_keys: Optional[int] = None,
+    start_after: Optional[str] = None,
 ) -> List[str]:
     """
     List object keys in an S3 bucket with optional filtering.
