@@ -280,12 +280,12 @@
         that:
           - upload_file.stat.checksum == download_file.stat.checksum
 
-    - name: Test get object (absolute path)
+    - name: Test get object
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}"
         mode: get
         dest: "{{ remote_tmp_dir }}/download-2.txt"
-        object: /delete.txt
+        object: delete.txt
       retries: 3
       delay: 3
       register: result
