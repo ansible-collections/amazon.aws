@@ -603,6 +603,38 @@ def ensure_s3_object_tags(
     return current_tags_dict, True
 
 
+@S3ErrorHandler.common_error_handler("generate presigned URL", "")
+def generate_s3_presigned_url(
+    client,
+    bucket_name: str,
+    object_key: str,
+    client_method: str = "get_object",
+    expiry: int = 600,
+    **params
+) -> str:
+    """
+    Generate a presigned URL for S3 object operations.
+
+    Parameters:
+        client (boto3.client): The Boto3 S3 client object.
+        bucket_name (str): The name of the S3 bucket.
+        object_key (str): The key of the S3 object.
+        client_method (str): The boto3 client method name ('get_object', 'put_object', etc.).
+        expiry (int): URL expiration time in seconds (default: 600).
+        **params: Additional parameters for the presigned URL.
+
+    Returns:
+        str: The presigned URL, or empty string on error.
+
+    Raises:
+        AnsibleS3Error: If URL generation fails.
+    """
+    url_params = {"Bucket": bucket_name, "Key": object_key}
+    url_params.update(params)
+
+    return client.generate_presigned_url(ClientMethod=client_method, Params=url_params, ExpiresIn=expiry)
+
+
 def s3_head_objects(client, parts, bucket, obj, versionId):
     args = {"Bucket": bucket, "Key": obj}
     if versionId:
