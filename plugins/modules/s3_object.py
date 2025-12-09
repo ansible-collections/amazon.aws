@@ -463,10 +463,13 @@ from ansible_collections.amazon.aws.plugins.module_utils.s3 import HAS_MD5
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import IGNORE_S3_DROP_IN_EXCEPTIONS
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import calculate_etag
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import calculate_etag_content
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import delete_s3_object_tagging
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import ensure_s3_object_tags
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_object_content
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_object_tagging
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import head_s3_object
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import list_bucket_object_keys
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_s3_object_tagging
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import s3_bucket_exists
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import s3_extra_params
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import s3_object_exists
@@ -855,94 +858,12 @@ def get_current_object_tags_dict(module, s3, bucket, obj, version=None):
         raise AnsibleS3Error(message="Failed to get object tags.", exception=e)
 
 
-@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def put_object_tagging(s3, bucket, obj, tags):
-    s3.put_object_tagging(
-        Bucket=bucket,
-        Key=obj,
-        Tagging={"TagSet": ansible_dict_to_boto3_tag_list(tags)},
-    )
-
-
-@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def delete_object_tagging(s3, bucket, obj):
-    s3.delete_object_tagging(Bucket=bucket, Key=obj)
-
-
-def wait_tags_are_applied(module, s3, bucket, obj, expected_tags_dict, version=None):
-    for _dummy in range(0, 12):
-        try:
-            current_tags_dict = get_current_object_tags_dict(module, s3, bucket, obj, version)
-        except (
-            botocore.exceptions.ClientError,
-            botocore.exceptions.BotoCoreError,
-            boto3.exceptions.Boto3Error,
-        ) as e:
-            raise AnsibleS3Error(message="Failed to get object tags.", exception=e)
-
-        if current_tags_dict != expected_tags_dict:
-            time.sleep(5)
-        else:
-            return current_tags_dict
-
-    module.fail_json(
-        msg="Object tags failed to apply in the expected time.",
-        requested_tags=expected_tags_dict,
-        live_tags=current_tags_dict,
-    )
-
-
 def ensure_tags(client, module, bucket, obj):
+    """Wrapper for ensure_s3_object_tags to maintain backward compatibility."""
     tags = module.params.get("tags")
     purge_tags = module.params.get("purge_tags")
-    changed = False
 
-    try:
-        current_tags_dict = get_current_object_tags_dict(module, client, bucket, obj)
-    except (
-        botocore.exceptions.BotoCoreError,
-        botocore.exceptions.ClientError,
-        boto3.exceptions.Boto3Error,
-    ) as e:  # pylint: disable=duplicate-except
-        raise AnsibleS3Error(message="Failed to get object tags.", exception=e)
-
-    # Tags is None, we shouldn't touch anything
-    if tags is None:
-        return current_tags_dict, changed
-
-    if not purge_tags:
-        # Ensure existing tags that aren't updated by desired tags remain
-        current_copy = current_tags_dict.copy()
-        current_copy.update(tags)
-        tags = current_copy
-
-    # Nothing to change, we shouldn't touch anything
-    if current_tags_dict == tags:
-        return current_tags_dict, changed
-
-    if tags:
-        try:
-            put_object_tagging(client, bucket, obj, tags)
-        except (
-            botocore.exceptions.BotoCoreError,
-            botocore.exceptions.ClientError,
-            boto3.exceptions.Boto3Error,
-        ) as e:
-            raise AnsibleS3Error(message="Failed to update object tags.", exception=e)
-    else:
-        try:
-            delete_object_tagging(client, bucket, obj)
-        except (
-            botocore.exceptions.BotoCoreError,
-            botocore.exceptions.ClientError,
-            boto3.exceptions.Boto3Error,
-        ) as e:
-            raise AnsibleS3Error(message="Failed to delete object tags.", exception=e)
-
-    current_tags_dict = wait_tags_are_applied(module, client, bucket, obj, tags)
-    changed = True
-
-    return current_tags_dict, changed
+    return ensure_s3_object_tags(client, bucket, obj, tags, purge_tags)
 
 
 def get_binary_content(s3_vars):
