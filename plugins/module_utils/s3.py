@@ -542,6 +542,67 @@ def put_s3_object_acl(client, bucket_name: str, object_key: str, acl: str, **kwa
     return client.put_object_acl(**params)
 
 
+def ensure_s3_object_tags(
+    client, bucket_name: str, object_key: str, desired_tags: Optional[Dict], purge_tags: bool = True
+) -> Tuple[Dict, bool]:
+    """
+    Ensure S3 object has desired tags, optionally purging unspecified tags.
+
+    This function handles the complete tag management workflow:
+    - Retrieves current tags
+    - Compares with desired state
+    - Updates or deletes tags as needed
+    - Waits for tags to be applied
+
+    Parameters:
+        client (boto3.client): The Boto3 S3 client object.
+        bucket_name (str): The name of the S3 bucket.
+        object_key (str): The key of the S3 object.
+        desired_tags (dict or None): Dictionary of desired tags. If None, tags are not modified.
+        purge_tags (bool): If True, remove tags not in desired_tags. If False, merge with existing tags.
+
+    Returns:
+        Tuple[Dict, bool]: (current_tags, changed) - The current tags and whether changes were made.
+
+    Raises:
+        AnsibleS3Error: If tag operations fail.
+    """
+    import time
+
+    # Get current tags
+    current_tags_dict = get_s3_object_tagging(client, bucket_name, object_key)
+
+    # Tags is None, we shouldn't touch anything
+    if desired_tags is None:
+        return current_tags_dict, False
+
+    if not purge_tags:
+        # Ensure existing tags that aren't updated by desired tags remain
+        current_copy = current_tags_dict.copy()
+        current_copy.update(desired_tags)
+        desired_tags = current_copy
+
+    # Nothing to change, we shouldn't touch anything
+    if current_tags_dict == desired_tags:
+        return current_tags_dict, False
+
+    # Apply tag changes
+    if desired_tags:
+        put_s3_object_tagging(client, bucket_name, object_key, desired_tags)
+    else:
+        delete_s3_object_tagging(client, bucket_name, object_key)
+
+    # Wait for tags to be applied (eventual consistency)
+    for _attempt in range(12):
+        current_tags_dict = get_s3_object_tagging(client, bucket_name, object_key)
+        if current_tags_dict == desired_tags:
+            return current_tags_dict, True
+        time.sleep(5)
+
+    # Tags didn't apply in time, but return what we have
+    return current_tags_dict, True
+
+
 def s3_head_objects(client, parts, bucket, obj, versionId):
     args = {"Bucket": bucket, "Key": obj}
     if versionId:
