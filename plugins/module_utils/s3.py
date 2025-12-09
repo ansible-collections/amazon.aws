@@ -37,6 +37,7 @@ from ansible.module_utils.basic import to_text
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 
 IGNORE_S3_DROP_IN_EXCEPTIONS = ["XNotImplemented", "NotImplemented", "AccessControlListNotSupported"]
