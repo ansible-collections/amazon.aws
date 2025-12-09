@@ -639,7 +639,7 @@ def ensure_s3_object_tags(
     return current_tags_dict, True
 
 
-@S3ErrorHandler.common_error_handler("generate presigned URL", "")
+@S3ErrorHandler.common_error_handler("generate presigned URL")
 def generate_s3_presigned_url(
     client: ClientType,
     bucket_name: str,
