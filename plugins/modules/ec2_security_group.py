@@ -50,22 +50,18 @@ options:
     suboptions:
         cidr_ip:
           type: list
-          elements: raw
+          elements: str
           description:
             - The IPv4 CIDR range traffic is coming from.
             - You can specify only one of O(rules.cidr_ip), O(rules.cidr_ipv6), O(rules.ip_prefix), O(rules.group_id)
               and I(group_name).
-            - Support for passing nested lists of strings to O(rules.cidr_ip) has been deprecated and will
-              be removed in a release after 2024-12-01.
         cidr_ipv6:
           type: list
-          elements: raw
+          elements: str
           description:
             - The IPv6 CIDR range traffic is coming from.
             - You can specify only one of O(rules.cidr_ip), O(rules.cidr_ipv6), O(rules.ip_prefix), O(rules.group_id)
               and I(rules.group_name).
-            - Support for passing nested lists of strings to O(rules.cidr_ipv6) has been deprecated and will
-              be removed in a release after 2024-12-01.
         ip_prefix:
           type: list
           elements: str
@@ -155,22 +151,18 @@ options:
     suboptions:
         cidr_ip:
           type: list
-          elements: raw
+          elements: str
           description:
             - The IPv4 CIDR range traffic is going to.
             - You can specify only one of O(rules_egress.cidr_ip), O(rules_egress.cidr_ipv6), O(rules_egress.ip_prefix), O(rules_egress.group_id)
               and I(rules_egress.group_name).
-            - Support for passing nested lists of strings to O(rules_egress.cidr_ip) has been deprecated and will
-              be removed in a release after 2024-12-01.
         cidr_ipv6:
           type: list
-          elements: raw
+          elements: str
           description:
             - The IPv6 CIDR range traffic is going to.
             - You can specify only one of O(rules_egress.cidr_ip), O(rules_egress.cidr_ipv6), O(rules_egress.ip_prefix), O(rules_egress.group_id)
               and O(rules_egress.group_name).
-            - Support for passing nested lists of strings to O(rules_egress.cidr_ipv6) has been deprecated and will
-              be removed in a release after 2024-12-01.
         ip_prefix:
           type: list
           elements: str
@@ -1309,7 +1301,7 @@ def get_diff_final_resource(client, module, security_group):
             final_rules = []
         else:
             final_rules = list(security_group_rules)
-        specified_rules = flatten_nested_targets(module, deepcopy(specified_rules))
+        specified_rules = validate_cidr_targets(module, deepcopy(specified_rules))
         for rule in specified_rules:
             format_rule = {
                 "from_port": None,
@@ -1414,31 +1406,19 @@ def get_diff_final_resource(client, module, security_group):
     }
 
 
-def flatten_nested_targets(module, rules):
-    def _flatten(targets):
-        for target in targets:
-            if isinstance(target, list):
-                module.deprecate(
-                    (
-                        "Support for nested lists in cidr_ip and cidr_ipv6 has been "
-                        "deprecated.  The flatten filter can be used instead."
-                    ),
-                    date="2024-12-01",
-                    collection_name="amazon.aws",
-                )
-                yield from _flatten(target)
-            elif isinstance(target, str):
-                yield target
-
-    if rules is not None:
-        for rule in rules:
-            target_list_type = None
-            if isinstance(rule.get("cidr_ip"), list):
-                target_list_type = "cidr_ip"
-            elif isinstance(rule.get("cidr_ipv6"), list):
-                target_list_type = "cidr_ipv6"
-            if target_list_type is not None:
-                rule[target_list_type] = list(_flatten(rule[target_list_type]))
+def validate_cidr_targets(module, rules):
+    """Validate that cidr_ip and cidr_ipv6 do not contain nested lists."""
+    if rules is None:
+        return rules
+    for rule in rules:
+        for target_type in ("cidr_ip", "cidr_ipv6"):
+            targets = rule.get(target_type)
+            if isinstance(targets, list):
+                for target in targets:
+                    if isinstance(target, list):
+                        module.fail_json(
+                            msg=f"Nested lists are not supported for '{target_type}'. Use the 'flatten' filter instead."
+                        )
     return rules
 
 
@@ -1517,10 +1497,8 @@ def ensure_present(
     name = module.params["name"]
     description = module.params["description"]
     vpc_id = module.params["vpc_id"]
-    # Deprecated
-    rules = flatten_nested_targets(module, deepcopy(module.params["rules"]))
-    rules_egress = flatten_nested_targets(module, deepcopy(module.params["rules_egress"]))
-    # /end Deprecated
+    rules = validate_cidr_targets(module, deepcopy(module.params["rules"]))
+    rules_egress = validate_cidr_targets(module, deepcopy(module.params["rules_egress"]))
     validate_rules(module, rules)
     validate_rules(module, rules_egress)
     rules = deduplicate_rules_args(expand_rules(rules))

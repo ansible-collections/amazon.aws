@@ -35,9 +35,7 @@ options:
   dualstack:
     description:
       - Enables Amazon S3 Dual-Stack Endpoints, allowing S3 communications using both IPv4 and IPv6.
-      - Support for passing O(dualstack) and O(endpoint_url) at the same time has been deprecated,
-        the dualstack endpoints are automatically configured using the configured O(region).
-        Support will be removed in a release after 2024-12-01.
+      - Mutually exclusive with O(endpoint_url).
     type: bool
     default: false
   ceph:
@@ -722,16 +720,7 @@ def main():
     dualstack = module.params.get("dualstack")
 
     if dualstack and endpoint_url:
-        module.deprecate(
-            (
-                "Support for passing both the 'dualstack' and 'endpoint_url' parameters at the same "
-                "time has been deprecated."
-            ),
-            date="2024-12-01",
-            collection_name="amazon.aws",
-        )
-        if "amazonaws.com" not in endpoint_url:
-            module.fail_json(msg="dualstack only applies to AWS S3")
+        module.fail_json(msg="Parameters 'dualstack' and 'endpoint_url' are mutually exclusive.")
 
     result = []
     extra_params = s3_extra_params(module.params)
