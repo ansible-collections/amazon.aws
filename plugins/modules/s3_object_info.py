@@ -450,6 +450,14 @@ object_info:
                             sample: "xxxxxxxxxxxx"
 """
 
+import typing
+
+if typing.TYPE_CHECKING:
+    from typing import Dict
+    from typing import List
+
+    from ansible_collections.amazon.aws.plugins.module_utils.botocore import ClientType
+
 try:
     import botocore
 except ImportError:
@@ -477,7 +485,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.s3 import s3_object_exi
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 
 
-def describe_s3_object_acl(connection, bucket_name, object_name):
+def describe_s3_object_acl(connection: ClientType, bucket_name: str, object_name: str) -> Dict:
     """Get object ACL."""
     try:
         acl_info = get_s3_object_acl(connection, bucket_name, object_name)
@@ -492,7 +500,9 @@ def describe_s3_object_acl(connection, bucket_name, object_name):
         return {}
 
 
-def describe_s3_object_attributes(connection, module, bucket_name, object_name):
+def describe_s3_object_attributes(
+    connection: ClientType, module: AnsibleAWSModule, bucket_name: str, object_name: str
+) -> Dict:
     """Get object attributes."""
     try:
         attributes_list = module.params.get("object_details", {}).get("attributes_list", [])
@@ -510,7 +520,7 @@ def describe_s3_object_attributes(connection, module, bucket_name, object_name):
         return {"msg": "Object attributes not found"}
 
 
-def describe_s3_object_legal_hold(connection, bucket_name, object_name):
+def describe_s3_object_legal_hold(connection: ClientType, bucket_name: str, object_name: str) -> Dict:
     """Get object legal hold status."""
     try:
         legal_hold = get_s3_object_legal_hold(connection, bucket_name, object_name)
@@ -525,7 +535,7 @@ def describe_s3_object_legal_hold(connection, bucket_name, object_name):
         return {}
 
 
-def describe_s3_object_lock_configuration(connection, bucket_name):
+def describe_s3_object_lock_configuration(connection: ClientType, bucket_name: str) -> Dict:
     """Get bucket-level object lock configuration."""
     try:
         lock_config = get_s3_object_lock_configuration(connection, bucket_name)
@@ -540,7 +550,7 @@ def describe_s3_object_lock_configuration(connection, bucket_name):
         return {}
 
 
-def describe_s3_object_retention(connection, bucket_name, object_name):
+def describe_s3_object_retention(connection: ClientType, bucket_name: str, object_name: str) -> Dict:
     """Get object retention settings."""
     try:
         retention = get_s3_object_retention(connection, bucket_name, object_name)
@@ -555,7 +565,7 @@ def describe_s3_object_retention(connection, bucket_name, object_name):
         return {}
 
 
-def describe_s3_object_tagging(connection, bucket_name, object_name):
+def describe_s3_object_tagging(connection: ClientType, bucket_name: str, object_name: str) -> Dict:
     """Get object tags."""
     try:
         return get_s3_object_tagging(connection, bucket_name, object_name)
@@ -567,7 +577,9 @@ def describe_s3_object_tagging(connection, bucket_name, object_name):
         return {}
 
 
-def get_object_details(connection, module, bucket_name, object_name, requested_facts):
+def get_object_details(
+    connection: ClientType, module: AnsibleAWSModule, bucket_name: str, object_name: str, requested_facts: Dict
+) -> Dict:
     all_facts = {}
 
     # Remove non-requested facts
@@ -601,7 +613,7 @@ def get_object_details(connection, module, bucket_name, object_name, requested_f
     return all_facts
 
 
-def get_object(connection, bucket_name, object_name):
+def get_object(connection: ClientType, bucket_name: str, object_name: str) -> Dict:
     """Get basic object metadata."""
     try:
         object_info = head_s3_object(connection, bucket_name, object_name)
@@ -616,7 +628,7 @@ def get_object(connection, bucket_name, object_name):
         return {"object_data": {}}
 
 
-def list_bucket_objects(connection, module, bucket_name):
+def list_bucket_objects(connection: ClientType, module: AnsibleAWSModule, bucket_name: str) -> List[str]:
     try:
         keys = list_bucket_object_keys(
             connection,
@@ -630,7 +642,7 @@ def list_bucket_objects(connection, module, bucket_name):
     return keys
 
 
-def bucket_check(connection, module, bucket_name):
+def bucket_check(connection: ClientType, module: AnsibleAWSModule, bucket_name: str) -> None:
     """Check if bucket exists and is accessible."""
     try:
         if not s3_bucket_exists(connection, bucket_name):
@@ -641,7 +653,7 @@ def bucket_check(connection, module, bucket_name):
         module.fail_json_aws(e, msg=f"Failed to check if bucket {bucket_name} exists.")
 
 
-def object_check(connection, module, bucket_name, object_name):
+def object_check(connection: ClientType, module: AnsibleAWSModule, bucket_name: str, object_name: str) -> None:
     """Check if object exists and is accessible."""
     try:
         if not s3_object_exists(connection, bucket_name, object_name):
@@ -652,7 +664,7 @@ def object_check(connection, module, bucket_name, object_name):
         module.fail_json_aws(e, msg=f"Failed to check if object {object_name} exists.")
 
 
-def main():
+def main() -> None:
     argument_spec = dict(
         object_details=dict(
             type="dict",
