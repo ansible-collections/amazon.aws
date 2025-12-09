@@ -17,13 +17,6 @@ test_create_config = [
 ]
 
 test_normalize_config = {
-    # New underscore keys (Jinja2 dot notation compatible)
-    "domain_name": ["us-west-2.compute.internal"],
-    "domain_name_servers": ["AmazonProvidedDNS"],
-    "ntp_servers": ["10.10.2.3", "10.10.4.5"],
-    "netbios_name_servers": ["10.20.2.3", "10.20.4.5"],
-    "netbios_node_type": "2",
-    # Deprecated hyphenated keys (kept for backward compatibility)
     "domain-name": ["us-west-2.compute.internal"],
     "domain-name-servers": ["AmazonProvidedDNS"],
     "ntp-servers": ["10.10.2.3", "10.10.4.5"],

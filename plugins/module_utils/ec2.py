@@ -1733,18 +1733,13 @@ def normalize_ec2_vpc_dhcp_config(option_config: List[Dict[str, Any]]) -> Dict[s
             {'Key': 'netbios-node-type', 'Values': [1]},
             {'Key': 'ntp-servers', 'Values': [{'Value': '1.2.3.4'}, {'Value': '5.6.7.8'}]}
         ],
-    Returns both underscore keys (new) and hyphenated keys (deprecated) for backward compatibility:
+    The module historically returned:
         "new_options": {
-            "domain_name": "ec2.internal",
-            "domain_name_servers": ["AmazonProvidedDNS"],
-            "netbios_name_servers": ["10.0.0.1", "10.0.1.1"],
-            "netbios_node_type": "1",
-            "ntp_servers": ["10.0.0.2", "10.0.1.2"],
-            "domain-name": "ec2.internal",  # deprecated
-            "domain-name-servers": ["AmazonProvidedDNS"],  # deprecated
-            "netbios-name-servers": ["10.0.0.1", "10.0.1.1"],  # deprecated
-            "netbios-node-type": "1",  # deprecated
-            "ntp-servers": ["10.0.0.2", "10.0.1.2"],  # deprecated
+            "domain-name": "ec2.internal",
+            "domain-name-servers": ["AmazonProvidedDNS"],
+            "netbios-name-servers": ["10.0.0.1", "10.0.1.1"],
+            "netbios-node-type": "1",
+            "ntp-servers": ["10.0.0.2", "10.0.1.2"]
         },
     """
     config_data = {}
@@ -1753,32 +1748,17 @@ def normalize_ec2_vpc_dhcp_config(option_config: List[Dict[str, Any]]) -> Dict[s
         # If there is no provided config, return the empty dictionary
         return config_data
 
-    # Map AWS hyphenated keys to underscore keys for Jinja dot notation compatibility
-    key_mapping = {
-        "domain-name": "domain_name",
-        "domain-name-servers": "domain_name_servers",
-        "ntp-servers": "ntp_servers",
-        "netbios-name-servers": "netbios_name_servers",
-        "netbios-node-type": "netbios_node_type",
-    }
-
     for config_item in option_config:
-        aws_key = config_item["Key"]
-        # Handle single value keys (netbios-node-type)
-        if aws_key == "netbios-node-type":
+        # Handle single value keys
+        if config_item["Key"] == "netbios-node-type":
             if isinstance(config_item["Values"], int):
-                value = str(config_item["Values"])
+                config_data["netbios-node-type"] = str((config_item["Values"]))
             elif isinstance(config_item["Values"], list):
-                value = str(config_item["Values"][0]["Value"])
-            # Set both new underscore key and deprecated hyphenated key
-            config_data["netbios_node_type"] = value
-            config_data["netbios-node-type"] = value
+                config_data["netbios-node-type"] = str((config_item["Values"][0]["Value"]))
         # Handle actual lists of values
-        elif aws_key in key_mapping:
-            values = [val["Value"] for val in config_item["Values"]]
-            # Set both new underscore key and deprecated hyphenated key
-            config_data[key_mapping[aws_key]] = values
-            config_data[aws_key] = values
+        for option in ["domain-name", "domain-name-servers", "ntp-servers", "netbios-name-servers"]:
+            if config_item["Key"] == option:
+                config_data[option] = [val["Value"] for val in config_item["Values"]]
 
     return config_data
 
