@@ -229,6 +229,28 @@ def head_s3_bucket(client, bucket_name: str) -> Dict:
     return client.head_bucket(Bucket=bucket_name)
 
 
+@S3ErrorHandler.list_error_handler("get bucket location", {})
+@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
+def get_bucket_location(client, bucket_name: str) -> Dict:
+    """
+    Retrieve the AWS region where an S3 bucket is located.
+
+    Parameters:
+        client (boto3.client): The Boto3 S3 client object.
+        bucket_name (str): The name of the S3 bucket.
+
+    Returns:
+        Dict: Bucket location information containing 'LocationConstraint'.
+              Returns {} if bucket doesn't exist (404).
+              Note: LocationConstraint is None for us-east-1 buckets.
+
+    Raises:
+        AnsibleS3PermissionsError: If access is denied (403).
+        AnsibleS3Error: For other S3 errors.
+    """
+    return client.get_bucket_location(Bucket=bucket_name)
+
+
 @S3ErrorHandler.list_error_handler("get object metadata", {})
 @AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
 def head_s3_object(client, bucket_name: str, object_key: str, version_id: Optional[str] = None, **kwargs) -> Dict:
