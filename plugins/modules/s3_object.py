@@ -467,6 +467,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.s3 import delete_s3_obj
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import delete_s3_object_tagging
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import ensure_s3_object_tags
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import generate_s3_presigned_url
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_bucket_ownership_controls
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_object_content
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_object_tagging
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import head_s3_object
@@ -1304,15 +1305,13 @@ def validate_bucket(module, s3, var_dict):
     bucket_check(module, s3, var_dict["bucket"], validate=var_dict["validate"])
 
     try:
-        ownership_controls = s3.get_bucket_ownership_controls(aws_retry=True, Bucket=var_dict["bucket"])[
-            "OwnershipControls"
-        ]
-        if ownership_controls.get("Rules"):
+        ownership_controls = get_s3_bucket_ownership_controls(s3, var_dict["bucket"])
+        if ownership_controls and ownership_controls.get("Rules"):
             object_ownership = ownership_controls["Rules"][0]["ObjectOwnership"]
             if object_ownership == "BucketOwnerEnforced":
                 var_dict["acl_disabled"] = True
-    # if bucket ownership controls are not found
-    except botocore.exceptions.ClientError:
+    except AnsibleS3Error:
+        # Bucket ownership controls not found or not accessible
         pass
 
     if not var_dict["acl_disabled"]:
