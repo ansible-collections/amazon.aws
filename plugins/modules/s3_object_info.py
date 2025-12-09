@@ -465,7 +465,6 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import AnsibleS3Error
@@ -482,7 +481,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.s3 import list_bucket_o
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import s3_bucket_exists
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import s3_extra_params
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import s3_object_exists
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 
 
 def describe_s3_object_acl(connection: ClientType, bucket_name: str, object_name: str) -> Dict:

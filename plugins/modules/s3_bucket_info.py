@@ -545,7 +545,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_bucket
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_bucket_request_payment
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_bucket_tagging
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_bucket_versioning
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 
 
 def get_bucket_list(module: AnsibleAWSModule, connection: ClientType, name: str = "", name_filter: str = "") -> List[Dict]:
