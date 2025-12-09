@@ -547,7 +547,12 @@ from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_bucket
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_bucket_versioning
 
 
-def get_bucket_list(module: AnsibleAWSModule, connection: ClientType, name: str = "", name_filter: str = "") -> List[Dict]:
+def get_bucket_list(
+    module: AnsibleAWSModule,
+    connection: ClientType,
+    name: str = "",
+    name_filter: str = "",
+) -> List[Dict]:
     """
     Return result of list_buckets json encoded
     Filter only buckets matching 'name' or name_filter if defined
