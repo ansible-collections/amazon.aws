@@ -494,8 +494,7 @@ def key_check(module, s3, bucket, obj, version=None, validate=True):
         if validate:
             module.fail_json_aws(e, msg=f"Failed while looking up object {obj} (permission denied).")
         return False  # If not validating, treat permission errors as "doesn't exist"
-    except AnsibleS3Error as e:
-        raise AnsibleS3Error(message=f"Failed while looking up object {obj}.", exception=e)
+    # Let other AnsibleS3Error exceptions propagate naturally
 
 
 def etag_compare(module, s3, bucket, obj, version=None, local_file=None, content=None):
@@ -552,11 +551,11 @@ def bucket_check(module, s3, bucket, validate=True):
                 "Support for automatically creating buckets was removed in release 6.0.0. "
                 "The amazon.aws.s3_bucket module can be used to create buckets."
             )
-    except AnsibleS3PermissionsError as e:
+    except AnsibleS3PermissionsError:
         if validate:
-            raise AnsibleS3Error(message=f"Permission denied accessing bucket '{bucket}'.", exception=e)
-    except AnsibleS3Error as e:
-        raise AnsibleS3Error(message=f"Failed while looking up bucket '{bucket}'.", exception=e)
+            raise  # Let the original AnsibleS3PermissionsError propagate
+        # If not validating, silently ignore permission errors
+    # Let other AnsibleS3Error exceptions propagate naturally
 
 
 def delete_key(module, s3, bucket, obj):
@@ -818,8 +817,7 @@ def get_current_object_tags_dict(module, s3, bucket, obj, version=None):
     except AnsibleS3SupportError:
         module.warn("GetObjectTagging is not implemented by your storage provider.")
         return {}
-    except AnsibleS3Error as e:
-        raise AnsibleS3Error(message="Failed to get object tags.", exception=e)
+    # Let other AnsibleS3Error exceptions propagate naturally
 
 
 def ensure_tags(client, module, bucket, obj):
