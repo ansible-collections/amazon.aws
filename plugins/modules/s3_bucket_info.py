@@ -526,6 +526,7 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import AnsibleS3Error
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import S3ErrorHandler
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_bucket_location
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_bucket_accelerate_configuration
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_bucket_acl
@@ -629,13 +630,11 @@ def get_bucket_details(connection, name, requested_facts, transform_location):
         except AnsibleS3Error:
             # Silent failure for missing/inaccessible bucket properties (backward compatibility)
             pass
-        except botocore.exceptions.ClientError:
-            # Catch remaining ClientErrors for properties using get_bucket_property
-            pass
 
     return all_facts
 
 
+@S3ErrorHandler.list_error_handler("get bucket property", {})
 @AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
 def get_bucket_property(name, connection, get_api_name):
     """
