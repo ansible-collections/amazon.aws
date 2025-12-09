@@ -576,7 +576,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_bucket
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_bucket_versioning
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_object_lock_configuration
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_waiter
-from ansible_collections.amazon.aws.plugins.module_utils.s3 import head_s3_bucket
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import list_bucket_inventory_configurations
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import merge_tags
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import normalize_s3_bucket_acls
