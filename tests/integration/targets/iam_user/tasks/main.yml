@@ -63,7 +63,7 @@
 
     - name: Ensure the info used to validate other tests is valid
       ansible.builtin.set_fact:
-        test_iam_user: "{{ iam_user.iam_user.user }}"
+        test_iam_user: "{{ iam_user.user }}"
     - name: Assert expected return values
       ansible.builtin.assert:
         that:
@@ -124,7 +124,7 @@
       ansible.builtin.assert:
         that:
           - iam_user is changed
-          - iam_user.iam_user.user.password_reset_required
+          - iam_user.user.password_reset_required
 
     - name: Get info on IAM user(s) on path
       amazon.aws.iam_user_info:
