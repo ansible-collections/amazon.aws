@@ -1649,10 +1649,8 @@ def ensure_present(
 def main():
     rule_spec = dict(
         rule_desc=dict(type="str"),
-        # We have historically allowed for lists of lists in cidr_ip and cidr_ipv6
-        # https://github.com/ansible-collections/amazon.aws/pull/1213
-        cidr_ip=dict(type="list", elements="raw"),
-        cidr_ipv6=dict(type="list", elements="raw"),
+        cidr_ip=dict(type="list", elements="str"),
+        cidr_ipv6=dict(type="list", elements="str"),
         ip_prefix=dict(type="list", elements="str"),
         group_id=dict(type="list", elements="str"),
         group_name=dict(type="list", elements="str"),
