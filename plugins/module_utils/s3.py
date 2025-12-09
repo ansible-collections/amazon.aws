@@ -456,6 +456,92 @@ def s3_bucket_exists(client, bucket_name: str) -> bool:
     return bool(result)
 
 
+@S3ErrorHandler.deletion_error_handler("delete object")
+@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
+def delete_s3_object(client, bucket_name: str, object_key: str, **kwargs) -> Dict:
+    """
+    Delete an S3 object.
+
+    Parameters:
+        client (boto3.client): The Boto3 S3 client object.
+        bucket_name (str): The name of the S3 bucket.
+        object_key (str): The key of the S3 object to delete.
+        **kwargs: Additional parameters to pass to delete_object.
+
+    Returns:
+        Dict: Response from the delete operation.
+    """
+    params = {"Bucket": bucket_name, "Key": object_key}
+    params.update(kwargs)
+    return client.delete_object(**params)
+
+
+@S3ErrorHandler.common_error_handler("update object tags")
+@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
+def put_s3_object_tagging(client, bucket_name: str, object_key: str, tags: Dict, **kwargs) -> Dict:
+    """
+    Set tags on an S3 object.
+
+    Parameters:
+        client (boto3.client): The Boto3 S3 client object.
+        bucket_name (str): The name of the S3 bucket.
+        object_key (str): The key of the S3 object.
+        tags (dict): Dictionary of tags to apply (e.g., {'Environment': 'prod', 'Owner': 'team'}).
+        **kwargs: Additional parameters to pass to put_object_tagging.
+
+    Returns:
+        Dict: Response from the put operation.
+    """
+    params = {
+        "Bucket": bucket_name,
+        "Key": object_key,
+        "Tagging": {"TagSet": ansible_dict_to_boto3_tag_list(tags)},
+    }
+    params.update(kwargs)
+    return client.put_object_tagging(**params)
+
+
+@S3ErrorHandler.deletion_error_handler("delete object tags")
+@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
+def delete_s3_object_tagging(client, bucket_name: str, object_key: str, **kwargs) -> Dict:
+    """
+    Remove all tags from an S3 object.
+
+    Parameters:
+        client (boto3.client): The Boto3 S3 client object.
+        bucket_name (str): The name of the S3 bucket.
+        object_key (str): The key of the S3 object.
+        **kwargs: Additional parameters to pass to delete_object_tagging.
+
+    Returns:
+        Dict: Response from the delete operation.
+    """
+    params = {"Bucket": bucket_name, "Key": object_key}
+    params.update(kwargs)
+    return client.delete_object_tagging(**params)
+
+
+@S3ErrorHandler.common_error_handler("update object ACL")
+@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
+def put_s3_object_acl(client, bucket_name: str, object_key: str, acl: str, **kwargs) -> Dict:
+    """
+    Set ACL on an S3 object.
+
+    Parameters:
+        client (boto3.client): The Boto3 S3 client object.
+        bucket_name (str): The name of the S3 bucket.
+        object_key (str): The key of the S3 object.
+        acl (str): The canned ACL to apply (e.g., 'private', 'public-read', 'authenticated-read').
+        **kwargs: Additional parameters to pass to put_object_acl.
+
+    Returns:
+        Dict: Response from the put operation.
+    """
+    params = {"Bucket": bucket_name, "Key": object_key, "ACL": acl}
+    params.update(kwargs)
+    return client.put_object_acl(**params)
+
+
 def s3_head_objects(client, parts, bucket, obj, versionId):
     args = {"Bucket": bucket, "Key": obj}
     if versionId:
