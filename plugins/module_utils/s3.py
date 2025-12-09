@@ -806,7 +806,25 @@ def _list_objects_v2(client, **params):
     return paginator.paginate(**params).build_full_result()
 
 
+@S3ErrorHandler.list_error_handler("list bucket objects", [])
 def list_bucket_object_keys(client, bucket, prefix=None, max_keys=None, start_after=None):
+    """
+    List object keys in an S3 bucket with optional filtering.
+
+    Parameters:
+        client (boto3.client): The Boto3 S3 client object.
+        bucket (str): The name of the S3 bucket.
+        prefix (str, optional): Limits the response to keys that begin with the specified prefix.
+        max_keys (int, optional): Maximum number of keys to return.
+        start_after (str, optional): StartAfter key for pagination.
+
+    Returns:
+        List[str]: List of object keys. Returns [] if bucket has no objects or on 404.
+
+    Raises:
+        AnsibleS3PermissionsError: If access is denied (403).
+        AnsibleS3Error: For other S3 errors.
+    """
     response = _list_objects_v2(client, Bucket=bucket, Prefix=prefix, StartAfter=start_after, MaxKeys=max_keys)
     return [c["Key"] for c in response.get("Contents", [])]
 
