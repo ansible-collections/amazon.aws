@@ -229,6 +229,233 @@ def head_s3_bucket(client, bucket_name: str) -> Dict:
     return client.head_bucket(Bucket=bucket_name)
 
 
+@S3ErrorHandler.list_error_handler("get object metadata", {})
+@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
+def head_s3_object(client, bucket_name: str, object_key: str, version_id: Optional[str] = None, **kwargs) -> Dict:
+    """
+    Retrieve metadata about an S3 object without downloading the object itself.
+
+    Parameters:
+        client (boto3.client): The Boto3 S3 client object.
+        bucket_name (str): The name of the S3 bucket.
+        object_key (str): The key of the S3 object.
+        version_id (str, optional): The version ID of the object.
+        **kwargs: Additional parameters to pass to head_object (e.g., ExpectedBucketOwner).
+
+    Returns:
+        Dict: Object metadata including ETag, ContentLength, LastModified, etc.
+              Returns {} if object does not exist (404).
+    """
+    params = {"Bucket": bucket_name, "Key": object_key}
+    if version_id:
+        params["VersionId"] = version_id
+    params.update(kwargs)
+    return client.head_object(**params)
+
+
+@S3ErrorHandler.list_error_handler("get object content", None)
+@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
+def get_s3_object_content(
+    client, bucket_name: str, object_key: str, version_id: Optional[str] = None, **kwargs
+) -> Optional[bytes]:
+    """
+    Download the content of an S3 object.
+
+    Parameters:
+        client (boto3.client): The Boto3 S3 client object.
+        bucket_name (str): The name of the S3 bucket.
+        object_key (str): The key of the S3 object.
+        version_id (str, optional): The version ID of the object.
+        **kwargs: Additional parameters to pass to get_object.
+
+    Returns:
+        bytes: The object content, or None if object does not exist (404).
+    """
+    params = {"Bucket": bucket_name, "Key": object_key}
+    if version_id:
+        params["VersionId"] = version_id
+    params.update(kwargs)
+    response = client.get_object(**params)
+    return response["Body"].read()
+
+
+@S3ErrorHandler.list_error_handler("get object tags", {})
+@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
+def get_s3_object_tagging(
+    client, bucket_name: str, object_key: str, version_id: Optional[str] = None, **kwargs
+) -> Dict:
+    """
+    Retrieve tags for an S3 object.
+
+    Parameters:
+        client (boto3.client): The Boto3 S3 client object.
+        bucket_name (str): The name of the S3 bucket.
+        object_key (str): The key of the S3 object.
+        version_id (str, optional): The version ID of the object.
+        **kwargs: Additional parameters to pass to get_object_tagging (e.g., ExpectedBucketOwner).
+
+    Returns:
+        Dict: The current tags dictionary applied to the object.
+              Returns {} if object has no tags or does not exist.
+    """
+    params = {"Bucket": bucket_name, "Key": object_key}
+    if version_id:
+        params["VersionId"] = version_id
+    params.update(kwargs)
+    current_tags = client.get_object_tagging(**params).get("TagSet", [])
+    return boto3_tag_list_to_ansible_dict(current_tags)
+
+
+@S3ErrorHandler.list_error_handler("get object ACL", {})
+@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
+def get_s3_object_acl(client, bucket_name: str, object_key: str, version_id: Optional[str] = None, **kwargs) -> Dict:
+    """
+    Retrieve ACL for an S3 object.
+
+    Parameters:
+        client (boto3.client): The Boto3 S3 client object.
+        bucket_name (str): The name of the S3 bucket.
+        object_key (str): The key of the S3 object.
+        version_id (str, optional): The version ID of the object.
+        **kwargs: Additional parameters to pass to get_object_acl.
+
+    Returns:
+        Dict: ACL information including Owner and Grants.
+              Returns {} if object does not exist.
+    """
+    params = {"Bucket": bucket_name, "Key": object_key}
+    if version_id:
+        params["VersionId"] = version_id
+    params.update(kwargs)
+    return client.get_object_acl(**params)
+
+
+@S3ErrorHandler.list_error_handler("get object legal hold status", {})
+@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
+def get_s3_object_legal_hold(
+    client, bucket_name: str, object_key: str, version_id: Optional[str] = None, **kwargs
+) -> Dict:
+    """
+    Retrieve legal hold status for an S3 object.
+
+    Parameters:
+        client (boto3.client): The Boto3 S3 client object.
+        bucket_name (str): The name of the S3 bucket.
+        object_key (str): The key of the S3 object.
+        version_id (str, optional): The version ID of the object.
+        **kwargs: Additional parameters to pass to get_object_legal_hold.
+
+    Returns:
+        Dict: Legal hold configuration.
+              Returns {} if not configured or object does not exist.
+    """
+    params = {"Bucket": bucket_name, "Key": object_key}
+    if version_id:
+        params["VersionId"] = version_id
+    params.update(kwargs)
+    result = client.get_object_legal_hold(**params)
+    return result.get("LegalHold", {})
+
+
+@S3ErrorHandler.list_error_handler("get object retention settings", {})
+@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
+def get_s3_object_retention(
+    client, bucket_name: str, object_key: str, version_id: Optional[str] = None, **kwargs
+) -> Dict:
+    """
+    Retrieve retention settings for an S3 object.
+
+    Parameters:
+        client (boto3.client): The Boto3 S3 client object.
+        bucket_name (str): The name of the S3 bucket.
+        object_key (str): The key of the S3 object.
+        version_id (str, optional): The version ID of the object.
+        **kwargs: Additional parameters to pass to get_object_retention.
+
+    Returns:
+        Dict: Retention configuration.
+              Returns {} if not configured or object does not exist.
+    """
+    params = {"Bucket": bucket_name, "Key": object_key}
+    if version_id:
+        params["VersionId"] = version_id
+    params.update(kwargs)
+    result = client.get_object_retention(**params)
+    return result.get("Retention", {})
+
+
+@S3ErrorHandler.list_error_handler("get object attributes", {})
+@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
+def get_s3_object_attributes(
+    client, bucket_name: str, object_key: str, object_attributes: List[str], version_id: Optional[str] = None, **kwargs
+) -> Dict:
+    """
+    Retrieve specific attributes for an S3 object.
+
+    Parameters:
+        client (boto3.client): The Boto3 S3 client object.
+        bucket_name (str): The name of the S3 bucket.
+        object_key (str): The key of the S3 object.
+        object_attributes (list): List of object attributes to retrieve
+                                  (e.g., ['ETag', 'Checksum', 'ObjectParts', 'StorageClass', 'ObjectSize']).
+        version_id (str, optional): The version ID of the object.
+        **kwargs: Additional parameters to pass to get_object_attributes.
+
+    Returns:
+        Dict: Requested object attributes.
+              Returns {} if object does not exist.
+    """
+    params = {
+        "Bucket": bucket_name,
+        "Key": object_key,
+        "ObjectAttributes": object_attributes,
+    }
+    if version_id:
+        params["VersionId"] = version_id
+    params.update(kwargs)
+    return client.get_object_attributes(**params)
+
+
+def s3_object_exists(client, bucket_name: str, object_key: str, version_id: Optional[str] = None) -> bool:
+    """
+    Check if an S3 object exists.
+
+    Parameters:
+        client (boto3.client): The Boto3 S3 client object.
+        bucket_name (str): The name of the S3 bucket.
+        object_key (str): The key of the S3 object.
+        version_id (str, optional): The version ID of the object.
+
+    Returns:
+        bool: True if object exists, False otherwise.
+
+    Raises:
+        AnsibleS3PermissionsError: If access is denied (403).
+        AnsibleS3Error: For other S3 errors.
+    """
+    result = head_s3_object(client, bucket_name, object_key, version_id)
+    return bool(result)
+
+
+def s3_bucket_exists(client, bucket_name: str) -> bool:
+    """
+    Check if an S3 bucket exists.
+
+    Parameters:
+        client (boto3.client): The Boto3 S3 client object.
+        bucket_name (str): The name of the S3 bucket.
+
+    Returns:
+        bool: True if bucket exists, False otherwise.
+
+    Raises:
+        AnsibleS3PermissionsError: If access is denied (403).
+        AnsibleS3Error: For other S3 errors.
+    """
+    result = head_s3_bucket(client, bucket_name)
+    return bool(result)
+
+
 def s3_head_objects(client, parts, bucket, obj, versionId):
     args = {"Bucket": bucket, "Key": obj}
     if versionId:
