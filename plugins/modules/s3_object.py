@@ -1552,7 +1552,7 @@ def main():
         module.deprecate(
             (
                 "Support for 'list' mode has been deprecated and will be removed in a release after "
-                "2024-11-01.  Please use the amazon.aws.s3_object_info module instead."
+                "2026-11-01.  Please use the amazon.aws.s3_object_info module instead."
             ),
             date="2026-11-01",
             collection_name="amazon.aws",
