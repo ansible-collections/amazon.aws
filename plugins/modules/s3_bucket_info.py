@@ -516,6 +516,14 @@ buckets:
       version_added: 7.2.0
 """
 
+import typing
+
+if typing.TYPE_CHECKING:
+    from typing import Dict
+    from typing import List
+
+    from ansible_collections.amazon.aws.plugins.module_utils.botocore import ClientType
+
 try:
     import botocore
 except ImportError:
@@ -540,7 +548,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_bucket
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 
 
-def get_bucket_list(module, connection, name="", name_filter=""):
+def get_bucket_list(module: AnsibleAWSModule, connection: ClientType, name: str = "", name_filter: str = "") -> List[Dict]:
     """
     Return result of list_buckets json encoded
     Filter only buckets matching 'name' or name_filter if defined
@@ -576,7 +584,9 @@ def get_bucket_list(module, connection, name="", name_filter=""):
     return final_buckets
 
 
-def get_buckets_facts(connection, buckets, requested_facts, transform_location):
+def get_buckets_facts(
+    connection: ClientType, buckets: List[Dict], requested_facts: Dict, transform_location: bool
+) -> List[Dict]:
     """
     Retrieve additional information about S3 buckets
     """
@@ -589,7 +599,7 @@ def get_buckets_facts(connection, buckets, requested_facts, transform_location):
     return full_bucket_list
 
 
-def get_bucket_details(connection, name, requested_facts, transform_location):
+def get_bucket_details(connection: ClientType, name: str, requested_facts: Dict, transform_location: bool) -> Dict:
     """
     Execute all enabled S3API get calls for selected bucket using module_utils functions.
     """
@@ -636,7 +646,7 @@ def get_bucket_details(connection, name, requested_facts, transform_location):
 
 @S3ErrorHandler.list_error_handler("get bucket property", {})
 @AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def get_bucket_property(name, connection, get_api_name):
+def get_bucket_property(name: str, connection: ClientType, get_api_name: str) -> Dict:
     """
     Get bucket property
     """
@@ -649,7 +659,7 @@ def get_bucket_property(name, connection, get_api_name):
     return data
 
 
-def main():
+def main() -> None:
     """
     Get list of S3 buckets
     :return:
