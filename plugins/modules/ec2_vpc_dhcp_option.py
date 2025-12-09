@@ -137,82 +137,35 @@ dhcp_config:
     returned: when available
     type: dict
     contains:
-      domain_name_servers:
+      domain-name-servers:
         description: The IP addresses of up to four domain name servers, or AmazonProvidedDNS.
         returned: when available
         type: list
         sample:
           - 10.0.0.1
           - 10.0.1.1
-      domain_name:
+      domain-name:
         description: The domain name for hosts in the DHCP option sets.
         returned: when available
         type: list
         sample:
           - "my.example.com"
-      ntp_servers:
+      ntp-servers:
         description: The IP addresses of up to four Network Time Protocol (NTP) servers.
         returned: when available
         type: list
         sample:
           - 10.0.0.1
           - 10.0.1.1
-      netbios_name_servers:
+      netbios-name-servers:
         description: The IP addresses of up to four NetBIOS name servers.
         returned: when available
         type: list
         sample:
           - 10.0.0.1
           - 10.0.1.1
-      netbios_node_type:
-        description: The NetBIOS node type (1, 2, 4, or 8).
-        returned: when available
-        type: str
-        sample: 2
-      domain-name-servers:
-        description:
-          - The IP addresses of up to four domain name servers, or AmazonProvidedDNS.
-          - This key has been deprecated and will be removed in a release after
-            2026-12-01. Use RV(dhcp_config.domain_name_servers) instead.
-        returned: when available
-        type: list
-        sample:
-          - 10.0.0.1
-          - 10.0.1.1
-      domain-name:
-        description:
-          - The domain name for hosts in the DHCP option sets.
-          - This key has been deprecated and will be removed in a release after
-            2026-12-01. Use RV(dhcp_config.domain_name) instead.
-        returned: when available
-        type: list
-        sample:
-          - "my.example.com"
-      ntp-servers:
-        description:
-          - The IP addresses of up to four Network Time Protocol (NTP) servers.
-          - This key has been deprecated and will be removed in a release after
-            2026-12-01. Use RV(dhcp_config.ntp_servers) instead.
-        returned: when available
-        type: list
-        sample:
-          - 10.0.0.1
-          - 10.0.1.1
-      netbios-name-servers:
-        description:
-          - The IP addresses of up to four NetBIOS name servers.
-          - This key has been deprecated and will be removed in a release after
-            2026-12-01. Use RV(dhcp_config.netbios_name_servers) instead.
-        returned: when available
-        type: list
-        sample:
-          - 10.0.0.1
-          - 10.0.1.1
       netbios-node-type:
-        description:
-          - The NetBIOS node type (1, 2, 4, or 8).
-          - This key has been deprecated and will be removed in a release after
-            2026-12-01. Use RV(dhcp_config.netbios_node_type) instead.
+        description: The NetBIOS node type (1, 2, 4, or 8).
         returned: when available
         type: str
         sample: 2
