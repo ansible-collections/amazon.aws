@@ -467,6 +467,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.s3 import calculate_eta
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import calculate_etag_content
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import delete_s3_object_tagging
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import ensure_s3_object_tags
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import generate_s3_presigned_url
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_object_content
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_object_tagging
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import head_s3_object
@@ -805,44 +806,18 @@ def download_s3str(module, s3, bucket, obj, version=None):
 
 
 def get_download_url(module, s3, bucket, obj, expiry, tags=None, changed=True):
-    try:
-        url = s3.generate_presigned_url(
-            # aws_retry=True,
-            ClientMethod="get_object",
-            Params={"Bucket": bucket, "Key": obj},
-            ExpiresIn=expiry,
-        )
-        module.exit_json(
-            msg="Download url:",
-            url=url,
-            tags=tags,
-            expiry=expiry,
-            changed=changed,
-        )
-    except (
-        botocore.exceptions.ClientError,
-        botocore.exceptions.BotoCoreError,
-        boto3.exceptions.Boto3Error,
-    ) as e:
-        raise AnsibleS3Error(message="Failed while getting download url.", exception=e)
+    url = generate_s3_presigned_url(s3, bucket, obj, client_method="get_object", expiry=expiry)
+    module.exit_json(
+        msg="Download url:",
+        url=url,
+        tags=tags,
+        expiry=expiry,
+        changed=changed,
+    )
 
 
 def put_download_url(s3, bucket, obj, expiry):
-    try:
-        url = s3.generate_presigned_url(
-            # aws_retry=True,
-            ClientMethod="put_object",
-            Params={"Bucket": bucket, "Key": obj},
-            ExpiresIn=expiry,
-        )
-    except (
-        botocore.exceptions.ClientError,
-        botocore.exceptions.BotoCoreError,
-        boto3.exceptions.Boto3Error,
-    ) as e:
-        raise AnsibleS3Error(message="Unable to generate presigned URL", exception=e)
-
-    return url
+    return generate_s3_presigned_url(s3, bucket, obj, client_method="put_object", expiry=expiry)
 
 
 def get_current_object_tags_dict(module, s3, bucket, obj, version=None):
