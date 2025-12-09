@@ -632,7 +632,7 @@ def generate_s3_presigned_url(
     object_key: str,
     client_method: str = "get_object",
     expiry: int = 600,
-    **params
+    **params,
 ) -> str:
     """
     Generate a presigned URL for S3 object operations.
