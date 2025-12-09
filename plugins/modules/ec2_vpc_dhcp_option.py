@@ -130,7 +130,10 @@ dhcp_options_id:
     type: str
     returned: when available
 dhcp_config:
-    description: The boto2-style DHCP options created, associated or found.
+    description:
+      - The boto2-style DHCP options created, associated or found.
+      - This return value has been deprecated and will be removed in a release after
+        2026-12-01. Use RV(dhcp_options) instead.
     returned: when available
     type: dict
     contains:
@@ -169,7 +172,7 @@ dhcp_config:
       domain-name-servers:
         description:
           - The IP addresses of up to four domain name servers, or AmazonProvidedDNS.
-          - This return value has been deprecated and will be removed in a release after
+          - This key has been deprecated and will be removed in a release after
             2026-12-01. Use RV(dhcp_config.domain_name_servers) instead.
         returned: when available
         type: list
@@ -179,7 +182,7 @@ dhcp_config:
       domain-name:
         description:
           - The domain name for hosts in the DHCP option sets.
-          - This return value has been deprecated and will be removed in a release after
+          - This key has been deprecated and will be removed in a release after
             2026-12-01. Use RV(dhcp_config.domain_name) instead.
         returned: when available
         type: list
@@ -188,7 +191,7 @@ dhcp_config:
       ntp-servers:
         description:
           - The IP addresses of up to four Network Time Protocol (NTP) servers.
-          - This return value has been deprecated and will be removed in a release after
+          - This key has been deprecated and will be removed in a release after
             2026-12-01. Use RV(dhcp_config.ntp_servers) instead.
         returned: when available
         type: list
@@ -198,7 +201,7 @@ dhcp_config:
       netbios-name-servers:
         description:
           - The IP addresses of up to four NetBIOS name servers.
-          - This return value has been deprecated and will be removed in a release after
+          - This key has been deprecated and will be removed in a release after
             2026-12-01. Use RV(dhcp_config.netbios_name_servers) instead.
         returned: when available
         type: list
@@ -208,7 +211,7 @@ dhcp_config:
       netbios-node-type:
         description:
           - The NetBIOS node type (1, 2, 4, or 8).
-          - This return value has been deprecated and will be removed in a release after
+          - This key has been deprecated and will be removed in a release after
             2026-12-01. Use RV(dhcp_config.netbios_node_type) instead.
         returned: when available
         type: str
@@ -581,10 +584,7 @@ def main() -> None:
     module = AnsibleAWSModule(argument_spec=argument_spec, check_boto3=False, supports_check_mode=True)
 
     module.deprecate(
-        "The dhcp_config return value's hyphenated keys (domain-name, domain-name-servers, "
-        "ntp-servers, netbios-name-servers, netbios-node-type) are deprecated. "
-        "Use the underscore versions (domain_name, domain_name_servers, ntp_servers, "
-        "netbios_name_servers, netbios_node_type) instead.",
+        "The 'dhcp_config' return value is deprecated. Use 'dhcp_options' instead.",
         date="2026-12-01",
         collection_name="amazon.aws",
     )

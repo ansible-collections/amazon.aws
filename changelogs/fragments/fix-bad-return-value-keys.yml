@@ -1,12 +1,16 @@
 deprecated_features:
-- ec2_vpc_dhcp_option - the ``dhcp_config`` return value's hyphenated keys (``domain-name``, ``domain-name-servers``, ``ntp-servers``, ``netbios-name-servers``, ``netbios-node-type``) have been deprecated in favor of underscore versions (``domain_name``, ``domain_name_servers``, ``ntp_servers``, ``netbios_name_servers``, ``netbios_node_type``) for Jinja2 dot notation compatibility. The hyphenated keys will be removed in a release after 2026-12-01.
-- ec2_vpc_dhcp_option_info - the ``dhcp_config`` return value's hyphenated keys (``domain-name``, ``domain-name-servers``, ``ntp-servers``, ``netbios-name-servers``, ``netbios-node-type``) have been deprecated in favor of underscore versions (``domain_name``, ``domain_name_servers``, ``ntp_servers``, ``netbios_name_servers``, ``netbios_node_type``) for Jinja2 dot notation compatibility. The hyphenated keys will be removed in a release after 2026-12-01.
-- route53 - the ``values`` key in the ``resource_record_sets`` return value has been deprecated in favor of ``record_values`` for Jinja2 compatibility. The ``values`` key will be removed in a release after 2026-12-01.
+  - ec2_vpc_dhcp_option - the ``dhcp_config`` return value has been deprecated and will be removed
+    in a release after 2026-12-01. Use ``dhcp_options`` instead.
+  - ec2_vpc_dhcp_option_info - the ``dhcp_config`` return value has been deprecated and will be
+    removed in a release after 2026-12-01. Use ``dhcp_options`` instead.
+  - route53 - the ``values`` key in the ``resource_record_sets`` return value has been deprecated
+    in favor of ``record_values`` for Jinja2 compatibility. The ``values`` key will be removed in
+    a release after 2026-12-01.
 
 minor_changes:
-- ec2_vpc_dhcp_option - added underscore-named keys to ``dhcp_config`` return value (``domain_name``, ``domain_name_servers``, ``ntp_servers``, ``netbios_name_servers``, ``netbios_node_type``) that can be accessed using Jinja2 dot notation.
-- ec2_vpc_dhcp_option_info - added underscore-named keys to ``dhcp_config`` return value (``domain_name``, ``domain_name_servers``, ``ntp_servers``, ``netbios_name_servers``, ``netbios_node_type``) that can be accessed using Jinja2 dot notation.
-- route53 - added ``record_values`` key to ``resource_record_sets`` return value that can be accessed using Jinja2 dot notation.
+  - route53 - added ``record_values`` key to ``resource_record_sets`` return value that can be
+    accessed using Jinja2 dot notation.
 
 bugfixes:
-- lambda_info - fixed invalid return value documentation that used dot notation (``function.TheName``) which cannot be used in Jinja2 templates.
+  - lambda_info - fixed invalid return value documentation that used dot notation
+    (``function.TheName``) which cannot be used in Jinja2 templates.
