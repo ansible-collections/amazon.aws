@@ -471,6 +471,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_object
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_object_tagging
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import head_s3_object
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import list_bucket_object_keys
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_s3_object_acl
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_s3_object_tagging
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import s3_bucket_exists
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import s3_extra_params
@@ -572,23 +573,26 @@ def delete_key(module, s3, bucket, obj):
 
 
 def put_object_acl(module, s3, bucket, obj, params=None):
-    try:
-        if params:
+    if params:
+        try:
             s3.put_object(aws_retry=True, **params)
-        for acl in module.params.get("permission"):
-            s3.put_object_acl(aws_retry=True, ACL=acl, Bucket=bucket, Key=obj)
-    except is_boto3_error_code(IGNORE_S3_DROP_IN_EXCEPTIONS):
-        # S3 drop-ins (MinIO, Ceph, etc.) may not support ACL operations
-        module.warn(
-            "Setting object ACLs is not supported by your storage provider. "
-            "Set the 'permission' parameter to an empty list to avoid this warning."
-        )
-    except (
-        botocore.exceptions.BotoCoreError,
-        botocore.exceptions.ClientError,
-        boto3.exceptions.Boto3Error,
-    ) as e:
-        raise AnsibleS3Error(message=f"Failed to set ACL on object {obj}.", exception=e)
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+            boto3.exceptions.Boto3Error,
+        ) as e:
+            raise AnsibleS3Error(message=f"Failed to create object {obj}.", exception=e)
+
+    for acl in module.params.get("permission"):
+        try:
+            put_s3_object_acl(s3, bucket, obj, acl)
+        except AnsibleS3SupportError:
+            # S3 drop-ins (MinIO, Ceph, etc.) may not support ACL operations
+            module.warn(
+                "Setting object ACLs is not supported by your storage provider. "
+                "Set the 'permission' parameter to an empty list to avoid this warning."
+            )
+            return  # Don't try other ACLs if this one failed
 
 
 def create_dirkey(module, s3, bucket, obj, encrypt, expiry, metadata):
