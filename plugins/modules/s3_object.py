@@ -557,17 +557,6 @@ def bucket_check(module, s3, bucket, validate=True):
         raise AnsibleS3Error(message=f"Failed while looking up bucket '{bucket}'.", exception=e)
 
 
-def list_keys(s3, bucket, prefix=None, marker=None, max_keys=None):
-    try:
-        return list_bucket_object_keys(s3, bucket, prefix=prefix, start_after=marker, max_keys=max_keys)
-    except (
-        botocore.exceptions.ClientError,
-        botocore.exceptions.BotoCoreError,
-        boto3.exceptions.Boto3Error,
-    ) as e:
-        raise AnsibleS3Error(message=f"Failed while listing the keys in the bucket {bucket}", exception=e)
-
-
 def delete_key(module, s3, bucket, obj):
     if module.check_mode:
         module.exit_json(
@@ -1000,13 +989,16 @@ def s3_object_do_delobj(module, connection, connection_v4, s3_vars):
 
 def s3_object_do_list(module, connection, connection_v4, s3_vars):
     # If the bucket does not exist then bail out
-    keys = list_keys(
-        connection,
-        s3_vars["bucket"],
-        s3_vars["prefix"],
-        s3_vars["marker"],
-        s3_vars["max_keys"],
-    )
+    try:
+        keys = list_bucket_object_keys(
+            connection,
+            s3_vars["bucket"],
+            prefix=s3_vars["prefix"],
+            start_after=s3_vars["marker"],
+            max_keys=s3_vars["max_keys"],
+        )
+    except AnsibleS3Error as e:
+        module.fail_json_aws(e, msg=f"Failed to list objects in bucket {s3_vars['bucket']}.")
 
     module.exit_json(msg="LIST operation complete", s3_keys=keys)
 
@@ -1226,7 +1218,10 @@ def s3_object_do_copy(module, connection, connection_v4, s3_vars):
     if not copy_src.get("object"):
         # copy recursively object(s) from source bucket to destination bucket
         # list all the objects from the source bucket
-        keys = list_keys(connection, src_bucket, copy_src.get("prefix"))
+        try:
+            keys = list_bucket_object_keys(connection, src_bucket, prefix=copy_src.get("prefix"))
+        except AnsibleS3Error as e:
+            module.fail_json_aws(e, msg=f"Failed to list objects in source bucket {src_bucket}.")
         if len(keys) == 0:
             module.exit_json(msg=f"No object found to be copied from source bucket {src_bucket}.")
 
