@@ -378,8 +378,11 @@ def is_boto3_error_code(
         e = sys.exc_info()[1]
     if not isinstance(code, (list, tuple, set)):
         code = [code]
-    if isinstance(e, ClientError) and e.response["Error"]["Code"] in code:
-        return ClientError
+    try:
+        if isinstance(e, ClientError) and e.response["Error"]["Code"] in code:
+            return ClientError
+    except KeyError:
+        pass
     return type("NeverEverRaisedException", (Exception,), {})
 
 
@@ -403,8 +406,11 @@ def is_boto3_error_httpstatus(
         e = sys.exc_info()[1]
     if not isinstance(status, (list, tuple, set)):
         status = [status]
-    if isinstance(e, ClientError) and e.response["ResponseMetadata"]["HTTPStatusCode"] in status:
-        return ClientError
+    try:
+        if isinstance(e, ClientError) and e.response["ResponseMetadata"]["HTTPStatusCode"] in status:
+            return ClientError
+    except KeyError:
+        pass
     return type("NeverEverRaisedException", (Exception,), {})
 
 
@@ -427,8 +433,11 @@ def is_boto3_error_message(
 
     if e is None:
         e = sys.exc_info()[1]
-    if isinstance(e, ClientError) and msg in e.response["Error"]["Message"]:
-        return ClientError
+    try:
+        if isinstance(e, ClientError) and msg in e.response["Error"]["Message"]:
+            return ClientError
+    except KeyError:
+        pass
     return type("NeverEverRaisedException", (Exception,), {})
 
 
