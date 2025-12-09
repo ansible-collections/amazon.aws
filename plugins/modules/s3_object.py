@@ -465,6 +465,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.s3 import HAS_MD5
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import IGNORE_S3_DROP_IN_EXCEPTIONS
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import calculate_etag
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import calculate_etag_content
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import delete_s3_object
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import delete_s3_object_tagging
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import ensure_s3_object_tags
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import generate_s3_presigned_url
@@ -566,14 +567,10 @@ def delete_key(module, s3, bucket, obj):
             changed=True,
         )
     try:
-        s3.delete_object(aws_retry=True, Bucket=bucket, Key=obj)
+        delete_s3_object(s3, bucket, obj)
         module.exit_json(msg=f"Object deleted from bucket {bucket}.", changed=True)
-    except (
-        botocore.exceptions.ClientError,
-        botocore.exceptions.BotoCoreError,
-        boto3.exceptions.Boto3Error,
-    ) as e:
-        raise AnsibleS3Error(message=f"Failed while trying to delete {obj}.", exception=e)
+    except AnsibleS3Error as e:
+        module.fail_json_aws(e, msg=f"Failed to delete object {obj}.")
 
 
 def put_object_acl(module, s3, bucket, obj, params=None):
