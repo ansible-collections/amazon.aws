@@ -383,6 +383,31 @@ def is_boto3_error_code(
     return type("NeverEverRaisedException", (Exception,), {})
 
 
+def is_boto3_error_httpstatus(
+    status: Union[List, Tuple, Set, int],
+    e: Optional[BaseException] = None,
+) -> Type[Exception]:
+    """Check if the botocore exception is raised by a specific HTTP status code.
+
+    Returns ClientError if the HTTP status code matches, a dummy exception if it does not have a status code or does not match
+
+    Example:
+    try:
+        ec2.describe_instances(InstanceIds=['potato'])
+    except is_boto3_error_httpstatus(501):
+        # handle the error for that status code case
+    except botocore.exceptions.ClientError as e:
+        # handle the generic error case for all other status codes
+    """
+    if e is None:
+        e = sys.exc_info()[1]
+    if not isinstance(status, (list, tuple, set)):
+        status = [status]
+    if isinstance(e, ClientError) and e.response["ResponseMetadata"]["HTTPStatusCode"] in status:
+        return ClientError
+    return type("NeverEverRaisedException", (Exception,), {})
+
+
 def is_boto3_error_message(
     msg: str,
     e: Optional[BaseException] = None,

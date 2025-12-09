@@ -1,0 +1,2 @@
+minor_changes:
+- module_utils/botocore - add ``is_boto3_error_httpstatus`` helper function to catch boto3 exceptions based on HTTP status codes.
