@@ -439,7 +439,17 @@ import copy
 import mimetypes
 import os
 import time
+import typing
 from ssl import SSLError
+
+if typing.TYPE_CHECKING:
+    from typing import Any
+    from typing import Dict
+    from typing import List
+    from typing import Optional
+    from typing import Tuple
+
+    from ansible_collections.amazon.aws.plugins.module_utils.botocore import ClientType
 
 try:
     # Beware, S3 is a "special" case, it sometimes catches botocore exceptions and
@@ -486,7 +496,14 @@ class Sigv4Required(Exception):
     pass
 
 
-def key_check(module, s3, bucket, obj, version=None, validate=True):
+def key_check(
+    module: AnsibleAWSModule,
+    s3: ClientType,
+    bucket: str,
+    obj: str,
+    version: Optional[str] = None,
+    validate: bool = True,
+) -> bool:
     """Check if object exists with optional validation."""
     try:
         exists = s3_object_exists(s3, bucket, obj, version_id=version)
@@ -498,7 +515,15 @@ def key_check(module, s3, bucket, obj, version=None, validate=True):
     # Let other AnsibleS3Error exceptions propagate naturally
 
 
-def etag_compare(module, s3, bucket, obj, version=None, local_file=None, content=None):
+def etag_compare(
+    module: AnsibleAWSModule,
+    s3: ClientType,
+    bucket: str,
+    obj: str,
+    version: Optional[str] = None,
+    local_file: Optional[str] = None,
+    content: Optional[bytes] = None,
+) -> bool:
     s3_etag = _head_object(s3, bucket, obj, version=version).get("ETag")
     if local_file is not None:
         local_etag = calculate_etag(module, local_file, s3_etag, s3, bucket, obj, version)
@@ -507,12 +532,18 @@ def etag_compare(module, s3, bucket, obj, version=None, local_file=None, content
     return s3_etag == local_etag
 
 
-def _head_object(s3, bucket, obj, version=None):
+def _head_object(s3: ClientType, bucket: str, obj: str, version: Optional[str] = None) -> Dict:
     """Wrapper for head_s3_object with backward-compatible interface."""
     return head_s3_object(s3, bucket, obj, version_id=version)
 
 
-def _get_object_content(module, s3, bucket, obj, version=None):
+def _get_object_content(
+    module: AnsibleAWSModule,
+    s3: ClientType,
+    bucket: str,
+    obj: str,
+    version: Optional[str] = None,
+) -> bytes:
     """Wrapper for get_s3_object_content with module-specific error handling."""
     try:
         return get_s3_object_content(s3, bucket, obj, version_id=version)
@@ -526,7 +557,12 @@ def _get_object_content(module, s3, bucket, obj, version=None):
         module.fail_json_aws(e, msg=f"Could not find the key {obj}.")
 
 
-def get_s3_last_modified_timestamp(s3, bucket, obj, version=None):
+def get_s3_last_modified_timestamp(
+    s3: ClientType,
+    bucket: str,
+    obj: str,
+    version: Optional[str] = None,
+) -> Optional[float]:
     last_modified = None
     obj_info = _head_object(s3, bucket, obj, version)
     if obj_info:
@@ -534,7 +570,13 @@ def get_s3_last_modified_timestamp(s3, bucket, obj, version=None):
     return last_modified
 
 
-def is_local_object_latest(s3, bucket, obj, version=None, local_file=None):
+def is_local_object_latest(
+    s3: ClientType,
+    bucket: str,
+    obj: str,
+    version: Optional[str] = None,
+    local_file: Optional[str] = None,
+) -> bool:
     s3_last_modified = get_s3_last_modified_timestamp(s3, bucket, obj, version)
     if not os.path.exists(local_file):
         return False
@@ -542,7 +584,7 @@ def is_local_object_latest(s3, bucket, obj, version=None, local_file=None):
     return s3_last_modified <= local_last_modified
 
 
-def bucket_check(module, s3, bucket, validate=True):
+def bucket_check(module: AnsibleAWSModule, s3: ClientType, bucket: str, validate: bool = True) -> None:
     """Check if bucket exists and is accessible."""
     try:
         exists = s3_bucket_exists(s3, bucket)
@@ -559,7 +601,7 @@ def bucket_check(module, s3, bucket, validate=True):
     # Let other AnsibleS3Error exceptions propagate naturally
 
 
-def delete_key(module, s3, bucket, obj):
+def delete_key(module: AnsibleAWSModule, s3: ClientType, bucket: str, obj: str) -> None:
     if module.check_mode:
         module.exit_json(
             msg="DELETE operation skipped - running in check mode",
@@ -572,7 +614,13 @@ def delete_key(module, s3, bucket, obj):
         module.fail_json_aws(e, msg=f"Failed to delete object {obj}.")
 
 
-def put_object_acl(module, s3, bucket, obj, params=None):
+def put_object_acl(
+    module: AnsibleAWSModule,
+    s3: ClientType,
+    bucket: str,
+    obj: str,
+    params: Optional[Dict] = None,
+) -> None:
     if params:
         try:
             s3.put_object(aws_retry=True, **params)
@@ -595,7 +643,15 @@ def put_object_acl(module, s3, bucket, obj, params=None):
             return  # Don't try other ACLs if this one failed
 
 
-def create_dirkey(module, s3, bucket, obj, encrypt, expiry, metadata):
+def create_dirkey(
+    module: AnsibleAWSModule,
+    s3: ClientType,
+    bucket: str,
+    obj: str,
+    encrypt: bool,
+    expiry: int,
+    metadata: Optional[Dict],
+) -> None:
     if module.check_mode:
         module.exit_json(msg="PUT operation skipped - running in check mode", changed=True)
     params = {"Bucket": bucket, "Key": obj, "Body": b""}
@@ -622,11 +678,11 @@ def create_dirkey(module, s3, bucket, obj, encrypt, expiry, metadata):
     )
 
 
-def path_check(path):
+def path_check(path: str) -> bool:
     return bool(os.path.exists(path))
 
 
-def guess_content_type(src):
+def guess_content_type(src: Optional[str]) -> str:
     if src:
         content_type = mimetypes.guess_type(src)[0]
         if content_type:
@@ -637,11 +693,11 @@ def guess_content_type(src):
 
 
 def get_extra_params(
-    encrypt=None,
-    encryption_mode=None,
-    encryption_kms_key_id=None,
-    metadata=None,
-):
+    encrypt: Optional[bool] = None,
+    encryption_mode: Optional[str] = None,
+    encryption_kms_key_id: Optional[str] = None,
+    metadata: Optional[Dict] = None,
+) -> Dict:
     extra = {}
     if encrypt:
         extra["ServerSideEncryption"] = encryption_mode
@@ -659,7 +715,7 @@ def get_extra_params(
     return extra
 
 
-def option_in_extra_args(option):
+def option_in_extra_args(option: str) -> Optional[str]:
     temp_option = option.replace("-", "").lower()
 
     allowed_extra_args = {
@@ -687,21 +743,22 @@ def option_in_extra_args(option):
 
     if temp_option in allowed_extra_args:
         return allowed_extra_args[temp_option]
+    return None
 
 
 def upload_s3file(
-    module,
-    s3,
-    bucket,
-    obj,
-    expiry,
-    metadata,
-    encrypt,
-    headers,
-    src=None,
-    content=None,
-    acl_disabled=False,
-):
+    module: AnsibleAWSModule,
+    s3: ClientType,
+    bucket: str,
+    obj: str,
+    expiry: int,
+    metadata: Optional[Dict],
+    encrypt: bool,
+    headers: Optional[Dict],
+    src: Optional[str] = None,
+    content: Optional[bytes] = None,
+    acl_disabled: bool = False,
+) -> None:
     if module.check_mode:
         module.exit_json(msg="PUT operation skipped - running in check mode", changed=True)
     try:
@@ -760,7 +817,15 @@ def upload_s3file(
     module.exit_json(msg="PUT operation complete", url=url, tags=tags, changed=True)
 
 
-def download_s3file(module, s3, bucket, obj, dest, retries, version=None):
+def download_s3file(
+    module: AnsibleAWSModule,
+    s3: ClientType,
+    bucket: str,
+    obj: str,
+    dest: str,
+    retries: int,
+    version: Optional[str] = None,
+) -> None:
     if module.check_mode:
         module.exit_json(msg="GET operation skipped - running in check mode", changed=True)
 
@@ -785,14 +850,28 @@ def download_s3file(module, s3, bucket, obj, dest, retries, version=None):
             # otherwise, try again, this may be a transient timeout.
 
 
-def download_s3str(module, s3, bucket, obj, version=None):
+def download_s3str(
+    module: AnsibleAWSModule,
+    s3: ClientType,
+    bucket: str,
+    obj: str,
+    version: Optional[str] = None,
+) -> None:
     if module.check_mode:
         module.exit_json(msg="GET operation skipped - running in check mode", changed=True)
     contents = to_native(_get_object_content(module, s3, bucket, obj, version))
     module.exit_json(msg="GET operation complete", contents=contents, changed=True)
 
 
-def get_download_url(module, s3, bucket, obj, expiry, tags=None, changed=True):
+def get_download_url(
+    module: AnsibleAWSModule,
+    s3: ClientType,
+    bucket: str,
+    obj: str,
+    expiry: int,
+    tags: Optional[Dict] = None,
+    changed: bool = True,
+) -> None:
     url = generate_s3_presigned_url(s3, bucket, obj, client_method="get_object", expiry=expiry)
     module.exit_json(
         msg="Download url:",
@@ -803,11 +882,17 @@ def get_download_url(module, s3, bucket, obj, expiry, tags=None, changed=True):
     )
 
 
-def put_download_url(s3, bucket, obj, expiry):
+def put_download_url(s3: ClientType, bucket: str, obj: str, expiry: int) -> str:
     return generate_s3_presigned_url(s3, bucket, obj, client_method="put_object", expiry=expiry)
 
 
-def get_current_object_tags_dict(module, s3, bucket, obj, version=None):
+def get_current_object_tags_dict(
+    module: AnsibleAWSModule,
+    s3: ClientType,
+    bucket: str,
+    obj: str,
+    version: Optional[str] = None,
+) -> Dict:
     """Get object tags with module-specific parameter handling."""
     kwargs = {}
     if module.params.get("expected_bucket_owner"):
@@ -821,7 +906,7 @@ def get_current_object_tags_dict(module, s3, bucket, obj, version=None):
     # Let other AnsibleS3Error exceptions propagate naturally
 
 
-def ensure_tags(client, module, bucket, obj):
+def ensure_tags(client: ClientType, module: AnsibleAWSModule, bucket: str, obj: str) -> Tuple[Dict, bool]:
     """Wrapper for ensure_s3_object_tags to maintain backward compatibility."""
     tags = module.params.get("tags")
     purge_tags = module.params.get("purge_tags")
@@ -829,7 +914,7 @@ def ensure_tags(client, module, bucket, obj):
     return ensure_s3_object_tags(client, bucket, obj, tags, purge_tags)
 
 
-def get_binary_content(s3_vars):
+def get_binary_content(s3_vars: Dict) -> Optional[bytes]:
     # the content will be uploaded as a byte string, so we must encode it first
     bincontent = None
     if s3_vars.get("content"):
@@ -1264,7 +1349,7 @@ def s3_object_do_copy(module, connection, connection_v4, s3_vars):
         module.exit_json(changed=changed, **result)
 
 
-def populate_params(module):
+def populate_params(module: AnsibleAWSModule) -> Dict:
     # Copy the parameters dict, we shouldn't be directly modifying it.
     variable_dict = copy.deepcopy(module.params)
 
@@ -1301,7 +1386,7 @@ def populate_params(module):
     return variable_dict
 
 
-def validate_bucket(module, s3, var_dict):
+def validate_bucket(module: AnsibleAWSModule, s3: ClientType, var_dict: Dict) -> Dict:
     bucket_check(module, s3, var_dict["bucket"], validate=var_dict["validate"])
 
     try:
