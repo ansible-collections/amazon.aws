@@ -457,16 +457,24 @@ from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_message
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import AnsibleS3Error
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import AnsibleS3PermissionsError
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import AnsibleS3Sigv4RequiredError
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import AnsibleS3SupportError
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import HAS_MD5
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import IGNORE_S3_DROP_IN_EXCEPTIONS
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import calculate_etag
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import calculate_etag_content
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_object_content
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_object_tagging
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import head_s3_object
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import list_bucket_object_keys
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import s3_bucket_exists
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import s3_extra_params
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import s3_object_exists
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import validate_bucket_name
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
-
-IGNORE_S3_DROP_IN_EXCEPTIONS = ["XNotImplemented", "NotImplemented"]
 
 
 class Sigv4Required(Exception):
@@ -481,27 +489,16 @@ class S3ObjectFailure(Exception):
 
 
 def key_check(module, s3, bucket, obj, version=None, validate=True):
+    """Check if object exists with optional validation."""
     try:
-        if version:
-            s3.head_object(aws_retry=True, Bucket=bucket, Key=obj, VersionId=version)
-        else:
-            s3.head_object(aws_retry=True, Bucket=bucket, Key=obj)
-    except is_boto3_error_code("404"):
-        return False
-    except is_boto3_error_code("403") as e:  # pylint: disable=duplicate-except
-        if validate is True:
-            module.fail_json_aws(
-                e,
-                msg=f"Failed while looking up object (during key check) {obj}.",
-            )
-    except (
-        botocore.exceptions.BotoCoreError,
-        botocore.exceptions.ClientError,
-        boto3.exceptions.Boto3Error,
-    ) as e:  # pylint: disable=duplicate-except
-        raise S3ObjectFailure(f"Failed while looking up object (during key check) {obj}.", e)
-
-    return True
+        exists = s3_object_exists(s3, bucket, obj, version_id=version)
+        return exists
+    except AnsibleS3PermissionsError as e:
+        if validate:
+            module.fail_json_aws(e, msg=f"Failed while looking up object {obj} (permission denied).")
+        return False  # If not validating, treat permission errors as "doesn't exist"
+    except AnsibleS3Error as e:
+        raise S3ObjectFailure(f"Failed while looking up object {obj}.", e)
 
 
 def etag_compare(module, s3, bucket, obj, version=None, local_file=None, content=None):
@@ -514,40 +511,22 @@ def etag_compare(module, s3, bucket, obj, version=None, local_file=None, content
 
 
 def _head_object(s3, bucket, obj, version=None):
-    try:
-        if version:
-            obj_head = s3.head_object(aws_retry=True, Bucket=bucket, Key=obj, VersionId=version)
-        else:
-            obj_head = s3.head_object(aws_retry=True, Bucket=bucket, Key=obj)
-        if not obj_head:
-            return {}
-        obj_head.pop("ResponseMetadata")
-        return obj_head
-    except is_boto3_error_code("404"):
-        return {}
+    """Wrapper for head_s3_object with backward-compatible interface."""
+    return head_s3_object(s3, bucket, obj, version_id=version)
 
 
 def _get_object_content(module, s3, bucket, obj, version=None):
+    """Wrapper for get_s3_object_content with module-specific error handling."""
     try:
-        if version:
-            contents = s3.get_object(aws_retry=True, Bucket=bucket, Key=obj, VersionId=version)["Body"].read()
-        else:
-            contents = s3.get_object(aws_retry=True, Bucket=bucket, Key=obj)["Body"].read()
-        return contents
-    except is_boto3_error_code(["404", "403"]) as e:
-        # AccessDenied errors may be triggered if 1) file does not exist or 2) file exists but
-        # user does not have the s3:GetObject permission.
+        return get_s3_object_content(s3, bucket, obj, version_id=version)
+    except AnsibleS3PermissionsError as e:
+        # AccessDenied can mean file doesn't exist or no permission
         module.fail_json_aws(e, msg=f"Could not find the key {obj}.")
-    except is_boto3_error_message("require AWS Signature Version 4"):  # pylint: disable=duplicate-except
+    except AnsibleS3Sigv4RequiredError:
         raise Sigv4Required()
-    except is_boto3_error_code("InvalidArgument") as e:  # pylint: disable=duplicate-except
+    except AnsibleS3Error as e:
+        # Covers InvalidArgument and other errors
         module.fail_json_aws(e, msg=f"Could not find the key {obj}.")
-    except (
-        botocore.exceptions.BotoCoreError,
-        botocore.exceptions.ClientError,
-        boto3.exceptions.Boto3Error,
-    ) as e:  # pylint: disable=duplicate-except
-        raise S3ObjectFailure(f"Could not find the key {obj}.", e)
 
 
 def get_s3_last_modified_timestamp(s3, bucket, obj, version=None):
@@ -567,33 +546,21 @@ def is_local_object_latest(s3, bucket, obj, version=None, local_file=None):
 
 
 def bucket_check(module, s3, bucket, validate=True):
+    """Check if bucket exists and is accessible."""
     try:
-        s3.head_bucket(aws_retry=True, Bucket=bucket)
-    except is_boto3_error_code("404") as e:
-        if validate:
+        exists = s3_bucket_exists(s3, bucket)
+        if not exists and validate:
             raise S3ObjectFailure(
-                (
-                    f"Bucket '{bucket}' not found (during bucket_check).  "
-                    "Support for automatically creating buckets was removed in release 6.0.0.  "
-                    "The amazon.aws.s3_bucket module can be used to create buckets."
-                ),
-                e,
+                f"Bucket '{bucket}' not found. "
+                "Support for automatically creating buckets was removed in release 6.0.0. "
+                "The amazon.aws.s3_bucket module can be used to create buckets.",
+                None,
             )
-    except is_boto3_error_code("403") as e:  # pylint: disable=duplicate-except
+    except AnsibleS3PermissionsError as e:
         if validate:
-            raise S3ObjectFailure(
-                f"Permission denied accessing bucket '{bucket}' (during bucket_check).",
-                e,
-            )
-    except (
-        botocore.exceptions.BotoCoreError,
-        botocore.exceptions.ClientError,
-        boto3.exceptions.Boto3Error,
-    ) as e:  # pylint: disable=duplicate-except
-        raise S3ObjectFailure(
-            f"Failed while looking up bucket '{bucket}' (during bucket_check).",
-            e,
-        )
+            raise S3ObjectFailure(f"Permission denied accessing bucket '{bucket}'.", e)
+    except AnsibleS3Error as e:
+        raise S3ObjectFailure(f"Failed while looking up bucket '{bucket}'.", e)
 
 
 def list_keys(s3, bucket, prefix=None, marker=None, max_keys=None):
@@ -884,21 +851,18 @@ def put_download_url(s3, bucket, obj, expiry):
 
 
 def get_current_object_tags_dict(module, s3, bucket, obj, version=None):
-    params = {"Bucket": bucket, "Key": obj}
-
+    """Get object tags with module-specific parameter handling."""
+    kwargs = {}
     if module.params.get("expected_bucket_owner"):
-        params["ExpectedBucketOwner"] = module.params["expected_bucket_owner"]
-    if version:
-        params["VersionId"] = version
+        kwargs["ExpectedBucketOwner"] = module.params["expected_bucket_owner"]
 
     try:
-        current_tags = s3.get_object_tagging(aws_retry=True, **params).get("TagSet")
-    except is_boto3_error_code(IGNORE_S3_DROP_IN_EXCEPTIONS):
+        return get_s3_object_tagging(s3, bucket, obj, version_id=version, **kwargs)
+    except AnsibleS3SupportError:
         module.warn("GetObjectTagging is not implemented by your storage provider.")
         return {}
-    except is_boto3_error_code(["NoSuchTagSet", "NoSuchTagSetError"]):
-        return {}
-    return boto3_tag_list_to_ansible_dict(current_tags)
+    except AnsibleS3Error as e:
+        raise S3ObjectFailure("Failed to get object tags.", e)
 
 
 @AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
