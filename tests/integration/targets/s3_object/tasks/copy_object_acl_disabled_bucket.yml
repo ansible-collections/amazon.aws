@@ -124,9 +124,8 @@
         - /test_directory/
 
     - name: List keys simple
-      amazon.aws.s3_object:
-        bucket: "{{ bucket_name }}-acl-disabled"
-        mode: list
+      amazon.aws.s3_object_info:
+        bucket_name: "{{ bucket_name }}-acl-disabled"
 
     - name: Delete bucket created in this test
       amazon.aws.s3_bucket:

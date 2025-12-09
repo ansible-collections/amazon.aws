@@ -91,8 +91,8 @@
     - name: Assert that we found exactly one zone when querying by name
       ansible.builtin.assert:
         that:
-          - list_by_name_result.HostedZones | length == 1
-          - list_by_name_result.HostedZones[0].Name == zone_one
+          - list_by_name_result.hosted_zones | length == 1
+          - list_by_name_result.hosted_zones[0].Name == zone_one
 
     - name: Create A record using zone fqdn
       amazon.aws.route53:
@@ -251,10 +251,10 @@
 
     - ansible.builtin.assert:
         that:
-          - records.ResourceRecordSets|length == 1
-          - records.ResourceRecordSets[0].ResourceRecords|length == 2
-          - records.ResourceRecordSets[0].ResourceRecords[0].Value == '192.0.2.2'
-          - records.ResourceRecordSets[0].ResourceRecords[1].Value == '192.0.2.1'
+          - records.resource_record_sets|length == 1
+          - records.resource_record_sets[0].ResourceRecords|length == 2
+          - records.resource_record_sets[0].ResourceRecords[0].Value == '192.0.2.2'
+          - records.resource_record_sets[0].ResourceRecords[1].Value == '192.0.2.1'
 
     - name: Remove a member from multi-value A record with values in different order
       amazon.aws.route53:
@@ -300,9 +300,9 @@
 
     - ansible.builtin.assert:
         that:
-          - records.ResourceRecordSets|length == 3
-          - records.ResourceRecordSets[0].ResourceRecords|length == 1
-          - records.ResourceRecordSets[0].ResourceRecords[0].Value == '192.0.2.2'
+          - records.resource_record_sets|length == 3
+          - records.resource_record_sets[0].ResourceRecords|length == 1
+          - records.resource_record_sets[0].ResourceRecords[0].Value == '192.0.2.2'
 
     ## Test CNAME record creation and retrive info
     - name: Create CNAME record
@@ -330,9 +330,9 @@
 
     - ansible.builtin.assert:
         that:
-          - cname_records.ResourceRecordSets|length == 1
-          - cname_records.ResourceRecordSets[0].ResourceRecords|length == 1
-          - cname_records.ResourceRecordSets[0].ResourceRecords[0].Value == "order_test."+zone_one
+          - cname_records.resource_record_sets|length == 1
+          - cname_records.resource_record_sets[0].ResourceRecords|length == 1
+          - cname_records.resource_record_sets[0].ResourceRecords[0].Value == "order_test."+zone_one
 
     ## Test CAA record creation
     - name: Create a LetsEncrypt CAA record
@@ -739,7 +739,7 @@
           - create_geo_continent is changed
           - create_geo_continent is not failed
           - '"route53:ChangeResourceRecordSets" in create_geo_continent.resource_actions'
-          - result.ResourceRecordSets[0].GeoLocation.ContinentCode == "NA"
+          - result.resource_record_sets[0].GeoLocation.ContinentCode == "NA"
 
     - name: Create a record with geo_location - continent_code (idempotency)
       amazon.aws.route53:
@@ -825,7 +825,7 @@
           - create_geo_country is changed
           - create_geo_country is not failed
           - '"route53:ChangeResourceRecordSets" in create_geo_country.resource_actions'
-          - result.ResourceRecordSets[0].GeoLocation.CountryCode == "US"
+          - result.resource_record_sets[0].GeoLocation.CountryCode == "US"
 
     - name: Create a record with geo_location - country_code (idempotency)
       amazon.aws.route53:
@@ -913,8 +913,8 @@
           - create_geo_subdivision is changed
           - create_geo_subdivision is not failed
           - '"route53:ChangeResourceRecordSets" in create_geo_subdivision.resource_actions'
-          - result.ResourceRecordSets[0].GeoLocation.CountryCode == "US"
-          - result.ResourceRecordSets[0].GeoLocation.SubdivisionCode == "TX"
+          - result.resource_record_sets[0].GeoLocation.CountryCode == "US"
+          - result.resource_record_sets[0].GeoLocation.SubdivisionCode == "TX"
 
     - name: Create a record with geo_location - subdivision_code (idempotency)
       amazon.aws.route53:
@@ -1015,7 +1015,7 @@
         type: "{{ item.Type }}"
         value: "{{ item.AliasTarget.DNSName }}"
       ignore_errors: true
-      loop: '{{ z1_records.ResourceRecordSets | selectattr("Type", "in", ["A", "AAAA", "CNAME", "CAA"]) | list }}'
+      loop: '{{ z1_records.resource_record_sets | selectattr("Type", "in", ["A", "AAAA", "CNAME", "CAA"]) | list }}'
       when:
         - '"AliasTarget" in item'
 
@@ -1030,7 +1030,7 @@
         identifier: "{{ item.SetIdentifier }}"
         region: "{{ omit }}"
       ignore_errors: true
-      loop: '{{ z1_records.ResourceRecordSets | selectattr("Type", "in", ["A", "AAAA", "CNAME", "CAA"]) | list }}'
+      loop: '{{ z1_records.resource_record_sets | selectattr("Type", "in", ["A", "AAAA", "CNAME", "CAA"]) | list }}'
       when:
         - '"ResourceRecords" in item'
         - '"SetIdentifier" in item'
@@ -1043,7 +1043,7 @@
         type: "{{ item.Type }}"
         value: '{{ item.ResourceRecords | map(attribute="Value") | join(",") }}'
       ignore_errors: true
-      loop: '{{ z1_records.ResourceRecordSets | selectattr("Type", "in", ["A", "AAAA", "CNAME", "CAA"]) | list }}'
+      loop: '{{ z1_records.resource_record_sets | selectattr("Type", "in", ["A", "AAAA", "CNAME", "CAA"]) | list }}'
       when:
         - '"ResourceRecords" in item'
 
@@ -1063,7 +1063,7 @@
         value: "{{ item.AliasTarget.DNSName }}"
         private_zone: true
       ignore_errors: true
-      loop: '{{ z2_records.ResourceRecordSets | selectattr("Type", "in", ["A", "AAAA", "CNAME", "CAA"]) | list }}'
+      loop: '{{ z2_records.resource_record_sets | selectattr("Type", "in", ["A", "AAAA", "CNAME", "CAA"]) | list }}'
       when:
         - '"AliasTarget" in item'
 
@@ -1078,7 +1078,7 @@
         region: "{{ omit }}"
         private_zone: true
       ignore_errors: true
-      loop: '{{ z2_records.ResourceRecordSets | selectattr("Type", "in", ["A", "AAAA", "CNAME", "CAA"]) | list }}'
+      loop: '{{ z2_records.resource_record_sets | selectattr("Type", "in", ["A", "AAAA", "CNAME", "CAA"]) | list }}'
       when:
         - '"ResourceRecords" in item'
         - '"SetIdentifier" in item'
@@ -1092,7 +1092,7 @@
         value: '{{ item.ResourceRecords | map(attribute="Value") | join(",") }}'
         private_zone: true
       ignore_errors: true
-      loop: '{{ z2_records.ResourceRecordSets | selectattr("Type", "in", ["A", "AAAA", "CNAME", "CAA"]) | list }}'
+      loop: '{{ z2_records.resource_record_sets | selectattr("Type", "in", ["A", "AAAA", "CNAME", "CAA"]) | list }}'
       when:
         - '"ResourceRecords" in item'
 

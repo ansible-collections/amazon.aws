@@ -44,9 +44,8 @@
       check_mode: true
 
     - name: List objects from bucket
-      amazon.aws.s3_object:
-        bucket: "{{ bucket_dst }}"
-        mode: list
+      amazon.aws.s3_object_info:
+        bucket_name: "{{ bucket_dst }}"
       register: _objects
 
     - name: Ensure no object were found into bucket
@@ -65,19 +64,20 @@
       register: _copy_with_prefix
 
     - name: List objects from bucket
-      amazon.aws.s3_object:
-        bucket: "{{ bucket_dst }}"
-        mode: list
+      amazon.aws.s3_object_info:
+        bucket_name: "{{ bucket_dst }}"
       register: _objects
 
     - name: Ensure objects with prefix 'file' were copied into bucket
+      vars:
+        _object_keys: "{{ _objects.s3_keys | map(attribute='key') | list }}"
       ansible.builtin.assert:
         that:
           - _copy_with_prefix is changed
           - _objects.s3_keys | length == 3
-          - '"file1.txt" in _objects.s3_keys'
-          - '"file2.txt" in _objects.s3_keys'
-          - '"file3.txt" in _objects.s3_keys'
+          - '"file1.txt" in _object_keys'
+          - '"file2.txt" in _object_keys'
+          - '"file3.txt" in _object_keys'
 
     # Test: Copy all objects using prefix (idempotency)
     - name: Copy object using prefix (idempotency)
@@ -90,24 +90,24 @@
       register: _copy_with_prefix_idempotency
 
     - name: List objects from bucket
-      amazon.aws.s3_object:
-        bucket: "{{ bucket_dst }}"
-        mode: list
+      amazon.aws.s3_object_info:
+        bucket_name: "{{ bucket_dst }}"
       register: _objects
 
     - name: Ensure objects with prefix 'file' were copied into bucket
+      vars:
+        _object_keys: "{{ _objects.s3_keys | map(attribute='key') | list }}"
       ansible.builtin.assert:
         that:
           - _copy_with_prefix_idempotency is not changed
           - _objects.s3_keys | length == 3
-          - '"file1.txt" in _objects.s3_keys'
-          - '"file2.txt" in _objects.s3_keys'
-          - '"file3.txt" in _objects.s3_keys'
+          - '"file1.txt" in _object_keys'
+          - '"file2.txt" in _object_keys'
+          - '"file3.txt" in _object_keys'
 
     - name: Test list to get just 1 object from the bucket
-      amazon.aws.s3_object:
-        bucket: "{{ bucket_dst }}"
-        mode: list
+      amazon.aws.s3_object_info:
+        bucket_name: "{{ bucket_dst }}"
         max_keys: 1
       retries: 3
       delay: 3
@@ -116,7 +116,6 @@
     - ansible.builtin.assert:
         that:
           - "(result.s3_keys | length) == 1"
-          - result.msg == "LIST operation complete"
 
     # Test: Copy all objects from source bucket
     - name: Copy all objects from source bucket
@@ -128,9 +127,8 @@
       register: _copy_all
 
     - name: List objects from bucket
-      amazon.aws.s3_object:
-        bucket: "{{ bucket_dst }}"
-        mode: list
+      amazon.aws.s3_object_info:
+        bucket_name: "{{ bucket_dst }}"
       register: _objects
 
     - name: Ensure all objects were copied into bucket
@@ -149,9 +147,8 @@
       register: _copy_all_idempotency
 
     - name: List objects from bucket
-      amazon.aws.s3_object:
-        bucket: "{{ bucket_dst }}"
-        mode: list
+      amazon.aws.s3_object_info:
+        bucket_name: "{{ bucket_dst }}"
       register: _objects
 
     - name: Ensure number of copied objects remains the same.
