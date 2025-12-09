@@ -583,6 +583,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.s3 import normalize_s3_
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import normalize_s3_bucket_public_access
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import normalize_s3_bucket_versioning
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import s3_acl_to_name
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import s3_bucket_exists
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import s3_extra_params
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import validate_bucket_name
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
@@ -1170,7 +1171,7 @@ def create_or_update_bucket(s3_client: ClientType, module: AnsibleAWSModule) -> 
     changed = False
     result: dict = {}
 
-    bucket_is_present = bucket_exists(s3_client, name)
+    bucket_is_present = s3_bucket_exists(s3_client, name)
 
     if not bucket_is_present:
         changed = create_bucket(s3_client, name, location, object_lock_enabled)
@@ -1246,18 +1247,6 @@ def create_or_update_bucket(s3_client: ClientType, module: AnsibleAWSModule) -> 
         or bucket_inventory_changed
     )
     module.exit_json(changed=changed, name=name, **result)
-
-
-def bucket_exists(s3_client: ClientType, bucket_name: str) -> bool:
-    """
-    Checks if a given bucket exists in an AWS S3 account.
-    Parameters:
-        s3_client (boto3.client): The Boto3 S3 client object.
-        bucket_name (str): The name of the bucket to check for existence.
-    Returns:
-        True if the bucket exists, False otherwise.
-    """
-    return bool(head_s3_bucket(s3_client, bucket_name))
 
 
 @S3ErrorHandler.common_error_handler("create S3 bucket")
@@ -1962,7 +1951,7 @@ def destroy_bucket(s3_client: ClientType, module: AnsibleAWSModule) -> None:
     """
     force = module.params.get("force")
     name = cast(str, module.params.get("name"))
-    bucket_is_present = bucket_exists(s3_client, name)
+    bucket_is_present = s3_bucket_exists(s3_client, name)
 
     if not bucket_is_present:
         module.exit_json(changed=False)
