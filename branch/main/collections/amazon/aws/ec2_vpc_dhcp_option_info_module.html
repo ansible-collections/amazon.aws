@@ -388,7 +388,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <div class="ansibleOptionAnchor" id="return-dhcp_config"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-return-dhcp-config"><strong>dhcp_config</strong></p>
 <a class="ansibleOptionLink" href="#return-dhcp_config" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>The boto2-style DHCP options created, associated or found. Provided for consistency with ec2_vpc_dhcp_option’s <code class="docutils literal notranslate"><span class="pre">dhcp_config</span></code>.</p>
+<td><div class="ansible-option-cell"><p>The boto2-style DHCP options created, associated or found.</p>
+<p>This return value has been deprecated and will be removed in a release after 2026-12-01. Use <code class="ansible-return-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-return-dhcp-options"><span class="std std-ref"><span class="pre">dhcp_options</span></span></a></code> instead.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 </div></td>
 </tr>
@@ -454,31 +455,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[{&quot;key&quot;:</span> <span class="pre">&quot;ntp-servers&quot;,</span> <span class="pre">&quot;values&quot;:</span> <span class="pre">[{&quot;value&quot;:</span> <span class="pre">&quot;10.0.1.2&quot;}]},</span> <span class="pre">&quot;{\&quot;key\&quot;:</span> <span class="pre">\&quot;netbios-name-servers\&quot;,</span> <span class="pre">\&quot;values\&quot;:</span> <span class="pre">[{value\&quot;:</span> <span class="pre">\&quot;10.0.0.1\&quot;},</span> <span class="pre">{\&quot;value\&quot;:</span> <span class="pre">\&quot;10.0.1.1\&quot;</span> <span class="pre">}]}&quot;]</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-dhcp_options/dhcp_configurations/key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-return-dhcp-options-dhcp-configurations-key"><strong>key</strong></p>
-<a class="ansibleOptionLink" href="#return-dhcp_options/dhcp_configurations/key" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-</div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The name of a DHCP option.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
-</div></td>
-</tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-dhcp_options/dhcp_configurations/values"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-return-dhcp-options-dhcp-configurations-values"><strong>values</strong></p>
-<a class="ansibleOptionLink" href="#return-dhcp_options/dhcp_configurations/values" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
-</div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>List of values for the DHCP option.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
-</div></td>
-</tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-dhcp_options/dhcp_configurations/values/value"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-return-dhcp-options-dhcp-configurations-values-value"><strong>value</strong></p>
-<a class="ansibleOptionLink" href="#return-dhcp_options/dhcp_configurations/values/value" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-</div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The attribute value. This value is case-sensitive.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
-</div></td>
-</tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-dhcp_options/dhcp_options_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-return-dhcp-options-dhcp-options-id"><strong>dhcp_options_id</strong></p>
 <a class="ansibleOptionLink" href="#return-dhcp_options/dhcp_options_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -487,7 +464,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;dopt-0955331de6a20dd07&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-dhcp_options/owner_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-return-dhcp-options-owner-id"><strong>owner_id</strong></p>
 <a class="ansibleOptionLink" href="#return-dhcp_options/owner_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -496,7 +473,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;012345678912&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-dhcp_options/tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-dhcp-option-info-module-return-dhcp-options-tags"><strong>tags</strong></p>
 <a class="ansibleOptionLink" href="#return-dhcp_options/tags" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
 </div></td>
