@@ -72,21 +72,6 @@ dhcp_options:
             description: The DHCP configuration for the option set.
             type: list
             elements: dict
-            contains:
-                key:
-                    description: The name of a DHCP option.
-                    returned: always
-                    type: str
-                values:
-                    description: List of values for the DHCP option.
-                    returned: always
-                    type: list
-                    elements: dict
-                    contains:
-                        value:
-                            description: The attribute value. This value is case-sensitive.
-                            returned: always
-                            type: str
             sample:
               - '{"key": "ntp-servers", "values": [{"value": "10.0.0.2" , "value": "10.0.1.2"}]}'
               - '{"key": "netbios-name-servers", "values": [{value": "10.0.0.1"}, {"value": "10.0.1.1" }]}'
@@ -106,7 +91,10 @@ dhcp_options:
               - '{"Key": "CreatedBy", "Value": "ansible-test"}'
               - '{"Key": "Collection", "Value": "amazon.aws"}'
 dhcp_config:
-    description: The boto2-style DHCP options created, associated or found. Provided for consistency with ec2_vpc_dhcp_option's C(dhcp_config).
+    description:
+      - The boto2-style DHCP options created, associated or found.
+      - This return value has been deprecated and will be removed in a release after
+        2026-12-01. Use RV(dhcp_options) instead.
     returned: always
     type: list
     elements: dict
@@ -200,6 +188,12 @@ def main() -> None:
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
+
+    module.deprecate(
+        "The 'dhcp_config' return value is deprecated. Use 'dhcp_options' instead.",
+        date="2026-12-01",
+        collection_name="amazon.aws",
+    )
 
     client = module.client("ec2")
 
