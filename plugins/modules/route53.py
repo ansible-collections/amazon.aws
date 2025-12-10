@@ -245,6 +245,7 @@ resource_record_sets:
       description: Record values as a list.
       returned: always
       type: list
+      version_added: 11.0.0
       sample:
       - 52.43.18.27
     values:
