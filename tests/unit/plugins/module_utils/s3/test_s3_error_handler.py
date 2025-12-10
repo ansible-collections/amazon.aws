@@ -180,6 +180,31 @@ class TestS3CommonHandler:
         assert "do something" in raised.message
         assert "Something bad" in str(raised.exception)
 
+    def test_permissions_error_http_403(self):
+        """Test that HTTP 403 status code raises AnsibleS3PermissionsError"""
+        self.counter = 0
+        err_response = {
+            "Error": {
+                "Code": "SomeOtherError",
+                "Message": "Forbidden",
+            },
+            "ResponseMetadata": {"HTTPStatusCode": 403},
+        }
+
+        @S3ErrorHandler.common_error_handler("do something")
+        def raise_client_error():
+            self.counter += 1
+            raise botocore.exceptions.ClientError(err_response, "Something bad")
+
+        with pytest.raises(AnsibleS3PermissionsError) as e_info:
+            raise_client_error()
+        assert self.counter == 1
+        raised = e_info.value
+        assert isinstance(raised.exception, botocore.exceptions.ClientError)
+        assert "do something" in raised.message
+        assert "permission denied" in raised.message
+        assert "Something bad" in str(raised.exception)
+
     def test_not_implemented_error(self):
         self.counter = 0
         err_response = {
@@ -200,6 +225,31 @@ class TestS3CommonHandler:
         raised = e_info.value
         assert isinstance(raised.exception, botocore.exceptions.ClientError)
         assert "do something" in raised.message
+        assert "Something bad" in str(raised.exception)
+
+    def test_not_implemented_http_501(self):
+        """Test that HTTP 501 status code raises AnsibleS3SupportError"""
+        self.counter = 0
+        err_response = {
+            "Error": {
+                "Code": "SomeOtherError",
+                "Message": "Not Implemented",
+            },
+            "ResponseMetadata": {"HTTPStatusCode": 501},
+        }
+
+        @S3ErrorHandler.common_error_handler("do something")
+        def raise_client_error():
+            self.counter += 1
+            raise botocore.exceptions.ClientError(err_response, "Something bad")
+
+        with pytest.raises(AnsibleS3SupportError) as e_info:
+            raise_client_error()
+        assert self.counter == 1
+        raised = e_info.value
+        assert isinstance(raised.exception, botocore.exceptions.ClientError)
+        assert "do something" in raised.message
+        assert "not supported by cloud" in raised.message
         assert "Something bad" in str(raised.exception)
 
     def test_endpoint_error(self):
