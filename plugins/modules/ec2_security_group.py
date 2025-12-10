@@ -1301,7 +1301,7 @@ def get_diff_final_resource(client, module, security_group):
             final_rules = []
         else:
             final_rules = list(security_group_rules)
-        specified_rules = validate_cidr_targets(module, deepcopy(specified_rules))
+        specified_rules = deepcopy(specified_rules)
         for rule in specified_rules:
             format_rule = {
                 "from_port": None,
@@ -1406,22 +1406,6 @@ def get_diff_final_resource(client, module, security_group):
     }
 
 
-def validate_cidr_targets(module, rules):
-    """Validate that cidr_ip and cidr_ipv6 do not contain nested lists."""
-    if rules is None:
-        return rules
-    for rule in rules:
-        for target_type in ("cidr_ip", "cidr_ipv6"):
-            targets = rule.get(target_type)
-            if isinstance(targets, list):
-                for target in targets:
-                    if isinstance(target, list):
-                        module.fail_json(
-                            msg=f"Nested lists are not supported for '{target_type}'. Use the 'flatten' filter instead."
-                        )
-    return rules
-
-
 def get_rule_sort_key(dicts):
     if dicts.get("cidr_ip"):
         return str(dicts.get("cidr_ip"))
@@ -1497,8 +1481,8 @@ def ensure_present(
     name = module.params["name"]
     description = module.params["description"]
     vpc_id = module.params["vpc_id"]
-    rules = validate_cidr_targets(module, deepcopy(module.params["rules"]))
-    rules_egress = validate_cidr_targets(module, deepcopy(module.params["rules_egress"]))
+    rules = deepcopy(module.params["rules"])
+    rules_egress = deepcopy(module.params["rules_egress"])
     validate_rules(module, rules)
     validate_rules(module, rules_egress)
     rules = deduplicate_rules_args(expand_rules(rules))

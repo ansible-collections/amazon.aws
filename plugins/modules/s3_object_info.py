@@ -706,21 +706,18 @@ def main():
         ["ceph", True, ["endpoint_url"]],
     ]
 
+    mutually_exclusive = [["object_name", "prefix"], ["dualstack", "endpoint_url"]]
+
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
         supports_check_mode=True,
         required_if=required_if,
-        mutually_exclusive=[["object_name", "prefix"]],
+        mutually_exclusive=mutually_exclusive,
     )
 
     bucket_name = module.params.get("bucket_name")
     object_name = module.params.get("object_name")
     requested_object_details = module.params.get("object_details")
-    endpoint_url = module.params.get("endpoint_url")
-    dualstack = module.params.get("dualstack")
-
-    if dualstack and endpoint_url:
-        module.fail_json(msg="Parameters 'dualstack' and 'endpoint_url' are mutually exclusive.")
 
     result = []
     extra_params = s3_extra_params(module.params)
