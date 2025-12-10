@@ -89,15 +89,8 @@
       ansible.builtin.assert:
         that:
           - result.failed
-          - "'The policy is not in the valid JSON format.' in result.msg"
+          - "'Invalid policy document provided' in result.msg"
       when: result.module_stderr is not defined
-
-    - name: Assert assume role with invalid policy
-      ansible.builtin.assert:
-        that:
-          - result.failed
-          - "'The policy is not in the valid JSON format.' in result.module_stderr"
-      when: result.module_stderr is defined
 
     # ============================================================
     - name: Test assume role with invalid duration seconds

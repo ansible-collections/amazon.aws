@@ -109,6 +109,7 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 
 
@@ -143,6 +144,8 @@ def assume_role_policy(connection, module):
     try:
         response = connection.assume_role(**kwargs)
         changed = True
+    except is_boto3_error_code("MalformedPolicyDocument") as e:
+        module.fail_json_aws(e, msg="Invalid policy document provided")
     except (ClientError, ParamValidationError) as e:
         module.fail_json_aws(e)
 
