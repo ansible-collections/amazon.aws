@@ -18,6 +18,7 @@ except ImportError:
 
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_httpstatus
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_message
 from ansible_collections.amazon.aws.plugins.module_utils.errors import AWSErrorHandler
 from ansible_collections.amazon.aws.plugins.module_utils.exceptions import AnsibleAWSError
@@ -88,6 +89,13 @@ class S3ErrorHandler(AWSErrorHandler):
                     raise AnsibleS3PermissionsError(
                         message=f"Failed to {description} (permission denied)", exception=e
                     ) from e
+                except is_boto3_error_httpstatus(403) as e:  # pylint: disable=duplicate-except
+                    # FUTURE: there's a case to be made that this moves up into AWSErrorHandler
+                    # for now, we'll handle this just for S3, but wait and see if it pops up in too
+                    # many other places
+                    raise AnsibleS3PermissionsError(
+                        message=f"Failed to {description} (permission denied)", exception=e
+                    ) from e
                 except is_boto3_error_message(  # pylint: disable=duplicate-except
                     "require AWS Signature Version 4"
                 ) as e:
@@ -95,6 +103,12 @@ class S3ErrorHandler(AWSErrorHandler):
                         message=f"Failed to {description} (not supported by cloud)", exception=e
                     ) from e
                 except is_boto3_error_code(IGNORE_S3_DROP_IN_EXCEPTIONS) as e:  # pylint: disable=duplicate-except
+                    # Unlike most of our modules, we attempt to handle non-AWS clouds.  For read-only
+                    # actions we sometimes need the ability to ignore unsupported features.
+                    raise AnsibleS3SupportError(
+                        message=f"Failed to {description} (not supported by cloud)", exception=e
+                    ) from e
+                except is_boto3_error_httpstatus(501) as e:  # pylint: disable=duplicate-except
                     # Unlike most of our modules, we attempt to handle non-AWS clouds.  For read-only
                     # actions we sometimes need the ability to ignore unsupported features.
                     raise AnsibleS3SupportError(
