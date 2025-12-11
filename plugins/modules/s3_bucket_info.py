@@ -566,12 +566,9 @@ def get_bucket_list(
     final_buckets = []
 
     # Get all buckets
-    try:
-        # camel_dict_to_snake_dict doesn't support being passed a list,
-        # so we wrap the bucket list in a dictionary temporarily
-        buckets = camel_dict_to_snake_dict({"Buckets": list_s3_buckets(connection)})["buckets"]
-    except AnsibleS3Error as e:
-        module.fail_json_aws(e, msg="Failed to list buckets")
+    # camel_dict_to_snake_dict doesn't support being passed a list,
+    # so we wrap the bucket list in a dictionary temporarily
+    buckets = camel_dict_to_snake_dict({"Buckets": list_s3_buckets(connection)})["buckets"]
 
     # Filter buckets if requested
     if name_filter:
@@ -721,11 +718,7 @@ def main() -> None:
     transform_location = module.params.get("transform_location")
 
     # Set up connection
-    connection = {}
-    try:
-        connection = module.client("s3")
-    except (connection.exceptions.ClientError, botocore.exceptions.BotoCoreError) as err_code:
-        module.fail_json_aws(err_code, msg="Failed to connect to AWS")
+    connection = module.client("s3")
 
     # Get basic bucket list (name + creation date)
     bucket_list = get_bucket_list(module, connection, name, name_filter)
