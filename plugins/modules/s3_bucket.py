@@ -604,7 +604,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.s3 import s3_acl_to_nam
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import s3_bucket_exists
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import s3_extra_params
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import validate_bucket_name
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
 
 
