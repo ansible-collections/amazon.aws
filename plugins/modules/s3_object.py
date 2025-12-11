@@ -641,10 +641,6 @@ def create_dirkey(
     )
 
 
-def path_check(path: str) -> bool:
-    return bool(os.path.exists(path))
-
-
 def guess_content_type(src: Optional[str]) -> str:
     if src:
         content_type = mimetypes.guess_type(src)[0]
@@ -880,7 +876,7 @@ def s3_object_do_get(module, connection, connection_v4, s3_vars):
         if s3_vars["version"]:
             module.fail_json(msg=f"Key {s3_vars['object']} with version id {s3_vars['version']} does not exist.")
         module.fail_json(msg=f"Key {s3_vars['object']} does not exist.")
-    if s3_vars["dest"] and path_check(s3_vars["dest"]) and s3_vars["overwrite"] != "always":
+    if s3_vars["dest"] and os.path.exists(s3_vars["dest"]) and s3_vars["overwrite"] != "always":
         if s3_vars["overwrite"] == "never":
             module.exit_json(
                 msg="Local object already exists and overwrite is disabled.",
@@ -943,7 +939,7 @@ def s3_object_do_put(module, connection, connection_v4, s3_vars):
     if module.params.get("encryption_mode") == "aws:kms":
         connection = connection_v4
 
-    if s3_vars["src"] is not None and not path_check(s3_vars["src"]):
+    if s3_vars["src"] is not None and not os.path.exists(s3_vars["src"]):
         module.fail_json(msg=f'Local object "{s3_vars["src"]}" does not exist for PUT operation')
 
     keyrtn = key_check(
