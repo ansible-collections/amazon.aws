@@ -597,16 +597,6 @@ def bucket_check(module: AnsibleAWSModule, s3: ClientType, bucket: str, validate
     # Let other AnsibleS3Error exceptions propagate naturally
 
 
-def delete_key(module: AnsibleAWSModule, s3: ClientType, bucket: str, obj: str) -> None:
-    if module.check_mode:
-        module.exit_json(
-            msg="DELETE operation skipped - running in check mode",
-            changed=True,
-        )
-    delete_s3_object(s3, bucket, obj)
-    module.exit_json(msg=f"Object deleted from bucket {bucket}.", changed=True)
-
-
 def put_object_acl(
     module: AnsibleAWSModule,
     s3: ClientType,
@@ -1023,12 +1013,13 @@ def s3_object_do_put(module, connection, connection_v4, s3_vars):
 
 
 def s3_object_do_delobj(module, connection, connection_v4, s3_vars):
-    # Delete an object from a bucket, not the entire bucket
-    if not s3_vars.get("object", None):
-        module.fail_json(msg="object parameter is required")
-    if not s3_vars["bucket"]:
-        module.fail_json(msg="Bucket parameter is required.")
-    delete_key(module, connection, s3_vars["bucket"], s3_vars["object"])
+    if module.check_mode:
+        module.exit_json(
+            msg="DELETE operation skipped - running in check mode",
+            changed=True,
+        )
+    delete_s3_object(s3, bucket, obj)
+    module.exit_json(msg=f"Object deleted from bucket {bucket}.", changed=True)
 
 
 def s3_object_do_list(module, connection, connection_v4, s3_vars):
@@ -1419,6 +1410,7 @@ def main():
         ["mode", "getstr", ["object"]],
         ["mode", "geturl", ["object"]],
         ["mode", "copy", ["copy_src"]],
+        ["mode", "delobj", ["object"]],
     ]
 
     module = AnsibleAWSModule(
