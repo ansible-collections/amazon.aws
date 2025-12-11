@@ -545,6 +545,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_bucket
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_bucket_request_payment
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_bucket_tagging
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_bucket_versioning
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import list_s3_buckets
 
 
 def get_bucket_list(
@@ -566,9 +567,11 @@ def get_bucket_list(
 
     # Get all buckets
     try:
-        buckets = camel_dict_to_snake_dict(connection.list_buckets())["buckets"]
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as err_code:
-        module.fail_json_aws(err_code, msg="Failed to list buckets")
+        # camel_dict_to_snake_dict doesn't support being passed a list,
+        # so we wrap the bucket list in a dictionary temporarily
+        buckets = camel_dict_to_snake_dict({"Buckets": list_s3_buckets(connection)})["buckets"]
+    except AnsibleS3Error as e:
+        module.fail_json_aws(e, msg="Failed to list buckets")
 
     # Filter buckets if requested
     if name_filter:

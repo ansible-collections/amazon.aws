@@ -981,6 +981,26 @@ def list_bucket_object_keys(
     return [c["Key"] for c in response.get("Contents", [])]
 
 
+@S3ErrorHandler.list_error_handler("list buckets", [])
+@AWSRetry.jittered_backoff()
+def list_s3_buckets(client: ClientType) -> List[Dict]:
+    """
+    List all S3 buckets in the account.
+
+    Parameters:
+        client (boto3.client): The Boto3 S3 client object.
+
+    Returns:
+        List[Dict]: List of bucket information dictionaries containing 'Name' and 'CreationDate'.
+                    Returns [] on error.
+
+    Raises:
+        AnsibleS3PermissionsError: If access is denied (403).
+        AnsibleS3Error: For other S3 errors.
+    """
+    return client.list_buckets().get("Buckets", [])
+
+
 def get_s3_bucket_location(module):
     if module.params.get("ceph") is True:
         return module.params.get("region")
