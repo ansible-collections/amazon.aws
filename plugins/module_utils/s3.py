@@ -95,7 +95,7 @@ def get_s3_bucket_acl(s3_client: ClientType, bucket_name: str) -> List:
         s3_client (boto3.client): The Boto3 S3 client object.
         bucket_name (str): The name of the S3 bucket.
     Returns:
-        Transfer accelerate status of the S3 bucket.
+        ACL configuration of the S3 bucket.
     """
     return s3_client.get_bucket_acl(Bucket=bucket_name)
 
