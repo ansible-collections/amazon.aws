@@ -65,7 +65,7 @@ def get_s3_waiter(client: ClientType, waiter_name: str) -> Any:
     return _waiters.waiter_factory.get_waiter(client, waiter_name)
 
 
-@S3ErrorHandler.list_error_handler("get bucket encryption settings", {})
+@S3ErrorHandler.list_error_handler("get bucket accelerate configuration", {})
 @AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
 def get_s3_bucket_accelerate_configuration(s3_client: ClientType, bucket_name: str) -> Dict:
     """
