@@ -564,11 +564,11 @@ from ansible_collections.amazon.aws.plugins.module_utils.s3 import AnsibleS3Erro
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import AnsibleS3PermissionsError
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import AnsibleS3SupportError
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import S3ErrorHandler
-from ansible_collections.amazon.aws.plugins.module_utils.s3 import delete_bucket
-from ansible_collections.amazon.aws.plugins.module_utils.s3 import delete_bucket_accelerate_configuration
-from ansible_collections.amazon.aws.plugins.module_utils.s3 import delete_bucket_inventory
-from ansible_collections.amazon.aws.plugins.module_utils.s3 import delete_bucket_ownership
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import delete_s3_bucket
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import delete_s3_bucket_accelerate_configuration
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import delete_s3_bucket_encryption
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import delete_s3_bucket_inventory
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import delete_s3_bucket_ownership
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import delete_s3_bucket_policy
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import delete_s3_bucket_public_access
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import delete_s3_bucket_tagging
@@ -589,17 +589,17 @@ from ansible_collections.amazon.aws.plugins.module_utils.s3 import merge_tags
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import normalize_s3_bucket_acls
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import normalize_s3_bucket_public_access
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import normalize_s3_bucket_versioning
-from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_bucket_accelerate_configuration
-from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_bucket_encryption
-from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_bucket_inventory
-from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_bucket_ownership
-from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_bucket_request_payment
-from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_bucket_versioning
-from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_object_lock_configuration
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_s3_bucket_accelerate_configuration
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_s3_bucket_acl
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_s3_bucket_encryption
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_s3_bucket_inventory
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_s3_bucket_ownership
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_s3_bucket_policy
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_s3_bucket_public_access
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_s3_bucket_request_payment
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_s3_bucket_tagging
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_s3_bucket_versioning
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_s3_object_lock_configuration
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import s3_acl_to_name
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import s3_bucket_exists
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import s3_extra_params
@@ -642,7 +642,7 @@ def handle_bucket_versioning(s3_client: ClientType, module: AnsibleAWSModule, na
     if not required_versioning:
         return False, normalize_s3_bucket_versioning(versioning_status)
 
-    put_bucket_versioning(s3_client, name, required_versioning)
+    put_s3_bucket_versioning(s3_client, name, required_versioning)
 
     wait_versioning_is_applied(s3_client, name, required_versioning)
     versioning_status = get_s3_bucket_versioning(s3_client, name)
@@ -681,10 +681,10 @@ def handle_bucket_requester_pays(
         return False, requester_pays_status
 
     payer = "Requester" if requester_pays else "BucketOwner"
-    put_bucket_request_payment(s3_client, name, payer)
+    put_s3_bucket_request_payment(s3_client, name, payer)
     requester_pays_status = wait_payer_is_applied(s3_client, name, payer, should_fail=False)
     if requester_pays_status is None:
-        put_bucket_request_payment(s3_client, name, payer)
+        put_s3_bucket_request_payment(s3_client, name, payer)
         requester_pays_status = wait_payer_is_applied(s3_client, name, payer, should_fail=True)
 
     return True, requester_pays
@@ -956,7 +956,7 @@ def handle_bucket_ownership(s3_client: ClientType, module: AnsibleAWSModule, nam
     if delete_object_ownership:
         if bucket_ownership is None:
             return False, None
-        delete_bucket_ownership(s3_client, name)
+        delete_s3_bucket_ownership(s3_client, name)
         return True, None
 
     if object_ownership is None:
@@ -964,7 +964,7 @@ def handle_bucket_ownership(s3_client: ClientType, module: AnsibleAWSModule, nam
     if bucket_ownership == object_ownership:
         return False, bucket_ownership
 
-    put_bucket_ownership(s3_client, name, object_ownership)
+    put_s3_bucket_ownership(s3_client, name, object_ownership)
     return True, object_ownership
 
 
@@ -1061,10 +1061,10 @@ def handle_bucket_accelerate(s3_client: ClientType, module: AnsibleAWSModule, na
         return False, accelerate_status
 
     if not accelerate_enabled:
-        delete_bucket_accelerate_configuration(s3_client, name)
+        delete_s3_bucket_accelerate_configuration(s3_client, name)
         return True, False
 
-    put_bucket_accelerate_configuration(s3_client, name)
+    put_s3_bucket_accelerate_configuration(s3_client, name)
 
     return True, True
 
@@ -1107,7 +1107,7 @@ def handle_bucket_object_lock_retention(
     if object_lock_configuration_status == conf:
         return False, object_lock_configuration_status
 
-    put_object_lock_configuration(s3_client, name, conf)
+    put_s3_object_lock_configuration(s3_client, name, conf)
     return True, object_lock_default_retention
 
 
@@ -1158,13 +1158,13 @@ def handle_bucket_inventory(s3_client: ClientType, module: AnsibleAWSModule, nam
         present_inventory = present_inventories.pop(declared_inventory_api["Id"], None)
 
         if declared_inventory_api != present_inventory:
-            put_bucket_inventory(s3_client, name, declared_inventory_api)
+            put_s3_bucket_inventory(s3_client, name, declared_inventory_api)
             bucket_changed = True
 
         results.append(declared_inventory_api)
 
     for inventory_id in present_inventories.keys():
-        delete_bucket_inventory(s3_client, name, inventory_id)
+        delete_s3_bucket_inventory(s3_client, name, inventory_id)
         bucket_changed = True
 
     return bucket_changed, results
@@ -1390,7 +1390,7 @@ def put_bucket_encryption_with_retry(s3_client: ClientType, name: str, expected_
     """
     max_retries = 3
     for retries in range(1, max_retries + 1):
-        put_bucket_encryption(s3_client, name, expected_encryption)
+        put_s3_bucket_encryption(s3_client, name, expected_encryption)
         current_encryption = wait_encryption_is_applied(
             s3_client, name, expected_encryption, should_fail=(retries == max_retries), retries=5
         )
@@ -1692,7 +1692,7 @@ def destroy_bucket(s3_client: ClientType, module: AnsibleAWSModule) -> None:
         # if there are contents then we need to delete them (including versions) before we can delete the bucket
         delete_objects(s3_client, module, name)
 
-    delete_bucket(s3_client, name)
+    delete_s3_bucket(s3_client, name)
     waiter = get_s3_waiter(s3_client, "bucket_not_exists")
     S3ErrorHandler.deletion_error_handler(f"wait for bucket f{name} to be deleted")(waiter.wait)(Bucket=name)
 
