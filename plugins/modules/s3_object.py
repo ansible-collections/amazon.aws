@@ -516,17 +516,12 @@ def etag_compare(
     local_file: Optional[str] = None,
     content: Optional[bytes] = None,
 ) -> bool:
-    s3_etag = _head_object(s3, bucket, obj, version=version).get("ETag")
+    s3_etag = head_s3_object(s3, bucket, obj, version_id=version).get("ETag")
     if local_file is not None:
         local_etag = calculate_etag(module, local_file, s3_etag, s3, bucket, obj, version)
     else:
         local_etag = calculate_etag_content(module, content, s3_etag, s3, bucket, obj, version)
     return s3_etag == local_etag
-
-
-def _head_object(s3: ClientType, bucket: str, obj: str, version: Optional[str] = None) -> Dict:
-    """Wrapper for head_s3_object with backward-compatible interface."""
-    return head_s3_object(s3, bucket, obj, version_id=version)
 
 
 def _get_object_content(
@@ -547,7 +542,7 @@ def get_s3_last_modified_timestamp(
     version: Optional[str] = None,
 ) -> Optional[float]:
     last_modified = None
-    obj_info = _head_object(s3, bucket, obj, version)
+    obj_info = head_s3_object(s3, bucket, obj, version_id=version)
     if obj_info:
         last_modified = obj_info["LastModified"].timestamp()
     return last_modified
@@ -1136,8 +1131,8 @@ def copy_object_to_bucket(module, s3, bucket, obj, encrypt, metadata, validate, 
             changed=False,
         )
 
-    s_obj_info = _head_object(s3, src_bucket, src_obj, version=versionId)
-    d_obj_info = _head_object(s3, bucket, obj)
+    s_obj_info = head_s3_object(s3, src_bucket, src_obj, version_id=versionId)
+    d_obj_info = head_s3_object(s3, bucket, obj, version_id=None)
     do_match = True
     diff_msg = None
     if d_obj_info:
