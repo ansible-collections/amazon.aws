@@ -543,14 +543,8 @@ def _get_object_content(
     """Wrapper for get_s3_object_content with module-specific error handling."""
     try:
         return get_s3_object_content(s3, bucket, obj, version_id=version)
-    except AnsibleS3PermissionsError as e:
-        # AccessDenied can mean file doesn't exist or no permission
-        module.fail_json_aws(e, msg=f"Could not find the key {obj}.")
     except AnsibleS3Sigv4RequiredError:
         raise Sigv4Required()
-    except AnsibleS3Error as e:
-        # Covers InvalidArgument and other errors
-        module.fail_json_aws(e, msg=f"Could not find the key {obj}.")
 
 
 def get_s3_last_modified_timestamp(
