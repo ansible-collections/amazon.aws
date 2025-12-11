@@ -72,17 +72,17 @@ def get_s3_waiter(client: ClientType, waiter_name: str) -> Any:
 
 @S3ErrorHandler.list_error_handler("get bucket accelerate configuration", {})
 @AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def get_s3_bucket_accelerate_configuration(s3_client: ClientType, bucket_name: str) -> Dict:
+def get_s3_bucket_accelerate_configuration(client: ClientType, bucket_name: str) -> Dict:
     """
     Get transfer accelerate configuration of the S3 bucket.
     Parameters:
-        s3_client (boto3.client): The Boto3 S3 client object.
+        client (boto3.client): The Boto3 S3 client object.
         bucket_name (str): The name of the S3 bucket.
     Returns:
         Transfer accelerate status of the S3 bucket.
     """
     try:
-        return s3_client.get_bucket_accelerate_configuration(Bucket=bucket_name)
+        return client.get_bucket_accelerate_configuration(Bucket=bucket_name)
     except is_boto3_error_code(["UnsupportedArgument", "MethodNotAllowed"]) as e:
         # aws-gov throws UnsupportedArgument (consistently)
         # aws throws MethodNotAllowed where acceleration isn't available /yet/
@@ -93,16 +93,16 @@ def get_s3_bucket_accelerate_configuration(s3_client: ClientType, bucket_name: s
 
 @S3ErrorHandler.list_error_handler("get bucket ACLs", [])
 @AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def get_s3_bucket_acl(s3_client: ClientType, bucket_name: str) -> List:
+def get_s3_bucket_acl(client: ClientType, bucket_name: str) -> List:
     """
     Get ACLs of the S3 bucket.
     Parameters:
-        s3_client (boto3.client): The Boto3 S3 client object.
+        client (boto3.client): The Boto3 S3 client object.
         bucket_name (str): The name of the S3 bucket.
     Returns:
         ACL configuration of the S3 bucket.
     """
-    return s3_client.get_bucket_acl(Bucket=bucket_name)
+    return client.get_bucket_acl(Bucket=bucket_name)
 
 
 @S3ErrorHandler.list_error_handler("get bucket encryption settings", {})
