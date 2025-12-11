@@ -1018,17 +1018,13 @@ def s3_object_do_delobj(module, connection, connection_v4, s3_vars):
 
 def s3_object_do_list(module, connection, connection_v4, s3_vars):
     # If the bucket does not exist then bail out
-    try:
-        keys = list_bucket_object_keys(
-            connection,
-            s3_vars["bucket"],
-            prefix=s3_vars["prefix"],
-            start_after=s3_vars["marker"],
-            max_keys=s3_vars["max_keys"],
-        )
-    except AnsibleS3Error as e:
-        module.fail_json_aws(e, msg=f"Failed to list objects in bucket {s3_vars['bucket']}.")
-
+    keys = list_bucket_object_keys(
+        connection,
+        s3_vars["bucket"],
+        prefix=s3_vars["prefix"],
+        start_after=s3_vars["marker"],
+        max_keys=s3_vars["max_keys"],
+    )
     module.exit_json(msg="LIST operation complete", s3_keys=keys)
 
 
