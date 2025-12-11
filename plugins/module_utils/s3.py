@@ -327,7 +327,8 @@ def list_bucket_inventory_configurations(client: ClientType, bucket_name: str) -
     return entries
 
 
-@AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
+@S3ErrorHandler.common_error_handler("set object lock configuration")
+@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
 def put_s3_object_lock_configuration(client: ClientType, bucket_name: str, object_lock_default_retention: str) -> None:
     """
     Set object lock configuration for an S3 bucket.
@@ -485,7 +486,8 @@ def put_s3_bucket_acl(client: ClientType, bucket_name: str, acl: str) -> None:
     client.put_bucket_acl(Bucket=bucket_name, ACL=acl)
 
 
-@AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
+@S3ErrorHandler.common_error_handler("set bucket ownership controls")
+@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
 def put_s3_bucket_ownership(client: ClientType, bucket_name: str, target: str) -> None:
     """
     Put bucket ownership controls for S3 bucket
@@ -598,7 +600,8 @@ def delete_s3_bucket_public_access(client: ClientType, bucket_name: str) -> None
     client.delete_public_access_block(Bucket=bucket_name)
 
 
-@AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
+@S3ErrorHandler.deletion_error_handler("delete bucket ownership controls")
+@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
 def delete_s3_bucket_ownership(client: ClientType, bucket_name: str) -> None:
     """
     Delete bucket ownership controls from S3 bucket
