@@ -26,10 +26,10 @@ class TestMinimalVersionTestSuite:
     # Prepare some data for use in our testing
     # ========================================================
     def setup_method(self):
-        self.MINIMAL_BOTO3 = "1.34.0"
-        self.MINIMAL_BOTOCORE = "1.34.0"
-        self.OLD_BOTO3 = "1.33.999"
-        self.OLD_BOTOCORE = "1.33.999"
+        self.MINIMAL_BOTO3 = "1.35.0"
+        self.MINIMAL_BOTOCORE = "1.35.0"
+        self.OLD_BOTO3 = "1.34.999"
+        self.OLD_BOTOCORE = "1.34.999"
 
     # ========================================================
     #   Test we don't warn when using valid versions
