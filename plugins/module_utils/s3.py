@@ -1207,7 +1207,7 @@ def calculate_checksum_with_content(client, parts, bucket, obj, versionId, conte
     return f'"{md5(digest_squared).hexdigest()}-{len(digests)}"'
 
 
-def calculate_etag(module, filename, etag, s3, bucket, obj, version=None):
+def calculate_etag(module, filename, etag, client, bucket, obj, version=None):
     if not HAS_MD5:
         return None
 
@@ -1215,14 +1215,14 @@ def calculate_etag(module, filename, etag, s3, bucket, obj, version=None):
         # Multi-part ETag; a hash of the hashes of each part.
         parts = int(etag[1:-1].split("-")[1])
         try:
-            return calculate_checksum_with_file(s3, parts, bucket, obj, version, filename)
+            return calculate_checksum_with_file(client, parts, bucket, obj, version, filename)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             module.fail_json_aws(e, msg="Failed to get head object")
     else:  # Compute the MD5 sum normally
         return f'"{module.md5(filename)}"'
 
 
-def calculate_etag_content(module, content, etag, s3, bucket, obj, version=None):
+def calculate_etag_content(module, content, etag, client, bucket, obj, version=None):
     if not HAS_MD5:
         return None
 
@@ -1230,7 +1230,7 @@ def calculate_etag_content(module, content, etag, s3, bucket, obj, version=None)
         # Multi-part ETag; a hash of the hashes of each part.
         parts = int(etag[1:-1].split("-")[1])
         try:
-            return calculate_checksum_with_content(s3, parts, bucket, obj, version, content)
+            return calculate_checksum_with_content(client, parts, bucket, obj, version, content)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             module.fail_json_aws(e, msg="Failed to get head object")
     else:  # Compute the MD5 sum normally
