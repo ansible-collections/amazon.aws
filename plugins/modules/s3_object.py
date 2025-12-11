@@ -1204,10 +1204,7 @@ def s3_object_do_copy(module, connection, connection_v4, s3_vars):
     if not copy_src.get("object"):
         # copy recursively object(s) from source bucket to destination bucket
         # list all the objects from the source bucket
-        try:
-            keys = list_bucket_object_keys(connection, src_bucket, prefix=copy_src.get("prefix"))
-        except AnsibleS3Error as e:
-            module.fail_json_aws(e, msg=f"Failed to list objects in source bucket {src_bucket}.")
+        keys = list_bucket_object_keys(connection, src_bucket, prefix=copy_src.get("prefix"))
         if len(keys) == 0:
             module.exit_json(msg=f"No object found to be copied from source bucket {src_bucket}.")
 
@@ -1419,15 +1416,8 @@ def main():
     extra_params = s3_extra_params(module.params, sigv4=False)
     extra_params_v4 = s3_extra_params(module.params, sigv4=True)
     retry_decorator = AWSRetry.jittered_backoff()
-    try:
-        s3 = module.client("s3", retry_decorator=retry_decorator, **extra_params)
-        s3_v4 = module.client("s3", retry_decorator=retry_decorator, **extra_params_v4)
-    except (
-        botocore.exceptions.ClientError,
-        botocore.exceptions.BotoCoreError,
-        boto3.exceptions.Boto3Error,
-    ) as e:
-        module.fail_json_aws(e, msg="Failed to connect to AWS")
+    s3 = module.client("s3", retry_decorator=retry_decorator, **extra_params)
+    s3_v4 = module.client("s3", retry_decorator=retry_decorator, **extra_params_v4)
 
     s3_object_params = populate_params(module)
     s3_object_params.update(validate_bucket(module, s3, s3_object_params))
@@ -1443,12 +1433,7 @@ def main():
         "copy": s3_object_do_copy,
     }
     func = func_mapping[s3_object_params["mode"]]
-    try:
-        func(module, s3, s3_v4, s3_object_params)
-    except botocore.exceptions.EndpointConnectionError as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Invalid endpoint provided")
-    except AnsibleS3Error as e:
-        module.fail_json_aws(e, msg=str(e))
+    func(module, s3, s3_v4, s3_object_params)
 
     module.exit_json(failed=False)
 
