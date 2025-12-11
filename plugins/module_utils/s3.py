@@ -449,6 +449,7 @@ def get_s3_object_attributes(
     return client.get_object_attributes(**params)
 
 
+@AWSRetry.jittered_backoff()
 def s3_object_exists(
     client: ClientType,
     bucket_name: str,
@@ -475,6 +476,7 @@ def s3_object_exists(
     return bool(result)
 
 
+@AWSRetry.jittered_backoff()
 def s3_bucket_exists(client: ClientType, bucket_name: str) -> bool:
     """
     Check if an S3 bucket exists.
@@ -586,6 +588,7 @@ def put_s3_object_acl(client: ClientType, bucket_name: str, object_key: str, acl
     return client.put_object_acl(**params)
 
 
+@AWSRetry.jittered_backoff()
 def ensure_s3_object_tags(
     client: ClientType, bucket_name: str, object_key: str, desired_tags: Optional[Dict], purge_tags: bool = True
 ) -> Tuple[Dict, bool]:
@@ -648,6 +651,7 @@ def ensure_s3_object_tags(
 
 
 @S3ErrorHandler.common_error_handler("generate presigned URL")
+@AWSRetry.jittered_backoff()
 def generate_s3_presigned_url(
     client: ClientType,
     bucket_name: str,
@@ -679,6 +683,7 @@ def generate_s3_presigned_url(
     return client.generate_presigned_url(ClientMethod=client_method, Params=url_params, ExpiresIn=expiry)
 
 
+@AWSRetry.jittered_backoff()
 def s3_head_objects(client, parts, bucket, obj, versionId):
     args = {"Bucket": bucket, "Key": obj}
     if versionId:
