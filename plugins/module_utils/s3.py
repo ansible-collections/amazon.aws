@@ -656,7 +656,7 @@ def generate_s3_presigned_url(
     client: ClientType,
     bucket_name: str,
     object_key: str,
-    client_method: str = "get_object",
+    client_method: str,
     expiry: int = 600,
     **params,
 ) -> str:
