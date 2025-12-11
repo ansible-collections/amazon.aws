@@ -524,17 +524,6 @@ def etag_compare(
     return s3_etag == local_etag
 
 
-def _get_object_content(
-    module: AnsibleAWSModule,
-    s3: ClientType,
-    bucket: str,
-    obj: str,
-    version: Optional[str] = None,
-) -> bytes:
-    """Wrapper for get_s3_object_content with module-specific error handling."""
-    return get_s3_object_content(s3, bucket, obj, version_id=version)
-
-
 def get_s3_last_modified_timestamp(
     s3: ClientType,
     bucket: str,
@@ -790,7 +779,7 @@ def download_s3str(
 ) -> None:
     if module.check_mode:
         module.exit_json(msg="GET operation skipped - running in check mode", changed=True)
-    contents = to_native(_get_object_content(module, s3, bucket, obj, version))
+    contents = to_native(get_s3_object_content(s3, bucket, obj, version_id=version))
     module.exit_json(msg="GET operation complete", contents=contents, changed=True)
 
 
@@ -1117,7 +1106,7 @@ def calculate_object_etag(module, s3, bucket, obj, head_etag, version=None):
     if "-" in etag:
         # object has been created using multipart upload, compute ETag using
         # object content to ensure idempotency.
-        contents = _get_object_content(module, s3, bucket, obj, version)
+        contents = get_s3_object_content(s3, bucket, obj, version_id=version)
         # Set ETag to None, to force function to compute ETag from content
         etag = calculate_etag_content(module, contents, None, s3, bucket, obj)
     return etag
