@@ -474,17 +474,17 @@ from ansible_collections.amazon.aws.plugins.module_utils.s3 import delete_s3_obj
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import download_s3_file
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import ensure_s3_object_tags
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import generate_s3_presigned_url
-from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_s3_object
-from ansible_collections.amazon.aws.plugins.module_utils.s3 import upload_s3_file
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_bucket_ownership_controls
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_object_content
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_object_tagging
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import head_s3_object
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import list_bucket_object_keys
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_s3_object
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_s3_object_acl
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import s3_bucket_exists
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import s3_extra_params
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import s3_object_exists
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import upload_s3_file
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import validate_bucket_name
 
 
@@ -938,7 +938,11 @@ def s3_object_do_put(module, connection, connection_v4, s3_vars):
         ):
             # Return the download URL for the existing object and ensure tags are updated
             tags, tags_update = ensure_s3_object_tags(
-                connection, s3_vars["bucket"], s3_vars["object"], module.params.get("tags"), module.params.get("purge_tags")
+                connection,
+                s3_vars["bucket"],
+                s3_vars["object"],
+                module.params.get("tags"),
+                module.params.get("purge_tags"),
             )
             get_download_url(
                 module,
@@ -1144,7 +1148,9 @@ def copy_object_to_bucket(module, s3, bucket, obj, encrypt, metadata, validate, 
             return changed, result
 
         # Ensure tags
-        tags, changed = ensure_s3_object_tags(s3, bucket, obj, module.params.get("tags"), module.params.get("purge_tags"))
+        tags, changed = ensure_s3_object_tags(
+            s3, bucket, obj, module.params.get("tags"), module.params.get("purge_tags")
+        )
         result = {"msg": "ETag from source and destination are the same"}
         if changed:
             result = {"msg": "tags successfully updated.", "tags": tags}
@@ -1180,7 +1186,9 @@ def copy_object_to_bucket(module, s3, bucket, obj, encrypt, metadata, validate, 
 
         # We can't set the ACLs & tags during the copy, update them afterwards
         put_object_acl(module, s3, bucket, obj)
-        tags, tags_updated = ensure_s3_object_tags(s3, bucket, obj, module.params.get("tags"), module.params.get("purge_tags"))
+        tags, tags_updated = ensure_s3_object_tags(
+            s3, bucket, obj, module.params.get("tags"), module.params.get("purge_tags")
+        )
 
         msg = f"Object copied from bucket {src_bucket} to bucket {bucket}."
         return changed, {"msg": msg, "tags": tags}
