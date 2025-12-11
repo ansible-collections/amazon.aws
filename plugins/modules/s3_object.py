@@ -488,10 +488,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.s3 import s3_object_exi
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import validate_bucket_name
 
 
-class Sigv4Required(Exception):
-    pass
-
-
 def key_check(
     module: AnsibleAWSModule,
     s3: ClientType,
@@ -541,10 +537,7 @@ def _get_object_content(
     version: Optional[str] = None,
 ) -> bytes:
     """Wrapper for get_s3_object_content with module-specific error handling."""
-    try:
-        return get_s3_object_content(s3, bucket, obj, version_id=version)
-    except AnsibleS3Sigv4RequiredError:
-        raise Sigv4Required()
+    return get_s3_object_content(s3, bucket, obj, version_id=version)
 
 
 def get_s3_last_modified_timestamp(
@@ -927,7 +920,7 @@ def s3_object_do_get(module, connection, connection_v4, s3_vars):
             s3_vars["retries"],
             version=s3_vars["version"],
         )
-    except Sigv4Required:
+    except AnsibleS3Sigv4RequiredError:
         download_s3file(
             module,
             connection_v4,
@@ -1105,7 +1098,7 @@ def s3_object_do_getstr(module, connection, connection_v4, s3_vars):
                     s3_vars["object"],
                     version=s3_vars["version"],
                 )
-            except Sigv4Required:
+            except AnsibleS3Sigv4RequiredError:
                 download_s3str(
                     module,
                     connection_v4,
