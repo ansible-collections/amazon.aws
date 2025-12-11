@@ -82,7 +82,7 @@ def get_s3_bucket_accelerate_configuration(s3_client: ClientType, bucket_name: s
         # aws-gov throws UnsupportedArgument (consistently)
         # aws throws MethodNotAllowed where acceleration isn't available /yet/
         raise AnsibleS3RegionSupportError(
-            message="Failed to get bucket encryption settings (not available in S3 bucket region)", exception=e
+            message="Failed to get bucket accelerate configuration (not available in S3 bucket region)", exception=e
         ) from e
 
 
