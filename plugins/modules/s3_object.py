@@ -603,11 +603,8 @@ def delete_key(module: AnsibleAWSModule, s3: ClientType, bucket: str, obj: str) 
             msg="DELETE operation skipped - running in check mode",
             changed=True,
         )
-    try:
-        delete_s3_object(s3, bucket, obj)
-        module.exit_json(msg=f"Object deleted from bucket {bucket}.", changed=True)
-    except AnsibleS3Error as e:
-        module.fail_json_aws(e, msg=f"Failed to delete object {obj}.")
+    delete_s3_object(s3, bucket, obj)
+    module.exit_json(msg=f"Object deleted from bucket {bucket}.", changed=True)
 
 
 def put_object_acl(
