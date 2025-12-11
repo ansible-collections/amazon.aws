@@ -1167,93 +1167,83 @@ def calculate_object_etag(module, s3, bucket, obj, head_etag, version=None):
 
 
 def copy_object_to_bucket(module, s3, bucket, obj, encrypt, metadata, validate, src_bucket, src_obj, versionId=None):
-    try:
-        if not key_check(module, s3, src_bucket, src_obj, version=versionId, validate=validate):
-            # Key does not exist in source bucket
-            module.exit_json(
-                msg=f"Key {src_obj} does not exist in bucket {src_bucket}.",
-                changed=False,
-            )
-
-        s_obj_info = _head_object(s3, src_bucket, src_obj, version=versionId)
-        d_obj_info = _head_object(s3, bucket, obj)
-        do_match = True
-        diff_msg = None
-        if d_obj_info:
-            src_etag = calculate_object_etag(module, s3, src_bucket, src_obj, s_obj_info.get("ETag"), versionId)
-            dst_etag = calculate_object_etag(module, s3, bucket, obj, d_obj_info.get("ETag"))
-            if src_etag != dst_etag:
-                # Source and destination objects ETag differ
-                do_match = False
-                diff_msg = "ETag from source and destination differ"
-            if do_match and metadata and metadata != d_obj_info.get("Metadata"):
-                # Metadata from module inputs differs from what has been retrieved from object header
-                diff_msg = "Would have update object Metadata if not running in check mode."
-                do_match = False
-        else:
-            # The destination object does not exists
-            do_match = False
-            diff_msg = "Would have copy object if not running in check mode."
-
-        if do_match:
-            # S3 objects are equals, ensure tags will not be updated
-            if module.check_mode:
-                changed = check_object_tags(module, s3, bucket, obj)
-                result = {}
-                if changed:
-                    result.update({"msg": "Would have update object tags if not running in check mode."})
-                return changed, result
-
-            # Ensure tags
-            tags, changed = ensure_tags(s3, module, bucket, obj)
-            result = {"msg": "ETag from source and destination are the same"}
-            if changed:
-                result = {"msg": "tags successfully updated.", "tags": tags}
-            return changed, result
-        # S3 objects differ
-        if module.check_mode:
-            return True, {"msg": diff_msg}
-        else:
-            changed = True
-            bucketsrc = {
-                "Bucket": src_bucket,
-                "Key": src_obj,
-            }
-            if versionId:
-                bucketsrc.update({"VersionId": versionId})
-
-            extra_args = get_extra_params(
-                encrypt,
-                module.params.get("encryption_mode"),
-                module.params.get("encryption_kms_key_id"),
-                metadata,
-            )
-
-            if metadata:
-                # 'MetadataDirective' Specifies whether the metadata is copied from the source object or replaced
-                # with metadata that's provided in the request. The default value is 'COPY', therefore when user
-                # specifies a metadata we should set it to 'REPLACE'
-                extra_args.update({"MetadataDirective": "REPLACE"})
-
-            # perform a "managed" copy rather simply using copy_object.  This will automatically use
-            # multi-part uploads where necessary (https://github.com/boto/boto3/issues/1715)
-            copy_s3_object(s3, bucketsrc, bucket, obj, extra_args)
-
-            # We can't set the ACLs & tags during the copy, update them afterwards
-            put_object_acl(module, s3, bucket, obj)
-            tags, tags_updated = ensure_tags(s3, module, bucket, obj)
-
-            msg = f"Object copied from bucket {src_bucket} to bucket {bucket}."
-            return changed, {"msg": msg, "tags": tags}
-    except (
-        botocore.exceptions.BotoCoreError,
-        botocore.exceptions.ClientError,
-        boto3.exceptions.Boto3Error,
-    ) as e:  # pylint: disable=duplicate-except
-        raise AnsibleS3Error(
-            message=f"Failed while copying object {obj} from bucket {module.params['copy_src'].get('Bucket')}.",
-            exception=e,
+    if not key_check(module, s3, src_bucket, src_obj, version=versionId, validate=validate):
+        # Key does not exist in source bucket
+        module.exit_json(
+            msg=f"Key {src_obj} does not exist in bucket {src_bucket}.",
+            changed=False,
         )
+
+    s_obj_info = _head_object(s3, src_bucket, src_obj, version=versionId)
+    d_obj_info = _head_object(s3, bucket, obj)
+    do_match = True
+    diff_msg = None
+    if d_obj_info:
+        src_etag = calculate_object_etag(module, s3, src_bucket, src_obj, s_obj_info.get("ETag"), versionId)
+        dst_etag = calculate_object_etag(module, s3, bucket, obj, d_obj_info.get("ETag"))
+        if src_etag != dst_etag:
+            # Source and destination objects ETag differ
+            do_match = False
+            diff_msg = "ETag from source and destination differ"
+        if do_match and metadata and metadata != d_obj_info.get("Metadata"):
+            # Metadata from module inputs differs from what has been retrieved from object header
+            diff_msg = "Would have update object Metadata if not running in check mode."
+            do_match = False
+    else:
+        # The destination object does not exists
+        do_match = False
+        diff_msg = "Would have copy object if not running in check mode."
+
+    if do_match:
+        # S3 objects are equals, ensure tags will not be updated
+        if module.check_mode:
+            changed = check_object_tags(module, s3, bucket, obj)
+            result = {}
+            if changed:
+                result.update({"msg": "Would have update object tags if not running in check mode."})
+            return changed, result
+
+        # Ensure tags
+        tags, changed = ensure_tags(s3, module, bucket, obj)
+        result = {"msg": "ETag from source and destination are the same"}
+        if changed:
+            result = {"msg": "tags successfully updated.", "tags": tags}
+        return changed, result
+    # S3 objects differ
+    if module.check_mode:
+        return True, {"msg": diff_msg}
+    else:
+        changed = True
+        bucketsrc = {
+            "Bucket": src_bucket,
+            "Key": src_obj,
+        }
+        if versionId:
+            bucketsrc.update({"VersionId": versionId})
+
+        extra_args = get_extra_params(
+            encrypt,
+            module.params.get("encryption_mode"),
+            module.params.get("encryption_kms_key_id"),
+            metadata,
+        )
+
+        if metadata:
+            # 'MetadataDirective' Specifies whether the metadata is copied from the source object or replaced
+            # with metadata that's provided in the request. The default value is 'COPY', therefore when user
+            # specifies a metadata we should set it to 'REPLACE'
+            extra_args.update({"MetadataDirective": "REPLACE"})
+
+        # perform a "managed" copy rather simply using copy_object.  This will automatically use
+        # multi-part uploads where necessary (https://github.com/boto/boto3/issues/1715)
+        copy_s3_object(s3, bucketsrc, bucket, obj, extra_args)
+
+        # We can't set the ACLs & tags during the copy, update them afterwards
+        put_object_acl(module, s3, bucket, obj)
+        tags, tags_updated = ensure_tags(s3, module, bucket, obj)
+
+        msg = f"Object copied from bucket {src_bucket} to bucket {bucket}."
+        return changed, {"msg": msg, "tags": tags}
 
 
 def s3_object_do_copy(module, connection, connection_v4, s3_vars):
