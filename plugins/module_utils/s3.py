@@ -588,6 +588,103 @@ def put_s3_object_acl(client: ClientType, bucket_name: str, object_key: str, acl
     return client.put_object_acl(**params)
 
 
+@S3ErrorHandler.common_error_handler("put object")
+@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
+def put_s3_object(client: ClientType, **params) -> Dict:
+    """
+    Upload an object to S3 using put_object.
+
+    Parameters:
+        client (boto3.client): The Boto3 S3 client object.
+        **params: Parameters to pass to put_object (must include Bucket, Key, and typically Body).
+
+    Returns:
+        Dict: Response from the put operation.
+    """
+    return client.put_object(**params)
+
+
+@S3ErrorHandler.common_error_handler("upload file")
+@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
+def upload_s3_file(
+    client: ClientType,
+    filename: str,
+    bucket_name: str,
+    object_key: str,
+    extra_args: Optional[Dict] = None,
+) -> None:
+    """
+    Upload a file to S3 using upload_file (transfer manager).
+
+    Parameters:
+        client (boto3.client): The Boto3 S3 client object.
+        filename (str): Path to the file to upload.
+        bucket_name (str): The name of the S3 bucket.
+        object_key (str): The key for the S3 object.
+        extra_args (dict, optional): Extra arguments for the upload (e.g., ContentType, Metadata).
+
+    Returns:
+        None
+    """
+    if extra_args is None:
+        extra_args = {}
+    client.upload_file(Filename=filename, Bucket=bucket_name, Key=object_key, ExtraArgs=extra_args)
+
+
+@S3ErrorHandler.common_error_handler("download file")
+@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
+def download_s3_file(
+    client: ClientType,
+    bucket_name: str,
+    object_key: str,
+    filename: str,
+    extra_args: Optional[Dict] = None,
+) -> None:
+    """
+    Download a file from S3 using download_file (transfer manager).
+
+    Parameters:
+        client (boto3.client): The Boto3 S3 client object.
+        bucket_name (str): The name of the S3 bucket.
+        object_key (str): The key of the S3 object.
+        filename (str): Path where the file should be saved.
+        extra_args (dict, optional): Extra arguments for the download (e.g., VersionId).
+
+    Returns:
+        None
+    """
+    if extra_args is None:
+        extra_args = {}
+    client.download_file(Bucket=bucket_name, Key=object_key, Filename=filename, ExtraArgs=extra_args)
+
+
+@S3ErrorHandler.common_error_handler("copy object")
+@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
+def copy_s3_object(
+    client: ClientType,
+    copy_source: Dict,
+    dest_bucket_name: str,
+    dest_object_key: str,
+    extra_args: Optional[Dict] = None,
+) -> None:
+    """
+    Copy an object within S3 using managed copy (automatically handles multipart for large objects).
+
+    Parameters:
+        client (boto3.client): The Boto3 S3 client object.
+        copy_source (dict): Source object specification with 'Bucket', 'Key', and optionally 'VersionId'.
+        dest_bucket_name (str): The destination bucket name.
+        dest_object_key (str): The destination object key.
+        extra_args (dict, optional): Extra arguments for the copy operation (e.g., ACL, Metadata).
+
+    Returns:
+        None
+    """
+    if extra_args is None:
+        extra_args = {}
+    client.copy(copy_source, dest_bucket_name, dest_object_key, ExtraArgs=extra_args)
+
+
 @AWSRetry.jittered_backoff()
 def ensure_s3_object_tags(
     client: ClientType, bucket_name: str, object_key: str, desired_tags: Optional[Dict], purge_tags: bool = True
