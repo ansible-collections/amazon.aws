@@ -823,9 +823,7 @@ def get_binary_content(s3_vars: Dict) -> Optional[bytes]:
     return bincontent
 
 
-def do_s3_object_get(module, connection, connection_v4, s3_vars):
-    if module.params.get("sig_v4"):
-        connection = connection_v4
+def do_s3_object_get(module, connection, s3_vars):
 
     keyrtn = key_check(
         module,
@@ -869,38 +867,22 @@ def do_s3_object_get(module, connection, connection_v4, s3_vars):
                 changed=False,
             )
 
-    try:
-        download_s3file(
-            module,
-            connection,
-            s3_vars["bucket"],
-            s3_vars["object"],
-            s3_vars["dest"],
-            s3_vars["retries"],
-            version=s3_vars["version"],
-        )
-    except AnsibleS3Sigv4RequiredError:
-        download_s3file(
-            module,
-            connection_v4,
-            s3_vars["bucket"],
-            s3_vars["obj"],
-            s3_vars["dest"],
-            s3_vars["retries"],
-            version=s3_vars["version"],
-        )
+    download_s3file(
+        module,
+        connection,
+        s3_vars["bucket"],
+        s3_vars["object"],
+        s3_vars["dest"],
+        s3_vars["retries"],
+        version=s3_vars["version"],
+    )
 
     module.exit_json(failed=False)
 
 
-def do_s3_object_put(module, connection, connection_v4, s3_vars):
+def do_s3_object_put(module, connection, s3_vars):
     # if putting an object in a bucket yet to be created, acls for the bucket and/or the object may be specified
     # these were separated into the variables bucket_acl and object_acl above
-
-    # if encryption mode is set to aws:kms then we're forced to use s3v4, no point trying the
-    # original signature.
-    if module.params.get("encryption_mode") == "aws:kms":
-        connection = connection_v4
 
     if s3_vars["src"] is not None and not os.path.exists(s3_vars["src"]):
         module.fail_json(msg=f'Local object "{s3_vars["src"]}" does not exist for PUT operation')
@@ -964,7 +946,7 @@ def do_s3_object_put(module, connection, connection_v4, s3_vars):
     module.exit_json(failed=False)
 
 
-def do_s3_object_delobj(module, connection, connection_v4, s3_vars):
+def do_s3_object_delobj(module, connection, s3_vars):
     if module.check_mode:
         module.exit_json(
             msg="DELETE operation skipped - running in check mode",
@@ -978,7 +960,7 @@ def do_s3_object_delobj(module, connection, connection_v4, s3_vars):
     module.exit_json(msg=f"Object deleted from bucket {s3_vars['object']}.", changed=True)
 
 
-def do_s3_object_list(module, connection, connection_v4, s3_vars):
+def do_s3_object_list(module, connection, s3_vars):
     # If the bucket does not exist then bail out
     keys = list_bucket_object_keys(
         connection,
@@ -990,7 +972,7 @@ def do_s3_object_list(module, connection, connection_v4, s3_vars):
     module.exit_json(msg="LIST operation complete", s3_keys=keys)
 
 
-def do_s3_object_create(module, connection, connection_v4, s3_vars):
+def do_s3_object_create(module, connection, s3_vars):
     # if both creating a bucket and putting an object in it, acls for the bucket and/or the object may be specified
     # these were separated above into the variables bucket_acl and object_acl
 
@@ -1016,9 +998,7 @@ def do_s3_object_create(module, connection, connection_v4, s3_vars):
     )
 
 
-def do_s3_object_geturl(module, connection, connection_v4, s3_vars):
-    if module.params.get("sig_v4"):
-        connection = connection_v4
+def do_s3_object_geturl(module, connection, s3_vars):
 
     if key_check(
         module,
@@ -1046,9 +1026,7 @@ def do_s3_object_geturl(module, connection, connection_v4, s3_vars):
     module.fail_json(msg=f"Key {s3_vars['object']} does not exist.")
 
 
-def do_s3_object_getstr(module, connection, connection_v4, s3_vars):
-    if module.params.get("sig_v4"):
-        connection = connection_v4
+def do_s3_object_getstr(module, connection, s3_vars):
 
     if s3_vars["bucket"] and s3_vars["object"]:
         if key_check(
@@ -1059,22 +1037,13 @@ def do_s3_object_getstr(module, connection, connection_v4, s3_vars):
             version=s3_vars["version"],
             validate=s3_vars["validate"],
         ):
-            try:
-                download_s3str(
-                    module,
-                    connection,
-                    s3_vars["bucket"],
-                    s3_vars["object"],
-                    version=s3_vars["version"],
-                )
-            except AnsibleS3Sigv4RequiredError:
-                download_s3str(
-                    module,
-                    connection_v4,
-                    s3_vars["bucket"],
-                    s3_vars["object"],
-                    version=s3_vars["version"],
-                )
+            download_s3str(
+                module,
+                connection,
+                s3_vars["bucket"],
+                s3_vars["object"],
+                version=s3_vars["version"],
+            )
         elif s3_vars["version"]:
             module.fail_json(msg=f"Key {s3_vars['object']} with version id {s3_vars['version']} does not exist.")
         else:
@@ -1189,7 +1158,7 @@ def copy_object_to_bucket(module, s3, bucket, obj, encrypt, metadata, validate, 
         return changed, {"msg": msg, "tags": tags}
 
 
-def do_s3_object_copy(module, connection, connection_v4, s3_vars):
+def do_s3_object_copy(module, connection, s3_vars):
     copy_src = module.params.get("copy_src")
     if not copy_src.get("object") and s3_vars["object"]:
         module.fail_json(
@@ -1417,6 +1386,12 @@ def main():
     s3_object_params = populate_params(module)
     s3_object_params.update(validate_bucket(module, s3, s3_object_params))
 
+    # Conditions that force the use of Sig V4
+    if module.params.get("sig_v4"):
+        s3 = s3_v4
+    if module.params.get("encryption_mode") == "aws:kms":
+        s3 = s3_v4
+
     func_mapping = {
         "get": do_s3_object_get,
         "put": do_s3_object_put,
@@ -1428,7 +1403,14 @@ def main():
         "copy": do_s3_object_copy,
     }
     func = func_mapping[s3_object_params["mode"]]
-    func(module, s3, s3_v4, s3_object_params)
+    try:
+        try:
+            func(module, s3, s3_object_params)
+        except AnsibleS3Sigv4RequiredError:
+            # Opportunistically bump the connection up to SigV4
+            func(module, s3_v4, s3_object_params)
+    except AnsibleS3Error as e:
+        module.fail_json_aws_error(e)
 
     module.exit_json(failed=False)
 
