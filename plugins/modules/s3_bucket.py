@@ -564,6 +564,14 @@ from ansible_collections.amazon.aws.plugins.module_utils.s3 import AnsibleS3Erro
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import AnsibleS3PermissionsError
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import AnsibleS3SupportError
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import S3ErrorHandler
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import delete_bucket
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import delete_bucket_accelerate_configuration
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import delete_bucket_inventory
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import delete_bucket_ownership
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import delete_s3_bucket_encryption
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import delete_s3_bucket_policy
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import delete_s3_bucket_public_access
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import delete_s3_bucket_tagging
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_bucket_accelerate_configuration
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_bucket_acl
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_bucket_encryption
@@ -581,6 +589,17 @@ from ansible_collections.amazon.aws.plugins.module_utils.s3 import merge_tags
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import normalize_s3_bucket_acls
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import normalize_s3_bucket_public_access
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import normalize_s3_bucket_versioning
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_bucket_accelerate_configuration
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_bucket_encryption
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_bucket_inventory
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_bucket_ownership
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_bucket_request_payment
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_bucket_versioning
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_object_lock_configuration
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_s3_bucket_acl
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_s3_bucket_policy
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_s3_bucket_public_access
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_s3_bucket_tagging
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import s3_acl_to_name
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import s3_bucket_exists
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import s3_extra_params
@@ -1301,51 +1320,6 @@ def get_object_lock_configuration(s3_client: ClientType, bucket_name: str) -> Op
     return result.get("Rule", {}).get("DefaultRetention", {})
 
 
-@AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def put_object_lock_configuration(s3_client: ClientType, bucket_name: str, object_lock_default_retention: str) -> None:
-    """
-    Set tags for an S3 bucket.
-    Parameters:
-        s3_client (boto3.client): The Boto3 S3 client object.
-        bucket_name (str): The name of the S3 bucket.
-        object_lock_default_retention (dict): A dictionary containing the object
-        lock default retention configuration to be set on the bucket.
-    Returns:
-        None
-    """
-    conf = {"ObjectLockEnabled": "Enabled", "Rule": {"DefaultRetention": object_lock_default_retention}}
-    s3_client.put_object_lock_configuration(Bucket=bucket_name, ObjectLockConfiguration=conf)
-
-
-@S3ErrorHandler.common_error_handler("set bucket acceleration configuration")
-@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def put_bucket_accelerate_configuration(s3_client: ClientType, bucket_name: str) -> None:
-    """
-    Enable transfer accelerate for the S3 bucket.
-    Parameters:
-        s3_client (boto3.client): The Boto3 S3 client object.
-        bucket_name (str): The name of the S3 bucket.
-    Returns:
-        None
-    """
-    s3_client.put_bucket_accelerate_configuration(Bucket=bucket_name, AccelerateConfiguration={"Status": "Enabled"})
-
-
-@S3ErrorHandler.deletion_error_handler("set bucket acceleration configuration")
-@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def delete_bucket_accelerate_configuration(s3_client: ClientType, bucket_name: str) -> None:
-    """
-    Disable transfer accelerate for the S3 bucket.
-    Parameters:
-        s3_client (boto3.client): The Boto3 S3 client object.
-        bucket_name (str): The name of the S3 bucket.
-    Returns:
-        None
-    """
-
-    s3_client.put_bucket_accelerate_configuration(Bucket=bucket_name, AccelerateConfiguration={"Status": "Suspended"})
-
-
 def get_bucket_accelerate_status(s3_client: ClientType, bucket_name: str) -> bool:
     """
     Get transfer accelerate status of the S3 bucket.
@@ -1357,101 +1331,6 @@ def get_bucket_accelerate_status(s3_client: ClientType, bucket_name: str) -> boo
     """
     accelerate_configuration = get_s3_bucket_accelerate_configuration(s3_client, bucket_name)
     return accelerate_configuration.get("Status") == "Enabled"
-
-
-@S3ErrorHandler.common_error_handler("set bucket inventory configuration")
-@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def put_bucket_inventory(s3_client: ClientType, bucket_name: str, inventory: dict) -> None:
-    """
-    Set inventory settings for an S3 bucket.
-    Parameters:
-        s3_client (boto3.client): The Boto3 S3 client object.
-        bucket_name (str): The name of the S3 bucket.
-        tags (dict): A dictionary containing the inventory settings to be set on the bucket.
-    Returns:
-        None
-    """
-    try:
-        s3_client.put_bucket_inventory_configuration(
-            Bucket=bucket_name, InventoryConfiguration=inventory, Id=inventory.get("Id")
-        )
-    except is_boto3_error_code("InvalidS3DestinationBucket") as e:
-        raise AnsibleS3Error("Invalid destination bucket ARN") from e
-
-
-@S3ErrorHandler.common_error_handler("set bucket tagging")
-@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def put_s3_bucket_tagging(s3_client: ClientType, bucket_name: str, tags: dict) -> None:
-    """
-    Set tags for an S3 bucket.
-    Parameters:
-        s3_client (boto3.client): The Boto3 S3 client object.
-        bucket_name (str): The name of the S3 bucket.
-        tags (dict): A dictionary containing the tags to be set on the bucket.
-    Returns:
-        None
-    """
-    s3_client.put_bucket_tagging(Bucket=bucket_name, Tagging={"TagSet": ansible_dict_to_boto3_tag_list(tags)})
-
-
-@S3ErrorHandler.deletion_error_handler("delete bucket inventory configuration")
-@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def delete_bucket_inventory(s3_client: ClientType, bucket_name: str, inventory_id: str) -> None:
-    """
-    Delete the inventory settings for an S3 bucket.
-    Parameters:
-        s3_client (boto3.client): The Boto3 S3 client object.
-        bucket_name (str): The name of the S3 bucket.
-        id (str): The ID used to identify the inventory configuration
-    Returns:
-        None
-    """
-    s3_client.delete_bucket_inventory_configuration(Bucket=bucket_name, Id=inventory_id)
-
-
-@S3ErrorHandler.common_error_handler("set bucket policy")
-@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def put_s3_bucket_policy(s3_client: ClientType, bucket_name: str, policy: dict) -> None:
-    """
-    Set the policy for an S3 bucket.
-    Parameters:
-        s3_client (boto3.client): The Boto3 S3 client object.
-        bucket_name (str): The name of the S3 bucket.
-        policy (dict): A dictionary containing the policy to be set on the bucket.
-    Returns:
-        None
-    """
-    s3_client.put_bucket_policy(Bucket=bucket_name, Policy=json.dumps(policy))
-
-
-@S3ErrorHandler.common_error_handler("set bucket request payment configuration")
-@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def put_bucket_request_payment(s3_client: ClientType, bucket_name: str, payer: str) -> None:
-    """
-    Set the request payment configuration for an S3 bucket.
-    Parameters:
-        s3_client (boto3.client): The Boto3 S3 client object.
-        bucket_name (str): The name of the S3 bucket.
-        payer (str): The entity responsible for charges related to fulfilling the request.
-    Returns:
-        None
-    """
-    s3_client.put_bucket_request_payment(Bucket=bucket_name, RequestPaymentConfiguration={"Payer": payer})
-
-
-@S3ErrorHandler.common_error_handler("set bucket versioning configuation")
-@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def put_bucket_versioning(s3_client: ClientType, bucket_name: str, required_versioning: str) -> None:
-    """
-    Set the versioning configuration for an S3 bucket.
-    Parameters:
-        s3_client (boto3.client): The Boto3 S3 client object.
-        bucket_name (str): The name of the S3 bucket.
-        required_versioning (str): The desired versioning state for the bucket ("Enabled", "Suspended").
-    Returns:
-        None
-    """
-    s3_client.put_bucket_versioning(Bucket=bucket_name, VersioningConfiguration={"Status": required_versioning})
 
 
 def get_bucket_object_lock_enabled(s3_client: ClientType, bucket_name: str) -> bool:
@@ -1523,24 +1402,6 @@ def put_bucket_encryption_with_retry(s3_client: ClientType, name: str, expected_
     raise AnsibleS3Error("Failed to set bucket encryption configuration")
 
 
-@S3ErrorHandler.common_error_handler("set bucket encryption")
-@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def put_bucket_encryption(s3_client: ClientType, bucket_name: str, encryption: dict) -> None:
-    """
-    Set the encryption configuration for an S3 bucket.
-    Parameters:
-        s3_client (boto3.client): The Boto3 S3 client object.
-        bucket_name (str): The name of the S3 bucket.
-        encryption (dict): A dictionary containing the encryption configuration.
-    Returns:
-        None
-    """
-    server_side_encryption_configuration = {"Rules": [{"ApplyServerSideEncryptionByDefault": encryption}]}
-    s3_client.put_bucket_encryption(
-        Bucket=bucket_name, ServerSideEncryptionConfiguration=server_side_encryption_configuration
-    )
-
-
 def put_bucket_key_with_retry(s3_client: ClientType, name: str, expected_encryption: bool) -> None:
     """
     Set the status of server-side encryption for an S3 bucket.
@@ -1584,134 +1445,6 @@ def put_bucket_key(s3_client: ClientType, bucket_name: str, encryption: bool) ->
     encryption_status = get_s3_bucket_encryption(s3_client, bucket_name)
     encryption_status["Rules"][0]["BucketKeyEnabled"] = encryption
     s3_client.put_bucket_encryption(Bucket=bucket_name, ServerSideEncryptionConfiguration=encryption_status)
-
-
-@S3ErrorHandler.deletion_error_handler("delete bucket tagging")
-@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def delete_s3_bucket_tagging(s3_client: ClientType, bucket_name: str) -> None:
-    """
-    Delete the tagging configuration of an S3 bucket.
-    Parameters:
-        s3_client (boto3.client): The Boto3 S3 client object.
-        bucket_name (str): The name of the S3 bucket.
-    Returns:
-        None
-    """
-    s3_client.delete_bucket_tagging(Bucket=bucket_name)
-
-
-@S3ErrorHandler.deletion_error_handler("delete bucket encryption")
-@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def delete_s3_bucket_encryption(s3_client: ClientType, bucket_name: str) -> None:
-    """
-    Delete the encryption configuration of an S3 bucket.
-    Parameters:
-        s3_client (boto3.client): The Boto3 S3 client object.
-        bucket_name (str): The name of the S3 bucket.
-    Returns:
-        None
-    """
-    s3_client.delete_bucket_encryption(Bucket=bucket_name)
-
-
-@S3ErrorHandler.deletion_error_handler("delete bucket")
-@AWSRetry.jittered_backoff(max_delay=240, catch_extra_error_codes=["OperationAborted"])
-def delete_bucket(s3_client: ClientType, bucket_name: str) -> None:
-    """
-    Delete an S3 bucket.
-    Parameters:
-        s3_client (boto3.client): The Boto3 S3 client object.
-        bucket_name (str): The name of the S3 bucket.
-    Returns:
-        None
-    """
-    s3_client.delete_bucket(Bucket=bucket_name)
-
-
-@S3ErrorHandler.common_error_handler("set public access block configuration")
-@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def put_s3_bucket_public_access(s3_client: ClientType, bucket_name: str, public_acces: dict) -> None:
-    """
-    Put new public access block to S3 bucket
-    Parameters:
-        s3_client (boto3.client): The Boto3 S3 client object.
-        bucket_name (str): The name of the S3 bucket.
-        public_access (dict): The public access block configuration.
-    Returns:
-        None
-    """
-    s3_client.put_public_access_block(Bucket=bucket_name, PublicAccessBlockConfiguration=public_acces)
-
-
-@S3ErrorHandler.common_error_handler("set bucket ACL")
-@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def put_s3_bucket_acl(s3_client: ClientType, bucket_name: str, acl: str) -> None:
-    """
-    Applies a canned ACL to an S3 bucket
-    Parameters:
-        s3_client (boto3.client): The Boto3 S3 client object.
-        bucket_name (str): The name of the S3 bucket.
-        acl (str): The ACL
-    Returns:
-        None
-    """
-    s3_client.put_bucket_acl(Bucket=bucket_name, ACL=acl)
-
-
-@S3ErrorHandler.deletion_error_handler("delete bucket policy")
-@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def delete_s3_bucket_policy(s3_client: ClientType, bucket_name: str) -> None:
-    """
-    Delete policy from S3 bucket
-    Parameters:
-        s3_client (boto3.client): The Boto3 S3 client object.
-        bucket_name (str): The name of the S3 bucket.
-    Returns:
-        None
-    """
-    s3_client.delete_bucket_policy(Bucket=bucket_name)
-
-
-@S3ErrorHandler.deletion_error_handler("delete public access block configuration")
-@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def delete_s3_bucket_public_access(s3_client: ClientType, bucket_name: str) -> None:
-    """
-    Delete public access block from S3 bucket
-    Parameters:
-        s3_client (boto3.client): The Boto3 S3 client object.
-        bucket_name (str): The name of the S3 bucket.
-    Returns:
-        None
-    """
-    s3_client.delete_public_access_block(Bucket=bucket_name)
-
-
-@AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def delete_bucket_ownership(s3_client: ClientType, bucket_name: str) -> None:
-    """
-    Delete bucket ownership controls from S3 bucket
-    Parameters:
-        s3_client (boto3.client): The Boto3 S3 client object.
-        bucket_name (str): The name of the S3 bucket.
-    Returns:
-        None
-    """
-    s3_client.delete_bucket_ownership_controls(Bucket=bucket_name)
-
-
-@AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def put_bucket_ownership(s3_client: ClientType, bucket_name: str, target: str) -> None:
-    """
-    Put bucket ownership controls for S3 bucket
-    Parameters:
-        s3_client (boto3.client): The Boto3 S3 client object.
-        bucket_name (str): The name of the S3 bucket.
-    Returns:
-        None
-    """
-    s3_client.put_bucket_ownership_controls(
-        Bucket=bucket_name, OwnershipControls={"Rules": [{"ObjectOwnership": target}]}
-    )
 
 
 def wait_policy_is_applied(
