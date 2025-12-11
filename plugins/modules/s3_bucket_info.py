@@ -715,7 +715,7 @@ def main() -> None:
     name = module.params.get("name")
     name_filter = module.params.get("name_filter")
     requested_facts = module.params.get("bucket_facts")
-    transform_location = module.params.get("bucket_facts")
+    transform_location = module.params.get("transform_location")
 
     # Set up connection
     connection = {}
