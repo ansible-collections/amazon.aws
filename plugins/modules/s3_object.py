@@ -613,7 +613,7 @@ def create_dirkey(
     put_object_acl(module, s3, bucket, obj, params)
 
     # Tags
-    tags, _changed = ensure_tags(s3, module, bucket, obj)
+    tags, _changed = ensure_s3_object_tags(s3, bucket, obj, module.params.get("tags"), module.params.get("purge_tags"))
 
     url = generate_s3_presigned_url(s3, bucket, obj, client_method="put_object", expiry=expiry)
 
@@ -746,7 +746,7 @@ def upload_s3file(
         put_object_acl(module, s3, bucket, obj)
 
     # Tags
-    tags, _changed = ensure_tags(s3, module, bucket, obj)
+    tags, _changed = ensure_s3_object_tags(s3, bucket, obj, module.params.get("tags"), module.params.get("purge_tags"))
 
     url = generate_s3_presigned_url(s3, bucket, obj, client_method="put_object", expiry=expiry)
 
@@ -820,14 +820,6 @@ def get_current_object_tags_dict(
         module.warn("GetObjectTagging is not implemented by your storage provider.")
         return {}
     # Let other AnsibleS3Error exceptions propagate naturally
-
-
-def ensure_tags(client: ClientType, module: AnsibleAWSModule, bucket: str, obj: str) -> Tuple[Dict, bool]:
-    """Wrapper for ensure_s3_object_tags to maintain backward compatibility."""
-    tags = module.params.get("tags")
-    purge_tags = module.params.get("purge_tags")
-
-    return ensure_s3_object_tags(client, bucket, obj, tags, purge_tags)
 
 
 def get_binary_content(s3_vars: Dict) -> Optional[bytes]:
@@ -945,7 +937,9 @@ def s3_object_do_put(module, connection, connection_v4, s3_vars):
             content=bincontent,
         ):
             # Return the download URL for the existing object and ensure tags are updated
-            tags, tags_update = ensure_tags(connection, module, s3_vars["bucket"], s3_vars["object"])
+            tags, tags_update = ensure_s3_object_tags(
+                connection, s3_vars["bucket"], s3_vars["object"], module.params.get("tags"), module.params.get("purge_tags")
+            )
             get_download_url(
                 module,
                 connection,
@@ -1150,7 +1144,7 @@ def copy_object_to_bucket(module, s3, bucket, obj, encrypt, metadata, validate, 
             return changed, result
 
         # Ensure tags
-        tags, changed = ensure_tags(s3, module, bucket, obj)
+        tags, changed = ensure_s3_object_tags(s3, bucket, obj, module.params.get("tags"), module.params.get("purge_tags"))
         result = {"msg": "ETag from source and destination are the same"}
         if changed:
             result = {"msg": "tags successfully updated.", "tags": tags}
@@ -1186,7 +1180,7 @@ def copy_object_to_bucket(module, s3, bucket, obj, encrypt, metadata, validate, 
 
         # We can't set the ACLs & tags during the copy, update them afterwards
         put_object_acl(module, s3, bucket, obj)
-        tags, tags_updated = ensure_tags(s3, module, bucket, obj)
+        tags, tags_updated = ensure_s3_object_tags(s3, bucket, obj, module.params.get("tags"), module.params.get("purge_tags"))
 
         msg = f"Object copied from bucket {src_bucket} to bucket {bucket}."
         return changed, {"msg": msg, "tags": tags}
