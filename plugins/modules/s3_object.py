@@ -469,9 +469,13 @@ from ansible_collections.amazon.aws.plugins.module_utils.s3 import AnsibleS3Sigv
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import AnsibleS3SupportError
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import calculate_etag
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import calculate_etag_content
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import copy_s3_object
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import delete_s3_object
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import download_s3_file
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import ensure_s3_object_tags
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import generate_s3_presigned_url
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_s3_object
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import upload_s3_file
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_bucket_ownership_controls
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_object_content
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_object_tagging
@@ -614,14 +618,7 @@ def put_object_acl(
     params: Optional[Dict] = None,
 ) -> None:
     if params:
-        try:
-            s3.put_object(aws_retry=True, **params)
-        except (
-            botocore.exceptions.BotoCoreError,
-            botocore.exceptions.ClientError,
-            boto3.exceptions.Boto3Error,
-        ) as e:
-            raise AnsibleS3Error(message=f"Failed to create object {obj}.", exception=e)
+        put_s3_object(s3, **params)
 
     for acl in module.params.get("permission"):
         try:
@@ -753,50 +750,43 @@ def upload_s3file(
 ) -> None:
     if module.check_mode:
         module.exit_json(msg="PUT operation skipped - running in check mode", changed=True)
-    try:
-        extra = get_extra_params(
-            encrypt,
-            module.params.get("encryption_mode"),
-            module.params.get("encryption_kms_key_id"),
-            metadata,
-        )
-        # Promote supported headers to boto3 ExtraArgs and place unknown ones under Metadata
-        if headers:
-            if not isinstance(headers, dict):
-                module.warn("'headers' must be a dict; ignoring non-dict value")
-            else:
-                for option, value in headers.items():
-                    extra_arg_key = option_in_extra_args(option)
-                    if extra_arg_key:
-                        extra[extra_arg_key] = value
-                    else:
-                        # Fall back to Metadata for non-ExtraArgs headers
-                        extra.setdefault("Metadata", {})
-                        extra["Metadata"][option] = value
-        if module.params.get("permission"):
-            permissions = module.params["permission"]
-            if isinstance(permissions, str):
-                extra["ACL"] = permissions
-            elif isinstance(permissions, list):
-                extra["ACL"] = permissions[0]
-
-        if "ContentType" not in extra:
-            extra["ContentType"] = guess_content_type(src)
-
-        if src:
-            s3.upload_file(aws_retry=True, Filename=src, Bucket=bucket, Key=obj, ExtraArgs=extra)
+    extra = get_extra_params(
+        encrypt,
+        module.params.get("encryption_mode"),
+        module.params.get("encryption_kms_key_id"),
+        metadata,
+    )
+    # Promote supported headers to boto3 ExtraArgs and place unknown ones under Metadata
+    if headers:
+        if not isinstance(headers, dict):
+            module.warn("'headers' must be a dict; ignoring non-dict value")
         else:
-            # For in-memory content uploads, use put_object so promoted headers
-            # (e.g. ContentType, ContentDisposition, CacheControl) are applied consistently
-            params = {"Bucket": bucket, "Key": obj, "Body": content}
-            params.update(extra)
-            s3.put_object(aws_retry=True, **params)
-    except (
-        botocore.exceptions.ClientError,
-        botocore.exceptions.BotoCoreError,
-        boto3.exceptions.Boto3Error,
-    ) as e:
-        raise AnsibleS3Error(message="Unable to complete PUT operation.", exception=e)
+            for option, value in headers.items():
+                extra_arg_key = option_in_extra_args(option)
+                if extra_arg_key:
+                    extra[extra_arg_key] = value
+                else:
+                    # Fall back to Metadata for non-ExtraArgs headers
+                    extra.setdefault("Metadata", {})
+                    extra["Metadata"][option] = value
+    if module.params.get("permission"):
+        permissions = module.params["permission"]
+        if isinstance(permissions, str):
+            extra["ACL"] = permissions
+        elif isinstance(permissions, list):
+            extra["ACL"] = permissions[0]
+
+    if "ContentType" not in extra:
+        extra["ContentType"] = guess_content_type(src)
+
+    if src:
+        upload_s3_file(s3, src, bucket, obj, extra)
+    else:
+        # For in-memory content uploads, use put_object so promoted headers
+        # (e.g. ContentType, ContentDisposition, CacheControl) are applied consistently
+        params = {"Bucket": bucket, "Key": obj, "Body": content}
+        params.update(extra)
+        put_s3_object(s3, **params)
 
     if not acl_disabled:
         put_object_acl(module, s3, bucket, obj)
@@ -821,25 +811,9 @@ def download_s3file(
     if module.check_mode:
         module.exit_json(msg="GET operation skipped - running in check mode", changed=True)
 
-    optional_kwargs = {"ExtraArgs": {"VersionId": version}} if version else {}
-    for x in range(0, retries + 1):
-        try:
-            s3.download_file(bucket, obj, dest, aws_retry=True, **optional_kwargs)
-            module.exit_json(msg="GET operation complete", changed=True)
-        except (
-            botocore.exceptions.ClientError,
-            botocore.exceptions.BotoCoreError,
-            boto3.exceptions.Boto3Error,
-        ) as e:
-            # actually fail on last pass through the loop.
-            if x >= retries:
-                raise AnsibleS3Error(message=f"Failed while downloading {obj}.", exception=e)
-            # otherwise, try again, this may be a transient timeout.
-        except SSLError as e:  # will ClientError catch SSLError?
-            # actually fail on last pass through the loop.
-            if x >= retries:
-                module.fail_json_aws(e, msg="s3 download failed")
-            # otherwise, try again, this may be a transient timeout.
+    extra_args = {"VersionId": version} if version else {}
+    download_s3_file(s3, bucket, obj, dest, extra_args)
+    module.exit_json(msg="GET operation complete", changed=True)
 
 
 def download_s3str(
@@ -1266,7 +1240,7 @@ def copy_object_to_bucket(module, s3, bucket, obj, encrypt, metadata, validate, 
 
             # perform a "managed" copy rather simply using copy_object.  This will automatically use
             # multi-part uploads where necessary (https://github.com/boto/boto3/issues/1715)
-            s3.copy(bucketsrc, bucket, obj, ExtraArgs=extra_args, aws_retry=True)
+            copy_s3_object(s3, bucketsrc, bucket, obj, extra_args)
 
             # We can't set the ACLs & tags during the copy, update them afterwards
             put_object_acl(module, s3, bucket, obj)
