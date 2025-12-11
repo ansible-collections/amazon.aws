@@ -625,39 +625,26 @@ def get_object(connection: ClientType, bucket_name: str, object_name: str) -> Di
 
 
 def list_bucket_objects(connection: ClientType, module: AnsibleAWSModule, bucket_name: str) -> List[str]:
-    try:
-        keys = list_bucket_object_keys(
-            connection,
-            bucket=bucket_name,
-            max_keys=module.params["max_keys"],
-            start_after=module.params["marker"],
-            prefix=module.params["prefix"],
-        )
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to list bucket objects.")
+    keys = list_bucket_object_keys(
+        connection,
+        bucket=bucket_name,
+        max_keys=module.params["max_keys"],
+        start_after=module.params["marker"],
+        prefix=module.params["prefix"],
+    )
     return keys
 
 
 def bucket_check(connection: ClientType, module: AnsibleAWSModule, bucket_name: str) -> None:
     """Check if bucket exists and is accessible."""
-    try:
-        if not s3_bucket_exists(connection, bucket_name):
-            module.fail_json(msg=f"The bucket {bucket_name} does not exist.")
-    except AnsibleS3PermissionsError as e:
-        module.fail_json_aws(e, msg=f"Permission denied accessing bucket {bucket_name}.")
-    except AnsibleS3Error as e:
-        module.fail_json_aws(e, msg=f"Failed to check if bucket {bucket_name} exists.")
+    if not s3_bucket_exists(connection, bucket_name):
+        module.fail_json(msg=f"The bucket {bucket_name} does not exist.")
 
 
 def object_check(connection: ClientType, module: AnsibleAWSModule, bucket_name: str, object_name: str) -> None:
     """Check if object exists and is accessible."""
-    try:
-        if not s3_object_exists(connection, bucket_name, object_name):
-            module.fail_json(msg=f"The object {object_name} does not exist.")
-    except AnsibleS3PermissionsError as e:
-        module.fail_json_aws(e, msg=f"Permission denied accessing object {object_name}.")
-    except AnsibleS3Error as e:
-        module.fail_json_aws(e, msg=f"Failed to check if object {object_name} exists.")
+    if not s3_object_exists(connection, bucket_name, object_name):
+        module.fail_json(msg=f"The object {object_name} does not exist.")
 
 
 def main() -> None:
@@ -714,10 +701,7 @@ def main() -> None:
     result = []
     extra_params = s3_extra_params(module.params)
     retry_decorator = AWSRetry.jittered_backoff()
-    try:
-        connection = module.client("s3", retry_decorator=retry_decorator, **extra_params)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to connect to AWS")
+    connection = module.client("s3", retry_decorator=retry_decorator, **extra_params)
 
     # check if specified bucket exists
     bucket_check(connection, module, bucket_name)
