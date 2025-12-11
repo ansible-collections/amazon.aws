@@ -61,6 +61,11 @@ s3_acl_to_name = _transformations.s3_acl_to_name
 merge_tags = _transformations.merge_tags
 
 
+# ========================================
+# S3 Client Wrappers - Bucket Operations
+# ========================================
+
+
 def get_s3_waiter(client: ClientType, waiter_name: str) -> Any:
     return _waiters.waiter_factory.get_waiter(client, waiter_name)
 
@@ -146,6 +151,20 @@ def get_s3_bucket_policy(client: ClientType, bucket_name: str) -> Dict:
         raise AnsibleS3Error(exception=e, message="Unable to parse current bucket policy") from e
 
 
+@S3ErrorHandler.list_error_handler("get bucket public access block settings", {})
+@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
+def get_s3_bucket_public_access_block(client: ClientType, bucket_name: str) -> Dict:
+    """
+    Get current public access block configuration for a bucket.
+    Parameters:
+        s3_client (boto3.client): The Boto3 S3 client object.
+        bucket_name (str): The name of the S3 bucket.
+    Returns:
+        The current public access block configuration for the bucket.
+    """
+    return client.get_public_access_block(Bucket=bucket_name).get("PublicAccessBlockConfiguration")
+
+
 @S3ErrorHandler.list_error_handler("get bucket request payment settings", {})
 @AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
 def get_s3_bucket_request_payment(client: ClientType, bucket_name: str) -> Dict:
@@ -203,20 +222,6 @@ def get_s3_object_lock_configuration(client: ClientType, bucket_name: str) -> Di
     return client.get_object_lock_configuration(Bucket=bucket_name).get("ObjectLockConfiguration")
 
 
-@S3ErrorHandler.list_error_handler("get bucket public access block settings", {})
-@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def get_s3_bucket_public_access_block(client: ClientType, bucket_name: str) -> Dict:
-    """
-    Get current public access block configuration for a bucket.
-    Parameters:
-        s3_client (boto3.client): The Boto3 S3 client object.
-        bucket_name (str): The name of the S3 bucket.
-    Returns:
-        The current public access block configuration for the bucket.
-    """
-    return client.get_public_access_block(Bucket=bucket_name).get("PublicAccessBlockConfiguration")
-
-
 @S3ErrorHandler.list_error_handler("determine if bucket exisits", {})
 @AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["OperationAborted"])
 def head_s3_bucket(client: ClientType, bucket_name: str) -> Dict:
@@ -253,6 +258,80 @@ def get_bucket_location(client: ClientType, bucket_name: str) -> Dict:
     return client.get_bucket_location(Bucket=bucket_name)
 
 
+@AWSRetry.jittered_backoff()
+def s3_bucket_exists(client: ClientType, bucket_name: str) -> bool:
+    """
+    Check if an S3 bucket exists.
+
+    Parameters:
+        client (boto3.client): The Boto3 S3 client object.
+        bucket_name (str): The name of the S3 bucket.
+
+    Returns:
+        bool: True if bucket exists, False otherwise.
+
+    Raises:
+        AnsibleS3PermissionsError: If access is denied (403).
+        AnsibleS3Error: For other S3 errors.
+    """
+    result = head_s3_bucket(client, bucket_name)
+    return bool(result)
+
+
+@S3ErrorHandler.list_error_handler("list buckets", [])
+@AWSRetry.jittered_backoff()
+def list_s3_buckets(client: ClientType) -> List[Dict]:
+    """
+    List all S3 buckets in the account.
+
+    Parameters:
+        client (boto3.client): The Boto3 S3 client object.
+
+    Returns:
+        List[Dict]: List of bucket information dictionaries containing 'Name' and 'CreationDate'.
+                    Returns [] on error.
+
+    Raises:
+        AnsibleS3PermissionsError: If access is denied (403).
+        AnsibleS3Error: For other S3 errors.
+    """
+    return client.list_buckets().get("Buckets", [])
+
+
+@S3ErrorHandler.list_error_handler("get bucket inventory settings", {})
+@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
+def _list_bucket_inventory_configurations(client: ClientType, **params) -> Dict:
+    return client.list_bucket_inventory_configurations(**params)
+
+
+# _list_backup_inventory_configurations is a workaround for a missing paginator for listing
+# bucket inventory configuration in boto3:
+# https://github.com/boto/botocore/blob/1.34.141/botocore/data/s3/2006-03-01/paginators-1.json
+def list_bucket_inventory_configurations(client: ClientType, bucket_name: str) -> list:
+    first_iteration = False
+    next_token = None
+
+    response = _list_bucket_inventory_configurations(client, Bucket=bucket_name)
+    next_token = response.get("NextToken", None)
+
+    if next_token is None:
+        return response.get("InventoryConfigurationList", [])
+
+    entries = []
+    while next_token is not None:
+        if first_iteration:
+            response = _list_bucket_inventory_configurations(client, NextToken=next_token, Bucket=bucket_name)
+        first_iteration = True
+        entries.extend(response["InventoryConfigurationList"])
+        next_token = response.get("NextToken")
+    return entries
+
+
+# ========================================
+# S3 Client Wrappers - Object Operations
+# ========================================
+
+
 @S3ErrorHandler.list_error_handler("get object metadata", {})
 @AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
 def head_s3_object(
@@ -277,6 +356,17 @@ def head_s3_object(
         params["VersionId"] = version_id
     params.update(kwargs)
     return client.head_object(**params)
+
+
+@AWSRetry.jittered_backoff()
+def s3_head_objects(client, parts, bucket, obj, versionId):
+    args = {"Bucket": bucket, "Key": obj}
+    if versionId:
+        args["VersionId"] = versionId
+
+    for part in range(1, parts + 1):
+        args["PartNumber"] = part
+        yield client.head_object(**args)
 
 
 @S3ErrorHandler.list_error_handler("get object content", None)
@@ -473,26 +563,6 @@ def s3_object_exists(
         AnsibleS3Error: For other S3 errors.
     """
     result = head_s3_object(client, bucket_name, object_key, version_id)
-    return bool(result)
-
-
-@AWSRetry.jittered_backoff()
-def s3_bucket_exists(client: ClientType, bucket_name: str) -> bool:
-    """
-    Check if an S3 bucket exists.
-
-    Parameters:
-        client (boto3.client): The Boto3 S3 client object.
-        bucket_name (str): The name of the S3 bucket.
-
-    Returns:
-        bool: True if bucket exists, False otherwise.
-
-    Raises:
-        AnsibleS3PermissionsError: If access is denied (403).
-        AnsibleS3Error: For other S3 errors.
-    """
-    result = head_s3_bucket(client, bucket_name)
     return bool(result)
 
 
@@ -781,14 +851,49 @@ def generate_s3_presigned_url(
 
 
 @AWSRetry.jittered_backoff()
-def s3_head_objects(client, parts, bucket, obj, versionId):
-    args = {"Bucket": bucket, "Key": obj}
-    if versionId:
-        args["VersionId"] = versionId
+def _list_objects_v2(client: ClientType, **params) -> Dict:
+    params = {k: v for k, v in params.items() if v is not None}
+    # For practical purposes, the paginator ignores MaxKeys, if we've been passed MaxKeys we need to
+    # explicitly call list_objects_v3 rather than re-use the paginator
+    if params.get("MaxKeys", None) is not None:
+        return client.list_objects_v2(**params)
 
-    for part in range(1, parts + 1):
-        args["PartNumber"] = part
-        yield client.head_object(**args)
+    paginator = client.get_paginator("list_objects_v2")
+    return paginator.paginate(**params).build_full_result()
+
+
+@S3ErrorHandler.list_error_handler("list bucket objects", [])
+def list_bucket_object_keys(
+    client: ClientType,
+    bucket: str,
+    prefix: Optional[str] = None,
+    max_keys: Optional[int] = None,
+    start_after: Optional[str] = None,
+) -> List[str]:
+    """
+    List object keys in an S3 bucket with optional filtering.
+
+    Parameters:
+        client (boto3.client): The Boto3 S3 client object.
+        bucket (str): The name of the S3 bucket.
+        prefix (str, optional): Limits the response to keys that begin with the specified prefix.
+        max_keys (int, optional): Maximum number of keys to return.
+        start_after (str, optional): StartAfter key for pagination.
+
+    Returns:
+        List[str]: List of object keys. Returns [] if bucket has no objects or on 404.
+
+    Raises:
+        AnsibleS3PermissionsError: If access is denied (403).
+        AnsibleS3Error: For other S3 errors.
+    """
+    response = _list_objects_v2(client, Bucket=bucket, Prefix=prefix, StartAfter=start_after, MaxKeys=max_keys)
+    return [c["Key"] for c in response.get("Contents", [])]
+
+
+# ==========================================
+# Transformation and Helper Functions
+# ==========================================
 
 
 def calculate_checksum_with_file(client, parts, bucket, obj, versionId, filename):
@@ -909,96 +1014,6 @@ def s3_extra_params(options, sigv4=False):
         config["signature_version"] = "s3v4"
     extra_params["config"] = config
     return extra_params
-
-
-@S3ErrorHandler.list_error_handler("get bucket inventory settings", {})
-@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def _list_bucket_inventory_configurations(client: ClientType, **params) -> Dict:
-    return client.list_bucket_inventory_configurations(**params)
-
-
-# _list_backup_inventory_configurations is a workaround for a missing paginator for listing
-# bucket inventory configuration in boto3:
-# https://github.com/boto/botocore/blob/1.34.141/botocore/data/s3/2006-03-01/paginators-1.json
-def list_bucket_inventory_configurations(client: ClientType, bucket_name: str) -> list:
-    first_iteration = False
-    next_token = None
-
-    response = _list_bucket_inventory_configurations(client, Bucket=bucket_name)
-    next_token = response.get("NextToken", None)
-
-    if next_token is None:
-        return response.get("InventoryConfigurationList", [])
-
-    entries = []
-    while next_token is not None:
-        if first_iteration:
-            response = _list_bucket_inventory_configurations(client, NextToken=next_token, Bucket=bucket_name)
-        first_iteration = True
-        entries.extend(response["InventoryConfigurationList"])
-        next_token = response.get("NextToken")
-    return entries
-
-
-@AWSRetry.jittered_backoff()
-def _list_objects_v2(client: ClientType, **params) -> Dict:
-    params = {k: v for k, v in params.items() if v is not None}
-    # For practical purposes, the paginator ignores MaxKeys, if we've been passed MaxKeys we need to
-    # explicitly call list_objects_v3 rather than re-use the paginator
-    if params.get("MaxKeys", None) is not None:
-        return client.list_objects_v2(**params)
-
-    paginator = client.get_paginator("list_objects_v2")
-    return paginator.paginate(**params).build_full_result()
-
-
-@S3ErrorHandler.list_error_handler("list bucket objects", [])
-def list_bucket_object_keys(
-    client: ClientType,
-    bucket: str,
-    prefix: Optional[str] = None,
-    max_keys: Optional[int] = None,
-    start_after: Optional[str] = None,
-) -> List[str]:
-    """
-    List object keys in an S3 bucket with optional filtering.
-
-    Parameters:
-        client (boto3.client): The Boto3 S3 client object.
-        bucket (str): The name of the S3 bucket.
-        prefix (str, optional): Limits the response to keys that begin with the specified prefix.
-        max_keys (int, optional): Maximum number of keys to return.
-        start_after (str, optional): StartAfter key for pagination.
-
-    Returns:
-        List[str]: List of object keys. Returns [] if bucket has no objects or on 404.
-
-    Raises:
-        AnsibleS3PermissionsError: If access is denied (403).
-        AnsibleS3Error: For other S3 errors.
-    """
-    response = _list_objects_v2(client, Bucket=bucket, Prefix=prefix, StartAfter=start_after, MaxKeys=max_keys)
-    return [c["Key"] for c in response.get("Contents", [])]
-
-
-@S3ErrorHandler.list_error_handler("list buckets", [])
-@AWSRetry.jittered_backoff()
-def list_s3_buckets(client: ClientType) -> List[Dict]:
-    """
-    List all S3 buckets in the account.
-
-    Parameters:
-        client (boto3.client): The Boto3 S3 client object.
-
-    Returns:
-        List[Dict]: List of bucket information dictionaries containing 'Name' and 'CreationDate'.
-                    Returns [] on error.
-
-    Raises:
-        AnsibleS3PermissionsError: If access is denied (403).
-        AnsibleS3Error: For other S3 errors.
-    """
-    return client.list_buckets().get("Buckets", [])
 
 
 def get_s3_bucket_location(module):
