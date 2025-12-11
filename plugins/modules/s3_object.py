@@ -823,7 +823,7 @@ def get_binary_content(s3_vars: Dict) -> Optional[bytes]:
     return bincontent
 
 
-def s3_object_do_get(module, connection, connection_v4, s3_vars):
+def do_s3_object_get(module, connection, connection_v4, s3_vars):
     if module.params.get("sig_v4"):
         connection = connection_v4
 
@@ -893,7 +893,7 @@ def s3_object_do_get(module, connection, connection_v4, s3_vars):
     module.exit_json(failed=False)
 
 
-def s3_object_do_put(module, connection, connection_v4, s3_vars):
+def do_s3_object_put(module, connection, connection_v4, s3_vars):
     # if putting an object in a bucket yet to be created, acls for the bucket and/or the object may be specified
     # these were separated into the variables bucket_acl and object_acl above
 
@@ -964,7 +964,7 @@ def s3_object_do_put(module, connection, connection_v4, s3_vars):
     module.exit_json(failed=False)
 
 
-def s3_object_do_delobj(module, connection, connection_v4, s3_vars):
+def do_s3_object_delobj(module, connection, connection_v4, s3_vars):
     if module.check_mode:
         module.exit_json(
             msg="DELETE operation skipped - running in check mode",
@@ -978,7 +978,7 @@ def s3_object_do_delobj(module, connection, connection_v4, s3_vars):
     module.exit_json(msg=f"Object deleted from bucket {s3_vars['object']}.", changed=True)
 
 
-def s3_object_do_list(module, connection, connection_v4, s3_vars):
+def do_s3_object_list(module, connection, connection_v4, s3_vars):
     # If the bucket does not exist then bail out
     keys = list_bucket_object_keys(
         connection,
@@ -990,7 +990,7 @@ def s3_object_do_list(module, connection, connection_v4, s3_vars):
     module.exit_json(msg="LIST operation complete", s3_keys=keys)
 
 
-def s3_object_do_create(module, connection, connection_v4, s3_vars):
+def do_s3_object_create(module, connection, connection_v4, s3_vars):
     # if both creating a bucket and putting an object in it, acls for the bucket and/or the object may be specified
     # these were separated above into the variables bucket_acl and object_acl
 
@@ -1016,7 +1016,7 @@ def s3_object_do_create(module, connection, connection_v4, s3_vars):
     )
 
 
-def s3_object_do_geturl(module, connection, connection_v4, s3_vars):
+def do_s3_object_geturl(module, connection, connection_v4, s3_vars):
     if module.params.get("sig_v4"):
         connection = connection_v4
 
@@ -1046,7 +1046,7 @@ def s3_object_do_geturl(module, connection, connection_v4, s3_vars):
     module.fail_json(msg=f"Key {s3_vars['object']} does not exist.")
 
 
-def s3_object_do_getstr(module, connection, connection_v4, s3_vars):
+def do_s3_object_getstr(module, connection, connection_v4, s3_vars):
     if module.params.get("sig_v4"):
         connection = connection_v4
 
@@ -1189,7 +1189,7 @@ def copy_object_to_bucket(module, s3, bucket, obj, encrypt, metadata, validate, 
         return changed, {"msg": msg, "tags": tags}
 
 
-def s3_object_do_copy(module, connection, connection_v4, s3_vars):
+def do_s3_object_copy(module, connection, connection_v4, s3_vars):
     copy_src = module.params.get("copy_src")
     if not copy_src.get("object") and s3_vars["object"]:
         module.fail_json(
@@ -1418,14 +1418,14 @@ def main():
     s3_object_params.update(validate_bucket(module, s3, s3_object_params))
 
     func_mapping = {
-        "get": s3_object_do_get,
-        "put": s3_object_do_put,
-        "delobj": s3_object_do_delobj,
-        "list": s3_object_do_list,
-        "create": s3_object_do_create,
-        "geturl": s3_object_do_geturl,
-        "getstr": s3_object_do_getstr,
-        "copy": s3_object_do_copy,
+        "get": do_s3_object_get,
+        "put": do_s3_object_put,
+        "delobj": do_s3_object_delobj,
+        "list": do_s3_object_list,
+        "create": do_s3_object_create,
+        "geturl": do_s3_object_geturl,
+        "getstr": do_s3_object_getstr,
+        "copy": do_s3_object_copy,
     }
     func = func_mapping[s3_object_params["mode"]]
     func(module, s3, s3_v4, s3_object_params)
