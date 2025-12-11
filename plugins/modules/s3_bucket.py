@@ -733,7 +733,7 @@ def handle_bucket_public_access_config(
         return False, normalize_s3_bucket_public_access(current_public_access)
 
     # Make a change
-    put_s3_bucket_public_access(s3_client, name, camel_public_block)
+    put_s3_bucket_public_access(s3_client, name, public_access_config=camel_public_block)
     return True, normalize_s3_bucket_public_access(camel_public_block)
 
 
@@ -964,7 +964,7 @@ def handle_bucket_ownership(s3_client: ClientType, module: AnsibleAWSModule, nam
     if bucket_ownership == object_ownership:
         return False, bucket_ownership
 
-    put_s3_bucket_ownership(s3_client, name, object_ownership)
+    put_s3_bucket_ownership(s3_client, name, object_ownership=object_ownership)
     return True, object_ownership
 
 

@@ -458,17 +458,17 @@ def put_s3_bucket_encryption(client: ClientType, bucket_name: str, encryption: d
 
 @S3ErrorHandler.common_error_handler("set public access block configuration")
 @AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def put_s3_bucket_public_access(client: ClientType, bucket_name: str, public_acces: dict) -> None:
+def put_s3_bucket_public_access(client: ClientType, bucket_name: str, public_access_config: dict) -> None:
     """
     Put new public access block to S3 bucket
     Parameters:
         client (boto3.client): The Boto3 S3 client object.
         bucket_name (str): The name of the S3 bucket.
-        public_acces (dict): The public access block configuration.
+        public_access_config (dict): The public access block configuration.
     Returns:
         None
     """
-    client.put_public_access_block(Bucket=bucket_name, PublicAccessBlockConfiguration=public_acces)
+    client.put_public_access_block(Bucket=bucket_name, PublicAccessBlockConfiguration=public_access_config)
 
 
 @S3ErrorHandler.common_error_handler("set bucket ACL")
@@ -488,17 +488,19 @@ def put_s3_bucket_acl(client: ClientType, bucket_name: str, acl: str) -> None:
 
 @S3ErrorHandler.common_error_handler("set bucket ownership controls")
 @AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def put_s3_bucket_ownership(client: ClientType, bucket_name: str, target: str) -> None:
+def put_s3_bucket_ownership(client: ClientType, bucket_name: str, object_ownership: str) -> None:
     """
     Put bucket ownership controls for S3 bucket
     Parameters:
         client (boto3.client): The Boto3 S3 client object.
         bucket_name (str): The name of the S3 bucket.
-        target (str): The target ownership control setting.
+        object_ownership (str): The object ownership control setting.
     Returns:
         None
     """
-    client.put_bucket_ownership_controls(Bucket=bucket_name, OwnershipControls={"Rules": [{"ObjectOwnership": target}]})
+    client.put_bucket_ownership_controls(
+        Bucket=bucket_name, OwnershipControls={"Rules": [{"ObjectOwnership": object_ownership}]}
+    )
 
 
 @S3ErrorHandler.deletion_error_handler("set bucket acceleration configuration")
