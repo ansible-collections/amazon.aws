@@ -439,7 +439,6 @@ import copy
 import mimetypes
 import os
 import typing
-from ssl import SSLError
 
 if typing.TYPE_CHECKING:
     from typing import Any
@@ -449,14 +448,6 @@ if typing.TYPE_CHECKING:
     from typing import Tuple
 
     from ansible_collections.amazon.aws.plugins.module_utils.botocore import ClientType
-
-try:
-    # Beware, S3 is a "special" case, it sometimes catches botocore exceptions and
-    # re-raises them as boto3 exceptions.
-    import boto3
-    import botocore
-except ImportError:
-    pass  # Handled by AnsibleAWSModule
 
 from ansible.module_utils.basic import to_native
 
@@ -979,8 +970,12 @@ def s3_object_do_delobj(module, connection, connection_v4, s3_vars):
             msg="DELETE operation skipped - running in check mode",
             changed=True,
         )
-    delete_s3_object(s3, bucket, obj)
-    module.exit_json(msg=f"Object deleted from bucket {bucket}.", changed=True)
+    delete_s3_object(
+        connection,
+        s3_vars["bucket"],
+        s3_vars["object"],
+    )
+    module.exit_json(msg=f"Object deleted from bucket {s3_vars['object']}.", changed=True)
 
 
 def s3_object_do_list(module, connection, connection_v4, s3_vars):

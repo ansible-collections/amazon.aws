@@ -456,17 +456,11 @@ if typing.TYPE_CHECKING:
 
     from ansible_collections.amazon.aws.plugins.module_utils.botocore import ClientType
 
-try:
-    import botocore
-except ImportError:
-    pass  # Handled by AnsibleAWSModule
-
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import AnsibleS3Error
-from ansible_collections.amazon.aws.plugins.module_utils.s3 import AnsibleS3PermissionsError
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import AnsibleS3SupportError
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_object_acl
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_object_attributes
