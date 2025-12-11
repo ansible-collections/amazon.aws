@@ -328,7 +328,7 @@ def list_bucket_inventory_configurations(client: ClientType, bucket_name: str) -
 
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def put_object_lock_configuration(client: ClientType, bucket_name: str, object_lock_default_retention: str) -> None:
+def put_s3_object_lock_configuration(client: ClientType, bucket_name: str, object_lock_default_retention: str) -> None:
     """
     Set object lock configuration for an S3 bucket.
     Parameters:
@@ -345,7 +345,7 @@ def put_object_lock_configuration(client: ClientType, bucket_name: str, object_l
 
 @S3ErrorHandler.common_error_handler("set bucket acceleration configuration")
 @AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def put_bucket_accelerate_configuration(client: ClientType, bucket_name: str) -> None:
+def put_s3_bucket_accelerate_configuration(client: ClientType, bucket_name: str) -> None:
     """
     Enable transfer accelerate for the S3 bucket.
     Parameters:
@@ -359,7 +359,7 @@ def put_bucket_accelerate_configuration(client: ClientType, bucket_name: str) ->
 
 @S3ErrorHandler.common_error_handler("set bucket inventory configuration")
 @AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def put_bucket_inventory(client: ClientType, bucket_name: str, inventory: dict) -> None:
+def put_s3_bucket_inventory(client: ClientType, bucket_name: str, inventory: dict) -> None:
     """
     Set inventory settings for an S3 bucket.
     Parameters:
@@ -409,7 +409,7 @@ def put_s3_bucket_policy(client: ClientType, bucket_name: str, policy: dict) -> 
 
 @S3ErrorHandler.common_error_handler("set bucket request payment configuration")
 @AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def put_bucket_request_payment(client: ClientType, bucket_name: str, payer: str) -> None:
+def put_s3_bucket_request_payment(client: ClientType, bucket_name: str, payer: str) -> None:
     """
     Set the request payment configuration for an S3 bucket.
     Parameters:
@@ -424,7 +424,7 @@ def put_bucket_request_payment(client: ClientType, bucket_name: str, payer: str)
 
 @S3ErrorHandler.common_error_handler("set bucket versioning configuration")
 @AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def put_bucket_versioning(client: ClientType, bucket_name: str, required_versioning: str) -> None:
+def put_s3_bucket_versioning(client: ClientType, bucket_name: str, required_versioning: str) -> None:
     """
     Set the versioning configuration for an S3 bucket.
     Parameters:
@@ -439,7 +439,7 @@ def put_bucket_versioning(client: ClientType, bucket_name: str, required_version
 
 @S3ErrorHandler.common_error_handler("set bucket encryption")
 @AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def put_bucket_encryption(client: ClientType, bucket_name: str, encryption: dict) -> None:
+def put_s3_bucket_encryption(client: ClientType, bucket_name: str, encryption: dict) -> None:
     """
     Set the encryption configuration for an S3 bucket.
     Parameters:
@@ -486,7 +486,7 @@ def put_s3_bucket_acl(client: ClientType, bucket_name: str, acl: str) -> None:
 
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def put_bucket_ownership(client: ClientType, bucket_name: str, target: str) -> None:
+def put_s3_bucket_ownership(client: ClientType, bucket_name: str, target: str) -> None:
     """
     Put bucket ownership controls for S3 bucket
     Parameters:
@@ -501,7 +501,7 @@ def put_bucket_ownership(client: ClientType, bucket_name: str, target: str) -> N
 
 @S3ErrorHandler.deletion_error_handler("set bucket acceleration configuration")
 @AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def delete_bucket_accelerate_configuration(client: ClientType, bucket_name: str) -> None:
+def delete_s3_bucket_accelerate_configuration(client: ClientType, bucket_name: str) -> None:
     """
     Disable transfer accelerate for the S3 bucket.
     Parameters:
@@ -515,7 +515,7 @@ def delete_bucket_accelerate_configuration(client: ClientType, bucket_name: str)
 
 @S3ErrorHandler.deletion_error_handler("delete bucket inventory configuration")
 @AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def delete_bucket_inventory(client: ClientType, bucket_name: str, inventory_id: str) -> None:
+def delete_s3_bucket_inventory(client: ClientType, bucket_name: str, inventory_id: str) -> None:
     """
     Delete the inventory settings for an S3 bucket.
     Parameters:
@@ -558,7 +558,7 @@ def delete_s3_bucket_encryption(client: ClientType, bucket_name: str) -> None:
 
 @S3ErrorHandler.deletion_error_handler("delete bucket")
 @AWSRetry.jittered_backoff(max_delay=240, catch_extra_error_codes=["OperationAborted"])
-def delete_bucket(client: ClientType, bucket_name: str) -> None:
+def delete_s3_bucket(client: ClientType, bucket_name: str) -> None:
     """
     Delete an S3 bucket.
     Parameters:
@@ -599,7 +599,7 @@ def delete_s3_bucket_public_access(client: ClientType, bucket_name: str) -> None
 
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def delete_bucket_ownership(client: ClientType, bucket_name: str) -> None:
+def delete_s3_bucket_ownership(client: ClientType, bucket_name: str) -> None:
     """
     Delete bucket ownership controls from S3 bucket
     Parameters:
