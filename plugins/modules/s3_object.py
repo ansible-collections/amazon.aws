@@ -631,7 +631,7 @@ def create_dirkey(
     # Tags
     tags, _changed = ensure_tags(s3, module, bucket, obj)
 
-    url = put_download_url(s3, bucket, obj, expiry)
+    url = generate_s3_presigned_url(s3, bucket, obj, client_method="put_object", expiry=expiry)
 
     module.exit_json(
         msg=f"Virtual directory {obj} created in bucket {bucket}",
@@ -764,7 +764,7 @@ def upload_s3file(
     # Tags
     tags, _changed = ensure_tags(s3, module, bucket, obj)
 
-    url = put_download_url(s3, bucket, obj, expiry)
+    url = generate_s3_presigned_url(s3, bucket, obj, client_method="put_object", expiry=expiry)
 
     module.exit_json(msg="PUT operation complete", url=url, tags=tags, changed=True)
 
@@ -816,10 +816,6 @@ def get_download_url(
         expiry=expiry,
         changed=changed,
     )
-
-
-def put_download_url(s3: ClientType, bucket: str, obj: str, expiry: int) -> str:
-    return generate_s3_presigned_url(s3, bucket, obj, client_method="put_object", expiry=expiry)
 
 
 def get_current_object_tags_dict(
