@@ -157,7 +157,7 @@ def get_s3_bucket_public_access_block(client: ClientType, bucket_name: str) -> D
     """
     Get current public access block configuration for a bucket.
     Parameters:
-        s3_client (boto3.client): The Boto3 S3 client object.
+        client (boto3.client): The Boto3 S3 client object.
         bucket_name (str): The name of the S3 bucket.
     Returns:
         The current public access block configuration for the bucket.
@@ -222,13 +222,13 @@ def get_s3_object_lock_configuration(client: ClientType, bucket_name: str) -> Di
     return client.get_object_lock_configuration(Bucket=bucket_name).get("ObjectLockConfiguration")
 
 
-@S3ErrorHandler.list_error_handler("determine if bucket exisits", {})
+@S3ErrorHandler.list_error_handler("determine if bucket exists", {})
 @AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["OperationAborted"])
 def head_s3_bucket(client: ClientType, bucket_name: str) -> Dict:
     """
     Retrieve basic information about an S3 bucket
     Parameters:
-        s3_client (boto3.client): The Boto3 S3 client object.
+        client (boto3.client): The Boto3 S3 client object.
         bucket_name (str): The name of the S3 bucket.
     Returns:
         Basic information about the bucket.
@@ -304,7 +304,7 @@ def _list_bucket_inventory_configurations(client: ClientType, **params) -> Dict:
     return client.list_bucket_inventory_configurations(**params)
 
 
-# _list_backup_inventory_configurations is a workaround for a missing paginator for listing
+# _list_bucket_inventory_configurations is a workaround for a missing paginator for listing
 # bucket inventory configuration in boto3:
 # https://github.com/boto/botocore/blob/1.34.141/botocore/data/s3/2006-03-01/paginators-1.json
 def list_bucket_inventory_configurations(client: ClientType, bucket_name: str) -> list:
