@@ -9,6 +9,7 @@ from unittest.mock import patch
 
 import pytest
 
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import AnsibleS3SupportError
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import ensure_s3_object_tags
 
 
@@ -236,3 +237,34 @@ class TestEnsureS3ObjectTags:
         assert changed is True
         # Verify the tags passed to put were converted
         m_put_tags.assert_called_once_with(client, "test-bucket", "test-key", {"Count": "123", "Enabled": "True"})
+
+    @patch("ansible_collections.amazon.aws.plugins.module_utils.s3.get_s3_object_tagging")
+    def test_support_error_with_none_tags_returns_empty(self, m_get_tags):
+        """Test that AnsibleS3SupportError with None tags returns empty dict."""
+        client = MagicMock()
+        m_get_tags.side_effect = AnsibleS3SupportError(message="Tagging not supported")
+
+        result_tags, changed = ensure_s3_object_tags(
+            client, "test-bucket", "test-key", None, purge_tags=True, _max_attempts=1, _sleep_time=0
+        )
+
+        assert result_tags == {}
+        assert changed is False
+        m_get_tags.assert_called_once_with(client, "test-bucket", "test-key")
+
+    @patch("ansible_collections.amazon.aws.plugins.module_utils.s3.get_s3_object_tagging")
+    def test_support_error_with_tags_raises(self, m_get_tags):
+        """Test that AnsibleS3SupportError with tags specified raises."""
+        client = MagicMock()
+        m_get_tags.side_effect = AnsibleS3SupportError(message="Tagging not supported")
+
+        with pytest.raises(AnsibleS3SupportError, match="Tagging not supported"):
+            ensure_s3_object_tags(
+                client,
+                "test-bucket",
+                "test-key",
+                {"Environment": "test"},
+                purge_tags=True,
+                _max_attempts=1,
+                _sleep_time=0,
+            )
