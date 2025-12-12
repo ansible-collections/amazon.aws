@@ -69,15 +69,13 @@
       register: _objects
 
     - name: Ensure objects with prefix 'file' were copied into bucket
-      vars:
-        _object_keys: "{{ _objects.s3_keys | map(attribute='key') | list }}"
       ansible.builtin.assert:
         that:
           - _copy_with_prefix is changed
           - _objects.s3_keys | length == 3
-          - '"file1.txt" in _object_keys'
-          - '"file2.txt" in _object_keys'
-          - '"file3.txt" in _object_keys'
+          - '"file1.txt" in _objects.s3_keys'
+          - '"file2.txt" in _objects.s3_keys'
+          - '"file3.txt" in _objects.s3_keys'
 
     # Test: Copy all objects using prefix (idempotency)
     - name: Copy object using prefix (idempotency)
@@ -95,15 +93,13 @@
       register: _objects
 
     - name: Ensure objects with prefix 'file' were copied into bucket
-      vars:
-        _object_keys: "{{ _objects.s3_keys | map(attribute='key') | list }}"
       ansible.builtin.assert:
         that:
           - _copy_with_prefix_idempotency is not changed
           - _objects.s3_keys | length == 3
-          - '"file1.txt" in _object_keys'
-          - '"file2.txt" in _object_keys'
-          - '"file3.txt" in _object_keys'
+          - '"file1.txt" in _objects.s3_keys'
+          - '"file2.txt" in _objects.s3_keys'
+          - '"file3.txt" in _objects.s3_keys'
 
     - name: Test list to get just 1 object from the bucket
       amazon.aws.s3_object_info:

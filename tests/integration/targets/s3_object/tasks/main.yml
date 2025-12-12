@@ -452,7 +452,7 @@
 
     - ansible.builtin.assert:
         that:
-          - "'delete.txt' in (result.s3_keys | map(attribute='key') | list)"
+          - "'delete.txt' in result.s3_keys"
 
     - name: Test delobj to just delete an object in the bucket
       amazon.aws.s3_object:
