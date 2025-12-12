@@ -706,6 +706,10 @@ def main():
         ["ceph", True, ["endpoint_url"]],
     ]
 
+    mutually_exclusive = [
+        ["object_name", "prefix"],
+        ["dualstack", "endpoint_url"],
+    ]
     mutually_exclusive = [["object_name", "prefix"], ["dualstack", "endpoint_url"]]
 
     module = AnsibleAWSModule(
