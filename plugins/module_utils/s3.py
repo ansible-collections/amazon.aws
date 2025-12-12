@@ -308,7 +308,7 @@ def _list_bucket_inventory_configurations(client: ClientType, **params) -> Dict:
 # bucket inventory configuration in boto3:
 # https://github.com/boto/botocore/blob/1.34.141/botocore/data/s3/2006-03-01/paginators-1.json
 def list_bucket_inventory_configurations(client: ClientType, bucket_name: str) -> list:
-    first_iteration = False
+    first_iteration_completed = False
     next_token = None
 
     response = _list_bucket_inventory_configurations(client, Bucket=bucket_name)
@@ -319,9 +319,9 @@ def list_bucket_inventory_configurations(client: ClientType, bucket_name: str) -
 
     entries = []
     while next_token is not None:
-        if first_iteration:
+        if first_iteration_completed:
             response = _list_bucket_inventory_configurations(client, NextToken=next_token, Bucket=bucket_name)
-        first_iteration = True
+        first_iteration_completed = True
         entries.extend(response["InventoryConfigurationList"])
         next_token = response.get("NextToken")
     return entries
