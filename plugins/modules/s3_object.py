@@ -958,7 +958,7 @@ def do_s3_object_delobj(module, connection, s3_vars):
         s3_vars["bucket"],
         s3_vars["object"],
     )
-    module.exit_json(msg=f"Object deleted from bucket {s3_vars['object']}.", changed=True)
+    module.exit_json(msg=f"Object {s3_vars['object']} deleted from bucket {s3_vars['bucket']}.", changed=True)
 
 
 def do_s3_object_list(module, connection, s3_vars):
