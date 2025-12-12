@@ -5,8 +5,6 @@
 
 from unittest.mock import MagicMock
 
-import pytest
-
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_bucket_location
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import parse_s3_endpoint
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import s3_extra_params

@@ -12,11 +12,13 @@ import typing
 if typing.TYPE_CHECKING:
     from typing import Any
     from typing import Dict
+    from typing import Generator
     from typing import List
     from typing import Optional
     from typing import Tuple
 
     from .botocore import ClientType
+    from .modules import AnsibleAWSModule
 
 from urllib.parse import urlparse
 
@@ -648,7 +650,22 @@ def head_s3_object(
 
 
 @AWSRetry.jittered_backoff()
-def s3_head_objects(client, parts, bucket, obj, versionId):
+def s3_head_objects(
+    client: ClientType, parts: int, bucket: str, obj: str, versionId: Optional[str]
+) -> Generator[Dict, None, None]:
+    """
+    Generator that yields HEAD object responses for each part of a multipart upload.
+
+    Parameters:
+        client (boto3.client): The Boto3 S3 client object.
+        parts (int): Number of parts in the multipart upload.
+        bucket (str): The S3 bucket name.
+        obj (str): The S3 object key.
+        versionId (str): Optional version ID of the object.
+
+    Yields:
+        HEAD object response dict for each part.
+    """
     args = {"Bucket": bucket, "Key": obj}
     if versionId:
         args["VersionId"] = versionId
@@ -1201,7 +1218,23 @@ def list_bucket_object_keys(
 # ==========================================
 
 
-def calculate_checksum_with_file(client, parts, bucket, obj, versionId, filename):
+def calculate_checksum_with_file(
+    client: ClientType, parts: int, bucket: str, obj: str, versionId: Optional[str], filename: str
+) -> str:
+    """
+    Calculate MD5 checksum for a multipart upload using a local file.
+
+    Parameters:
+        client (boto3.client): The Boto3 S3 client object.
+        parts (int): Number of parts in the multipart upload.
+        bucket (str): The S3 bucket name.
+        obj (str): The S3 object key.
+        versionId (str): Optional version ID of the object.
+        filename (str): Path to the local file.
+
+    Returns:
+        The ETag for the multipart upload in the format "{md5hash}-{parts}".
+    """
     digests = []
     with open(filename, "rb") as f:
         for head in s3_head_objects(client, parts, bucket, obj, versionId):
@@ -1211,7 +1244,23 @@ def calculate_checksum_with_file(client, parts, bucket, obj, versionId, filename
     return f'"{md5(digest_squared).hexdigest()}-{len(digests)}"'
 
 
-def calculate_checksum_with_content(client, parts, bucket, obj, versionId, content):
+def calculate_checksum_with_content(
+    client: ClientType, parts: int, bucket: str, obj: str, versionId: Optional[str], content: bytes
+) -> str:
+    """
+    Calculate MD5 checksum for a multipart upload using in-memory content.
+
+    Parameters:
+        client (boto3.client): The Boto3 S3 client object.
+        parts (int): Number of parts in the multipart upload.
+        bucket (str): The S3 bucket name.
+        obj (str): The S3 object key.
+        versionId (str): Optional version ID of the object.
+        content (bytes): The content bytes.
+
+    Returns:
+        The ETag for the multipart upload in the format "{md5hash}-{parts}".
+    """
     digests = []
     offset = 0
     for head in s3_head_objects(client, parts, bucket, obj, versionId):
@@ -1223,7 +1272,30 @@ def calculate_checksum_with_content(client, parts, bucket, obj, versionId, conte
     return f'"{md5(digest_squared).hexdigest()}-{len(digests)}"'
 
 
-def calculate_etag(module, filename, etag, client, bucket, obj, version=None):
+def calculate_etag(
+    module: AnsibleAWSModule,
+    filename: str,
+    etag: Optional[str],
+    client: ClientType,
+    bucket: str,
+    obj: str,
+    version: Optional[str] = None,
+) -> Optional[str]:
+    """
+    Calculate the ETag for a local file, handling both single-part and multipart uploads.
+
+    Parameters:
+        module (AnsibleAWSModule): The Ansible module object.
+        filename (str): Path to the local file.
+        etag (str): The ETag from S3 to determine if multipart.
+        client (boto3.client): The Boto3 S3 client object.
+        bucket (str): The S3 bucket name.
+        obj (str): The S3 object key.
+        version (str): Optional version ID of the object.
+
+    Returns:
+        The calculated ETag string, or None if MD5 is not available.
+    """
     if not HAS_MD5:
         return None
 
@@ -1238,7 +1310,30 @@ def calculate_etag(module, filename, etag, client, bucket, obj, version=None):
         return f'"{module.md5(filename)}"'
 
 
-def calculate_etag_content(module, content, etag, client, bucket, obj, version=None):
+def calculate_etag_content(
+    module: AnsibleAWSModule,
+    content: bytes,
+    etag: Optional[str],
+    client: ClientType,
+    bucket: str,
+    obj: str,
+    version: Optional[str] = None,
+) -> Optional[str]:
+    """
+    Calculate the ETag for in-memory content, handling both single-part and multipart uploads.
+
+    Parameters:
+        module (AnsibleAWSModule): The Ansible module object.
+        content (bytes): The content bytes.
+        etag (str): The ETag from S3 to determine if multipart.
+        client (boto3.client): The Boto3 S3 client object.
+        bucket (str): The S3 bucket name.
+        obj (str): The S3 object key.
+        version (str): Optional version ID of the object.
+
+    Returns:
+        The calculated ETag string, or None if MD5 is not available.
+    """
     if not HAS_MD5:
         return None
 
@@ -1253,7 +1348,16 @@ def calculate_etag_content(module, content, etag, client, bucket, obj, version=N
         return f'"{md5(content).hexdigest()}"'
 
 
-def validate_bucket_name(name):
+def validate_bucket_name(name: str) -> Optional[str]:
+    """
+    Validate S3 bucket name against AWS naming rules.
+
+    Parameters:
+        name (str): The bucket name to validate.
+
+    Returns:
+        Error message string if validation fails, or None if valid.
+    """
     # See: https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html
     if len(name) < 3:
         return "the length of an S3 bucket must be at least 3 characters"
@@ -1270,7 +1374,7 @@ def validate_bucket_name(name):
 
 
 # Spot special case of fakes3.
-def is_fakes3(url):
+def is_fakes3(url: Optional[str]) -> bool:
     """Return True if endpoint_url has scheme fakes3://"""
     result = False
     if url is not None:
@@ -1278,7 +1382,16 @@ def is_fakes3(url):
     return result
 
 
-def parse_fakes3_endpoint(url):
+def parse_fakes3_endpoint(url: str) -> Dict:
+    """
+    Parse a FakeS3 endpoint URL and extract connection parameters.
+
+    Parameters:
+        url (str): The FakeS3 endpoint URL (fakes3:// or fakes3s://).
+
+    Returns:
+        Dict with 'endpoint' URL and 'use_ssl' boolean.
+    """
     fakes3 = urlparse(url)
     protocol = "http"
     port = fakes3.port or 80
@@ -1290,13 +1403,31 @@ def parse_fakes3_endpoint(url):
     return {"endpoint": endpoint_url, "use_ssl": use_ssl}
 
 
-def parse_ceph_endpoint(url):
+def parse_ceph_endpoint(url: str) -> Dict:
+    """
+    Parse a Ceph endpoint URL and extract connection parameters.
+
+    Parameters:
+        url (str): The Ceph endpoint URL.
+
+    Returns:
+        Dict with 'endpoint' URL and 'use_ssl' boolean.
+    """
     ceph = urlparse(url)
     use_ssl = bool(ceph.scheme == "https")
     return {"endpoint": url, "use_ssl": use_ssl}
 
 
-def parse_s3_endpoint(options):
+def parse_s3_endpoint(options: Dict) -> Tuple[bool, Dict]:
+    """
+    Parse S3 endpoint options and determine connection parameters.
+
+    Parameters:
+        options (dict): Dictionary containing endpoint_url, ceph flag, etc.
+
+    Returns:
+        Tuple of (is_aws_s3, connection_params_dict).
+    """
     endpoint_url = options.get("endpoint_url")
     if options.get("ceph"):
         return False, parse_ceph_endpoint(endpoint_url)
@@ -1305,7 +1436,17 @@ def parse_s3_endpoint(options):
     return True, {"endpoint": endpoint_url}
 
 
-def s3_extra_params(options, sigv4=False):
+def s3_extra_params(options: Dict, sigv4: bool = False) -> Dict:
+    """
+    Build extra parameters for S3 client connection.
+
+    Parameters:
+        options (dict): Dictionary containing connection options.
+        sigv4 (bool): Whether to use signature version 4.
+
+    Returns:
+        Dict of extra connection parameters for boto3 client.
+    """
     aws, extra_params = parse_s3_endpoint(options)
     if not aws:
         return extra_params
@@ -1321,7 +1462,16 @@ def s3_extra_params(options, sigv4=False):
     return extra_params
 
 
-def get_s3_bucket_location(module):
+def get_s3_bucket_location(module: AnsibleAWSModule) -> str:
+    """
+    Determine the S3 bucket location/region from module parameters.
+
+    Parameters:
+        module (AnsibleAWSModule): The Ansible module object.
+
+    Returns:
+        The region string for the S3 bucket location.
+    """
     if module.params.get("ceph") is True:
         return module.params.get("region")
     return module.region or "us-east-1"
