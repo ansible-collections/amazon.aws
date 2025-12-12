@@ -826,7 +826,6 @@ def get_binary_content(s3_vars: Dict) -> Optional[bytes]:
 
 
 def do_s3_object_get(module, connection, s3_vars):
-
     keyrtn = key_check(
         module,
         connection,
@@ -1001,7 +1000,6 @@ def do_s3_object_create(module, connection, s3_vars):
 
 
 def do_s3_object_geturl(module, connection, s3_vars):
-
     if key_check(
         module,
         connection,
@@ -1029,7 +1027,6 @@ def do_s3_object_geturl(module, connection, s3_vars):
 
 
 def do_s3_object_getstr(module, connection, s3_vars):
-
     if s3_vars["bucket"] and s3_vars["object"]:
         if key_check(
             module,

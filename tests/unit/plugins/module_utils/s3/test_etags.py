@@ -107,7 +107,6 @@ def test_calculate_etag(m_checksum_file, etag_multipart):
     module = MagicMock()
     client = MagicMock()
 
-    module.fail_json_aws.side_effect = SystemExit(2)
     module.md5.return_value = generate_random_string(32)
 
     s3bucket_name = f"s3-bucket-{generate_random_string(8, False)}"
@@ -138,8 +137,6 @@ def test_calculate_etag_content(m_checksum_content, etag_multipart):
     module = MagicMock()
     client = MagicMock()
 
-    module.fail_json_aws.side_effect = SystemExit(2)
-
     s3bucket_name = f"s3-bucket-{generate_random_string(8, False)}"
     s3bucket_object = f"s3-bucket-object-{generate_random_string(8, False)}"
     version = random.randint(0, 1000)
@@ -169,8 +166,6 @@ def test_calculate_etag_failure(m_checksum_file, m_checksum_content, using_file)
     module = MagicMock()
     client = MagicMock()
 
-    module.fail_json_aws.side_effect = SystemExit(2)
-
     s3bucket_name = f"s3-bucket-{generate_random_string(8, False)}"
     s3bucket_object = f"s3-bucket-object-{generate_random_string(8, False)}"
     version = random.randint(0, 1000)
@@ -186,6 +181,8 @@ def test_calculate_etag_failure(m_checksum_file, m_checksum_content, using_file)
         test_method = s3.calculate_etag_content
         m_checksum_content.side_effect = raise_botoclient_exception()
 
-    with pytest.raises(SystemExit):
+    with pytest.raises(s3.AnsibleS3Error) as exc_info:
         test_method(module, content, etag, client, s3bucket_name, s3bucket_object, version)
-    module.fail_json_aws.assert_called()
+
+    # Verify the error message
+    assert "Failed to calculate object ETag" in str(exc_info.value)
