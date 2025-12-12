@@ -1046,7 +1046,13 @@ def copy_s3_object(
 
 @AWSRetry.jittered_backoff()
 def ensure_s3_object_tags(
-    client: ClientType, bucket_name: str, object_key: str, desired_tags: Optional[Dict], purge_tags: bool = True
+    client: ClientType,
+    bucket_name: str,
+    object_key: str,
+    desired_tags: Optional[Dict],
+    purge_tags: bool = True,
+    _max_attempts: int = 12,
+    _sleep_time: float = 5.0,
 ) -> Tuple[Dict, bool]:
     """
     Ensure S3 object has desired tags, optionally purging unspecified tags.
@@ -1063,6 +1069,8 @@ def ensure_s3_object_tags(
         object_key (str): The key of the S3 object.
         desired_tags (dict or None): Dictionary of desired tags. If None, tags are not modified.
         purge_tags (bool): If True, remove tags not in desired_tags. If False, merge with existing tags.
+        _max_attempts (int): Maximum retry attempts for eventual consistency (internal/testing parameter).
+        _sleep_time (float): Sleep time between retries in seconds (internal/testing parameter).
 
     Returns:
         Tuple[Dict, bool]: (current_tags, changed) - The current tags and whether changes were made.
@@ -1075,32 +1083,25 @@ def ensure_s3_object_tags(
     # Get current tags
     current_tags_dict = get_s3_object_tagging(client, bucket_name, object_key)
 
-    # Tags is None, we shouldn't touch anything
-    if desired_tags is None:
-        return current_tags_dict, False
+    # Compute final tags using existing merge_tags helper
+    final_tags = merge_tags(current_tags_dict, desired_tags, purge_tags)
 
-    if not purge_tags:
-        # Ensure existing tags that aren't updated by desired tags remain
-        current_copy = current_tags_dict.copy()
-        current_copy.update(desired_tags)
-        desired_tags = current_copy
-
-    # Nothing to change, we shouldn't touch anything
-    if current_tags_dict == desired_tags:
+    # Nothing to change
+    if current_tags_dict == final_tags:
         return current_tags_dict, False
 
     # Apply tag changes
-    if desired_tags:
-        put_s3_object_tagging(client, bucket_name, object_key, desired_tags)
+    if final_tags:
+        put_s3_object_tagging(client, bucket_name, object_key, final_tags)
     else:
         delete_s3_object_tagging(client, bucket_name, object_key)
 
     # Wait for tags to be applied (eventual consistency)
-    for _attempt in range(12):
+    for _attempt in range(_max_attempts):
         current_tags_dict = get_s3_object_tagging(client, bucket_name, object_key)
-        if current_tags_dict == desired_tags:
+        if current_tags_dict == final_tags:
             return current_tags_dict, True
-        time.sleep(5)
+        time.sleep(_sleep_time)
 
     # Tags didn't apply in time, but return what we have
     return current_tags_dict, True
