@@ -3,8 +3,6 @@
 # Copyright: Contributors to the Ansible project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-import pytest
-
 from ansible_collections.amazon.aws.plugins.module_utils._s3.transformations import merge_tags
 from ansible_collections.amazon.aws.plugins.module_utils._s3.transformations import normalize_s3_bucket_acls
 from ansible_collections.amazon.aws.plugins.module_utils._s3.transformations import normalize_s3_bucket_public_access
