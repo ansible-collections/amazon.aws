@@ -555,7 +555,10 @@ def list_hosted_zones_by_name():
     if module.params.get("max_items"):
         params["MaxItems"] = str(module.params.get("max_items"))
 
-    return client.list_hosted_zones_by_name(**params)
+    zones = client.list_hosted_zones_by_name(**params)["HostedZones"]
+    snaked_zones = [camel_dict_to_snake_dict(zone) for zone in zones]
+
+    return {"hosted_zones": snaked_zones}
 
 
 def change_details():

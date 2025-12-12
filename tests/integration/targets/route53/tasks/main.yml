@@ -92,7 +92,7 @@
       ansible.builtin.assert:
         that:
           - list_by_name_result.hosted_zones | length == 1
-          - list_by_name_result.hosted_zones[0].Name == zone_one
+          - list_by_name_result.hosted_zones[0].name == zone_one
 
     - name: Create A record using zone fqdn
       amazon.aws.route53:
@@ -252,9 +252,9 @@
     - ansible.builtin.assert:
         that:
           - records.resource_record_sets|length == 1
-          - records.resource_record_sets[0].ResourceRecords|length == 2
-          - records.resource_record_sets[0].ResourceRecords[0].Value == '192.0.2.2'
-          - records.resource_record_sets[0].ResourceRecords[1].Value == '192.0.2.1'
+          - records.resource_record_sets[0].resource_records|length == 2
+          - records.resource_record_sets[0].resource_records[0].value == '192.0.2.2'
+          - records.resource_record_sets[0].resource_records[1].value == '192.0.2.1'
 
     - name: Remove a member from multi-value A record with values in different order
       amazon.aws.route53:
@@ -301,8 +301,8 @@
     - ansible.builtin.assert:
         that:
           - records.resource_record_sets|length == 3
-          - records.resource_record_sets[0].ResourceRecords|length == 1
-          - records.resource_record_sets[0].ResourceRecords[0].Value == '192.0.2.2'
+          - records.resource_record_sets[0].resource_records|length == 1
+          - records.resource_record_sets[0].resource_records[0].value == '192.0.2.2'
 
     ## Test CNAME record creation and retrive info
     - name: Create CNAME record
@@ -331,8 +331,8 @@
     - ansible.builtin.assert:
         that:
           - cname_records.resource_record_sets|length == 1
-          - cname_records.resource_record_sets[0].ResourceRecords|length == 1
-          - cname_records.resource_record_sets[0].ResourceRecords[0].Value == "order_test."+zone_one
+          - cname_records.resource_record_sets[0].resource_records|length == 1
+          - cname_records.resource_record_sets[0].resource_records[0].value == "order_test."+zone_one
 
     ## Test CAA record creation
     - name: Create a LetsEncrypt CAA record
@@ -739,7 +739,7 @@
           - create_geo_continent is changed
           - create_geo_continent is not failed
           - '"route53:ChangeResourceRecordSets" in create_geo_continent.resource_actions'
-          - result.resource_record_sets[0].GeoLocation.ContinentCode == "NA"
+          - result.resource_record_sets[0].geo_location.continent_code == "NA"
 
     - name: Create a record with geo_location - continent_code (idempotency)
       amazon.aws.route53:
@@ -825,7 +825,7 @@
           - create_geo_country is changed
           - create_geo_country is not failed
           - '"route53:ChangeResourceRecordSets" in create_geo_country.resource_actions'
-          - result.resource_record_sets[0].GeoLocation.CountryCode == "US"
+          - result.resource_record_sets[0].geo_location.country_code == "US"
 
     - name: Create a record with geo_location - country_code (idempotency)
       amazon.aws.route53:
@@ -913,8 +913,8 @@
           - create_geo_subdivision is changed
           - create_geo_subdivision is not failed
           - '"route53:ChangeResourceRecordSets" in create_geo_subdivision.resource_actions'
-          - result.resource_record_sets[0].GeoLocation.CountryCode == "US"
-          - result.resource_record_sets[0].GeoLocation.SubdivisionCode == "TX"
+          - result.resource_record_sets[0].geo_location.country_code == "US"
+          - result.resource_record_sets[0].geo_location.subdivision_code == "TX"
 
     - name: Create a record with geo_location - subdivision_code (idempotency)
       amazon.aws.route53:
@@ -1009,43 +1009,43 @@
       amazon.aws.route53:
         state: absent
         alias: true
-        alias_hosted_zone_id: "{{ item.AliasTarget.HostedZoneId }}"
+        alias_hosted_zone_id: "{{ item.alias_target.hosted_zone_id }}"
         zone: "{{ zone_one }}"
-        record: "{{ item.Name }}"
-        type: "{{ item.Type }}"
-        value: "{{ item.AliasTarget.DNSName }}"
+        record: "{{ item.name }}"
+        type: "{{ item.type }}"
+        value: "{{ item.alias_target.dns_name }}"
       ignore_errors: true
-      loop: '{{ z1_records.resource_record_sets | selectattr("Type", "in", ["A", "AAAA", "CNAME", "CAA"]) | list }}'
+      loop: '{{ z1_records.resource_record_sets | selectattr("type", "in", ["A", "AAAA", "CNAME", "CAA"]) | list }}'
       when:
-        - '"AliasTarget" in item'
+        - '"alias_target" in item'
 
     - name: Loop over A/AAAA/CNAME records and delete them
       amazon.aws.route53:
         state: absent
         zone: "{{ zone_one }}"
-        record: "{{ item.Name }}"
-        type: "{{ item.Type }}"
-        value: '{{ item.ResourceRecords | map(attribute="Value") | join(",") }}'
-        weight: "{{ item.Weight | default(omit) }}"
-        identifier: "{{ item.SetIdentifier }}"
+        record: "{{ item.name }}"
+        type: "{{ item.type }}"
+        value: '{{ item.resource_records | map(attribute="value") | join(",") }}'
+        weight: "{{ item.weight | default(omit) }}"
+        identifier: "{{ item.set_identifier }}"
         region: "{{ omit }}"
       ignore_errors: true
-      loop: '{{ z1_records.resource_record_sets | selectattr("Type", "in", ["A", "AAAA", "CNAME", "CAA"]) | list }}'
+      loop: '{{ z1_records.resource_record_sets | selectattr("type", "in", ["A", "AAAA", "CNAME", "CAA"]) | list }}'
       when:
-        - '"ResourceRecords" in item'
-        - '"SetIdentifier" in item'
+        - '"resource_records" in item'
+        - '"set_identifier" in item'
 
     - name: Loop over A/AAAA/CNAME records and delete them
       amazon.aws.route53:
         state: absent
         zone: "{{ zone_one }}"
-        record: "{{ item.Name }}"
-        type: "{{ item.Type }}"
-        value: '{{ item.ResourceRecords | map(attribute="Value") | join(",") }}'
+        record: "{{ item.name }}"
+        type: "{{ item.type }}"
+        value: '{{ item.resource_records | map(attribute="value") | join(",") }}'
       ignore_errors: true
-      loop: '{{ z1_records.resource_record_sets | selectattr("Type", "in", ["A", "AAAA", "CNAME", "CAA"]) | list }}'
+      loop: '{{ z1_records.resource_record_sets | selectattr("type", "in", ["A", "AAAA", "CNAME", "CAA"]) | list }}'
       when:
-        - '"ResourceRecords" in item'
+        - '"resource_records" in item'
 
     - amazon.aws.route53_info:
         query: record_sets
@@ -1056,45 +1056,45 @@
       amazon.aws.route53:
         state: absent
         alias: true
-        alias_hosted_zone_id: "{{ item.AliasTarget.HostedZoneId }}"
+        alias_hosted_zone_id: "{{ item.alias_target.hosted_zone_id }}"
         zone: "{{ zone_two }}"
-        record: "{{ item.Name }}"
-        type: "{{ item.Type }}"
-        value: "{{ item.AliasTarget.DNSName }}"
+        record: "{{ item.name }}"
+        type: "{{ item.type }}"
+        value: "{{ item.alias_target.dns_name }}"
         private_zone: true
       ignore_errors: true
-      loop: '{{ z2_records.resource_record_sets | selectattr("Type", "in", ["A", "AAAA", "CNAME", "CAA"]) | list }}'
+      loop: '{{ z2_records.resource_record_sets | selectattr("type", "in", ["A", "AAAA", "CNAME", "CAA"]) | list }}'
       when:
-        - '"AliasTarget" in item'
+        - '"alias_target" in item'
 
     - name: Loop over A/AAAA/CNAME records and delete them
       amazon.aws.route53:
         state: absent
         zone: "{{ zone_two }}"
-        record: "{{ item.Name }}"
-        type: "{{ item.Type }}"
-        value: '{{ item.ResourceRecords | map(attribute="Value") | join(",") }}'
-        identifier: "{{ item.SetIdentifier }}"
+        record: "{{ item.name }}"
+        type: "{{ item.type }}"
+        value: '{{ item.resource_records | map(attribute="value") | join(",") }}'
+        identifier: "{{ item.set_identifier }}"
         region: "{{ omit }}"
         private_zone: true
       ignore_errors: true
-      loop: '{{ z2_records.resource_record_sets | selectattr("Type", "in", ["A", "AAAA", "CNAME", "CAA"]) | list }}'
+      loop: '{{ z2_records.resource_record_sets | selectattr("type", "in", ["A", "AAAA", "CNAME", "CAA"]) | list }}'
       when:
-        - '"ResourceRecords" in item'
-        - '"SetIdentifier" in item'
+        - '"resource_records" in item'
+        - '"set_identifier" in item'
 
     - name: Loop over A/AAAA/CNAME records and delete them
       amazon.aws.route53:
         state: absent
         zone: "{{ zone_two }}"
-        record: "{{ item.Name }}"
-        type: "{{ item.Type }}"
-        value: '{{ item.ResourceRecords | map(attribute="Value") | join(",") }}'
+        record: "{{ item.name }}"
+        type: "{{ item.type }}"
+        value: '{{ item.resource_records | map(attribute="value") | join(",") }}'
         private_zone: true
       ignore_errors: true
-      loop: '{{ z2_records.resource_record_sets | selectattr("Type", "in", ["A", "AAAA", "CNAME", "CAA"]) | list }}'
+      loop: '{{ z2_records.resource_record_sets | selectattr("type", "in", ["A", "AAAA", "CNAME", "CAA"]) | list }}'
       when:
-        - '"ResourceRecords" in item'
+        - '"resource_records" in item'
 
     - name: Delete test zone one {{ zone_one }}
       amazon.aws.route53_zone:
