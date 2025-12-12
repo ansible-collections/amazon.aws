@@ -1063,6 +1063,9 @@ def ensure_s3_object_tags(
     - Updates or deletes tags as needed
     - Waits for tags to be applied
 
+    Handles S3-compatible services that don't support tagging by returning empty tags
+    when desired_tags is None.
+
     Parameters:
         client (boto3.client): The Boto3 S3 client object.
         bucket_name (str): The name of the S3 bucket.
@@ -1076,12 +1079,24 @@ def ensure_s3_object_tags(
         Tuple[Dict, bool]: (current_tags, changed) - The current tags and whether changes were made.
 
     Raises:
-        AnsibleS3Error: If tag operations fail.
+        AnsibleS3Error: If tag operations fail and desired_tags is not None.
+        AnsibleS3SupportError: If tagging is not supported and desired_tags is not None.
     """
     import time
 
-    # Get current tags
-    current_tags_dict = get_s3_object_tagging(client, bucket_name, object_key)
+    # Get current tags, handling S3-compatible services that don't support tagging
+    try:
+        current_tags_dict = get_s3_object_tagging(client, bucket_name, object_key)
+    except AnsibleS3SupportError:
+        # If tags weren't requested, silently handle unsupported tagging
+        if desired_tags is None:
+            return {}, False
+        # If tags were requested, re-raise to indicate tagging is not supported
+        raise
+
+    # If no tags were requested, return current tags without changes
+    if desired_tags is None:
+        return current_tags_dict, False
 
     # Compute final tags using existing merge_tags helper
     final_tags = merge_tags(current_tags_dict, desired_tags, purge_tags)
