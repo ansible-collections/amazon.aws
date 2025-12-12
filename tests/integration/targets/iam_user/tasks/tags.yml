@@ -25,10 +25,10 @@
   ansible.builtin.assert:
     that:
       - iam_user is changed
-      - iam_user.iam_user.user.user_name == test_user
-      - iam_user.iam_user.user.tags | length == 1
-      - '"TagA" in iam_user.iam_user.user.tags'
-      - iam_user.iam_user.user.tags.TagA == "ValueA"
+      - iam_user.user.user_name == test_user
+      - iam_user.user.tags | length == 1
+      - '"TagA" in iam_user.user.tags'
+      - iam_user.user.tags.TagA == "ValueA"
 
 - name: Get info on IAM user
   amazon.aws.iam_user_info:
@@ -38,7 +38,7 @@
   ansible.builtin.assert:
     that:
       - iam_user_info.iam_users | length == 1
-      - iam_user_info.iam_users[0].arn == iam_user.iam_user.user.arn
+      - iam_user_info.iam_users[0].arn == iam_user.user.arn
       - iam_user_info.iam_users[0].tags | length == 1
       - iam_user_info.iam_users[0].tags.TagA == "ValueA"
 
@@ -66,10 +66,10 @@
   ansible.builtin.assert:
     that:
       - iam_user is not changed
-      - iam_user.iam_user.user.user_name == test_user
-      - iam_user.iam_user.user.tags | length == 1
-      - '"TagA" in iam_user.iam_user.user.tags'
-      - iam_user.iam_user.user.tags.TagA == "ValueA"
+      - iam_user.user.user_name == test_user
+      - iam_user.user.tags | length == 1
+      - '"TagA" in iam_user.user.tags'
+      - iam_user.user.tags.TagA == "ValueA"
 
 - name: Extend Tags
   amazon.aws.iam_user:
@@ -85,16 +85,16 @@
   ansible.builtin.assert:
     that:
       - iam_user is changed
-      - iam_user.iam_user.user.user_name == test_user
-      - iam_user.iam_user.user.tags | length == 4
-      - '"TagA" in iam_user.iam_user.user.tags'
-      - '"tag_b" in iam_user.iam_user.user.tags'
-      - '"Tag C" in iam_user.iam_user.user.tags'
-      - '"tag d" in iam_user.iam_user.user.tags'
-      - iam_user.iam_user.user.tags.TagA == "ValueA"
-      - iam_user.iam_user.user.tags.tag_b == "value_b"
-      - iam_user.iam_user.user.tags["Tag C"] == "Value C"
-      - iam_user.iam_user.user.tags["tag d"] == "value d"
+      - iam_user.user.user_name == test_user
+      - iam_user.user.tags | length == 4
+      - '"TagA" in iam_user.user.tags'
+      - '"tag_b" in iam_user.user.tags'
+      - '"Tag C" in iam_user.user.tags'
+      - '"tag d" in iam_user.user.tags'
+      - iam_user.user.tags.TagA == "ValueA"
+      - iam_user.user.tags.tag_b == "value_b"
+      - iam_user.user.tags["Tag C"] == "Value C"
+      - iam_user.user.tags["tag d"] == "value d"
 
 - name: Create user without Tag (no change)
   amazon.aws.iam_user:
@@ -105,8 +105,8 @@
   ansible.builtin.assert:
     that:
       - iam_user is not changed
-      - iam_user.iam_user.user.user_name == test_user
-      - iam_user.iam_user.user.tags | length == 4
+      - iam_user.user.user_name == test_user
+      - iam_user.user.tags | length == 4
 
 - name: Remove all Tags (check mode)
   amazon.aws.iam_user:
@@ -131,10 +131,10 @@
   ansible.builtin.assert:
     that:
       - iam_user is changed
-      - iam_user.iam_user.user.user_name == test_user
-      - iam_user.iam_user.user.tags | length == 1
-      - '"TagA" in iam_user.iam_user.user.tags'
-      - iam_user.iam_user.user.tags.TagA == "ValueA"
+      - iam_user.user.user_name == test_user
+      - iam_user.user.tags | length == 1
+      - '"TagA" in iam_user.user.tags'
+      - iam_user.user.tags.TagA == "ValueA"
 
 - name: Change Tag (check mode)
   amazon.aws.iam_user:
@@ -160,10 +160,10 @@
   ansible.builtin.assert:
     that:
       - iam_user is changed
-      - iam_user.iam_user.user.user_name == test_user
-      - iam_user.iam_user.user.tags | length == 1
-      - '"TagA" in iam_user.iam_user.user.tags'
-      - iam_user.iam_user.user.tags.TagA == "AnotherValueA"
+      - iam_user.user.user_name == test_user
+      - iam_user.user.tags | length == 1
+      - '"TagA" in iam_user.user.tags'
+      - iam_user.user.tags.TagA == "AnotherValueA"
 
 - name: Remove All Tags
   amazon.aws.iam_user:
@@ -175,8 +175,8 @@
   ansible.builtin.assert:
     that:
       - iam_user is changed
-      - iam_user.iam_user.user.user_name == test_user
-      - iam_user.iam_user.user.tags | length == 0
+      - iam_user.user.user_name == test_user
+      - iam_user.user.tags | length == 0
 
 - name: Remove All Tags (no change)
   amazon.aws.iam_user:
@@ -188,5 +188,5 @@
   ansible.builtin.assert:
     that:
       - iam_user is not changed
-      - iam_user.iam_user.user.user_name == test_user
-      - iam_user.iam_user.user.tags | length == 0
+      - iam_user.user.user_name == test_user
+      - iam_user.user.tags | length == 0

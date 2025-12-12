@@ -1,5 +1,6 @@
 ---
 # ============================================================
+# Tests for multiple ipv6 and ipv4 targets (flat lists only - nested lists no longer supported)
 
 - name: Test state=present for multiple ipv6 and ipv4 targets (expected changed=true) (CHECK MODE)
   amazon.aws.ec2_security_group:
@@ -12,13 +13,14 @@
         to_port: 8182
         cidr_ipv6:
           - 64:ff9b::/96
-          - ["2620::/32"]
+          - "2620::/32"
       - proto: tcp
         ports: 5665
         cidr_ip:
           - 172.16.1.0/24
           - 172.16.17.0/24
-          - [10.0.0.0/24, 10.20.0.0/24]
+          - 10.0.0.0/24
+          - 10.20.0.0/24
   check_mode: true
   register: result
 
@@ -38,13 +40,14 @@
         to_port: 8182
         cidr_ipv6:
           - 64:ff9b::/96
-          - ["2620::/32"]
+          - "2620::/32"
       - proto: tcp
         ports: 5665
         cidr_ip:
           - 172.16.1.0/24
           - 172.16.17.0/24
-          - [10.0.0.0/24, 10.20.0.0/24]
+          - 10.0.0.0/24
+          - 10.20.0.0/24
   register: result
 
 - name: Assert state=present (expected changed=true)
@@ -66,17 +69,18 @@
         to_port: 8182
         cidr_ipv6:
           - 64:ff9b::/96
-          - ["2620::/32"]
+          - "2620::/32"
       - proto: tcp
         ports: 5665
         cidr_ip:
           - 172.16.1.0/24
           - 172.16.17.0/24
-          - [10.0.0.0/24, 10.20.0.0/24]
+          - 10.0.0.0/24
+          - 10.20.0.0/24
   check_mode: true
   register: result
 
-- name: Assert state=present (expected changed=true)
+- name: Assert state=present (expected changed=false)
   ansible.builtin.assert:
     that:
       - not result.changed
@@ -92,21 +96,22 @@
         to_port: 8182
         cidr_ipv6:
           - 64:ff9b::/96
-          - ["2620::/32"]
+          - "2620::/32"
       - proto: tcp
         ports: 5665
         cidr_ip:
           - 172.16.1.0/24
           - 172.16.17.0/24
-          - [10.0.0.0/24, 10.20.0.0/24]
+          - 10.0.0.0/24
+          - 10.20.0.0/24
   register: result
 
-- name: Assert state=present (expected changed=true)
+- name: Assert state=present (expected changed=false)
   ansible.builtin.assert:
     that:
       - not result.changed
 
-- name: Test state=present purging a nested ipv4 target (expected changed=true) (CHECK MODE)
+- name: Test state=present purging an ipv4 target (expected changed=true) (CHECK MODE)
   amazon.aws.ec2_security_group:
     name: "{{ ec2_group_name }}"
     description: "{{ ec2_group_description }}"
@@ -117,13 +122,13 @@
         to_port: 8182
         cidr_ipv6:
           - 64:ff9b::/96
-          - ["2620::/32"]
+          - "2620::/32"
       - proto: tcp
         ports: 5665
         cidr_ip:
           - 172.16.1.0/24
           - 172.16.17.0/24
-          - [10.0.0.0/24]
+          - 10.0.0.0/24
   check_mode: true
   register: result
 
@@ -131,7 +136,7 @@
     that:
       - result.changed
 
-- name: Test state=present purging a nested ipv4 target (expected changed=true)
+- name: Test state=present purging an ipv4 target (expected changed=true)
   amazon.aws.ec2_security_group:
     name: "{{ ec2_group_name }}"
     description: "{{ ec2_group_description }}"
@@ -142,13 +147,13 @@
         to_port: 8182
         cidr_ipv6:
           - 64:ff9b::/96
-          - ["2620::/32"]
+          - "2620::/32"
       - proto: tcp
         ports: 5665
         cidr_ip:
           - 172.16.1.0/24
           - 172.16.17.0/24
-          - [10.0.0.0/24]
+          - 10.0.0.0/24
   register: result
 
 - ansible.builtin.assert:
@@ -157,7 +162,7 @@
       - result.ip_permissions[0].ip_ranges | length == 3 or result.ip_permissions[1].ip_ranges | length == 3
       - result.ip_permissions[0].ipv6_ranges | length == 2 or result.ip_permissions[1].ipv6_ranges | length == 2
 
-- name: Test state=present with both associated ipv6 targets nested (expected changed=false)
+- name: Test state=present with same targets (expected changed=false)
   amazon.aws.ec2_security_group:
     name: "{{ ec2_group_name }}"
     description: "{{ ec2_group_description }}"
@@ -167,20 +172,21 @@
         from_port: 8182
         to_port: 8182
         cidr_ipv6:
-          - ["2620::/32", "64:ff9b::/96"]
+          - "2620::/32"
+          - 64:ff9b::/96
       - proto: tcp
         ports: 5665
         cidr_ip:
           - 172.16.1.0/24
           - 172.16.17.0/24
-          - [10.0.0.0/24]
+          - 10.0.0.0/24
   register: result
 
 - ansible.builtin.assert:
     that:
       - not result.changed
 
-- name: Test state=present add another nested ipv6 target (expected changed=true)
+- name: Test state=present add another ipv6 target (expected changed=true)
   amazon.aws.ec2_security_group:
     name: "{{ ec2_group_name }}"
     description: "{{ ec2_group_description }}"
@@ -190,14 +196,15 @@
         from_port: 8182
         to_port: 8182
         cidr_ipv6:
-          - ["2620::/32", "64:ff9b::/96"]
-          - ["2001:DB8:A0B:12F0::1/64"]
+          - "2620::/32"
+          - 64:ff9b::/96
+          - "2001:DB8:A0B:12F0::1/64"
       - proto: tcp
         ports: 5665
         cidr_ip:
           - 172.16.1.0/24
           - 172.16.17.0/24
-          - [10.0.0.0/24]
+          - 10.0.0.0/24
   register: result
 
 - ansible.builtin.assert:

@@ -1,0 +1,8 @@
+major_changes:
+- s3_object - Support for passing the leading ``/`` has been removed (https://github.com/ansible-collections/amazon.aws/issues/2777).
+- s3_object_info - Support for passing ``dualstack`` and ``endpoint_url`` at the same time has been removed (https://github.com/ansible-collections/amazon.aws/issues/2777).
+- ec2_security_group - Support for passing nested lists of strings to ``rules.cidr_ip`` and ``rules.cidr_ipv6`` have been removed (https://github.com/ansible-collections/amazon.aws/issues/2777).
+- route53_info - Support for CamelCased lists (``ResourceRecordSets``, ``HostedZones``, ``HealthChecks``, ``CheckerIpRanges``, ``DelegationSets``, ``HealthCheck``) have been removed (https://github.com/ansible-collections/amazon.aws/issues/2777).
+- lambda_info - Support for ``function`` has been removed (https://github.com/ansible-collections/amazon.aws/issues/2777).
+- iam_user - Support for ``iam_user`` return key has been removed; only ``user`` is now returned (https://github.com/ansible-collections/amazon.aws/issues/2777).
+- s3_object - Support for ``list`` mode has been removed; use ``s3_object_info`` instead (https://github.com/ansible-collections/amazon.aws/issues/2777).

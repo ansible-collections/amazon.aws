@@ -475,47 +475,6 @@ health_check_observations:
                     type: str
                     sample: 'Failure: Resolved IP: 12.345.67.89. The connection was closed by the endpoint.'
     version_added: 5.4.0
-ResourceRecordSets:
-    description: A deprecated CamelCased list of resource record sets returned by list_resource_record_sets in boto3. \
-                 This list contains same elements/parameters as it's snake_cased version mentioned above. \
-                 This field is deprecated and will be removed in 6.0.0 version release.
-    returned: when O(query=record_sets)
-    type: list
-    elements: dict
-HostedZones:
-    description: A deprecated CamelCased list of hosted zones returned by list_hosted_zones in boto3. \
-                 This list contains same elements/parameters as it's snake_cased version mentioned above. \
-                 This field is deprecated and will be removed in 6.0.0 version release.
-    returned: when O(query=hosted_zone)
-    type: list
-    elements: dict
-HealthChecks:
-    description: A deprecated CamelCased list of Route53 health checks returned by list_health_checks in boto3. \
-                 This list contains same elements/parameters as it's snake_cased version mentioned above. \
-                 This field is deprecated and will be removed in 6.0.0 version release.
-    type: list
-    elements: dict
-    returned: when O(query=health_check)
-CheckerIpRanges:
-    description: A deprecated CamelCased list of IP ranges in CIDR format for Amazon Route 53 health checkers.\
-                 This list contains same elements/parameters as it's snake_cased version mentioned abobe. \
-                 This field is deprecated and will be removed in 6.0.0 version release.
-    type: list
-    elements: str
-    returned: when O(query=checker_ip_range)
-DelegationSets:
-    description: A deprecated CamelCased list of dicts that contains information about the reusable delegation set. \
-                 This list contains same elements/parameters as it's snake_cased version mentioned above. \
-                 This field is deprecated and will be removed in 6.0.0 version release.
-    type: list
-    elements: dict
-    returned: when O(query=reusable_delegation_set)
-HealthCheck:
-    description: A deprecated CamelCased dict of Route53 health check details returned by get_health_check in boto3. \
-                 This dict contains same elements/parameters as it's snake_cased version mentioned above. \
-                 This field is deprecated and will be removed in 6.0.0 version release.
-    type: dict
-    returned: when O(query=health_check) and O(health_check_method=details)
 """
 
 try:
@@ -562,18 +521,7 @@ def reusable_delegation_set_details():
         params["DelegationSetId"] = module.params.get("delegation_set_id")
         results = client.get_reusable_delegation_set(**params)
 
-    results["delegation_sets"] = results["DelegationSets"]
-    module.deprecate(
-        (
-            "The 'CamelCase' return values with key 'DelegationSets' is deprecated and will be"
-            " replaced by 'snake_case' return values with key 'delegation_sets'.  Both case values"
-            " are returned for now."
-        ),
-        date="2025-01-01",
-        collection_name="amazon.aws",
-    )
-
-    return results
+    return {"delegation_sets": results["DelegationSets"]}
 
 
 def list_hosted_zones():
@@ -592,21 +540,7 @@ def list_hosted_zones():
     zones = _paginated_result("list_hosted_zones", **params)["HostedZones"]
     snaked_zones = [camel_dict_to_snake_dict(zone) for zone in zones]
 
-    module.deprecate(
-        (
-            "The 'CamelCase' return values with key 'HostedZones' and 'list' are deprecated and"
-            " will be replaced by 'snake_case' return values with key 'hosted_zones'.  Both case"
-            " values are returned for now."
-        ),
-        date="2025-01-01",
-        collection_name="amazon.aws",
-    )
-
-    return {
-        "HostedZones": zones,
-        "list": zones,
-        "hosted_zones": snaked_zones,
-    }
+    return {"hosted_zones": snaked_zones}
 
 
 def list_hosted_zones_by_name():
@@ -621,7 +555,10 @@ def list_hosted_zones_by_name():
     if module.params.get("max_items"):
         params["MaxItems"] = str(module.params.get("max_items"))
 
-    return client.list_hosted_zones_by_name(**params)
+    zones = client.list_hosted_zones_by_name(**params)["HostedZones"]
+    snaked_zones = [camel_dict_to_snake_dict(zone) for zone in zones]
+
+    return {"hosted_zones": snaked_zones}
 
 
 def change_details():
@@ -638,18 +575,7 @@ def change_details():
 
 def checker_ip_range_details():
     results = client.get_checker_ip_ranges()
-    results["checker_ip_ranges"] = results["CheckerIpRanges"]
-    module.deprecate(
-        (
-            "The 'CamelCase' return values with key 'CheckerIpRanges' is deprecated and will be"
-            " replaced by 'snake_case' return values with key 'checker_ip_ranges'.  Both case values"
-            " are returned for now."
-        ),
-        date="2025-01-01",
-        collection_name="amazon.aws",
-    )
-
-    return results
+    return {"checker_ip_ranges": results["CheckerIpRanges"]}
 
 
 def get_count():
@@ -671,17 +597,8 @@ def get_health_check():
         params["HealthCheckId"] = module.params.get("health_check_id")
 
     if module.params.get("health_check_method") == "details":
-        results = client.get_health_check(**params)
-        results["health_check"] = camel_dict_to_snake_dict(results["HealthCheck"])
-        module.deprecate(
-            (
-                "The 'CamelCase' return values with key 'HealthCheck' is deprecated and will be"
-                " replaced by 'snake_case' return values with key 'health_check'.  Both case values are"
-                " returned for now."
-            ),
-            date="2025-01-01",
-            collection_name="amazon.aws",
-        )
+        response = client.get_health_check(**params)
+        results["health_check"] = camel_dict_to_snake_dict(response["HealthCheck"])
 
     elif module.params.get("health_check_method") == "failure_reason":
         response = client.get_health_check_last_failure_reason(**params)
@@ -727,21 +644,7 @@ def list_health_checks():
     health_checks = _paginated_result("list_health_checks", **params)["HealthChecks"]
     snaked_health_checks = [camel_dict_to_snake_dict(health_check) for health_check in health_checks]
 
-    module.deprecate(
-        (
-            "The 'CamelCase' return values with key 'HealthChecks' and 'list' are deprecated and"
-            " will be replaced by 'snake_case' return values with key 'health_checks'.  Both case"
-            " values are returned for now."
-        ),
-        date="2025-01-01",
-        collection_name="amazon.aws",
-    )
-
-    return {
-        "HealthChecks": health_checks,
-        "list": health_checks,
-        "health_checks": snaked_health_checks,
-    }
+    return {"health_checks": snaked_health_checks}
 
 
 def record_sets_details():
@@ -769,21 +672,7 @@ def record_sets_details():
     record_sets = _paginated_result("list_resource_record_sets", **params)["ResourceRecordSets"]
     snaked_record_sets = [camel_dict_to_snake_dict(record_set) for record_set in record_sets]
 
-    module.deprecate(
-        (
-            "The 'CamelCase' return values with key 'ResourceRecordSets' and 'list' are deprecated and"
-            " will be replaced by 'snake_case' return values with key 'resource_record_sets'."
-            "  Both case values are returned for now."
-        ),
-        date="2025-01-01",
-        collection_name="amazon.aws",
-    )
-
-    return {
-        "ResourceRecordSets": record_sets,
-        "list": record_sets,
-        "resource_record_sets": snaked_record_sets,
-    }
+    return {"resource_record_sets": snaked_record_sets}
 
 
 def health_check_details():

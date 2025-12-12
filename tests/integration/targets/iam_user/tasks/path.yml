@@ -25,9 +25,9 @@
   ansible.builtin.assert:
     that:
       - iam_user is changed
-      - "'user' in iam_user.iam_user"
-      - iam_user.iam_user.user.user_name == test_user
-      - iam_user.iam_user.user.path == test_path2
+      - "'user' in iam_user"
+      - iam_user.user.user_name == test_user
+      - iam_user.user.path == test_path2
 
 - name: Add tag to test user
   amazon.aws.iam_user:
@@ -78,9 +78,9 @@
   ansible.builtin.assert:
     that:
       - iam_user is not changed
-      - "'user' in iam_user.iam_user"
-      - iam_user.iam_user.user.user_name == test_user
-      - iam_user.iam_user.user.path == test_path2
+      - "'user' in iam_user"
+      - iam_user.user.user_name == test_user
+      - iam_user.user.path == test_path2
 
 # Re-Set Path
 
@@ -108,9 +108,9 @@
   ansible.builtin.assert:
     that:
       - iam_user is changed
-      - "'user' in iam_user.iam_user"
-      - iam_user.iam_user.user.user_name == test_user
-      - iam_user.iam_user.user.path == test_path
+      - "'user' in iam_user"
+      - iam_user.user.user_name == test_user
+      - iam_user.user.path == test_path
 
 - name: Retry set path (check_mode)
   amazon.aws.iam_user:
@@ -136,9 +136,9 @@
   ansible.builtin.assert:
     that:
       - iam_user is not changed
-      - "'user' in iam_user.iam_user"
-      - iam_user.iam_user.user.user_name == test_user
-      - iam_user.iam_user.user.path == test_path
+      - "'user' in iam_user"
+      - iam_user.user.user_name == test_user
+      - iam_user.user.path == test_path
 
 # /end Path management
 

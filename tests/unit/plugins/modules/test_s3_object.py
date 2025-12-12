@@ -104,9 +104,12 @@ def test_populate_params(m_get_aws_connection_info):
     assert result["object"] == "example.txt"
 
     module.params.update({"object": "/example.txt", "mode": "get"})
-    result = s3_object.populate_params(module)
-    assert result["object"] == "example.txt"
+    s3_object.populate_params(module)
+    module.fail_json.assert_called_with(
+        msg="Parameter 'object' should not start with a leading '/'. See https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-keys.html"
+    )
 
+    module.fail_json.reset_mock()
     module.params.update({"object": "example.txt", "mode": "delete"})
     result = s3_object.populate_params(module)
     module.fail_json.assert_called_with(msg="Parameter object cannot be used with mode=delete")
