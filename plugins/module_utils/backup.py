@@ -24,7 +24,7 @@ def get_backup_resource_tags(module, backup_client, resource):
 
 
 def _list_backup_plans(client, backup_plan_name):
-    first_iteration = False
+    first_iteration_completed = False
     next_token = None
 
     # We can not use the paginator at the moment because if was introduced after boto3 version 1.22
@@ -41,9 +41,9 @@ def _list_backup_plans(client, backup_plan_name):
                 return backup_plan["BackupPlanId"]
 
     while next_token is not None:
-        if first_iteration:
+        if first_iteration_completed:
             response = client.list_backup_plans(NextToken=next_token)
-        first_iteration = True
+        first_iteration_completed = True
         entries = response["BackupPlansList"]
         for backup_plan in entries:
             if backup_plan_name == backup_plan["BackupPlanName"]:
@@ -84,7 +84,7 @@ def get_plan_details(module, client, backup_plan_name: str):
 
 
 def _list_backup_selections(client, module, plan_id):
-    first_iteration = False
+    first_iteration_completed = False
     next_token = None
     selections = []
 
@@ -103,12 +103,12 @@ def _list_backup_selections(client, module, plan_id):
         return response["BackupSelectionsList"]
 
     while next_token:
-        if first_iteration:
+        if first_iteration_completed:
             try:
                 response = client.list_backup_selections(BackupPlanId=plan_id, NextToken=next_token)
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                 module.fail_json_aws(e, msg="Failed to list AWS backup selections")
-        first_iteration = True
+        first_iteration_completed = True
         selections.append(response["BackupSelectionsList"])
         next_token = response.get("NextToken")
 
