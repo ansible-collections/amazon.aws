@@ -6,6 +6,9 @@
 import pytest
 
 from ansible_collections.amazon.aws.plugins.module_utils._s3.transformations import merge_tags
+from ansible_collections.amazon.aws.plugins.module_utils._s3.transformations import normalize_s3_bucket_acls
+from ansible_collections.amazon.aws.plugins.module_utils._s3.transformations import normalize_s3_bucket_public_access
+from ansible_collections.amazon.aws.plugins.module_utils._s3.transformations import normalize_s3_bucket_versioning
 
 
 class TestMergeTags:
@@ -116,3 +119,140 @@ class TestMergeTags:
         new_tags = {"aws:tag": "value", "custom:tag": "value2", "tag-with-dash": "value3"}
         result = merge_tags(current_tags, new_tags, purge_tags=True)
         assert result == {"aws:tag": "value", "custom:tag": "value2", "tag-with-dash": "value3"}
+
+
+class TestNormalizeS3BucketVersioning:
+    def test_none_input_returns_none(self):
+        """Test that None input returns None."""
+        result = normalize_s3_bucket_versioning(None)
+        assert result is None
+
+    def test_empty_dict_returns_empty_dict(self):
+        """Test that empty dict returns empty dict (early return)."""
+        result = normalize_s3_bucket_versioning({})
+        assert result == {}
+
+    def test_dict_with_other_keys_adds_defaults(self):
+        """Test that dict with other keys gets default Status and MFADelete."""
+        versioning_status = {"SomeOtherKey": "value"}
+        result = normalize_s3_bucket_versioning(versioning_status)
+
+        assert result["Status"] == "Disabled"
+        assert result["Versioning"] == "Disabled"
+        assert result["MFADelete"] == "Disabled"
+        assert result["MfaDelete"] == "Disabled"
+
+    def test_versioning_enabled(self):
+        """Test versioning status Enabled."""
+        versioning_status = {"Status": "Enabled", "MFADelete": "Disabled"}
+        result = normalize_s3_bucket_versioning(versioning_status)
+
+        assert result["Status"] == "Enabled"
+        assert result["Versioning"] == "Enabled"
+        assert result["MFADelete"] == "Disabled"
+        assert result["MfaDelete"] == "Disabled"
+
+    def test_versioning_suspended(self):
+        """Test versioning status Suspended."""
+        versioning_status = {"Status": "Suspended"}
+        result = normalize_s3_bucket_versioning(versioning_status)
+
+        assert result["Status"] == "Suspended"
+        assert result["Versioning"] == "Suspended"
+        assert result["MFADelete"] == "Disabled"
+        assert result["MfaDelete"] == "Disabled"
+
+    def test_mfa_delete_enabled(self):
+        """Test MFA delete enabled."""
+        versioning_status = {"Status": "Enabled", "MFADelete": "Enabled"}
+        result = normalize_s3_bucket_versioning(versioning_status)
+
+        assert result["MFADelete"] == "Enabled"
+        assert result["MfaDelete"] == "Enabled"
+
+    def test_missing_mfa_delete_defaults_to_disabled(self):
+        """Test that missing MFADelete defaults to Disabled."""
+        versioning_status = {"Status": "Enabled"}
+        result = normalize_s3_bucket_versioning(versioning_status)
+
+        assert result["MFADelete"] == "Disabled"
+        assert result["MfaDelete"] == "Disabled"
+
+
+class TestNormalizeS3BucketPublicAccess:
+    def test_none_input_returns_none(self):
+        """Test that None input returns None."""
+        result = normalize_s3_bucket_public_access(None)
+        assert result is None
+
+    def test_empty_dict_returns_empty_dict(self):
+        """Test that empty dict returns empty dict."""
+        result = normalize_s3_bucket_public_access({})
+        assert result == {}
+
+    def test_normalizes_public_access_config(self):
+        """Test that public access configuration is normalized."""
+        public_access_status = {
+            "BlockPublicAcls": True,
+            "IgnorePublicAcls": True,
+            "BlockPublicPolicy": False,
+            "RestrictPublicBuckets": False,
+        }
+        result = normalize_s3_bucket_public_access(public_access_status)
+
+        # Should have all original keys
+        assert result["BlockPublicAcls"] is True
+        assert result["IgnorePublicAcls"] is True
+        assert result["BlockPublicPolicy"] is False
+        assert result["RestrictPublicBuckets"] is False
+
+        # Should also have PublicAccessBlockConfiguration
+        assert "PublicAccessBlockConfiguration" in result
+        assert result["PublicAccessBlockConfiguration"] == public_access_status
+
+    def test_deep_copy_does_not_modify_original(self):
+        """Test that normalization deep copies and doesn't modify original."""
+        public_access_status = {"BlockPublicAcls": True}
+        result = normalize_s3_bucket_public_access(public_access_status)
+
+        # Modifying result should not affect original
+        result["PublicAccessBlockConfiguration"]["BlockPublicAcls"] = False
+        assert public_access_status["BlockPublicAcls"] is True
+
+
+class TestNormalizeS3BucketAcls:
+    def test_none_input_returns_none(self):
+        """Test that None input returns None."""
+        result = normalize_s3_bucket_acls(None)
+        assert result is None
+
+    def test_empty_dict_returns_empty_dict(self):
+        """Test that empty dict returns empty dict."""
+        result = normalize_s3_bucket_acls({})
+        assert result == {}
+
+    def test_extracts_grants_from_acls(self):
+        """Test that grants are extracted from ACL dict."""
+        acls = {
+            "grants": [
+                {"grantee": {"type": "CanonicalUser", "id": "abc123"}, "permission": "FULL_CONTROL"},
+                {
+                    "grantee": {"type": "Group", "uri": "http://acs.amazonaws.com/groups/global/AllUsers"},
+                    "permission": "READ",
+                },
+            ]
+        }
+        result = normalize_s3_bucket_acls(acls)
+
+        # Result should be the grants array
+        assert isinstance(result, list)
+        assert len(result) == 2
+        assert result[0]["permission"] == "FULL_CONTROL"
+        assert result[1]["permission"] == "READ"
+
+    def test_empty_grants_returns_empty_list(self):
+        """Test that empty grants returns empty list."""
+        acls = {"grants": []}
+        result = normalize_s3_bucket_acls(acls)
+
+        assert result == []
