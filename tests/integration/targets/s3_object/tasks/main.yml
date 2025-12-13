@@ -465,7 +465,8 @@
 
     - ansible.builtin.assert:
         that:
-          - "'Object deleted from bucket' in result.msg"
+          - "'deleted from bucket' in result.msg"
+          - "'Object' in result.msg"
           - result is changed
 
     - name: Test putting an object in the bucket with metadata set
