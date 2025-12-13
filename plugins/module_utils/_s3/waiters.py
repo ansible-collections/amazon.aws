@@ -3,12 +3,27 @@
 # Copyright: Contributors to the Ansible project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+from __future__ import annotations
+
+import typing
+
+if typing.TYPE_CHECKING:
+    from typing import Dict
+
 from ..waiter import BaseWaiterFactory
 
 
 class S3WaiterFactory(BaseWaiterFactory):
+    """Factory for creating S3-specific waiters."""
+
     @property
-    def _waiter_model_data(self):
+    def _waiter_model_data(self) -> Dict:
+        """
+        Define waiter models for S3 operations.
+
+        Returns:
+            Dictionary containing waiter configurations for S3 operations.
+        """
         PATH_BUCKET_KEY_ENABLED = "ServerSideEncryptionConfiguration.Rules[].BucketKeyEnabled"
         data = dict(
             bucket_exists=dict(
