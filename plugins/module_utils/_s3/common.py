@@ -32,7 +32,6 @@ IGNORE_S3_DROP_IN_EXCEPTIONS = [
     "NotSupported",
     "XNotImplemented",
     "NotImplemented",
-    "AccessControlListNotSupported",
     "501",
 ]
 
@@ -57,6 +56,12 @@ class AnsibleS3PermissionsError(AnsibleS3Error):
 
 class AnsibleS3SupportError(AnsibleS3Error):
     """Exception raised when an S3 operation is not supported by the cloud provider."""
+
+    pass
+
+
+class AnsibleS3ACLSupportError(AnsibleS3SupportError):
+    """Exception raised when an S3 operation is specifically due to ACLs not being supported."""
 
     pass
 
@@ -143,6 +148,11 @@ class S3ErrorHandler(AWSErrorHandler):
                 ) as e:
                     raise AnsibleS3Sigv4RequiredError(
                         message=f"Failed to {description} (not supported by cloud)", exception=e
+                    ) from e
+                except is_boto3_error_code("AccessControlListNotSupported") as e:  # pylint: disable=duplicate-except
+                    # This error is more likely to be specifically related to the bucket
+                    raise AnsibleS3ACLSupportError(
+                        message=f"Failed to {description} (not supported by bucket)", exception=e
                     ) from e
                 except is_boto3_error_code(IGNORE_S3_DROP_IN_EXCEPTIONS) as e:  # pylint: disable=duplicate-except
                     # Unlike most of our modules, we attempt to handle non-AWS clouds.  For read-only

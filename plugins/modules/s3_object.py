@@ -456,6 +456,7 @@ from ansible.module_utils.basic import to_native
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import HAS_MD5
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import AnsibleS3ACLSupportError
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import AnsibleS3Error
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import AnsibleS3PermissionsError
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import AnsibleS3Sigv4RequiredError
@@ -574,6 +575,9 @@ def put_object_acl(
     for acl in module.params.get("permission"):
         try:
             put_s3_object_acl(s3, bucket, obj, acl)
+        except AnsibleS3ACLSupportError:
+            module.warn("PutObjectAcl operation : The bucket does not allow ACLs.")
+            return
         except AnsibleS3SupportError:
             # S3 drop-ins (MinIO, Ceph, etc.) may not support ACL operations
             module.warn(

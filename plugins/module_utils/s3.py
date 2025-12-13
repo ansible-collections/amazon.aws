@@ -54,6 +54,7 @@ AnsibleS3Error = _common.AnsibleS3Error
 AnsibleS3Sigv4RequiredError = _common.AnsibleS3Error
 AnsibleS3PermissionsError = _common.AnsibleS3PermissionsError
 AnsibleS3SupportError = _common.AnsibleS3SupportError
+AnsibleS3ACLSupportError = _common.AnsibleS3ACLSupportError
 AnsibleS3RegionSupportError = _common.AnsibleS3RegionSupportError
 
 normalize_s3_bucket_versioning = _transformations.normalize_s3_bucket_versioning
