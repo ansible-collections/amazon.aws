@@ -395,16 +395,6 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 </thead>
 <tbody>
 <tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-function"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-function"><strong>function</strong></p>
-<a class="ansibleOptionLink" href="#return-function" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
-</div></td>
-<td><div class="ansible-option-cell"><p>Lambda function list, keyed by function name.</p>
-<p>Each key is a function name with a value containing the function information, including event, mapping, and version information.</p>
-<p><code class="ansible-return-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-info-module-return-function"><span class="std std-ref"><span class="pre">function</span></span></a></code> has been deprecated and will be removed in a release after 2025-01-01.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
-</div></td>
-</tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions"><strong>functions</strong></p>
 <a class="ansibleOptionLink" href="#return-functions" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
 <p><em class="ansible-option-versionadded">added in community.aws 4.1.0</em></p>
@@ -413,7 +403,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions/aliases"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions-aliases"><strong>aliases</strong></p>
 <a class="ansibleOptionLink" href="#return-functions/aliases" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
@@ -421,7 +411,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-info-module-parameter-query"><span class="std std-ref"><span class="pre">query=aliases</span></span></a></code> or <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-info-module-parameter-query"><span class="std std-ref"><span class="pre">query=all</span></span></a></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions/architectures"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions-architectures"><strong>architectures</strong></p>
 <a class="ansibleOptionLink" href="#return-functions/architectures" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
@@ -430,7 +420,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[&quot;arm64&quot;]</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions/code_sha256"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions-code-sha256"><strong>code_sha256</strong></p>
 <a class="ansibleOptionLink" href="#return-functions/code_sha256" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -439,7 +429,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;zOAGfF5JLFuzZoSNirUtOrQp+S341IOA3BcoXXoaIaU=&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions/code_size"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions-code-size"><strong>code_size</strong></p>
 <a class="ansibleOptionLink" href="#return-functions/code_size" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
@@ -448,7 +438,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">123</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions/dead_letter_config"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions-dead-letter-config"><strong>dead_letter_config</strong></p>
 <a class="ansibleOptionLink" href="#return-functions/dead_letter_config" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
@@ -457,7 +447,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;target_arn&quot;:</span> <span class="pre">&quot;arn:aws:lambda:us-east-1:123456789012:function:myFunction:1&quot;}</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions/dead_letter_config/target_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions-dead-letter-config-target-arn"><strong>target_arn</strong></p>
 <a class="ansibleOptionLink" href="#return-functions/dead_letter_config/target_arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -466,7 +456,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:lambda:us-east-1:123456789012:function:myFunction:1&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions/description"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions-description"><strong>description</strong></p>
 <a class="ansibleOptionLink" href="#return-functions/description" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -475,7 +465,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;My</span> <span class="pre">function&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions/environment"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions-environment"><strong>environment</strong></p>
 <a class="ansibleOptionLink" href="#return-functions/environment" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
@@ -483,7 +473,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when environment variables exist</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions/environment/error"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions-environment-error"><strong>error</strong></p>
 <a class="ansibleOptionLink" href="#return-functions/environment/error" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
@@ -491,7 +481,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when there is an error applying environment variables</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions/environment/error/error_code"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions-environment-error-error-code"><strong>error_code</strong></p>
 <a class="ansibleOptionLink" href="#return-functions/environment/error/error_code" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -499,7 +489,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when there is an error applying environment variables</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions/environment/error/message"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions-environment-error-message"><strong>message</strong></p>
 <a class="ansibleOptionLink" href="#return-functions/environment/error/message" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -507,7 +497,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when there is an error applying environment variables</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions/environment/variables"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions-environment-variables"><strong>variables</strong></p>
 <a class="ansibleOptionLink" href="#return-functions/environment/variables" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
@@ -516,7 +506,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;key&quot;:</span> <span class="pre">&quot;value&quot;}</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions/ephermal_storage"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions-ephermal-storage"><strong>ephermal_storage</strong></p>
 <a class="ansibleOptionLink" href="#return-functions/ephermal_storage" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
@@ -524,7 +514,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions/ephermal_storage/size"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions-ephermal-storage-size"><strong>size</strong></p>
 <a class="ansibleOptionLink" href="#return-functions/ephermal_storage/size" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
@@ -533,7 +523,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">512</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions/function_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions-function-arn"><strong>function_arn</strong></p>
 <a class="ansibleOptionLink" href="#return-functions/function_arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -542,7 +532,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:lambda:us-east-1:123456789012:function:myFunction:1&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions/function_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions-function-name"><strong>function_name</strong></p>
 <a class="ansibleOptionLink" href="#return-functions/function_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -551,7 +541,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;myFunction&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions/handler"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions-handler"><strong>handler</strong></p>
 <a class="ansibleOptionLink" href="#return-functions/handler" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -560,7 +550,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;index.handler&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions/last_modified"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions-last-modified"><strong>last_modified</strong></p>
 <a class="ansibleOptionLink" href="#return-functions/last_modified" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -569,7 +559,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2017-08-01T00:00:00.000+0000&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions/mappings"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions-mappings"><strong>mappings</strong></p>
 <a class="ansibleOptionLink" href="#return-functions/mappings" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
 </div></td>
@@ -577,7 +567,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-info-module-parameter-query"><span class="std std-ref"><span class="pre">query=all</span></span></a></code> or <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-info-module-parameter-query"><span class="std std-ref"><span class="pre">query=mappings</span></span></a></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions/mappings/batch_size"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions-mappings-batch-size"><strong>batch_size</strong></p>
 <a class="ansibleOptionLink" href="#return-functions/mappings/batch_size" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
@@ -585,7 +575,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> on success</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions/mappings/event_source_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions-mappings-event-source-arn"><strong>event_source_arn</strong></p>
 <a class="ansibleOptionLink" href="#return-functions/mappings/event_source_arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -593,7 +583,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> on success</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions/mappings/function_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions-mappings-function-arn"><strong>function_arn</strong></p>
 <a class="ansibleOptionLink" href="#return-functions/mappings/function_arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -601,7 +591,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> on success</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions/mappings/last_modified"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions-mappings-last-modified"><strong>last_modified</strong></p>
 <a class="ansibleOptionLink" href="#return-functions/mappings/last_modified" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -609,7 +599,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> on success</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions/mappings/last_processing_result"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions-mappings-last-processing-result"><strong>last_processing_result</strong></p>
 <a class="ansibleOptionLink" href="#return-functions/mappings/last_processing_result" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -617,7 +607,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> on success</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions/mappings/state"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions-mappings-state"><strong>state</strong></p>
 <a class="ansibleOptionLink" href="#return-functions/mappings/state" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -625,7 +615,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> on success</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions/mappings/state_transition_reason"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions-mappings-state-transition-reason"><strong>state_transition_reason</strong></p>
 <a class="ansibleOptionLink" href="#return-functions/mappings/state_transition_reason" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -633,7 +623,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> on success</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions/mappings/uuid"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions-mappings-uuid"><strong>uuid</strong></p>
 <a class="ansibleOptionLink" href="#return-functions/mappings/uuid" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -641,7 +631,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> on success</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions/memory_size"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions-memory-size"><strong>memory_size</strong></p>
 <a class="ansibleOptionLink" href="#return-functions/memory_size" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
@@ -650,7 +640,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">128</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions/package_type"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions-package-type"><strong>package_type</strong></p>
 <a class="ansibleOptionLink" href="#return-functions/package_type" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -659,7 +649,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;Zip&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions/policy"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions-policy"><strong>policy</strong></p>
 <a class="ansibleOptionLink" href="#return-functions/policy" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
@@ -667,7 +657,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-info-module-parameter-query"><span class="std std-ref"><span class="pre">query=all</span></span></a></code> or <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-info-module-parameter-query"><span class="std std-ref"><span class="pre">query=policy</span></span></a></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions/revision_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions-revision-id"><strong>revision_id</strong></p>
 <a class="ansibleOptionLink" href="#return-functions/revision_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -676,7 +666,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;a2x9886d-d48a-4a0c-ab64-82abc005x80c&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions/role"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions-role"><strong>role</strong></p>
 <a class="ansibleOptionLink" href="#return-functions/role" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -685,7 +675,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:iam::123456789012:role/lambda_basic_execution&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions/runtime"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions-runtime"><strong>runtime</strong></p>
 <a class="ansibleOptionLink" href="#return-functions/runtime" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -694,7 +684,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;nodejs6.10&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions/runtime_version_config"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions-runtime-version-config"><strong>runtime_version_config</strong></p>
 <a class="ansibleOptionLink" href="#return-functions/runtime_version_config" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
@@ -702,7 +692,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions/runtime_version_config/runtime_version_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions-runtime-version-config-runtime-version-arn"><strong>runtime_version_arn</strong></p>
 <a class="ansibleOptionLink" href="#return-functions/runtime_version_config/runtime_version_arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -711,7 +701,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:lambda:us-west-2::runtime:123456789012&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions/snap_start"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions-snap-start"><strong>snap_start</strong></p>
 <a class="ansibleOptionLink" href="#return-functions/snap_start" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
@@ -719,7 +709,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions/snap_start/apply_on"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions-snap-start-apply-on"><strong>apply_on</strong></p>
 <a class="ansibleOptionLink" href="#return-functions/snap_start/apply_on" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -728,7 +718,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions/snap_start/optimization_status"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions-snap-start-optimization-status"><strong>optimization_status</strong></p>
 <a class="ansibleOptionLink" href="#return-functions/snap_start/optimization_status" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -737,7 +727,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;Off&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions/timeout"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions-timeout"><strong>timeout</strong></p>
 <a class="ansibleOptionLink" href="#return-functions/timeout" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
@@ -746,7 +736,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">3</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions/tracing_config"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions-tracing-config"><strong>tracing_config</strong></p>
 <a class="ansibleOptionLink" href="#return-functions/tracing_config" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
@@ -755,7 +745,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;mode&quot;:</span> <span class="pre">&quot;Active&quot;}</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions/tracing_config/mode"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions-tracing-config-mode"><strong>mode</strong></p>
 <a class="ansibleOptionLink" href="#return-functions/tracing_config/mode" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -764,7 +754,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;Active&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions/version"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions-version"><strong>version</strong></p>
 <a class="ansibleOptionLink" href="#return-functions/version" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -773,7 +763,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;1&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions/versions"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions-versions"><strong>versions</strong></p>
 <a class="ansibleOptionLink" href="#return-functions/versions" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
 </div></td>
@@ -781,7 +771,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-i
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-info-module-parameter-query"><span class="std std-ref"><span class="pre">query=all</span></span></a></code> or <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-lambda-info-module-parameter-query"><span class="std std-ref"><span class="pre">query=versions</span></span></a></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-functions/vpc_config"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-lambda-info-module-return-functions-vpc-config"><strong>vpc_config</strong></p>
 <a class="ansibleOptionLink" href="#return-functions/vpc_config" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
