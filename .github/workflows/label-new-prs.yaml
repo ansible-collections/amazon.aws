@@ -5,6 +5,7 @@ on:
     types:
       - opened
       - reopened
+      - edited
 
 jobs:
   add_label:
@@ -12,6 +13,14 @@ jobs:
     permissions:
       pull-requests: write
     steps:
-      - uses: actions-ecosystem/action-add-labels@v1
+      - name: Add 'needs_triage' label if the pr is not a draft
+        uses: actions-ecosystem/action-add-labels@v1
+        if: github.event.pull_request.draft == false
+        with:
+          labels: needs_triage
+
+      - name: Remove 'needs_triage' label if the pr is a draft
+        uses: actions-ecosystem/action-remove-labels@v1
+        if: github.event.pull_request.draft == true
         with:
           labels: needs_triage
