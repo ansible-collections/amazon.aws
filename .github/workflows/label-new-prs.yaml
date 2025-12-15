@@ -5,7 +5,8 @@ on:
     types:
       - opened
       - reopened
-      - edited
+      - converted_to_draft
+      - ready_for_review
 
 jobs:
   add_label:
