@@ -98,7 +98,7 @@
     - name: Create an object in the bucket with permissions (permission not set)
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}-acl-disabled"
-        object: /test_directory
+        object: test_directory
         permission: bucket-owner-full-control
         mode: create
       register: permission_result
@@ -121,12 +121,11 @@
       ignore_errors: true
       loop:
         - acl_disabled_upload_test.txt
-        - /test_directory/
+        - test_directory/
 
     - name: List keys simple
-      amazon.aws.s3_object:
-        bucket: "{{ bucket_name }}-acl-disabled"
-        mode: list
+      amazon.aws.s3_object_info:
+        bucket_name: "{{ bucket_name }}-acl-disabled"
 
     - name: Delete bucket created in this test
       amazon.aws.s3_bucket:

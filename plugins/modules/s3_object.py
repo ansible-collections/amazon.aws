@@ -105,8 +105,6 @@ options:
       - Object key names should not include the leading C(/), see
         U(https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-keys.html) for more
         information.
-      - Support for passing the leading V(/) has been deprecated and will be removed
-        in a release after 2025-12-01.
     type: str
   sig_v4:
     description:
@@ -1446,14 +1444,9 @@ def populate_params(module):
         if variable_dict.get("mode") == "delete":
             module.fail_json(msg="Parameter object cannot be used with mode=delete")
         obj = variable_dict["object"]
-        # If the object starts with / remove the leading character
         if obj.startswith("/"):
-            obj = obj[1:]
-            variable_dict["object"] = obj
-            module.deprecate(
-                "Support for passing object key names with a leading '/' has been deprecated.",
-                date="2025-12-01",
-                collection_name="amazon.aws",
+            module.fail_json(
+                msg="Parameter 'object' should not start with a leading '/'. See https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-keys.html"
             )
 
     variable_dict["validate"] = not variable_dict["ignore_nonexistent_bucket"]
@@ -1561,7 +1554,7 @@ def main():
         module.deprecate(
             (
                 "Support for 'list' mode has been deprecated and will be removed in a release after "
-                "2024-11-01.  Please use the amazon.aws.s3_object_info module instead."
+                "2026-11-01.  Please use the amazon.aws.s3_object_info module instead."
             ),
             date="2026-11-01",
             collection_name="amazon.aws",
