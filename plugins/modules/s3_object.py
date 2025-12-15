@@ -829,7 +829,7 @@ def get_binary_content(s3_vars: Dict) -> Optional[bytes]:
     return bincontent
 
 
-def do_s3_object_get(module, connection, s3_vars):
+def do_s3_object_get(module: AnsibleAWSModule, connection: ClientType, s3_vars: Dict) -> None:
     keyrtn = key_check(
         module,
         connection,
@@ -885,7 +885,7 @@ def do_s3_object_get(module, connection, s3_vars):
     module.exit_json(failed=False)
 
 
-def do_s3_object_put(module, connection, s3_vars):
+def do_s3_object_put(module: AnsibleAWSModule, connection: ClientType, s3_vars: Dict) -> None:
     # if putting an object in a bucket yet to be created, acls for the bucket and/or the object may be specified
     # these were separated into the variables bucket_acl and object_acl above
 
@@ -951,7 +951,7 @@ def do_s3_object_put(module, connection, s3_vars):
     module.exit_json(failed=False)
 
 
-def do_s3_object_delobj(module, connection, s3_vars):
+def do_s3_object_delobj(module: AnsibleAWSModule, connection: ClientType, s3_vars: Dict) -> None:
     if module.check_mode:
         module.exit_json(
             msg="DELETE operation skipped - running in check mode",
@@ -965,7 +965,7 @@ def do_s3_object_delobj(module, connection, s3_vars):
     module.exit_json(msg=f"Object {s3_vars['object']} deleted from bucket {s3_vars['bucket']}.", changed=True)
 
 
-def do_s3_object_list(module, connection, s3_vars):
+def do_s3_object_list(module: AnsibleAWSModule, connection: ClientType, s3_vars: Dict) -> None:
     # If the bucket does not exist then bail out
     keys = list_bucket_object_keys(
         connection,
@@ -977,7 +977,7 @@ def do_s3_object_list(module, connection, s3_vars):
     module.exit_json(msg="LIST operation complete", s3_keys=keys)
 
 
-def do_s3_object_create(module, connection, s3_vars):
+def do_s3_object_create(module: AnsibleAWSModule, connection: ClientType, s3_vars: Dict) -> None:
     # if both creating a bucket and putting an object in it, acls for the bucket and/or the object may be specified
     # these were separated above into the variables bucket_acl and object_acl
 
@@ -1003,7 +1003,7 @@ def do_s3_object_create(module, connection, s3_vars):
     )
 
 
-def do_s3_object_geturl(module, connection, s3_vars):
+def do_s3_object_geturl(module: AnsibleAWSModule, connection: ClientType, s3_vars: Dict) -> None:
     if key_check(
         module,
         connection,
@@ -1030,7 +1030,7 @@ def do_s3_object_geturl(module, connection, s3_vars):
     module.fail_json(msg=f"Key {s3_vars['object']} does not exist.")
 
 
-def do_s3_object_getstr(module, connection, s3_vars):
+def do_s3_object_getstr(module: AnsibleAWSModule, connection: ClientType, s3_vars: Dict) -> None:
     if s3_vars["bucket"] and s3_vars["object"]:
         if key_check(
             module,
@@ -1053,7 +1053,7 @@ def do_s3_object_getstr(module, connection, s3_vars):
             module.fail_json(msg=f"Key {s3_vars['object']} does not exist.")
 
 
-def check_object_tags(module, connection, bucket, obj):
+def check_object_tags(module: AnsibleAWSModule, connection: ClientType, bucket: str, obj: str) -> bool:
     tags = module.params.get("tags")
     purge_tags = module.params.get("purge_tags")
     diff = False
@@ -1066,7 +1066,9 @@ def check_object_tags(module, connection, bucket, obj):
     return diff
 
 
-def calculate_object_etag(module, s3, bucket, obj, head_etag, version=None):
+def calculate_object_etag(
+    module: AnsibleAWSModule, s3: ClientType, bucket: str, obj: str, head_etag: str, version: Optional[str] = None
+) -> str:
     etag = head_etag
     if "-" in etag:
         # object has been created using multipart upload, compute ETag using
@@ -1077,7 +1079,18 @@ def calculate_object_etag(module, s3, bucket, obj, head_etag, version=None):
     return etag
 
 
-def copy_object_to_bucket(module, s3, bucket, obj, encrypt, metadata, validate, src_bucket, src_obj, versionId=None):
+def copy_object_to_bucket(
+    module: AnsibleAWSModule,
+    s3: ClientType,
+    bucket: str,
+    obj: str,
+    encrypt: bool,
+    metadata: Optional[Dict],
+    validate: bool,
+    src_bucket: str,
+    src_obj: str,
+    versionId: Optional[str] = None,
+) -> Tuple[bool, Dict]:
     if not key_check(module, s3, src_bucket, src_obj, version=versionId, validate=validate):
         # Key does not exist in source bucket
         module.exit_json(
@@ -1161,7 +1174,7 @@ def copy_object_to_bucket(module, s3, bucket, obj, encrypt, metadata, validate, 
         return changed, {"msg": msg, "tags": tags}
 
 
-def do_s3_object_copy(module, connection, s3_vars):
+def do_s3_object_copy(module: AnsibleAWSModule, connection: ClientType, s3_vars: Dict) -> None:
     copy_src = module.params.get("copy_src")
     if not copy_src.get("object") and s3_vars["object"]:
         module.fail_json(
