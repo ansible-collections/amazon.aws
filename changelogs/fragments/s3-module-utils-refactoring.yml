@@ -1,12 +1,12 @@
 ---
 minor_changes:
   - module_utils/s3 - refactored S3 module utilities to consolidate duplicate code, add comprehensive type hints and docstrings, and improve maintainability
-    (https://github.com/ansible-collections/amazon.aws/pull/XXXX).
+    (https://github.com/ansible-collections/amazon.aws/pull/2782).
   - s3_bucket - refactored to use centralized S3 wrapper functions from module_utils and consistently use S3ErrorHandler
-    (https://github.com/ansible-collections/amazon.aws/pull/XXXX).
+    (https://github.com/ansible-collections/amazon.aws/pull/2782).
   - s3_bucket_info - refactored to use centralized S3 wrapper functions from module_utils and consistently use S3ErrorHandler
-    (https://github.com/ansible-collections/amazon.aws/pull/XXXX).
+    (https://github.com/ansible-collections/amazon.aws/pull/2782).
   - s3_object - refactored to use centralized S3 wrapper functions from module_utils and consistently use S3ErrorHandler
-    (https://github.com/ansible-collections/amazon.aws/pull/XXXX).
+    (https://github.com/ansible-collections/amazon.aws/pull/2782).
   - s3_object_info - refactored to use centralized S3 wrapper functions from module_utils and consistently use S3ErrorHandler
-    (https://github.com/ansible-collections/amazon.aws/pull/XXXX).
+    (https://github.com/ansible-collections/amazon.aws/pull/2782).
