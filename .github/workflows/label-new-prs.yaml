@@ -10,8 +10,7 @@ jobs:
   add_label:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-      issues: write
+      pull-requests: write
     steps:
       - uses: actions-ecosystem/action-add-labels@v1
         with:
