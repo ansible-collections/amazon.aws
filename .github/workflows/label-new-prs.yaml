@@ -1,0 +1,27 @@
+---
+name: label new prs
+on:
+  pull_request_target:
+    types:
+      - opened
+      - reopened
+      - converted_to_draft
+      - ready_for_review
+
+jobs:
+  add_label:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Add 'needs_triage' label if the pr is not a draft
+        uses: actions-ecosystem/action-add-labels@v1
+        if: github.event.pull_request.draft == false
+        with:
+          labels: needs_triage
+
+      - name: Remove 'needs_triage' label if the pr is a draft
+        uses: actions-ecosystem/action-remove-labels@v1
+        if: github.event.pull_request.draft == true
+        with:
+          labels: needs_triage
