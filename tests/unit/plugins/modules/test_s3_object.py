@@ -12,38 +12,20 @@ module_name = "ansible_collections.amazon.aws.plugins.modules.s3_object"
 utils = "ansible_collections.amazon.aws.plugins.module_utils.ec2"
 
 
-@patch(module_name + ".delete_key")
-def test_s3_object_do_delobj_success(m_delete_key):
+@patch(module_name + ".delete_s3_object")
+def test_s3_object_do_delobj_success(m_delete_s3_object):
     module = MagicMock()
     s3 = MagicMock()
     var_dict = {
         "object": "/usr/local/myfile.txt",
         "bucket": "a987e6b6026ab04e4717",
     }
-    s3_object.s3_object_do_delobj(module, s3, s3, var_dict)
-    assert m_delete_key.call_count == 1
-    module.exit_json.assert_called_with(msg="Object deleted from bucket a987e6b6026ab04e4717.", changed=True)
-
-
-@patch(module_name + ".delete_key")
-def test_s3_object_do_delobj_failure_nobucket(m_delete_key):
-    module = MagicMock()
-    s3 = MagicMock()
-
-    var_dict = {"object": "/usr/local/myfile.txt", "bucket": ""}
-    s3_object.s3_object_do_delobj(module, s3, s3, var_dict)
-    assert m_delete_key.call_count == 0
-    module.fail_json.assert_called_with(msg="Bucket parameter is required.")
-
-
-@patch(module_name + ".delete_key")
-def test_s3_object_do_delobj_failure_noobj(m_delete_key):
-    module = MagicMock()
-    s3 = MagicMock()
-    var_dict = {"bucket": "a987e6b6026ab04e4717", "object": ""}
-    s3_object.s3_object_do_delobj(module, s3, s3, var_dict)
-    assert m_delete_key.call_count == 0
-    module.fail_json.assert_called_with(msg="object parameter is required")
+    s3_object.do_s3_object_delobj(module, s3, var_dict)
+    assert m_delete_s3_object.call_count == 1
+    m_delete_s3_object.assert_called_with(s3, "a987e6b6026ab04e4717", "/usr/local/myfile.txt")
+    module.exit_json.assert_called_with(
+        msg="Object /usr/local/myfile.txt deleted from bucket a987e6b6026ab04e4717.", changed=True
+    )
 
 
 @patch(utils + ".get_aws_connection_info")

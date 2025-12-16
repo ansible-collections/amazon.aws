@@ -9,6 +9,7 @@ import copy
 import typing
 
 if typing.TYPE_CHECKING:
+    from typing import List
     from typing import Optional
 
 from ansible.module_utils.basic import to_text
@@ -17,6 +18,15 @@ from ansible_collections.amazon.aws.plugins.module_utils.transformation import b
 
 
 def normalize_s3_bucket_versioning(versioning_status: Optional[dict]) -> Optional[dict]:
+    """
+    Normalize S3 bucket versioning status to Ansible dictionary format.
+
+    Parameters:
+        versioning_status (dict): The versioning status returned from boto3.
+
+    Returns:
+        Normalized versioning status dictionary with both legacy and current formats.
+    """
     if not versioning_status:
         return versioning_status
     versioning_result = typing.cast(dict, boto3_resource_to_ansible_dict(versioning_status))
@@ -30,6 +40,15 @@ def normalize_s3_bucket_versioning(versioning_status: Optional[dict]) -> Optiona
 
 
 def normalize_s3_bucket_public_access(public_access_status: Optional[dict]) -> Optional[dict]:
+    """
+    Normalize S3 bucket public access block configuration to Ansible dictionary format.
+
+    Parameters:
+        public_access_status (dict): The public access block configuration from boto3.
+
+    Returns:
+        Normalized public access configuration dictionary.
+    """
     if not public_access_status:
         return public_access_status
     public_access_result = typing.cast(dict, boto3_resource_to_ansible_dict(public_access_status))
@@ -39,31 +58,53 @@ def normalize_s3_bucket_public_access(public_access_status: Optional[dict]) -> O
 
 
 def normalize_s3_bucket_acls(acls: Optional[dict]) -> Optional[dict]:
+    """
+    Normalize S3 bucket ACLs to Ansible dictionary format.
+
+    Parameters:
+        acls (dict): The ACL configuration returned from boto3.
+
+    Returns:
+        Normalized ACL grants dictionary.
+    """
     if not acls:
         return acls
     acls_result = typing.cast(dict, boto3_resource_to_ansible_dict(acls))
     return typing.cast(dict, acls_result["grants"])
 
 
-def _grantee_is_owner(grant, owner_id):
+def _grantee_is_owner(grant: dict, owner_id: str) -> bool:
     return grant.get("Grantee", {}).get("ID") == owner_id
 
 
-def _grantee_is_public(grant):
+def _grantee_is_public(grant: dict) -> bool:
     return grant.get("Grantee", {}).get("URI") == "http://acs.amazonaws.com/groups/global/AllUsers"
 
 
-def _grantee_is_authenticated(grant):
+def _grantee_is_authenticated(grant: dict) -> bool:
     return grant.get("Grantee", {}).get("URI") == "http://acs.amazonaws.com/groups/global/AuthenticatedUsers"
 
 
-def _acl_permissions(grants):
+def _acl_permissions(grants: Optional[List[dict]]) -> List[str]:
     if not grants:
         return []
     return [grant.get("Permission") for grant in grants if grant]
 
 
-def s3_acl_to_name(acl):
+def s3_acl_to_name(acl: Optional[dict]) -> Optional[str]:
+    """
+    Convert S3 ACL grant structure to a named canned ACL template.
+
+    Attempts to match the ACL grants to standard AWS canned ACLs by analyzing
+    the owner, authenticated user, and public grants.
+
+    Parameters:
+        acl (dict): The ACL structure with 'Grants' and 'Owner' keys.
+
+    Returns:
+        The name of the matching canned ACL ('private', 'public-read',
+        'public-read-write', 'authenticated-read'), or None if no match is found.
+    """
     if not acl:
         return None
 

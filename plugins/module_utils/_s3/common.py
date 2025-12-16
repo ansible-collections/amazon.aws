@@ -6,7 +6,12 @@
 from __future__ import annotations
 
 import functools
+import typing
 from typing import cast
+
+if typing.TYPE_CHECKING:
+    from typing import Any
+    from typing import Callable
 
 try:
     # Beware, S3 is a "special" case, it sometimes catches botocore exceptions and
@@ -27,36 +32,64 @@ IGNORE_S3_DROP_IN_EXCEPTIONS = [
     "NotSupported",
     "XNotImplemented",
     "NotImplemented",
-    "AccessControlListNotSupported",
     "501",
 ]
 
 
 class AnsibleS3Error(AnsibleAWSError):
+    """Base exception for S3-related errors."""
+
     pass
 
 
 class AnsibleS3Sigv4RequiredError(AnsibleS3Error):
+    """Exception raised when AWS Signature Version 4 is required but not used."""
+
     pass
 
 
 class AnsibleS3PermissionsError(AnsibleS3Error):
+    """Exception raised for S3 permission/authorization errors."""
+
     pass
 
 
 class AnsibleS3SupportError(AnsibleS3Error):
+    """Exception raised when an S3 operation is not supported by the cloud provider."""
+
+    pass
+
+
+class AnsibleS3ACLSupportError(AnsibleS3SupportError):
+    """Exception raised when an S3 operation is specifically due to ACLs not being supported."""
+
     pass
 
 
 class AnsibleS3RegionSupportError(AnsibleS3SupportError):
+    """Exception raised when an S3 feature is not supported in the current region."""
+
     pass
 
 
 class S3ErrorHandler(AWSErrorHandler):
+    """
+    Error handler for S3 operations with S3-specific exception handling.
+
+    Extends AWSErrorHandler to provide custom error handling for S3-specific
+    error codes and S3-compatible services.
+    """
+
     _CUSTOM_EXCEPTION = AnsibleS3Error
 
     @classmethod
-    def _is_missing(cls):
+    def _is_missing(cls) -> Callable:
+        """
+        Check if a boto3 exception indicates a missing/not found resource.
+
+        Returns:
+            A matcher function for boto3 error codes indicating missing resources.
+        """
         return is_boto3_error_code(
             [
                 "404",
@@ -73,13 +106,27 @@ class S3ErrorHandler(AWSErrorHandler):
         )
 
     @classmethod
-    def common_error_handler(cls, description):
-        def wrapper(func):
+    def common_error_handler(cls, description: str) -> Callable:
+        """
+        Decorator for S3 operations that provides comprehensive error handling.
+
+        Catches and converts boto3 exceptions to appropriate AnsibleS3 exceptions,
+        including handling for permission errors, unsupported operations on S3-compatible
+        services, and signature version requirements.
+
+        Parameters:
+            description (str): Human-readable description of the operation for error messages.
+
+        Returns:
+            Decorated function with S3-specific error handling.
+        """
+
+        def wrapper(func: Callable) -> Callable:
             parent_class = cast(AWSErrorHandler, super(S3ErrorHandler, cls))
 
             @parent_class.common_error_handler(description)
             @functools.wraps(func)
-            def handler(*args, **kwargs):
+            def handler(*args: Any, **kwargs: Any) -> Any:
                 try:
                     return func(*args, **kwargs)
                 except is_boto3_error_code(["403", "AccessDenied"]) as e:
@@ -101,6 +148,11 @@ class S3ErrorHandler(AWSErrorHandler):
                 ) as e:
                     raise AnsibleS3Sigv4RequiredError(
                         message=f"Failed to {description} (not supported by cloud)", exception=e
+                    ) from e
+                except is_boto3_error_code("AccessControlListNotSupported") as e:  # pylint: disable=duplicate-except
+                    # This error is more likely to be specifically related to the bucket
+                    raise AnsibleS3ACLSupportError(
+                        message=f"Failed to {description} (not supported by bucket)", exception=e
                     ) from e
                 except is_boto3_error_code(IGNORE_S3_DROP_IN_EXCEPTIONS) as e:  # pylint: disable=duplicate-except
                     # Unlike most of our modules, we attempt to handle non-AWS clouds.  For read-only

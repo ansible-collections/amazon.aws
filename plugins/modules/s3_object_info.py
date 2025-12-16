@@ -4,6 +4,8 @@
 # Copyright: Contributors to the Ansible project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+from __future__ import annotations
+
 DOCUMENTATION = r"""
 ---
 module: s3_object_info
@@ -448,142 +450,128 @@ object_info:
                             sample: "xxxxxxxxxxxx"
 """
 
-try:
-    import botocore
-except ImportError:
-    pass  # Handled by AnsibleAWSModule
+import typing
+
+if typing.TYPE_CHECKING:
+    from typing import Dict
+    from typing import List
+
+    from ansible_collections.amazon.aws.plugins.module_utils.botocore import ClientType
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import AnsibleS3Error
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import AnsibleS3SupportError
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_object_acl
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_object_attributes
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_object_legal_hold
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_object_lock_configuration
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_object_retention
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_object_tagging
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import head_s3_object
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import list_bucket_object_keys
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import s3_bucket_exists
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import s3_extra_params
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import s3_object_exists
 
 
-def describe_s3_object_acl(connection, bucket_name, object_name):
-    params = {}
-    params["Bucket"] = bucket_name
-    params["Key"] = object_name
-
-    object_acl_info = {}
-
+def describe_s3_object_acl(connection: ClientType, bucket_name: str, object_name: str) -> Dict:
+    """Get object ACL."""
     try:
-        object_acl_info = connection.get_object_acl(**params)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError):
-        pass
+        acl_info = get_s3_object_acl(connection, bucket_name, object_name)
+        if acl_info:
+            return camel_dict_to_snake_dict(acl_info)
+        return {}
+    except AnsibleS3SupportError:
+        # Silent failure for unsupported operations on S3 drop-ins
+        return {}
+    except AnsibleS3Error:
+        # Silent failure to maintain backward compatibility
+        return {}
 
-    if len(object_acl_info) != 0:
-        # Remove ResponseMetadata from object_acl_info, convert to snake_case
-        del object_acl_info["ResponseMetadata"]
-        object_acl_info = camel_dict_to_snake_dict(object_acl_info)
 
-    return object_acl_info
-
-
-def describe_s3_object_attributes(connection, module, bucket_name, object_name):
-    params = {}
-    params["Bucket"] = bucket_name
-    params["Key"] = object_name
-    params["ObjectAttributes"] = module.params.get("object_details")["attributes_list"]
-
-    object_attributes_info = {}
-
+def describe_s3_object_attributes(
+    connection: ClientType, module: AnsibleAWSModule, bucket_name: str, object_name: str
+) -> Dict:
+    """Get object attributes."""
     try:
-        object_attributes_info = connection.get_object_attributes(**params)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError):
-        object_attributes_info["msg"] = "Object attributes not found"
+        attributes_list = module.params.get("object_details", {}).get("attributes_list", [])
+        if not attributes_list:
+            return {}
 
-    if len(object_attributes_info) != 0 and "msg" not in object_attributes_info.keys():
-        # Remove ResponseMetadata from object_attributes_info, convert to snake_case
-        del object_attributes_info["ResponseMetadata"]
-        object_attributes_info = camel_dict_to_snake_dict(object_attributes_info)
+        attrs = get_s3_object_attributes(connection, bucket_name, object_name, object_attributes=attributes_list)
+        if attrs:
+            return camel_dict_to_snake_dict(attrs)
+        return {}
+    except AnsibleS3SupportError:
+        # Silent failure for unsupported operations on S3 drop-ins
+        return {"msg": "Object attributes not found"}
+    except AnsibleS3Error:
+        return {"msg": "Object attributes not found"}
 
-    return object_attributes_info
 
-
-def describe_s3_object_legal_hold(connection, bucket_name, object_name):
-    params = {}
-    params["Bucket"] = bucket_name
-    params["Key"] = object_name
-
-    object_legal_hold_info = {}
-
+def describe_s3_object_legal_hold(connection: ClientType, bucket_name: str, object_name: str) -> Dict:
+    """Get object legal hold status."""
     try:
-        object_legal_hold_info = connection.get_object_legal_hold(**params)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError):
-        pass
+        legal_hold = get_s3_object_legal_hold(connection, bucket_name, object_name)
+        if legal_hold:
+            return {"legal_hold": camel_dict_to_snake_dict(legal_hold)}
+        return {}
+    except AnsibleS3SupportError:
+        # Silent failure for unsupported operations on S3 drop-ins
+        return {}
+    except AnsibleS3Error:
+        # Silent failure to maintain backward compatibility
+        return {}
 
-    if len(object_legal_hold_info) != 0:
-        # Remove ResponseMetadata from object_legal_hold_info, convert to snake_case
-        del object_legal_hold_info["ResponseMetadata"]
-        object_legal_hold_info = camel_dict_to_snake_dict(object_legal_hold_info)
 
-    return object_legal_hold_info
-
-
-def describe_s3_object_lock_configuration(connection, bucket_name):
-    params = {}
-    params["Bucket"] = bucket_name
-
-    object_legal_lock_configuration_info = {}
-
+def describe_s3_object_lock_configuration(connection: ClientType, bucket_name: str) -> Dict:
+    """Get bucket-level object lock configuration."""
     try:
-        object_legal_lock_configuration_info = connection.get_object_lock_configuration(**params)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError):
-        pass
+        lock_config = get_s3_object_lock_configuration(connection, bucket_name)
+        if lock_config:
+            return camel_dict_to_snake_dict(lock_config)
+        return {}
+    except AnsibleS3SupportError:
+        # Silent failure for unsupported operations on S3 drop-ins
+        return {}
+    except AnsibleS3Error:
+        # Silent failure to maintain backward compatibility
+        return {}
 
-    if len(object_legal_lock_configuration_info) != 0:
-        # Remove ResponseMetadata from object_legal_lock_configuration_info, convert to snake_case
-        del object_legal_lock_configuration_info["ResponseMetadata"]
-        object_legal_lock_configuration_info = camel_dict_to_snake_dict(object_legal_lock_configuration_info)
 
-    return object_legal_lock_configuration_info
-
-
-def describe_s3_object_retention(connection, bucket_name, object_name):
-    params = {}
-    params["Bucket"] = bucket_name
-    params["Key"] = object_name
-
-    object_retention_info = {}
-
+def describe_s3_object_retention(connection: ClientType, bucket_name: str, object_name: str) -> Dict:
+    """Get object retention settings."""
     try:
-        object_retention_info = connection.get_object_retention(**params)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError):
-        pass
+        retention = get_s3_object_retention(connection, bucket_name, object_name)
+        if retention:
+            return {"retention": camel_dict_to_snake_dict(retention)}
+        return {}
+    except AnsibleS3SupportError:
+        # Silent failure for unsupported operations on S3 drop-ins
+        return {}
+    except AnsibleS3Error:
+        # Silent failure to maintain backward compatibility
+        return {}
 
-    if len(object_retention_info) != 0:
-        # Remove ResponseMetadata from object_retention_info, convert to snake_case
-        del object_retention_info["ResponseMetadata"]
-        object_retention_info = camel_dict_to_snake_dict(object_retention_info)
 
-    return object_retention_info
-
-
-def describe_s3_object_tagging(connection, bucket_name, object_name):
-    params = {}
-    params["Bucket"] = bucket_name
-    params["Key"] = object_name
-
-    object_tagging_info = {}
-
+def describe_s3_object_tagging(connection: ClientType, bucket_name: str, object_name: str) -> Dict:
+    """Get object tags."""
     try:
-        object_tagging_info = connection.get_object_tagging(**params)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError):
-        pass
-
-    if len(object_tagging_info) != 0:
-        # Remove ResponseMetadata from object_tagging_info, convert to snake_case
-        del object_tagging_info["ResponseMetadata"]
-        object_tagging_info = boto3_tag_list_to_ansible_dict(object_tagging_info["TagSet"])
-
-    return object_tagging_info
+        return get_s3_object_tagging(connection, bucket_name, object_name)
+    except AnsibleS3SupportError:
+        # Silent failure for unsupported operations on S3 drop-ins
+        return {}
+    except AnsibleS3Error:
+        # Silent failure to maintain backward compatibility
+        return {}
 
 
-def get_object_details(connection, module, bucket_name, object_name, requested_facts):
+def get_object_details(
+    connection: ClientType, module: AnsibleAWSModule, bucket_name: str, object_name: str, requested_facts: Dict
+) -> Dict:
     all_facts = {}
 
     # Remove non-requested facts
@@ -617,62 +605,45 @@ def get_object_details(connection, module, bucket_name, object_name, requested_f
     return all_facts
 
 
-def get_object(connection, bucket_name, object_name):
-    params = {}
-    params["Bucket"] = bucket_name
-    params["Key"] = object_name
-
-    result = {}
-    object_info = {}
-
+def get_object(connection: ClientType, bucket_name: str, object_name: str) -> Dict:
+    """Get basic object metadata."""
     try:
-        object_info = connection.head_object(**params)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError):
-        pass
-
-    if len(object_info) != 0:
-        # Remove ResponseMetadata from object_info, convert to snake_case
-        del object_info["ResponseMetadata"]
-        object_info = camel_dict_to_snake_dict(object_info)
-
-    result["object_data"] = object_info
-
-    return result
+        object_info = head_s3_object(connection, bucket_name, object_name)
+        if object_info:
+            object_info = camel_dict_to_snake_dict(object_info)
+        return {"object_data": object_info}
+    except AnsibleS3SupportError:
+        # Silent failure for unsupported operations on S3 drop-ins
+        return {"object_data": {}}
+    except AnsibleS3Error:
+        # Silent failure to maintain backward compatibility
+        return {"object_data": {}}
 
 
-def list_bucket_objects(connection, module, bucket_name):
-    try:
-        keys = list_bucket_object_keys(
-            connection,
-            bucket=bucket_name,
-            max_keys=module.params["max_keys"],
-            start_after=module.params["marker"],
-            prefix=module.params["prefix"],
-        )
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to list bucket objects.")
+def list_bucket_objects(connection: ClientType, module: AnsibleAWSModule, bucket_name: str) -> List[str]:
+    keys = list_bucket_object_keys(
+        connection,
+        bucket=bucket_name,
+        max_keys=module.params["max_keys"],
+        start_after=module.params["marker"],
+        prefix=module.params["prefix"],
+    )
     return keys
 
 
-def bucket_check(
-    connection,
-    module,
-    bucket_name,
-):
-    try:
-        connection.head_bucket(Bucket=bucket_name)
-    except is_boto3_error_code(["404", "403"]) as e:
-        module.fail_json_aws(e, msg=f"The bucket {bucket_name} does not exist or is missing access permissions.")
+def bucket_check(connection: ClientType, module: AnsibleAWSModule, bucket_name: str) -> None:
+    """Check if bucket exists and is accessible."""
+    if not s3_bucket_exists(connection, bucket_name):
+        module.fail_json(msg=f"The bucket {bucket_name} does not exist.")
 
 
-def object_check(connection, module, bucket_name, object_name):
-    try:
-        connection.head_object(Bucket=bucket_name, Key=object_name)
-    except is_boto3_error_code(["404", "403"]) as e:
-        module.fail_json_aws(e, msg=f"The object {object_name} does not exist or is missing access permissions.")
+def object_check(connection: ClientType, module: AnsibleAWSModule, bucket_name: str, object_name: str) -> None:
+    """Check if object exists and is accessible."""
+    if not s3_object_exists(connection, bucket_name, object_name):
+        module.fail_json(msg=f"The object {object_name} does not exist.")
 
 
-def main():
+def main() -> None:
     argument_spec = dict(
         object_details=dict(
             type="dict",
@@ -726,10 +697,7 @@ def main():
     result = []
     extra_params = s3_extra_params(module.params)
     retry_decorator = AWSRetry.jittered_backoff()
-    try:
-        connection = module.client("s3", retry_decorator=retry_decorator, **extra_params)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to connect to AWS")
+    connection = module.client("s3", retry_decorator=retry_decorator, **extra_params)
 
     # check if specified bucket exists
     bucket_check(connection, module, bucket_name)
