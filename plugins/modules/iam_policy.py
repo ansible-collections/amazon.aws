@@ -4,6 +4,8 @@
 # Copyright: Contributors to the Ansible project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+from __future__ import annotations
+
 DOCUMENTATION = r"""
 ---
 module: iam_policy
@@ -155,6 +157,15 @@ diff:
 """
 
 import json
+import typing
+
+if typing.TYPE_CHECKING:
+    from typing import Any
+    from typing import Dict
+    from typing import List
+    from typing import Optional
+
+    from ansible_collections.amazon.aws.plugins.module_utils.botocore import ClientType
 
 try:
     from botocore.exceptions import BotoCoreError
@@ -174,7 +185,30 @@ class PolicyError(Exception):
 
 
 class Policy:
-    def __init__(self, client, name, policy_name, policy_json, skip_duplicates, state, check_mode):
+    """Base class for managing inline IAM policies."""
+
+    def __init__(
+        self,
+        client: ClientType,
+        name: str,
+        policy_name: str,
+        policy_json: Optional[Any],
+        skip_duplicates: bool,
+        state: str,
+        check_mode: bool,
+    ) -> None:
+        """
+        Initialize the Policy manager.
+
+        Parameters:
+            client: The Boto3 IAM client object.
+            name: The name of the IAM resource (user, group, or role).
+            policy_name: The name of the policy.
+            policy_json: The policy document as JSON.
+            skip_duplicates: Whether to skip creating duplicate policies.
+            state: Desired state ('present' or 'absent').
+            check_mode: Whether running in check mode.
+        """
         self.client = client
         self.name = name
         self.policy_name = policy_name
@@ -185,34 +219,41 @@ class Policy:
         self.changed = False
 
         self.original_policies = self.get_all_policies().copy()
-        self.updated_policies = {}
+        self.updated_policies: Dict[str, Any] = {}
 
     @staticmethod
-    def _iam_type():
+    def _iam_type() -> str:
+        """Return the IAM resource type."""
         return ""
 
-    def _list(self, name):
+    def _list(self, name: str) -> Dict[str, Any]:
+        """List policies for the resource (to be overridden by subclasses)."""
         return {}
 
-    def list(self):
+    def list(self) -> List[str]:
+        """List all policy names for the IAM resource."""
         try:
             return self._list(self.name).get("PolicyNames", [])
         except is_boto3_error_code("AccessDenied"):
             return []
 
-    def _get(self, name, policy_name):
-        return "{}"
+    def _get(self, name: str, policy_name: str) -> Dict[str, Any]:
+        """Get a policy document (to be overridden by subclasses)."""
+        return {}
 
-    def get(self, policy_name):
+    def get(self, policy_name: str) -> Dict[str, Any]:
+        """Get the policy document for a specific policy."""
         try:
             return self._get(self.name, policy_name)["PolicyDocument"]
         except is_boto3_error_code("AccessDenied"):
             return {}
 
-    def _put(self, name, policy_name, policy_doc):
+    def _put(self, name: str, policy_name: str, policy_doc: str) -> None:
+        """Create or update a policy (to be overridden by subclasses)."""
         pass
 
-    def put(self, policy_doc):
+    def put(self, policy_doc: Dict[str, Any]) -> None:
+        """Create or update the policy."""
         self.changed = True
 
         if self.check_mode:
@@ -220,10 +261,12 @@ class Policy:
 
         self._put(self.name, self.policy_name, json.dumps(policy_doc, sort_keys=True))
 
-    def _delete(self, name, policy_name):
+    def _delete(self, name: str, policy_name: str) -> None:
+        """Delete a policy (to be overridden by subclasses)."""
         pass
 
-    def delete(self):
+    def delete(self) -> None:
+        """Delete the policy."""
         self.updated_policies = self.original_policies.copy()
 
         if self.policy_name not in self.list():
@@ -238,7 +281,8 @@ class Policy:
 
         self._delete(self.name, self.policy_name)
 
-    def get_policy_text(self):
+    def get_policy_text(self) -> Optional[Dict[str, Any]]:
+        """Get the policy document from JSON."""
         try:
             if self.policy_json is not None:
                 return self.get_policy_from_json()
@@ -246,20 +290,23 @@ class Policy:
             raise PolicyError(f"Failed to decode the policy as valid JSON: {str(e)}")
         return None
 
-    def get_policy_from_json(self):
+    def get_policy_from_json(self) -> Dict[str, Any]:
+        """Parse the policy JSON into a dictionary."""
         if isinstance(self.policy_json, str):
             pdoc = json.loads(self.policy_json)
         else:
             pdoc = self.policy_json
         return pdoc
 
-    def get_all_policies(self):
+    def get_all_policies(self) -> Dict[str, Dict[str, Any]]:
+        """Get all policies for the IAM resource."""
         policies = {}
         for pol in self.list():
             policies[pol] = self.get(pol)
         return policies
 
-    def create(self):
+    def create(self) -> None:
+        """Create the policy if it doesn't already exist."""
         matching_policies = []
         policy_doc = self.get_policy_text()
         policy_match = False
@@ -278,7 +325,8 @@ class Policy:
         self.put(policy_doc)
         self.updated_policies[self.policy_name] = policy_doc
 
-    def run(self):
+    def run(self) -> Dict[str, Any]:
+        """Execute the policy operation and return results."""
         if self.state == "present":
             self.create()
         elif self.state == "absent":
@@ -295,66 +343,88 @@ class Policy:
 
 
 class UserPolicy(Policy):
+    """Manage inline policies for IAM users."""
+
     @staticmethod
-    def _iam_type():
+    def _iam_type() -> str:
+        """Return the IAM resource type."""
         return "user"
 
-    def _list(self, name):
+    def _list(self, name: str) -> Dict[str, Any]:
+        """List all inline policies for a user."""
         return self.client.list_user_policies(aws_retry=True, UserName=name)
 
-    def _get(self, name, policy_name):
+    def _get(self, name: str, policy_name: str) -> Dict[str, Any]:
+        """Get an inline policy for a user."""
         return self.client.get_user_policy(aws_retry=True, UserName=name, PolicyName=policy_name)
 
-    def _put(self, name, policy_name, policy_doc):
+    def _put(self, name: str, policy_name: str, policy_doc: str) -> Dict[str, Any]:
+        """Create or update an inline policy for a user."""
         return self.client.put_user_policy(
             aws_retry=True, UserName=name, PolicyName=policy_name, PolicyDocument=policy_doc
         )
 
-    def _delete(self, name, policy_name):
+    def _delete(self, name: str, policy_name: str) -> Dict[str, Any]:
+        """Delete an inline policy from a user."""
         return self.client.delete_user_policy(aws_retry=True, UserName=name, PolicyName=policy_name)
 
 
 class RolePolicy(Policy):
+    """Manage inline policies for IAM roles."""
+
     @staticmethod
-    def _iam_type():
+    def _iam_type() -> str:
+        """Return the IAM resource type."""
         return "role"
 
-    def _list(self, name):
+    def _list(self, name: str) -> Dict[str, Any]:
+        """List all inline policies for a role."""
         return self.client.list_role_policies(aws_retry=True, RoleName=name)
 
-    def _get(self, name, policy_name):
+    def _get(self, name: str, policy_name: str) -> Dict[str, Any]:
+        """Get an inline policy for a role."""
         return self.client.get_role_policy(aws_retry=True, RoleName=name, PolicyName=policy_name)
 
-    def _put(self, name, policy_name, policy_doc):
+    def _put(self, name: str, policy_name: str, policy_doc: str) -> Dict[str, Any]:
+        """Create or update an inline policy for a role."""
         return self.client.put_role_policy(
             aws_retry=True, RoleName=name, PolicyName=policy_name, PolicyDocument=policy_doc
         )
 
-    def _delete(self, name, policy_name):
+    def _delete(self, name: str, policy_name: str) -> Dict[str, Any]:
+        """Delete an inline policy from a role."""
         return self.client.delete_role_policy(aws_retry=True, RoleName=name, PolicyName=policy_name)
 
 
 class GroupPolicy(Policy):
+    """Manage inline policies for IAM groups."""
+
     @staticmethod
-    def _iam_type():
+    def _iam_type() -> str:
+        """Return the IAM resource type."""
         return "group"
 
-    def _list(self, name):
+    def _list(self, name: str) -> Dict[str, Any]:
+        """List all inline policies for a group."""
         return self.client.list_group_policies(aws_retry=True, GroupName=name)
 
-    def _get(self, name, policy_name):
+    def _get(self, name: str, policy_name: str) -> Dict[str, Any]:
+        """Get an inline policy for a group."""
         return self.client.get_group_policy(aws_retry=True, GroupName=name, PolicyName=policy_name)
 
-    def _put(self, name, policy_name, policy_doc):
+    def _put(self, name: str, policy_name: str, policy_doc: str) -> Dict[str, Any]:
+        """Create or update an inline policy for a group."""
         return self.client.put_group_policy(
             aws_retry=True, GroupName=name, PolicyName=policy_name, PolicyDocument=policy_doc
         )
 
-    def _delete(self, name, policy_name):
+    def _delete(self, name: str, policy_name: str) -> Dict[str, Any]:
+        """Delete an inline policy from a group."""
         return self.client.delete_group_policy(aws_retry=True, GroupName=name, PolicyName=policy_name)
 
 
-def main():
+def main() -> None:
+    """Main entry point for the iam_policy module."""
     argument_spec = dict(
         iam_type=dict(required=True, choices=["user", "group", "role"]),
         state=dict(default="present", choices=["present", "absent"]),
