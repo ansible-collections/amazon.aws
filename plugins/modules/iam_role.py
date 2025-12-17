@@ -4,6 +4,8 @@
 # Copyright: Contributors to the Ansible project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+from __future__ import annotations
+
 DOCUMENTATION = r"""
 ---
 module: iam_role
@@ -274,6 +276,16 @@ iam_role:
 """
 
 import json
+import typing
+
+if typing.TYPE_CHECKING:
+    from typing import Any
+    from typing import Dict
+    from typing import List
+    from typing import Optional
+    from typing import Set
+
+    from ansible_collections.amazon.aws.plugins.module_utils.botocore import ClientType
 
 from ansible_collections.amazon.aws.plugins.module_utils.arn import validate_aws_arn
 from ansible_collections.amazon.aws.plugins.module_utils.iam import AnsibleIAMError
@@ -301,7 +313,20 @@ class AnsibleIAMAlreadyExistsError(AnsibleIAMError):
 
 
 @IAMErrorHandler.common_error_handler("wait for role creation")
-def wait_iam_exists(client, check_mode, role_name, wait, wait_timeout):
+def wait_iam_exists(client: ClientType, check_mode: bool, role_name: str, wait: bool, wait_timeout: int) -> None:
+    """
+    Wait for an IAM role to exist using a waiter.
+
+    Parameters:
+        client: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        role_name: The name of the IAM role.
+        wait: Whether to wait for the role to exist.
+        wait_timeout: Maximum time in seconds to wait.
+
+    Returns:
+        None
+    """
     if check_mode or wait:
         return
 
@@ -315,7 +340,19 @@ def wait_iam_exists(client, check_mode, role_name, wait, wait_timeout):
     )
 
 
-def attach_policies(client, check_mode, policies_to_attach, role_name):
+def attach_policies(client: ClientType, check_mode: bool, policies_to_attach: Set[str], role_name: str) -> bool:
+    """
+    Attach managed policies to an IAM role.
+
+    Parameters:
+        client: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        policies_to_attach: Set of policy ARNs to attach to the role.
+        role_name: The name of the IAM role.
+
+    Returns:
+        True if changes were made or would be made, False otherwise.
+    """
     if not policies_to_attach:
         return False
     if check_mode:
@@ -328,7 +365,19 @@ def attach_policies(client, check_mode, policies_to_attach, role_name):
     return True
 
 
-def remove_policies(client, check_mode, policies_to_remove, role_name):
+def remove_policies(client: ClientType, check_mode: bool, policies_to_remove: Set[str], role_name: str) -> bool:
+    """
+    Detach managed policies from an IAM role.
+
+    Parameters:
+        client: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        policies_to_remove: Set of policy ARNs to detach from the role.
+        role_name: The name of the IAM role.
+
+    Returns:
+        True if changes were made or would be made, False otherwise.
+    """
     if not policies_to_remove:
         return False
     if check_mode:
@@ -341,7 +390,17 @@ def remove_policies(client, check_mode, policies_to_remove, role_name):
     return True
 
 
-def remove_inline_policies(client, role_name):
+def remove_inline_policies(client: ClientType, role_name: str) -> None:
+    """
+    Remove all inline policies from an IAM role.
+
+    Parameters:
+        client: The Boto3 IAM client object.
+        role_name: The name of the IAM role.
+
+    Returns:
+        None
+    """
     current_inline_policies = get_inline_policy_list(client, role_name)
     for policy in current_inline_policies:
         IAMErrorHandler.deletion_error_handler(f"delete policy {policy} embedded in role")(client.delete_role_policy)(
@@ -349,7 +408,16 @@ def remove_inline_policies(client, role_name):
         )
 
 
-def generate_create_params(module):
+def generate_create_params(module: AnsibleAWSModule) -> Dict[str, Any]:
+    """
+    Generate parameters for creating an IAM role.
+
+    Parameters:
+        module: The AnsibleAWSModule instance.
+
+    Returns:
+        Dictionary of parameters for the create_role API call.
+    """
     params = dict()
     params["Path"] = module.params.get("path") or "/"
     params["RoleName"] = module.params.get("name")
@@ -367,10 +435,18 @@ def generate_create_params(module):
 
 
 @IAMErrorHandler.common_error_handler("create role")
-def create_basic_role(module, client):
+def create_basic_role(module: AnsibleAWSModule, client: ClientType) -> Dict[str, Any]:
     """
-    Perform the Role creation.
+    Create an IAM role.
+
     Assumes tests for the role existing have already been performed.
+
+    Parameters:
+        module: The AnsibleAWSModule instance.
+        client: The Boto3 IAM client object.
+
+    Returns:
+        Dictionary containing the created IAM role data.
     """
     if module.check_mode:
         module.exit_json(changed=True)
@@ -387,7 +463,26 @@ def create_basic_role(module, client):
 
 
 @IAMErrorHandler.common_error_handler("update assume role policy for role")
-def update_role_assumed_policy(client, check_mode, role_name, target_assumed_policy, current_assumed_policy):
+def update_role_assumed_policy(
+    client: ClientType,
+    check_mode: bool,
+    role_name: str,
+    target_assumed_policy: Optional[str],
+    current_assumed_policy: Dict[str, Any],
+) -> bool:
+    """
+    Update the assume role policy document for an IAM role.
+
+    Parameters:
+        client: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        role_name: The name of the IAM role.
+        target_assumed_policy: The desired assume role policy document as JSON string.
+        current_assumed_policy: The current assume role policy document.
+
+    Returns:
+        True if changes were made or would be made, False otherwise.
+    """
     # Check Assumed Policy document
     if target_assumed_policy is None or not compare_policies(current_assumed_policy, json.loads(target_assumed_policy)):
         return False
@@ -399,7 +494,26 @@ def update_role_assumed_policy(client, check_mode, role_name, target_assumed_pol
 
 
 @IAMErrorHandler.common_error_handler("update description for role")
-def update_role_description(client, check_mode, role_name, target_description, current_description):
+def update_role_description(
+    client: ClientType,
+    check_mode: bool,
+    role_name: str,
+    target_description: Optional[str],
+    current_description: Optional[str],
+) -> bool:
+    """
+    Update the description for an IAM role.
+
+    Parameters:
+        client: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        role_name: The name of the IAM role.
+        target_description: The desired description for the role.
+        current_description: The current description of the role.
+
+    Returns:
+        True if changes were made or would be made, False otherwise.
+    """
     # Check Description update
     if target_description is None or current_description == target_description:
         return False
@@ -411,7 +525,26 @@ def update_role_description(client, check_mode, role_name, target_description, c
 
 
 @IAMErrorHandler.common_error_handler("update maximum session duration for role")
-def update_role_max_session_duration(client, check_mode, role_name, target_duration, current_duration):
+def update_role_max_session_duration(
+    client: ClientType,
+    check_mode: bool,
+    role_name: str,
+    target_duration: Optional[int],
+    current_duration: Optional[int],
+) -> bool:
+    """
+    Update the maximum session duration for an IAM role.
+
+    Parameters:
+        client: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        role_name: The name of the IAM role.
+        target_duration: The desired maximum session duration in seconds.
+        current_duration: The current maximum session duration in seconds.
+
+    Returns:
+        True if changes were made or would be made, False otherwise.
+    """
     # Check MaxSessionDuration update
     if target_duration is None or current_duration == target_duration:
         return False
@@ -423,16 +556,55 @@ def update_role_max_session_duration(client, check_mode, role_name, target_durat
 
 
 @IAMErrorHandler.common_error_handler("update permission boundary for role")
-def _put_role_permissions_boundary(client, **params):
+def _put_role_permissions_boundary(client: ClientType, **params: Any) -> None:
+    """
+    Set the permissions boundary for an IAM role.
+
+    Parameters:
+        client: The Boto3 IAM client object.
+        **params: Parameters to pass to put_role_permissions_boundary.
+
+    Returns:
+        None
+    """
     client.put_role_permissions_boundary(aws_retry=True, **params)
 
 
 @IAMErrorHandler.deletion_error_handler("remove permission boundary from role")
-def _delete_role_permissions_boundary(client, **params):
+def _delete_role_permissions_boundary(client: ClientType, **params: Any) -> None:
+    """
+    Remove the permissions boundary from an IAM role.
+
+    Parameters:
+        client: The Boto3 IAM client object.
+        **params: Parameters to pass to delete_role_permissions_boundary.
+
+    Returns:
+        None
+    """
     client.delete_role_permissions_boundary(**params)
 
 
-def update_role_permissions_boundary(client, check_mode, role_name, permissions_boundary, current_permissions_boundary):
+def update_role_permissions_boundary(
+    client: ClientType,
+    check_mode: bool,
+    role_name: str,
+    permissions_boundary: Optional[str],
+    current_permissions_boundary: str,
+) -> bool:
+    """
+    Update the permissions boundary for an IAM role.
+
+    Parameters:
+        client: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        role_name: The name of the IAM role.
+        permissions_boundary: The desired permissions boundary ARN (empty string to remove).
+        current_permissions_boundary: The current permissions boundary ARN.
+
+    Returns:
+        True if changes were made or would be made, False otherwise.
+    """
     # Check PermissionsBoundary
     if permissions_boundary is None or permissions_boundary == current_permissions_boundary:
         return False
@@ -446,7 +618,26 @@ def update_role_permissions_boundary(client, check_mode, role_name, permissions_
     return True
 
 
-def update_managed_policies(client, check_mode, role_name, managed_policies, purge_policies):
+def update_managed_policies(
+    client: ClientType,
+    check_mode: bool,
+    role_name: str,
+    managed_policies: Optional[List[str]],
+    purge_policies: bool,
+) -> bool:
+    """
+    Update managed policies attached to an IAM role.
+
+    Parameters:
+        client: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        role_name: The name of the IAM role.
+        managed_policies: List of policy ARNs to attach to the role.
+        purge_policies: Whether to remove policies not in the managed_policies list.
+
+    Returns:
+        True if changes were made or would be made, False otherwise.
+    """
     # Check Managed Policies
     if managed_policies is None:
         return False
@@ -459,7 +650,7 @@ def update_managed_policies(client, check_mode, role_name, managed_policies, pur
         managed_policies = []
 
     policies_to_remove = set(current_attached_policies_arn_list) - set(managed_policies)
-    policies_to_remove = policies_to_remove if purge_policies else []
+    policies_to_remove = policies_to_remove if purge_policies else set()
     policies_to_attach = set(managed_policies) - set(current_attached_policies_arn_list)
 
     changed = False
@@ -478,7 +669,19 @@ def update_managed_policies(client, check_mode, role_name, managed_policies, pur
     return changed
 
 
-def update_basic_role(module, client, role_name, role):
+def update_basic_role(module: AnsibleAWSModule, client: ClientType, role_name: str, role: Dict[str, Any]) -> bool:
+    """
+    Update basic attributes of an existing IAM role.
+
+    Parameters:
+        module: The AnsibleAWSModule instance.
+        client: The Boto3 IAM client object.
+        role_name: The name of the IAM role.
+        role: Dictionary containing the current role data.
+
+    Returns:
+        True if changes were made or would be made, False otherwise.
+    """
     check_mode = module.check_mode
     assumed_policy = module.params.get("assume_role_policy_document")
     description = module.params.get("description")
@@ -515,7 +718,21 @@ def update_basic_role(module, client, role_name, role):
     return changed
 
 
-def create_or_update_role(module, client, role_name, create_instance_profile):
+def create_or_update_role(
+    module: AnsibleAWSModule, client: ClientType, role_name: str, create_instance_profile: bool
+) -> None:
+    """
+    Create or update an IAM role with all requested attributes.
+
+    Parameters:
+        module: The AnsibleAWSModule instance.
+        client: The Boto3 IAM client object.
+        role_name: The name of the IAM role.
+        create_instance_profile: Whether to create an instance profile for the role.
+
+    Returns:
+        None (exits via module.exit_json)
+    """
     check_mode = module.check_mode
     wait = module.params.get("wait")
     wait_timeout = module.params.get("wait_timeout")
@@ -558,7 +775,22 @@ def create_or_update_role(module, client, role_name, create_instance_profile):
     module.exit_json(changed=changed, iam_role=camel_role)
 
 
-def create_instance_profiles(client, check_mode, role_name, path):
+def create_instance_profiles(client: ClientType, check_mode: bool, role_name: str, path: Optional[str]) -> bool:
+    """
+    Create an instance profile for an IAM role.
+
+    Parameters:
+        client: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        role_name: The name of the IAM role.
+        path: The path for the instance profile.
+
+    Returns:
+        True if changes were made or would be made, False otherwise.
+
+    Raises:
+        AnsibleIAMAlreadyExistsError: If an instance profile with the same name already exists.
+    """
     # Fetch existing Profiles
     role_profiles = list_iam_instance_profiles(client, role=role_name)
     # Profile already exists
@@ -580,11 +812,21 @@ def create_instance_profiles(client, check_mode, role_name, path):
     return True
 
 
-def remove_instance_profiles(client, check_mode, role_name, delete_instance_profile):
-    """Removes the role from instance profiles and deletes the instance profile if
-    delete_instance_profile is set
+def remove_instance_profiles(
+    client: ClientType, check_mode: bool, role_name: str, delete_instance_profile: bool
+) -> bool:
     """
+    Remove the role from instance profiles and optionally delete the instance profiles.
 
+    Parameters:
+        client: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        role_name: The name of the IAM role.
+        delete_instance_profile: Whether to delete instance profiles after removing the role.
+
+    Returns:
+        True if changes were made or would be made, False otherwise.
+    """
     instance_profiles = list_iam_instance_profiles(client, role=role_name)
     if not instance_profiles:
         return False
@@ -601,9 +843,23 @@ def remove_instance_profiles(client, check_mode, role_name, delete_instance_prof
         if profile_name == role_name:
             delete_iam_instance_profile(client, profile_name)
 
+    return True
+
 
 @IAMErrorHandler.deletion_error_handler("delete role")
-def destroy_role(client, check_mode, role_name, delete_profiles):
+def destroy_role(client: ClientType, check_mode: bool, role_name: str, delete_profiles: bool) -> bool:
+    """
+    Delete an IAM role and its associated resources.
+
+    Parameters:
+        client: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        role_name: The name of the IAM role to delete.
+        delete_profiles: Whether to delete associated instance profiles.
+
+    Returns:
+        True if changes were made or would be made, False if the role doesn't exist.
+    """
     role = get_iam_role(client, role_name)
 
     if role is None:
@@ -626,16 +882,50 @@ def destroy_role(client, check_mode, role_name, delete_profiles):
 
 @IAMErrorHandler.common_error_handler("get role")
 @AWSRetry.jittered_backoff(catch_extra_error_codes=["NoSuchEntity"])
-def _get_role_with_backoff(client, name):
-    client.get_role(RoleName=name)["Role"]
+def _get_role_with_backoff(client: ClientType, name: str) -> Dict[str, Any]:
+    """
+    Get an IAM role with retry logic.
+
+    Parameters:
+        client: The Boto3 IAM client object.
+        name: The name of the IAM role.
+
+    Returns:
+        Dictionary containing the IAM role data.
+    """
+    return client.get_role(RoleName=name)["Role"]
 
 
 @IAMErrorHandler.list_error_handler("list attached inline policies for role")
-def get_inline_policy_list(client, name):
+def get_inline_policy_list(client: ClientType, name: str) -> List[str]:
+    """
+    List all inline policies attached to an IAM role.
+
+    Parameters:
+        client: The Boto3 IAM client object.
+        name: The name of the IAM role.
+
+    Returns:
+        List of inline policy names.
+    """
     return client.list_role_policies(RoleName=name, aws_retry=True)["PolicyNames"]
 
 
-def update_role_path(client, check_mode, role, path):
+def update_role_path(client: ClientType, check_mode: bool, role: Dict[str, Any], path: Optional[str]) -> bool:
+    """
+    Check if the role path needs to be updated.
+
+    Note: Path updates are not currently supported by the AWS IAM APIs.
+
+    Parameters:
+        client: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        role: Dictionary containing the current role data.
+        path: The desired path for the role.
+
+    Returns:
+        True if the path differs from the current path, False otherwise.
+    """
     if path is None:
         return False
     if path == role.get("Path"):
@@ -649,12 +939,33 @@ def update_role_path(client, check_mode, role, path):
 
 
 @IAMErrorHandler.common_error_handler("set tags for role")
-def update_role_tags(client, check_mode, role_name, new_tags, purge_tags, existing_tags):
+def update_role_tags(
+    client: ClientType,
+    check_mode: bool,
+    role_name: str,
+    new_tags: Optional[Dict[str, str]],
+    purge_tags: bool,
+    existing_tags: List[Dict[str, str]],
+) -> bool:
+    """
+    Update tags for an IAM role.
+
+    Parameters:
+        client: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        role_name: The name of the IAM role.
+        new_tags: Dictionary of tags to apply to the role.
+        purge_tags: Whether to remove tags not in the new_tags dict.
+        existing_tags: List of existing tags in boto3 format.
+
+    Returns:
+        True if changes were made or would be made, False otherwise.
+    """
     if new_tags is None:
         return False
-    existing_tags = boto3_tag_list_to_ansible_dict(existing_tags)
+    existing_tags_dict = boto3_tag_list_to_ansible_dict(existing_tags)
 
-    tags_to_add, tags_to_remove = compare_aws_tags(existing_tags, new_tags, purge_tags=purge_tags)
+    tags_to_add, tags_to_remove = compare_aws_tags(existing_tags_dict, new_tags, purge_tags=purge_tags)
     if not tags_to_remove and not tags_to_add:
         return False
     if check_mode:
@@ -668,7 +979,16 @@ def update_role_tags(client, check_mode, role_name, new_tags, purge_tags, existi
     return True
 
 
-def validate_params(module):
+def validate_params(module: AnsibleAWSModule) -> None:
+    """
+    Validate module parameters.
+
+    Parameters:
+        module: The AnsibleAWSModule instance.
+
+    Returns:
+        None (fails via module.fail_json if validation fails)
+    """
     if module.params.get("boundary"):
         # We need to handle both None and True
         if module.params.get("create_instance_profile") is not False:
@@ -687,7 +1007,13 @@ def validate_params(module):
         module.fail_json(msg=identifier_problem)
 
 
-def main():
+def main() -> None:
+    """
+    Main entry point for the iam_role module.
+
+    Returns:
+        None (exits via module.exit_json or module.fail_json_aws_error)
+    """
     argument_spec = dict(
         name=dict(type="str", aliases=["role_name"], required=True),
         path=dict(type="str", aliases=["path_prefix", "prefix"]),
