@@ -4,6 +4,8 @@
 # Copyright: Contributors to the Ansible project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+from __future__ import annotations
+
 DOCUMENTATION = r"""
 ---
 module: iam_group
@@ -196,6 +198,16 @@ iam_group:
                     sample: test_policy
 """
 
+import typing
+
+if typing.TYPE_CHECKING:
+    from typing import Any
+    from typing import Dict
+    from typing import List
+    from typing import Optional
+
+    from ansible_collections.amazon.aws.plugins.module_utils.botocore import ClientType
+
 from ansible_collections.amazon.aws.plugins.module_utils.iam import AnsibleIAMError
 from ansible_collections.amazon.aws.plugins.module_utils.iam import IAMErrorHandler
 from ansible_collections.amazon.aws.plugins.module_utils.iam import convert_managed_policy_names_to_arns
@@ -207,7 +219,21 @@ from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 
 
 @IAMErrorHandler.common_error_handler("update group path")
-def ensure_path(connection, module, group_info, path):
+def ensure_path(
+    connection: ClientType, module: AnsibleAWSModule, group_info: Dict[str, Any], path: Optional[str]
+) -> bool:
+    """
+    Ensure the path is set for an IAM group.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        module: The AnsibleAWSModule instance.
+        group_info: Dictionary containing the current group data.
+        path: The desired path for the group.
+
+    Returns:
+        True if changes were made or would be made, False otherwise.
+    """
     if path is None:
         return False
 
@@ -225,21 +251,64 @@ def ensure_path(connection, module, group_info, path):
     return True
 
 
-def detach_policies(connection, module, group_name, policies):
+def detach_policies(connection: ClientType, module: AnsibleAWSModule, group_name: str, policies: List[str]) -> None:
+    """
+    Detach managed policies from an IAM group.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        module: The AnsibleAWSModule instance.
+        group_name: The name of the IAM group.
+        policies: List of policy ARNs to detach.
+
+    Returns:
+        None
+    """
     for policy_arn in policies:
         IAMErrorHandler.deletion_error_handler(f"detach policy {policy_arn} from group")(
             connection.detach_group_policy
         )(aws_retry=True, GroupName=group_name, PolicyArn=policy_arn)
 
 
-def attach_policies(connection, module, group_name, policies):
+def attach_policies(connection: ClientType, module: AnsibleAWSModule, group_name: str, policies: List[str]) -> None:
+    """
+    Attach managed policies to an IAM group.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        module: The AnsibleAWSModule instance.
+        group_name: The name of the IAM group.
+        policies: List of policy ARNs to attach.
+
+    Returns:
+        None
+    """
     for policy_arn in policies:
         IAMErrorHandler.common_error_handler(f"attach policy {policy_arn} to group")(connection.attach_group_policy)(
             aws_retry=True, GroupName=group_name, PolicyArn=policy_arn
         )
 
 
-def ensure_managed_policies(connection, module, group_info, managed_policies, purge_policies):
+def ensure_managed_policies(
+    connection: ClientType,
+    module: AnsibleAWSModule,
+    group_info: Dict[str, Any],
+    managed_policies: Optional[List[str]],
+    purge_policies: bool,
+) -> bool:
+    """
+    Ensure managed policies are attached to an IAM group.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        module: The AnsibleAWSModule instance.
+        group_info: Dictionary containing the current group data.
+        managed_policies: List of policy ARNs or names to attach.
+        purge_policies: Whether to remove policies not in the managed_policies list.
+
+    Returns:
+        True if changes were made or would be made, False otherwise.
+    """
     if managed_policies is None:
         return False
 
@@ -268,21 +337,64 @@ def ensure_managed_policies(connection, module, group_info, managed_policies, pu
     return True
 
 
-def add_group_members(connection, module, group_name, members):
+def add_group_members(connection: ClientType, module: AnsibleAWSModule, group_name: str, members: List[str]) -> None:
+    """
+    Add users as members of an IAM group.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        module: The AnsibleAWSModule instance.
+        group_name: The name of the IAM group.
+        members: List of usernames to add to the group.
+
+    Returns:
+        None
+    """
     for user in members:
         IAMErrorHandler.common_error_handler(f"add user {user} to group")(connection.add_user_to_group)(
             aws_retry=True, GroupName=group_name, UserName=user
         )
 
 
-def remove_group_members(connection, module, group_name, members):
+def remove_group_members(connection: ClientType, module: AnsibleAWSModule, group_name: str, members: List[str]) -> None:
+    """
+    Remove users from an IAM group.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        module: The AnsibleAWSModule instance.
+        group_name: The name of the IAM group.
+        members: List of usernames to remove from the group.
+
+    Returns:
+        None
+    """
     for user in members:
         IAMErrorHandler.deletion_error_handler(f"remove user {user} from group")(connection.remove_user_from_group)(
             aws_retry=True, GroupName=group_name, UserName=user
         )
 
 
-def ensure_group_members(connection, module, group_info, users, purge_users):
+def ensure_group_members(
+    connection: ClientType,
+    module: AnsibleAWSModule,
+    group_info: Dict[str, Any],
+    users: Optional[List[str]],
+    purge_users: bool,
+) -> bool:
+    """
+    Ensure users are members of an IAM group.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        module: The AnsibleAWSModule instance.
+        group_info: Dictionary containing the current group data.
+        users: List of usernames to be members of the group.
+        purge_users: Whether to remove users not in the users list.
+
+    Returns:
+        True if changes were made or would be made, False otherwise.
+    """
     if users is None:
         return False
 
@@ -307,7 +419,21 @@ def ensure_group_members(connection, module, group_info, users, purge_users):
 
 
 @IAMErrorHandler.common_error_handler("create group")
-def get_or_create_group(connection, module, group_name, path):
+def get_or_create_group(
+    connection: ClientType, module: AnsibleAWSModule, group_name: str, path: Optional[str]
+) -> tuple[bool, Dict[str, Any]]:
+    """
+    Get an existing IAM group or create a new one.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        module: The AnsibleAWSModule instance.
+        group_name: The name of the IAM group.
+        path: The path for the group.
+
+    Returns:
+        Tuple of (changed, group_info).
+    """
     group = get_iam_group(connection, group_name)
     if group:
         return False, group
@@ -328,7 +454,17 @@ def get_or_create_group(connection, module, group_name, path):
     return True, group
 
 
-def create_or_update_group(connection, module):
+def create_or_update_group(connection: ClientType, module: AnsibleAWSModule) -> None:
+    """
+    Create or update an IAM group with all requested attributes.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        module: The AnsibleAWSModule instance.
+
+    Returns:
+        None (exits via module.exit_json)
+    """
     changed, group_info = get_or_create_group(connection, module, module.params["name"], module.params["path"])
 
     # Update the path if necessary
@@ -369,7 +505,17 @@ def create_or_update_group(connection, module):
 
 
 @IAMErrorHandler.deletion_error_handler("delete group")
-def destroy_group(connection, module):
+def destroy_group(connection: ClientType, module: AnsibleAWSModule) -> None:
+    """
+    Delete an IAM group and all associated resources.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        module: The AnsibleAWSModule instance.
+
+    Returns:
+        None (exits via module.exit_json)
+    """
     group_name = module.params.get("name")
 
     group = get_iam_group(connection, group_name)
@@ -397,12 +543,29 @@ def destroy_group(connection, module):
 
 @IAMErrorHandler.list_error_handler("list policies attached to group")
 @AWSRetry.jittered_backoff()
-def get_attached_policy_list(connection, module, name):
+def get_attached_policy_list(connection: ClientType, module: AnsibleAWSModule, name: str) -> List[Dict[str, str]]:
+    """
+    List all managed policies attached to an IAM group.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        module: The AnsibleAWSModule instance.
+        name: The name of the IAM group.
+
+    Returns:
+        List of attached policy dictionaries.
+    """
     paginator = connection.get_paginator("list_attached_group_policies")
     return paginator.paginate(GroupName=name).build_full_result()["AttachedPolicies"]
 
 
-def main():
+def main() -> None:
+    """
+    Main entry point for the iam_group module.
+
+    Returns:
+        None (exits via module.exit_json or module.fail_json_aws_error)
+    """
     argument_spec = dict(
         name=dict(aliases=["group_name"], required=True),
         path=dict(aliases=["prefix", "path_prefix"]),
