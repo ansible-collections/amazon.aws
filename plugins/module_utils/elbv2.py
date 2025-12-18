@@ -159,15 +159,14 @@ def _sort_actions(actions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return sorted(actions, key=lambda x: x.get("Order", 0))
 
 
-def _sort_listener_actions(actions: List[Dict[str, str]]) -> List[Dict[str, str]]:
+def _sort_listener_actions(actions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    # Sort by Order field (defaulting to 0), then by Type for stability.
+    # This avoids comparing dict/None which causes TypeError.
     return sorted(
         actions,
         key=lambda x: (
-            x.get("AuthenticateOidcConfig"),
-            x.get("FixedResponseConfig"),
-            x.get("RedirectConfig"),
-            x.get("TargetGroupArn"),
-            x.get("Type"),
+            x.get("Order", 0),
+            x.get("Type", ""),
         ),
     )
 
@@ -804,16 +803,8 @@ def _compare_listener(current_listener: Dict[str, Any], new_listener: Dict[str, 
     new_default_actions = new_listener.get("DefaultActions")
     if new_default_actions:
         if current_default_actions and len(current_default_actions) == len(new_default_actions):
-            current_actions_sorted = _sort_listener_actions(
-                {
-                    k: v
-                    for k, v in x.items()
-                    if k
-                    in ["AuthenticateOidcConfig", "FixedResponseConfig", "RedirectConfig", "TargetGroupArn", "Type"]
-                }
-                for x in current_default_actions
-            )
-            if current_actions_sorted != _sort_listener_actions(new_default_actions):
+            # Use the same comparison logic as _compare_rule_actions for consistency
+            if not _compare_rule_actions(current_default_actions, new_default_actions):
                 modified_listener["DefaultActions"] = new_default_actions
         # If the action lengths are different, then replace with the new actions
         else:
