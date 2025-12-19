@@ -1095,12 +1095,6 @@ def destroy_user(connection: ClientType, module: AnsibleAWSModule) -> None:
 
 
 def main() -> None:
-    """
-    Main entry point for the iam_user module.
-
-    Returns:
-        None (exits via module.exit_json or module.fail_json_aws_error)
-    """
     argument_spec = dict(
         name=dict(required=True, type="str", aliases=["user_name"]),
         path=dict(type="str", aliases=["prefix", "path_prefix"]),

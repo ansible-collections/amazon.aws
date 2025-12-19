@@ -1008,12 +1008,6 @@ def validate_params(module: AnsibleAWSModule) -> None:
 
 
 def main() -> None:
-    """
-    Main entry point for the iam_role module.
-
-    Returns:
-        None (exits via module.exit_json or module.fail_json_aws_error)
-    """
     argument_spec = dict(
         name=dict(type="str", aliases=["role_name"], required=True),
         path=dict(type="str", aliases=["path_prefix", "prefix"]),
