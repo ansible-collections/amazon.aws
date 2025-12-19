@@ -560,12 +560,6 @@ def get_attached_policy_list(connection: ClientType, module: AnsibleAWSModule, n
 
 
 def main() -> None:
-    """
-    Main entry point for the iam_group module.
-
-    Returns:
-        None (exits via module.exit_json or module.fail_json_aws_error)
-    """
     argument_spec = dict(
         name=dict(aliases=["group_name"], required=True),
         path=dict(aliases=["prefix", "path_prefix"]),

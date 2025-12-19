@@ -424,7 +424,6 @@ class GroupPolicy(Policy):
 
 
 def main() -> None:
-    """Main entry point for the iam_policy module."""
     argument_spec = dict(
         iam_type=dict(required=True, choices=["user", "group", "role"]),
         state=dict(default="present", choices=["present", "absent"]),
