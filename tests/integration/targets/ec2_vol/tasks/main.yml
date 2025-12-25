@@ -203,6 +203,46 @@
         that:
           - volume3.changed
           - volume3.volume.snapshot_id ==  vol1_snapshot.snapshot_id
+    
+    - name: Create a volume from a snapshot with initialization rate (check_mode)
+      amazon.aws.ec2_vol:
+        snapshot: "{{ vol1_snapshot.snapshot_id }}"
+        volume_initialization_rate: 100
+        encrypted: true
+        volume_type: gp2
+        volume_size: 1
+        zone: "{{ availability_zone }}"
+        tags:
+          ResourcePrefix: "{{ resource_prefix }}"
+      check_mode: true
+      register: volume4_check_mode
+      vars:
+        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
+
+    - name: Check task return attributes
+      ansible.builtin.assert:
+        that:
+          - volume4_check_mode.changed
+
+    - name: Create a volume from a snapshot
+      amazon.aws.ec2_vol:
+        snapshot: "{{ vol1_snapshot.snapshot_id }}"
+        volume_initialization_rate: 100
+        encrypted: true
+        volume_type: gp2
+        volume_size: 1
+        zone: "{{ availability_zone }}"
+        tags:
+          ResourcePrefix: "{{ resource_prefix }}"
+      register: volume4
+      vars:
+        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
+
+    - name: Check task return attributes
+      ansible.builtin.assert:
+        that:
+          - volume4.changed
+          - volume4.volume.snapshot_id ==  vol1_snapshot.snapshot_id
 
     - name: Wait for instance to start
       amazon.aws.ec2_instance:
@@ -966,6 +1006,7 @@
         - "{{ volume1 }}"
         - "{{ volume2 }}"
         - "{{ volume3 }}"
+        - "{{ volume4 }}"
         - "{{ new_vol_attach_result }}"
         - "{{ attach_new_vol_from_snapshot_result }}"
         - "{{ dot_volume }}"
