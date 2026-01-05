@@ -201,5 +201,6 @@ def list_bucket_object_keys(client, bucket, prefix=None, max_keys=None, start_af
 
 def get_s3_bucket_location(module):
     if module.params.get("ceph") is True:
-        return module.params.get("region")
+        # Use location parameter if provided, otherwise fall back to region parameter
+        return module.params.get("location") or module.params.get("region")
     return module.region or "us-east-1"

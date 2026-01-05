@@ -41,6 +41,13 @@ options:
     aliases: ['rgw']
     type: bool
     default: false
+  location:
+    description:
+      - The LocationConstraint for the S3 bucket.
+      - When O(ceph=true), this parameter is used as the LocationConstraint instead of the region parameter.
+      - If not specified when O(ceph=true), it will fall back to the region parameter.
+    type: str
+    version_added: 1.0.0
   requester_pays:
     description:
       - With Requester Pays buckets, the requester instead of the bucket owner pays the cost
@@ -2211,6 +2218,7 @@ def main():
         dualstack=dict(default=False, type="bool"),
         state=dict(default="present", choices=["present", "absent"]),
         ceph=dict(default=False, type="bool", aliases=["rgw"]),
+        location=dict(type="str"),
         # ** Warning **
         # we support non-AWS implementations, only force/purge options should have a
         # default set for any top-level option.  We need to be able to identify
