@@ -64,6 +64,10 @@
       ansible.builtin.set_fact:
         ec2_instance_id: "{{ setup_instance.instances[0].instance_id }}"
 
+    - name: Store EC2 Instance ID again test
+      ansible.builtin.set_fact:
+        ec2_instance_id1: "{{ setup_instance.instances[0].instance_id }}"
+
     - name: Take a snapshot of the instance to create an image
       amazon.aws.ec2_snapshot:
         instance_id: "{{ ec2_instance_id }}"
