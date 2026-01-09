@@ -3930,3 +3930,82 @@ releases:
     - 2720-autoscaling_instance-implements-missing-instance-termination-state.yaml
     - s3_object-content-headers.yml
     release_date: '2025-10-07'
+  11.0.0:
+    changes:
+      bugfixes:
+      - connection/aws_ssm - fixed ReferenceError in aws_ssm connection plugin destructor
+        during interpreter shutdown (https://github.com/ansible-collections/amazon.aws/issues/2728).
+      - lambda_info - fixed invalid return value documentation that used dot notation
+        (``function.TheName``) which cannot be used in Jinja2 templates (https://github.com/ansible-collections/amazon.aws/pull/2772).
+      - s3_bucket - fix error when configuring AES256 bucket encryption with ``bucket_key_enabled``
+        explicitly set to ``false`` (https://github.com/ansible-collections/amazon.aws/issues/2734).
+      deprecated_features:
+      - ec2_vpc_dhcp_option - the ``dhcp_config`` return value has been deprecated
+        and will be removed in a release after 2026-12-01. Use ``dhcp_options`` instead
+        (https://github.com/ansible-collections/amazon.aws/pull/2772).
+      - ec2_vpc_dhcp_option_info - the ``dhcp_config`` return value has been deprecated
+        and will be removed in a release after 2026-12-01. Use ``dhcp_options`` instead
+        (https://github.com/ansible-collections/amazon.aws/pull/2772).
+      - route53 - the ``values`` key in the ``resource_record_sets`` return value
+        has been deprecated in favor of ``record_values`` for Jinja2 compatibility.
+        The ``values`` key will be removed in a release after 2026-12-01 (https://github.com/ansible-collections/amazon.aws/pull/2772).
+      major_changes:
+      - amazon.aws collection - ``awscli`` version has been bumped to 1.34.0 (https://github.com/ansible-collections/amazon.aws/pull/2774).
+      - amazon.aws collection - ``botocore`` and ``boto3`` versions have been bumped
+        to 1.35.0 (https://github.com/ansible-collections/amazon.aws/pull/2774).
+      - ec2_security_group - Support for passing nested lists of strings to ``rules.cidr_ip``
+        and ``rules.cidr_ipv6`` have been removed (https://github.com/ansible-collections/amazon.aws/issues/2777).
+      - iam_user - Support for ``iam_user`` return key has been removed; only ``user``
+        is now returned (https://github.com/ansible-collections/amazon.aws/issues/2777).
+      - lambda_info - Support for ``function`` has been removed (https://github.com/ansible-collections/amazon.aws/issues/2777).
+      - route53_info - Support for CamelCased lists (``ResourceRecordSets``, ``HostedZones``,
+        ``HealthChecks``, ``CheckerIpRanges``, ``DelegationSets``, ``HealthCheck``)
+        have been removed (https://github.com/ansible-collections/amazon.aws/issues/2777).
+      - s3_object - Support for ``list`` mode has been removed; use ``s3_object_info``
+        instead (https://github.com/ansible-collections/amazon.aws/issues/2777).
+      - s3_object - Support for passing the leading ``/`` has been removed (https://github.com/ansible-collections/amazon.aws/issues/2777).
+      - s3_object_info - Support for passing ``dualstack`` and ``endpoint_url`` at
+        the same time has been removed (https://github.com/ansible-collections/amazon.aws/issues/2777).
+      minor_changes:
+      - add support for the io2 storage type for RDS (https://github.com/ansible-collections/amazon.aws/pull/2748).
+      - ec2_launch_template - increase GP3 volume ``throughput`` limits in line with
+        updated AWS limits (https://github.com/ansible-collections/amazon.aws/pull/2749).
+      - ec2_vol - increase ``throughput`` and ``iops`` limits for GP3 volumes in line
+        with updated AWS limits (https://github.com/ansible-collections/amazon.aws/pull/2749).
+      - module_utils/_s3/common - use ``is_boto3_error_httpstatus`` to handle HTTP
+        403 and 501 status codes from S3-compatible services (https://github.com/ansible-collections/amazon.aws/pull/2776).
+      - module_utils/botocore - add ``is_boto3_error_httpstatus`` helper function
+        to catch boto3 exceptions based on HTTP status codes (https://github.com/ansible-collections/amazon.aws/pull/2776).
+      - module_utils/s3 - refactored S3 module utilities to consolidate duplicate
+        code, add comprehensive type hints and docstrings, and improve maintainability
+        (https://github.com/ansible-collections/amazon.aws/pull/2782).
+      - route53 - added ``record_values`` key to ``resource_record_sets`` return value
+        that can be accessed using Jinja2 dot notation (https://github.com/ansible-collections/amazon.aws/pull/2772).
+      - s3_bucket - refactored to use centralized S3 wrapper functions from module_utils
+        and consistently use S3ErrorHandler (https://github.com/ansible-collections/amazon.aws/pull/2782).
+      - s3_bucket_info - refactored to use centralized S3 wrapper functions from module_utils
+        and consistently use S3ErrorHandler (https://github.com/ansible-collections/amazon.aws/pull/2782).
+      - s3_object - refactored to use centralized S3 wrapper functions from module_utils
+        and consistently use S3ErrorHandler (https://github.com/ansible-collections/amazon.aws/pull/2782).
+      - s3_object_info - refactored to use centralized S3 wrapper functions from module_utils
+        and consistently use S3ErrorHandler (https://github.com/ansible-collections/amazon.aws/pull/2782).
+      - sts_assume_role - improve error handling for ``MalformedPolicyDocument`` errors
+        by providing a clearer error message when an invalid policy document is provided
+        (https://github.com/ansible-collections/amazon.aws/pull/2778).
+      release_summary: This major release includes several bugfixes, minor changes
+        and deprecation of parameters such as CamelCased lists and the ``iam_user``
+        return key. Additionally, ``botocore`` and ``boto3`` versions have been bumped
+        to 1.35.0 and ``awscli`` version has been bumped to 1.34.0.
+    fragments:
+    - 11-0-0.yaml
+    - 2728-reference_error_ssm_destructor.yml
+    - 2734-AES_explicit_bucket_key.yml
+    - 2748-io2_storage_support.yml
+    - 2749-gp3-limits.yml
+    - 2774-bump-botocore-1.35.0.yml
+    - 2777-deprecation_removals.yml
+    - fix-bad-return-value-keys.yml
+    - is_boto3_error_httpstatus.yml
+    - s3-module-utils-refactoring.yml
+    - sts_assume_role-malformed_policy.yml
+    release_date: '2026-01-13'
