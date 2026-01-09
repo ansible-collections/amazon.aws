@@ -180,6 +180,18 @@ EXAMPLES = r"""
   amazon.aws.ec2_import_image:
     state: absent
     task_name: "clone-vm-import-image"
+
+- name: Import Linux VM image
+  amazon.aws.ec2_import_image:
+    state: present
+    task_name: "ubuntu-server-import"
+    platform: "Linux"
+    disk_containers:
+      - format: vmdk
+        user_bucket:
+          s3_bucket: "linux-images"
+          s3_key: "ubuntu-20.04.vmdk"
+        description: "Ubuntu Server 20.04 LTS"    
 """
 
 RETURN = r"""
