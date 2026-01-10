@@ -1,0 +1,210 @@
+---
+amazon.aws.ec2_instance_info:
+  query: >-
+    .instances | select(. != null) | {
+      name: .arn,
+      canonical_facts: {
+        arn: .arn
+      },
+      facts: {
+        infra_type: "PrivateCloud",
+        infra_bucket: "Compute",
+        device_type: "Resource"
+      }
+    }
+amazon.aws.ec2_vpc_igw_info:
+  query: >-
+    .changed | select(. != null) | {
+      name: .vpc_id,
+      canonical_facts: {
+        id: .vpc_id
+      },
+      facts: {
+        infra_type: "PrivateCloud",
+        infra_bucket: "Compute",
+        device_type: "Resource"
+      }
+    }
+
+amazon.aws.ec2_vpc_nat_gateway_info:
+  query: >-
+    .changed | select(. != null) | {
+      name: .allocation_id,
+      canonical_facts: {
+        id: .allocation_id
+      },
+      facts: {
+        infra_type: "PrivateCloud",
+        infra_bucket: "Compute",
+        device_type: "Resource"
+      }
+    }
+
+amazon.aws.ec2_vpc_net_info:
+  query: >-
+    .vpcs | select(. != null) | {
+      name: .vpc_id,
+      canonical_facts: {
+        id: .vpc_id
+      },
+      facts: {
+        infra_type: "PrivateCloud",
+        infra_bucket: "Compute",
+        device_type: "Resource"
+      }
+    }
+
+amazon.aws.ec2_vpc_peering_info:
+  query: >-
+    .vpc_peering_connections[] | {
+      name: .owner_id,
+      canonical_facts: {
+        id: .owner_id
+      },
+      facts: {
+        infra_type: "PrivateCloud",
+        infra_bucket: "Compute",
+        device_type: "Resource"
+      }
+    }
+
+amazon.aws.ec2_vpc_route_table_info:
+  query: >-
+    .route_tables | select(. != null) | {
+      name: .gateway_id,
+      canonical_facts: {
+        id: .gateway_id
+      },
+      facts: {
+        infra_type: "PrivateCloud",
+        infra_bucket: "Compute",
+        device_type: "Resource"
+      }
+    }
+
+amazon.aws.ec2_vpc_subnet_info:
+  query: >-
+    .subnets | select(. != null) | {
+      name: .availability_zone_id,
+      canonical_facts: {
+        id: .availability_zone_id
+      },
+      facts: {
+        infra_type: "PrivateCloud",
+        infra_bucket: "Compute",
+        device_type: "Resource"
+      }
+    }
+
+amazon.aws.ec2_vpc_vgw_info:
+  query: >-
+    .virtual_gateways[] | {
+      name: .vpn_gateway_id,
+      canonical_facts: {
+        id: .vpn_gateway_id
+      },
+      facts: {
+        infra_type: "PrivateCloud",
+        infra_bucket: "Compute",
+        device_type: "Resource"
+      }
+    }
+
+amazon.aws.ec2_vpc_vpn_info:
+  query: >-
+    .vpn_connections[] | {
+      name: .customer_gateway_id,
+      canonical_facts: {
+        id: .customer_gateway_id
+      },
+      facts: {
+        infra_type: "PrivateCloud",
+        infra_bucket: "Compute",
+        device_type: "Resource"
+      }
+    }
+
+amazon.aws.elb_application_lb_info:
+  query: >-
+    .load_balancers | select(. != null) | {
+      name: .allocation_id,
+      canonical_facts: {
+        id: .allocation_id
+      },
+      facts: {
+        infra_type: "PrivateCloud",
+        infra_bucket: "Compute",
+        device_type: "Resource"
+      }
+    }
+
+amazon.aws.elb_classic_lb_info:
+  query: >-
+    .elbs[] | {
+      name: .canonical_hosted_zone_name_id,
+      canonical_facts: {
+        id: .canonical_hosted_zone_name_id
+      },
+      facts: {
+        infra_type: "PrivateCloud",
+        infra_bucket: "Compute",
+        device_type: "Resource"
+      }
+    }
+
+
+amazon.aws.rds_cluster_info:
+  query: >-
+    .clusters[] | {
+      name: .db_cluster_arn,
+      canonical_facts: {
+        id: .db_cluster_arn
+      },
+      facts: {
+        infra_type: "PrivateCloud",
+        infra_bucket: "Compute",
+        device_type: "Cluster"
+      }
+    }
+
+amazon.aws.rds_instance_info:
+  query: >-
+    .instances | select(. != null) | {
+      name: .ca_certificate_identifier,
+      canonical_facts: {
+        id: .ca_certificate_identifier
+      },
+      facts: {
+        infra_type: "PrivateCloud",
+        infra_bucket: "Compute",
+        device_type: "Resource"
+      }
+    }
+
+amazon.aws.s3_bucket_info:
+  query: >-
+    .buckets | select(. != null) | {
+      name: .id,
+      canonical_facts: {
+        id: .id
+      },
+      facts: {
+        infra_type: "PrivateCloud",
+        infra_bucket: "Compute",
+        device_type: "Resource"
+      }
+    }
+
+amazon.aws.s3_object_info:
+  query: >-
+    .s3_keys[] | {
+      name: .id,
+      canonical_facts: {
+        id: .id
+      },
+      facts: {
+        infra_type: "PrivateCloud",
+        infra_bucket: "Compute",
+        device_type: "Resource"
+      }
+    }
