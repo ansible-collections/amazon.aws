@@ -1,3 +1,0 @@
-minor_changes:
-- ec2_launch_template - increase GP3 volume ``throughput`` limits in line with updated AWS limits (https://github.com/ansible-collections/amazon.aws/pull/2749).
-- ec2_vol - increase ``throughput`` and ``iops`` limits for GP3 volumes in line with updated AWS limits (https://github.com/ansible-collections/amazon.aws/pull/2749).
