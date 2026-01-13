@@ -63,7 +63,7 @@
         that:
           - update_result is not failed
           - update_result is changed
-          - health_check_info.HealthCheck.HealthCheckConfig.Port == 8888
+          - health_check_info.health_check.health_check_config.port == 8888
 
     - name: Update Health Check by ID - Update Port - idempotency - check_mode
       amazon.aws.route53_health_check:
@@ -127,8 +127,8 @@
         that:
           - update_result is not failed
           - update_result is changed
-          - health_check_info.HealthCheck.HealthCheckConfig.IPAddress == '1.2.3.4'
-          - health_check_info.HealthCheck.HealthCheckConfig.FullyQualifiedDomainName == fqdn_1
+          - health_check_info.health_check.health_check_config.ip_address == '1.2.3.4'
+          - health_check_info.health_check.health_check_config.fully_qualified_domain_name == fqdn_1
 
     - name: Update Health Check by ID - Update IP address and FQDN - idempotency - check_mode
       amazon.aws.route53_health_check:
@@ -201,7 +201,7 @@
         that:
           - update_result is not failed
           - update_result is changed
-          - health_check_info.HealthCheck.HealthCheckConfig.Port == 8080
+          - health_check_info.health_check.health_check_config.port == 8080
 
     - name: Update Health Check by name - Update Port - idempotency - check_mode
       amazon.aws.route53_health_check:
