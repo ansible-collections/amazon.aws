@@ -1,2 +1,0 @@
-minor_changes:
-- add support for the io2 storage type for RDS (https://github.com/ansible-collections/amazon.aws/pull/2748).
