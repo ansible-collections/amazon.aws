@@ -190,8 +190,8 @@
           - '"action" in _health_check'
           - '"health_check_version" in _health_check'
           - '"tags" in _health_check'
-          - create_check.health_check.action is none
-          - '"health_check_config" in create_check.health_check'
+          - _health_check.action == 'update'
+          - '"health_check_config" in _health_check'
           - '"type" in _check_config'
           - '"disabled" in _check_config'
           - '"failure_threshold" in _check_config'
@@ -247,8 +247,8 @@
           - '"action" in _health_check'
           - '"health_check_version" in _health_check'
           - '"tags" in _health_check'
-          - create_check.health_check.action is none
-          - '"health_check_config" in create_check.health_check'
+          - _health_check.action is none
+          - '"health_check_config" in _health_check'
           - '"type" in _check_config'
           - '"disabled" in _check_config'
           - '"failure_threshold" in _check_config'
@@ -304,8 +304,8 @@
           - '"action" in _health_check'
           - '"health_check_version" in _health_check'
           - '"tags" in _health_check'
-          - create_check.health_check.action is none
-          - '"health_check_config" in create_check.health_check'
+          - _health_check.action == 'update'
+          - '"health_check_config" in _health_check'
           - '"type" in _check_config'
           - '"disabled" in _check_config'
           - '"failure_threshold" in _check_config'
@@ -361,8 +361,8 @@
           - '"action" in _health_check'
           - '"health_check_version" in _health_check'
           - '"tags" in _health_check'
-          - create_check.health_check.action is none
-          - '"health_check_config" in create_check.health_check'
+          - _health_check.action is none
+          - '"health_check_config" in _health_check'
           - '"type" in _check_config'
           - '"disabled" in _check_config'
           - '"failure_threshold" in _check_config'
@@ -432,8 +432,8 @@
           - _health_check.tags['snake_case'] == 'snake_case_value'
           - '"with space" in _health_check.tags'
           - _health_check.tags['with space'] == 'Some value'
-          - create_check.health_check.action is none
-          - '"health_check_config" in create_check.health_check'
+          - _health_check.action is none
+          - '"health_check_config" in _health_check'
           - '"type" in _check_config'
           - '"disabled" in _check_config'
           - '"failure_threshold" in _check_config'
@@ -503,8 +503,8 @@
           - _health_check.tags['snake_case'] == 'snake_case_value'
           - '"with space" in _health_check.tags'
           - _health_check.tags['with space'] == 'Some value'
-          - create_check.health_check.action is none
-          - '"health_check_config" in create_check.health_check'
+          - _health_check.action is none
+          - '"health_check_config" in _health_check'
           - '"type" in _check_config'
           - '"disabled" in _check_config'
           - '"failure_threshold" in _check_config'
@@ -572,8 +572,8 @@
           - _health_check.tags['with space'] == 'Some value'
           - '"anotherTag" in _health_check.tags'
           - _health_check.tags['anotherTag'] == 'anotherValue'
-          - create_check.health_check.action is none
-          - '"health_check_config" in create_check.health_check'
+          - _health_check.action is none
+          - '"health_check_config" in _health_check'
           - '"type" in _check_config'
           - '"disabled" in _check_config'
           - '"failure_threshold" in _check_config'
@@ -641,8 +641,8 @@
           - _health_check.tags['with space'] == 'Some value'
           - '"anotherTag" in _health_check.tags'
           - _health_check.tags['anotherTag'] == 'anotherValue'
-          - create_check.health_check.action is none
-          - '"health_check_config" in create_check.health_check'
+          - _health_check.action is none
+          - '"health_check_config" in _health_check'
           - '"type" in _check_config'
           - '"disabled" in _check_config'
           - '"failure_threshold" in _check_config'
@@ -707,8 +707,8 @@
           - '"with space" not in _health_check.tags'
           - '"anotherTag" in _health_check.tags'
           - _health_check.tags['anotherTag'] == 'anotherValue'
-          - create_check.health_check.action is none
-          - '"health_check_config" in create_check.health_check'
+          - _health_check.action is none
+          - '"health_check_config" in _health_check'
           - '"type" in _check_config'
           - '"disabled" in _check_config'
           - '"failure_threshold" in _check_config'
@@ -773,8 +773,8 @@
           - '"with space" not in _health_check.tags'
           - '"anotherTag" in _health_check.tags'
           - _health_check.tags['anotherTag'] == 'anotherValue'
-          - create_check.health_check.action is none
-          - '"health_check_config" in create_check.health_check'
+          - _health_check.action is none
+          - '"health_check_config" in _health_check'
           - '"type" in _check_config'
           - '"disabled" in _check_config'
           - '"failure_threshold" in _check_config'
@@ -894,8 +894,8 @@
           - '"action" in _health_check'
           - '"health_check_version" in _health_check'
           - '"tags" in _health_check'
-          - create_check.health_check.action is none
-          - '"health_check_config" in create_check.health_check'
+          - _health_check.action == 'create'
+          - '"health_check_config" in _health_check'
           - '"type" in _check_config'
           - '"disabled" in _check_config'
           - '"failure_threshold" in _check_config'
@@ -960,8 +960,8 @@
           - '"action" in _health_check'
           - '"health_check_version" in _health_check'
           - '"tags" in _health_check'
-          - create_check.health_check.action is none
-          - '"health_check_config" in create_check.health_check'
+          - _health_check.action is none
+          - '"health_check_config" in _health_check'
           - '"type" in _check_config'
           - '"disabled" in _check_config'
           - '"failure_threshold" in _check_config'
@@ -1023,8 +1023,8 @@
           - '"action" in _health_check'
           - '"health_check_version" in _health_check'
           - '"tags" in _health_check'
-          - create_check.health_check.action is none
-          - '"health_check_config" in create_check.health_check'
+          - _health_check.action == 'update'
+          - '"health_check_config" in _health_check'
           - '"type" in _check_config'
           - '"disabled" in _check_config'
           - '"failure_threshold" in _check_config'
@@ -1087,8 +1087,8 @@
           - '"action" in _health_check'
           - '"health_check_version" in _health_check'
           - '"tags" in _health_check'
-          - create_check.health_check.action is none
-          - '"health_check_config" in create_check.health_check'
+          - _health_check.action is none
+          - '"health_check_config" in _health_check'
           - '"type" in _check_config'
           - '"disabled" in _check_config'
           - '"failure_threshold" in _check_config'
@@ -1151,8 +1151,8 @@
           - '"action" in _health_check'
           - '"health_check_version" in _health_check'
           - '"tags" in _health_check'
-          - create_check.health_check.action is none
-          - '"health_check_config" in create_check.health_check'
+          - _health_check.action == 'update'
+          - '"health_check_config" in _health_check'
           - '"type" in _check_config'
           - '"disabled" in _check_config'
           - '"failure_threshold" in _check_config'
@@ -1215,8 +1215,8 @@
           - '"action" in _health_check'
           - '"health_check_version" in _health_check'
           - '"tags" in _health_check'
-          - create_check.health_check.action is none
-          - '"health_check_config" in create_check.health_check'
+          - _health_check.action is none
+          - '"health_check_config" in _health_check'
           - '"type" in _check_config'
           - '"disabled" in _check_config'
           - '"failure_threshold" in _check_config'
@@ -1370,8 +1370,8 @@
           - _health_check.tags['snake_case'] == 'snake_case_value'
           - '"with space" in _health_check.tags'
           - _health_check.tags['with space'] == 'Some value'
-          - create_check.health_check.action is none
-          - '"health_check_config" in create_check.health_check'
+          - _health_check.action == 'create'
+          - '"health_check_config" in _health_check'
           - '"type" in _check_config'
           - '"disabled" in _check_config'
           - '"failure_threshold" in _check_config'
@@ -1459,8 +1459,8 @@
           - _health_check.tags['snake_case'] == 'snake_case_value'
           - '"with space" in _health_check.tags'
           - _health_check.tags['with space'] == 'Some value'
-          - create_check.health_check.action is none
-          - '"health_check_config" in create_check.health_check'
+          - _health_check.action is none
+          - '"health_check_config" in _health_check'
           - '"type" in _check_config'
           - '"disabled" in _check_config'
           - '"failure_threshold" in _check_config'
@@ -1533,8 +1533,8 @@
           - _health_check.tags['snake_case'] == 'snake_case_value'
           - '"with space" in _health_check.tags'
           - _health_check.tags['with space'] == 'Some value'
-          - create_check.health_check.action is none
-          - '"health_check_config" in create_check.health_check'
+          - _health_check.action == 'update'
+          - '"health_check_config" in _health_check'
           - '"type" in _check_config'
           - '"disabled" in _check_config'
           - '"failure_threshold" in _check_config'
@@ -1607,8 +1607,8 @@
           - _health_check.tags['snake_case'] == 'snake_case_value'
           - '"with space" in _health_check.tags'
           - _health_check.tags['with space'] == 'Some value'
-          - create_check.health_check.action is none
-          - '"health_check_config" in create_check.health_check'
+          - _health_check.action is none
+          - '"health_check_config" in _health_check'
           - '"type" in _check_config'
           - '"disabled" in _check_config'
           - '"failure_threshold" in _check_config'
