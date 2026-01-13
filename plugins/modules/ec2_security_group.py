@@ -406,6 +406,23 @@ EXAMPLES = r"""
           - sg-edcd9784
   diff: true
 
+- name: Update with new rules and purge old ones
+  amazon.aws.ec2_security_group:
+    name: demo-sg
+    description: "Demo Security Group"
+    vpc_id: vpc-123456
+    purge_rules: true
+    rules:
+      - proto: tcp
+        ports: 80
+        cidr_ip: 0.0.0.0/0
+        rule_desc: "Web traffic"
+    rules_egress:
+      - proto: tcp
+        ports: 80
+        cidr_ip: 0.0.0.0/0
+        rule_desc: "HTTP outbound"
+
 - name: "Delete group by its id"
   amazon.aws.ec2_security_group:
     group_id: sg-33b4ee5b
