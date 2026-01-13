@@ -4,7 +4,7 @@ amazon.aws Release Notes
 
 .. contents:: Topics
 
-v10.1.3
+v10.2.0
 =======
 
 Release Summary

@@ -3930,7 +3930,7 @@ releases:
     - 2720-autoscaling_instance-implements-missing-instance-termination-state.yaml
     - s3_object-content-headers.yml
     release_date: '2025-10-07'
-  10.1.3:
+  10.2.0:
     changes:
       bugfixes:
       - connection/aws_ssm - fixed ReferenceError in aws_ssm connection plugin destructor
