@@ -4,6 +4,70 @@ amazon.aws Release Notes
 
 .. contents:: Topics
 
+v11.0.0
+=======
+
+Release Summary
+---------------
+
+This major release includes changes such as refactored S3 module utilities to consolidate duplicate code, add comprehensive type hints and docstrings, and improve maintainability. Additionally, ``botocore`` and ``boto3`` versions have been bumped to 1.35.0 and ``awscli`` version has been bumped to 1.34.0.
+
+Major Changes
+-------------
+
+- amazon.aws collection - ``awscli`` version has been bumped to 1.34.0 (https://github.com/ansible-collections/amazon.aws/pull/2774).
+- amazon.aws collection - ``botocore`` and ``boto3`` versions have been bumped to 1.35.0 (https://github.com/ansible-collections/amazon.aws/pull/2774).
+- ec2_security_group - Support for passing nested lists of strings to ``rules.cidr_ip`` and ``rules.cidr_ipv6`` have been removed (https://github.com/ansible-collections/amazon.aws/issues/2777).
+- iam_user - Support for ``iam_user`` return key has been removed; only ``user`` is now returned (https://github.com/ansible-collections/amazon.aws/issues/2777).
+- lambda_info - Support for ``function`` has been removed (https://github.com/ansible-collections/amazon.aws/issues/2777).
+- route53_info - Support for CamelCased lists (``ResourceRecordSets``, ``HostedZones``, ``HealthChecks``, ``CheckerIpRanges``, ``DelegationSets``, ``HealthCheck``) have been removed (https://github.com/ansible-collections/amazon.aws/issues/2777).
+- s3_object - Support for ``list`` mode has been removed; use ``s3_object_info`` instead (https://github.com/ansible-collections/amazon.aws/issues/2777).
+- s3_object - Support for passing the leading ``/`` has been removed (https://github.com/ansible-collections/amazon.aws/issues/2777).
+- s3_object_info - Support for passing ``dualstack`` and ``endpoint_url`` at the same time has been removed (https://github.com/ansible-collections/amazon.aws/issues/2777).
+
+Minor Changes
+-------------
+
+- module_utils/s3 - refactored S3 module utilities to consolidate duplicate code, add comprehensive type hints and docstrings, and improve maintainability (https://github.com/ansible-collections/amazon.aws/pull/2782).
+- s3_bucket - refactored to use centralized S3 wrapper functions from module_utils and consistently use S3ErrorHandler (https://github.com/ansible-collections/amazon.aws/pull/2782).
+- s3_bucket_info - refactored to use centralized S3 wrapper functions from module_utils and consistently use S3ErrorHandler (https://github.com/ansible-collections/amazon.aws/pull/2782).
+- s3_object - refactored to use centralized S3 wrapper functions from module_utils and consistently use S3ErrorHandler (https://github.com/ansible-collections/amazon.aws/pull/2782).
+- s3_object_info - refactored to use centralized S3 wrapper functions from module_utils and consistently use S3ErrorHandler (https://github.com/ansible-collections/amazon.aws/pull/2782).
+
+v10.2.0
+=======
+
+Release Summary
+---------------
+
+This release adds support for the io2 storage type for RDS as well as other minor changes, several bugfixes and deprecated features.
+
+Minor Changes
+-------------
+
+- Add support for the io2 storage type for RDS (https://github.com/ansible-collections/amazon.aws/pull/2748).
+- ec2_launch_template - increase GP3 volume ``throughput`` limits in line with updated AWS limits (https://github.com/ansible-collections/amazon.aws/pull/2749).
+- ec2_vol - increase ``throughput`` and ``iops`` limits for GP3 volumes in line with updated AWS limits (https://github.com/ansible-collections/amazon.aws/pull/2749).
+- module_utils.s3 - added "501" to the list of error codes thrown by S3 replacements (https://github.com/ansible-collections/amazon.aws/issues/2447).
+- module_utils/_s3/common - use ``is_boto3_error_httpstatus`` to handle HTTP 403 and 501 status codes from S3-compatible services (https://github.com/ansible-collections/amazon.aws/pull/2776).
+- module_utils/botocore - add ``is_boto3_error_httpstatus`` helper function to catch boto3 exceptions based on HTTP status codes (https://github.com/ansible-collections/amazon.aws/pull/2776).
+- route53 - added ``record_values`` key to ``resource_record_sets`` return value that can be accessed using Jinja2 dot notation (https://github.com/ansible-collections/amazon.aws/pull/2772).
+- sts_assume_role - improve error handling for ``MalformedPolicyDocument`` errors by providing a clearer error message when an invalid policy document is provided (https://github.com/ansible-collections/amazon.aws/pull/2778).
+
+Deprecated Features
+-------------------
+
+- ec2_vpc_dhcp_option - the ``dhcp_config`` return value has been deprecated and will be removed in a release after 2026-12-01. Use ``dhcp_options`` instead (https://github.com/ansible-collections/amazon.aws/pull/2772).
+- ec2_vpc_dhcp_option_info - the ``dhcp_config`` return value has been deprecated and will be removed in a release after 2026-12-01. Use ``dhcp_options`` instead (https://github.com/ansible-collections/amazon.aws/pull/2772).
+- route53 - the ``values`` key in the ``resource_record_sets`` return value has been deprecated in favor of ``record_values`` for Jinja2 compatibility. The ``values`` key will be removed in a release after 2026-12-01 (https://github.com/ansible-collections/amazon.aws/pull/2772).
+
+Bugfixes
+--------
+
+- connection/aws_ssm - fixed ReferenceError in aws_ssm connection plugin destructor during interpreter shutdown (https://github.com/ansible-collections/amazon.aws/issues/2728).
+- lambda_info - fixed invalid return value documentation that used dot notation (``function.TheName``) which cannot be used in Jinja2 templates (https://github.com/ansible-collections/amazon.aws/pull/2772).
+- s3_bucket - fix error when configuring AES256 bucket encryption with ``bucket_key_enabled`` explicitly set to ``false`` (https://github.com/ansible-collections/amazon.aws/issues/2734).
+
 v10.1.2
 =======
 
@@ -99,7 +163,6 @@ Bugfixes
 
 - s3_bucket - bucket ACLs now consistently returned (https://github.com/ansible-collections/amazon.aws/pull/2478).
 - s3_bucket - fixed idempotency when setting bucket ACLs (https://github.com/ansible-collections/amazon.aws/pull/2478).
-
 
 v9.5.2
 ======
