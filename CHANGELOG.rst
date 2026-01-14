@@ -4,7 +4,6 @@ amazon.aws Release Notes
 
 .. contents:: Topics
 
-=======
 v11.0.0
 =======
 
