@@ -4,6 +4,37 @@ amazon.aws Release Notes
 
 .. contents:: Topics
 
+=======
+v11.0.0
+=======
+
+Release Summary
+---------------
+
+This major release includes changes such as refactored S3 module utilities to consolidate duplicate code, add comprehensive type hints and docstrings, and improve maintainability. Additionally, ``botocore`` and ``boto3`` versions have been bumped to 1.35.0 and ``awscli`` version has been bumped to 1.34.0.
+
+Major Changes
+-------------
+
+- amazon.aws collection - ``awscli`` version has been bumped to 1.34.0 (https://github.com/ansible-collections/amazon.aws/pull/2774).
+- amazon.aws collection - ``botocore`` and ``boto3`` versions have been bumped to 1.35.0 (https://github.com/ansible-collections/amazon.aws/pull/2774).
+- ec2_security_group - Support for passing nested lists of strings to ``rules.cidr_ip`` and ``rules.cidr_ipv6`` have been removed (https://github.com/ansible-collections/amazon.aws/issues/2777).
+- iam_user - Support for ``iam_user`` return key has been removed; only ``user`` is now returned (https://github.com/ansible-collections/amazon.aws/issues/2777).
+- lambda_info - Support for ``function`` has been removed (https://github.com/ansible-collections/amazon.aws/issues/2777).
+- route53_info - Support for CamelCased lists (``ResourceRecordSets``, ``HostedZones``, ``HealthChecks``, ``CheckerIpRanges``, ``DelegationSets``, ``HealthCheck``) have been removed (https://github.com/ansible-collections/amazon.aws/issues/2777).
+- s3_object - Support for ``list`` mode has been removed; use ``s3_object_info`` instead (https://github.com/ansible-collections/amazon.aws/issues/2777).
+- s3_object - Support for passing the leading ``/`` has been removed (https://github.com/ansible-collections/amazon.aws/issues/2777).
+- s3_object_info - Support for passing ``dualstack`` and ``endpoint_url`` at the same time has been removed (https://github.com/ansible-collections/amazon.aws/issues/2777).
+
+Minor Changes
+-------------
+
+- module_utils/s3 - refactored S3 module utilities to consolidate duplicate code, add comprehensive type hints and docstrings, and improve maintainability (https://github.com/ansible-collections/amazon.aws/pull/2782).
+- s3_bucket - refactored to use centralized S3 wrapper functions from module_utils and consistently use S3ErrorHandler (https://github.com/ansible-collections/amazon.aws/pull/2782).
+- s3_bucket_info - refactored to use centralized S3 wrapper functions from module_utils and consistently use S3ErrorHandler (https://github.com/ansible-collections/amazon.aws/pull/2782).
+- s3_object - refactored to use centralized S3 wrapper functions from module_utils and consistently use S3ErrorHandler (https://github.com/ansible-collections/amazon.aws/pull/2782).
+- s3_object_info - refactored to use centralized S3 wrapper functions from module_utils and consistently use S3ErrorHandler (https://github.com/ansible-collections/amazon.aws/pull/2782).
+
 v10.2.0
 =======
 
