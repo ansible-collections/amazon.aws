@@ -2706,7 +2706,7 @@ def main():
         ebs_optimized=dict(type="bool"),
         vpc_subnet_id=dict(type="str", aliases=["subnet_id"]),
         availability_zone=dict(type="str"),
-        security_groups=dict(default=[], type="list", elements="str"),
+        security_groups=dict(default=None, type="list", elements="str"),
         security_group=dict(type="str"),
         iam_instance_profile=dict(type="str", aliases=["instance_role"]),
         name=dict(type="str"),
