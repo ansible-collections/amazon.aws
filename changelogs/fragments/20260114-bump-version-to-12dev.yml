@@ -1,0 +1,3 @@
+trivial:
+  - galaxy.yml - bump ``release`` for main branch to ``12.0.0-dev0``.
+  - plugins/module_utils/common.py - bump ``AMAZON_AWS_COLLECTION_VERSION`` to ``12.0.0-dev0``.
