@@ -2748,7 +2748,7 @@ def main():
         termination_protection=dict(type="bool"),
         hibernation_options=dict(type="bool", default=False),
         detailed_monitoring=dict(type="bool"),
-        instance_ids=dict(default=[], type="list", elements="str"),
+	instance_ids=dict(default=None, type="list", elements="str"),
         network=dict(default=None, type="dict"),
         volumes=dict(default=None, type="list", elements="dict"),
         metadata_options=dict(
