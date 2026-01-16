@@ -1998,19 +1998,16 @@ def main():
         ),
     )
 
+   global module
     module = AnsibleAWSModule(
-    	argument_spec=argument_spec,
-    	supports_check_mode=True,
-    	required_one_of=[
-        	["launch_config_name", "launch_template"],
-    	],
-    	mutually_exclusive=[
-        	["replace_all_instances", "replace_instances"],
-        	["replace_all_instances", "detach_instances"],
-        	["launch_config_name", "launch_template"],
-   	],
+        argument_spec=argument_spec,
+        supports_check_mode=True,
+        mutually_exclusive=[
+            ["replace_all_instances", "replace_instances"],
+            ["replace_all_instances", "detach_instances"],
+            ["launch_config_name", "launch_template"],
+        ],
     )
-
 
     state = module.params.get("state")
     replace_instances = module.params.get("replace_instances")
