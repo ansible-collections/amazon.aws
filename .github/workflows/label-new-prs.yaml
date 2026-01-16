@@ -10,6 +10,7 @@ on:
 
 jobs:
   add_label:
+    if: github.actor != 'patchback[bot]'
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
