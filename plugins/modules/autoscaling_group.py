@@ -1998,7 +1998,7 @@ def main():
         ),
     )
 
-    global module
+   global module
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
         supports_check_mode=True,
