@@ -1,0 +1,328 @@
+---
+# Test creating an ALB with multiple DefaultActions in a listener
+# This tests the fix for issue #2537 where multiple DefaultActions
+# with Order fields caused TypeError in _sort_listener_actions
+# when comparing dict vs NoneType.
+#
+# Multiple DefaultActions require an authentication action (authenticate-oidc
+# or authenticate-cognito) followed by a terminal action (forward, fixed-response,
+# or redirect). Authentication actions require HTTPS listeners.
+
+- name: Run tests for ALB with multiple default actions
+  vars:
+    alb_name_multiple_actions: alb-test-{{ resource_short }}-ma
+  block:
+    # ------------------------------------------------------------------------------------------
+    # Setup: Create certificate for HTTPS listener
+    # ------------------------------------------------------------------------------------------
+
+    - name: Generate private key for test cert
+      community.crypto.openssl_privatekey:
+        path: "{{ remote_tmp_dir }}/private-ma.pem"
+        type: RSA
+        size: 2048
+
+    - name: Generate an OpenSSL Certificate Signing Request
+      community.crypto.openssl_csr:
+        path: "{{ remote_tmp_dir }}/csr-ma.csr"
+        privatekey_path: "{{ remote_tmp_dir }}/private-ma.pem"
+        common_name: "alb-ma-test.ansible.test"
+
+    - name: Generate a Self Signed OpenSSL certificate
+      community.crypto.x509_certificate:
+        provider: selfsigned
+        path: "{{ remote_tmp_dir }}/public-ma.pem"
+        csr_path: "{{ remote_tmp_dir }}/csr-ma.csr"
+        privatekey_path: "{{ remote_tmp_dir }}/private-ma.pem"
+        selfsigned_digest: sha256
+
+    - name: Upload certificate to ACM
+      community.aws.acm_certificate:
+        name_tag: "{{ resource_prefix }}_ma_cert"
+        certificate: "{{ lookup('file', remote_tmp_dir + '/public-ma.pem') }}"
+        private_key: "{{ lookup('file', remote_tmp_dir + '/private-ma.pem') }}"
+        state: present
+      register: cert_upload
+      until: cert_upload is succeeded
+      retries: 5
+      delay: 10
+
+    - name: Set certificate ARN fact
+      ansible.builtin.set_fact:
+        ma_cert_arn: "{{ cert_upload.certificate.arn }}"
+
+    # ------------------------------------------------------------------------------------------
+    # Test: Create ALB with multiple DefaultActions using Order field
+    # This is the core test case for issue #2537
+    # Uses authenticate-oidc (Order: 1) + forward (Order: 2)
+    # ------------------------------------------------------------------------------------------
+
+    - name: Create ALB with multiple default actions - check_mode
+      amazon.aws.elb_application_lb:
+        name: "{{ alb_name_multiple_actions }}"
+        subnets: "{{ public_subnets }}"
+        security_groups: "{{ sec_group.group_id }}"
+        state: present
+        listeners:
+          - Protocol: HTTPS
+            Port: 443
+            SslPolicy: ELBSecurityPolicy-TLS13-1-2-2021-06
+            Certificates:
+              - CertificateArn: "{{ ma_cert_arn }}"
+            DefaultActions:
+              - Type: authenticate-oidc
+                Order: 1
+                AuthenticateOidcConfig:
+                  Issuer: "https://idp.example.com"
+                  AuthorizationEndpoint: "https://idp.example.com/authorize"
+                  TokenEndpoint: "https://idp.example.com/token"
+                  UserInfoEndpoint: "https://idp.example.com/userinfo"
+                  ClientId: "test-client-id"
+                  ClientSecret: "test-client-secret"
+                  Scope: "openid"
+                  OnUnauthenticatedRequest: "authenticate"
+              - Type: forward
+                Order: 2
+                TargetGroupName: "{{ tg_name }}"
+      register: alb
+      check_mode: true
+
+    - name: Assert check_mode result
+      ansible.builtin.assert:
+        that:
+          - alb is changed
+          - alb.msg is match('Would have created ALB if not in check mode.')
+
+    - name: Create ALB with multiple default actions
+      amazon.aws.elb_application_lb:
+        name: "{{ alb_name_multiple_actions }}"
+        subnets: "{{ public_subnets }}"
+        security_groups: "{{ sec_group.group_id }}"
+        state: present
+        listeners:
+          - Protocol: HTTPS
+            Port: 443
+            SslPolicy: ELBSecurityPolicy-TLS13-1-2-2021-06
+            Certificates:
+              - CertificateArn: "{{ ma_cert_arn }}"
+            DefaultActions:
+              - Type: authenticate-oidc
+                Order: 1
+                AuthenticateOidcConfig:
+                  Issuer: "https://idp.example.com"
+                  AuthorizationEndpoint: "https://idp.example.com/authorize"
+                  TokenEndpoint: "https://idp.example.com/token"
+                  UserInfoEndpoint: "https://idp.example.com/userinfo"
+                  ClientId: "test-client-id"
+                  ClientSecret: "test-client-secret"
+                  Scope: "openid"
+                  OnUnauthenticatedRequest: "authenticate"
+              - Type: forward
+                Order: 2
+                TargetGroupName: "{{ tg_name }}"
+      register: alb
+
+    - name: Assert ALB was created with multiple default actions
+      ansible.builtin.assert:
+        that:
+          - alb is changed
+          - alb.listeners | length == 1
+          - alb.listeners[0].default_actions | length == 2
+          - alb.listeners[0].default_actions[0].type == "authenticate-oidc"
+          - alb.listeners[0].default_actions[0].order == 1
+          - alb.listeners[0].default_actions[1].type == "forward"
+          - alb.listeners[0].default_actions[1].order == 2
+
+    - name: Create ALB with multiple default actions (idempotence) - check_mode
+      amazon.aws.elb_application_lb:
+        name: "{{ alb_name_multiple_actions }}"
+        subnets: "{{ public_subnets }}"
+        security_groups: "{{ sec_group.group_id }}"
+        state: present
+        listeners:
+          - Protocol: HTTPS
+            Port: 443
+            SslPolicy: ELBSecurityPolicy-TLS13-1-2-2021-06
+            Certificates:
+              - CertificateArn: "{{ ma_cert_arn }}"
+            DefaultActions:
+              - Type: authenticate-oidc
+                Order: 1
+                AuthenticateOidcConfig:
+                  Issuer: "https://idp.example.com"
+                  AuthorizationEndpoint: "https://idp.example.com/authorize"
+                  TokenEndpoint: "https://idp.example.com/token"
+                  UserInfoEndpoint: "https://idp.example.com/userinfo"
+                  ClientId: "test-client-id"
+                  UseExistingClientSecret: true
+                  Scope: "openid"
+                  OnUnauthenticatedRequest: "authenticate"
+              - Type: forward
+                Order: 2
+                TargetGroupName: "{{ tg_name }}"
+      register: alb
+      check_mode: true
+
+    - name: Assert check_mode idempotence result
+      ansible.builtin.assert:
+        that:
+          - alb is not changed
+          - alb.msg is match('IN CHECK MODE - no changes to make to ALB specified.')
+
+    - name: Create ALB with multiple default actions (idempotence)
+      amazon.aws.elb_application_lb:
+        name: "{{ alb_name_multiple_actions }}"
+        subnets: "{{ public_subnets }}"
+        security_groups: "{{ sec_group.group_id }}"
+        state: present
+        listeners:
+          - Protocol: HTTPS
+            Port: 443
+            SslPolicy: ELBSecurityPolicy-TLS13-1-2-2021-06
+            Certificates:
+              - CertificateArn: "{{ ma_cert_arn }}"
+            DefaultActions:
+              - Type: authenticate-oidc
+                Order: 1
+                AuthenticateOidcConfig:
+                  Issuer: "https://idp.example.com"
+                  AuthorizationEndpoint: "https://idp.example.com/authorize"
+                  TokenEndpoint: "https://idp.example.com/token"
+                  UserInfoEndpoint: "https://idp.example.com/userinfo"
+                  ClientId: "test-client-id"
+                  UseExistingClientSecret: true
+                  Scope: "openid"
+                  OnUnauthenticatedRequest: "authenticate"
+              - Type: forward
+                Order: 2
+                TargetGroupName: "{{ tg_name }}"
+      register: alb
+
+    - name: Assert idempotence result
+      ansible.builtin.assert:
+        that:
+          - alb is not changed
+          - alb.listeners | length == 1
+          - alb.listeners[0].default_actions | length == 2
+
+    # ------------------------------------------------------------------------------------------
+    # Test: Verify actions with different Order values specified in reverse order
+    # Actions should be sorted by Order regardless of input order
+    # ------------------------------------------------------------------------------------------
+
+    - name: Update ALB with actions in reverse Order - check_mode
+      amazon.aws.elb_application_lb:
+        name: "{{ alb_name_multiple_actions }}"
+        subnets: "{{ public_subnets }}"
+        security_groups: "{{ sec_group.group_id }}"
+        state: present
+        listeners:
+          - Protocol: HTTPS
+            Port: 443
+            SslPolicy: ELBSecurityPolicy-TLS13-1-2-2021-06
+            Certificates:
+              - CertificateArn: "{{ ma_cert_arn }}"
+            DefaultActions:
+              # Specify order 2 first, then order 1
+              - Type: forward
+                Order: 2
+                TargetGroupName: "{{ tg_name }}"
+              - Type: authenticate-oidc
+                Order: 1
+                AuthenticateOidcConfig:
+                  Issuer: "https://idp.example.com"
+                  AuthorizationEndpoint: "https://idp.example.com/authorize"
+                  TokenEndpoint: "https://idp.example.com/token"
+                  UserInfoEndpoint: "https://idp.example.com/userinfo"
+                  ClientId: "test-client-id"
+                  UseExistingClientSecret: true
+                  Scope: "openid"
+                  OnUnauthenticatedRequest: "authenticate"
+      register: alb
+      check_mode: true
+
+    - name: Assert check_mode result shows no change (same actions, different input order)
+      ansible.builtin.assert:
+        that:
+          - alb is not changed
+          - alb.msg is match('IN CHECK MODE - no changes to make to ALB specified.')
+
+    - name: Update ALB with actions in reverse Order
+      amazon.aws.elb_application_lb:
+        name: "{{ alb_name_multiple_actions }}"
+        subnets: "{{ public_subnets }}"
+        security_groups: "{{ sec_group.group_id }}"
+        state: present
+        listeners:
+          - Protocol: HTTPS
+            Port: 443
+            SslPolicy: ELBSecurityPolicy-TLS13-1-2-2021-06
+            Certificates:
+              - CertificateArn: "{{ ma_cert_arn }}"
+            DefaultActions:
+              # Specify order 2 first, then order 1
+              - Type: forward
+                Order: 2
+                TargetGroupName: "{{ tg_name }}"
+              - Type: authenticate-oidc
+                Order: 1
+                AuthenticateOidcConfig:
+                  Issuer: "https://idp.example.com"
+                  AuthorizationEndpoint: "https://idp.example.com/authorize"
+                  TokenEndpoint: "https://idp.example.com/token"
+                  UserInfoEndpoint: "https://idp.example.com/userinfo"
+                  ClientId: "test-client-id"
+                  UseExistingClientSecret: true
+                  Scope: "openid"
+                  OnUnauthenticatedRequest: "authenticate"
+      register: alb
+
+    - name: Assert no change when actions are in different input order but same Order values
+      ansible.builtin.assert:
+        that:
+          - alb is not changed
+          - alb.listeners[0].default_actions | length == 2
+          # Actions should still be sorted by Order field
+          - alb.listeners[0].default_actions[0].order == 1
+          - alb.listeners[0].default_actions[1].order == 2
+
+    # ------------------------------------------------------------------------------------------
+    # Cleanup
+    # ------------------------------------------------------------------------------------------
+
+    - name: Delete ALB with multiple default actions
+      amazon.aws.elb_application_lb:
+        name: "{{ alb_name_multiple_actions }}"
+        state: absent
+        wait: true
+        wait_timeout: 600
+      register: alb
+
+    - name: Assert ALB was deleted
+      ansible.builtin.assert:
+        that:
+          - alb is changed
+
+  always:
+    - name: Cleanup - Delete test ALB with multiple default actions
+      amazon.aws.elb_application_lb:
+        name: "{{ alb_name_multiple_actions }}"
+        state: absent
+        wait: true
+        wait_timeout: 600
+      register: remove_alb
+      retries: 5
+      delay: 3
+      until: remove_alb is success
+      ignore_errors: true
+
+    - name: Cleanup - Delete test certificate
+      community.aws.acm_certificate:
+        certificate_arn: "{{ ma_cert_arn }}"
+        state: absent
+      register: delete_acm
+      retries: 5
+      delay: 5
+      until: delete_acm is not failed
+      when: ma_cert_arn is defined
+      ignore_errors: true
