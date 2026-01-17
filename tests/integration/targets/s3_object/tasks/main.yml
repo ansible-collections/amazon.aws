@@ -755,6 +755,19 @@
         that:
           - result.contents == "test content"
 
+    - name: Create an object from empty static content
+      amazon.aws.s3_object:
+        bucket: "{{ bucket_name }}"
+        mode: put
+        object: put-empty-content.txt
+        content: ""
+      register: empty_content_result
+    
+    - ansible.builtin.assert:
+        that:
+          - empty_content_result is changed
+          - empty_content_result.msg == "PUT operation complete"
+
     - ansible.builtin.set_fact:
         put_template_text: test template
 
