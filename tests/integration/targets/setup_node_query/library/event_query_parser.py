@@ -63,7 +63,6 @@ def parse_event_queries(path: str) -> dict:
 
 
 def main():
-
     module = AnsibleModule(
         argument_spec=dict(
             path=dict(type="str", required=True),
