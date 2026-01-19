@@ -47,14 +47,14 @@
               bucket_tagging: true
           register: _buckets
 
-        - name: Run jq query on s3_bucket_info output
-          ansible.builtin.shell: echo '{{ _buckets | to_json }}' | jq '[ {{ event_node_queries.s3_bucket_info }} ]'
-          register: _results
+        - name: Run jq query on result data
+          ansible.builtin.set_fact:
+            node_count: "{{ _buckets | to_json | aws_jq(event_node_queries.s3_bucket_info) }}"
 
         - name: Validate result is as expected
           ansible.builtin.assert:
             that:
-              - _results.stdout | from_json == expected_result  
+              - node_count == expected_result  
           vars:
             expected_result: 
               - canonical_facts:
@@ -85,14 +85,14 @@
               object_tagging: true
           register: _objects
 
-        - name: Run jq query on s3_object_info output
-          ansible.builtin.shell: echo '{{ _objects | to_json }}' | jq '[ {{ event_node_queries.s3_object_info }} ]'
-          register: _results
+        - name: Run jq query on result data
+          ansible.builtin.set_fact:
+            node_count: "{{ _objects | to_json | aws_jq(event_node_queries.s3_object_info) }}"
 
         - name: Validate result is as expected
           ansible.builtin.assert:
             that:
-              - _results.stdout | from_json == expected_result  
+              - node_count == expected_result  
           vars:
             expected_result: 
               - canonical_facts:

@@ -1,6 +1,6 @@
 ---
 - ansible.builtin.set_fact:
-    event_qry_path: "{{ role_path | dirname | dirname | dirname | dirname + '/extensions/audit/event_query.yml' }}"
+    event_qry_path: "{{ role_path | ansible.builtin.dirname | ansible.builtin.dirname | ansible.builtin.dirname | ansible.builtin.dirname + '/extensions/audit/event_query.yml' }}"
 
 - name: Parse event node query
   event_query_parser:
