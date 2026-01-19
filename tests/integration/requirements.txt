@@ -12,4 +12,4 @@ cryptography
 # Used for recordings
 placebo
 # Used for validation of indirect node count queries
-jq
+pyjq
