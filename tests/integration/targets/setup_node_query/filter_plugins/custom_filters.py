@@ -1,5 +1,6 @@
-from ansible.errors import AnsibleFilterError
 import json
+
+from ansible.errors import AnsibleFilterError
 
 try:
     import jq
