@@ -3,6 +3,3 @@ botocore
 boto3
 
 placebo
-
-# For testing event source plugins
-asyncmock
