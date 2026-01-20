@@ -106,7 +106,7 @@
                 facts: "{{ s3_object_facts }}"
 
       always:
-        - name: Delete s3 objects form bucket
+        - name: Delete s3 objects from bucket
           amazon.aws.s3_object:
             bucket: "{{ s3_buckets.0.name }}"
             mode: delobj
