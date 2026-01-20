@@ -1,0 +1,121 @@
+- hosts: localhost
+  gather_facts: true
+
+  roles:
+    - role: setup_node_query
+
+  module_defaults:
+    group/aws:
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+
+  vars:
+    s3_buckets:
+      - name: "bucket-{{ resource_prefix }}-1"
+        tags:
+          resource_prefix: "{{ resource_prefix }}"
+      - name: "bucket-{{ resource_prefix }}-2"
+    s3_objects:
+      - name: "object_1.txt"
+        tags:
+          resource_prefix: "{{ resource_prefix }}"
+      - name: "object_2.txt"
+    s3_bucket_facts:
+      device_type: "Bucket"
+      infra_bucket: "Storage"
+      infra_type: "PublicCloud"
+    s3_object_facts:
+      device_type: "Object"
+      infra_bucket: "Storage"
+      infra_type: "PublicCloud"
+  tasks:
+    - block:
+        # S3 buckets
+        - name: Create a simple s3_bucket
+          amazon.aws.s3_bucket:
+            name: "{{ item.name }}"
+            tags: "{{ item.tags | default(omit) }}"
+            state: present
+          loop: "{{ s3_buckets }}"
+
+        - name: List buckets by name
+          amazon.aws.s3_bucket_info:
+            name_filter: "bucket-{{ resource_prefix }}"
+            bucket_facts:
+              bucket_tagging: true
+          register: _buckets
+
+        - name: Run jq query on result data
+          ansible.builtin.set_fact:
+            node_count: "{{ _buckets | to_json | aws_jq(event_node_queries.s3_bucket_info) }}"
+
+        - name: Validate result is as expected
+          ansible.builtin.assert:
+            that:
+              - node_count == expected_result  
+          vars:
+            expected_result: 
+              - canonical_facts:
+                  name: "bucket-{{ resource_prefix }}-1"
+                  tags:
+                    resource_prefix: "{{ resource_prefix }}"
+                facts: "{{ s3_bucket_facts }}"
+              - canonical_facts:
+                  name: "bucket-{{ resource_prefix }}-2"
+                  tags: {}
+                facts: "{{ s3_bucket_facts }}"
+
+        # S3 objects
+        - name: Create S3 objects
+          amazon.aws.s3_object:
+            bucket: "{{ s3_buckets.0.name }}"
+            mode: put
+            content: |
+              Some bucket content
+            object: "{{ item.name }}"
+            tags: "{{ item.tags | default(omit) }}"
+          loop: "{{ s3_objects }}"
+
+        - name: List s3 objects from bucket
+          amazon.aws.s3_object_info:
+            bucket_name: "{{ s3_buckets.0.name }}"
+            object_details:
+              object_tagging: true
+          register: _objects
+
+        - name: Run jq query on result data
+          ansible.builtin.set_fact:
+            node_count: "{{ _objects | to_json | aws_jq(event_node_queries.s3_object_info) }}"
+
+        - name: Validate result is as expected
+          ansible.builtin.assert:
+            that:
+              - node_count == expected_result  
+          vars:
+            expected_result: 
+              - canonical_facts:
+                  name: "{{ s3_objects.0.name }}"
+                  tags:
+                    resource_prefix: "{{ resource_prefix }}"
+                facts: "{{ s3_object_facts }}"
+              - canonical_facts:
+                  name: "{{ s3_objects.1.name }}"
+                  tags: {}
+                facts: "{{ s3_object_facts }}"
+
+      always:
+        - name: Delete s3 objects from bucket
+          amazon.aws.s3_object:
+            bucket: "{{ s3_buckets.0.name }}"
+            mode: delobj
+            object: "{{ item.name }}"
+          loop: "{{ s3_objects }}"
+
+        - name: Delete s3 buckets
+          amazon.aws.s3_bucket:
+            state: absent
+            name: "{{ item.name }}"
+          loop: "{{ s3_buckets }}"
+          ignore_errors: true

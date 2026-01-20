@@ -1,0 +1,12 @@
+---
+- ansible.builtin.set_fact:
+    event_qry_path: "{{ role_path | ansible.builtin.dirname | ansible.builtin.dirname | ansible.builtin.dirname | ansible.builtin.dirname + '/extensions/audit/event_query.yml' }}"
+
+- name: Parse event node query
+  event_query_parser:
+    path: "{{ event_qry_path }}"
+  register: _result
+
+- name: Set variable for node queries
+  ansible.builtin.set_fact:
+    event_node_queries: "{{ _result.node_queries }}"
