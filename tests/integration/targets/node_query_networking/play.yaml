@@ -1,0 +1,233 @@
+- hosts: localhost
+  gather_facts: false
+
+  # roles:
+  #   - role: setup_node_query
+
+  module_defaults:
+    group/aws:
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+
+  vars:
+    vpcs_info:
+      - name: "{{ resource_prefix }}-1"
+        cidr: "13.1.0.0/16"
+        tags:
+          resource_prefix: "{{ resource_prefix }}"
+      - name: "{{ resource_prefix }}-2"
+        cidr: "13.2.0.0/16"
+      - name: "{{ resource_prefix }}-3"
+        cidr: "13.3.0.0/16"
+    subnets_info:
+      - cidr: "13.1.1.0/24"
+        tags:
+          resource_prefix: "{{ resource_prefix }}"
+      - cidr: "13.1.2.0/24"
+
+  tasks:
+    - name: Create resources and validate indirect node count queries
+      block:
+        # VPCs
+        - name: Create VPCs
+          amazon.aws.ec2_vpc_net:
+            name: "{{ item.name }}"
+            cidr_block: "{{ item.cidr }}"
+            tags: "{{ item.tags | default(omit) }}"
+          loop: "{{ vpcs_info }}"
+          register: vpcs_results
+
+        # Subnets
+        - name: Create Subnets
+          amazon.aws.ec2_vpc_subnet:
+            state: present
+            cidr: "{{ item.cidr }}"
+            vpc_id: "{{ vpcs_results.results.0.vpc.id }}"
+            tags: "{{ item.tags | default(omit) }}"
+          loop: "{{ subnets_info }}"
+          register: subnets_results
+
+        # NAT Gateways
+        # - name: Create NAT Gateway
+        #   amazon.aws.ec2_vpc_nat_gateway:
+        #     state: present
+        #     subnet_id: "{{ item.subnet.id }}"
+        #     tags: "{{ item.subnet.tags }}"
+        #     # wait: true
+        #     # wait_timeout: 400
+        #   loop: "{{ subnets_results.results }}"
+        #   register: nat_results
+
+        # Internet Gateway
+        - name: Create Internet Gateways
+          amazon.aws.ec2_vpc_igw:
+            vpc_id: "{{ item.vpc.id }}"
+            state: present
+            tags: "{{ vpcs_info[index_item].tags | default(omit) }}"
+          loop: "{{ vpcs_results.results }}"
+          loop_control:
+            index_var: index_item
+          register:  igw_results
+
+        # Virtual Gateway
+        - name: Create VPN virtual gateway
+          amazon.aws.ec2_vpc_vgw:
+            state: present
+            vpc_id: "{{ item.vpc.id }}"
+            name: "{{ resource_prefix }}-{{ index_item }}"
+          loop: "{{ vpcs_results.results }}"
+          loop_control:
+            index_var: index_item
+          register: vgw_results
+
+        # Route table
+        - name: Create VPC Route table
+          amazon.aws.ec2_vpc_route_table:
+            vpc_id: "{{ item.vpc.id }}"
+            state: present
+            tags: "{{ vpcs_info[index_item].tags | default(omit) }}"
+          loop: "{{ vpcs_results.results }}"
+          loop_control:
+            index_var: index_item
+          register: route_table_results
+
+        # VPN
+        - ansible.builtin.set_fact:
+            virtual_gateway_id: "{{ vgw_results.results.0.vgw.id }}"
+
+        - name: Create customer gateway
+          community.aws.ec2_customer_gateway:
+            bgp_asn: 12345
+            ip_address: 1.2.3.4
+            name: "{{ resource_prefix }}"
+          register: customer_gateway
+
+        - name: Create transit gateway
+          amazon.aws.ec2_transit_gateway:
+            description: Transit Gateway for vpn attachment
+            wait: true
+          register: transit_gateway
+
+        - name: Create EC2 VPN Connection, with customer gateway and transit_gateway
+          amazon.aws.ec2_vpc_vpn:
+            customer_gateway_id: "{{ customer_gateway.gateway.customer_gateway.customer_gateway_id }}"
+            transit_gateway_id: "{{ transit_gateway.transit_gateway.transit_gateway_id }}"
+            state: present
+            tags:
+              resource_prefix: "{{ resource_prefix }}"
+            wait_timeout: 1000
+          register: first_vpn
+
+        - name: Create EC2 VPN Connection, with customer gateway and vpn gateway
+          amazon.aws.ec2_vpc_vpn:
+            customer_gateway_id: "{{ customer_gateway.gateway.customer_gateway.customer_gateway_id }}"
+            vpn_gateway_id: "{{ virtual_gateway_id }}"
+            state: present
+            wait_timeout: 1000
+          register: second_vpn
+
+        - name: List VPN
+          amazon.aws.ec2_vpc_vpn_info:
+            vpn_connection_ids:
+              - "{{ first_vpn.vpn_connection_id }}"
+              - "{{ second_vpn.vpn_connection_id }}"
+          register: vpn_info
+
+        # VPC Peering
+        - name: Create VPC Peering
+          amazon.aws.ec2_vpc_peering:
+            vpc_id: "{{ item.vpc_id_1 }}"
+            peer_vpc_id: "{{ item.vpc_id_2 }}"
+            state: present
+            tags: "{{ item.tags | default(omit) }}"
+          register: vpc_peering
+          loop:
+            - vpc_id_1: "{{ vpcs_results.results.0.vpc.id }}"
+              vpc_id_2: "{{ vpcs_results.results.1.vpc.id }}"
+              tags:
+                resource_prefix: "{{ resource_prefix }}"
+            - vpc_id_1: "{{ vpcs_results.results.1.vpc.id }}"
+              vpc_id_2: "{{ vpcs_results.results.2.vpc.id }}"
+
+      always:
+        # - name: Delete NAT Gateways
+        #   amazon.aws.ec2_vpc_nat_gateway:
+        #     nat_gateway_id: "{{ item.nat_gateway_id }}"
+        #     state: absent
+        #     wait: true
+        #   loop: "{{ nat_results.results }}"
+        #   ignore_errors: true
+        - name: Delete VPC Peering
+          amazon.aws.ec2_vpc_peering:
+            peering_id: "{{ item }}"
+            state: absent
+          loop: "{{ vpc_peering.results }}"
+
+        - name: Delete VPN Connection
+          amazon.aws.ec2_vpc_vpn:
+            state: absent
+            vpn_connection_id: "{{ item.vpn_connection_id }}"
+          retries: 10
+          delay: 3
+          until: result is not failed
+          ignore_errors: true
+          loop:
+            - "{{ first_vpn }}"
+            - "{{ second_vpn }}"
+
+        - name: Delete customer gateway
+          community.aws.ec2_customer_gateway:
+            state: absent
+            ip_address: 1.2.3.4
+            name: "{{ resource_prefix }}"
+            bgp_asn: 12345
+          register: result
+          retries: 10
+          delay: 3
+          until: result is not failed
+          ignore_errors: true
+
+        - name: Delete transit gateway
+          amazon.aws.ec2_transit_gateway:
+            transit_gateway_id: "{{ transit_gateway.transit_gateway.transit_gateway_id }}"
+            state: absent
+            wait: true
+          ignore_errors: true
+
+        - name: Delete VPC Route table
+          amazon.aws.ec2_vpc_route_table:
+            route_table_id: "{{ item.route_table.id }}"
+            state: absent
+          loop: "{{ route_table_results.results }}"
+          ignore_errors: true
+
+        - name: Delete Internet Gateways
+          amazon.aws.ec2_vpc_igw:
+            state: absent
+            internet_gateway_id: "{{ item.gateway_id }}"
+          loop: "{{ igw_results.results }}"
+          ignore_errors: true
+
+        - name: Delete Virtual Gateways
+          amazon.aws.ec2_vpc_vgw:
+            state: absent
+            vpn_gateway_id: "{{ item.vgw.id }}"
+          loop: "{{ vgw_results.results }}"
+          ignore_errors: true
+
+        - name: Delete Subnets
+          amazon.aws.ec2_vpc_subnet:
+            state: absent
+            cidr: "{{ item.cidr }}"
+            vpc_id: "{{ vpcs_results.results.0.vpc.id }}"
+          loop: "{{ subnets_info }}"
+          ignore_errors: true
+
+        - name: Delete VPCs
+          amazon.aws.ec2_vpc_net:
+            state: absent
+            vpc_id: "{{ item.vpc.id }}"
+          loop: "{{ vpcs_results.results }}"
+          ignore_errors: true

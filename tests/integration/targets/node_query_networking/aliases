@@ -1,0 +1,9 @@
+cloud/aws
+ec2_vpc_net_info
+ec2_vpc_subnet_info
+ec2_vpc_nat_gateway_info
+ec2_vpc_igw_info
+ec2_vpc_vgw_info
+ec2_vpc_route_table_info
+ec2_vpc_vpn_info
+ec2_vpc_peering_info
