@@ -11,3 +11,5 @@ awscli
 cryptography
 # Used for recordings
 placebo
+# Used for indirect node count tests targets
+jq
