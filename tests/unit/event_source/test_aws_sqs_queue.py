@@ -3,7 +3,7 @@ from unittest.mock import patch
 import pytest
 from asyncmock import AsyncMock
 from extensions.eda.plugins.event_source.aws_sqs_queue import main as sqs_main
-from tests.conftest import ListQueue
+from tests.unit.conftest import ListQueue
 
 
 @pytest.mark.asyncio

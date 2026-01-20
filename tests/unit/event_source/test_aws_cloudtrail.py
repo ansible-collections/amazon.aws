@@ -8,7 +8,7 @@ from extensions.eda.plugins.event_source.aws_cloudtrail import _get_events
 from extensions.eda.plugins.event_source.aws_cloudtrail import connection_args
 from extensions.eda.plugins.event_source.aws_cloudtrail import main as cloudtrail_main
 from mock import MagicMock
-from tests.conftest import ListQueue
+from tests.unit.conftest import ListQueue
 
 
 @pytest.mark.asyncio

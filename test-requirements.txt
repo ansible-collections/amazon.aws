@@ -17,3 +17,4 @@ awscli
 cryptography
 # For testing event source plugins
 asyncmock
+aiobotocore
