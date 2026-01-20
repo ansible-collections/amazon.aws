@@ -2,7 +2,6 @@ from unittest.mock import patch
 
 import pytest
 from asyncmock import AsyncMock
-
 from extensions.eda.plugins.event_source.aws_sqs_queue import main as sqs_main
 from tests.conftest import ListQueue
 
@@ -45,9 +44,7 @@ async def test_receive_from_sqs(eda_queue: ListQueue) -> None:
             "Failed": [delete_response2],
         }
         client.receive_message = AsyncMock(side_effect=[response, ValueError()])
-        client.delete_message_batch = AsyncMock(
-            side_effect=[delete_response, ValueError()]
-        )
+        client.delete_message_batch = AsyncMock(side_effect=[delete_response, ValueError()])
 
         session.create_client.return_value = client
         session.create_client.not_async = True

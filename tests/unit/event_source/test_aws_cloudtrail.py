@@ -3,14 +3,11 @@ from unittest.mock import patch
 
 import pytest
 from asyncmock import AsyncMock
-from mock import MagicMock
-
-from extensions.eda.plugins.event_source.aws_cloudtrail import (
-    _cloudtrail_event_to_dict,
-    _get_events,
-    connection_args,
-)
+from extensions.eda.plugins.event_source.aws_cloudtrail import _cloudtrail_event_to_dict
+from extensions.eda.plugins.event_source.aws_cloudtrail import _get_events
+from extensions.eda.plugins.event_source.aws_cloudtrail import connection_args
 from extensions.eda.plugins.event_source.aws_cloudtrail import main as cloudtrail_main
+from mock import MagicMock
 from tests.conftest import ListQueue
 
 
