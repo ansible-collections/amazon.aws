@@ -161,7 +161,7 @@
         #   ignore_errors: true
         - name: Delete VPC Peering
           amazon.aws.ec2_vpc_peering:
-            peering_id: "{{ item }}"
+            peering_id: "{{ item.peering_id }}"
             state: absent
           loop: "{{ vpc_peering.results }}"
 
@@ -200,6 +200,7 @@
           amazon.aws.ec2_vpc_route_table:
             route_table_id: "{{ item.route_table.id }}"
             state: absent
+            lookup: id
           loop: "{{ route_table_results.results }}"
           ignore_errors: true
 
