@@ -28,3 +28,38 @@ amazon.aws.s3_object_info:
         device_type: "Object"
       }
     }
+
+amazon.aws.elb_application_lb_info:
+  query: >-
+    .load_balancers[] | select(. != null) |
+    {
+      canonical_facts: {
+        name: .load_balancer_name,
+        arn: (.load_balancer_arn // null),
+        dns_name: (.dns_name // null),
+        vpc_id: (.vpc_id // null),
+        tags: (.tags // {})
+      },
+      facts: {
+        infra_type: "PublicCloud",
+        infra_bucket: "Networking",
+        device_type: "ApplicationLoadBalancer"
+      },
+    }
+
+amazon.aws.elb_classic_lb_info:
+  query: >-
+    .elbs[] | select(. != null) |
+    {
+      canonical_facts: {
+        name: .load_balancer_name,
+        dns_name: (.dns_name // null),
+        vpc_id: (.vpc_id // null),
+        tags: (.tags // {})
+      },
+      facts: {
+        infra_type: "PublicCloud",
+        infra_bucket: "Networking",
+        device_type: "ClassicLoadBalancer"
+      },
+    }
