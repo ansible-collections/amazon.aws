@@ -56,14 +56,14 @@ class AWSInventoryBase(BaseInventoryPlugin, Constructable, Cacheable, AWSPluginB
                 return value
 
             if isinstance(value, dict):
-                return {k: self.templar.template(variable=v, disable_lookups=False) for k, v in value.items()}
+                return {k: self.templar.template(variable=v) for k, v in value.items()}
             if isinstance(value, list):
-                return [self.templar.template(variable=v, disable_lookups=False) for v in value]
+                return [self.templar.template(variable=v) for v in value]
 
             if not self.templar.is_template(value):
                 return value
 
-            return self.templar.template(variable=value, disable_lookups=False)
+            return self.templar.template(variable=value)
 
     def get_options(self, *args):
         return self.TemplatedOptions(self.templar, super().get_options(*args))
