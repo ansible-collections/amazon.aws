@@ -1,8 +1,8 @@
 - hosts: localhost
   gather_facts: false
 
-  # roles:
-  #   - role: setup_node_query
+  roles:
+    - role: setup_node_query
 
   module_defaults:
     group/aws:
@@ -39,6 +39,11 @@
           loop: "{{ vpcs_info }}"
           register: vpcs_results
 
+        - name: List VPCs
+          amazon.aws.ec2_vpc_net_info:
+            vpc_ids: "{{ vpcs_results.results | map(attribute='vpc.id') | list }}"
+          register: vpcs_facts
+
         # Subnets
         - name: Create Subnets
           amazon.aws.ec2_vpc_subnet:
@@ -48,6 +53,12 @@
             tags: "{{ item.tags | default(omit) }}"
           loop: "{{ subnets_info }}"
           register: subnets_results
+
+        - name: Gather facts for subnets
+          amazon.aws.ec2_vpc_subnet_info:
+            filters:
+              vpc-id: "{{ vpcs_results.results.0.vpc.id }}"
+          register: subnets_facts
 
         # NAT Gateways
         # - name: Create NAT Gateway
@@ -71,6 +82,11 @@
             index_var: index_item
           register:  igw_results
 
+        - name: Gather facts for internet gateway
+          amazon.aws.ec2_vpc_igw_info:
+            internet_gateway_ids: "{{ igw_results.results | map(attribute='gateway_id') | list }}"
+          register: igw_facts
+
         # Virtual Gateway
         - name: Create VPN virtual gateway
           amazon.aws.ec2_vpc_vgw:
@@ -82,16 +98,25 @@
             index_var: index_item
           register: vgw_results
 
+        - name: Gather facts for virtual gateway
+          amazon.aws.ec2_vpc_vgw_info:
+            vpn_gateway_ids: "{{ vgw_results.results | map(attribute='vgw.id') | list }}"
+          register: igw_facts
+
         # Route table
         - name: Create VPC Route table
           amazon.aws.ec2_vpc_route_table:
-            vpc_id: "{{ item.vpc.id }}"
+            vpc_id: "{{ vpcs_results.results.0.vpc.id }}"
             state: present
-            tags: "{{ vpcs_info[index_item].tags | default(omit) }}"
-          loop: "{{ vpcs_results.results }}"
-          loop_control:
-            index_var: index_item
+            tags: "{{ vpcs_info[item].tags | default(omit) }}"
+          loop: [0, 1]
           register: route_table_results
+
+        - name: Gather facts for Route table
+          amazon.aws.ec2_vpc_route_table_info:
+            filters:
+              vpc-id: "{{ vpcs_results.results.0.vpc.id }}"
+          register: route_table_facts
 
         # VPN
         - ansible.builtin.set_fact:
@@ -128,12 +153,12 @@
             wait_timeout: 1000
           register: second_vpn
 
-        - name: List VPN
+        - name: Gather facts for VPN
           amazon.aws.ec2_vpc_vpn_info:
             vpn_connection_ids:
               - "{{ first_vpn.vpn_connection_id }}"
               - "{{ second_vpn.vpn_connection_id }}"
-          register: vpn_info
+          register: vpn_facts
 
         # VPC Peering
         - name: Create VPC Peering
@@ -142,7 +167,7 @@
             peer_vpc_id: "{{ item.vpc_id_2 }}"
             state: present
             tags: "{{ item.tags | default(omit) }}"
-          register: vpc_peering
+          register: peering_results
           loop:
             - vpc_id_1: "{{ vpcs_results.results.0.vpc.id }}"
               vpc_id_2: "{{ vpcs_results.results.1.vpc.id }}"
@@ -150,6 +175,11 @@
                 resource_prefix: "{{ resource_prefix }}"
             - vpc_id_1: "{{ vpcs_results.results.1.vpc.id }}"
               vpc_id_2: "{{ vpcs_results.results.2.vpc.id }}"
+        
+        - name: Gather facts for VPC peering
+          amazon.aws.ec2_vpc_peering_info:
+            peer_connection_ids: "{{ peering_results.results | map(attribute='peering_id') | list }}"
+          register: peering_facts
 
       always:
         # - name: Delete NAT Gateways
@@ -163,7 +193,8 @@
           amazon.aws.ec2_vpc_peering:
             peering_id: "{{ item.peering_id }}"
             state: absent
-          loop: "{{ vpc_peering.results }}"
+          loop: "{{ peering_results.results }}"
+          ignore_errors: true
 
         - name: Delete VPN Connection
           amazon.aws.ec2_vpc_vpn:
@@ -171,6 +202,7 @@
             vpn_connection_id: "{{ item.vpn_connection_id }}"
           retries: 10
           delay: 3
+          register: result
           until: result is not failed
           ignore_errors: true
           loop:

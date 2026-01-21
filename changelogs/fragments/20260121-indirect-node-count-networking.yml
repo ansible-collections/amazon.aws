@@ -1,0 +1,4 @@
+---
+minor_changes:
+  - indirect node count - create query for networking resources vpc, subnet, nat gateway, internet gateway,
+    virtual gateway, route table, vpn, vpc peering (https://github.com/ansible-collections/amazon.aws/pull/2811).
