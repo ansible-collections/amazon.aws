@@ -151,14 +151,17 @@ class S3ClientManager:
             put_args, put_headers = generate_encryption_settings(bucket_sse_mode, bucket_sse_kms_key_id)
             url = self.get_url("put_object", bucket_name, s3_path, "PUT", extra_args=put_args)
             if is_windows:
-                put_command_headers = "; ".join([f"'{h}' = '{v}'" for h, v in put_headers.items()])
+                # Use Python's built-in urllib for reliable S3 presigned URL handling on Windows
+                # Use raw string for Windows paths to avoid escape sequence issues
+                headers_dict = ", ".join([f"'{h}': '{v}'" for h, v in put_headers.items()])
                 command = (
-                    "Invoke-WebRequest -Method PUT "
-                    # @{'key' = 'value'; 'key2' = 'value2'}
-                    f"-Headers @{{{put_command_headers}}} "
-                    f"-InFile '{in_path}' "
-                    f"-Uri '{url}' "
-                    f"-UseBasicParsing"
+                    "python -c \""
+                    "import urllib.request; "
+                    f"req = urllib.request.Request('{url}', method='PUT', headers={{{headers_dict}}}); "
+                    f"with open(r'{in_path}', 'rb') as f: "
+                    "req.data = f.read(); "
+                    "urllib.request.urlopen(req)"
+                    "\""
                 )  # fmt: skip
             else:
                 # Due to https://github.com/curl/curl/issues/183 earlier
@@ -176,10 +179,13 @@ class S3ClientManager:
         elif method == "put":
             url = self.get_url("get_object", bucket_name, s3_path, "GET")
             if is_windows:
+                # Use Python's built-in urllib for reliable S3 presigned URL handling on Windows
+                # Use raw string for Windows paths to avoid escape sequence issues
                 command = (
-                    "Invoke-WebRequest "
-                    f"'{url}' "
-                    f"-OutFile '{out_path}'"
+                    "python -c \""
+                    "import urllib.request; "
+                    f"urllib.request.urlretrieve('{url}', r'{out_path}')"
+                    "\""
                 )  # fmt: skip
             else:
                 command = (
