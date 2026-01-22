@@ -1,4 +1,51 @@
 ---
+amazon.aws.elb_application_lb_info:
+  query: >-
+    .load_balancers[] | select(. != null) |
+    {
+      canonical_facts: {
+        name: .load_balancer_name,
+        arn: (.load_balancer_arn // null),
+        dns_name: (.dns_name // null),
+        vpc_id: (.vpc_id // null),
+        tags: (.tags // {})
+      },
+      facts: {
+        infra_type: "PublicCloud",
+        infra_bucket: "Networking",
+        device_type: "ApplicationLoadBalancer"
+      },
+      extra_fields: {
+      scheme: (.scheme // null),
+      availability_zones: (.availability_zones // []),
+      security_groups: (.security_groups // []),
+      subnets: (.subnets // [])
+      }
+    }
+
+amazon.aws.elb_classic_lb_info:
+  query: >-
+    .elbs[] | select(. != null) |
+    {
+      canonical_facts: {
+        name: .load_balancer_name,
+        dns_name: (.dns_name // null),
+        vpc_id: (.vpc_id // null),
+        tags: (.tags // {})
+      },
+      facts: {
+        infra_type: "PublicCloud",
+        infra_bucket: "Networking",
+        device_type: "ClassicLoadBalancer"
+      },
+      extra_fields: {
+        scheme: (.scheme // null),
+        availability_zones: (.availability_zones // []),
+        security_groups: (.security_groups // []),
+        subnets: (.subnets // [])
+      }
+    }
+
 amazon.aws.s3_bucket_info:
   query: >-
     .buckets[] | select(. != null) |
@@ -27,39 +74,4 @@ amazon.aws.s3_object_info:
         infra_bucket: "Storage",
         device_type: "Object"
       }
-    }
-
-amazon.aws.elb_application_lb_info:
-  query: >-
-    .load_balancers[] | select(. != null) |
-    {
-      canonical_facts: {
-        name: .load_balancer_name,
-        arn: (.load_balancer_arn // null),
-        dns_name: (.dns_name // null),
-        vpc_id: (.vpc_id // null),
-        tags: (.tags // {})
-      },
-      facts: {
-        infra_type: "PublicCloud",
-        infra_bucket: "Networking",
-        device_type: "ApplicationLoadBalancer"
-      },
-    }
-
-amazon.aws.elb_classic_lb_info:
-  query: >-
-    .elbs[] | select(. != null) |
-    {
-      canonical_facts: {
-        name: .load_balancer_name,
-        dns_name: (.dns_name // null),
-        vpc_id: (.vpc_id // null),
-        tags: (.tags // {})
-      },
-      facts: {
-        infra_type: "PublicCloud",
-        infra_bucket: "Networking",
-        device_type: "ClassicLoadBalancer"
-      },
     }
