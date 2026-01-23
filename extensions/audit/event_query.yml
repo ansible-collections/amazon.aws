@@ -5,22 +5,18 @@ amazon.aws.elb_application_lb_info:
     {
       canonical_facts: {
         name: .load_balancer_name,
+        status: (.state.code // null),
+        tags: (.tags // {}),
+        id: (.load_balancer_arn // null),
         arn: (.load_balancer_arn // null),
         dns_name: (.dns_name // null),
-        vpc_id: (.vpc_id // null),
-        tags: (.tags // {})
+        vpc_id: (.vpc_id // null)
       },
       facts: {
         infra_type: "PublicCloud",
         infra_bucket: "Networking",
         device_type: "ApplicationLoadBalancer"
       },
-      extra_fields: {
-      scheme: (.scheme // null),
-      availability_zones: (.availability_zones // []),
-      security_groups: (.security_groups // []),
-      subnets: (.subnets // [])
-      }
     }
 
 amazon.aws.elb_classic_lb_info:
@@ -29,21 +25,17 @@ amazon.aws.elb_classic_lb_info:
     {
       canonical_facts: {
         name: .load_balancer_name,
+        status: "active",
+        tags: (.tags // {}),
+        id: (.canonical_hosted_zone_name_id // null),
         dns_name: (.dns_name // null),
-        vpc_id: (.vpc_id // null),
-        tags: (.tags // {})
+        vpc_id: (.vpc_id // null)
       },
       facts: {
         infra_type: "PublicCloud",
         infra_bucket: "Networking",
         device_type: "ClassicLoadBalancer"
       },
-      extra_fields: {
-        scheme: (.scheme // null),
-        availability_zones: (.availability_zones // []),
-        security_groups: (.security_groups // []),
-        subnets: (.subnets // [])
-      }
     }
 
 amazon.aws.s3_bucket_info:
