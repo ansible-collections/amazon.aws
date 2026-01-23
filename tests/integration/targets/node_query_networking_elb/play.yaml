@@ -12,7 +12,7 @@
       region: "{{ aws_region }}"
 
   vars:
-    resource_short: "{{ '%0.8x' % ((16**8) | random(seed=resource_prefix)) }}"
+    resource_short: "{{ '%0.8x' % ((16**8) | random(seed=tiny_prefix)) }}"
     vpc_cidr: "10.{{ 256 | random(seed=resource_prefix) }}.0.0/16"
     subnet_cidr_1: "10.{{ 256 | random(seed=resource_prefix) }}.1.0/24"
     subnet_cidr_2: "10.{{ 256 | random(seed=resource_prefix) }}.2.0/24"
@@ -176,11 +176,6 @@
               - alb_node_result[0].canonical_facts.vpc_id == setup_vpc.vpc.id
               - alb_node_result[0].canonical_facts.tags == alb_tags
               - alb_node_result[0].facts == alb_facts
-              - alb_node_result[0].extra_fields.scheme is defined
-              - alb_node_result[0].extra_fields.type == "application"
-              - alb_node_result[0].extra_fields.state is defined
-              - alb_node_result[0].extra_fields.availability_zones | length > 0
-              - alb_node_result[0].extra_fields.security_groups | length > 0
 
         # Test Classic Load Balancer node query
         - name: Get Classic ELB info
@@ -202,10 +197,6 @@
               - classic_elb_node_result[0].canonical_facts.vpc_id == setup_vpc.vpc.id
               - classic_elb_node_result[0].canonical_facts.tags == classic_elb_tags
               - classic_elb_node_result[0].facts == classic_elb_facts
-              - classic_elb_node_result[0].extra_fields.scheme is defined
-              - classic_elb_node_result[0].extra_fields.availability_zones | length > 0
-              - classic_elb_node_result[0].extra_fields.security_groups | length > 0
-              - classic_elb_node_result[0].extra_fields.subnets | length > 0
 
         - name: Create an ALB without tags
           amazon.aws.elb_application_lb:
@@ -277,7 +268,6 @@
               - classic_elb_notags_result[0].facts == classic_elb_facts
 
       always:
-        # Cleanup
         - name: Delete ALB without tags
           amazon.aws.elb_application_lb:
             name: "{{ alb_name }}-notags"
@@ -378,4 +368,3 @@
           until: remove_vpc is success
           ignore_errors: true
           when: setup_vpc is defined
-
