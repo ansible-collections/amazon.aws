@@ -1,0 +1,66 @@
+- hosts: localhost
+  gather_facts: true
+
+  roles:
+    - role: setup_node_query
+
+  module_defaults:
+    group/aws:
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+
+  vars:
+    ec2_instance_buckets:
+      - name: "instance-{{ resource_prefix }}-1"
+        tags:
+          resource_prefix: "{{ resource_prefix }}"
+    ec2_instance_facts:
+      device_type: "EC2"
+      infra_bucket: "Compute"
+      infra_type: "PublicCloud"
+
+  tasks:
+    - block:
+        # EC2 Instances
+        - name: Create a simple ec2_instance
+          amazon.aws.ec2_instance:
+            state: present
+            name: "{{ resource_prefix }}-test-basic"
+            instance_type: "{{ ec2_instance_type }}"
+            image_id: "{{ ec2_ami_id }}"        
+
+        - name: List instances by name
+          amazon.aws.ec2_instance_info:
+            filters:
+              "tag:Name": "instance-{{ resource_prefix }}"
+          include_attributes:
+            - kernel
+            - instanceType
+            - userData
+          register: _instances
+          
+        - name: Run jq query on result data
+          ansible.builtin.set_fact:
+            node_count: "{{ _instances | to_json | aws_jq(event_node_queries.ec2_instance_info) }}"
+
+        - name: Validate result is as expected
+          ansible.builtin.assert:
+            that:
+              - node_count == expected_result  
+          vars:
+            expected_result: 
+              - canonical_facts:
+                  name: "instance-{{ resource_prefix }}-1"
+                  tags:
+                    resource_prefix: "{{ resource_prefix }}"
+                facts: "{{ ec2_instance_facts }}"
+
+      always:
+      - name: Delete instance created for tests
+        amazon.aws.ec2_instance:
+          state: absent
+          instance_ids: "{{ _instances.instance_ids }}"
+          wait: false
+        ignore_errors: true
