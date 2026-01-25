@@ -1,8 +1,8 @@
-- name: test aws cloudtrail source plugin
+- name: Test aws cloudtrail source plugin
   hosts: localhost
 
   sources:
-    - ansible.eda.aws_cloudtrail:
+    - amazon.aws.aws_cloudtrail:
         region: 'us-east-1'
         delay_seconds: 5
   rules:

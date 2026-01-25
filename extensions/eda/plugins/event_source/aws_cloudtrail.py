@@ -58,7 +58,7 @@ options:
 """
 
 EXAMPLES = r"""
-- ansible.eda.aws_cloudtrail:
+- amazon.aws.aws_cloudtrail:
     region: us-east-1
     lookup_attributes:
       - AttributeKey: 'EventSource'

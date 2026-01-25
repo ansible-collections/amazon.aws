@@ -64,7 +64,7 @@ options:
 """
 
 EXAMPLES = r"""
-- ansible.eda.aws_sqs_queue:
+- amazon.aws.aws_sqs_queue:
     region: us-east-1
     name: eda
     delay_seconds: 10
