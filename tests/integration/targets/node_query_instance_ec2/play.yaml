@@ -35,10 +35,10 @@
           amazon.aws.ec2_instance_info:
             filters:
               "tag:Name": "instance-{{ resource_prefix }}"
-          include_attributes:
-            - kernel
-            - instanceType
-            - userData
+            include_attributes:
+              - kernel
+              - instanceType
+              - userData
           register: _instances
           
         - name: Run jq query on result data
