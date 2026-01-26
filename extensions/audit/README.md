@@ -2,7 +2,7 @@
 
 ## Overview
 
-In the context of Ansible automation, **indirect node counts** refer to the practice of calculating or verifying the capacity or availability of computing nodes **through external systems or controllers**, rather than directly querying the nodes themselves. This approach is especially useful in complex, public cloud, or on prem environments .
+In the context of Ansible automation, **indirect node counts** refer to the practice of verifying capacity or availability **by analyzing the output of Ansible modules that interact with external systems**, rather than directly querying the nodes themselves. This approach is especially useful in complex, public cloud, or on-premises environments.
 
 This file explains:
 - What indirect node counts are
@@ -12,10 +12,16 @@ This file explains:
 
 ## What Are Indirect Node Counts?
 
-Rather than connecting directly to each node to assess its state  of automation(e.g., Service, DB, VM, etc), **indirect node counts** leverage tools like **APIs**, or other management layers to obtain usage information.
+Standard node counting relies on Ansible connecting to a host. However, in cloud or API-driven automation, the "managed nodes" are often manipulated via a centralized API (like AWS or Azure) rather than direct connections.
 
-In an Ansible role or collection, this might involve:
-- Querying a cloud service for the list of DBs or VMs and their status of if they are being automated
+**Indirect node counts** solve this by inspecting the **return values (JSON payload)** of specific Ansible modules.
+
+For example:
+1. A playbook runs `amazon.aws.ec2_instance_info` to gather facts about your cloud environment.
+2. The module queries the AWS API and returns a list of instances.
+3. The controller applies a specific filter (defined in `extensions/audit/event_query.yml`) to that output to count how many unique nodes were automated.
+
+This process is **passive**: it derives counts from the automation that is already running, without initiating separate API requests.
 
 ## Why Are They Required?
 
@@ -33,7 +39,7 @@ Using indirect node counts via cluster managers:
 ## What Does It Do?
 
 In practical terms, using indirect node counts in an Ansible collection:
-- Enables **guardrails** to verify into knowing what you are automating
+- Enables **guardrails** to verify what you are automating
 - Reduces operational risk and improves **predictability** of automation workflows
 
 ## Why This Is a Good Practice
@@ -98,6 +104,6 @@ ansible-test integration node_query_networking --no-temp-workdir
 
 When running these tests locally, you must include the **--no-temp-workdir** flag.
 
-- The Problem: The tests rely on a local helper role, **setup_node_query**, to prepare the environment. Standard **ansible-test** behavior creates a temporary, isolated testing directory that does not automatically copy this helper role (as it is not a production dependency listed in **meta/main.yml**).
+- **The Problem**: The tests rely on a local helper role, **setup_node_query**, to prepare the environment. Standard **ansible-test** behavior creates a temporary, isolated testing directory that does not automatically copy this helper role (as it is not a production dependency listed in **meta/main.yml**).
 
-- The Solution: The **--no-temp-workdir** flag forces **ansible-test** to run in the current directory context, ensuring the test suite can access the **setup_node_query** role.
+- **The Solution**: The **--no-temp-workdir** flag forces **ansible-test** to run in the current directory context, ensuring the test suite can access the **setup_node_query** role.
