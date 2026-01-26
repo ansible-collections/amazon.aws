@@ -7,3 +7,4 @@ ec2_vpc_vgw_info
 ec2_vpc_route_table_info
 ec2_vpc_vpn_info
 ec2_vpc_peering_info
+time=15m

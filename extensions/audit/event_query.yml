@@ -26,6 +26,8 @@ amazon.aws.s3_object_info:
         infra_type: "PublicCloud",
         infra_bucket: "Storage",
         device_type: "Object"
+      }
+    }
 amazon.aws.ec2_vpc_net_info:
   query: >-
     .vpcs[] | select(. != null) | {
@@ -79,7 +81,7 @@ amazon.aws.ec2_vpc_igw_info:
     {
       canonical_facts: {
         id: .internet_gateway_id,
-        status: (.attachments | map({vpc: .vpc_id, status: .state})),
+        status: (.attachments | map({vpc_id: .vpc_id, status: .state})),
         tags: (.tags // {})
       },
       facts: {
