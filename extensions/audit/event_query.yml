@@ -7,10 +7,6 @@ amazon.aws.elb_application_lb_info:
         name: .load_balancer_name,
         status: .state.code,
         tags: (.tags // {}),
-        id: .load_balancer_arn,
-        arn: .load_balancer_arn,
-        dns_name: .dns_name,
-        vpc_id: .vpc_id
       },
       facts: {
         infra_type: "PublicCloud",
@@ -27,9 +23,6 @@ amazon.aws.elb_classic_lb_info:
         name: .load_balancer_name,
         status: "active",
         tags: (.tags // {}),
-        id: .canonical_hosted_zone_name_id,
-        dns_name: .dns_name,
-        vpc_id: .vpc_id
       },
       facts: {
         infra_type: "PublicCloud",

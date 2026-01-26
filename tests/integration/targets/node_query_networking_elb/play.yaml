@@ -171,9 +171,6 @@
             that:
               - alb_node_result | length == 1
               - alb_node_result[0].canonical_facts.name == alb_name
-              - alb_node_result[0].canonical_facts.arn is defined
-              - alb_node_result[0].canonical_facts.dns_name is defined
-              - alb_node_result[0].canonical_facts.vpc_id == setup_vpc.vpc.id
               - alb_node_result[0].canonical_facts.tags == alb_tags
               - alb_node_result[0].facts == alb_facts
 
@@ -193,8 +190,6 @@
             that:
               - classic_elb_node_result | length == 1
               - classic_elb_node_result[0].canonical_facts.name == classic_elb_name
-              - classic_elb_node_result[0].canonical_facts.dns_name is defined
-              - classic_elb_node_result[0].canonical_facts.vpc_id == setup_vpc.vpc.id
               - classic_elb_node_result[0].canonical_facts.tags == classic_elb_tags
               - classic_elb_node_result[0].facts == classic_elb_facts
 
