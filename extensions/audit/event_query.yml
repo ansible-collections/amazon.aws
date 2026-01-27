@@ -21,7 +21,6 @@ amazon.aws.elb_classic_lb_info:
     {
       canonical_facts: {
         name: .load_balancer_name,
-        status: "active",
         tags: (.tags // {}),
       },
       facts: {

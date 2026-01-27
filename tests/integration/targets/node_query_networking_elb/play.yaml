@@ -301,6 +301,32 @@
           until: remove_tg is success
           ignore_errors: true
 
+        - name: Find all remaining ENIs in VPC
+          amazon.aws.ec2_eni_info:
+            filters:
+              vpc-id: "{{ setup_vpc.vpc.id }}"
+          register: remaining_enis
+          ignore_errors: true
+          when: setup_vpc is defined
+
+        - name: Delete all remaining ENIs
+          amazon.aws.ec2_eni:
+            state: absent
+            eni_id: "{{ item.id }}"
+          register: eni_removed
+          until: eni_removed is not failed
+          loop: "{{ remaining_enis.network_interfaces | default([]) }}"
+          ignore_errors: true
+          retries: 10
+          delay: 5
+          when: setup_vpc is defined and remaining_enis is defined
+
+        - name: Wait for AWS-managed ENIs to be released
+          ansible.builtin.pause:
+            seconds: 15
+          ignore_errors: true
+          when: setup_vpc is defined
+
         - name: Delete security group
           amazon.aws.ec2_security_group:
             name: "{{ resource_prefix }}-nq-elb"
@@ -308,7 +334,7 @@
             vpc_id: "{{ setup_vpc.vpc.id }}"
           register: remove_sg
           retries: 10
-          delay: 5
+          delay: 10
           until: remove_sg is success
           ignore_errors: true
           when: setup_vpc is defined
@@ -336,7 +362,7 @@
             - "{{ subnet_cidr_2 }}"
           register: remove_subnet
           retries: 10
-          delay: 5
+          delay: 10
           until: remove_subnet is success
           ignore_errors: true
           when: setup_vpc is defined
