@@ -59,11 +59,4 @@
                   status: "{{ _instances.instances.0.state.name }}"
                   tags: "{{ _instances.instances.0.tags }}"
                 facts: "{{ ec2_instance_facts }}"
-
-      always:
-      - name: Delete instance created for tests
-        amazon.aws.ec2_instance:
-          state: absent
-          instance_ids: "{{ _instances.instances | map(attribute='instance_id') | list }}"
-          wait: true
-        ignore_errors: true
+                
