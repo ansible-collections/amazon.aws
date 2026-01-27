@@ -66,8 +66,8 @@ The table below details how AWS resources are mapped to these canonical facts.
 | Category | AWS Resource | Ansible Module | Canonical Fact Mapping |
 | :--- | :--- | :--- | :--- |
 | **Compute** | **EC2 Instance** | `ec2_instance_info` | `.instance_id` → **id**<br>`.state` → **status**<br>`(.name // .tags.Name)` → **name** <br>`.tags` → **tags**  |
-| **Database** | **RDS Instance** | `rds_instance_info` | `.db_instance_identifier` → **id**<br>`.db_name` → **name**<br>`.db_instance_status` → **status**<br>`.tags` → **tags**  |
-| **Database** | **RDS Cluster** | `rds_cluster_info` | `db_cluster_identifier` → **id**<br>`.status` → **status**<br>`tags` → **tags** |
+| **Database** | **RDS Instance** | `rds_instance_info` | `.db_instance_identifier` → **name**<br>`.dbi_resource_id` → **id**<br>`.db_instance_status` → **status**<br>`.tags` → **tags**  |
+| **Database** | **RDS Cluster** | `rds_cluster_info` | `db_cluster_identifier` → **name**<br>`.db_cluster_resource_id` → **id**<br>`.status` → **status**<br>`.tags` → **tags** |
 | **Storage** | **S3 Bucket** | `s3_bucket_info` | `.name` → **name**<br>`.bucket_tagging` → **tags** |
 | **Storage** | **S3 Object** | `s3_object_info` | `.object_name` → **name**<br>`.object_tagging` → **tags** |
 | **Networking** | **Application / Network LB** | `elb_application_lb_info` | `.load_balancer_name` → **name**<br>`state` → **status** |
