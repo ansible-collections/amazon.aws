@@ -1,0 +1,261 @@
+---
+- name: 'ec2_instance_type_info integration tests'
+  collections:
+    - amazon.aws
+  module_defaults:
+    group/aws:
+      access_key: '{{ aws_access_key }}'
+      secret_key: '{{ aws_secret_key }}'
+      session_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+
+  block:
+    # ============================================================
+    # Basic functionality tests
+    # ============================================================
+
+    - name: Get information about a specific instance type
+     amazon.aws.ec2_instance_type_info:
+        instance_types:
+          - t3.micro
+      register: specific_result
+
+    - name: Verify specific instance type result
+      assert:
+        that:
+          - specific_result is success
+          - specific_result is not changed
+          - specific_result.instance_types | length == 1
+          - specific_result.instance_types[0].instance_type == 't3.micro'
+          - "'current_generation' in specific_result.instance_types[0]"
+          - "'free_tier_eligible' in specific_result.instance_types[0]"
+          - "'v_cpu_info' in specific_result.instance_types[0]"
+          - "'memory_info' in specific_result.instance_types[0]"
+          - "'processor_info' in specific_result.instance_types[0]"
+          - "'network_info' in specific_result.instance_types[0]"
+
+    - name: Verify t3.micro is current generation
+      assert:
+        that:
+          - specific_result.instance_types[0].current_generation == true
+
+    # ============================================================
+    # Multiple instance types
+    # ============================================================
+
+    - name: Get information about multiple specific instance types
+      amazon.aws.ec2_instance_type_info:
+        instance_types:
+          - t3.micro
+          - t3.small
+          - t3.medium
+      register: multiple_result
+
+    - name: Verify multiple instance types result
+      assert:
+        that:
+          - multiple_result is success
+          - multiple_result is not changed
+          - multiple_result.instance_types | length == 3
+          - "'t3.micro' in (multiple_result.instance_types | map(attribute='instance_type') | list)"
+          - "'t3.small' in (multiple_result.instance_types | map(attribute='instance_type') | list)"
+          - "'t3.medium' in (multiple_result.instance_types | map(attribute='instance_type') | list)"
+
+    # ============================================================
+    # Wildcard pattern tests (using filters)
+    # ============================================================
+
+    - name: Get instance types using wildcard pattern via filter
+      amazon.aws.ec2_instance_type_info:
+        filters:
+          instance-type:
+            - "t3.*"
+      register: wildcard_result
+
+    - name: Verify wildcard results contain t3 family instances
+      assert:
+        that:
+          - wildcard_result is success
+          - wildcard_result is not changed
+          - wildcard_result.instance_types | length >= 1
+          - wildcard_result.instance_types | map(attribute='instance_type') | select('match', '^t3\\.') | list | length == wildcard_result.instance_types | length
+
+    # ============================================================
+    # Filter tests
+    # ============================================================
+
+    - name: Filter for free tier eligible instances
+      amazon.aws.ec2_instance_type_info:
+        filters:
+          free-tier-eligible:
+            - "true"
+      register: free_tier_result
+
+    - name: Verify free tier results
+      assert:
+        that:
+          - free_tier_result is success
+          - free_tier_result is not changed
+          - free_tier_result.instance_types | length >= 1
+          - free_tier_result.instance_types | selectattr('free_tier_eligible', 'equalto', true) | list | length == free_tier_result.instance_types | length
+
+    - name: Filter by processor architecture (x86_64)
+      amazon.aws.ec2_instance_type_info:
+        instance_types:
+          - t3.micro
+        filters:
+          processor-info.supported-architecture:
+            - x86_64
+      register: arch_filter_result
+
+    - name: Verify architecture filter results
+      assert:
+        that:
+          - arch_filter_result is success
+          - arch_filter_result is not changed
+          - arch_filter_result.instance_types | length >= 1
+          - "'x86_64' in arch_filter_result.instance_types[0].processor_info.supported_architectures"
+
+    - name: Filter for current generation instances
+      amazon.aws.ec2_instance_type_info:
+        filters:
+          current-generation:
+            - "true"
+          instance-type:
+            - "t3.micro"
+      register: current_gen_result
+
+    - name: Verify current generation filter results
+      assert:
+        that:
+          - current_gen_result is success
+          - current_gen_result is not changed
+          - current_gen_result.instance_types | length == 1
+          - current_gen_result.instance_types[0].current_generation == true
+
+    # ============================================================
+    # Combined filters
+    # ============================================================
+
+    - name: Combine multiple filters
+      amazon.aws.ec2_instance_type_info:
+        filters:
+          instance-type:
+            - "m5.*"
+          vcpu-info.default-vcpus:
+            - "4"
+      register: combined_result
+
+    - name: Verify combined results
+      assert:
+        that:
+          - combined_result is success
+          - combined_result is not changed
+          - combined_result.instance_types | length >= 1
+          - combined_result.instance_types | map(attribute='instance_type') | select('match', '^m5\\.') | list | length == combined_result.instance_types | length
+          - combined_result.instance_types | selectattr('v_cpu_info.default_v_cpus', 'equalto', 4) | list | length == combined_result.instance_types | length
+
+    # ============================================================
+    # Check mode tests
+    # ============================================================
+
+    - name: Test check mode - get specific instance type
+      amazon.aws.ec2_instance_type_info:
+        instance_types:
+          - t3.micro
+      register: check_mode_result
+      check_mode: true
+
+    - name: Verify check mode result
+      assert:
+        that:
+          - check_mode_result is success
+          - check_mode_result is not changed
+          - check_mode_result.instance_types | length == 1
+          - check_mode_result.instance_types[0].instance_type == 't3.micro'
+
+    # ============================================================
+    # Return value structure validation
+    # ============================================================
+
+    - name: Validate return structure for a known instance type
+      amazon.aws.ec2_instance_type_info:
+        instance_types:
+          - t3.micro
+      register: structure_result
+
+    - name: Verify return structure contains expected fields
+      vars:
+        instance_info: "{{ structure_result.instance_types[0] }}"
+      assert:
+        that:
+          - "'instance_type' in instance_info"
+          - "'current_generation' in instance_info"
+          - "'free_tier_eligible' in instance_info"
+          - "'supported_usage_classes' in instance_info"
+          - "'supported_root_device_types' in instance_info"
+          - "'supported_virtualization_types' in instance_info"
+          - "'bare_metal' in instance_info"
+          - "'processor_info' in instance_info"
+          - "'v_cpu_info' in instance_info"
+          - "'memory_info' in instance_info"
+          - "'ebs_info' in instance_info"
+          - "'network_info' in instance_info"
+          - "'placement_group_info' in instance_info"
+          - "'hibernation_supported' in instance_info"
+          - "'burstable_performance_supported' in instance_info"
+          - "'dedicated_hosts_supported' in instance_info"
+          - "'auto_recovery_supported' in instance_info"
+          - "'supported_boot_modes' in instance_info"
+
+    - name: Verify nested structure - processor_info
+      vars:
+        proc_info: "{{ structure_result.instance_types[0].processor_info }}"
+      assert:
+        that:
+          - "'supported_architectures' in proc_info"
+          - proc_info.supported_architectures | type_debug == 'list'
+
+    - name: Verify nested structure - v_cpu_info
+      vars:
+        vcpu: "{{ structure_result.instance_types[0].v_cpu_info }}"
+      assert:
+        that:
+          - "'default_v_cpus' in vcpu"
+          - "'default_cores' in vcpu"
+          - "'default_threads_per_core' in vcpu"
+
+    - name: Verify nested structure - memory_info
+      vars:
+        mem: "{{ structure_result.instance_types[0].memory_info }}"
+      assert:
+        that:
+          - "'size_in_mi_b' in mem"
+          - mem.size_in_mi_b | int > 0
+
+    - name: Verify nested structure - network_info
+      vars:
+        net: "{{ structure_result.instance_types[0].network_info }}"
+      assert:
+        that:
+          - "'network_performance' in net"
+          - "'maximum_network_interfaces' in net"
+          - "'ipv4_addresses_per_interface' in net"
+          - "'ipv6_supported' in net"
+
+    # ============================================================
+    # Invalid instance type test
+    # ============================================================
+
+    - name: Test with non-existent instance type (should fail)
+      amazon.aws.ec2_instance_type_info:
+        instance_types:
+          - nonexistent.type.xyz
+      register: invalid_result
+      ignore_errors: true
+
+    - name: Verify error result for non-existent type
+      assert:
+        that:
+          - invalid_result is failed
+          - invalid_result.error.code == 'InvalidInstanceType'
