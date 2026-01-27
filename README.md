@@ -62,6 +62,9 @@ Version 11.0.0 of this collection supports `boto3 >= 1.35.0` and `botocore >= 1.
 
 All support for the original AWS SDK `boto` was removed in release 4.0.0.
 
+### Event source plugins compatibility
+`aiobotocore >= 2.14.0` is required only for event source plugings aws_cloudtrail and aws_sqs_qeeue.
+
 ## Included content
 <!--start collection content-->
 See the complete list of collection content in the [Plugin Index](https://ansible-collections.github.io/amazon.aws/branch/main/collections/amazon/aws/index.html#plugin-index).

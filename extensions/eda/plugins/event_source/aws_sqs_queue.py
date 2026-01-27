@@ -8,12 +8,12 @@ from aiobotocore.session import get_session
 
 DOCUMENTATION = r"""
 ---
-short_description: Receive events via an AWS SQS queue.
+short_description: Receive events via an AWS SQS queue
 description:
   - An ansible-rulebook event source plugin for receiving events via an AWS SQS queue.
   - >
-    This supports all the authentication methods supported by boto library:
-    https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html
+    This supports all the authentication methods supported by boto3 library:
+    U(https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html).
 options:
   access_key:
     description:
@@ -50,7 +50,7 @@ options:
   delay_seconds:
     description:
       - The SQS long polling duration.
-      - Set to 0 to disable.
+      - Set to V(0) to disable.
     type: int
     default: 2
   max_number_of_messages:
@@ -58,7 +58,7 @@ options:
       - >
         Optional The maximum number of messages to return. Amazon SQS
         never returns more messages than this value (however, fewer
-        messages might be returned). Valid values are 1 to 10.
+        messages might be returned). Valid values are V(1) to V(10).
     type: int
     default: 1
 """
