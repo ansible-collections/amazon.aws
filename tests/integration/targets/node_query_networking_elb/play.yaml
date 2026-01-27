@@ -1,0 +1,391 @@
+- hosts: localhost
+  gather_facts: true
+
+  roles:
+    - role: setup_node_query
+
+  module_defaults:
+    group/aws:
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+
+  vars:
+    resource_short: "{{ '%0.8x' % ((16**8) | random(seed=tiny_prefix)) }}"
+    vpc_cidr: "10.{{ 256 | random(seed=resource_prefix) }}.0.0/16"
+    subnet_cidr_1: "10.{{ 256 | random(seed=resource_prefix) }}.1.0/24"
+    subnet_cidr_2: "10.{{ 256 | random(seed=resource_prefix) }}.2.0/24"
+    alb_name: "nq-alb-{{ resource_short }}"
+    classic_elb_name: "nq-clb-{{ resource_short }}"
+    tg_name: "nq-tg-{{ resource_short }}"
+    alb_tags:
+      resource_prefix: "{{ resource_prefix }}"
+      test_type: "node_query"
+    classic_elb_tags:
+      resource_prefix: "{{ resource_prefix }}"
+      test_type: "node_query_classic"
+    alb_facts:
+      device_type: "ApplicationLoadBalancer"
+      infra_bucket: "Networking"
+      infra_type: "PublicCloud"
+    classic_elb_facts:
+      device_type: "ClassicLoadBalancer"
+      infra_bucket: "Networking"
+      infra_type: "PublicCloud"
+    default_listeners:
+      - protocol: http
+        load_balancer_port: 80
+        instance_port: 80
+
+  tasks:
+    - block:
+        # Setup availability zones
+        - name: Get available AZs
+          amazon.aws.aws_az_info:
+          register: _az_info
+
+        - name: Set availability zone variables
+          ansible.builtin.set_fact:
+            availability_zone_a: "{{ _az_info.availability_zones[0].zone_name }}"
+            availability_zone_b: "{{ _az_info.availability_zones[1].zone_name }}"
+
+        # Setup VPC infrastructure
+        - name: Create a VPC
+          amazon.aws.ec2_vpc_net:
+            cidr_block: "{{ vpc_cidr }}"
+            state: present
+            name: "{{ resource_prefix }}-nq-elb"
+            tags:
+              Name: "{{ resource_prefix }}-nq-elb"
+          register: setup_vpc
+
+        - name: Create an internet gateway
+          amazon.aws.ec2_vpc_igw:
+            vpc_id: "{{ setup_vpc.vpc.id }}"
+            state: present
+            tags:
+              Name: "{{ resource_prefix }}-nq-elb"
+          register: igw
+
+        - name: Create subnet 1
+          amazon.aws.ec2_vpc_subnet:
+            az: "{{ availability_zone_a }}"
+            vpc_id: "{{ setup_vpc.vpc.id }}"
+            cidr: "{{ subnet_cidr_1 }}"
+            state: present
+            tags:
+              Name: "{{ resource_prefix }}-nq-elb-a"
+          register: setup_subnet_1
+
+        - name: Create subnet 2
+          amazon.aws.ec2_vpc_subnet:
+            az: "{{ availability_zone_b }}"
+            vpc_id: "{{ setup_vpc.vpc.id }}"
+            cidr: "{{ subnet_cidr_2 }}"
+            state: present
+            tags:
+              Name: "{{ resource_prefix }}-nq-elb-b"
+          register: setup_subnet_2
+
+        - name: Create a route table
+          amazon.aws.ec2_vpc_route_table:
+            vpc_id: "{{ setup_vpc.vpc.id }}"
+            tags:
+              Name: "{{ resource_prefix }}-nq-elb"
+            subnets:
+              - "{{ setup_subnet_1.subnet.id }}"
+              - "{{ setup_subnet_2.subnet.id }}"
+            routes:
+              - dest: "0.0.0.0/0"
+                gateway_id: "{{ igw.gateway_id }}"
+          register: route_table
+
+        - name: Create a security group
+          amazon.aws.ec2_security_group:
+            name: "{{ resource_prefix }}-nq-elb"
+            description: Security group for node query ELB tests
+            state: present
+            vpc_id: "{{ setup_vpc.vpc.id }}"
+            rules:
+              - proto: tcp
+                from_port: 80
+                to_port: 80
+                cidr_ip: "0.0.0.0/0"
+          register: setup_sg
+
+        - name: Create a target group for Application Load Balancer
+          community.aws.elb_target_group:
+            name: "{{ tg_name }}"
+            protocol: http
+            port: 80
+            vpc_id: "{{ setup_vpc.vpc.id }}"
+            state: present
+          register: tg
+
+        - name: Create an Application Load Balancer
+          amazon.aws.elb_application_lb:
+            name: "{{ alb_name }}"
+            subnets:
+              - "{{ setup_subnet_1.subnet.id }}"
+              - "{{ setup_subnet_2.subnet.id }}"
+            security_groups:
+              - "{{ setup_sg.group_id }}"
+            state: present
+            tags: "{{ alb_tags }}"
+            listeners:
+              - Protocol: HTTP
+                Port: 80
+                DefaultActions:
+                  - Type: forward
+                    TargetGroupName: "{{ tg_name }}"
+          register: alb
+
+        - name: Create a Classic Load Balancer
+          amazon.aws.elb_classic_lb:
+            name: "{{ classic_elb_name }}"
+            state: present
+            subnets:
+              - "{{ setup_subnet_1.subnet.id }}"
+              - "{{ setup_subnet_2.subnet.id }}"
+            security_group_ids:
+              - "{{ setup_sg.group_id }}"
+            listeners: "{{ default_listeners }}"
+            tags: "{{ classic_elb_tags }}"
+            wait: true
+          register: classic_elb
+
+        # Test Application Load Balancer node query
+        - name: Get ALB info
+          amazon.aws.elb_application_lb_info:
+            names:
+              - "{{ alb_name }}"
+          register: _alb_info
+
+        - name: Run jq query on ALB result data
+          ansible.builtin.set_fact:
+            alb_node_result: "{{ _alb_info | to_json | aws_jq(event_node_queries.elb_application_lb_info) }}"
+
+        - name: Validate ALB result is as expected
+          ansible.builtin.assert:
+            that:
+              - alb_node_result | length == 1
+              - alb_node_result[0].canonical_facts.name == alb_name
+              - alb_node_result[0].canonical_facts.tags == alb_tags
+              - alb_node_result[0].facts == alb_facts
+
+        # Test Classic Load Balancer node query
+        - name: Get Classic ELB info
+          amazon.aws.elb_classic_lb_info:
+            names:
+              - "{{ classic_elb_name }}"
+          register: _classic_elb_info
+
+        - name: Run jq query on Classic ELB result data
+          ansible.builtin.set_fact:
+            classic_elb_node_result: "{{ _classic_elb_info | to_json | aws_jq(event_node_queries.elb_classic_lb_info) }}"
+
+        - name: Validate Classic ELB result is as expected
+          ansible.builtin.assert:
+            that:
+              - classic_elb_node_result | length == 1
+              - classic_elb_node_result[0].canonical_facts.name == classic_elb_name
+              - classic_elb_node_result[0].canonical_facts.tags == classic_elb_tags
+              - classic_elb_node_result[0].facts == classic_elb_facts
+
+        - name: Create an ALB without tags
+          amazon.aws.elb_application_lb:
+            name: "{{ alb_name }}-notags"
+            subnets:
+              - "{{ setup_subnet_1.subnet.id }}"
+              - "{{ setup_subnet_2.subnet.id }}"
+            security_groups:
+              - "{{ setup_sg.group_id }}"
+            state: present
+            listeners:
+              - Protocol: HTTP
+                Port: 80
+                DefaultActions:
+                  - Type: fixed-response
+                    FixedResponseConfig:
+                      ContentType: text/plain
+                      MessageBody: "OK"
+                      StatusCode: "200"
+          register: alb_notags
+
+        - name: Get ALB info for no-tags ALB
+          amazon.aws.elb_application_lb_info:
+            names:
+              - "{{ alb_name }}-notags"
+          register: _alb_notags_info
+
+        - name: Run jq query on ALB without tags
+          ansible.builtin.set_fact:
+            alb_notags_result: "{{ _alb_notags_info | to_json | aws_jq(event_node_queries.elb_application_lb_info) }}"
+
+        - name: Validate ALB without tags uses fallback (empty tags dict)
+          ansible.builtin.assert:
+            that:
+              - alb_notags_result | length == 1
+              - alb_notags_result[0].canonical_facts.name == alb_name + "-notags"
+              - alb_notags_result[0].canonical_facts.tags == {}
+              - alb_notags_result[0].facts == alb_facts
+
+        - name: Create a Classic ELB without tags
+          amazon.aws.elb_classic_lb:
+            name: "{{ classic_elb_name }}-notags"
+            state: present
+            subnets:
+              - "{{ setup_subnet_1.subnet.id }}"
+              - "{{ setup_subnet_2.subnet.id }}"
+            security_group_ids:
+              - "{{ setup_sg.group_id }}"
+            listeners: "{{ default_listeners }}"
+            wait: true
+          register: classic_elb_notags
+
+        - name: Get Classic ELB info for no-tags ELB
+          amazon.aws.elb_classic_lb_info:
+            names:
+              - "{{ classic_elb_name }}-notags"
+          register: _classic_elb_notags_info
+
+        - name: Run jq query on Classic ELB without tags
+          ansible.builtin.set_fact:
+            classic_elb_notags_result: "{{ _classic_elb_notags_info | to_json | aws_jq(event_node_queries.elb_classic_lb_info) }}"
+
+        - name: Validate Classic ELB without tags uses fallback (empty tags dict)
+          ansible.builtin.assert:
+            that:
+              - classic_elb_notags_result | length == 1
+              - classic_elb_notags_result[0].canonical_facts.name == classic_elb_name + "-notags"
+              - classic_elb_notags_result[0].canonical_facts.tags == {}
+              - classic_elb_notags_result[0].facts == classic_elb_facts
+
+      always:
+        - name: Delete ALB without tags
+          amazon.aws.elb_application_lb:
+            name: "{{ alb_name }}-notags"
+            state: absent
+            wait: true
+          ignore_errors: true
+
+        - name: Delete Application Load Balancer
+          amazon.aws.elb_application_lb:
+            name: "{{ alb_name }}"
+            state: absent
+            wait: true
+          ignore_errors: true
+
+        - name: Delete Classic Load Balancer
+          amazon.aws.elb_classic_lb:
+            name: "{{ classic_elb_name }}"
+            state: absent
+            wait: true
+          ignore_errors: true
+
+        - name: Delete Classic ELB without tags
+          amazon.aws.elb_classic_lb:
+            name: "{{ classic_elb_name }}-notags"
+            state: absent
+            wait: true
+          ignore_errors: true
+
+        - name: Delete target group
+          community.aws.elb_target_group:
+            name: "{{ tg_name }}"
+            state: absent
+          register: remove_tg
+          retries: 5
+          delay: 3
+          until: remove_tg is success
+          ignore_errors: true
+
+        - name: Find all remaining ENIs in VPC
+          amazon.aws.ec2_eni_info:
+            filters:
+              vpc-id: "{{ setup_vpc.vpc.id }}"
+          register: remaining_enis
+          ignore_errors: true
+          when: setup_vpc is defined
+
+        - name: Delete all remaining ENIs
+          amazon.aws.ec2_eni:
+            state: absent
+            eni_id: "{{ item.id }}"
+          register: eni_removed
+          until: eni_removed is not failed
+          loop: "{{ remaining_enis.network_interfaces | default([]) }}"
+          ignore_errors: true
+          retries: 10
+          delay: 5
+          when: setup_vpc is defined and remaining_enis is defined
+
+        - name: Wait for AWS-managed ENIs to be released
+          ansible.builtin.pause:
+            seconds: 15
+          ignore_errors: true
+          when: setup_vpc is defined
+
+        - name: Delete security group
+          amazon.aws.ec2_security_group:
+            name: "{{ resource_prefix }}-nq-elb"
+            state: absent
+            vpc_id: "{{ setup_vpc.vpc.id }}"
+          register: remove_sg
+          retries: 10
+          delay: 10
+          until: remove_sg is success
+          ignore_errors: true
+          when: setup_vpc is defined
+
+        - name: Delete route table
+          amazon.aws.ec2_vpc_route_table:
+            vpc_id: "{{ setup_vpc.vpc.id }}"
+            route_table_id: "{{ route_table.route_table.route_table_id }}"
+            lookup: id
+            state: absent
+          register: remove_rt
+          retries: 10
+          delay: 5
+          until: remove_rt is success
+          ignore_errors: true
+          when: route_table is defined
+
+        - name: Delete subnets
+          amazon.aws.ec2_vpc_subnet:
+            cidr: "{{ item }}"
+            vpc_id: "{{ setup_vpc.vpc.id }}"
+            state: absent
+          loop:
+            - "{{ subnet_cidr_1 }}"
+            - "{{ subnet_cidr_2 }}"
+          register: remove_subnet
+          retries: 10
+          delay: 10
+          until: remove_subnet is success
+          ignore_errors: true
+          when: setup_vpc is defined
+
+        - name: Delete internet gateway
+          amazon.aws.ec2_vpc_igw:
+            vpc_id: "{{ setup_vpc.vpc.id }}"
+            state: absent
+          register: remove_igw
+          retries: 10
+          delay: 5
+          until: remove_igw is success
+          ignore_errors: true
+          when: setup_vpc is defined
+
+        - name: Delete VPC
+          amazon.aws.ec2_vpc_net:
+            cidr_block: "{{ vpc_cidr }}"
+            name: "{{ resource_prefix }}-nq-elb"
+            state: absent
+          register: remove_vpc
+          retries: 10
+          delay: 5
+          until: remove_vpc is success
+          ignore_errors: true
+          when: setup_vpc is defined
