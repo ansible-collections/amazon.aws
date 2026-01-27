@@ -1,0 +1,62 @@
+- hosts: localhost
+  gather_facts: true
+
+  roles:
+    - role: setup_node_query
+    - role: setup_ec2_facts
+    - role: setup_ec2_instance_env
+
+  module_defaults:
+    group/aws:
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+
+  vars:
+    ec2_instance_buckets:
+      name: "instance-{{ resource_prefix }}"
+      tags:
+        resource_prefix: "{{ resource_prefix }}"
+    ec2_instance_facts:
+      device_type: "EC2"
+      infra_bucket: "Compute"
+      infra_type: "PublicCloud"
+
+  tasks:
+    - block:
+        # EC2 Instances
+        - name: Create a simple ec2_instance
+          amazon.aws.ec2_instance:
+            state: running
+            name: "{{ ec2_instance_buckets.name }}"
+            instance_type: t3.nano
+            image_id: "{{ ec2_ami_id }}"
+            tags: "{{ ec2_instance_buckets.tags }}"
+            security_group: "{{ security_group_name_1 }}"
+            vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
+            wait: false
+          register: result
+
+        - name: List instances by name
+          amazon.aws.ec2_instance_info:
+            instance_ids: "{{ result.instance_ids }}"
+          register: _instances
+
+        - name: Run jq query on result data
+          ansible.builtin.set_fact:
+            node_count: "{{ _instances | to_json | aws_jq(event_node_queries.ec2_instance_info) }}"
+
+        - name: Validate result is as expected
+          ansible.builtin.assert:
+            that:
+              - node_count == expected_result  
+          vars:
+            expected_result: 
+              - name: "{{ ec2_instance_buckets.name }}"
+                canonical_facts:
+                  id: "{{ _instances.instances.0.instance_id }}"
+                  status: "{{ _instances.instances.0.state.name }}"
+                  tags: "{{ _instances.instances.0.tags }}"
+                facts: "{{ ec2_instance_facts }}"
+                

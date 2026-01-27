@@ -1,0 +1,3 @@
+---
+minor_changes:
+  - indirect node count - create query for ec2 (https://github.com/ansible-collections/amazon.aws/pull/2807).
