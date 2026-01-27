@@ -3,6 +3,8 @@
 
   roles:
     - role: setup_node_query
+    - role: setup_ec2_facts
+    - role: setup_ec2_instance_env
 
   module_defaults:
     group/aws:
@@ -13,9 +15,9 @@
 
   vars:
     ec2_instance_buckets:
-      - name: "instance-{{ resource_prefix }}-1"
-        tags:
-          resource_prefix: "{{ resource_prefix }}"
+      name: "instance-{{ resource_prefix }}"
+      tags:
+        resource_prefix: "{{ resource_prefix }}"
     ec2_instance_facts:
       device_type: "EC2"
       infra_bucket: "Compute"
@@ -26,21 +28,21 @@
         # EC2 Instances
         - name: Create a simple ec2_instance
           amazon.aws.ec2_instance:
-            state: present
-            name: "{{ resource_prefix }}-test-basic"
-            instance_type: "{{ ec2_instance_type }}"
-            image_id: "{{ ec2_ami_id }}"        
+            state: running
+            name: "{{ ec2_instance_buckets.name }}"
+            instance_type: t3.nano
+            image_id: "{{ ec2_ami_id }}"
+            tags: "{{ ec2_instance_buckets.tags }}"
+            security_group: "{{ security_group_name_1 }}"
+            vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
+            wait: false
+          register: result
 
         - name: List instances by name
           amazon.aws.ec2_instance_info:
-            filters:
-              "tag:Name": "instance-{{ resource_prefix }}"
-            include_attributes:
-              - kernel
-              - instanceType
-              - userData
+            instance_ids: "{{ result.instance_ids }}"
           register: _instances
-          
+
         - name: Run jq query on result data
           ansible.builtin.set_fact:
             node_count: "{{ _instances | to_json | aws_jq(event_node_queries.ec2_instance_info) }}"
@@ -51,16 +53,17 @@
               - node_count == expected_result  
           vars:
             expected_result: 
-              - canonical_facts:
-                  name: "instance-{{ resource_prefix }}-1"
-                  tags:
-                    resource_prefix: "{{ resource_prefix }}"
+              - name: "{{ ec2_instance_buckets.name }}"
+                canonical_facts:
+                  id: "{{ _instances.instances.0.instance_id }}"
+                  status: "{{ _instances.instances.0.state.name }}"
+                  tags: "{{ _instances.instances.0.tags }}"
                 facts: "{{ ec2_instance_facts }}"
 
       always:
       - name: Delete instance created for tests
         amazon.aws.ec2_instance:
           state: absent
-          instance_ids: "{{ _instances.instance_ids }}"
-          wait: false
+          instance_ids: "{{ _instances.instances | map(attribute='instance_id') | list }}"
+          wait: true
         ignore_errors: true
