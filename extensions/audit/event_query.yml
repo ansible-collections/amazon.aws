@@ -1,4 +1,20 @@
 ---
+amazon.aws.ec2_instance_info:
+  query: >-
+    .instances[] | select(. != null) | {
+      name: (.name // .tags.Name // "UNKNOWN"),  # unique identifier for the resource
+      canonical_facts: {
+      id: .instance_id,
+      status: .state.name,
+      tags: (.tags // {}),
+      },
+      facts: {
+        infra_type: "PublicCloud",
+        infra_bucket: "Compute",
+        device_type: "EC2"
+        },
+      }
+
 amazon.aws.s3_bucket_info:
   query: >-
     .buckets[] | select(. != null) |
