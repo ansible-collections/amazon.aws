@@ -1,0 +1,89 @@
+- hosts: localhost
+  gather_facts: true
+
+  roles:
+    - role: setup_node_query
+
+  module_defaults:
+    group/aws:
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+
+  vars:
+    engine: aurora-mysql
+    username: testrdsusername
+    password: "{{ lookup('password', '/dev/null') }}"
+
+    rds_clusters:
+      - name: "{{ resource_prefix }}-cluster-1"
+        tags:
+          Name: "{{ resource_prefix }}-cluster-1"
+          Created_By: Ansible Indirect NodeQuery Count integration tests
+      - name: "{{ resource_prefix }}-cluster-2"
+
+    rds_cluster_facts:
+      device_type: "Cluster"
+      infra_bucket: "Database"
+      infra_type: "PublicCloud"
+
+  tasks:
+    - block:
+        # RDS Clusters
+        - name: Create a DB cluster
+          amazon.aws.rds_cluster:
+            state: present
+            engine: "{{ engine }}"
+            username: "{{ username }}"
+            password: "{{ password }}"
+            db_cluster_identifier: "{{ item.name }}"
+            tags: "{{ item.tags | default(omit) }}"
+          loop: "{{ rds_clusters }}"
+        
+        - name: Get information about the RDS clusters
+          amazon.aws.rds_cluster_info:
+            filters:
+              db-cluster-id:
+                - "{{ resource_prefix }}-cluster-1"
+                - "{{ resource_prefix }}-cluster-2"
+          register: _clusters
+        
+        - name: Extract RDS Cluster IDs
+          ansible.builtin.set_fact:
+            id_cluster_1: "{{ _clusters.clusters | selectattr('db_cluster_identifier', 'search', 'cluster-1') | map(attribute='db_cluster_resource_id') | first }}"
+            id_cluster_2: "{{ _clusters.clusters | selectattr('db_cluster_identifier', 'search', 'cluster-2') | map(attribute='db_cluster_resource_id') | first }}"
+
+        - name: Run jq query on result data
+          ansible.builtin.set_fact:
+            node_count: "{{ _clusters | to_json | aws_jq(event_node_queries.rds_cluster_info) }}"
+
+        - name: Validate result is as expected
+          ansible.builtin.assert:
+            that:
+              - node_count == expected_result  
+          vars:
+            expected_result: 
+              - canonical_facts:
+                  id: "{{ id_cluster_1 }}"
+                  name: "{{ resource_prefix }}-cluster-1"
+                  status: "available"
+                  tags:
+                    Name: "{{ resource_prefix }}-cluster-1"
+                    Created_By: Ansible Indirect NodeQuery Count integration tests
+                facts: "{{ rds_cluster_facts }}"
+              - canonical_facts:
+                  id: "{{ id_cluster_2 }}"
+                  name: "{{ resource_prefix }}-cluster-2"
+                  status: "available"
+                  tags: {}
+                facts: "{{ rds_cluster_facts }}"
+
+      always:      
+        - name: Delete RDS clusters
+          amazon.aws.rds_cluster:
+            state: absent
+            db_cluster_identifier: "{{ item.name }}"
+            skip_final_snapshot: true
+          ignore_errors: true
+          loop: "{{ rds_clusters }}"

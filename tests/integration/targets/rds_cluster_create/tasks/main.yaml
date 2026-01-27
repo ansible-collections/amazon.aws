@@ -159,7 +159,7 @@
     - name: Delete test DB clusters without creating a final snapshot
       amazon.aws.rds_cluster:
         state: absent
-        cluster_id: "{{ item }}"
+        db_cluster_identifier: "{{ item.name }}"
         skip_final_snapshot: true
       ignore_errors: true
       with_items:

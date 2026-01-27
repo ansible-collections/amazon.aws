@@ -1,0 +1,96 @@
+- hosts: localhost
+  gather_facts: true
+
+  roles:
+    - role: setup_node_query
+
+  module_defaults:
+    group/aws:
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+
+  vars:
+    engine: mariadb
+    mariadb_engine_version: 11.4.7
+    username: testrdsusername
+    password: "{{ lookup('password', '/dev/null') }}"
+    allocated_storage: 20
+    db_instance_class: db.t3.micro
+
+    rds_instances:
+      - name: "{{ resource_prefix }}-instance-1"
+        tags:
+          Name: "{{ resource_prefix }}-instance-1"
+          Created_by: Ansible Indirect NodeQuery Count integration tests
+      - name: "{{ resource_prefix }}-instance-2"
+
+    rds_instance_facts:
+      device_type: "Instance"
+      infra_bucket: "Database"
+      infra_type: "PublicCloud"
+
+  tasks:
+    - block:
+        # RDS Instances
+        - name: Create a MariaDB instance
+          amazon.aws.rds_instance:
+            db_instance_identifier: "{{ item.name }}"
+            state: present
+            username: "{{ username }}"
+            password: "{{ password }}"
+            engine: "{{ engine }}"
+            engine_version: "{{ mariadb_engine_version }}"
+            db_instance_class: "{{ db_instance_class }}"
+            allocated_storage: "{{ allocated_storage }}"
+            tags: "{{ item.tags | default(omit) }}"
+          loop: "{{ rds_instances }}"
+
+        - name: Get information about the RDS instance
+          amazon.aws.rds_instance_info:
+            filters:
+              db-instance-id:
+                - "{{ resource_prefix }}-instance-1"
+                - "{{ resource_prefix }}-instance-2"
+          register: _instances
+        
+        - name: Extract RDS Instance IDs
+          ansible.builtin.set_fact:
+            id_inst_1: "{{ _instances.instances | selectattr('db_instance_identifier', 'search', 'instance-1') | map(attribute='dbi_resource_id') | first }}"
+            id_inst_2: "{{ _instances.instances | selectattr('db_instance_identifier', 'search', 'instance-2') | map(attribute='dbi_resource_id') | first }}"
+
+        - name: Run jq query on result data
+          ansible.builtin.set_fact:
+            node_count: "{{ _instances | to_json | aws_jq(event_node_queries.rds_instance_info) }}"
+
+        - name: Validate result is as expected
+          ansible.builtin.assert:
+            that:
+              - node_count == expected_result  
+          vars:
+            expected_result: 
+              - canonical_facts:
+                  id: "{{ id_inst_1 }}"
+                  name: "{{ resource_prefix }}-instance-1"
+                  status: "available"
+                  tags:
+                    Name: "{{ resource_prefix }}-instance-1"
+                    Created_by: Ansible Indirect NodeQuery Count integration tests
+                facts: "{{ rds_instance_facts }}"
+              - canonical_facts:
+                  id: "{{ id_inst_2 }}"
+                  name: "{{ resource_prefix }}-instance-2"
+                  status: "available"
+                  tags: {}
+                facts: "{{ rds_instance_facts }}"
+
+      always:        
+        - name: Delete RDS instances
+          amazon.aws.rds_instance:
+            db_instance_identifier: "{{ item.name }}"
+            state: absent
+            skip_final_snapshot: true
+            wait: false
+          ignore_errors: true
+          loop: "{{ rds_instances }}"
