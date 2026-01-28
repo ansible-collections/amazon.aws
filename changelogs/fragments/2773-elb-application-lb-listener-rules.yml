@@ -1,3 +1,4 @@
+---
 bugfixes:
-  - elb_application_lb - fixed error where creating a new application load balancer with listener rules would fail with ``Parameter validation failed: Invalid type for parameter ListenerArn, value: None`` (https://github.com/ansible-collections/amazon.aws/issues/2400).
-  - elb_application_lb - fixed comparison of multi-rule default actions to properly handle the ``Order`` field when determining if listener modifications are needed (https://github.com/ansible-collections/amazon.aws/issues/2537).
+  - "elb_application_lb - fixed error where creating a new application load balancer with listener rules would fail with ``Parameter validation failed: Invalid type for parameter ListenerArn, value: None`` (https://github.com/ansible-collections/amazon.aws/issues/2400)."
+  - "elb_application_lb - fixed comparison of multi-rule default actions to properly handle the ``Order`` field when determining if listener modifications are needed (https://github.com/ansible-collections/amazon.aws/issues/2537)."
