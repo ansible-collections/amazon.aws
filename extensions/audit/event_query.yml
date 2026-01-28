@@ -1,4 +1,6 @@
 ---
+# COMPUTE
+
 amazon.aws.ec2_instance_info:
   query: >-
     .instances[] | select(. != null) | {
@@ -14,6 +16,8 @@ amazon.aws.ec2_instance_info:
         device_type: "EC2"
         },
       }
+
+# NETWORKING
 
 amazon.aws.elb_application_lb_info:
   query: >-
@@ -46,35 +50,6 @@ amazon.aws.elb_classic_lb_info:
       },
     }
 
-amazon.aws.s3_bucket_info:
-  query: >-
-    .buckets[] | select(. != null) |
-    {
-      canonical_facts: {
-        name: .name,
-        tags: (.bucket_tagging // {})
-      },
-      facts: {
-        infra_type: "PublicCloud",
-        infra_bucket: "Storage",
-        device_type: "Bucket"
-      }
-    }
-
-amazon.aws.s3_object_info:
-  query: >-
-    .object_info[] | select(. != null) |
-    {
-      canonical_facts: {
-        name: .object_name,
-        tags: (.object_tagging // {})
-      },
-      facts: {
-        infra_type: "PublicCloud",
-        infra_bucket: "Storage",
-        device_type: "Object"
-      }
-    }
 amazon.aws.ec2_vpc_net_info:
   query: >-
     .vpcs[] | select(. != null) | {
@@ -198,5 +173,75 @@ amazon.aws.ec2_vpc_peering_info:
         infra_type: "PublicCloud",
         infra_bucket: "Networking",
         device_type: "VPC Peering"
+      }
+    }
+
+# STORAGE
+
+amazon.aws.s3_bucket_info:
+  query: >-
+    .buckets[] | select(. != null) |
+    {
+      canonical_facts: {
+        name: .name,
+        tags: (.bucket_tagging // {})
+      },
+      facts: {
+        infra_type: "PublicCloud",
+        infra_bucket: "Storage",
+        device_type: "Bucket"
+      }
+    }
+
+amazon.aws.s3_object_info:
+  query: >-
+    .object_info[] | select(. != null) |
+    {
+      canonical_facts: {
+        name: .object_name,
+        tags: (.object_tagging // {})
+      },
+      facts: {
+        infra_type: "PublicCloud",
+        infra_bucket: "Storage",
+        device_type: "Object"
+      }
+    }
+
+# DATABASE
+
+amazon.aws.rds_instance_info:
+  query: >-
+    .instances[] | select(. != null) |
+    {
+      canonical_facts: {
+        id: .dbi_resource_id,  # AWS Region-unique, immutable identifier for the DB instance.
+        name: .db_instance_identifier,  # The user-supplied DB cluster identifier.
+        tags: (.tags // {}),
+        status: .db_instance_status
+
+      },
+      facts: {
+        infra_type: "PublicCloud",
+        infra_bucket: "Database",
+        device_type: "Instance"
+      }
+    }
+
+amazon.aws.rds_cluster_info:
+  query: >-
+    .clusters[] | select(. != null) |
+    {
+      canonical_facts: {
+        id: .db_cluster_resource_id,  # The AWS Region-unique, immutable identifier for the DB cluster.
+        name: .db_cluster_identifier,  # The user-supplied DB cluster identifier.
+        tags: (.tags // {}),
+        status: .status
+
+      },
+      facts: {
+        infra_type: "PublicCloud",
+        infra_bucket: "Database",
+        device_type: "Cluster"
       }
     }
