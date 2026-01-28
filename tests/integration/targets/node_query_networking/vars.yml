@@ -1,0 +1,29 @@
+---
+networking_common_facts:
+  infra_type: "PublicCloud"
+  infra_bucket: "Networking"
+networking_facts:
+  vpc: "VPC"
+  subnet: "Subnet"
+  nat_gateway: "NAT Gateway"
+  igw: "Internet Gateway"
+  vgw: "Virtual Gateway"
+  route_table: "Route table"
+  vpn: "VPN Connection"
+  peering: "VPC Peering"
+
+vpcs_info:
+  - name: "{{ resource_prefix }}-1"
+    cidr: "13.1.0.0/16"
+    tags:
+      resource_prefix: "{{ resource_prefix }}"
+  - name: "{{ resource_prefix }}-2"
+    cidr: "13.2.0.0/16"
+  - name: "{{ resource_prefix }}-3"
+    cidr: "13.3.0.0/16"
+subnets_info:
+  - cidr: "13.1.1.0/24"
+    tags:
+      resource_prefix: "{{ resource_prefix }}"
+  - cidr: "13.1.2.0/24"
+  

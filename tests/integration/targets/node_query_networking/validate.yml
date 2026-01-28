@@ -1,0 +1,21 @@
+- name: Validate indirect node count queries
+  hosts: all
+  gather_facts: false
+
+  vars_files:
+    - vars.yml
+    - aws_vars.yml
+
+  module_defaults:
+    group/aws:
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+
+  roles:
+    - role: setup_node_query
+
+  tasks:
+    - name: "Validate indirect node count query for {{ inventory_hostname }}"
+      ansible.builtin.include_tasks: "tasks/validate_{{ inventory_hostname }}.yml"

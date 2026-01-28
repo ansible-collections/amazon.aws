@@ -1,0 +1,57 @@
+---
+{% if nat_results is defined and nat_results.results | length > 0 %}
+# NAT Gateway ids
+nat_gateway_ids:
+{% for item in nat_results.results %}
+  - {{ item.nat_gateway_id }}
+{% endfor %}
+{% endif %}
+{% if peering_results is defined and peering_results.results | length > 0 %}
+# VPC Peering
+vpc_peering_ids:
+{% for item in peering_results.results %}
+  - {{ item.peering_id }}
+{% endfor %}
+{% endif %}
+{% if first_vpn is defined or second_vpn is defined %}
+# VPN Connection
+vpn_connection_ids:
+{% if first_vpn is defined %}
+  - {{ first_vpn.vpn_connection_id }}
+{% endif %}
+{% if second_vpn is defined %}
+  - {{ second_vpn.vpn_connection_id }}
+{% endif %}
+{% endif %}
+{% if transit_gateway is defined %}
+# Transit gateway
+transit_gateway_id: {{ transit_gateway.transit_gateway.transit_gateway_id }}
+{% endif %}
+{% if route_table_results is defined and route_table_results.results | length > 0 %}
+# Route table
+route_table_ids:
+{% for item in route_table_results.results %}
+  - {{ item.route_table.id }}
+{% endfor %}
+{% endif %}
+{% if igw_results is defined and igw_results.results | length > 0 %}
+# Internet Gateways
+igw_ids:
+{% for item in igw_results.results %}
+  - {{ item.gateway_id }}
+{% endfor %}
+{% endif %}
+{% if vgw_results is defined and vgw_results.results | length > 0 %}
+# Virtual Gateways
+vgw_ids:
+{% for item in vgw_results.results %}
+  - {{ item.vgw.id }}
+{% endfor %}
+{% endif %}
+{% if vpcs_results is defined and vpcs_results.results | length > 0 %}
+# VPCs
+vpcs_ids:
+{% for item in vpcs_results.results %}
+  - {{ item.vpc.id }}
+{% endfor %}
+{% endif %}
