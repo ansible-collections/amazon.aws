@@ -1,0 +1,8 @@
+---
+minor_changes:
+  - aws_cloudtrail - Ported the event source plugin from ``ansible.eda`` to ``amazon.aws`` (https://github.com/ansible-collections/amazon.aws/pull/2816).
+  - aws_sqs_queue - Ported the event source plugin from ``ansible.eda`` to ``amazon.aws`` (https://github.com/ansible-collections/amazon.aws/pull/2816).
+  - requirements.txt - Added ``aiobotocore`` as a dependency for the event source plugins only (https://github.com/ansible-collections/amazon.aws/pull/2816).
+trivial:
+  - aws event source - add unit tests for aws_cloudtrail and aws_sqs_queue event source plugins (https://github.com/ansible-collections/amazon.aws/pull/2816).
+  - aws event source - integration test for aws_cloudtrail event source plugin is temporary disabled, as it is not tested and CI environment is not yet configured to run them (https://github.com/ansible-collections/amazon.aws/pull/2816).
