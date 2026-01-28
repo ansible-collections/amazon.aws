@@ -342,46 +342,11 @@ instance_types:
             type: dict
 """
 
-try:
-    import botocore
-except ImportError:
-    pass  # caught by AnsibleAWSModule
-
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_instance_types
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
-
-class EC2InstanceTypesManager:
-    """Handles EC2 instance types information retrieval"""
-
-    def __init__(self, module):
-        self.module = module
-        self.ec2 = module.client("ec2")
-
-    def describe_instance_types(self, instance_types=None, filters=None):
-        """Describe EC2 instance types with optional filtering.
-
-        Args:
-            instance_types: Optional list of instance type names
-            filters: Optional list of boto3 filters
-
-        Returns:
-            List of instance type info dictionaries
-        """
-        params = {}
-
-        if instance_types:
-            params["InstanceTypes"] = instance_types
-
-        if filters:
-            params["Filters"] = filters
-
-        try:
-            paginator = self.ec2.get_paginator("describe_instance_types")
-            return paginator.paginate(**params).build_full_result()["InstanceTypes"]
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            self.module.fail_json_aws(e, msg="Failed to describe instance types")
 
 
 def main():
@@ -401,13 +366,16 @@ def main():
     # Convert filters to boto3 format
     filters = ansible_dict_to_boto3_filter_list(filters_dict)
 
-    manager = EC2InstanceTypesManager(module)
+    params = {}
+
+    if instance_types:
+        params["InstanceTypes"] = instance_types
+
+    if filters:
+        params["Filters"] = filters
 
     # Get instance type information
-    raw_results = manager.describe_instance_types(
-        instance_types=instance_types if instance_types else None,
-        filters=filters,
-    )
+    raw_results = describe_instance_types(module.client("ec2"), **params)
 
     # Convert keys to snake_case for Ansible convention
     instance_type_list = [camel_dict_to_snake_dict(item) for item in raw_results]

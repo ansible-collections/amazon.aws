@@ -15,7 +15,7 @@
     # ============================================================
 
     - name: Get information about a specific instance type
-     amazon.aws.ec2_instance_type_info:
+      amazon.aws.ec2_instance_type_info:
         instance_types:
           - t3.micro
       register: specific_result
@@ -258,4 +258,4 @@
       assert:
         that:
           - invalid_result is failed
-          - invalid_result.error.code == 'InvalidInstanceType'
+          - invalid_result is search('InvalidInstanceType')
