@@ -49,10 +49,10 @@
                 - "{{ resource_prefix }}-cluster-2"
           register: _clusters
         
-        - name: Extract RDS Cluster IDs
+        - name: Extract RDS Clusters
           ansible.builtin.set_fact:
-            id_cluster_1: "{{ _clusters.clusters | selectattr('db_cluster_identifier', 'search', 'cluster-1') | map(attribute='db_cluster_resource_id') | first }}"
-            id_cluster_2: "{{ _clusters.clusters | selectattr('db_cluster_identifier', 'search', 'cluster-2') | map(attribute='db_cluster_resource_id') | first }}"
+            cluster_1: "{{ _clusters.clusters | selectattr('db_cluster_identifier', 'search', 'cluster-1') | first }}"
+            cluster_2: "{{ _clusters.clusters | selectattr('db_cluster_identifier', 'search', 'cluster-2') | first }}"
 
         - name: Run jq query on result data
           ansible.builtin.set_fact:
@@ -65,17 +65,17 @@
           vars:
             expected_result: 
               - canonical_facts:
-                  id: "{{ id_cluster_1 }}"
+                  id: "{{ cluster_1.db_cluster_resource_id }}"
                   name: "{{ resource_prefix }}-cluster-1"
-                  status: "available"
+                  status: "{{ cluster_1.status }}"
                   tags:
                     Name: "{{ resource_prefix }}-cluster-1"
                     Created_By: Ansible Indirect NodeQuery Count integration tests
                 facts: "{{ rds_cluster_facts }}"
               - canonical_facts:
-                  id: "{{ id_cluster_2 }}"
+                  id: "{{ cluster_2.db_cluster_resource_id }}"
                   name: "{{ resource_prefix }}-cluster-2"
-                  status: "available"
+                  status: "{{ cluster_2.status }}"
                   tags: {}
                 facts: "{{ rds_cluster_facts }}"
 

@@ -17,38 +17,6 @@ amazon.aws.ec2_instance_info:
         },
       }
 
-# STORAGE
-
-amazon.aws.s3_bucket_info:
-  query: >-
-    .buckets[] | select(. != null) |
-    {
-      canonical_facts: {
-        name: .name,
-        tags: (.bucket_tagging // {})
-      },
-      facts: {
-        infra_type: "PublicCloud",
-        infra_bucket: "Storage",
-        device_type: "Bucket"
-      }
-    }
-
-amazon.aws.s3_object_info:
-  query: >-
-    .object_info[] | select(. != null) |
-    {
-      canonical_facts: {
-        name: .object_name,
-        tags: (.object_tagging // {})
-      },
-      facts: {
-        infra_type: "PublicCloud",
-        infra_bucket: "Storage",
-        device_type: "Object"
-      }
-    }
-
 # NETWORKING
 
 amazon.aws.elb_application_lb_info:
@@ -205,6 +173,38 @@ amazon.aws.ec2_vpc_peering_info:
         infra_type: "PublicCloud",
         infra_bucket: "Networking",
         device_type: "VPC Peering"
+      }
+    }
+
+# STORAGE
+
+amazon.aws.s3_bucket_info:
+  query: >-
+    .buckets[] | select(. != null) |
+    {
+      canonical_facts: {
+        name: .name,
+        tags: (.bucket_tagging // {})
+      },
+      facts: {
+        infra_type: "PublicCloud",
+        infra_bucket: "Storage",
+        device_type: "Bucket"
+      }
+    }
+
+amazon.aws.s3_object_info:
+  query: >-
+    .object_info[] | select(. != null) |
+    {
+      canonical_facts: {
+        name: .object_name,
+        tags: (.object_tagging // {})
+      },
+      facts: {
+        infra_type: "PublicCloud",
+        infra_bucket: "Storage",
+        device_type: "Object"
       }
     }
 

@@ -55,10 +55,10 @@
                 - "{{ resource_prefix }}-instance-2"
           register: _instances
         
-        - name: Extract RDS Instance IDs
+        - name: Extract RDS Instances
           ansible.builtin.set_fact:
-            id_inst_1: "{{ _instances.instances | selectattr('db_instance_identifier', 'search', 'instance-1') | map(attribute='dbi_resource_id') | first }}"
-            id_inst_2: "{{ _instances.instances | selectattr('db_instance_identifier', 'search', 'instance-2') | map(attribute='dbi_resource_id') | first }}"
+            instance_1: "{{ _instances.instances | selectattr('db_instance_identifier', 'search', 'instance-1') | first }}"
+            instance_2: "{{ _instances.instances | selectattr('db_instance_identifier', 'search', 'instance-2') | first }}"
 
         - name: Run jq query on result data
           ansible.builtin.set_fact:
@@ -71,17 +71,17 @@
           vars:
             expected_result: 
               - canonical_facts:
-                  id: "{{ id_inst_1 }}"
+                  id: "{{ instance_1.dbi_resource_id }}"
                   name: "{{ resource_prefix }}-instance-1"
-                  status: "available"
+                  status: "{{ instance_1.db_instance_status }}"
                   tags:
                     Name: "{{ resource_prefix }}-instance-1"
                     Created_by: Ansible Indirect NodeQuery Count integration tests
                 facts: "{{ rds_instance_facts }}"
               - canonical_facts:
-                  id: "{{ id_inst_2 }}"
+                  id: "{{ instance_2.dbi_resource_id }}"
                   name: "{{ resource_prefix }}-instance-2"
-                  status: "available"
+                  status: "{{ instance_2.db_instance_status }}"
                   tags: {}
                 facts: "{{ rds_instance_facts }}"
 
