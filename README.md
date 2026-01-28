@@ -69,6 +69,13 @@ All support for the original AWS SDK `boto` was removed in release 4.0.0.
 <!--start collection content-->
 See the complete list of collection content in the [Plugin Index](https://ansible-collections.github.io/amazon.aws/branch/main/collections/amazon/aws/index.html#plugin-index).
 
+In addition, this collection includes two event source plugins located under the `extensions/eda/` folder:
+
+| Plugin | Description |
+| :--- | :--- |
+`amazon.aws.aws_cloudtrail`| An ansible-rulebook event source plugin for getting events from an AWS CloudTrail |
+`amazon.aws.aws_sqs_queue`| An ansible-rulebook event source plugin for receiving events via an AWS SQS queue |
+
 <!--end collection content-->
 
 ## Installation
