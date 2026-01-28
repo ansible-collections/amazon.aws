@@ -15,6 +15,37 @@ amazon.aws.ec2_instance_info:
         },
       }
 
+amazon.aws.elb_application_lb_info:
+  query: >-
+    .load_balancers[] | select(. != null) |
+    {
+      canonical_facts: {
+        name: .load_balancer_name,
+        status: .state.code,
+        tags: (.tags // {}),
+      },
+      facts: {
+        infra_type: "PublicCloud",
+        infra_bucket: "Networking",
+        device_type: "ApplicationLoadBalancer"
+      },
+    }
+
+amazon.aws.elb_classic_lb_info:
+  query: >-
+    .elbs[] | select(. != null) |
+    {
+      canonical_facts: {
+        name: .load_balancer_name,
+        tags: (.tags // {}),
+      },
+      facts: {
+        infra_type: "PublicCloud",
+        infra_bucket: "Networking",
+        device_type: "ClassicLoadBalancer"
+      },
+    }
+
 amazon.aws.s3_bucket_info:
   query: >-
     .buckets[] | select(. != null) |
