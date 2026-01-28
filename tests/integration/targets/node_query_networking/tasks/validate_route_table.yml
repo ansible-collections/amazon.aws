@@ -1,0 +1,28 @@
+---
+- name: Gather facts for Route table
+  amazon.aws.ec2_vpc_route_table_info:
+    filters:
+      vpc-id: "{{ vpcs_ids[0] }}"
+  register: route_table_facts
+
+- vars:
+    expected_result: "{{ lookup('ansible.builtin.template', 'route_table.j2') | from_yaml }}"
+  block:
+    - name: Run jq query on result data
+      ansible.builtin.set_fact:
+        node_count: "{{ route_table_facts | to_json | aws_jq(event_node_queries.ec2_vpc_route_table_info) }}"
+
+    - name: Validate result is as expected
+      ansible.builtin.assert:
+        that:
+          - node_count | sort(attribute='canonical_facts.id') == expected_result | sort(attribute='canonical_facts.id')
+      register: test_result
+  always:
+    - name: Display expected result
+      ansible.builtin.debug:
+        var: expected_result
+      when: test_result is failed
+    - name: Display actual result
+      ansible.builtin.debug:
+        var: node_count
+      when: test_result is failed

@@ -1,0 +1,22 @@
+{% for item in igw_facts.internet_gateways %}
+- canonical_facts:
+    id: "{{ item.internet_gateway_id }}"
+    status:
+{% for attach in item.attachments %}
+    - vpc_id: {{ attach.vpc_id }}
+      status: {{ attach.state }}
+{% endfor %}
+{% if item.tags != {} %}
+    tags:
+{% for key, value in item.tags.items() %}
+      {{ key }}: {{ value }}
+{% endfor %}
+{% else %}
+    tags: {}
+{% endif %}
+  facts:
+    device_type: {{ networking_facts.igw }}
+{% for key, value in networking_common_facts.items()%}
+    {{ key }}: {{ value }}
+{% endfor %}
+{% endfor %}

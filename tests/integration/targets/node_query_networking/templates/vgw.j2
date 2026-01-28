@@ -1,0 +1,18 @@
+{% for item in vgw_facts.virtual_gateways %}
+- canonical_facts:
+    id: "{{ item.vpn_gateway_id }}"
+    status: "{{ item.state }}"
+{% if item.tags != {} %}
+    tags:
+{% for item in item.tags %}
+      {{ item['key'] }}: {{ item['value'] }}
+{% endfor %}
+{% else %}
+    tags: {}
+{% endif %}
+  facts:
+    device_type: {{ networking_facts.vgw }}
+{% for key, value in networking_common_facts.items()%}
+    {{ key }}: {{ value }}
+{% endfor %}
+{% endfor %}
