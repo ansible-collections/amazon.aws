@@ -1,0 +1,133 @@
+- name: Create resources for testing and generate inventory file
+  hosts: localhost
+  gather_facts: false
+
+  module_defaults:
+    group/aws:
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+
+  vars_files:
+    - vars.yml
+
+  tasks:
+    - block:
+      # VPC
+        - name: Create VPC
+          amazon.aws.ec2_vpc_net:
+            name: "{{ item.name }}"
+            cidr_block: "{{ item.cidr }}"
+            tags: "{{ item.tags | default(omit) }}"
+          loop: "{{ vpcs_info }}"
+          register: vpcs_results
+
+        # Subnets
+        - name: Create Subnets
+          amazon.aws.ec2_vpc_subnet:
+            state: present
+            cidr: "{{ item.cidr }}"
+            vpc_id: "{{ vpcs_results.results.0.vpc.id }}"
+            tags: "{{ item.tags | default(omit) }}"
+          loop: "{{ subnets_info }}"
+          register: subnets_results
+
+        # NAT Gateways
+        - name: Create NAT Gateway
+          amazon.aws.ec2_vpc_nat_gateway:
+            state: present
+            subnet_id: "{{ item.subnet.id }}"
+            tags: "{{ item.subnet.tags }}"
+            wait: false
+          loop: "{{ subnets_results.results }}"
+          register: nat_results
+
+        # Internet Gateway
+        - name: Create Internet Gateways
+          amazon.aws.ec2_vpc_igw:
+            vpc_id: "{{ item.vpc.id }}"
+            state: present
+            tags: "{{ vpcs_info[index_item].tags | default(omit) }}"
+          loop: "{{ vpcs_results.results }}"
+          loop_control:
+            index_var: index_item
+          register:  igw_results
+
+        # Virtual Gateway
+        - name: Create VPN virtual gateway
+          amazon.aws.ec2_vpc_vgw:
+            state: present
+            vpc_id: "{{ item.vpc.id }}"
+            name: "{{ resource_prefix }}-{{ index_item }}"
+          loop: "{{ vpcs_results.results }}"
+          loop_control:
+            index_var: index_item
+          register: vgw_results
+
+        # Route table
+        - name: Create VPC Route table
+          amazon.aws.ec2_vpc_route_table:
+            vpc_id: "{{ vpcs_results.results.0.vpc.id }}"
+            state: present
+            tags: "{{ vpcs_info[item].tags | default(omit) }}"
+          loop: [0, 1]
+          register: route_table_results
+
+        # VPN
+        - ansible.builtin.set_fact:
+            virtual_gateway_id: "{{ vgw_results.results.0.vgw.id }}"
+
+        - name: Create customer gateway
+          community.aws.ec2_customer_gateway:
+            bgp_asn: 12345
+            ip_address: 1.2.3.4
+            name: "{{ resource_prefix }}"
+          register: customer_gateway
+
+        - name: Create transit gateway
+          amazon.aws.ec2_transit_gateway:
+            description: Transit Gateway for vpn attachment
+            wait: true
+          register: transit_gateway
+
+        - name: Create EC2 VPN Connection, with customer gateway and transit_gateway
+          amazon.aws.ec2_vpc_vpn:
+            customer_gateway_id: "{{ customer_gateway.gateway.customer_gateway.customer_gateway_id }}"
+            transit_gateway_id: "{{ transit_gateway.transit_gateway.transit_gateway_id }}"
+            state: present
+            tags:
+              resource_prefix: "{{ resource_prefix }}"
+            wait_timeout: 1000
+          register: first_vpn
+
+        - name: Create EC2 VPN Connection, with customer gateway and vpn gateway
+          amazon.aws.ec2_vpc_vpn:
+            customer_gateway_id: "{{ customer_gateway.gateway.customer_gateway.customer_gateway_id }}"
+            vpn_gateway_id: "{{ virtual_gateway_id }}"
+            state: present
+            wait_timeout: 1000
+          register: second_vpn
+
+        # VPC Peering
+        - name: Create VPC Peering
+          amazon.aws.ec2_vpc_peering:
+            vpc_id: "{{ item.vpc_id_1 }}"
+            peer_vpc_id: "{{ item.vpc_id_2 }}"
+            state: present
+            tags: "{{ item.tags | default(omit) }}"
+          register: peering_results
+          loop:
+            - vpc_id_1: "{{ vpcs_results.results.0.vpc.id }}"
+              vpc_id_2: "{{ vpcs_results.results.1.vpc.id }}"
+              tags:
+                resource_prefix: "{{ resource_prefix }}"
+            - vpc_id_1: "{{ vpcs_results.results.1.vpc.id }}"
+              vpc_id_2: "{{ vpcs_results.results.2.vpc.id }}"
+
+      always:
+        - name: Generate AWS vars file
+          ansible.builtin.template:
+            src: aws_vars.j2
+            dest: aws_vars.yml
+            mode: '0644'
