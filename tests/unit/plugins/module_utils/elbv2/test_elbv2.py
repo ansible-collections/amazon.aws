@@ -138,6 +138,8 @@ def test__compare_listener_certificates(current_protocol, new_protocol, current_
 @pytest.mark.parametrize(
     "current_actions,new_actions,expected_listener",
     [
+        # When Order field differs between current and new actions, modification is expected
+        # because Order is now included in the comparison logic
         (
             [
                 {"TargetGroupArn": "ansible1", "Type": "a", "Order": 1},
@@ -149,7 +151,13 @@ def test__compare_listener_certificates(current_protocol, new_protocol, current_
                 {"TargetGroupArn": "ansible0", "Type": "b"},
                 {"TargetGroupArn": "ansible0", "Type": "a"},
             ],
-            {},
+            {
+                "DefaultActions": [
+                    {"TargetGroupArn": "ansible1", "Type": "a"},
+                    {"TargetGroupArn": "ansible0", "Type": "b"},
+                    {"TargetGroupArn": "ansible0", "Type": "a"},
+                ]
+            },
         ),
         (
             [
@@ -162,10 +170,22 @@ def test__compare_listener_certificates(current_protocol, new_protocol, current_
                 {"TargetGroupArn": "ansible0", "Type": "b"},
                 {"TargetGroupArn": "ansible0", "Type": "a"},
             ],
-            {},
+            {
+                "DefaultActions": [
+                    {"TargetGroupArn": "ansible1", "Type": "a"},
+                    {"TargetGroupArn": "ansible0", "Type": "b"},
+                    {"TargetGroupArn": "ansible0", "Type": "a"},
+                ]
+            },
         ),
         (
             [{"TargetGroupArn": "ansible1", "Type": "a", "Order": 1}],
+            [{"TargetGroupArn": "ansible1", "Type": "a"}],
+            {"DefaultActions": [{"TargetGroupArn": "ansible1", "Type": "a"}]},
+        ),
+        # When actions are identical (no Order difference), no modification expected
+        (
+            [{"TargetGroupArn": "ansible1", "Type": "a"}],
             [{"TargetGroupArn": "ansible1", "Type": "a"}],
             {},
         ),
@@ -225,7 +245,21 @@ def test__compare_listener_default_actions(current_actions, new_actions, expecte
                 "add": [
                     {"Port": 101, "Protocol": "UDP", "DefaultActions": [{"TargetGroupArn": "arn1", "Type": "forward"}]}
                 ],
-                "modify": [{"Port": 90, "Protocol": "HTTPS", "ListenerArn": "arn90"}],
+                # Port 80: DefaultActions Order changed (current has Order:1, new doesn't)
+                # Port 90: Protocol changed (UDP->HTTPS) AND DefaultActions Order changed
+                "modify": [
+                    {
+                        "DefaultActions": [{"TargetGroupArn": "arn1", "Type": "forward"}],
+                        "Port": 80,
+                        "ListenerArn": "arn80",
+                    },
+                    {
+                        "Protocol": "HTTPS",
+                        "DefaultActions": [{"TargetGroupArn": "arn1", "Type": "forward"}],
+                        "Port": 90,
+                        "ListenerArn": "arn90",
+                    },
+                ],
                 "delete": ["arn100"],
             },
         )
