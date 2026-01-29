@@ -7,3 +7,24 @@
 # isn't as agressive as the ansible_test._util.target.pytest.plugins.ansible_pytest_collections plugin
 # when it comes to rewriting the import paths and as such we can't import fixtures via their
 # absolute import path or across collections.
+
+import asyncio
+from typing import Any
+
+import pytest
+
+
+class ListQueue(asyncio.Queue[Any]):
+    def __init__(self) -> None:
+        self.queue: list[Any] = []
+
+    async def put(self, item: Any) -> None:
+        self.queue.append(item)
+
+    def put_nowait(self, item: Any) -> None:
+        self.queue.append(item)
+
+
+@pytest.fixture
+def eda_queue() -> ListQueue:
+    return ListQueue()
