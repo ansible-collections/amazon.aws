@@ -1,0 +1,18 @@
+{% for item in vpn_facts.vpn_connections %}
+- canonical_facts:
+    id: "{{ item.vpn_connection_id }}"
+    status: "{{ item.state }}"
+{% if item.tags != {} %}
+    tags:
+{% for key, value in item.tags.items() %}
+      {{ key }}: {{ value }}
+{% endfor %}
+{% else %}
+    tags: {}
+{% endif %}
+  facts:
+    device_type: {{ networking_facts.vpn }}
+{% for key, value in networking_common_facts.items()%}
+    {{ key }}: {{ value }}
+{% endfor %}
+{% endfor %}

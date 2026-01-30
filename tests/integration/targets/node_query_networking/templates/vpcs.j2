@@ -1,0 +1,15 @@
+{% for item in vpcs_facts.vpcs %}
+- canonical_facts:
+    id: "{{ item.id }}"
+    status: "{{ item.state }}"
+    tags:
+{% for key, value in item.tags.items()%}
+      {{ key }}: {{ value }}
+{% endfor %}
+  name: "{{ item.tags.Name }}"
+  facts:
+    device_type: {{ networking_facts.vpc }}
+{% for key, value in networking_common_facts.items()%}
+    {{ key }}: {{ value }}
+{% endfor %}
+{% endfor %}

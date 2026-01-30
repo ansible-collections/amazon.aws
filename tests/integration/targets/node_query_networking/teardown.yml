@@ -1,0 +1,125 @@
+- name: Delete resources create for test
+  hosts: localhost
+  gather_facts: false
+
+  module_defaults:
+    group/aws:
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+
+  vars_files:
+    - vars.yml
+    - aws_vars.yml
+
+  tasks:
+    # NAT gateways
+    - name: Delete NAT Gateways
+      amazon.aws.ec2_vpc_nat_gateway:
+        nat_gateway_id: "{{ item }}"
+        state: absent
+        wait: false
+      loop: "{{ nat_gateway_ids }}"
+      when: nat_gateway_ids is defined
+
+    - name: Wait until NAT gateways are deleted
+      amazon.aws.ec2_vpc_nat_gateway_info:
+        nat_gateway_ids: "{{ nat_gateway_ids }}"
+      register: nat_gateways
+      retries: 20
+      delay: 8
+      ignore_errors: true
+      when: nat_gateway_ids is defined
+      until: (nat_gateways.result | length == 0) or (nat_gateways.result | map(attribute='state') | unique == ['deleted'])
+
+    # VPC Peering
+    - name: Delete VPC Peering
+      amazon.aws.ec2_vpc_peering:
+        peering_id: "{{ item }}"
+        state: absent
+      loop: "{{ vpc_peering_ids }}"
+      ignore_errors: true
+      when: vpc_peering_ids is defined
+
+    # VPN connection
+    - name: Delete VPN Connection
+      amazon.aws.ec2_vpc_vpn:
+        state: absent
+        vpn_connection_id: "{{ item }}"
+      retries: 10
+      delay: 3
+      register: result
+      until: result is not failed
+      ignore_errors: true
+      loop: "{{ vpn_connection_ids }}"
+      when: vpn_connection_ids is defined
+
+    # Customer gateway
+    - name: Delete customer gateway
+      community.aws.ec2_customer_gateway:
+        state: absent
+        ip_address: 1.2.3.4
+        name: "{{ resource_prefix }}"
+        bgp_asn: 12345
+      register: result
+      retries: 10
+      delay: 3
+      until: result is not failed
+      ignore_errors: true
+
+    # Transit gateway
+    - name: Delete transit gateway
+      amazon.aws.ec2_transit_gateway:
+        transit_gateway_id: "{{ transit_gateway_id }}"
+        state: absent
+        wait: true
+      ignore_errors: true
+      when: transit_gateway_id is defined
+
+    # Route table
+    - name: Delete VPC Route table
+      amazon.aws.ec2_vpc_route_table:
+        route_table_id: "{{ item }}"
+        state: absent
+        lookup: id
+      loop: "{{ route_table_ids }}"
+      ignore_errors: true
+      when: route_table_ids is defined
+
+    # Internet Gateways
+    - name: Delete Internet Gateways
+      amazon.aws.ec2_vpc_igw:
+        state: absent
+        internet_gateway_id: "{{ item }}"
+      loop: "{{ igw_ids }}"
+      ignore_errors: true
+      when: igw_ids is defined
+
+    # Virtual gateway
+    - name: Delete Virtual Gateways
+      amazon.aws.ec2_vpc_vgw:
+        state: absent
+        vpn_gateway_id: "{{ item }}"
+      loop: "{{ vgw_ids }}"
+      ignore_errors: true
+      when: vgw_ids is defined
+
+    # Subnets
+    - name: Delete Subnets
+      amazon.aws.ec2_vpc_subnet:
+        state: absent
+        cidr: "{{ item.cidr }}"
+        vpc_id: "{{ vpcs_ids[0] }}"
+      loop: "{{ subnets_info }}"
+      ignore_errors: true
+      when: vpcs_ids is defined
+
+    # VPCS
+    - name: Delete VPCs
+      amazon.aws.ec2_vpc_net:
+        state: absent
+        vpc_id: "{{ item }}"
+      loop: "{{ vpcs_ids }}"
+      ignore_errors: true
+      when: vpcs_ids is defined
