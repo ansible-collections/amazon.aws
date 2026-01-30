@@ -1,3 +1,4 @@
+modifying the file for new commit test
 this is just a test to check DVCS connector
 Checking how source branch, PR, and smart commit naming conventions can be picked up buy Jira
 DO NOT MERGE
