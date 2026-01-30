@@ -62,9 +62,19 @@ Version 11.0.0 of this collection supports `boto3 >= 1.35.0` and `botocore >= 1.
 
 All support for the original AWS SDK `boto` was removed in release 4.0.0.
 
+### Event source plugins compatibility
+`aiobotocore >= 2.14.0` is required to use the event source plugins `amazon.aws.aws_cloudtrail` and `amazon.aws.aws_sqs_queue`.
+
 ## Included content
 <!--start collection content-->
 See the complete list of collection content in the [Plugin Index](https://ansible-collections.github.io/amazon.aws/branch/main/collections/amazon/aws/index.html#plugin-index).
+
+In addition, this collection includes two event source plugins located under the `extensions/eda/` folder:
+
+| Plugin | Description |
+| :--- | :--- |
+`amazon.aws.aws_cloudtrail`| An ansible-rulebook event source plugin for getting events from an AWS CloudTrail |
+`amazon.aws.aws_sqs_queue`| An ansible-rulebook event source plugin for receiving events via an AWS SQS queue |
 
 <!--end collection content-->
 
