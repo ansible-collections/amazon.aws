@@ -262,7 +262,9 @@ options:
     elements: str
   protected_from_scale_in:
     description:
-      - If V(true), instances will have scale-in protection enabled.
+      - If V(true), new instances will have scale-in protection enabled when added to the AutoScaling Group.
+      - Defaults to V(false) when creating a new AutoScaling Group.
+      
     type: bool
     version_added: 8.2.0
   tags:
