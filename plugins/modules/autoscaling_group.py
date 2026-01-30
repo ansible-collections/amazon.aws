@@ -264,7 +264,6 @@ options:
     description:
       - If V(true), instances will have scale-in protection enabled.
     type: bool
-    default: false
     version_added: 8.2.0
   tags:
     description:
