@@ -1,0 +1,2 @@
+minor_changes:
+  - plugins/modules/ec2_vol.py - added ``volume_initialization_rate`` optional parameter to support Provisioned Initialization Rate when creating a volume from snapshots. (https://github.com/ansible-collections/amazon.aws/issues/2665)
