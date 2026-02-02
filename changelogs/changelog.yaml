@@ -3832,8 +3832,8 @@ releases:
         has been removed please use ``amazon.aws.common.modules`` instead (https://github.com/ansible-collections/amazon.aws/pull/2527).
       - docs_fragments - The previously deprecated ``amazon.aws.ec2`` docs fragment
         has been removed please use ``amazon.aws.region.modules`` instead (https://github.com/ansible-collections/amazon.aws/pull/2527).
-      - ec2_vpc_peering_info - the `result` key has been removed from the return value.
-        `vpc_peering_connections` should be used instead (https://github.com/ansible-collections/amazon.aws/pull/2618).
+      - ec2_vpc_peering_info - the ``result`` key has been removed from the return
+        value. ``vpc_peering_connections`` should be used instead (https://github.com/ansible-collections/amazon.aws/pull/2618).
       - module_utils.botocore - drop deprecated ``boto3`` parameter for ``get_aws_region()``
         and ``get_aws_connection_info()``, this parameter has had no effect since
         release 4.0.0 (https://github.com/ansible-collections/amazon.aws/pull/2443).
@@ -3864,12 +3864,13 @@ releases:
       - module_utils/s3 - add initial ErrorHandler for S3 modules (https://github.com/ansible-collections/amazon.aws/pull/2060).
       - s3_bucket - migrated to use updated error handlers for better handling of
         non-AWS errors (https://github.com/ansible-collections/amazon.aws/pull/2478).
-      release_summary: 'This major release introduces new support with the aws_ssm
-        connection plugin, which has been promoted from community.aws, several bugfixes,
-        minor changes and deprecated features.
+      release_summary: 'This major release introduces new support with the ``aws_ssm``
+        connection plugin, which has been promoted from ``community.aws``, several
+        bugfixes, minor changes and deprecated features.
 
-        Additionally, this release increases the minimum required versions of boto3
-        and botocore to 1.34.0 to align with updated AWS SDK support.
+        Additionally, this release increases the minimum required versions of ``boto3``
+        and ``botocore`` to 1.34.0 to align with updated AWS SDK support and support
+        for ansible-core < 2.17 has been dropped.
 
         Due to the AWS SDKs announcing the end of support for Python less than 3.8
         (https://aws.amazon.com/blogs/developer/python-support-policy-updates-for-aws-sdks-and-tools/),
@@ -3896,7 +3897,7 @@ releases:
   10.1.0:
     changes:
       minor_changes:
-      - inventory/aws_ec2 - Adding support for Route53 as hostname (https://github.com/ansible-collections/amazon.aws/pull/2580).
+      - inventory/aws_ec2 - Adding support for ``Route53`` as hostname (https://github.com/ansible-collections/amazon.aws/pull/2580).
       release_summary: This minor release adds support for ``Route53`` as a hostname.
     fragments:
     - 20250321-inventory_aws_ec2-add-support-for-route53.yml
@@ -3966,7 +3967,8 @@ releases:
       - sts_assume_role - improve error handling for ``MalformedPolicyDocument`` errors
         by providing a clearer error message when an invalid policy document is provided
         (https://github.com/ansible-collections/amazon.aws/pull/2778).
-      release_summary: This release adds support for the io2 storage type for RDS as well as other minor changes, several bugfixes and deprecated features.
+      release_summary: This release adds support for the io2 storage type for RDS
+        as well as other minor changes, several bugfixes and deprecated features.
     fragments:
     - 2728-reference_error_ssm_destructor.yml
     - 2734-AES_explicit_bucket_key.yml
@@ -4008,9 +4010,11 @@ releases:
         and consistently use S3ErrorHandler (https://github.com/ansible-collections/amazon.aws/pull/2782).
       - s3_object_info - refactored to use centralized S3 wrapper functions from module_utils
         and consistently use S3ErrorHandler (https://github.com/ansible-collections/amazon.aws/pull/2782).
-      release_summary: This major release includes changes such as refactored S3 module utilities to consolidate
-        duplicate code, add comprehensive type hints and docstrings, and improve maintainability. Additionally,
-        ``botocore`` and ``boto3`` versions have been bumped to 1.35.0 and ``awscli`` version has been bumped to 1.34.0.
+      release_summary: This major release includes changes such as refactored S3 module
+        utilities to consolidate duplicate code, add comprehensive type hints and
+        docstrings, and improve maintainability. Additionally, ``botocore`` and ``boto3``
+        versions have been bumped to 1.35.0 and ``awscli`` version has been bumped
+        to 1.34.0.
     fragments:
     - 11-0-0.yaml
     - 2728-reference_error_ssm_destructor.yml
@@ -4024,3 +4028,51 @@ releases:
     - s3-module-utils-refactoring.yml
     - sts_assume_role-malformed_policy.yml
     release_date: '2026-01-14'
+  11.1.0:
+    changes:
+      bugfixes:
+      - elb_application_lb - fixed comparison of multi-rule default actions to properly
+        handle the ``Order`` field when determining if listener modifications are
+        needed (https://github.com/ansible-collections/amazon.aws/issues/2537).
+      - 'elb_application_lb - fixed error where creating a new application load balancer
+        with listener rules would fail with ``Parameter validation failed: Invalid
+        type for parameter ListenerArn, value: None`` (https://github.com/ansible-collections/amazon.aws/issues/2400).'
+      - s3_object - fixed error when using PUT with an empty ``content`` string (https://github.com/ansible-collections/amazon.aws/pull/2810)
+      minor_changes:
+      - aws_cloudtrail - Ported the event source plugin from ``ansible.eda`` to ``amazon.aws``
+        (https://github.com/ansible-collections/amazon.aws/pull/2816).
+      - aws_sqs_queue - Ported the event source plugin from ``ansible.eda`` to ``amazon.aws``
+        (https://github.com/ansible-collections/amazon.aws/pull/2816).
+      - indirect node count - Add support for querying RDS database resources (https://github.com/ansible-collections/amazon.aws/pull/2825).
+      - indirect node count - Create query for networking load balancer resources
+        (https://github.com/ansible-collections/amazon.aws/pull/2818).
+      - indirect node count - create query for ec2 (https://github.com/ansible-collections/amazon.aws/pull/2807).
+      - indirect node count - create query for networking resources vpc, subnet, nat
+        gateway, internet gateway, virtual gateway, route table, vpn, vpc peering
+        (https://github.com/ansible-collections/amazon.aws/pull/2811).
+      - indirect node count - create query for storage resources S3 bucket and Object
+        (https://github.com/ansible-collections/amazon.aws/pull/2811).
+      - requirements.txt - Added ``aiobotocore`` as a dependency for the event source
+        plugins only (https://github.com/ansible-collections/amazon.aws/pull/2816).
+      release_summary: "\"This release adds support for indirect node counts across
+        various EC2, RDS, and S3 resources.\n It also introduces the new ``amazon.aws.ec2_instance_type_info``
+        module to support EC2 instance types.\n Furthermore, the ``aws_cloudtrail``
+        and ``aws_sqs_queue`` Event Source plugins have been ported from the\n ``ansible.eda``
+        collection; please note that this introduces ``aiobotocore >= 2.14.0`` as
+        a new dependency for this collection.\n Several bugfixes are included for
+        the ``elb_application_lb`` and ``s3_object`` modules.\"\n"
+    fragments:
+    - 20260119-indirect-node-count-for-storage-s3.yml
+    - 20260120-networking-load-balancer-node-query.yml
+    - 20260121-indirect-node-count-networking.yml
+    - 20260123-indirect-node-count-ec2.yml
+    - 20260125-aws-event-source.yml
+    - 20260127-nodequery-database.yml
+    - 2773-elb-application-lb-listener-rules.yml
+    - 2810-fix-put-empty-content.yml
+    - release_summary.yml
+    modules:
+    - description: Retrieve information about EC2 instance types
+      name: ec2_instance_type_info
+      namespace: ''
+    release_date: '2026-02-03'
