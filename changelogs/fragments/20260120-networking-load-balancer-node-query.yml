@@ -1,3 +1,0 @@
----
-minor_changes:
-  - indirect node count - Create query for networking load balancer resources (https://github.com/ansible-collections/amazon.aws/pull/2818).

@@ -1,7 +1,7 @@
 ---
 namespace: amazon
 name: aws
-version: 11.0.0-dev0
+version: 11.1.0
 readme: README.md
 authors:
   - Ansible (https://github.com/ansible)
