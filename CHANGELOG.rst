@@ -11,12 +11,7 @@ v11.1.0
 Release Summary
 ---------------
 
-"This release adds support for indirect node counts across various EC2, RDS, and S3 resources.
- It also introduces the new ``amazon.aws.ec2_instance_type_info`` module to support EC2 instance types.
- Furthermore, the ``aws_cloudtrail`` and ``aws_sqs_queue`` Event Source plugins have been ported from the
- ``ansible.eda`` collection; please note that this introduces ``aiobotocore >= 2.14.0`` as a new dependency for this collection.
- Several bugfixes are included for the ``elb_application_lb`` and ``s3_object`` modules."
-
+This release adds support for indirect node counts across various EC2, RDS, and S3 resources. It also introduces the new ``amazon.aws.ec2_instance_type_info`` module to support EC2 instance types. Furthermore, the ``aws_cloudtrail`` and ``aws_sqs_queue`` Event Source plugins have been ported from the  ``ansible.eda`` collection; please note that this introduces ``aiobotocore >= 2.14.0`` as a new dependency for this collection. Several bugfixes are included for the ``elb_application_lb`` and ``s3_object`` modules.
 
 Minor Changes
 -------------
