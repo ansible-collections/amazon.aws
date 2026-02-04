@@ -264,7 +264,6 @@ options:
     description:
       - If V(true), new instances will have scale-in protection enabled when added to the AutoScaling Group.
       - Defaults to V(false) when creating a new AutoScaling Group.
-      
     type: bool
     version_added: 11.1.0
   tags:
