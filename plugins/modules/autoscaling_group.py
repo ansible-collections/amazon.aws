@@ -264,7 +264,6 @@ options:
     description:
       - If V(true), new instances will have scale-in protection enabled when added to the AutoScaling Group.
       - Defaults to V(false) when creating a new AutoScaling Group.
-      
     type: bool
     version_added: 11.1.0
   tags:
@@ -901,7 +900,7 @@ def get_properties(autoscaling_group):
     properties["termination_policies"] = autoscaling_group.get("TerminationPolicies")
     properties["target_group_arns"] = autoscaling_group.get("TargetGroupARNs")
     properties["vpc_zone_identifier"] = autoscaling_group.get("VPCZoneIdentifier")
-    properties['protected_from_scale_in'] = autoscaling_group.get('NewInstancesProtectedFromScaleIn')
+    properties["protected_from_scale_in"] = autoscaling_group.get("NewInstancesProtectedFromScaleIn")
     raw_mixed_instance_object = autoscaling_group.get("MixedInstancesPolicy")
     if raw_mixed_instance_object:
         properties["mixed_instances_policy_full"] = camel_dict_to_snake_dict(raw_mixed_instance_object)
@@ -1524,7 +1523,9 @@ def get_chunks(objects, chunk_size):
 
 def update_size(connection, group, max_size, min_size, dc, protected_from_scale_in):
     module.debug("setting ASG sizes")
-    module.debug(f"minimum size: {min_size}, desired_capacity: {dc}, max size: {max_size}, protected from scale in: {protected_from_scale_in}")
+    module.debug(
+        f"minimum size: {min_size}, desired_capacity: {dc}, max size: {max_size}, protected from scale in: {protected_from_scale_in}"
+    )
     updated_group = dict()
     updated_group["AutoScalingGroupName"] = group["AutoScalingGroupName"]
     updated_group["MinSize"] = min_size
