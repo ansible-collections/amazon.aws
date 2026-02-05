@@ -73,6 +73,7 @@ options:
     description: 
       - Rate at which to initiliaze the volume from a snapshot.
     type: int
+    version_added: 11.2.0
   state:
     description:
       - Whether to ensure the volume is present or absent.
