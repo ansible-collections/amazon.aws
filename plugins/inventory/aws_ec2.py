@@ -640,8 +640,29 @@ class InventoryModule(AWSInventoryBase):
                 if not strict_permissions:
                     continue
                 self.fail_aws("Failed to describe instances", exception=e)
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                self.fail_aws("Failed to describe instances", exception=e)
+            except botocore.exceptions.ClientError as e:
+                error = e.response.get("Error", {})
+                error_code = error.get("Code", "")
+                error_msg = error.get("Message", "")
+
+                if error_code == "AuthFailure":
+                    # This typically means the region is not opted-in or not enabled for the account
+                    self.display.warning(
+                        f"Skipping region '{_region}' due to AuthFailure (Possibly not enabled region for the account). boto3 Error message:{error_msg}"
+                    )
+                    continue
+
+                # If not an AuthFailure, re-raise with detailed context
+                self.fail_aws(
+                    f"Failed to describe instances in region '{_region}' (ClientError: {error_code}): {error_msg}",
+                    exception=e
+                )
+
+            except botocore.exceptions.BotoCoreError as e:
+                self.fail_aws(
+                    f"Failed to describe instances in region '{_region}' (BotoCoreError)",
+                    exception=e
+                )
 
             all_instances.extend(instances)
 
