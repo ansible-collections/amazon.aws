@@ -71,6 +71,14 @@
         state: present
       register: setup_snapshot
 
+    - name: Make sure the snapshot is available
+      amazon.aws.ec2_snapshot_info:
+        snapshot_ids:
+          - "{{ setup_snapshot.snapshot_id }}"
+      register: snapshot_info
+      until: snapshot_info.snapshots[0].state == 'completed'
+      retries: 100
+
     # ============================================================
 
     - name: Create an image from the snapshot with boot_mode and tpm_support
