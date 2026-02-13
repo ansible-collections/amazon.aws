@@ -238,6 +238,7 @@ if typing.TYPE_CHECKING:
     from typing import Any
     from typing import Dict
     from typing import List
+    from typing import NoReturn
     from typing import Optional
     from typing import Tuple
 
@@ -657,7 +658,7 @@ def _delete_user_permissions_boundary(connection: ClientType, check_mode: bool, 
         user_name: The name of the IAM user.
 
     Returns:
-        True if in check mode, None otherwise.
+        True
     """
     if check_mode:
         return True
@@ -677,7 +678,7 @@ def _put_user_permissions_boundary(connection: ClientType, check_mode: bool, use
         boundary: The permissions boundary ARN.
 
     Returns:
-        True if in check mode, None otherwise.
+        True
     """
     if check_mode:
         return True
@@ -764,7 +765,7 @@ def ensure_path(
     return True
 
 
-def create_or_update_user(connection: ClientType, module: AnsibleAWSModule) -> None:
+def create_or_update_user(connection: ClientType, module: AnsibleAWSModule) -> NoReturn:
     """
     Create or update an IAM user with all requested attributes.
 
@@ -773,7 +774,7 @@ def create_or_update_user(connection: ClientType, module: AnsibleAWSModule) -> N
         module: The AnsibleAWSModule instance.
 
     Returns:
-        None (exits via module.exit_json)
+        Does not return (exits via module.exit_json).
     """
     user_name = module.params.get("name")
 
@@ -876,7 +877,18 @@ def create_or_update_user(connection: ClientType, module: AnsibleAWSModule) -> N
 
 @IAMErrorHandler.deletion_error_handler("delete access key")
 def delete_access_key(connection: ClientType, check_mode: bool, user_name: str, key_id: str) -> bool:
-    """Delete a single IAM access key."""
+    """
+    Delete a single IAM access key.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        user_name: The name of the IAM user.
+        key_id: The access key ID to delete.
+
+    Returns:
+        True if changes were made or would be made.
+    """
     if check_mode:
         return True
     connection.delete_access_key(aws_retry=True, UserName=user_name, AccessKeyId=key_id)
@@ -885,7 +897,17 @@ def delete_access_key(connection: ClientType, check_mode: bool, user_name: str, 
 
 @IAMErrorHandler.list_error_handler("list access keys")
 def delete_access_keys(connection: ClientType, check_mode: bool, user_name: str) -> bool:
-    """Delete all IAM access keys for a user."""
+    """
+    Delete all IAM access keys for a user.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        user_name: The name of the IAM user.
+
+    Returns:
+        True if changes were made or would be made, False otherwise.
+    """
     access_keys = connection.list_access_keys(aws_retry=True, UserName=user_name)["AccessKeyMetadata"]
     if not access_keys:
         return False
@@ -896,7 +918,18 @@ def delete_access_keys(connection: ClientType, check_mode: bool, user_name: str)
 
 @IAMErrorHandler.deletion_error_handler("delete SSH key")
 def delete_ssh_key(connection: ClientType, check_mode: bool, user_name: str, key_id: str) -> bool:
-    """Delete a single SSH public key for a user."""
+    """
+    Delete a single SSH public key for a user.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        user_name: The name of the IAM user.
+        key_id: The SSH public key ID to delete.
+
+    Returns:
+        True if changes were made or would be made.
+    """
     if check_mode:
         return True
     connection.delete_ssh_public_key(aws_retry=True, UserName=user_name, SSHPublicKeyId=key_id)
@@ -905,7 +938,17 @@ def delete_ssh_key(connection: ClientType, check_mode: bool, user_name: str, key
 
 @IAMErrorHandler.list_error_handler("list SSH keys")
 def delete_ssh_public_keys(connection: ClientType, check_mode: bool, user_name: str) -> bool:
-    """Delete all SSH public keys for a user."""
+    """
+    Delete all SSH public keys for a user.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        user_name: The name of the IAM user.
+
+    Returns:
+        True if changes were made or would be made, False otherwise.
+    """
     public_keys = connection.list_ssh_public_keys(aws_retry=True, UserName=user_name)["SSHPublicKeys"]
     if not public_keys:
         return False
@@ -916,7 +959,18 @@ def delete_ssh_public_keys(connection: ClientType, check_mode: bool, user_name: 
 
 @IAMErrorHandler.deletion_error_handler("delete service credential")
 def delete_service_credential(connection: ClientType, check_mode: bool, user_name: str, cred_id: str) -> bool:
-    """Delete a single service-specific credential for a user."""
+    """
+    Delete a single service-specific credential for a user.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        user_name: The name of the IAM user.
+        cred_id: The service-specific credential ID to delete.
+
+    Returns:
+        True if changes were made or would be made.
+    """
     if check_mode:
         return True
     connection.delete_ssh_public_key(aws_retry=True, UserName=user_name, SSHPublicKeyId=cred_id)
@@ -925,7 +979,17 @@ def delete_service_credential(connection: ClientType, check_mode: bool, user_nam
 
 @IAMErrorHandler.list_error_handler("list service credentials")
 def delete_service_credentials(connection: ClientType, check_mode: bool, user_name: str) -> bool:
-    """Delete all service-specific credentials for a user."""
+    """
+    Delete all service-specific credentials for a user.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        user_name: The name of the IAM user.
+
+    Returns:
+        True if changes were made or would be made, False otherwise.
+    """
     credentials = connection.list_service_specific_credentials(aws_retry=True, UserName=user_name)[
         "ServiceSpecificCredentials"
     ]
@@ -938,7 +1002,18 @@ def delete_service_credentials(connection: ClientType, check_mode: bool, user_na
 
 @IAMErrorHandler.deletion_error_handler("delete signing certificate")
 def delete_signing_certificate(connection: ClientType, check_mode: bool, user_name: str, cert_id: str) -> bool:
-    """Delete a single signing certificate for a user."""
+    """
+    Delete a single signing certificate for a user.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        user_name: The name of the IAM user.
+        cert_id: The certificate ID to delete.
+
+    Returns:
+        True if changes were made or would be made.
+    """
     if check_mode:
         return True
     connection.delete_signing_certificate(aws_retry=True, UserName=user_name, CertificateId=cert_id)
@@ -947,7 +1022,17 @@ def delete_signing_certificate(connection: ClientType, check_mode: bool, user_na
 
 @IAMErrorHandler.list_error_handler("list signing certificates")
 def delete_signing_certificates(connection: ClientType, check_mode: bool, user_name: str) -> bool:
-    """Delete all signing certificates for a user."""
+    """
+    Delete all signing certificates for a user.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        user_name: The name of the IAM user.
+
+    Returns:
+        True if changes were made or would be made, False otherwise.
+    """
     certificates = connection.list_signing_certificates(aws_retry=True, UserName=user_name)["Certificates"]
     if not certificates:
         return False
@@ -958,7 +1043,18 @@ def delete_signing_certificates(connection: ClientType, check_mode: bool, user_n
 
 @IAMErrorHandler.deletion_error_handler("delete MFA device")
 def delete_mfa_device(connection: ClientType, check_mode: bool, user_name: str, device_id: str) -> bool:
-    """Delete a single MFA device for a user."""
+    """
+    Delete a single MFA device for a user.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        user_name: The name of the IAM user.
+        device_id: The MFA device serial number to deactivate.
+
+    Returns:
+        True if changes were made or would be made.
+    """
     if check_mode:
         return True
     connection.deactivate_mfa_device(aws_retry=True, UserName=user_name, SerialNumber=device_id)
@@ -967,7 +1063,17 @@ def delete_mfa_device(connection: ClientType, check_mode: bool, user_name: str, 
 
 @IAMErrorHandler.list_error_handler("list MFA devices")
 def delete_mfa_devices(connection: ClientType, check_mode: bool, user_name: str) -> bool:
-    """Delete all MFA devices for a user."""
+    """
+    Delete all MFA devices for a user.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        user_name: The name of the IAM user.
+
+    Returns:
+        True if changes were made or would be made, False otherwise.
+    """
     devices = connection.list_mfa_devices(aws_retry=True, UserName=user_name)["MFADevices"]
     if not devices:
         return False
@@ -996,7 +1102,18 @@ def detach_all_policies(connection: ClientType, check_mode: bool, user_name: str
 
 @IAMErrorHandler.deletion_error_handler("delete inline policy")
 def delete_inline_policy(connection: ClientType, check_mode: bool, user_name: str, policy: str) -> bool:
-    """Delete a single inline policy from a user."""
+    """
+    Delete a single inline policy from a user.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        user_name: The name of the IAM user.
+        policy: The name of the policy to delete.
+
+    Returns:
+        True if changes were made or would be made.
+    """
     if check_mode:
         return True
     connection.delete_user_policy(aws_retry=True, UserName=user_name, PolicyName=policy)
@@ -1005,7 +1122,17 @@ def delete_inline_policy(connection: ClientType, check_mode: bool, user_name: st
 
 @IAMErrorHandler.list_error_handler("list inline policies")
 def delete_inline_policies(connection: ClientType, check_mode: bool, user_name: str) -> bool:
-    """Delete all inline policies from a user."""
+    """
+    Delete all inline policies from a user.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        user_name: The name of the IAM user.
+
+    Returns:
+        True if changes were made or would be made, False otherwise.
+    """
     inline_policies = connection.list_user_policies(aws_retry=True, UserName=user_name)["PolicyNames"]
     if not inline_policies:
         return False
@@ -1016,7 +1143,18 @@ def delete_inline_policies(connection: ClientType, check_mode: bool, user_name: 
 
 @IAMErrorHandler.deletion_error_handler("remove user from group")
 def remove_from_group(connection: ClientType, check_mode: bool, user_name: str, group_name: str) -> bool:
-    """Remove a user from a single IAM group."""
+    """
+    Remove a user from a single IAM group.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        user_name: The name of the IAM user.
+        group_name: The name of the IAM group.
+
+    Returns:
+        True if changes were made or would be made.
+    """
     if check_mode:
         return True
     connection.remove_user_from_group(aws_retry=True, UserName=user_name, GroupName=group_name)
@@ -1025,7 +1163,17 @@ def remove_from_group(connection: ClientType, check_mode: bool, user_name: str, 
 
 @IAMErrorHandler.list_error_handler("list groups containing user")
 def remove_from_all_groups(connection: ClientType, check_mode: bool, user_name: str) -> bool:
-    """Remove a user from all IAM groups."""
+    """
+    Remove a user from all IAM groups.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        user_name: The name of the IAM user.
+
+    Returns:
+        True if changes were made or would be made, False otherwise.
+    """
     user_groups = connection.list_groups_for_user(aws_retry=True, UserName=user_name)["Groups"]
     if not user_groups:
         return False
@@ -1036,14 +1184,24 @@ def remove_from_all_groups(connection: ClientType, check_mode: bool, user_name: 
 
 @IAMErrorHandler.deletion_error_handler("delete user")
 def delete_user(connection: ClientType, check_mode: bool, user_name: str) -> bool:
-    """Delete an IAM user."""
+    """
+    Delete an IAM user.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        user_name: The name of the IAM user.
+
+    Returns:
+        True if changes were made or would be made.
+    """
     if check_mode:
         return True
     connection.delete_user(aws_retry=True, UserName=user_name)
     return True
 
 
-def destroy_user(connection: ClientType, module: AnsibleAWSModule) -> None:
+def destroy_user(connection: ClientType, module: AnsibleAWSModule) -> NoReturn:
     """
     Delete an IAM user and all associated resources.
 
@@ -1052,7 +1210,7 @@ def destroy_user(connection: ClientType, module: AnsibleAWSModule) -> None:
         module: The AnsibleAWSModule instance.
 
     Returns:
-        None (exits via module.exit_json)
+        Does not return (exits via module.exit_json).
     """
     user_name = module.params.get("name")
 
@@ -1094,7 +1252,7 @@ def destroy_user(connection: ClientType, module: AnsibleAWSModule) -> None:
     module.exit_json(changed=changed)
 
 
-def main() -> None:
+def main() -> NoReturn:
     argument_spec = dict(
         name=dict(required=True, type="str", aliases=["user_name"]),
         path=dict(type="str", aliases=["prefix", "path_prefix"]),

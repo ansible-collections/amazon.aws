@@ -204,6 +204,7 @@ if typing.TYPE_CHECKING:
     from typing import Any
     from typing import Dict
     from typing import List
+    from typing import NoReturn
     from typing import Optional
 
     from ansible_collections.amazon.aws.plugins.module_utils.botocore import ClientType
@@ -454,7 +455,7 @@ def get_or_create_group(
     return True, group
 
 
-def create_or_update_group(connection: ClientType, module: AnsibleAWSModule) -> None:
+def create_or_update_group(connection: ClientType, module: AnsibleAWSModule) -> NoReturn:
     """
     Create or update an IAM group with all requested attributes.
 
@@ -463,7 +464,7 @@ def create_or_update_group(connection: ClientType, module: AnsibleAWSModule) -> 
         module: The AnsibleAWSModule instance.
 
     Returns:
-        None (exits via module.exit_json)
+        Does not return (exits via module.exit_json).
     """
     changed, group_info = get_or_create_group(connection, module, module.params["name"], module.params["path"])
 
@@ -505,7 +506,7 @@ def create_or_update_group(connection: ClientType, module: AnsibleAWSModule) -> 
 
 
 @IAMErrorHandler.deletion_error_handler("delete group")
-def destroy_group(connection: ClientType, module: AnsibleAWSModule) -> None:
+def destroy_group(connection: ClientType, module: AnsibleAWSModule) -> NoReturn:
     """
     Delete an IAM group and all associated resources.
 
@@ -514,7 +515,7 @@ def destroy_group(connection: ClientType, module: AnsibleAWSModule) -> None:
         module: The AnsibleAWSModule instance.
 
     Returns:
-        None (exits via module.exit_json)
+        Does not return (exits via module.exit_json).
     """
     group_name = module.params.get("name")
 
@@ -559,7 +560,7 @@ def get_attached_policy_list(connection: ClientType, module: AnsibleAWSModule, n
     return paginator.paginate(GroupName=name).build_full_result()["AttachedPolicies"]
 
 
-def main() -> None:
+def main() -> NoReturn:
     argument_spec = dict(
         name=dict(aliases=["group_name"], required=True),
         path=dict(aliases=["prefix", "path_prefix"]),
