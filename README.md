@@ -1,11 +1,31 @@
 # Amazon AWS Collection
 The Ansible Amazon AWS collection includes a variety of Ansible content to help automate the management of AWS services. This collection is maintained by the Ansible cloud team.
 
+## Table of Contents
+
+- [Description](#description)
+- [Communication](#communication)
+- [Requirements](#requirements)
+  - [Ansible version compatibility](#ansible-version-compatibility)
+  - [Python version compatibility](#python-version-compatibility)
+  - [AWS SDK version compatibility](#aws-sdk-version-compatibility)
+  - [Event source plugin compatibility](#event-source-plugin-compatibility)
+- [Included content](#included-content)
+- [Installation](#installation)
+- [Use Cases](#use-cases)
+- [Testing](#testing)
+- [Contributing to this collection](#contributing-to-this-collection)
+  - [More information about contributing](#more-information-about-contributing)
+- [Support](#support)
+- [Release notes](#release-notes)
+- [Related Information](#related-information)
+- [License Information](#license-information)
+
 ## Description
 
 The primary purpose of this collection is to simplify and streamline the management of AWS resources through automation. By leveraging this collection, organizations can reduce manual intervention, minimize errors, and ensure consistent and repeatable deployments. This leads to increased efficiency, faster deployments, and a more agile IT infrastructure.
 
-AWS related modules and plugins supported by the Ansible community are in the [community.aws](https://github.com/ansible-collections/community.aws/) collection.
+AWS-related modules and plugins supported by the Ansible community are in the [community.aws](https://github.com/ansible-collections/community.aws/) collection.
 
 Being Red Hat Ansible Certified Content, this collection is eligible for support through the [Ansible Automation Platform](https://www.redhat.com/en/technologies/management/ansible).
 
@@ -14,7 +34,7 @@ Being Red Hat Ansible Certified Content, this collection is eligible for support
 * Join the Ansible forum:
   * [Get Help](https://forum.ansible.com/c/help/6): get help or help others.
   * [Posts tagged with 'aws'](https://forum.ansible.com/tag/aws): subscribe to participate in collection-related conversations.
-  * [AWS Working Group](https://forum.ansible.com/g/AWS): by joining the team you will automatically get subscribed to the posts tagged with [aws](https://forum.ansible.com/tags).
+  * [AWS Working Group](https://forum.ansible.com/g/AWS): by joining the team, you will automatically be subscribed to posts tagged with [aws](https://forum.ansible.com/tags).
   * [Social Spaces](https://forum.ansible.com/c/chat/4): gather and interact with fellow enthusiasts.
   * [News & Announcements](https://forum.ansible.com/c/news/5): track project-wide announcements including social events.
 
@@ -26,7 +46,7 @@ For more information about communication, see the [Ansible communication guide](
 
 ### Ansible version compatibility
 
-Tested with the Ansible Core >= 2.17.0 versions, and the current development version of Ansible. Ansible Core versions prior to 2.17.0 are not supported.
+Tested with Ansible Core 2.17.0 and later, and the current development version of Ansible. Ansible Core versions prior to 2.17.0 are not supported.
 
 ### Python version compatibility
 
@@ -35,8 +55,8 @@ This collection depends on the AWS SDK for Python (Boto3 and Botocore).  Due to 
 this collection requires Python 3.8 or greater.
 
 Amazon has also announced the planned end of support for
-[Python less than 3.9](https://aws.amazon.com/blogs/developer/python-support-policy-updates-for-aws-sdks-and-tools/).
-As such support for Python less than 3.9 will be removed in a release after 2026-05-01.
+[Python versions below 3.9](https://aws.amazon.com/blogs/developer/python-support-policy-updates-for-aws-sdks-and-tools/).
+As such, support for Python versions below 3.9 will be removed in a release after 2026-05-01.
 
 <!---
 ### End of Support by Python Versions:
@@ -56,13 +76,13 @@ As such support for Python less than 3.9 will be removed in a release after 2026
 
 ### AWS SDK version compatibility
 
-Starting with the 2.0.0 releases of amazon.aws and community.aws, it is generally the collection's policy to support the versions of `botocore` and `boto3` that were released 12 months prior to the most recent major collection release, following semantic versioning (for example, 2.0.0, 3.0.0).
+Starting with the 2.0.0 releases of amazon.aws and community.aws, the collection's policy is generally to support the versions of `botocore` and `boto3` that were released within 12 months prior to the most recent major collection release, following semantic versioning (for example, 2.0.0, 3.0.0).
 
 Version 11.0.0 of this collection supports `boto3 >= 1.35.0` and `botocore >= 1.35.0`
 
 All support for the original AWS SDK `boto` was removed in release 4.0.0.
 
-### Event source plugins compatibility
+### Event source plugin compatibility
 `aiobotocore >= 2.14.0` is required to use the event source plugins `amazon.aws.aws_cloudtrail` and `amazon.aws.aws_sqs_queue`.
 
 ## Included content
@@ -73,20 +93,20 @@ In addition, this collection includes two event source plugins located under the
 
 | Plugin | Description |
 | :--- | :--- |
-`amazon.aws.aws_cloudtrail`| An ansible-rulebook event source plugin for getting events from an AWS CloudTrail |
-`amazon.aws.aws_sqs_queue`| An ansible-rulebook event source plugin for receiving events via an AWS SQS queue |
+| `amazon.aws.aws_cloudtrail` | An ansible-rulebook event source plugin that retrieves events from AWS CloudTrail |
+| `amazon.aws.aws_sqs_queue` | An ansible-rulebook event source plugin that receives events via an AWS SQS queue |
 
 <!--end collection content-->
 
 ## Installation
 
-The amazon.aws collection can be installed with Ansible Galaxy command-line tool:
+The amazon.aws collection can be installed with the Ansible Galaxy command-line tool:
 
-```
-    ansible-galaxy collection install amazon.aws
+```shell
+ansible-galaxy collection install amazon.aws
 ```
 
-You can also include it in a `requirements.yml` file and install it with `ansible-galaxy collection install -r requirements.yml`, using the format:
+You can also include it in a `requirements.yml` file and install it with `ansible-galaxy collection install -r requirements.yml`, using the following format:
 
 ```yaml
 ---
@@ -97,7 +117,7 @@ collections:
 Note that if you install any collections from Ansible Galaxy, they will not be upgraded automatically when you upgrade the Ansible package.
 To upgrade the collection to the latest available version, run the following command:
 
-```
+```shell
 ansible-galaxy collection install amazon.aws --upgrade
 ```
 A specific version of the collection can be installed by using the `version` keyword in the `requirements.yml` file:
@@ -109,29 +129,33 @@ collections:
     version: 3.1.1
 ```
 
-or using the ansible-galaxy command as follows
+or using the ansible-galaxy command as follows:
 
-```
+```shell
 ansible-galaxy collection install amazon.aws:==1.0.0
 ```
 
 The python module dependencies are not installed by `ansible-galaxy`.  They can
 be manually installed using pip:
 
-    pip install -r requirements.txt
+```shell
+pip install -r requirements.txt
+```
 
 or:
 
-    pip install boto3 botocore
+```shell
+pip install boto3 botocore
+```
 
-Refer the following for more details:
+Refer to the following for more details:
 
 * [Amazon Web Services Guide](https://docs.ansible.com/ansible/latest/collections/amazon/aws/docsite/guide_aws.html)
-* [using Ansible collections](https://docs.ansible.com/ansible/latest/user_guide/collections_using.html) for more details.
+* [Using Ansible collections](https://docs.ansible.com/ansible/latest/user_guide/collections_using.html)
 
 ## Use Cases
 
-You can either call modules by their Fully Qualified Collection Name (FQCN), such as `amazon.aws.ec2_instance`, or you can call modules by their short name if you list the `amazon.aws` collection in the playbook's `collections` keyword:
+You can call modules by their Fully Qualified Collection Name (FQCN), such as `amazon.aws.ec2_instance`, or by their short name if you list the `amazon.aws` collection in the playbook's `collections` keyword:
 
 ```yaml
 ---
@@ -178,7 +202,7 @@ You can either call modules by their Fully Qualified Collection Name (FQCN), suc
 
 ## Testing
 
-This collection is tested using GitHub Actions. To know more about testing, refer to [CI.md](https://github.com/ansible-collections/amazon.aws/blob/main/CI.md).
+This collection is tested using GitHub Actions. To learn more about testing, refer to [CI.md](https://github.com/ansible-collections/amazon.aws/blob/main/CI.md).
 
 ## Contributing to this collection
 
@@ -195,11 +219,11 @@ See [CONTRIBUTING.md](https://github.com/ansible-collections/amazon.aws/blob/mai
 ## Support
 
 
-As Red Hat Ansible Certified Content, this collection is entitled to support through the Ansible Automation Platform (AAP) using the **Create issue** button on the top right corner. If a support case cannot be opened with Red Hat and the collection has been obtained either from Galaxy or GitHub, there may community help available on the [Ansible Forum](https://forum.ansible.com/).
+As Red Hat Ansible Certified Content, this collection is entitled to support through the Ansible Automation Platform (AAP) using the **Create issue** button on the top right corner. If a support case cannot be opened with Red Hat and the collection has been obtained from Galaxy or GitHub, community help may be available on the [Ansible Forum](https://forum.ansible.com/).
 
 You can also join us on:
 
-- Libera.Chat IRC - the ``#ansible-aws`` [irc.libera.chat](https://libera.chat/) channel
+- The ``#ansible-aws`` channel on [Libera.Chat](https://libera.chat/) (IRC)
 
 ## Release notes
 
