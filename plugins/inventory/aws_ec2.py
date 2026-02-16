@@ -116,7 +116,7 @@ options:
   use_contrib_script_compatible_ec2_tag_keys:
     description:
       - Expose the host tags with ec2_tag_TAGNAME keys like the old ec2.py inventory script.
-      - The use of this feature is discouraged and we advise to migrate to the new ``tags`` structure.
+      - The use of this feature is discouraged and we advise to migrate to the new ``ec2_tags`` structure.
     type: bool
     default: false
     version_added: 1.5.0
@@ -225,7 +225,7 @@ keyed_groups:
     key: 'architecture'
   # Add hosts to tag_Name_Value groups for each Name/Value tag pair
   - prefix: tag
-    key: tags
+    key: ec2_tags
   # Add hosts to e.g. instance_type_z3_tiny
   - prefix: instance_type
     key: instance_type
@@ -233,13 +233,13 @@ keyed_groups:
   - key: 'security_groups|json_query("[].group_id")'
     prefix: 'security_groups'
   # Create a group for each value of the Application tag
-  - key: tags.Application
+  - key: ec2_tags.Application
     separator: ''
   # Create a group per region e.g. aws_region_us_east_2
   - key: placement.region
     prefix: aws_region
   # Create a group (or groups) based on the value of a custom tag "Role" and add them to a metagroup called "project"
-  - key: tags['Role']
+  - key: ec2_tags['Role']
     prefix: foo
     parent_group: "project"
 # Set individual variables with compose
@@ -277,7 +277,7 @@ filters:
   instance-state-name: running
 keyed_groups:
   - prefix: tag
-    key: tags
+    key: ec2_tags
 compose:
   ansible_host: public_dns_name
 groups:
@@ -486,13 +486,15 @@ def _prepare_host_vars(
     use_contrib_script_compatible_ec2_tag_keys=False,
 ):
     host_vars = camel_dict_to_snake_dict(original_host_vars, ignore_list=["Tags"])
-    host_vars["tags"] = boto3_tag_list_to_ansible_dict(original_host_vars.get("Tags", []))
+    host_vars["ec2_tags"] = boto3_tag_list_to_ansible_dict(original_host_vars.get("Tags", []))
+    # ec2_tags is the new key, tags is deprecated but kept for backward compatibility
+    host_vars["tags"] = host_vars["ec2_tags"]
 
     # Allow easier grouping by region
     host_vars["placement"]["region"] = host_vars["placement"]["availability_zone"][:-1]
 
     if use_contrib_script_compatible_ec2_tag_keys:
-        for k, v in host_vars["tags"].items():
+        for k, v in host_vars["ec2_tags"].items():
             host_vars[f"ec2_tag_{k}"] = v
 
     if hostvars_prefix or hostvars_suffix:
@@ -941,6 +943,12 @@ class InventoryModule(AWSInventoryBase):
 
     def parse(self, inventory, loader, path, cache=True):
         super().parse(inventory, loader, path, cache=cache)
+
+        self.display.deprecated(
+            "The 'tags' host variable is deprecated. Use 'ec2_tags' instead.",
+            date="2026-12-01",
+            collection_name="amazon.aws",
+        )
 
         if self.get_option("use_contrib_script_compatible_sanitization"):
             self._sanitize_group_name = self._legacy_script_compatible_group_sanitization
