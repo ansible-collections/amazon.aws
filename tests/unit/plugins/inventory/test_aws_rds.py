@@ -514,14 +514,24 @@ def test_inventory_add_hosts(m_get_rds_hostname, inventory, hostvars_prefix, hos
     camel_hosts = [
         {
             "db_instance_identifier": "db_i_001",
+            "rds_tags": {"Name": "db_001", "RunningEngine": "mysql"},
             "tags": {"Name": "db_001", "RunningEngine": "mysql"},
             "availability_zone": "us-east-1a",
             "region": "us-east-1",
         },
-        {"db_instance_identifier": "db_i_002", "tags": {"ClusterName": "test_cluster", "RunningOS": "CoreOS"}},
-        {"db_cluster_identifier": "test_cluster", "tags": {"CluserVersionOrigin": "2.0", "Provider": "RedHat"}},
+        {
+            "db_instance_identifier": "db_i_002",
+            "rds_tags": {"ClusterName": "test_cluster", "RunningOS": "CoreOS"},
+            "tags": {"ClusterName": "test_cluster", "RunningOS": "CoreOS"},
+        },
+        {
+            "db_cluster_identifier": "test_cluster",
+            "rds_tags": {"CluserVersionOrigin": "2.0", "Provider": "RedHat"},
+            "tags": {"CluserVersionOrigin": "2.0", "Provider": "RedHat"},
+        },
         {
             "db_cluster_identifier": "another_cluster",
+            "rds_tags": {"TestingPurpose": "Ansible"},
             "tags": {"TestingPurpose": "Ansible"},
             "availability_zones": ["us-west-1a", "us-east-1b"],
             "region": "us-west-1",
