@@ -19,6 +19,9 @@ description:
 notes:
   - If no credentials are provided and the control node has an associated IAM instance profile then the
     role will be used for authentication.
+  - The C(tags) host variable is deprecated and will be removed in a release after 2026-12-01.
+    Use C(ec2_tags) instead to avoid conflicts with Ansible reserved variable names.
+  - The C(ec2_tags) host variable was added in version 11.2.0.
 author:
   - Sloane Hertel (@s-hertel)
 options:

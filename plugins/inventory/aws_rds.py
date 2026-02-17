@@ -50,6 +50,9 @@ options:
     version_added: 3.1.0
 notes:
   - Ansible versions prior to 2.10 should use the fully qualified plugin name 'amazon.aws.aws_rds'.
+  - The C(tags) host variable is deprecated and will be removed in a release after 2026-12-01.
+    Use C(rds_tags) instead to avoid conflicts with Ansible reserved variable names.
+  - The C(rds_tags) host variable was added in version 11.2.0.
 extends_documentation_fragment:
   - inventory_cache
   - constructed
