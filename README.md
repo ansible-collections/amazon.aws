@@ -1,7 +1,7 @@
 # Amazon AWS Collection
 The Ansible Amazon AWS collection includes a variety of Ansible content to help automate the management of AWS services. This collection is maintained by the Ansible Cloud Content team.
 
-## Table of Contents
+## Contents
 
 - [Description](#description)
 - [Communication](#communication)
@@ -46,7 +46,8 @@ For more information about communication, see the [Ansible communication guide](
 
 ### Ansible version compatibility
 
-Tested with Ansible Core 2.17.0 and later, and the current development version of Ansible. Ansible Core versions prior to 2.17.0 are not supported.
+The collection supports ansible-core versions based on `requires_ansible` in [meta/runtime.yml](meta/runtime.yml):
+- Tested with Ansible Core 2.17.0 and later, and the current development version of Ansible. Ansible Core versions prior to 2.17.0 are not supported.
 
 ### Python version compatibility
 

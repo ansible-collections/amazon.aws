@@ -8,11 +8,6 @@ The collection uses reusable workflows from [ansible-network/github_actions](htt
 
 To learn more about the testing strategy, see [this proposal](https://github.com/ansible-collections/cloud-content-handbook/blob/main/Proposals/core_collection_dependency.md).
 
-### Version Support
-
-The collection supports ansible-core versions based on `requires_ansible` in [meta/runtime.yml](meta/runtime.yml):
-- **Minimum ansible-core version:** `>=2.17.0`
-
 ### PR Testing Workflows
 
 The following tests run on every pull request:
