@@ -267,6 +267,7 @@ def test_sanitize_hostname_legacy(inventory):
             {
                 "my_var": 1,
                 "placement": {"availability_zone": "us-east-1a", "region": "us-east-1"},
+                "ec2_tags": {"Name": "my-name"},
                 "tags": {"Name": "my-name"},
             },
         ),
@@ -280,6 +281,7 @@ def test_sanitize_hostname_legacy(inventory):
                     "availability_zone": "us-east-1a",
                     "region": "us-east-1",
                 },
+                "preec2_tagspost": {"Name": "my-name"},
                 "pretagspost": {"Name": "my-name"},
             },
         ),
@@ -291,6 +293,7 @@ def test_sanitize_hostname_legacy(inventory):
                 "my_var": 1,
                 "ec2_tag_Name": "my-name",
                 "placement": {"availability_zone": "us-east-1a", "region": "us-east-1"},
+                "ec2_tags": {"Name": "my-name"},
                 "tags": {"Name": "my-name"},
             },
         ),
@@ -339,6 +342,7 @@ def test_iter_entry(inventory):
     assert len(entries) == 2
     assert entries[0][0] == "first_host___"
     assert entries[1][0] == "second-host"
+    assert entries[1][1]["ec2_tags"]["Name"] == "my-name"
     assert entries[1][1]["tags"]["Name"] == "my-name"
 
     entries = list(
@@ -352,6 +356,7 @@ def test_iter_entry(inventory):
     )
     assert len(entries) == 2
     assert entries[0][0] == "first_host___"
+    assert entries[1][1]["a_ec2_tags_b"]["Name"] == "my-name"
     assert entries[1][1]["a_tags_b"]["Name"] == "my-name"
 
 
