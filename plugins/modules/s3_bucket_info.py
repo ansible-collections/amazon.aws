@@ -167,7 +167,7 @@ EXAMPLES = r"""
 
 RETURN = r"""
 buckets:
-  description: A list of S3 buckets.
+  description: A list of S3 buckets
   returned: always
   type: complex
   contains:
