@@ -285,7 +285,7 @@ The prefix will be the name of the host group that is to be concatenated with th
 <span class="c1"># Similarly, if a tag existed for an AWS EC2 instance as `Applications` with the value of `nodejs` the</span>
 <span class="c1"># variable would be: `tag_Applications_nodejs`.</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tag</span>
-<span class="w">  </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tags</span>
+<span class="w">  </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ec2_tags</span>
 
 <span class="c1"># This creates host groups using instance_type, e.g., `instance_type_z3_tiny`.</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">instance_type</span>
@@ -296,7 +296,7 @@ The prefix will be the name of the host group that is to be concatenated with th
 <span class="w">  </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;security_groups&#39;</span>
 
 <span class="c1"># This creates a host group for each value of the Application tag.</span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tags.Application</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ec2_tags.Application</span>
 <span class="w">  </span><span class="nt">separator</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;&#39;</span>
 
 <span class="c1"># This creates a host group per region e.g., `aws_region_us_east_2`.</span>
@@ -304,7 +304,7 @@ The prefix will be the name of the host group that is to be concatenated with th
 <span class="w">  </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aws_region</span>
 
 <span class="c1"># This creates host groups based on the value of a custom tag `Role` and adds them to a metagroup called `project`.</span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tags[&#39;Role&#39;]</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ec2_tags[&#39;Role&#39;]</span>
 <span class="w">  </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">foo</span>
 <span class="w">  </span><span class="nt">parent_group</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;project&quot;</span>
 
@@ -326,8 +326,8 @@ The prefix will be the name of the host group that is to be concatenated with th
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">groups</span><span class="p">:</span>
 <span class="w">  </span><span class="c1"># This created two groups - `Production` and `PreProduction` based on tags</span>
 <span class="w">  </span><span class="c1"># These conditionals are expressed using Jinja2 syntax.</span>
-<span class="w">  </span><span class="nt">redhat</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&#39;Production&#39;</span><span class="nv"> </span><span class="s">in</span><span class="nv"> </span><span class="s">tags.Environment&quot;</span>
-<span class="w">  </span><span class="nt">ubuntu</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&#39;PreProduction&#39;</span><span class="nv"> </span><span class="s">in</span><span class="nv"> </span><span class="s">tags.Environment&quot;</span>
+<span class="w">  </span><span class="nt">redhat</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&#39;Production&#39;</span><span class="nv"> </span><span class="s">in</span><span class="nv"> </span><span class="s">ec2_tags.Environment&quot;</span>
+<span class="w">  </span><span class="nt">ubuntu</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&#39;PreProduction&#39;</span><span class="nv"> </span><span class="s">in</span><span class="nv"> </span><span class="s">ec2_tags.Environment&quot;</span>
 
 <span class="w">  </span><span class="c1"># This created a libvpc group based on specific condition on `vpc_id`.</span>
 <span class="w">  </span><span class="nt">libvpc</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vpc_id == &#39;vpc-####&#39;</span>
@@ -415,7 +415,7 @@ The prefix will be the name of the host group that is to be concatenated with th
 To replicate behavior of replace_dash_in_groups = True with constructed groups, you will need to replace hyphens with underscores via the regex_replace filter for those entries.</p>
 <p>For this to work you should also turn off the TRANSFORM_INVALID_GROUP_CHARS setting, otherwise the core engine will just use the standard sanitization on top.</p>
 <p>This is not the default as such names break certain functionality as not all characters are valid Python identifiers which group names end up being used as.</p>
-<p>The use of this feature is discouraged and we advise to migrate to the new tags structure.</p>
+<p>The use of this feature is discouraged and we advise to migrate to the new ec2_tags structure.</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># demo.aws_ec2.yml</span>
 <span class="nt">plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">amazon.aws.aws_ec2</span>
 <span class="nt">regions</span><span class="p">:</span>
@@ -607,13 +607,13 @@ You can can define plugin-specific cache settings in the config file:</p>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-1</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-2</span>
 <span class="nt">keyed_groups</span><span class="p">:</span>
-<span class="w">  </span><span class="c1"># add hosts to tag_Name_value groups for each aws_ec2 host&#39;s tags.Name variable.</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tags.Name</span>
+<span class="w">  </span><span class="c1"># add hosts to tag_Name_value groups for each aws_ec2 host&#39;s ec2_tags.Name variable.</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ec2_tags.Name</span>
 <span class="w">    </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tag_Name_</span>
 <span class="w">    </span><span class="nt">separator</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span>
 <span class="nt">groups</span><span class="p">:</span>
 <span class="w">  </span><span class="c1"># add hosts to the group dev if any of the dictionary&#39;s keys or values is the word &#39;dev&#39;.</span>
-<span class="w">  </span><span class="nt">development</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&#39;dev&#39;</span><span class="nv"> </span><span class="s">in</span><span class="nv"> </span><span class="s">(tags|list)&quot;</span>
+<span class="w">  </span><span class="nt">development</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&#39;dev&#39;</span><span class="nv"> </span><span class="s">in</span><span class="nv"> </span><span class="s">(ec2_tags|list)&quot;</span>
 <span class="nt">filters</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">tag:Name</span><span class="p">:</span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;instance-01&#39;</span>
@@ -637,7 +637,7 @@ You can can define plugin-specific cache settings in the config file:</p>
 <span class="w">  </span><span class="nt">ansible_host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">private_ip_address</span>
 </pre></div>
 </div>
-<p>If a host does not have the variables in the configuration above (i.e. <code class="docutils literal notranslate"><span class="pre">tags.Name</span></code>, <code class="docutils literal notranslate"><span class="pre">tags</span></code>, <code class="docutils literal notranslate"><span class="pre">private_ip_address</span></code>), the host will not be added to groups other than those that the inventory plugin creates and the <code class="docutils literal notranslate"><span class="pre">ansible_host</span></code> host variable will not be modified.</p>
+<p>If a host does not have the variables in the configuration above (i.e. <code class="docutils literal notranslate"><span class="pre">ec2_tags.Name</span></code>, <code class="docutils literal notranslate"><span class="pre">ec2_tags</span></code>, <code class="docutils literal notranslate"><span class="pre">private_ip_address</span></code>), the host will not be added to groups other than those that the inventory plugin creates and the <code class="docutils literal notranslate"><span class="pre">ansible_host</span></code> host variable will not be modified.</p>
 <p>Now the output of <code class="docutils literal notranslate"><span class="pre">ansible-inventory</span> <span class="pre">-i</span> <span class="pre">demo.aws_ec2.yml</span> <span class="pre">--graph</span></code>:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>@all:
 |--@aws_ec2:
