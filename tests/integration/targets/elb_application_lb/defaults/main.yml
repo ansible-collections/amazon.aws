@@ -5,6 +5,7 @@ resource_short: "{{ '%0.8x' % ((16**8) | random(seed=resource_prefix)) }}"
 alb_name: alb-test-{{ resource_short }}
 alb_2_name: alb-test-2-{{ resource_short }}
 alb_name_multiple_listener_test: alb-test-{{ resource_short }}-lt
+alb_name_rules_on_create_test: alb-test-{{ resource_short }}-rc
 tg_name: alb-test-{{ resource_short }}
 tg_2_name: alb-test-2-{{ resource_short }}
 vpc_cidr: 10.{{ 256 | random(seed=resource_prefix) }}.0.0/16
@@ -25,6 +26,7 @@ elb_access_log_account_id_map:
   us-west-2: "797873946194"
   us-gov-east-1: "190560391635"
   us-gov-west-1: "048591011584"
+  eu-west-1: "156460612806"
 
 elb_account_id: "{{ elb_access_log_account_id_map[aws_region] }}"
 

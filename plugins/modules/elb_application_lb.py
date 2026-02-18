@@ -885,9 +885,10 @@ def create_or_update_alb(alb_obj: ApplicationLoadBalancer) -> None:
         listener_obj.modify()
         listeners_obj.changed = True
 
-    # If listeners changed, mark ALB as changed
+    # If listeners changed, mark ALB as changed and refresh current_listeners
     if listeners_obj.changed:
         alb_obj.changed = True
+        listeners_obj.update()
 
     # Rules of each listener
     for listener in listeners_obj.listeners:
