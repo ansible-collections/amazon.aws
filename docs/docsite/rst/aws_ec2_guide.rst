@@ -189,10 +189,10 @@ Some examples are shown below:
       key: placement.availability_zone
     
     # If the EC2 tag Name had the value `redhat` the tag variable would be: `tag_Name_redhat`.
-    # Similarly, if a tag existed for an AWS EC2 instance as `Applications` with the value of `nodejs` the  
+    # Similarly, if a tag existed for an AWS EC2 instance as `Applications` with the value of `nodejs` the
     # variable would be: `tag_Applications_nodejs`.
     - prefix: tag
-      key: tags
+      key: ec2_tags
     
     # This creates host groups using instance_type, e.g., `instance_type_z3_tiny`.
     - prefix: instance_type
@@ -203,7 +203,7 @@ Some examples are shown below:
       prefix: 'security_groups'
     
     # This creates a host group for each value of the Application tag.
-    - key: tags.Application
+    - key: ec2_tags.Application
       separator: ''
 
     # This creates a host group per region e.g., `aws_region_us_east_2`.
@@ -211,7 +211,7 @@ Some examples are shown below:
       prefix: aws_region
 
     # This creates host groups based on the value of a custom tag `Role` and adds them to a metagroup called `project`.
-    - key: tags['Role']
+    - key: ec2_tags['Role']
       prefix: foo
       parent_group: "project"
     
@@ -237,8 +237,8 @@ Some examples are shown below:
   groups:
     # This created two groups - `Production` and `PreProduction` based on tags
     # These conditionals are expressed using Jinja2 syntax.
-    redhat: "'Production' in tags.Environment"
-    ubuntu: "'PreProduction' in tags.Environment"
+    redhat: "'Production' in ec2_tags.Environment"
+    ubuntu: "'PreProduction' in ec2_tags.Environment"
 
     # This created a libvpc group based on specific condition on `vpc_id`.
     libvpc: vpc_id == 'vpc-####'
@@ -340,7 +340,7 @@ For this to work you should also turn off the TRANSFORM_INVALID_GROUP_CHARS sett
 
 This is not the default as such names break certain functionality as not all characters are valid Python identifiers which group names end up being used as.
 
-The use of this feature is discouraged and we advise to migrate to the new tags structure.
+The use of this feature is discouraged and we advise to migrate to the new ec2_tags structure.
 
 .. code-block:: yaml
 
@@ -554,13 +554,13 @@ Here is an ``aws_ec2`` complex example utilizing some of the previously listed o
       - us-east-1
       - us-east-2
     keyed_groups:
-      # add hosts to tag_Name_value groups for each aws_ec2 host's tags.Name variable.
-      - key: tags.Name
+      # add hosts to tag_Name_value groups for each aws_ec2 host's ec2_tags.Name variable.
+      - key: ec2_tags.Name
         prefix: tag_Name_
         separator: ""
     groups:
       # add hosts to the group dev if any of the dictionary's keys or values is the word 'dev'.
-      development: "'dev' in (tags|list)"
+      development: "'dev' in (ec2_tags|list)"
     filters:
       tag:Name:
         - 'instance-01'
@@ -583,7 +583,7 @@ Here is an ``aws_ec2`` complex example utilizing some of the previously listed o
       # This sets the `ansible_host` variable to connect with the private IP address without changing the hostname.
       ansible_host: private_ip_address
 
-If a host does not have the variables in the configuration above (i.e. ``tags.Name``, ``tags``, ``private_ip_address``), the host will not be added to groups other than those that the inventory plugin creates and the ``ansible_host`` host variable will not be modified.
+If a host does not have the variables in the configuration above (i.e. ``ec2_tags.Name``, ``ec2_tags``, ``private_ip_address``), the host will not be added to groups other than those that the inventory plugin creates and the ``ansible_host`` host variable will not be modified.
 
 Now the output of ``ansible-inventory -i demo.aws_ec2.yml --graph``:
 

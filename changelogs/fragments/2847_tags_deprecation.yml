@@ -1,0 +1,9 @@
+deprecated_features:
+  - aws_ec2 - the ``tags`` host variable has been deprecated to avoid conflicts with Ansible reserved variable names and will be removed
+    in a release after 2026-12-01. Use ``ec2_tags`` instead (https://github.com/ansible-collections/amazon.aws/pull/2847).
+  - aws_rds - the ``tags`` host variable has been deprecated to avoid conflicts with Ansible reserved variable names and will be removed
+    in a release after 2026-12-01. Use ``rds_tags`` instead (https://github.com/ansible-collections/amazon.aws/pull/2847).
+
+minor_changes:
+  - aws_ec2 - added "ec2_tags" host variable (https://github.com/ansible-collections/amazon.aws/pull/2847).
+  - aws_rds - added "rds_tags" host variable (https://github.com/ansible-collections/amazon.aws/pull/2847).

@@ -205,7 +205,7 @@ For instance, you might use ``keyed_groups`` to create groups from instance tags
     plugin: amazon.aws.aws_ec2
     keyed_groups:
       - prefix: tag
-        key: tags
+        key: ec2_tags
 
 
 You can then target all instances with a "class" tag where the value is "webserver" in a play::

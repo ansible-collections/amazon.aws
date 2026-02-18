@@ -50,6 +50,9 @@ options:
     version_added: 3.1.0
 notes:
   - Ansible versions prior to 2.10 should use the fully qualified plugin name 'amazon.aws.aws_rds'.
+  - The C(tags) host variable is deprecated and will be removed in a release after 2026-12-01.
+    Use C(rds_tags) instead to avoid conflicts with Ansible reserved variable names.
+  - The C(rds_tags) host variable was added in version 11.2.0.
 extends_documentation_fragment:
   - inventory_cache
   - constructed
@@ -71,7 +74,7 @@ keyed_groups:
     prefix: rds_parameter_group
   - key: engine
     prefix: rds
-  - key: tags
+  - key: rds_tags
   - key: region
 hostvars_prefix: aws_
 hostvars_suffix: _rds
@@ -208,7 +211,9 @@ class InventoryModule(AWSInventoryBase):
         for host in hosts:
             hostname = _get_rds_hostname(host)
             host = camel_dict_to_snake_dict(host, ignore_list=["Tags"])
-            host["tags"] = boto3_tag_list_to_ansible_dict(host.get("tags", []))
+            host["rds_tags"] = boto3_tag_list_to_ansible_dict(host.get("tags", []))
+            # rds_tags is the new key, tags is deprecated but kept for backward compatibility
+            host["tags"] = host["rds_tags"]
 
             # Allow easier grouping by region
             if "availability_zone" in host:
@@ -262,6 +267,12 @@ class InventoryModule(AWSInventoryBase):
 
     def parse(self, inventory, loader, path, cache=True):
         super().parse(inventory, loader, path, cache=cache)
+
+        self.display.deprecated(
+            "The 'tags' host variable is deprecated. Use 'rds_tags' instead.",
+            date="2026-12-01",
+            collection_name="amazon.aws",
+        )
 
         # get user specifications
         regions = self.get_option("regions")
