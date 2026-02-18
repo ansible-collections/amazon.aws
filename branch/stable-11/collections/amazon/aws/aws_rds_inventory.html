@@ -610,6 +610,8 @@ For example, an ansible.cfg entry (further up in the list) is overwritten by an 
 <p class="admonition-title">Note</p>
 <ul class="simple">
 <li><p>Ansible versions prior to 2.10 should use the fully qualified plugin name ‘amazon.aws.aws_rds’.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">tags</span></code> host variable is deprecated and will be removed in a release after 2026-12-01. Use <code class="docutils literal notranslate"><span class="pre">rds_tags</span></code> instead to avoid conflicts with Ansible reserved variable names.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">rds_tags</span></code> host variable was added in version 11.2.0.</p></li>
 <li><p>Inventories are not finalized at this stage, so the auto populated <code class="docutils literal notranslate"><span class="pre">all</span></code> and <code class="docutils literal notranslate"><span class="pre">ungrouped</span></code> groups will only reflect what previous inventory sources explicitly added to them.</p></li>
 <li><p>Runtime ‘magic variables’ are not available during inventory construction. For example, <code class="docutils literal notranslate"><span class="pre">groups</span></code> and <code class="docutils literal notranslate"><span class="pre">hostvars</span></code> do not exist yet.</p></li>
 <li><p><strong>Caution:</strong> For modules, environment variables and configuration files are read from the Ansible ‘host’ context and not the ‘controller’ context. As such, files may need to be explicitly copied to the ‘host’. For lookup and connection plugins, environment variables and configuration files are read from the Ansible ‘controller’ context and not the ‘host’ context.</p></li>
@@ -628,7 +630,7 @@ For example, an ansible.cfg entry (further up in the list) is overwritten by an 
 <span class="w">    </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rds_parameter_group</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">engine</span>
 <span class="w">    </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rds</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tags</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rds_tags</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">region</span>
 <span class="nt">hostvars_prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aws_</span>
 <span class="nt">hostvars_suffix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">_rds</span>

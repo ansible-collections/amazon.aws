@@ -667,7 +667,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 <p><em class="ansible-option-versionadded">added in amazon.aws 1.5.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Expose the host tags with ec2_tag_TAGNAME keys like the old ec2.py inventory script.</p>
-<p>The use of this feature is discouraged and we advise to migrate to the new ``tags`` structure.</p>
+<p>The use of this feature is discouraged and we advise to migrate to the new ``ec2_tags`` structure.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
@@ -742,6 +742,8 @@ For example, an ansible.cfg entry (further up in the list) is overwritten by an 
 <p class="admonition-title">Note</p>
 <ul class="simple">
 <li><p>If no credentials are provided and the control node has an associated IAM instance profile then the role will be used for authentication.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">tags</span></code> host variable is deprecated and will be removed in a release after 2026-12-01. Use <code class="docutils literal notranslate"><span class="pre">ec2_tags</span></code> instead to avoid conflicts with Ansible reserved variable names.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">ec2_tags</span></code> host variable was added in version 11.2.0.</p></li>
 <li><p>Inventories are not finalized at this stage, so the auto populated <code class="docutils literal notranslate"><span class="pre">all</span></code> and <code class="docutils literal notranslate"><span class="pre">ungrouped</span></code> groups will only reflect what previous inventory sources explicitly added to them.</p></li>
 <li><p>Runtime ‘magic variables’ are not available during inventory construction. For example, <code class="docutils literal notranslate"><span class="pre">groups</span></code> and <code class="docutils literal notranslate"><span class="pre">hostvars</span></code> do not exist yet.</p></li>
 <li><p><strong>Caution:</strong> For modules, environment variables and configuration files are read from the Ansible ‘host’ context and not the ‘controller’ context. As such, files may need to be explicitly copied to the ‘host’. For lookup and connection plugins, environment variables and configuration files are read from the Ansible ‘controller’ context and not the ‘host’ context.</p></li>
@@ -812,7 +814,7 @@ For example, an ansible.cfg entry (further up in the list) is overwritten by an 
 <span class="w">    </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;architecture&#39;</span>
 <span class="w">  </span><span class="c1"># Add hosts to tag_Name_Value groups for each Name/Value tag pair</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tag</span>
-<span class="w">    </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tags</span>
+<span class="w">    </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ec2_tags</span>
 <span class="w">  </span><span class="c1"># Add hosts to e.g. instance_type_z3_tiny</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">instance_type</span>
 <span class="w">    </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">instance_type</span>
@@ -820,13 +822,13 @@ For example, an ansible.cfg entry (further up in the list) is overwritten by an 
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;security_groups|json_query(&quot;[].group_id&quot;)&#39;</span>
 <span class="w">    </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;security_groups&#39;</span>
 <span class="w">  </span><span class="c1"># Create a group for each value of the Application tag</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tags.Application</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ec2_tags.Application</span>
 <span class="w">    </span><span class="nt">separator</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;&#39;</span>
 <span class="w">  </span><span class="c1"># Create a group per region e.g. aws_region_us_east_2</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">placement.region</span>
 <span class="w">    </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aws_region</span>
 <span class="w">  </span><span class="c1"># Create a group (or groups) based on the value of a custom tag &quot;Role&quot; and add them to a metagroup called &quot;project&quot;</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tags[&#39;Role&#39;]</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ec2_tags[&#39;Role&#39;]</span>
 <span class="w">    </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">foo</span>
 <span class="w">    </span><span class="nt">parent_group</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;project&quot;</span>
 <span class="c1"># Set individual variables with compose</span>
@@ -864,7 +866,7 @@ For example, an ansible.cfg entry (further up in the list) is overwritten by an 
 <span class="w">  </span><span class="nt">instance-state-name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">running</span>
 <span class="nt">keyed_groups</span><span class="p">:</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tag</span>
-<span class="w">    </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tags</span>
+<span class="w">    </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ec2_tags</span>
 <span class="nt">compose</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">ansible_host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">public_dns_name</span>
 <span class="nt">groups</span><span class="p">:</span>
