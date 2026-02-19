@@ -1,0 +1,19 @@
+# Default variables for ec2_instance alternate types integration test
+
+# Instance type that is very unlikely to be available in most regions/AZs
+# This should trigger the alternate instance types fallback mechanism
+unlikely_instance_type: "x1e.xlarge"
+
+# Alternate instance types that should be commonly available
+# Listed in order of preference (first choice to last choice)
+backup_instance_type_1: "t3.micro"
+backup_instance_type_2: "t2.micro" 
+backup_instance_type_3: "t3.small"
+
+# Instance type that should definitely be available for control tests
+available_instance_type: "t3.micro"
+
+# Test configuration
+instance_wait_timeout: 300
+test_vpc_cidr: "10.0.0.0/16"
+test_subnet_cidr: "10.0.1.0/24"
