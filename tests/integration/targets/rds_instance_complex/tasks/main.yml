@@ -49,6 +49,8 @@
         that:
           - result.changed
           - result.db_instance_identifier == instance_id
+          - '"backup_retention_period" in result'
+          - result.backup_retention_period | int == 0'
 
     - name: Add IAM roles to mariab (should fail - iam roles not supported for mariadb)
       amazon.aws.rds_instance:
@@ -131,6 +133,8 @@
           - '"port" in result.pending_modified_values or result.endpoint.port == 1150'
           - '"db_instance_class" in result.pending_modified_values or result.db_instance_class == modified_db_instance_class'
           - '"monitoring_interval" in result.pending_modified_values or result.monitoring_interval == monitoring_interval'
+          - '"backup_retention_period" in result'
+          - result.backup_retention_period | int == 0'
 
     - name: Idempotence modifying several pending attributes - check_mode
       amazon.aws.rds_instance:
@@ -181,6 +185,8 @@
           - '"max_allocated_storage" in result.pending_modified_values or result.max_allocated_storage == 150'
           - '"port" in result.pending_modified_values or result.endpoint.port == 1150'
           - '"db_instance_class" in result.pending_modified_values or result.db_instance_class == modified_db_instance_class'
+          - '"backup_retention_period" in result'
+          - result.backup_retention_period | int == 0'
 
   always:
     - name: Delete the instance

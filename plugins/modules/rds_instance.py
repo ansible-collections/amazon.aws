@@ -1187,6 +1187,10 @@ def get_options_with_changing_values(client, module: AnsibleAWSModule, parameter
         ):
             parameters.pop("NewDBInstanceIdentifier")
 
+    backup_retention_period = module.params.get("backup_retention_period")
+    if instance.get("BackupRetentionPeriod") != backup_retention_period:
+        parameters["BackupRetentionPeriod"] = backup_retention_period
+
     if parameters:
         parameters["DBInstanceIdentifier"] = instance_id
         if apply_immediately is not None:
