@@ -329,11 +329,19 @@ Some examples are shown below:
 ``use_contrib_script_compatible_ec2_tag_keys`` and ``use_contrib_script_compatible_sanitization``
 -------------------------------------------------------------------------------------------------
 
+.. deprecated:: 11.2.0
+   The ``use_contrib_script_compatible_ec2_tag_keys`` option is deprecated and will be removed in a release after 2026-12-01.
+   We advise to migrate to the ``ec2_tags`` structure (e.g. use ``ec2_tags.TAGNAME`` instead of ``ec2_tag_TAGNAME``).
+
+.. deprecated:: 11.2.0
+   The ``use_contrib_script_compatible_sanitization`` option is deprecated and will be removed in a release after 2026-12-01.
+   We advise to remove this option and migrate to Ansible's default group name sanitization instead.
+
 ``use_contrib_script_compatible_ec2_tag_keys`` exposes the host tags with ec2_tag_TAGNAME keys like the old ec2.py inventory script when it's True.
 
 By default the ``aws_ec2`` plugin is using a general group name sanitization to create safe and usable group names for use in Ansible.
 
-``use_contrib_script_compatible_ec2_tag_keys`` allows you to override that, in efforts to allow migration from the old inventory script and matches the sanitization of groups when the script's replace_dash_in_groups option is set to False.
+``use_contrib_script_compatible_sanitization`` allows you to override that, in efforts to allow migration from the old inventory script and matches the sanitization of groups when the script's replace_dash_in_groups option is set to False.
 To replicate behavior of replace_dash_in_groups = True with constructed groups, you will need to replace hyphens with underscores via the regex_replace filter for those entries.
 
 For this to work you should also turn off the TRANSFORM_INVALID_GROUP_CHARS setting, otherwise the core engine will just use the standard sanitization on top.
@@ -393,7 +401,7 @@ After providing any required options, you can view the populated inventory with 
             }
         }
     },
-    all": {
+    "all": {
           "children": [
               "aws_ec2",
               "ungrouped"
@@ -411,7 +419,7 @@ After providing any required options, you can view the populated inventory with 
 ``hostvars_prefix`` and ``hostvars_suffix``
 -------------------------------------------
 
-``hostvars_prefix`` and ``hostvars_sufix`` allow to set up a prefix and suffix for host variables.
+``hostvars_prefix`` and ``hostvars_suffix`` allow to set up a prefix and suffix for host variables.
 
 .. code-block:: yaml
 
@@ -458,7 +466,7 @@ Now the output of ``ansible-inventory -i demo.aws_ec2.yml --list``:
             }
         }
     },
-    all": {
+    "all": {
           "children": [
               "aws_ec2",
               "ungrouped"
