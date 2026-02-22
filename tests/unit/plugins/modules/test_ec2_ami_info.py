@@ -140,6 +140,7 @@ def test_list_ec2_images(m_get_images, m_describe_image_attribute, ec2_client):
     m_describe_image_attribute.return_value = {
         "ImageId": "ami-1234567890",
         "LaunchPermissions": [{"UserId": "1234567890"}, {"UserId": "0987654321"}],
+        "ImdsSupport": {"Value": "v2.0"},
     }
 
     images = m_get_images.return_value
@@ -160,15 +161,20 @@ def test_list_ec2_images(m_get_images, m_describe_image_attribute, ec2_client):
     assert m_get_images.call_count == 1
     m_get_images.assert_called_with(ec2_client, request_args)
 
-    assert m_describe_image_attribute.call_count == 2
+    assert m_describe_image_attribute.call_count == 4
     m_describe_image_attribute.assert_has_calls(
         [call(ec2_client, attribute="launchPermission", image_id=images[0]["image_id"])],
         [call(ec2_client, attribute="launchPermission", image_id=images[1]["image_id"])],
+    )
+    m_describe_image_attribute.assert_has_calls(
+        [call(ec2_client, attribute="imdsSupport", image_id=images[0]["image_id"])],
+        [call(ec2_client, attribute="imdsSupport", image_id=images[1]["image_id"])],
     )
 
     assert len(list_ec2_images_result) == 2
     assert list_ec2_images_result[0]["image_id"] == "ami-1234567890"
     assert list_ec2_images_result[1]["image_id"] == "ami-1523498760"
+    assert list_ec2_images_result[0]["imdsv2_enabled"]
 
 
 @patch(module_name + ".AnsibleAWSModule")
