@@ -67,7 +67,6 @@ options:
         description:
             - Enables DNSSEC signing in a specific hosted zone.
         type: bool
-        default: false
         version_added: 9.2.0
 extends_documentation_fragment:
     - amazon.aws.common.modules
@@ -351,6 +350,9 @@ def get_hosted_zone(hosted_zone_id: str) -> Dict[str, Any]:
 def ensure_dnssec(zone_id: str) -> bool:
     changed = False
     dnssec = module.params.get("dnssec")
+
+    if dnssec is None:
+        return changed
 
     response = get_dnssec(zone_id)
     dnssec_status = response["Status"]["ServeSignature"]
@@ -661,7 +663,7 @@ def main():
         delegation_set_id=dict(),
         tags=dict(type="dict", aliases=["resource_tags"]),
         purge_tags=dict(type="bool", default=True),
-        dnssec=dict(type="bool", default=False),
+        dnssec=dict(type="bool"),
     )
 
     mutually_exclusive = [
