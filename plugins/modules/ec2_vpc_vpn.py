@@ -71,6 +71,38 @@ options:
     elements: dict
     default: []
     suboptions:
+        LogOptions:
+            type: dict
+            description:
+              - Options for VPN connection logging.
+            version_added: 9.4.0
+            suboptions:
+                CloudWatchLogOptions:
+                    type: dict
+                    description:
+                      - Options for sending VPN connections logs to CloudWatch.
+                    suboptions:
+                        LogEnabled:
+                            type: bool
+                            description:
+                              - Enable or disable VPN tunnel logging feature.
+                        LogGroupArn:
+                            type: str
+                            description:
+                              - ARN of the CloudWatch log group to send logs to.
+                        LogOutputFormat:
+                            type: str
+                            description:
+                              - Log format.
+                            choices: ["json", "text"]
+        StartupAction:
+            type: str
+            description:
+              - The action to take when establishing the tunnel.
+              - O(tunnel_options.StartupAction=add) means the customer gateway must initiate the IKE negotiation and bring up the tunnel.
+              - O(tunnel_options.StartupAction=start) means the AWS must initiate the IKE negotiation and bring up the tunnel.
+            choices: ["add", "start"]
+            version_added: 9.4.0
         TunnelInsideCidr:
             type: str
             description:
@@ -611,6 +643,74 @@ def find_connection_response(module, connections: Optional[List[Dict[str, Any]]]
             return connections[0]
 
 
+def validate_tunnel_options(
+    tunnel_options: Optional[List[Dict[str, Any]]] = None,
+) -> List[Dict[str, Any]]:
+    """Prepares tunnel options"""
+
+    t_opt = None
+
+    if tunnel_options and len(tunnel_options) <= 2:
+        t_opt = []
+        for m in tunnel_options:
+            # See Boto3 docs regarding 'create_vpn_connection'
+            # tunnel options for allowed 'TunnelOptions' keys.
+            if not isinstance(m, dict):
+                raise TypeError("non-dict list member")
+            t_opt.append(m)
+
+    return t_opt
+
+
+def ensure_tunnel_options(
+    client,
+    module: AnsibleAWSModule,
+    vpn_connection: Optional[Dict[str, Any]],
+    max_attempts: Optional[int],
+    delay: Optional[int],
+) -> bool:
+    """Prepares tunnel options"""
+
+    changed: bool = False
+
+    tunnel_options = module.params.get("tunnel_options")
+
+    if not tunnel_options:
+        return changed
+
+    tunnel_options = validate_tunnel_options(tunnel_options)
+
+    for tunnel_idx in range(1):
+        current_tunnel_options = vpn_connection["Options"]["TunnelOptions"][tunnel_idx]
+        new_tunnel_options = {k: v for k, v in tunnel_options[tunnel_idx].items() if v is not None}
+
+        for param in current_tunnel_options:
+            if param in new_tunnel_options and current_tunnel_options[param] != new_tunnel_options[param]:
+                changed = True
+
+        if changed and not module.check_mode:
+            try:
+                client.modify_vpn_tunnel_options(
+                    VpnConnectionId=vpn_connection["VpnConnectionId"],
+                    VpnTunnelOutsideIpAddress=current_tunnel_options["OutsideIpAddress"],
+                    TunnelOptions=new_tunnel_options,
+                )
+
+                client.get_waiter("vpn_connection_available").wait(
+                    VpnConnectionIds=[vpn_connection["VpnConnectionId"]],
+                    WaiterConfig={"Delay": delay, "MaxAttempts": max_attempts},
+                )
+            except WaiterError as e:
+                module.fail_json_aws(
+                    e,
+                    msg=f"Failed to wait for VPN connection {vpn_connection['VpnConnectionId']} to be available",
+                )
+            except AnsibleEC2Error as e:
+                module.fail_json_aws(e, msg="Failed to modify VPN connection tunnel options")
+
+    return changed
+
+
 def create_connection(
     client,
     module: AnsibleAWSModule,
@@ -628,16 +728,9 @@ def create_connection(
 
     options = {"StaticRoutesOnly": static_only, "LocalIpv4NetworkCidr": local_ipv4_network_cidr}
 
-    if tunnel_options and len(tunnel_options) <= 2:
-        t_opt = []
-        for m in tunnel_options:
-            # See Boto3 docs regarding 'create_vpn_connection'
-            # tunnel options for allowed 'TunnelOptions' keys.
-            if not isinstance(m, dict):
-                raise TypeError("non-dict list member")
-            t_opt.append(m)
-        if t_opt:
-            options["TunnelOptions"] = t_opt
+    t_opt = validate_tunnel_options(tunnel_options)
+    if t_opt:
+        options["TunnelOptions"] = t_opt
 
     if not (customer_gateway_id and (vpn_gateway_id or transit_gateway_id)):
         module.fail_json(
@@ -836,6 +929,13 @@ def ensure_present(
             return get_check_mode_results(module.params, vpn_connection_id, current_state=vpn_connection)
 
         changed |= make_changes(client, module, vpn_connection_id, changes)
+        changed |= ensure_tunnel_options(
+            client,
+            module,
+            vpn_connection=vpn_connection,
+            max_attempts=max_attempts,
+            delay=delay,
+        )
 
     # No match was found. Create and tag a connection and add routes.
     else:
@@ -895,11 +995,24 @@ def main():
         transit_gateway_id=dict(type="str"),
         local_ipv4_network_cidr=dict(type="str", default="0.0.0.0/0"),
         tunnel_options=dict(
-            no_log=True,
             type="list",
             default=[],
             elements="dict",
             options=dict(
+                LogOptions=dict(
+                    type="dict",
+                    options=dict(
+                        CloudWatchLogOptions=dict(
+                            type="dict",
+                            options=dict(
+                                LogEnabled=dict(type="bool"),
+                                LogGroupArn=dict(type="str"),
+                                LogOutputFormat=dict(type="str", choices=["json", "text"]),
+                            ),
+                        ),
+                    ),
+                ),
+                StartupAction=dict(type="str", choices=["add", "start"]),
                 TunnelInsideCidr=dict(type="str"),
                 TunnelInsideIpv6Cidr=dict(type="str"),
                 PreSharedKey=dict(type="str", no_log=True),
