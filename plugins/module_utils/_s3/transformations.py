@@ -73,6 +73,22 @@ def normalize_s3_bucket_acls(acls: Optional[dict]) -> Optional[dict]:
     return typing.cast(dict, acls_result["grants"])
 
 
+def normalize_s3_bucket_logging(logging_config: Optional[dict]) -> Optional[dict]:
+    """
+    Normalize S3 bucket logging configuration to Ansible dictionary format.
+
+    Parameters:
+        logging_config (dict): The logging configuration returned from boto3.
+
+    Returns:
+        Normalized logging configuration dictionary or None if logging is disabled.
+    """
+    if not logging_config or "LoggingEnabled" not in logging_config:
+        return None
+
+    return boto3_resource_to_ansible_dict(logging_config.get("LoggingEnabled"), force_tags=False)
+
+
 def _grantee_is_owner(grant: dict, owner_id: str) -> bool:
     return grant.get("Grantee", {}).get("ID") == owner_id
 

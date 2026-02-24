@@ -258,6 +258,23 @@ options:
             "ObjectLockLegalHoldStatus", "IntelligentTieringAccessTier",
             "BucketKeyStatus", "ChecksumAlgorithm", "ObjectAccessControlList",
             "ObjectOwner" ]
+  logging:
+    description:
+      - Configure S3 bucket logging to track requests for access to the bucket.
+      - To disable logging, explicitly set O(logging.target_bucket) to an empty string.
+      - "Note: The target bucket must have appropriate permissions configured. This module does NOT automatically
+        configure ACLs on the target bucket. See AWS documentation for required permissions."
+    type: dict
+    suboptions:
+      target_bucket:
+        description: The name of the bucket where Amazon S3 should store server access log files.
+        type: str
+        required: true
+      target_prefix:
+        description: A prefix for all log object keys.
+        type: str
+        default: ""
+    version_added: 11.2.0
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
@@ -399,6 +416,21 @@ EXAMPLES = r"""
           - "Size"
         included_object_versions: "All"
         schedule: "Weekly"
+
+# Enable bucket logging
+- amazon.aws.s3_bucket:
+    name: mys3bucket
+    state: present
+    logging:
+      target_bucket: my-logging-bucket
+      target_prefix: logs/mys3bucket/
+
+# Disable bucket logging
+- amazon.aws.s3_bucket:
+    name: mys3bucket
+    state: present
+    logging:
+      target_bucket: ""
 """
 
 RETURN = r"""
@@ -414,6 +446,14 @@ name:
     returned: when O(state=present)
     type: str
     sample: "a-testing-bucket-name"
+logging:
+    description: S3 bucket's logging configuration.
+    type: dict
+    returned: when O(state=present)
+    sample: {
+        "target_bucket": "my-logging-bucket",
+        "target_prefix": "logs/"
+    }
 object_ownership:
     description: S3 bucket's ownership controls.
     type: str
@@ -576,6 +616,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_bucket
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_bucket_acl
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_bucket_encryption
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_bucket_location
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_bucket_logging
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_bucket_ownership_controls
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_bucket_policy
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_bucket_public_access_block
@@ -587,12 +628,14 @@ from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_waiter
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import list_bucket_inventory_configurations
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import merge_tags
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import normalize_s3_bucket_acls
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import normalize_s3_bucket_logging
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import normalize_s3_bucket_public_access
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import normalize_s3_bucket_versioning
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_s3_bucket_accelerate_configuration
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_s3_bucket_acl
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_s3_bucket_encryption
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_s3_bucket_inventory
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_s3_bucket_logging
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_s3_bucket_ownership
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_s3_bucket_policy
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_s3_bucket_public_access
@@ -1169,6 +1212,65 @@ def handle_bucket_inventory(s3_client: ClientType, module: AnsibleAWSModule, nam
     return bucket_changed, results
 
 
+def handle_bucket_logging(s3_client: ClientType, module: AnsibleAWSModule, name: str) -> Tuple[bool, Optional[dict]]:
+    """
+    Manage logging configuration for an S3 bucket.
+    Parameters:
+        s3_client (boto3.client): The Boto3 S3 client object.
+        module (AnsibleAWSModule): The Ansible module object.
+        name (str): The name of the bucket to handle logging for.
+    Returns:
+        A tuple containing a boolean indicating whether logging settings were changed
+        and a dictionary containing the updated logging configuration.
+    """
+    logging_param = module.params.get("logging")
+
+    try:
+        current_logging = get_s3_bucket_logging(s3_client, name)
+    except (AnsibleS3PermissionsError, AnsibleS3SupportError) as e:
+        if logging_param is not None:
+            raise
+        module.warn(e.message)
+        return False, None
+
+    # Normalize current logging state
+    current_normalized = normalize_s3_bucket_logging(current_logging)
+
+    # If no logging parameter specified, return current state
+    if logging_param is None:
+        return False, current_normalized
+
+    # Determine desired state
+    # Disable logging if empty dict or target_bucket is empty string
+    if logging_param == {} or logging_param.get("target_bucket") == "":
+        desired_config = {}
+        desired_normalized = None
+    else:
+        # Enable logging with specified configuration
+        target_bucket = logging_param.get("target_bucket")
+        target_prefix = logging_param.get("target_prefix", "")
+
+        desired_config = {
+            "LoggingEnabled": {
+                "TargetBucket": target_bucket,
+                "TargetPrefix": target_prefix,
+            }
+        }
+        desired_normalized = {
+            "target_bucket": target_bucket,
+            "target_prefix": target_prefix,
+        }
+
+    # Compare current and desired states
+    if current_normalized == desired_normalized:
+        return False, current_normalized
+
+    # Make the change
+    put_s3_bucket_logging(s3_client, name, desired_config)
+
+    return True, desired_normalized
+
+
 def create_or_update_bucket(s3_client: ClientType, module: AnsibleAWSModule) -> NoReturn:
     """
     Create or update an S3 bucket along with its associated configurations.
@@ -1248,6 +1350,10 @@ def create_or_update_bucket(s3_client: ClientType, module: AnsibleAWSModule) -> 
     bucket_inventory_changed, bucket_inventory_result = handle_bucket_inventory(s3_client, module, name)
     result["bucket_inventory"] = bucket_inventory_result
 
+    # -- Logging
+    bucket_logging_changed, bucket_logging_result = handle_bucket_logging(s3_client, module, name)
+    result["logging"] = bucket_logging_result
+
     # Module exit
     changed = (
         changed
@@ -1262,6 +1368,7 @@ def create_or_update_bucket(s3_client: ClientType, module: AnsibleAWSModule) -> 
         or bucket_accelerate_changed
         or bucket_object_lock_retention_changed
         or bucket_inventory_changed
+        or bucket_logging_changed
     )
     module.exit_json(changed=changed, name=name, **result)
 
@@ -1782,6 +1889,13 @@ def main():
                 id=dict(type="str", required=True),
                 schedule=dict(type="str", choices=["Daily", "Weekly"], required=True),
                 included_object_versions=dict(type="str", choices=["All", "Current"], required=True),
+            ),
+        ),
+        logging=dict(
+            type="dict",
+            options=dict(
+                target_bucket=dict(type="str", required=True),
+                target_prefix=dict(type="str", default=""),
             ),
         ),
     )

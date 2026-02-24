@@ -60,6 +60,7 @@ AnsibleS3RegionSupportError = _common.AnsibleS3RegionSupportError
 normalize_s3_bucket_versioning = _transformations.normalize_s3_bucket_versioning
 normalize_s3_bucket_public_access = _transformations.normalize_s3_bucket_public_access
 normalize_s3_bucket_acls = _transformations.normalize_s3_bucket_acls
+normalize_s3_bucket_logging = _transformations.normalize_s3_bucket_logging
 s3_acl_to_name = _transformations.s3_acl_to_name
 merge_tags = _transformations.merge_tags
 
@@ -209,6 +210,20 @@ def get_s3_bucket_versioning(client: ClientType, bucket_name: str) -> Dict:
         Versioning settings of the bucket.
     """
     return client.get_bucket_versioning(Bucket=bucket_name)
+
+
+@S3ErrorHandler.list_error_handler("get bucket logging configuration", {})
+@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
+def get_s3_bucket_logging(client: ClientType, bucket_name: str) -> Dict:
+    """
+    Retrieve bucket logging configuration for an S3 bucket.
+    Parameters:
+        client (boto3.client): The Boto3 S3 client object.
+        bucket_name (str): The name of the S3 bucket.
+    Returns:
+        Logging configuration of the bucket.
+    """
+    return client.get_bucket_logging(Bucket=bucket_name)
 
 
 @S3ErrorHandler.list_error_handler("get bucket object lock settings", {})
@@ -439,6 +454,21 @@ def put_s3_bucket_versioning(client: ClientType, bucket_name: str, required_vers
         None
     """
     client.put_bucket_versioning(Bucket=bucket_name, VersioningConfiguration={"Status": required_versioning})
+
+
+@S3ErrorHandler.common_error_handler("set bucket logging configuration")
+@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
+def put_s3_bucket_logging(client: ClientType, bucket_name: str, logging_config: dict) -> None:
+    """
+    Set the logging configuration for an S3 bucket.
+    Parameters:
+        client (boto3.client): The Boto3 S3 client object.
+        bucket_name (str): The name of the S3 bucket.
+        logging_config (dict): The logging configuration to set.
+    Returns:
+        None
+    """
+    client.put_bucket_logging(Bucket=bucket_name, BucketLoggingStatus=logging_config)
 
 
 @S3ErrorHandler.common_error_handler("set bucket encryption")
