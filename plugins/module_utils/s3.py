@@ -94,9 +94,9 @@ def get_s3_bucket_accelerate_configuration(client: ClientType, bucket_name: str)
         ) from e
 
 
-@S3ErrorHandler.list_error_handler("get bucket ACLs", [])
+@S3ErrorHandler.list_error_handler("get bucket ACLs", {})
 @AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
-def get_s3_bucket_acl(client: ClientType, bucket_name: str) -> List:
+def get_s3_bucket_acl(client: ClientType, bucket_name: str) -> Dict:
     """
     Get ACLs of the S3 bucket.
     Parameters:
