@@ -1,0 +1,2 @@
+trivial:
+  - tests - fix unit tests to work correctly when run using pytest_ansible plugin.
