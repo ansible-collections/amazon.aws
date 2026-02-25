@@ -10,7 +10,7 @@ import botocore
 import pytest
 from dateutil.tz import tzutc
 
-from ansible.module_utils._text import to_bytes
+from ansible.module_utils.common.text.converters import to_bytes
 
 from ansible_collections.amazon.aws.plugins.modules import ec2_key
 
