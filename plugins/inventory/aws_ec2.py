@@ -23,9 +23,9 @@ notes:
     Use C(ec2_tags) instead to avoid conflicts with Ansible reserved variable names.
   - The C(ec2_tags) host variable was added in version 11.2.0.
   - The C(use_contrib_script_compatible_ec2_tag_keys) option is deprecated and will be removed in a release after 2026-12-01.
-    We advise to migrate to the C(ec2_tags) structure (e.g. use C(ec2_tags.TAGNAME) instead of C(ec2_tag_TAGNAME)).
+    Use the C(ec2_tags) structure instead (e.g. use C(ec2_tags.TAGNAME) rather than C(ec2_tag_TAGNAME)).
   - The C(use_contrib_script_compatible_sanitization) option is deprecated and will be removed in a release after 2026-12-01.
-    We advise to remove this option and migrate to Ansible's default group name sanitization instead.
+    Use Ansible's default group name sanitization instead.
 author:
   - Sloane Hertel (@s-hertel)
 options:
@@ -119,14 +119,14 @@ options:
       - This is not the default as such names break certain functionality as not all characters are valid Python identifiers
         which group names end up being used as.
       - The use of this feature is deprecated and will be removed in a release after 2026-12-01.
-        We advise to remove this option and migrate to Ansible's default group name sanitization instead.
+        Use Ansible's default group name sanitization instead.
     type: bool
     default: false
   use_contrib_script_compatible_ec2_tag_keys:
     description:
       - Expose the host tags with C(ec2_tag_TAGNAME) keys like the old C(ec2.py) inventory script.
       - The use of this feature is deprecated and will be removed in a release after 2026-12-01.
-        We advise to migrate to the C(ec2_tags) structure (e.g. use C(ec2_tags.TAGNAME) instead of C(ec2_tag_TAGNAME)).
+        Use the C(ec2_tags) structure instead (e.g. use C(ec2_tags.TAGNAME) rather than C(ec2_tag_TAGNAME)).
     type: bool
     default: false
     version_added: 1.5.0
@@ -977,7 +977,7 @@ class InventoryModule(AWSInventoryBase):
         if use_contrib_script_compatible_sanitization:
             self.display.deprecated(
                 "The 'use_contrib_script_compatible_sanitization' option is deprecated. "
-                "We advise to remove this option and migrate to Ansible's default group name sanitization instead.",
+                "Use Ansible's default group name sanitization instead.",
                 date="2026-12-01",
                 collection_name="amazon.aws",
             )
@@ -987,7 +987,7 @@ class InventoryModule(AWSInventoryBase):
         if use_contrib_script_compatible_ec2_tag_keys:
             self.display.deprecated(
                 "The 'use_contrib_script_compatible_ec2_tag_keys' option is deprecated. "
-                "We advise to migrate to the 'ec2_tags' structure.",
+                "Use the 'ec2_tags' structure instead.",
                 date="2026-12-01",
                 collection_name="amazon.aws",
             )
