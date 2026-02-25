@@ -1,0 +1,5 @@
+minor_changes:
+  - aws_cloudtrail - replace deprecated ``datetime.utcnow()`` with timezone-aware ``datetime.now(tz=timezone.utc)`` (https://github.com/ansible-collections/amazon.aws/pull/2858).
+
+trivial:
+  - tests - fix unit tests to work correctly when run using pytest_ansible plugin (https://github.com/ansible-collections/amazon.aws/pull/2858).

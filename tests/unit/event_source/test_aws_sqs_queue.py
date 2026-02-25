@@ -2,15 +2,16 @@ from unittest.mock import patch
 
 import pytest
 from asyncmock import AsyncMock
-from extensions.eda.plugins.event_source.aws_sqs_queue import main as sqs_main
-from tests.unit.conftest import ListQueue
+
+from ansible_collections.amazon.aws.extensions.eda.plugins.event_source.aws_sqs_queue import main as sqs_main
+from ansible_collections.amazon.aws.tests.unit.utils.event import ListQueue
 
 
 @pytest.mark.asyncio
 async def test_receive_from_sqs(eda_queue: ListQueue) -> None:
     session = AsyncMock()
     with patch(
-        "extensions.eda.plugins.event_source.aws_sqs_queue.get_session",  # noqa: E501
+        "ansible_collections.amazon.aws.extensions.eda.plugins.event_source.aws_sqs_queue.get_session",
         return_value=session,
     ):
         client = AsyncMock()

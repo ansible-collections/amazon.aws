@@ -1,6 +1,6 @@
 import asyncio
+import datetime
 import json
-from datetime import datetime
 from typing import TYPE_CHECKING, Any, cast
 
 from aiobotocore.session import get_session
@@ -132,7 +132,7 @@ async def main(queue: asyncio.Queue[Any], args: dict[str, Any]) -> None:
         if args.get(key) is not None:
             params[value] = args.get(key)
 
-    params["StartTime"] = datetime.utcnow()  # noqa: DTZ003
+    params["StartTime"] = datetime.datetime.now(tz=datetime.timezone.utc)
 
     async with session.create_client("cloudtrail", **connection_args(args)) as client:
         event_time = None

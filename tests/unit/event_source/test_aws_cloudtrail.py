@@ -3,12 +3,13 @@ from unittest.mock import patch
 
 import pytest
 from asyncmock import AsyncMock
-from extensions.eda.plugins.event_source.aws_cloudtrail import _cloudtrail_event_to_dict
-from extensions.eda.plugins.event_source.aws_cloudtrail import _get_events
-from extensions.eda.plugins.event_source.aws_cloudtrail import connection_args
-from extensions.eda.plugins.event_source.aws_cloudtrail import main as cloudtrail_main
 from mock import MagicMock
-from tests.unit.conftest import ListQueue
+
+from ansible_collections.amazon.aws.extensions.eda.plugins.event_source.aws_cloudtrail import _cloudtrail_event_to_dict
+from ansible_collections.amazon.aws.extensions.eda.plugins.event_source.aws_cloudtrail import _get_events
+from ansible_collections.amazon.aws.extensions.eda.plugins.event_source.aws_cloudtrail import connection_args
+from ansible_collections.amazon.aws.extensions.eda.plugins.event_source.aws_cloudtrail import main as cloudtrail_main
+from ansible_collections.amazon.aws.tests.unit.utils.event import ListQueue
 
 
 @pytest.mark.asyncio
@@ -31,7 +32,7 @@ async def test_receive_from_cloudtrail(eda_queue: ListQueue) -> None:
         ]
     }
     with patch(
-        "extensions.eda.plugins.event_source.aws_cloudtrail.get_session",  # noqa: E501
+        "ansible_collections.amazon.aws.extensions.eda.plugins.event_source.aws_cloudtrail.get_session",
         return_value=session,
     ):
         iterator = AsyncMock()
