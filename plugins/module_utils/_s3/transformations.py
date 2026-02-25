@@ -86,7 +86,11 @@ def normalize_s3_bucket_logging(logging_config: Optional[dict]) -> Optional[dict
     if not logging_config or "LoggingEnabled" not in logging_config:
         return None
 
-    return boto3_resource_to_ansible_dict(logging_config.get("LoggingEnabled"), force_tags=False)
+    result = boto3_resource_to_ansible_dict(logging_config.get("LoggingEnabled"), force_tags=False)
+    # Ensure target_prefix is always present, even if not in source
+    if "target_prefix" not in result:
+        result["target_prefix"] = ""
+    return result
 
 
 def _grantee_is_owner(grant: dict, owner_id: str) -> bool:
