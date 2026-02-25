@@ -1,5 +1,7 @@
 deprecated_features:
   - aws_ec2 - the ``use_contrib_script_compatible_ec2_tag_keys`` option has been deprecated and will be removed in a release after 2026-12-01.
-    We advise to migrate to the ``ec2_tags`` structure instead.
+    Use the ``ec2_tags`` structure instead.
+    (https://github.com/ansible-collections/amazon.aws/pull/2854)
   - aws_ec2 - the ``use_contrib_script_compatible_sanitization`` option has been deprecated and will be removed in a release after 2026-12-01.
-    We advise to remove this option and migrate to Ansible's default group name sanitization instead.
+    Use Ansible's default group name sanitization instead.
+     (https://github.com/ansible-collections/amazon.aws/pull/2854)

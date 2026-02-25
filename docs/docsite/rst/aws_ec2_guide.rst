@@ -331,11 +331,11 @@ Some examples are shown below:
 
 .. deprecated:: 11.2.0
    The ``use_contrib_script_compatible_ec2_tag_keys`` option is deprecated and will be removed in a release after 2026-12-01.
-   We advise to migrate to the ``ec2_tags`` structure (e.g. use ``ec2_tags.TAGNAME`` instead of ``ec2_tag_TAGNAME``).
+   Use the ``ec2_tags`` structure instead (e.g. ``ec2_tags.TAGNAME`` rather than ``ec2_tag_TAGNAME``).
 
 .. deprecated:: 11.2.0
    The ``use_contrib_script_compatible_sanitization`` option is deprecated and will be removed in a release after 2026-12-01.
-   We advise to remove this option and migrate to Ansible's default group name sanitization instead.
+   Use Ansible's default group name sanitization instead.
 
 ``use_contrib_script_compatible_ec2_tag_keys`` exposes the host tags with ec2_tag_TAGNAME keys like the old ec2.py inventory script when it's True.
 
