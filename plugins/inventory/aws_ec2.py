@@ -340,7 +340,7 @@ from typing import Dict
 from typing import List
 from typing import Set
 
-from ansible.module_utils._text import to_text
+from ansible.module_utils.common.text.converters import to_text
 
 try:
     from ansible.template import trust_as_template

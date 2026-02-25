@@ -1,0 +1,2 @@
+minor_changes:
+  - Various modules and utilities - migrated from deprecated ``ansible.module_utils._text`` to ``ansible.module_utils.common.text.converters``.

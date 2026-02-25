@@ -27,7 +27,7 @@ sample output: >
   #               's3:ListObjectsV2', 's3:HeadBucket', 's3:UploadPart', 's3:PutObject']
 """
 
-from ansible.module_utils._text import to_native
+from ansible.module_utils.common.text.converters import to_native
 from ansible.plugins.callback import CallbackBase
 
 
