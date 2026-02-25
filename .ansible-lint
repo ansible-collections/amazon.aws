@@ -6,3 +6,4 @@ exclude_paths:
   - changelogs/fragments/
   - .github/
   - tests/integration
+  - meta/
