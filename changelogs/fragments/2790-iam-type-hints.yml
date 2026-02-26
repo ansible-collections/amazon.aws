@@ -1,0 +1,5 @@
+minor_changes:
+- iam_group - added type hints and docstrings to improve code maintainability (https://github.com/ansible-collections/amazon.aws/pull/2790).
+- iam_policy - added type hints and docstrings to improve code maintainability (https://github.com/ansible-collections/amazon.aws/pull/2790).
+- iam_role - added type hints and docstrings to improve code maintainability (https://github.com/ansible-collections/amazon.aws/pull/2790).
+- iam_user - added type hints and docstrings to improve code maintainability (https://github.com/ansible-collections/amazon.aws/pull/2790).
