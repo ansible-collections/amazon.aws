@@ -22,6 +22,10 @@ notes:
   - The C(tags) host variable is deprecated and will be removed in a release after 2026-12-01.
     Use C(ec2_tags) instead to avoid conflicts with Ansible reserved variable names.
   - The C(ec2_tags) host variable was added in version 11.2.0.
+  - The C(use_contrib_script_compatible_ec2_tag_keys) option is deprecated and will be removed in a release after 2026-12-01.
+    Use the C(ec2_tags) structure instead (e.g. use C(ec2_tags.TAGNAME) rather than C(ec2_tag_TAGNAME)).
+  - The C(use_contrib_script_compatible_sanitization) option is deprecated and will be removed in a release after 2026-12-01.
+    Use Ansible's default group name sanitization instead.
 author:
   - Sloane Hertel (@s-hertel)
 options:
@@ -106,7 +110,7 @@ options:
   use_contrib_script_compatible_sanitization:
     description:
       - By default this plugin is using a general group name sanitization to create safe and usable group names for use in Ansible.
-        This option allows you to override that, in efforts to allow migration from the old inventory script and
+        This option allows you to override that, in efforts to allow migration from the old C(ec2.py) inventory script and
         matches the sanitization of groups when the script's ``replace_dash_in_groups`` option is set to ``False``.
         To replicate behavior of ``replace_dash_in_groups = True`` with constructed groups,
         you will need to replace hyphens with underscores via the regex_replace filter for those entries.
@@ -114,12 +118,15 @@ options:
         otherwise the core engine will just use the standard sanitization on top.
       - This is not the default as such names break certain functionality as not all characters are valid Python identifiers
         which group names end up being used as.
+      - The use of this feature is deprecated and will be removed in a release after 2026-12-01.
+        Use Ansible's default group name sanitization instead.
     type: bool
     default: false
   use_contrib_script_compatible_ec2_tag_keys:
     description:
-      - Expose the host tags with ec2_tag_TAGNAME keys like the old ec2.py inventory script.
-      - The use of this feature is discouraged and we advise to migrate to the new ``ec2_tags`` structure.
+      - Expose the host tags with C(ec2_tag_TAGNAME) keys like the old C(ec2.py) inventory script.
+      - The use of this feature is deprecated and will be removed in a release after 2026-12-01.
+        Use the C(ec2_tags) structure instead (e.g. use C(ec2_tags.TAGNAME) rather than C(ec2_tag_TAGNAME)).
     type: bool
     default: false
     version_added: 1.5.0
@@ -953,9 +960,6 @@ class InventoryModule(AWSInventoryBase):
             collection_name="amazon.aws",
         )
 
-        if self.get_option("use_contrib_script_compatible_sanitization"):
-            self._sanitize_group_name = self._legacy_script_compatible_group_sanitization
-
         # get user specifications
         regions = self.get_option("regions")
         include_filters = self.build_include_filters()
@@ -966,8 +970,27 @@ class InventoryModule(AWSInventoryBase):
 
         hostvars_prefix = self.get_option("hostvars_prefix")
         hostvars_suffix = self.get_option("hostvars_suffix")
+        use_contrib_script_compatible_sanitization = self.get_option("use_contrib_script_compatible_sanitization")
         use_contrib_script_compatible_ec2_tag_keys = self.get_option("use_contrib_script_compatible_ec2_tag_keys")
         use_ssm_inventory = self.get_option("use_ssm_inventory")
+
+        if use_contrib_script_compatible_sanitization:
+            self.display.deprecated(
+                "The 'use_contrib_script_compatible_sanitization' option is deprecated. "
+                "Use Ansible's default group name sanitization instead.",
+                date="2026-12-01",
+                collection_name="amazon.aws",
+            )
+
+            self._sanitize_group_name = self._legacy_script_compatible_group_sanitization
+
+        if use_contrib_script_compatible_ec2_tag_keys:
+            self.display.deprecated(
+                "The 'use_contrib_script_compatible_ec2_tag_keys' option is deprecated. "
+                "Use the 'ec2_tags' structure instead.",
+                date="2026-12-01",
+                collection_name="amazon.aws",
+            )
 
         if not all(isinstance(element, (dict, str)) for element in hostnames):
             self.fail_aws("Hostnames should be a list of dict and str.")
