@@ -6,10 +6,14 @@
             "Sid": "ELB-Logging",
             "Effect": "Allow",
             "Principal": {
-                "AWS": "arn:aws:iam::{{ access_log_account_id }}:root"
+                "Service": "logdelivery.elasticloadbalancing.amazonaws.com"
             },
             "Action": "s3:PutObject",
-            "Resource": "arn:aws:s3:::{{ s3_logging_bucket }}/*"
+            "Resource": [
+                "arn:aws:s3:::{{ s3_logging_bucket }}/AWSLogs/{{ aws_account }}/*",
+                "arn:aws:s3:::{{ s3_logging_bucket }}/{{ default_logging_prefix }}/AWSLogs/{{ aws_account }}/*",
+                "arn:aws:s3:::{{ s3_logging_bucket }}/{{ updated_logging_prefix }}/AWSLogs/{{ aws_account }}/*"
+            ]
         }
     ]
 }

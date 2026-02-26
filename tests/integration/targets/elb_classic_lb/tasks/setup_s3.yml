@@ -1,4 +1,12 @@
 ---
+- name: Get ARN of calling user
+  amazon.aws.aws_caller_info:
+  register: aws_caller_info
+
+- name: Register account id
+  ansible.builtin.set_fact:
+    aws_account: "{{ aws_caller_info.account }}"
+
 - name: Create S3 bucket for access logs
   vars:
     s3_logging_bucket: "{{ s3_logging_bucket_a }}"
