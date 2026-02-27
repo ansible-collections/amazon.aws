@@ -412,7 +412,7 @@ def test_summary_get_distribution_list(
 
     cloudfront_facts_service.list_resource_tags = MagicMock()
     cloudfront_facts_service.list_resource_tags.side_effect = lambda arn: {
-        "Tags": x["Tags"] for x in distributions if x["ARN"] == arn
+        "Tags": [x["Tags"] for x in distributions if x["ARN"] == arn][0]
     }
 
     key_name = "streaming_distributions"
