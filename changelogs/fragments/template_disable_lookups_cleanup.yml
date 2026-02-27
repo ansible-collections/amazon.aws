@@ -1,0 +1,3 @@
+minor_changes:
+  - aws_ec2 - remove explicit ``disable_lookups=False`` parameter from template calls as it is deprecated and False is the default value.
+  - aws_inventory_base - remove explicit ``disable_lookups=False`` parameter from template calls as it is deprecated and False is the default value.
