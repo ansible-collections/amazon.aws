@@ -90,7 +90,7 @@ class AwsUnitTestTemplar:
                     return True
         return False
 
-    def template(self, variable, disable_lookups):
+    def template(self, variable):
         for k, v in self.config.items():
             variable = re.sub("{{([ ]*%s[ ]*)}}" % k, v, variable)
         if self.is_template_string(variable):

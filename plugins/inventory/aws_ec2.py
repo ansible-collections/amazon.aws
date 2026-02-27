@@ -675,7 +675,7 @@ class InventoryModule(AWSInventoryBase):
                 template_var = "{{%s|%s}}" % (hostname, jinja2_filter)
             if trust_as_template:
                 template_var = trust_as_template(template_var)
-            hostname = self.templar.template(variable=template_var, disable_lookups=False)
+            hostname = self.templar.template(variable=template_var)
         if isinstance(hostname, list) and return_single_hostname:
             hostname = hostname[0] if hostname else None
         return hostname
