@@ -9,11 +9,10 @@ on:
       - all_green
     types:
       - completed
-    secrets:
-      SONAR_TOKEN:
-        required: true
 
-permissions: read-all
+permissions:
+  contents: read
+  pull-requests: read
 
 jobs:
   finalize:
@@ -32,23 +31,27 @@ jobs:
         if: github.event.workflow_run.event == 'pull_request'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          REPO: ${{ github.repository }}
         run: |
-          PR_NUMBER=$(gh pr list --head "${{ github.event.workflow_run.head_branch }}" --repo "${{ github.repository }}" --json number -q '.[0].number')
+          PR_NUMBER=$(gh pr list --head "$HEAD_BRANCH" --repo "$REPO" --json number -q '.[0].number')
           echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
           if [ -n "$PR_NUMBER" ]; then
-            PR_DATA=$(gh api "repos/${{ github.repository }}/pulls/$PR_NUMBER")
+            PR_DATA=$(gh api "repos/$REPO/pulls/$PR_NUMBER")
             echo "PR_BASE=$(echo "$PR_DATA" | jq -r '.base.ref')" >> $GITHUB_ENV
             echo "PR_HEAD=$(echo "$PR_DATA" | jq -r '.head.ref')" >> $GITHUB_ENV
           fi
 
       - name: Prepare SonarCloud args
+        env:
+          COMMIT_SHA: ${{ github.event.workflow_run.head_sha }}
+          EVENT_TYPE: ${{ github.event.workflow_run.event }}
         run: |
-          COMMIT_SHA="${{ github.event.workflow_run.head_sha }}"
-          SONAR_ARGS="-Dsonar.scm.revision=$COMMIT_SHA"
-          if [[ "${{ github.event.workflow_run.event }}" == "pull_request" && -n "${{ env.PR_NUMBER }}" ]]; then
-            SONAR_ARGS="${SONAR_ARGS} -Dsonar.pullrequest.key=${{ env.PR_NUMBER }}"
-            SONAR_ARGS="${SONAR_ARGS} -Dsonar.pullrequest.branch=${{ env.PR_HEAD }}"
-            SONAR_ARGS="${SONAR_ARGS} -Dsonar.pullrequest.base=${{ env.PR_BASE }}"
+          SONAR_ARGS="-Dsonar.scm.revision=\"${COMMIT_SHA}\""
+          if [[ "$EVENT_TYPE" == "pull_request" && -n "$PR_NUMBER" ]]; then
+            SONAR_ARGS="${SONAR_ARGS} -Dsonar.pullrequest.key=\"${PR_NUMBER}\""
+            SONAR_ARGS="${SONAR_ARGS} -Dsonar.pullrequest.branch=\"${PR_HEAD}\""
+            SONAR_ARGS="${SONAR_ARGS} -Dsonar.pullrequest.base=\"${PR_BASE}\""
           fi
           echo "SONAR_ARGS=${SONAR_ARGS}" >> $GITHUB_ENV
 
