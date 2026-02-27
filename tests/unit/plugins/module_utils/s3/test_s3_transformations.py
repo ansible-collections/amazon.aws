@@ -3,8 +3,11 @@
 # Copyright: Contributors to the Ansible project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+import pytest
+
 from ansible_collections.amazon.aws.plugins.module_utils._s3.transformations import merge_tags
 from ansible_collections.amazon.aws.plugins.module_utils._s3.transformations import normalize_s3_bucket_acls
+from ansible_collections.amazon.aws.plugins.module_utils._s3.transformations import normalize_s3_bucket_logging
 from ansible_collections.amazon.aws.plugins.module_utils._s3.transformations import normalize_s3_bucket_public_access
 from ansible_collections.amazon.aws.plugins.module_utils._s3.transformations import normalize_s3_bucket_versioning
 
@@ -254,3 +257,64 @@ class TestNormalizeS3BucketAcls:
         result = normalize_s3_bucket_acls(acls)
 
         assert result == []
+
+
+class TestNormalizeS3BucketLogging:
+    @pytest.mark.parametrize(
+        "logging_config,expected",
+        [
+            (None, None),
+            ({}, None),
+            ({"SomeOtherKey": "value"}, None),
+        ],
+        ids=["none_input", "empty_dict", "dict_without_logging_enabled"],
+    )
+    def test_returns_none_for_invalid_input(self, logging_config, expected):
+        """Test that invalid or empty input returns None."""
+        result = normalize_s3_bucket_logging(logging_config)
+        assert result is expected
+
+    @pytest.mark.parametrize(
+        "logging_config,expected_bucket,expected_prefix",
+        [
+            (
+                {"LoggingEnabled": {"TargetBucket": "my-log-bucket", "TargetPrefix": "logs/"}},
+                "my-log-bucket",
+                "logs/",
+            ),
+            (
+                {"LoggingEnabled": {"TargetBucket": "my-log-bucket", "TargetPrefix": ""}},
+                "my-log-bucket",
+                "",
+            ),
+            (
+                {"LoggingEnabled": {"TargetBucket": "my-log-bucket"}},
+                "my-log-bucket",
+                None,  # Will check for key existence
+            ),
+        ],
+        ids=["with_prefix", "empty_prefix", "no_prefix_key"],
+    )
+    def test_normalizes_logging_config(self, logging_config, expected_bucket, expected_prefix):
+        """Test that logging configuration is normalized correctly."""
+        result = normalize_s3_bucket_logging(logging_config)
+
+        assert result is not None
+        assert result["target_bucket"] == expected_bucket
+        if expected_prefix is not None:
+            assert result["target_prefix"] == expected_prefix
+        else:
+            # Should have target_prefix key even if not in source
+            assert "target_prefix" in result
+
+    def test_does_not_inject_tags_field(self):
+        """Test that tags field is not injected into normalized output."""
+        logging_config = {"LoggingEnabled": {"TargetBucket": "my-log-bucket", "TargetPrefix": "logs/"}}
+        result = normalize_s3_bucket_logging(logging_config)
+
+        assert result is not None
+        # Critical: verify no tags field was injected
+        assert "tags" not in result
+        assert "Tags" not in result
+        # Should only have the expected keys
+        assert set(result.keys()).issubset({"target_bucket", "target_prefix"})
