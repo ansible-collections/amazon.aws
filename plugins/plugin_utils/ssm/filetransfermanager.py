@@ -9,7 +9,7 @@ from typing import Dict
 from typing import Optional
 
 from ansible.errors import AnsibleError
-from ansible.module_utils._text import to_bytes
+from ansible.module_utils.common.text.converters import to_bytes
 
 from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.common import CommandResult
 from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.common import ssm_retry

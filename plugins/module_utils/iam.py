@@ -10,7 +10,7 @@ try:
 except ImportError:
     pass  # Modules are responsible for handling this.
 
-from ansible.module_utils._text import to_native
+from ansible.module_utils.common.text.converters import to_native
 
 from .arn import parse_aws_arn
 from .arn import validate_aws_arn

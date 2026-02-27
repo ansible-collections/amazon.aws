@@ -18,7 +18,7 @@ from typing import Optional
 from typing import Union
 
 from ansible.errors import AnsibleConnectionFailure
-from ansible.module_utils._text import to_text
+from ansible.module_utils.common.text.converters import to_text
 
 verbosity_display_type = Callable[[int, str], None]
 
