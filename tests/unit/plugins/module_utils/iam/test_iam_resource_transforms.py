@@ -28,9 +28,6 @@ example_date2 = dateutil.parser.parse(example_date2_txt)
 
 
 class TestIamResourceToAnsibleDict:
-    def setup_method(self):
-        pass
-
     def test_normalize_iam_mfa_device(self):
         INPUT = {
             "UserName": "ExampleUser",

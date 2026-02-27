@@ -75,7 +75,7 @@ def test_get_aws_region_exception_nested(monkeypatch, aws_module, botocore_utils
     region_method.side_effect = exception_nested
 
     with pytest.raises(FailException):
-        assert botocore_utils.get_aws_region(aws_module)
+        botocore_utils.get_aws_region(aws_module)
 
     passed_args = region_method.call_args
     assert passed_args == call(sentinel.MODULE_PARAMS)
@@ -97,7 +97,7 @@ def test_get_aws_region_exception_msg(monkeypatch, aws_module, botocore_utils):
     region_method.side_effect = exception_nested
 
     with pytest.raises(FailException):
-        assert botocore_utils.get_aws_region(aws_module)
+        botocore_utils.get_aws_region(aws_module)
 
     passed_args = region_method.call_args
     assert passed_args == call(sentinel.MODULE_PARAMS)

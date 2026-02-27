@@ -113,7 +113,7 @@ class TestConnectionBaseClass:
         else:
             with pytest.raises(AnsibleFileNotFound) as exc_info:
                 loaded_aws_ssm.put_file(in_path, out_path)
-            str(exc_info.value).startswith("file or module does not exist: ")
+            assert str(exc_info.value).startswith("file or module does not exist: ")
             loaded_aws_ssm.file_transfer_manager._file_transport_command.assert_not_called()
 
         mock_os_path_exists.assert_called_once_with(to_bytes_results)
@@ -126,7 +126,7 @@ class TestConnectionBaseClass:
         loaded_aws_ssm.generate_commands = MagicMock(return_value=("", [], {}))
         loaded_aws_ssm.file_transfer_manager._file_transport_command = MagicMock(return_value=file_transport_result)
 
-        loaded_aws_ssm.fetch_file(in_path, out_path) == file_transport_result
+        assert loaded_aws_ssm.fetch_file(in_path, out_path) == file_transport_result
         loaded_aws_ssm.file_transfer_manager._file_transport_command.assert_called_once_with(
             in_path, out_path, "get", [], {}, ""
         )
