@@ -55,9 +55,6 @@ def do_transform_nested(resource):
 
 
 class TestBoto3ResourceToAnsibleDict:
-    def setup_method(self):
-        pass
-
     @pytest.mark.parametrize("input_params, output_params", deepcopy(TEST_DATA))
     def test_default_conversion(self, input_params, output_params):
         # Test default behaviour

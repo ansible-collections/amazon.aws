@@ -12,9 +12,6 @@ from ansible_collections.amazon.aws.plugins.module_utils._autoscaling.transforma
 
 
 class TestAutoScalingResourceToAnsibleDict:
-    def setup_method(self):
-        pass
-
     def test_normalize_autoscaling_instances(self):
         INPUT = [
             {

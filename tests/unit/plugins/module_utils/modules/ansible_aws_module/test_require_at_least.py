@@ -51,12 +51,6 @@ def set_ansible_traceback_env(monkeypatch):
 
 class TestRequireAtLeastTestSuite:
     # ========================================================
-    # Prepare some data for use in our testing
-    # ========================================================
-    def setup_method(self):
-        pass
-
-    # ========================================================
     #   Test botocore_at_least
     # ========================================================
     @pytest.mark.parametrize(
