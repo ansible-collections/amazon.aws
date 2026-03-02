@@ -1,0 +1,3 @@
+---
+# defaults file for ec2_key
+ec2_key_name: "event-source-eda-aws-cloudtrail-{{ tiny_prefix }}-key-pair"

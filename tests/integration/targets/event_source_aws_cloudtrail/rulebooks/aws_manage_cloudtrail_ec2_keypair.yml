@@ -1,0 +1,36 @@
+- name: Test aws cloudtrail source plugin
+  hosts: localhost
+
+  sources:
+    - amazon.aws.aws_cloudtrail:
+        access_key: "{{ aws_access_key }}"
+        secret_key: "{{ aws_secret_key }}"
+        session_token: "{{ security_token | default(omit) }}"
+        region: "{{ aws_region }}"
+        delay_seconds: 5
+        lookup_attributes:
+          - AttributeKey: 'EventSource'
+            AttributeValue: 'ec2.amazonaws.com'
+          - AttributeKey: 'ReadOnly'
+            AttributeValue: 'false'
+  rules:
+    - name: match key pair creation event
+      condition: event.CloudTrailEvent.eventName == 'CreateKeyPair' and event.CloudTrailEvent.requestParameters.keyName == vars.ec2_key_name
+      action:
+        run_playbook:
+          name: playbooks/aws_delete_ec2_keypair.yml
+          extra_vars:
+            aws_region: "{{ aws_region }}"
+            aws_access_key: "{{ aws_access_key }}"
+            aws_secret_key: "{{ aws_secret_key }}"
+            security_token: "{{ security_token }}"
+            tiny_prefix: "{{ tiny_prefix }}"
+            ec2_key_name: "{{ ec2_key_name }}"
+
+    - name: match key pair deletion event
+      condition: event.CloudTrailEvent.eventName == 'DeleteKeyPair' and event.CloudTrailEvent.requestParameters.keyName == vars.ec2_key_name
+      action:
+        shutdown:
+          delay: 0.125
+          kind: now
+          message: Shutting down because the key pair was deleted
