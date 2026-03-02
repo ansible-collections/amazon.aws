@@ -1,4 +1,19 @@
-# SonarCloud analysis after CI passes (i.e. triggers when "all_green" workflow completes).
+## SonarCloud Analysis Workflow for amazon.aws
+
+# This workflow runs SonarCloud analysis triggered by all_green workflow completion.
+#
+# FLOW: all_green completes (linters, sanity, units, coverage) → workflow_run triggers this workflow → finalize job runs
+#
+# - Triggered by: workflow_run (all_green on pull_request or push to main/stable-*)
+# - Steps: Checkout → Download coverage from all_green run → Get PR info (if PR) → Run SonarCloud scan
+# - Coverage: Unit test coverage is produced by the coverage job in all_green and passed to SonarCloud here.
+#
+# This ensures coverage data is always available from the all_green run before analysis runs.
+#
+# What files are scanned:
+# - All files in the repository that SonarCloud can analyze
+# - Excludes: tests, scripts, dev environments, external collections (see sonar-project.properties)
+
 
 ---
 name: SonarCloud
@@ -13,6 +28,7 @@ on:
 permissions:
   contents: read
   pull-requests: read
+  actions: read
 
 jobs:
   finalize:
@@ -26,6 +42,20 @@ jobs:
           ref: ${{ github.event.workflow_run.head_sha }}
           fetch-depth: 0
           show-progress: false
+
+      - name: Download coverage artifacts
+        uses: dawidd6/action-download-artifact@v16
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          workflow: all_green
+          run_id: ${{ github.event.workflow_run.id }}
+          pattern: coverage*
+
+      - name: Set coverage report paths
+        run: |
+          coverage_files=$(find . -name "coverage*.xml" -type f 2>/dev/null | tr '\n' ',' | sed 's/,$//')
+          echo "Found coverage files: ${coverage_files:-none}"
+          echo "COVERAGE_PATHS=${coverage_files}" >> $GITHUB_ENV
 
       - name: Get PR number and info
         if: github.event.workflow_run.event == 'pull_request'
@@ -60,4 +90,6 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.ANSIBLE_COLLECTIONS_ORG_SONAR_TOKEN_CICD_BOT }}
         with:
-          args: ${{ env.SONAR_ARGS }}
+          args: >-
+            ${{ env.SONAR_ARGS }}
+            ${{ env.COVERAGE_PATHS && format('-Dsonar.python.coverage.reportPaths={0}', env.COVERAGE_PATHS) || '' }}
