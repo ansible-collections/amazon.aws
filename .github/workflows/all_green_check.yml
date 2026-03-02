@@ -44,7 +44,7 @@ jobs:
 
       - name: Build and install collection
         id: build
-        uses: ansible-network/github_actions/.github/actions/build_install_collection@main
+        uses: ansible-network/github_actions/.github/actions/build_install_collection@ce8d6b9b5ebf455660619714022ffd288db1a4de
         with:
           source_path: ${{ github.workspace }}
           install_python_dependencies: true

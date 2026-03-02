@@ -44,7 +44,7 @@ jobs:
           show-progress: false
 
       - name: Download coverage artifacts
-        uses: dawidd6/action-download-artifact@v16
+        uses: dawidd6/action-download-artifact@2536c51d3d126276eb39f74d6bc9c72ac6ef30d3  # v16
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow: all_green
