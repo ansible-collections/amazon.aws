@@ -49,9 +49,9 @@ jobs:
         run: |
           SONAR_ARGS="-Dsonar.scm.revision=\"${COMMIT_SHA}\""
           if [[ "$EVENT_TYPE" == "pull_request" && -n "$PR_NUMBER" ]]; then
-            SONAR_ARGS="${SONAR_ARGS} -Dsonar.pullrequest.key=\"${PR_NUMBER}\""
-            SONAR_ARGS="${SONAR_ARGS} -Dsonar.pullrequest.branch=\"${PR_HEAD}\""
-            SONAR_ARGS="${SONAR_ARGS} -Dsonar.pullrequest.base=\"${PR_BASE}\""
+            SONAR_ARGS="${SONAR_ARGS} -Dsonar.pullrequest.key=${PR_NUMBER}"
+            SONAR_ARGS="${SONAR_ARGS} -Dsonar.pullrequest.branch=${PR_HEAD}"
+            SONAR_ARGS="${SONAR_ARGS} -Dsonar.pullrequest.base=${PR_BASE}"
           fi
           echo "SONAR_ARGS=${SONAR_ARGS}" >> $GITHUB_ENV
 
