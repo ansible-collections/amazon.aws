@@ -1,0 +1,2 @@
+bugfixes:
+  - route53_zone - Remove the default value for ``dnssec`` parameter to avoid idempotency issues (https://github.com/ansible-collections/amazon.aws/pull/2553).
