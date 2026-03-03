@@ -6,7 +6,7 @@
 #
 # - Triggered by: workflow_run (all_green on pull_request or push to main/stable-*)
 # - Steps: Checkout → Download coverage from all_green run → Get PR info (if PR) → Run SonarCloud scan
-# - Coverage: Unit test coverage is produced by the coverage job in all_green and passed to SonarCloud here.
+# - Coverage: Unit test coverage is produced by the coverage job (via tox) in all_green and passed to SonarCloud here.
 #
 # This ensures coverage data is always available from the all_green run before analysis runs.
 #
@@ -78,10 +78,13 @@ jobs:
           EVENT_TYPE: ${{ github.event.workflow_run.event }}
         run: |
           SONAR_ARGS="-Dsonar.scm.revision=\"${COMMIT_SHA}\""
-          if [[ "$EVENT_TYPE" == "pull_request" && -n "$PR_NUMBER" ]]; then
+          if [[ "$EVENT_TYPE" == "pull_request" && -n "${PR_NUMBER:-}" ]]; then
             SONAR_ARGS="${SONAR_ARGS} -Dsonar.pullrequest.key=${PR_NUMBER}"
             SONAR_ARGS="${SONAR_ARGS} -Dsonar.pullrequest.branch=${PR_HEAD}"
             SONAR_ARGS="${SONAR_ARGS} -Dsonar.pullrequest.base=${PR_BASE}"
+          fi
+          if [[ -n "${COVERAGE_PATHS:-}" ]]; then
+            SONAR_ARGS="${SONAR_ARGS} -Dsonar.python.coverage.reportPaths=${COVERAGE_PATHS}"
           fi
           echo "SONAR_ARGS=${SONAR_ARGS}" >> $GITHUB_ENV
 
@@ -90,6 +93,4 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.ANSIBLE_COLLECTIONS_ORG_SONAR_TOKEN_CICD_BOT }}
         with:
-          args: >-
-            ${{ env.SONAR_ARGS }}
-            ${{ env.COVERAGE_PATHS && format('-Dsonar.python.coverage.reportPaths={0}', env.COVERAGE_PATHS) || '' }}
+          args: ${{ env.SONAR_ARGS }}
