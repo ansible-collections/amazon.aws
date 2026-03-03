@@ -508,7 +508,7 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
         """connect to the host via ssm"""
         self._play_context.remote_user = getpass.getuser()
         if not self.session_manager:
-            self.verbosity_display(3, "NO EXISTING SESSION, STARTING NEW ONE")
+            self.verbosity_display(4, "NO EXISTING SESSION, STARTING NEW ONE")
             self.start_session()
         else:
             self.verbosity_display(4, f"REUSING EXISTING SESSION: {self.session_manager._session_id}")
