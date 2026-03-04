@@ -28,11 +28,13 @@ def fixture_connection_aws_ssm():
 
     connection.session_manager = MagicMock()
 
-    def display_msg(msg):
-        print("--- AWS SSM CONNECTION --- ", msg)
+    # Track verbosity messages without printing to stdout (which pollutes test output)
+    connection._verbosity_messages = []
 
-    connection.verbosity_display = MagicMock()
-    connection.verbosity_display.side_effect = lambda level, msg: display_msg(msg)
+    def record_msg(level, msg):
+        connection._verbosity_messages.append((level, msg))
+
+    connection.verbosity_display = MagicMock(side_effect=record_msg)
 
     connection.get_option = MagicMock()
     return connection

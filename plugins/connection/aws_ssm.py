@@ -508,8 +508,12 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
         """connect to the host via ssm"""
         self._play_context.remote_user = getpass.getuser()
         if not self.session_manager:
+            self.verbosity_display(4, "NO EXISTING SESSION, STARTING NEW ONE")
             self.start_session()
+        else:
+            self.verbosity_display(4, f"REUSING EXISTING SESSION: {self.session_manager._session_id}")
 
+        self._connected = True
         return self
 
     def _init_clients(self) -> None:
@@ -602,6 +606,8 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
                 region_name=self.get_option("region"),
                 profile_name=self.get_option("profile") or "",
             )
+
+            self.verbosity_display(4, f"STARTED SSM SESSION: {self.session_manager._session_id}")
 
             # For non-windows Hosts: Ensure the session has started, and disable command echo and prompt.
             self.terminal_manager.prepare_terminal()
@@ -782,5 +788,9 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
     def close(self) -> None:
         """terminate the connection"""
         if self.session_manager is not None:
+            self.verbosity_display(3, f"TERMINATE SSM SESSION: {self.session_manager._session_id}")
+
             self.session_manager.terminate()
             self.session_manager = None
+
+        self._connected = False
