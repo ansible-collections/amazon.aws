@@ -111,6 +111,16 @@
         dest: "{{ remote_empty_file }}"
         mode: '0644'
 
+    # Can be used to manually test for a regression of
+    # https://github.com/ansible-collections/amazon.aws/issues/2753
+    # but you need to increase the verbosity and inspect the logs...
+    - name: Copy an empty file (Looping)
+      ansible.builtin.copy:
+        content: ""
+        dest: "{{ remote_empty_file }}-{{ item }}"
+        mode: '0644'
+      loop: ["one", "two", "three"]
+
     - name: Stat empty file
       ansible.builtin.stat:
         path: "{{ remote_empty_file }}"
