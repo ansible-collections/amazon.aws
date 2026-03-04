@@ -369,7 +369,7 @@ def create_aws_vpc_endpoint(client, module: AnsibleAWSModule) -> Tuple[bool, Dic
 
     if module.params.get("client_token"):
         token_provided = True
-        request_time = datetime.datetime.utcnow()
+        request_time = datetime.datetime.now(datetime.timezone.utc)
         params["ClientToken"] = module.params.get("client_token")
 
     policy = None

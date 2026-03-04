@@ -1,0 +1,3 @@
+minor_changes:
+  - ec2_vpc_nat_gateway - replace deprecated ``datetime.utcnow()`` with timezone-aware ``datetime.now(datetime.timezone.utc)`` (https://github.com/ansible-collections/amazon.aws/pull/2866).
+  - ec2_vpc_endpoint - replace deprecated ``datetime.utcnow()`` with timezone-aware ``datetime.now(datetime.timezone.utc)`` (https://github.com/ansible-collections/amazon.aws/pull/2866).
