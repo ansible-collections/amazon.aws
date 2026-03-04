@@ -609,7 +609,7 @@ def create(client, module: AnsibleAWSModule, allocation_id: Optional[str]) -> Tu
     if connectivity_type == "public":
         params.update({"AllocationId": allocation_id})
 
-    request_time = datetime.datetime.utcnow()
+    request_time = datetime.datetime.now(datetime.timezone.utc)
     changed = False
     token_provided = False
     result: dict[str, Any] = {}
