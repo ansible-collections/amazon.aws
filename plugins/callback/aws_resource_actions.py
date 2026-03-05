@@ -32,6 +32,15 @@ from ansible.plugins.callback import CallbackBase
 
 
 class CallbackModule(CallbackBase):
+    """Callback plugin to collect and display AWS resource actions.
+
+    This callback aggregates resource actions from task results. The resource_actions
+    are captured by AnsibleAWSModule when debug_botocore_endpoint_logs is enabled.
+    AnsibleAWSModule parses botocore.endpoint debug logs to extract API calls and
+    adds them to the task result as resource_actions. This callback then collects
+    those actions across all tasks and displays a summary.
+    """
+
     CALLBACK_VERSION = 2.8
     CALLBACK_TYPE = "aggregate"
     CALLBACK_NAME = "amazon.aws.aws_resource_actions"
@@ -59,5 +68,5 @@ class CallbackModule(CallbackBase):
 
     def playbook_on_stats(self, stats):
         if self.aws_resource_actions:
-            self.aws_resource_actions = sorted(list(to_native(action) for action in set(self.aws_resource_actions)))
+            self.aws_resource_actions = sorted(to_native(action) for action in set(self.aws_resource_actions))
             self._display.display(f"AWS ACTIONS: {self.aws_resource_actions}")
