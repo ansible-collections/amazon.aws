@@ -1,3 +1,3 @@
 minor_changes:
-  - arn - fix potential ReDoS vulnerability in ARN parsing regex by using negated character class instead of non-greedy quantifier.
-  - ec2_security_group - fix potential ReDoS vulnerability in security group ID parsing regex by using negated character classes and adding end anchor.
+  - arn - fix potential ReDoS vulnerability in ARN parsing regex by using negated character class instead of non-greedy quantifier (https://github.com/ansible-collections/amazon.aws/pull/2884).
+  - ec2_security_group - fix potential ReDoS vulnerability in security group ID parsing regex by using negated character classes and adding end anchor (https://github.com/ansible-collections/amazon.aws/pull/2884).
