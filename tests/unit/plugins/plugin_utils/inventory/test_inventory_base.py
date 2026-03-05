@@ -74,7 +74,7 @@ class AwsUnitTestTemplar:
         self.config = config
 
     def is_template_string(self, key):
-        m = re.findall("{{([ ]*[a-zA-Z0-9_]*[ ]*)}}", key)
+        m = re.findall(r"{{ *\w* *}}", key)
         return bool(m)
 
     def is_template(self, data):
@@ -92,9 +92,9 @@ class AwsUnitTestTemplar:
 
     def template(self, variable, disable_lookups):
         for k, v in self.config.items():
-            variable = re.sub("{{([ ]*%s[ ]*)}}" % k, v, variable)
+            variable = re.sub(r"{{ *%s *}}" % k, v, variable)
         if self.is_template_string(variable):
-            m = re.findall("{{([ ]*[a-zA-Z0-9_]*[ ]*)}}", variable)
+            m = re.findall(r"{{ *(\w*) *}}", variable)
             raise AnsibleError(f"Missing variables: {','.join([k.replace(' ', '') for k in m])}")
         return variable
 
