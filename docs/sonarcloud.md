@@ -45,7 +45,7 @@ Project-level analysis settings live in `sonar-project.properties` at the reposi
 | `sonar.exclusions` | `tests/**,.tox/**` | Paths excluded from analysis |
 | `sonar.python.coverage.reportPaths` | `coverage.xml` | Default coverage report path (overridden by CI when present) |
 | `sonar.python.version` | `3.13` | Python version for analysis |
-| `sonar.newCode.referenceBranch` | `main` | Branch used as baseline for “new code” |
+| `sonar.newCode.referenceBranch` | `main` | Branch used as baseline for "new code" |
 
 Full reference: [Analysis parameters](https://docs.sonarqube.org/latest/analysis/analysis-parameters/).
 
@@ -86,7 +86,7 @@ Flow:
 1. PR or `push` triggers **`all_green`** (linters, sanity, units, coverage).
 2. The **coverage** job runs `tox -e ansible2.20-py314-with_constraints`, finds `coverage.xml` under `.tox`, rewrites paths in the XML to be repo-relative, and uploads it as the `coverage` artifact.
 3. When **`all_green`** completes successfully, the **SonarCloud** workflow is triggered.
-4. The SonarCloud job checks out the repo at the run’s commit, downloads the `coverage` artifact, sets `COVERAGE_PATHS`, and runs the scanner with `sonar.python.coverage.reportPaths` set so SonarCloud receives the coverage report.
+4. The SonarCloud job checks out the repo at the run's commit, downloads the `coverage` artifact, sets `COVERAGE_PATHS`, and runs the scanner with `sonar.python.coverage.reportPaths` set so SonarCloud receives the coverage report.
 
 ### `all_green_check.yml`: coverage job
 
@@ -132,7 +132,7 @@ Coverage is only passed to the scanner when the download step finds at least one
 If analysis fails or coverage is missing:
 
 1. **Check `all_green`**: Ensure the `all_green` workflow (including the coverage job) succeeded for the same commit. SonarCloud downloads artifacts from that run.
-2. **Check artifact**: In the SonarCloud run, confirm the “Download coverage artifacts” and “Set coverage report paths” steps found at least one `coverage*.xml` and set `COVERAGE_PATHS`.
+2. **Check artifact**: In the SonarCloud run, confirm the "Download coverage artifacts" and "Set coverage report paths steps" found at least one `coverage*.xml` and set `COVERAGE_PATHS`.
 3. **Run SonarScanner locally**: Install [SonarScanner CLI](https://docs.sonarsource.com/sonarqube-cloud/advanced-setup/ci-based-analysis/sonarscanner-cli/), set `SONAR_TOKEN` from [SonarCloud Security](https://sonarcloud.io/account/security), and run from the repo root:
    ```sh
    sonar-scanner -Dsonar.projectBaseDir=. -Dsonar.host.url=https://sonarcloud.io
