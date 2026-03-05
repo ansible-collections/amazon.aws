@@ -64,7 +64,7 @@ The CI coverage job uses the environment `ansible2.20-py314-with_constraints` so
 `pyproject.toml` does not define SonarQube-specific settings. It configures tools used by tests and coverage:
 
 - **`[tool.pytest]`**: Pytest options (e.g. `xfail_strict = true`).
-- **`[tool.coverage.report]`**: Coverage report options, including `exclude_lines` for lines that are not required to be covered (e.g. `pragma: no cover`, `raise NotImplementedError`).
+- **`[tool.coverage.report]`**: Coverage report options, including `also_exclude` for lines that are not required to be covered (e.g. `raise NotImplementedError`).
 
 These affect how coverage is generated (and thus what appears in `coverage.xml`), but SonarCloud is configured only via `sonar-project.properties` and the workflow arguments.
 
