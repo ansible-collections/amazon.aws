@@ -165,7 +165,7 @@ def test_inventory_get_preferred_hostname_failure(inventory):
 
     with pytest.raises(AnsibleError) as err:
         inventory._get_preferred_hostname(instance, hostnames)
-        assert "A 'name' key must be defined in a hostnames dictionary." in err
+    assert "A 'name' key must be defined in a hostnames dictionary." in str(err.value)
 
 
 @pytest.mark.parametrize("base_verify_file_return", [True, False])
@@ -618,7 +618,7 @@ def test_inventory_get_all_hostnames_failure(inventory):
 
     with pytest.raises(AnsibleError) as err:
         inventory._get_all_hostnames(instance, hostnames)
-        assert "A 'name' key must be defined in a hostnames dictionary." in err
+    assert "A 'name' key must be defined in a hostnames dictionary." in str(err.value)
 
 
 @patch("ansible_collections.amazon.aws.plugins.inventory.aws_ec2._get_ssm_information")
