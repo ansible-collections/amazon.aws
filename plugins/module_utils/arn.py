@@ -57,7 +57,7 @@ def parse_aws_arn(arn):
     result.update(dict(account_id=m.group(6)))
     result.update(dict(resource=m.group(7)))
 
-    m2 = re.search(r"^(.*?)[:/](.+)$", m.group(7))
+    m2 = re.search(r"^([^:/]*)[:/](.+)$", m.group(7))
     if m2 is None:
         result.update(dict(resource_type=None, resource_id=m.group(7)))
     else:
