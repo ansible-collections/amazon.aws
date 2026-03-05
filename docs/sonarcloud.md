@@ -10,7 +10,7 @@ The amazon.aws collection uses SonarQube Cloud to analyze the main branch and pu
 
 2. **Clean Code Attributes**: Consistency, Intentionality, Adaptability, and Responsibility. See [Code analysis metrics](https://docs.sonarsource.com/sonarqube-cloud/digging-deeper/metric-definitions/).
 
-3. **Software Quality**: SonarQube Cloud evaluates quality by flagging issues that violate clean code principles. See [Code analysis based on clean code](https://docs.sonarsource.com/sonarqube-cloud/core-concepts/clean-code/code-analysis/).
+3. **Software Quality**: SonarQube Cloud evaluates quality by flagging issues that violate clean code principles.
 
 4. **Quality Standards**: Defined by a quality profile (rules) and a quality gate (conditions that must pass). The gate shows pass or fail based on whether all conditions are met.
 
