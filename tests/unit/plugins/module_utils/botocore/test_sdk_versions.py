@@ -21,7 +21,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.botocore import boto3_a
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import botocore_at_least
 from ansible_collections.amazon.aws.plugins.module_utils.exceptions import AnsibleBotocoreError
 
-DUMMY_VERSION = "5.5.5.5"
+DUMMY_VERSION = "5.5.5"
 
 TEST_VERSIONS = [
     ["1.1.1", "2.2.2", True],
