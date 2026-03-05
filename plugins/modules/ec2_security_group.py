@@ -778,7 +778,7 @@ def validate_rule(rule):
 
 def _target_from_rule_with_group_id(rule, groups):
     owner_id = current_account_id
-    FOREIGN_SECURITY_GROUP_REGEX = r"^([^/]+)/?(sg-\S+)?/(\S+)"
+    FOREIGN_SECURITY_GROUP_REGEX = r"^([^/]+)/?(sg-[^/]+)?/([^/]+)$"
     foreign_rule = re.match(FOREIGN_SECURITY_GROUP_REGEX, rule["group_id"])
 
     if not foreign_rule:
