@@ -63,9 +63,7 @@ ignore = ["F401", "E402"]
 xfail_strict = true
 
 [tool.coverage.report]
-exclude_lines = [
-    # Have to re-enable the standard pragma
-    "pragma: no cover",
+exclude_also = [
     # Don't complain if tests don't hit defensive assertion code:
     "raise NotImplementedError",
 ]
