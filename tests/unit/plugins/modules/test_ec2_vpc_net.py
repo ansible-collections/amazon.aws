@@ -104,7 +104,6 @@ def test_update_cidrs_no_cidr_block(
 ):
     connection = MagicMock()
     vpc_obj = {}
-    cidr_block = []
     changed, desired_cidrs = ec2_vpc_net.update_cidrs(connection, ansible_module, vpc_obj, cidr_block, ANY)
     assert not changed
     assert desired_cidrs is None

@@ -39,9 +39,6 @@ TEST_DATA = [
 
 
 class TestCustomWaiterConfig:
-    def setup_method(self):
-        pass
-
     @pytest.mark.parametrize("input_params, output_params", deepcopy(TEST_DATA))
     def test_custom_waiter(self, input_params, output_params):
         # Test default behaviour
