@@ -1,4 +1,4 @@
 minor_changes:
-  - aws_resource_actions - remove redundant ``list()`` call when using ``sorted()``, improving efficiency by allowing sorted() to consume the generator expression directly.
+  - aws_resource_actions - remove redundant ``list()`` call when using ``sorted()``, improving efficiency by allowing sorted() to consume the generator expression directly (https://github.com/ansible-collections/amazon.aws/pull/2882).
 trivial:
-  - aws_resource_actions - add unit tests for the callback plugin.
+  - aws_resource_actions - add unit tests for the callback plugin (https://github.com/ansible-collections/amazon.aws/pull/2882).
