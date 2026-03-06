@@ -1,3 +1,11 @@
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ansible-collections_amazon.aws&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=ansible-collections_amazon.aws)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=ansible-collections_amazon.aws&metric=coverage)](https://sonarcloud.io/summary/new_code?id=ansible-collections_amazon.aws)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=ansible-collections_amazon.aws&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=ansible-collections_amazon.aws)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=ansible-collections_amazon.aws&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=ansible-collections_amazon.aws)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=ansible-collections_amazon.aws&metric=bugs)](https://sonarcloud.io/summary/new_code?id=ansible-collections_amazon.aws)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=ansible-collections_amazon.aws&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=ansible-collections_amazon.aws)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=ansible-collections_amazon.aws&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=ansible-collections_amazon.aws)
+
 # Amazon AWS Collection
 The Ansible Amazon AWS collection includes a variety of Ansible content to help automate the management of AWS services. This collection is maintained by the Ansible Cloud Content team.
 
