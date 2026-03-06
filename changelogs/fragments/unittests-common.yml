@@ -3,3 +3,4 @@ trivial:
   - tests - expand unit tests for exceptions.py to cover is_ansible_aws_error_code() and is_ansible_aws_error_message() helper functions.
   - tests - add tests for KeyError exception handling in is_boto3_error_code() and is_boto3_error_message() for defensive coding against malformed ClientError responses.
   - tests - add unit tests for _get_user_agent_string() in botocore.py to verify user agent string generation for AWS API requests.
+  - tests - expand normalize_boto3_result tests to cover the else clause in _boto3_handler for non-datetime objects.
