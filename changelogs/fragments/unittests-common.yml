@@ -1,0 +1,2 @@
+trivial:
+  - tests - add unit tests for common.py module utilities to improve test coverage for collection info management functions.
