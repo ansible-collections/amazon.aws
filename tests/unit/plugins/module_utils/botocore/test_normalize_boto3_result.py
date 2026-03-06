@@ -30,6 +30,8 @@ normalize_boto3_result_data = [
     (list([example_date_txt]), list([example_date_txt])),
     (list([example_date_iso]), list([example_date_iso])),
     (list([example_date]), list([example_date_iso])),
+    (dict(count=42), dict(count=42)),
+    (dict(value=None), dict(value=None)),
 ]
 
 

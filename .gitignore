@@ -401,3 +401,4 @@ tests/integration/inventory
 tests/integration/cloud-config-aws.ini
 .ansible
 .vscode
+.scannerwork/
