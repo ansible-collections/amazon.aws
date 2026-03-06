@@ -1,3 +1,4 @@
 trivial:
   - tests - add unit tests for common.py module utilities to improve test coverage for collection info management functions.
   - tests - expand unit tests for exceptions.py to cover is_ansible_aws_error_code() and is_ansible_aws_error_message() helper functions.
+  - tests - add tests for KeyError exception handling in is_boto3_error_code() and is_boto3_error_message() for defensive coding against malformed ClientError responses.
