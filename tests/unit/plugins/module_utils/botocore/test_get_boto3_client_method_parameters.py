@@ -4,6 +4,8 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+import os
+
 import pytest
 
 try:
@@ -21,6 +23,16 @@ if not HAS_BOTO3:
 
 class TestGetBoto3ClientMethodParameters:
     """Test suite for get_boto3_client_method_parameters() function."""
+
+    def setup_method(self):
+        """Set AWS credentials to prevent metadata service calls."""
+        os.environ["AWS_ACCESS_KEY_ID"] = "EXAMPLE_ID"
+        os.environ["AWS_SECRET_ACCESS_KEY"] = "EXAMPLE_SECRET"
+
+    def teardown_method(self):
+        """Clean up environment variables."""
+        os.environ.pop("AWS_ACCESS_KEY_ID", None)
+        os.environ.pop("AWS_SECRET_ACCESS_KEY", None)
 
     def test_get_all_parameters(self):
         """Test getting all parameters for a method."""
