@@ -30,7 +30,7 @@
 
 from functools import cmp_to_key
 
-from ansible.module_utils._text import to_text
+from ansible.module_utils.common.text.converters import to_text
 
 
 def _canonify_root_arn(arn):
