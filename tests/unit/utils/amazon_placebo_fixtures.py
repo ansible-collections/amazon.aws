@@ -45,7 +45,9 @@ def fixture_placeboify(request, monkeypatch):
     namespace `placebo_recordings/{testfile name}/{test function name}` to
     distinguish them.
     """
-    session = boto3.Session(region_name="us-west-2")
+    session = boto3.Session(
+        region_name="us-west-2", aws_access_key_id="EXAMPLE_KEY", aws_secret_access_key="EXAMPLE_SECRET"
+    )
 
     recordings_path = os.path.join(
         request.fspath.dirname,
