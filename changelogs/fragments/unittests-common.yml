@@ -1,11 +1,11 @@
 trivial:
-  - tests - add unit tests for common.py module utilities to improve test coverage for collection info management functions.
-  - tests - expand unit tests for exceptions.py to cover is_ansible_aws_error_code() and is_ansible_aws_error_message() helper functions.
-  - tests - add tests for KeyError exception handling in is_boto3_error_code() and is_boto3_error_message() for defensive coding against malformed ClientError responses.
-  - tests - add unit tests for _get_user_agent_string() in botocore.py to verify user agent string generation for AWS API requests.
-  - tests - expand normalize_boto3_result tests to cover the else clause in _boto3_handler for non-datetime objects.
-  - tests - add unit tests for waiter.py BaseWaiterFactory class to cover initialization, waiter model data, ratelimit retry injection, and get_waiter behavior including when botocore is not available.
-  - tests - add unit tests for botocore.py _boto3_conn() function covering different connection types (client, resource, both), config merging, profile handling, and ValueError for invalid connection types.
-  - tests - add unit tests for botocore.py boto_exception() function to test error message extraction from different boto exception types.
-  - tests - add unit tests for botocore.py get_boto3_client_method_parameters() function to verify boto3 method parameter introspection.
-  - tests - expand unit tests for botocore.py _merge_botocore_config() to cover empty dicts, retry configuration, multiple parameters, and region configuration merging.
+  - tests - add unit tests for common.py module utilities to improve test coverage for collection info management functions (https://github.com/ansible-collections/amazon.aws/pull/2891).
+  - tests - expand unit tests for exceptions.py to cover is_ansible_aws_error_code() and is_ansible_aws_error_message() helper functions (https://github.com/ansible-collections/amazon.aws/pull/2891).
+  - tests - add tests for KeyError exception handling in is_boto3_error_code() and is_boto3_error_message() for defensive coding against malformed ClientError responses (https://github.com/ansible-collections/amazon.aws/pull/2891).
+  - tests - add unit tests for _get_user_agent_string() in botocore.py to verify user agent string generation for AWS API requests (https://github.com/ansible-collections/amazon.aws/pull/2891).
+  - tests - expand normalize_boto3_result tests to cover the else clause in _boto3_handler for non-datetime objects (https://github.com/ansible-collections/amazon.aws/pull/2891).
+  - tests - add unit tests for waiter.py BaseWaiterFactory class to cover initialization, waiter model data, ratelimit retry injection, and get_waiter behavior including when botocore is not available (https://github.com/ansible-collections/amazon.aws/pull/2891).
+  - tests - add unit tests for botocore.py _boto3_conn() function covering different connection types (client, resource, both), config merging, profile handling, and ValueError for invalid connection types (https://github.com/ansible-collections/amazon.aws/pull/2891).
+  - tests - add unit tests for botocore.py boto_exception() function to test error message extraction from different boto exception types (https://github.com/ansible-collections/amazon.aws/pull/2891).
+  - tests - add unit tests for botocore.py get_boto3_client_method_parameters() function to verify boto3 method parameter introspection (https://github.com/ansible-collections/amazon.aws/pull/2891).
+  - tests - expand unit tests for botocore.py _merge_botocore_config() to cover empty dicts, retry configuration, multiple parameters, and region configuration merging (https://github.com/ansible-collections/amazon.aws/pull/2891).
