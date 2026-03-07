@@ -409,9 +409,17 @@ The prefix will be the name of the host group that is to be concatenated with th
 </section>
 <section id="use-contrib-script-compatible-ec2-tag-keys-and-use-contrib-script-compatible-sanitization">
 <h2><code class="docutils literal notranslate"><span class="pre">use_contrib_script_compatible_ec2_tag_keys</span></code> and <code class="docutils literal notranslate"><span class="pre">use_contrib_script_compatible_sanitization</span></code><a class="headerlink" href="#use-contrib-script-compatible-ec2-tag-keys-and-use-contrib-script-compatible-sanitization" title="Link to this heading"></a></h2>
+<div class="deprecated">
+<p><span class="versionmodified deprecated">Deprecated since version 11.2.0: </span>The <code class="docutils literal notranslate"><span class="pre">use_contrib_script_compatible_ec2_tag_keys</span></code> option is deprecated and will be removed in a release after 2026-12-01.
+Use the <code class="docutils literal notranslate"><span class="pre">ec2_tags</span></code> structure instead (e.g. <code class="docutils literal notranslate"><span class="pre">ec2_tags.TAGNAME</span></code> rather than <code class="docutils literal notranslate"><span class="pre">ec2_tag_TAGNAME</span></code>).</p>
+</div>
+<div class="deprecated">
+<p><span class="versionmodified deprecated">Deprecated since version 11.2.0: </span>The <code class="docutils literal notranslate"><span class="pre">use_contrib_script_compatible_sanitization</span></code> option is deprecated and will be removed in a release after 2026-12-01.
+Use Ansible’s default group name sanitization instead.</p>
+</div>
 <p><code class="docutils literal notranslate"><span class="pre">use_contrib_script_compatible_ec2_tag_keys</span></code> exposes the host tags with ec2_tag_TAGNAME keys like the old ec2.py inventory script when it’s True.</p>
 <p>By default the <code class="docutils literal notranslate"><span class="pre">aws_ec2</span></code> plugin is using a general group name sanitization to create safe and usable group names for use in Ansible.</p>
-<p><code class="docutils literal notranslate"><span class="pre">use_contrib_script_compatible_ec2_tag_keys</span></code> allows you to override that, in efforts to allow migration from the old inventory script and matches the sanitization of groups when the script’s replace_dash_in_groups option is set to False.
+<p><code class="docutils literal notranslate"><span class="pre">use_contrib_script_compatible_sanitization</span></code> allows you to override that, in efforts to allow migration from the old inventory script and matches the sanitization of groups when the script’s replace_dash_in_groups option is set to False.
 To replicate behavior of replace_dash_in_groups = True with constructed groups, you will need to replace hyphens with underscores via the regex_replace filter for those entries.</p>
 <p>For this to work you should also turn off the TRANSFORM_INVALID_GROUP_CHARS setting, otherwise the core engine will just use the standard sanitization on top.</p>
 <p>This is not the default as such names break certain functionality as not all characters are valid Python identifiers which group names end up being used as.</p>
@@ -463,7 +471,7 @@ To replicate behavior of replace_dash_in_groups = True with constructed groups, 
           }
       }
   },
-  all&quot;: {
+  &quot;all&quot;: {
         &quot;children&quot;: [
             &quot;aws_ec2&quot;,
             &quot;ungrouped&quot;
@@ -481,7 +489,7 @@ To replicate behavior of replace_dash_in_groups = True with constructed groups, 
 </section>
 <section id="hostvars-prefix-and-hostvars-suffix">
 <h2><code class="docutils literal notranslate"><span class="pre">hostvars_prefix</span></code> and <code class="docutils literal notranslate"><span class="pre">hostvars_suffix</span></code><a class="headerlink" href="#hostvars-prefix-and-hostvars-suffix" title="Link to this heading"></a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">hostvars_prefix</span></code> and <code class="docutils literal notranslate"><span class="pre">hostvars_sufix</span></code> allow to set up a prefix and suffix for host variables.</p>
+<p><code class="docutils literal notranslate"><span class="pre">hostvars_prefix</span></code> and <code class="docutils literal notranslate"><span class="pre">hostvars_suffix</span></code> allow to set up a prefix and suffix for host variables.</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># demo.aws_ec2.yml</span>
 <span class="nt">plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">amazon.aws.aws_ec2</span>
 <span class="nt">regions</span><span class="p">:</span>
@@ -523,7 +531,7 @@ To replicate behavior of replace_dash_in_groups = True with constructed groups, 
           }
       }
   },
-  all&quot;: {
+  &quot;all&quot;: {
         &quot;children&quot;: [
             &quot;aws_ec2&quot;,
             &quot;ungrouped&quot;
