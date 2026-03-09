@@ -737,7 +737,7 @@ def main():
     # Handle backward compatibility for deprecated 'region' parameter
     if region_in:
         module.deprecate(
-            "The 'region' parameter for latency-based routing is deprecated. " "Please use 'routing_region' instead.",
+            "The 'region' parameter for latency-based routing is deprecated. Please use 'routing_region' instead.",
             date="2027-06-01",
             collection_name="amazon.aws",
         )
