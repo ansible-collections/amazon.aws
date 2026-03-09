@@ -43,7 +43,7 @@
       register: check_create_calculated
       check_mode: true
 
-    - name: Check result - Calculated Health Check
+    - name: Check result - Create Calculated Health Check - check_mode
       ansible.builtin.assert:
         that:
           - check_create_calculated is not failed
@@ -58,13 +58,13 @@
         child_health_checks: "{{ create_result.health_check.id }}"
       register: create_calculated
 
-    - name: Check result - Calculated Health Check
+    - name: Check result - Create Calculated Health Check
       ansible.builtin.assert:
         that:
           - create_calculated is not failed
           - create_calculated is changed
 
-    - name: Check result - Create Calculated Health Check - idempotency
+    - name: Create Calculated Health Check - idempotency
       amazon.aws.route53_health_check:
         health_check_name: calculated_health_check
         use_unique_names: true

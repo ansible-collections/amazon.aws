@@ -426,8 +426,8 @@ def create(matching_zones):
 
         # Handle Tags
         if tags is not None:
-            changed |= manage_tags(module, client, "hostedzone", zone_id, tags, purge_tags)
-        result["tags"] = get_tags(module, client, "hostedzone", zone_id)
+            changed |= manage_tags(client, "hostedzone", zone_id, tags, purge_tags, module.check_mode)
+        result["tags"] = get_tags(client, "hostedzone", zone_id)
     else:
         result["tags"] = tags
 
