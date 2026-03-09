@@ -63,17 +63,6 @@ jobs:
           export COLLECTION_PATH=$(dirname "$COVERAGE_FILE")
           export COVERAGE_FILE
           echo "COVERAGE_FILE=$COVERAGE_FILE" >> $GITHUB_ENV
-          python3 -c "
-          import os
-          prefix = os.environ['COLLECTION_PATH'].rstrip('/') + '/'
-          path = os.environ['COVERAGE_FILE']
-          with open(path, 'r') as f:
-            content = f.read()
-          content = content.replace(prefix, '')
-          with open(path, 'w') as f:
-            f.write(content)
-          "
-
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
         with:
