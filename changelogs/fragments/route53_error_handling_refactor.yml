@@ -1,0 +1,2 @@
+minor_changes:
+  - route53 - refactored the route53 module utility to improve error handling and testability. (https://github.com/ansible-collections/amazon.aws/pull/2892)

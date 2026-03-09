@@ -3,18 +3,34 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+from __future__ import annotations
+
+import typing
+
 try:
     import botocore
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+if typing.TYPE_CHECKING:
+    from ansible_collections.amazon.aws.plugins.module_utils.botocore import ClientType
+    from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+
+from ansible_collections.amazon.aws.plugins.module_utils._route53.common import AnsibleRoute53Error  # pylint: disable=unused-import
+from ansible_collections.amazon.aws.plugins.module_utils._route53.common import Route53ErrorHandler
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
 
 
-def manage_tags(module, client, resource_type, resource_id, new_tags, purge_tags):
+def manage_tags(
+    module: AnsibleAWSModule,
+    client: ClientType,
+    resource_type: str,
+    resource_id: str,
+    new_tags: dict,
+    purge_tags: bool,
+) -> bool:
     if new_tags is None:
         return False
 
@@ -45,21 +61,11 @@ def manage_tags(module, client, resource_type, resource_id, new_tags, purge_tags
     return True
 
 
-def get_tags(module, client, resource_type, resource_id):
-    try:
-        tagset = client.list_tags_for_resource(
-            ResourceType=resource_type,
-            ResourceId=resource_id,
-        )
-    except is_boto3_error_code("NoSuchHealthCheck"):
-        return {}
-    except is_boto3_error_code("NoSuchHostedZone"):  # pylint: disable=duplicate-except
-        return {}
-    except (
-        botocore.exceptions.BotoCoreError,
-        botocore.exceptions.ClientError,
-    ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg=f"Failed to fetch tags on {resource_type}", resource_id=resource_id)
-
+@Route53ErrorHandler.list_error_handler("list tags for resource", {})
+def get_tags(module: AnsibleAWSModule, client: ClientType, resource_type: str, resource_id: str) -> dict:
+    tagset = client.list_tags_for_resource(
+        ResourceType=resource_type,
+        ResourceId=resource_id,
+    )
     tags = boto3_tag_list_to_ansible_dict(tagset["ResourceTagSet"]["Tags"])
     return tags
