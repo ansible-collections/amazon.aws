@@ -1134,9 +1134,9 @@ from typing import Optional
 from typing import Tuple
 from uuid import uuid4
 
-from ansible.module_utils._text import to_text
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
+from ansible.module_utils.common.text.converters import to_text
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import normalize_boto3_result
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleEC2Error

@@ -348,10 +348,10 @@ from typing import Tuple
 
 from ansible.errors import AnsibleError
 from ansible.errors import AnsibleFileNotFound
-from ansible.module_utils._text import to_bytes
-from ansible.module_utils._text import to_text
 from ansible.module_utils.basic import missing_required_lib
 from ansible.module_utils.common.process import get_bin_path
+from ansible.module_utils.common.text.converters import to_bytes
+from ansible.module_utils.common.text.converters import to_text
 from ansible.plugins.connection import ConnectionBase
 from ansible.utils.display import Display
 
