@@ -70,7 +70,7 @@ options:
       - Snapshot ID on which to base the volume.
     type: str
   volume_initialization_rate:
-    description: 
+    description:
       - Rate at which to initiliaze the volume from a snapshot.
     type: int
     version_added: 11.2.0
@@ -516,7 +516,7 @@ def create_volume(module: AnsibleAWSModule, ec2_conn, zone: str) -> Tuple[Dict[s
 
         if snapshot:
             additional_params["SnapshotId"] = snapshot
-        
+
         if volume_initialization_rate:
             additional_params["VolumeInitializationRate"] = int(volume_initialization_rate)
 
@@ -907,8 +907,8 @@ def main():
 
     if multi_attach is True and volume_type not in ("io1", "io2"):
         module.fail_json(msg="multi_attach is only supported for io1 and io2 volumes.")
-    
-    if volume_initialization_rate: 
+
+    if volume_initialization_rate:
         if not snapshot:
             module.fail_json(msg="Volume initialization rate is only supported when creating a volume from snapshot.")
         if int(volume_initialization_rate) < 100 or int(volume_initialization_rate) > 300:
