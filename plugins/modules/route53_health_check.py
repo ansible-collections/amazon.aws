@@ -385,8 +385,7 @@ def iter_health_checks(client: ClientType):
     """
     results = _list_health_checks(client)
     while True:
-        for check in results.get("HealthChecks", []):
-            yield check
+        yield from results.get("HealthChecks", [])
 
         if results.get("IsTruncated", False):
             results = _list_health_checks(client, Marker=results.get("NextMarker"))
