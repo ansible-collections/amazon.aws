@@ -860,9 +860,7 @@ def ensure_present(module, client: ClientType, port_in: int | None) -> tuple[boo
         # When use_unique_names is true and user didn't specify tags,
         # we only want to ensure Name tag exists, not purge other tags
         purge_tags = module.params.get("purge_tags") if user_specified_tags else False
-        changed |= manage_tags(
-            client, "healthcheck", check_id, tags, purge_tags, module.check_mode
-        )
+        changed |= manage_tags(client, "healthcheck", check_id, tags, purge_tags, module.check_mode)
 
     return changed, action, check_id
 

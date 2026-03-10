@@ -6,8 +6,6 @@
 from unittest.mock import MagicMock
 from unittest.mock import patch
 
-import pytest
-
 from ansible_collections.amazon.aws.plugins.modules.route53_health_check import iter_health_checks
 
 

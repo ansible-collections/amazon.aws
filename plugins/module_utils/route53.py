@@ -7,11 +7,6 @@ from __future__ import annotations
 
 import typing
 
-try:
-    import botocore
-except ImportError:
-    pass  # caught by AnsibleAWSModule
-
 if typing.TYPE_CHECKING:
     from ansible_collections.amazon.aws.plugins.module_utils.botocore import ClientType
 
