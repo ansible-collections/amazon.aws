@@ -92,11 +92,19 @@ class AWSInventoryBase(BaseInventoryPlugin, Constructable, Cacheable, AWSPluginB
         kw_args.update(kwargs)
         return super().resource(*args, **kw_args)
 
+    def _get_role_session_name(self):
+        """
+        Generate the role session name for assume_role operations.
+
+        Returns the session name based on the plugin's ansible_name attribute if present,
+        otherwise returns a default session name.
+        """
+        if hasattr(self, "ansible_name") and self.ansible_name:
+            return f"ansible_aws_{self.ansible_name}_dynamic_inventory"
+        return "ansible_aws_dynamic_inventory"
+
     def _freeze_iam_role(self, iam_role_arn):
-        if hasattr(self, "ansible_name"):
-            role_session_name = f"ansible_aws_{self.ansible_name}_dynamic_inventory"
-        else:
-            role_session_name = "ansible_aws_dynamic_inventory"
+        role_session_name = self._get_role_session_name()
         assume_params = {"RoleArn": iam_role_arn, "RoleSessionName": role_session_name}
 
         try:
