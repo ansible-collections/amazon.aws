@@ -630,7 +630,7 @@ def build_health_check_changes(params: dict[str, Any], existing_check: dict[str,
     Returns:
         Dictionary of changes to apply, empty dict if no changes needed
     """
-    changes = dict()
+    changes = {}
     existing_config = existing_check.get("HealthCheckConfig", {})
 
     # Always updatable fields
@@ -720,11 +720,11 @@ def describe_health_check(client: ClientType, check_id: str | None) -> dict[str,
         Dictionary containing health check details and tags, or empty dict if not found
     """
     if not check_id:
-        return dict()
+        return {}
 
     result = _get_health_check(client, check_id)
     if not result:
-        return dict()
+        return {}
 
     health_check = result.get("HealthCheck", {})
     health_check = camel_dict_to_snake_dict(health_check)

@@ -33,7 +33,7 @@ def manage_tags(
     old_tags = get_tags(client, resource_type, resource_id)
     tags_to_set, tags_to_delete = compare_aws_tags(old_tags, new_tags, purge_tags=purge_tags)
 
-    change_params = dict()
+    change_params = {}
     if tags_to_set:
         change_params["AddTags"] = ansible_dict_to_boto3_tag_list(tags_to_set)
     if tags_to_delete:
