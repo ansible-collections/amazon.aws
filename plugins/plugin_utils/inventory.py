@@ -157,7 +157,8 @@ class AWSInventoryBase(BaseInventoryPlugin, Constructable, Cacheable, AWSPluginB
 
         # boto3 has hard coded lists of available regions for resources, however this does bit-rot
         # As such we try to query the service, and fall back to ec2 for a list of regions
-        for resource_type in list({service, "ec2"}):
+        services_to_try = [service] if service == "ec2" else [service, "ec2"]
+        for resource_type in services_to_try:
             regions = self._describe_regions(resource_type)
             if regions:
                 return regions
