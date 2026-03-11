@@ -2,7 +2,7 @@
 name: all_green
 
 concurrency:
-  group: ${{ github.head_ref }}
+  group: ${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
 on: # yamllint disable-line rule:truthy
@@ -14,27 +14,78 @@ on: # yamllint disable-line rule:truthy
     branches:
       - main
       - stable-*
-    tags:
-      - "*"
+  push:
+    branches:
+      - main
+      - stable-*
 
 jobs:
   linters:
-    uses: ./.github/workflows/linters.yml # use the callable linters job to run tests
+    if: github.event_name == 'pull_request'
+    uses: ./.github/workflows/linters.yml
   sanity:
-    uses: ./.github/workflows/sanity.yml # use the callable sanity job to run tests
+    if: github.event_name == 'pull_request'
+    uses: ./.github/workflows/sanity.yml
   units:
-    uses: ./.github/workflows/units.yml # use the callable units job to run tests
+    uses: ./.github/workflows/units.yml
+  coverage:
+    name: Unit test coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Install tox
+        run: python -m pip install --upgrade pip tox
+
+      - name: Run unit tests with coverage (tox)
+        run: tox -e ansible2.20-py314-with_constraints
+
+      - name: Rewrite coverage paths to be repo-relative
+        run: |
+          COVERAGE_FILE=$(find .tox -name coverage.xml -type f 2>/dev/null | head -1)
+          if [[ -z "$COVERAGE_FILE" ]]; then
+            echo "::error::coverage.xml not found under .tox"
+            exit 1
+          fi
+          # Coverage XML uses absolute paths; use absolute prefix so the replacement matches
+          COVERAGE_FILE=$(realpath "$COVERAGE_FILE")
+          # Ensure path stays within workspace (avoid symlink escape)
+          case "$COVERAGE_FILE" in
+            "$GITHUB_WORKSPACE"/*) ;;
+            *) echo "::error::coverage.xml path outside workspace"; exit 1 ;;
+          esac
+          export COLLECTION_PATH=$(dirname "$COVERAGE_FILE")
+          export COVERAGE_FILE
+          echo "COVERAGE_FILE=$COVERAGE_FILE" >> $GITHUB_ENV
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: ${{ env.COVERAGE_FILE }}
+
   all_green:
     if: ${{ always() }}
     needs:
       - linters
       - sanity
       - units
+      - coverage
     runs-on: ubuntu-latest
     steps:
-      - run: >-
-          python -c "assert set([
-          '${{ needs.linters.result }}',
-          '${{ needs.sanity.result }}',
-          '${{ needs.units.result }}'
-          ]) == {'success'}"
+      - run: |
+          python -c "
+          required = ['units', 'coverage']
+          if '${{ github.event_name }}' == 'pull_request':
+            required = ['linters', 'sanity', 'units', 'coverage']
+          results = {'linters': '${{ needs.linters.result }}', 'sanity': '${{ needs.sanity.result }}',
+                     'units': '${{ needs.units.result }}', 'coverage': '${{ needs.coverage.result }}'}
+          ok = all(results[j] == 'success' for j in required)
+          skipped_ok = all(results[j] in ('success', 'skipped') for j in results)
+          assert ok and skipped_ok, f'required={required} results={results}'
+          "
