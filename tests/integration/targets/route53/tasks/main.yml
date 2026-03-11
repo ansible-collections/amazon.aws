@@ -956,10 +956,126 @@
           - create_geo_subdivision_idem_check is not failed
           - '"route53:ChangeResourceRecordSets" not in create_geo_subdivision_idem_check.resource_actions'
 
+    # Test Latency-based Routing - routing_region parameter
+    - name: Create a record with routing_region for latency-based routing (check_mode)
+      amazon.aws.route53:
+        state: present
+        zone: "{{ zone_one }}"
+        record: latency-test.{{ zone_one }}
+        identifier: latencyhost@www
+        type: A
+        value: 127.0.0.1
+        ttl: 30
+        routing_region: us-east-1
+        region: "{{ omit }}"
+      check_mode: true
+      register: create_latency_routing_region_check_mode
+    - ansible.builtin.assert:
+        that:
+          - create_latency_routing_region_check_mode is changed
+          - create_latency_routing_region_check_mode is not failed
+          - '"route53:ChangeResourceRecordSets" not in create_latency_routing_region_check_mode.resource_actions'
+          - '"wait_id" in create_latency_routing_region_check_mode'
+          - create_latency_routing_region_check_mode.wait_id is none
+
+    - name: Create a record with routing_region for latency-based routing
+      amazon.aws.route53:
+        state: present
+        zone: "{{ zone_one }}"
+        record: latency-test.{{ zone_one }}
+        identifier: latencyhost@www
+        type: A
+        value: 127.0.0.1
+        ttl: 30
+        routing_region: us-east-1
+        region: "{{ omit }}"
+      register: create_latency_routing_region
+    - name: Get Route53 latency record information
+      amazon.aws.route53_info:
+        type: A
+        query: record_sets
+        hosted_zone_id: "{{ z1.zone_id }}"
+        start_record_name: latency-test.{{ zone_one }}
+        max_items: 1
+      register: latency_result
+
+    - ansible.builtin.assert:
+        that:
+          - create_latency_routing_region is changed
+          - create_latency_routing_region is not failed
+          - '"route53:ChangeResourceRecordSets" in create_latency_routing_region.resource_actions'
+          - latency_result.resource_record_sets[0].region == "us-east-1"
+          - latency_result.resource_record_sets[0].set_identifier == "latencyhost@www"
+
+    - name: Create a record with routing_region for latency-based routing (idempotency)
+      amazon.aws.route53:
+        state: present
+        zone: "{{ zone_one }}"
+        record: latency-test.{{ zone_one }}
+        identifier: latencyhost@www
+        type: A
+        value: 127.0.0.1
+        ttl: 30
+        routing_region: us-east-1
+        region: "{{ omit }}"
+      register: create_latency_routing_region_idem
+    - ansible.builtin.assert:
+        that:
+          - create_latency_routing_region_idem is not changed
+          - create_latency_routing_region_idem is not failed
+          - '"route53:ChangeResourceRecordSets" not in create_latency_routing_region_idem.resource_actions'
+
+    - name: Create a record with routing_region for latency-based routing (idempotency - check_mode)
+      amazon.aws.route53:
+        state: present
+        zone: "{{ zone_one }}"
+        record: latency-test.{{ zone_one }}
+        identifier: latencyhost@www
+        type: A
+        value: 127.0.0.1
+        ttl: 30
+        routing_region: us-east-1
+        region: "{{ omit }}"
+      check_mode: true
+      register: create_latency_routing_region_idem_check
+
+    - ansible.builtin.assert:
+        that:
+          - create_latency_routing_region_idem_check is not changed
+          - create_latency_routing_region_idem_check is not failed
+          - '"route53:ChangeResourceRecordSets" not in create_latency_routing_region_idem_check.resource_actions'
+
+    # Test that get returns both routing_region and region (for backward compatibility)
+    - name: Get latency record and verify both region fields are returned
+      amazon.aws.route53:
+        state: get
+        zone: "{{ zone_one }}"
+        record: latency-test.{{ zone_one }}
+        type: A
+      register: get_latency_result
+    - ansible.builtin.assert:
+        that:
+          - get_latency_result.set.routing_region is defined
+          - get_latency_result.set.region is defined
+          - get_latency_result.set.routing_region == "us-east-1"
+          - get_latency_result.set.region == "us-east-1"
+
   # ------------------------------------------------------
   # Cleanup
 
   always:
+    - name: Delete latency-based routing record
+      amazon.aws.route53:
+        state: absent
+        zone: "{{ zone_one }}"
+        record: latency-test.{{ zone_one }}
+        identifier: latencyhost@www
+        type: A
+        value: 127.0.0.1
+        ttl: 30
+        routing_region: us-east-1
+      ignore_errors: true
+
     - name: Delete a record with geo_location - continent_code
       amazon.aws.route53:
         state: absent
