@@ -4,6 +4,7 @@ boto3
 placebo
 mock
 pytest
+pytest-cov
 pytest-forked
 pytest-mock
 pytest-xdist

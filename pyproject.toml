@@ -62,8 +62,24 @@ ignore = ["F401", "E402"]
 [tool.pytest]
 xfail_strict = true
 
+[tool.coverage.run]
+source = [
+    "plugins/",
+    "extensions/",
+]
+relative_files = true
+
 [tool.coverage.report]
 exclude_also = [
     # Don't complain if tests don't hit defensive assertion code:
     "raise NotImplementedError",
+    # Handling for botocore not being available is performed by AnsibleAWSModule
+    "try:\n(    import botocore\n|    import boto3\n)*except ImportError:\n    pass",
 ]
+include_namespace_packages = true
+
+[tool.coverage.html]
+directory = "coverage-report"
+
+[tool.coverage.xml]
+output = "coverage.xml"
