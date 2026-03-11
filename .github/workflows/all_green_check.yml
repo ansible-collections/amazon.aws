@@ -38,13 +38,13 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.14"
+          python-version: "3.13"
 
       - name: Install tox
         run: python -m pip install --upgrade pip tox
 
       - name: Run unit tests with coverage (tox)
-        run: tox -e ansible2.20-py314-with_constraints
+        run: tox -e ansible2.18-py313-with_constraints
 
       - name: Rewrite coverage paths to be repo-relative
         run: |
