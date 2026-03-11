@@ -110,7 +110,7 @@ class AWSInventoryBase(BaseInventoryPlugin, Constructable, Cacheable, AWSPluginB
         try:
             sts = self.client("sts")
             assumed_role = sts.assume_role(**assume_params)
-        except AnsibleBotocoreError as e:
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError, AnsibleBotocoreError) as e:
             self.fail_aws(f"Unable to assume role {iam_role_arn}", exception=e)
 
         credentials = assumed_role.get("Credentials")
