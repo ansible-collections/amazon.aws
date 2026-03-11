@@ -106,7 +106,7 @@ options:
         latency-based routing
       - Mutually exclusive with O(weight) and O(failover).
     type: str
-    version_added: 12.0.0
+    version_added: 11.2.0
   region:
     description:
       - Latency-based resource record sets only Among resource record sets
@@ -124,7 +124,7 @@ options:
       - See the AWS documentation U(https://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region) for more information.
       - When O(aws_region) is not specified, the module may also use a profile from your AWS configuration.
     type: str
-    version_added: 12.0.0
+    version_added: 11.2.0
   geo_location:
     description:
       - Allows to control how Amazon Route 53 responds to DNS queries based on the geographic origin of the query.
@@ -240,7 +240,7 @@ resource_record_sets:
       returned: always
       type: str
       sample: "us-west-2"
-      version_added: 12.0.0
+      version_added: 11.2.0
     region:
       description:
         - Which region this should be associated with for latency-based routing.
