@@ -475,6 +475,38 @@ def delete_health_check(client: ClientType, check_id: str | None, check_mode: bo
     return True, "delete"
 
 
+def validate_health_check_creation_params(
+    healthcheck_type: str,
+    string_match: str | None,
+    child_health_checks: list[str] | None,
+    health_threshold: int | None,
+) -> None:
+    """Validate that required parameters are present for health check creation.
+
+    Args:
+        healthcheck_type: Health check type
+        string_match: Search string for STR_MATCH types
+        child_health_checks: List of child health check IDs for CALCULATED type
+        health_threshold: Minimum healthy children for CALCULATED type
+
+    Raises:
+        AnsibleRoute53Error: If required parameters are missing for the given type
+    """
+    missing_args = []
+
+    if healthcheck_type in ["HTTP_STR_MATCH", "HTTPS_STR_MATCH"] and not string_match:
+        missing_args.append("string_match")
+
+    if healthcheck_type == "CALCULATED":
+        if not child_health_checks:
+            missing_args.append("child_health_checks")
+        if not health_threshold:
+            missing_args.append("health_threshold")
+
+    if missing_args:
+        raise AnsibleRoute53Error(message=f"missing required arguments for creation: {', '.join(missing_args)}")
+
+
 def build_health_check_config(
     params: dict[str, Any],
     ip_addr: str | None,
@@ -499,15 +531,9 @@ def build_health_check_config(
 
     Returns:
         Health check configuration dictionary
-
-    Raises:
-        AnsibleRoute53Error: If required parameters are missing
     """
-    missing_args = []
+    health_check = {"Type": healthcheck_type}
 
-    health_check = dict(
-        Type=healthcheck_type,
-    )
     if params.get("disabled") is not None:
         health_check["Disabled"] = params.get("disabled")
     if ip_addr:
@@ -519,35 +545,21 @@ def build_health_check_config(
 
     if healthcheck_type in ["HTTP", "HTTPS", "HTTP_STR_MATCH", "HTTPS_STR_MATCH"]:
         resource_path = params.get("resource_path")
-        # if not resource_path:
-        #     missing_args.append('resource_path')
         if resource_path:
             health_check["ResourcePath"] = resource_path
+
     if healthcheck_type in ["HTTP_STR_MATCH", "HTTPS_STR_MATCH"]:
-        string_match = params.get("string_match")
-        if not string_match:
-            missing_args.append("string_match")
         health_check["SearchString"] = params.get("string_match")
 
     if healthcheck_type == "CALCULATED":
-        if not child_health_checks:
-            missing_args.append("child_health_checks")
-        if not health_threshold:
-            missing_args.append("health_threshold")
         health_check["ChildHealthChecks"] = child_health_checks
         health_check["HealthThreshold"] = health_threshold
     else:
-        failure_threshold = params.get("failure_threshold")
-        if not failure_threshold:
-            failure_threshold = 3
-        health_check["FailureThreshold"] = failure_threshold
+        health_check["FailureThreshold"] = params.get("failure_threshold") or 3
         health_check["RequestInterval"] = request_interval
 
     if params.get("measure_latency") is not None:
         health_check["MeasureLatency"] = params.get("measure_latency")
-
-    if missing_args:
-        raise AnsibleRoute53Error(message=f"missing required arguments for creation: {', '.join(missing_args)}")
 
     return health_check
 
@@ -585,6 +597,13 @@ def create_health_check(
     # result in a duplicate check appearing.  This means we can safely use our
     # retry decorators
     caller_ref = str(uuid.uuid4())
+
+    validate_health_check_creation_params(
+        type_in,
+        params.get("string_match"),
+        child_health_checks_in,
+        health_threshold_in,
+    )
 
     health_check = build_health_check_config(
         params,

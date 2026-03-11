@@ -5,7 +5,6 @@
 
 import pytest
 
-from ansible_collections.amazon.aws.plugins.module_utils.route53 import AnsibleRoute53Error
 from ansible_collections.amazon.aws.plugins.modules.route53_health_check import build_health_check_config
 
 
@@ -170,37 +169,6 @@ class TestBuildHealthCheckConfig:
         # CALCULATED type should not have these fields
         assert "FailureThreshold" not in result
         assert "RequestInterval" not in result
-
-    @pytest.mark.parametrize(
-        "healthcheck_type,child_health_checks,health_threshold,expected_error",
-        [
-            # Missing string_match for HTTP_STR_MATCH
-            ("HTTP_STR_MATCH", None, None, "string_match"),
-            # Missing string_match for HTTPS_STR_MATCH
-            ("HTTPS_STR_MATCH", None, None, "string_match"),
-            # Missing child_health_checks for CALCULATED
-            ("CALCULATED", None, 2, "child_health_checks"),
-            # Missing health_threshold for CALCULATED
-            ("CALCULATED", ["check-1"], None, "health_threshold"),
-            # Missing both for CALCULATED
-            ("CALCULATED", None, None, "child_health_checks.*health_threshold"),
-        ],
-    )
-    def test_missing_required_parameters(self, healthcheck_type, child_health_checks, health_threshold, expected_error):
-        """Test that missing required parameters raise appropriate errors."""
-        params = {"resource_path": "/"} if "STR_MATCH" in healthcheck_type else {}
-
-        with pytest.raises(AnsibleRoute53Error, match=f"missing required arguments.*{expected_error}"):
-            build_health_check_config(
-                params=params,
-                ip_addr="192.0.2.1" if healthcheck_type != "CALCULATED" else None,
-                fqdn=None,
-                healthcheck_type=healthcheck_type,
-                request_interval=30,
-                port=80 if healthcheck_type != "CALCULATED" else None,
-                child_health_checks=child_health_checks,
-                health_threshold=health_threshold,
-            )
 
     @pytest.mark.parametrize(
         "params,expected_failure_threshold",
