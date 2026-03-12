@@ -23,18 +23,32 @@ from ansible.errors import AnsibleConnectionFailure
         (
             "L_START_1",
             "L_END_1",
-            ["L_START_1", "SOME_CONTENT", "L_END_1"],
+            ["SOME_CONTENT", "L_END_1"],
             "SOME_CONTENT",
         ),
         (
             "L_START_2",
             "L_END_2",
-            ["L_START_2", "FIRST", "+", "SECOND", "L_END_2"],
+            ["FIRST", "+", "SECOND", "L_END_2"],
             "FIRST+SECOND",
+        ),
+        # Test that end marker can appear anywhere in the line
+        (
+            "L_START_3",
+            "L_END_3",
+            ["OUTPUT", "prefix_L_END_3_suffix"],
+            "OUTPUT",
+        ),
+        # Test that end marker can be part of other text
+        (
+            "L_START_4",
+            "MARKER",
+            ["CONTENT", "some text MARKER more text"],
+            "CONTENT",
         ),
     ],
 )
-@patch("ansible_collections.amazon.aws.plugins.connection.aws_ssm.filter_ansi")
+@patch("ansible_collections.amazon.aws.plugins.plugin_utils.ssm.text.filter_ansi")
 def test_connection_aws_ssm_exec_communicate(
     m_filter_ansi, connection_aws_ssm, mark_start, mark_end, stdout_lines, expected_stdout
 ):
@@ -46,6 +60,8 @@ def test_connection_aws_ssm_exec_communicate(
             yield True
 
     connection_aws_ssm.session_manager.poll.side_effect = _poll
+    # wait_for_match consumes the start marker, so readline only sees content after it
+    connection_aws_ssm.session_manager.wait_for_match = MagicMock()
     connection_aws_ssm.session_manager.stdout_readline.side_effect = stdout_lines
     connection_aws_ssm._post_process = MagicMock()
     returncode = MagicMock()
@@ -55,7 +71,7 @@ def test_connection_aws_ssm_exec_communicate(
     connection_aws_ssm.session_manager.flush_stderr.return_value = stderr
 
     result_returncode, result_stdout, result_stderr = connection_aws_ssm.exec_communicate(
-        "ansible-test units", mark_start, mark_start, mark_end
+        "ansible-test units", None, mark_start, mark_end
     )
 
     assert result_returncode == returncode
@@ -69,7 +85,7 @@ def test_connection_aws_ssm_exec_communicate_with_exception(connection_aws_ssm):
     connection_aws_ssm.exec_communicate.side_effect = AnsibleConnectionFailure(exception_msg)
 
     with pytest.raises(AnsibleConnectionFailure) as exc_info:
-        connection_aws_ssm.exec_communicate("ansible-test units", MagicMock(), MagicMock(), MagicMock())
+        connection_aws_ssm.exec_communicate("ansible-test units", None, MagicMock(), MagicMock(), MagicMock())
 
     assert str(exc_info.value) == exception_msg
 
@@ -94,3 +110,39 @@ def test_connection_aws_ssm_exec_command(m_chunks, connection_aws_ssm, is_window
     assert result == connection_aws_ssm.exec_command(cmd, in_data, sudoable)
     # m_chunks.assert_called_once_with(chunk, 1024)
     connection_aws_ssm.session_manager.flush_stderr.assert_called_once_with()
+
+
+@pytest.mark.parametrize(
+    "stdout_input,expected_returncode,expected_stdout,is_windows",
+    [
+        # Linux: output format is: <output>\n\n<returncode>\n
+        ("some output\nmore output\n\n0\n", 0, "some output\nmore output", False),
+        ("single line\n\n42\n", 42, "single line", False),
+        ("multi\nline\noutput\n\n1\n", 1, "multi\nline\noutput", False),
+        # Windows: same format, but with JSON output test
+        ('{"result": "data"}\n\n0\n', 0, '{"result": "data"}', True),
+        ("plain text\n\n0\n", 0, "plain text", True),
+        # Windows with CLIXML filtering
+        ("output\n#< CLIXML <Objs></Objs>more\n\n0\n", 0, "output\nmore", True),
+    ],
+)
+def test_connection_aws_ssm_post_process(connection_aws_ssm, stdout_input, expected_returncode, expected_stdout, is_windows):
+    connection_aws_ssm.is_windows = is_windows
+    mark_begin = "MARK_START"
+
+    returncode, stdout = connection_aws_ssm._post_process(stdout_input, mark_begin)
+
+    assert returncode == expected_returncode
+    assert stdout == expected_stdout
+
+
+def test_connection_aws_ssm_post_process_invalid_returncode(connection_aws_ssm):
+    """Test that _post_process handles invalid return codes gracefully"""
+    connection_aws_ssm.is_windows = False
+    stdout_input = "output\n\nnot_a_number\n"
+
+    returncode, stdout = connection_aws_ssm._post_process(stdout_input, "MARK")
+
+    # Should return 32 when return code is not a valid integer
+    assert returncode == 32
+    assert stdout == "output"
