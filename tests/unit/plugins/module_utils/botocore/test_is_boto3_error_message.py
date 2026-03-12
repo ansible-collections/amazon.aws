@@ -70,6 +70,25 @@ class TestIsBoto3ErrorMessaged:
     def _make_botocore_exception(self):
         return botocore.exceptions.EndpointConnectionError(endpoint_url="junk.endpoint")
 
+    def _make_malformed_client_error_missing_error(self):
+        """Create a ClientError with response missing 'Error' key."""
+        return botocore.exceptions.ClientError(
+            {
+                "ResponseMetadata": {"RequestId": "01234567-89ab-cdef-0123-456789abcdef"},
+            },
+            "someCall",
+        )
+
+    def _make_malformed_client_error_missing_message(self):
+        """Create a ClientError with 'Error' present but missing 'Message' key."""
+        return botocore.exceptions.ClientError(
+            {
+                "Error": {"Code": "SomeError"},
+                "ResponseMetadata": {"RequestId": "01234567-89ab-cdef-0123-456789abcdef"},
+            },
+            "someCall",
+        )
+
     def _do_try_message(self, exception, messages):
         try:
             raise exception
@@ -140,3 +159,37 @@ class TestIsBoto3ErrorMessaged:
         assert not issubclass(returned_exception, botocore.exceptions.BotoCoreError)
         assert issubclass(returned_exception, Exception)
         assert returned_exception.__name__ == "NeverEverRaisedException"
+
+    ###
+    # Test KeyError handling (defensive coding for malformed ClientError responses)
+    ###
+
+    def test_is_boto3_error_message__malformed_missing_error(self):
+        """Test that ClientError with missing 'Error' key doesn't raise KeyError."""
+        passed_exception = self._make_malformed_client_error_missing_error()
+        returned_exception = is_boto3_error_message("some message", e=passed_exception)
+        # Should handle the KeyError gracefully and return NeverEverRaisedException
+        assert not isinstance(passed_exception, returned_exception)
+        assert not issubclass(returned_exception, botocore.exceptions.ClientError)
+        assert issubclass(returned_exception, Exception)
+        assert returned_exception.__name__ == "NeverEverRaisedException"
+
+    def test_is_boto3_error_message__malformed_missing_message(self):
+        """Test that ClientError with missing 'Message' key doesn't raise KeyError."""
+        passed_exception = self._make_malformed_client_error_missing_message()
+        returned_exception = is_boto3_error_message("some message", e=passed_exception)
+        # Should handle the KeyError gracefully and return NeverEverRaisedException
+        assert not isinstance(passed_exception, returned_exception)
+        assert not issubclass(returned_exception, botocore.exceptions.ClientError)
+        assert issubclass(returned_exception, Exception)
+        assert returned_exception.__name__ == "NeverEverRaisedException"
+
+    def test_is_boto3_error_message__malformed_in_try_except(self):
+        """Test that malformed ClientError doesn't raise KeyError in try/except usage."""
+        thrown_exception = self._make_malformed_client_error_missing_error()
+        message_to_catch = "some message"
+
+        # Should not be caught (and should not raise KeyError)
+        with pytest.raises(botocore.exceptions.ClientError) as context:
+            self._do_try_message(thrown_exception, message_to_catch)
+        assert context.value == thrown_exception
