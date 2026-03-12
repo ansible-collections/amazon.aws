@@ -6,6 +6,8 @@
 # Based on the ssh connection plugin by Michael DeHaan
 
 
+from __future__ import annotations
+
 DOCUMENTATION = r"""
 name: aws_ssm
 author:
@@ -46,22 +48,27 @@ requirements:
     `s3:GetObject`, `s3:PutObject`, `s3:ListBucket`, `s3:DeleteObject` and `s3:GetBucketLocation`.
 
 options:
-  access_key_id:
+  access_key:
     description: The STS access key to use when connecting via session-manager.
+    aliases: ['access_key_id', 'aws_access_key_id']
     vars:
     - name: ansible_aws_ssm_access_key_id
     env:
     - name: AWS_ACCESS_KEY_ID
+    - name: AWS_ACCESS_KEY
     version_added: 1.3.0
-  secret_access_key:
+  secret_key:
     description: The STS secret key to use when connecting via session-manager.
+    aliases: ['secret_access_key', 'aws_secret_access_key']
     vars:
     - name: ansible_aws_ssm_secret_access_key
     env:
     - name: AWS_SECRET_ACCESS_KEY
+    - name: AWS_SECRET_KEY
     version_added: 1.3.0
   session_token:
     description: The STS session token to use when connecting via session-manager.
+    aliases: ['aws_session_token']
     vars:
     - name: ansible_aws_ssm_session_token
     env:
@@ -79,6 +86,15 @@ options:
     - name: AWS_REGION
     - name: AWS_DEFAULT_REGION
     default: 'us-east-1'
+  endpoint_url:
+    description:
+    - URL to connect to instead of the default AWS endpoints.
+    - This is used for the SSM client connection.
+    aliases: ['aws_endpoint_url']
+    vars:
+    - name: ansible_aws_ssm_endpoint_url
+    env:
+    - name: AWS_URL
   bucket_name:
     description: The name of the S3 bucket used for file transfers.
     vars:
@@ -100,10 +116,12 @@ options:
     - name: AWS_SESSION_MANAGER_PLUGIN
   profile:
     description: Sets AWS profile to use.
+    aliases: ['aws_profile']
     vars:
     - name: ansible_aws_ssm_profile
     env:
     - name: AWS_PROFILE
+    - name: AWS_DEFAULT_PROFILE
     version_added: 1.5.0
   reconnection_retries:
     description: Number of attempts to connect.
@@ -340,60 +358,59 @@ import os
 import random
 import re
 import string
-from typing import Any
-from typing import Dict
-from typing import Iterator
-from typing import List
-from typing import Tuple
+import typing
+
+if typing.TYPE_CHECKING:
+    from typing import Any
+    from typing import Dict
+    from typing import Iterator
+    from typing import List
+    from typing import Optional
+    from typing import Tuple
 
 from ansible.errors import AnsibleError
 from ansible.errors import AnsibleFileNotFound
 from ansible.module_utils._text import to_bytes
 from ansible.module_utils._text import to_text
-from ansible.module_utils.basic import missing_required_lib
 from ansible.module_utils.common.process import get_bin_path
-from ansible.plugins.connection import ConnectionBase
 from ansible.utils.display import Display
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOTO3
-from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.base import AwsConnectionPluginBase
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_bucket_region
+from ansible_collections.amazon.aws.plugins.plugin_utils.connection import AWSConnectionBase
+from ansible_collections.amazon.aws.plugins.plugin_utils.retries import AWSConnectionRetry
 from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.common import CommandResult
-from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.common import ssm_retry
 from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.filetransfermanager import FileTransferManager
 from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.s3clientmanager import S3ClientManager
 from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.sessionmanager import SSMSessionManager
 from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.terminalmanager import TerminalManager
+from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.text import filter_ansi
 
 display = Display()
 
 
-def chunks(lst: List, n: int) -> Iterator[List[Any]]:
-    """Yield successive n-sized chunks from lst."""
+def chunks(lst: list, n: int) -> Iterator[list[Any]]:
+    """Yield successive n-sized chunks from lst.
+
+    :param lst: The list to chunk.
+    :param n: The size of each chunk.
+    :returns: Iterator yielding list chunks of size n.
+    """
     for i in range(0, len(lst), n):
         yield lst[i:i + n]  # fmt: skip
 
 
-def filter_ansi(line: str, is_windows: bool) -> str:
-    """Remove any ANSI terminal control codes.
-
-    :param line: The input line.
-    :param is_windows: Whether the output is coming from a Windows host.
-    :returns: The result line.
+def _chunked_payload(payload: bytes | string, buffer_size: int = 1024) -> Iterator[tuple[bytes, bool]]:
     """
-    line = to_text(line)
+    Yield successive buffer-sized chunks from payload with completion flag.
 
-    if is_windows:
-        osc_filter = re.compile(r"\x1b\][^\x07]*\x07")
-        line = osc_filter.sub("", line)
-        ansi_filter = re.compile(r"(\x9B|\x1B\[)[0-?]*[ -/]*[@-~]")
-        line = ansi_filter.sub("", line)
-
-        # Replace or strip sequence (at terminal width)
-        line = line.replace("\r\r\n", "\n")
-        if len(line) == 201:
-            line = line[:-1]
-
-    return line
+    :param payload: The data to chunk (bytes or string)
+    :param buffer_size: Size of each chunk in bytes (default: 1024)
+    :returns: Iterator yielding tuples of (chunk, is_last)
+    """
+    payload_bytes = to_bytes(payload)
+    byte_count = len(payload_bytes)
+    for i in range(0, byte_count, buffer_size):
+        yield payload_bytes[i : i + buffer_size], i + buffer_size >= byte_count
 
 
 def escape_path(path: str) -> str:
@@ -405,7 +422,7 @@ def escape_path(path: str) -> str:
     return path.replace("\\", "/")
 
 
-class Connection(ConnectionBase, AwsConnectionPluginBase):
+class Connection(AWSConnectionBase):
     """AWS SSM based connections"""
 
     transport = "amazon.aws.aws_ssm"
@@ -424,9 +441,6 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
-        if not HAS_BOTO3:
-            raise AnsibleError(missing_required_lib("boto3"))
-
         self.host = self._play_context.remote_addr
         self._instance_id = None
         self.terminal_manager = TerminalManager(self)
@@ -442,6 +456,35 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
             self._shell_type = "powershell"
             self.is_windows = True
 
+    def _get_bucket_endpoint(
+        self, bucket_name: str, bucket_endpoint_url: str | None, region_name: str | None
+    ) -> tuple[str, str]:
+        """
+        Fetch the correct S3 endpoint and region for use with our bucket.
+
+        If we don't explicitly set the endpoint then some commands will use the global
+        endpoint and fail (new AWS regions and new buckets in a region other than the one we're running in).
+
+        :param bucket_name: The name of the S3 bucket
+        :param bucket_endpoint_url: Optional explicit endpoint URL
+        :param region_name: The region name
+        :returns: Tuple of (endpoint_url, region_name)
+        """
+        # Create a temporary S3 client in the specified region to determine bucket location
+        tmp_s3_client = self.client("s3", region=region_name)
+
+        # Get the bucket region using head_bucket (preferred over get_bucket_location)
+        bucket_region = get_bucket_region(tmp_s3_client, bucket_name)
+
+        if bucket_endpoint_url:
+            return bucket_endpoint_url, bucket_region
+
+        # Create another client for the region the bucket lives in, so we can get the endpoint URL
+        if bucket_region != region_name:
+            tmp_s3_client = self.client("s3", region=bucket_region)
+
+        return tmp_s3_client.meta.endpoint_url, tmp_s3_client.meta.region_name
+
     @property
     def s3_client(self) -> None:
         if self._s3_manager is not None:
@@ -454,19 +497,13 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
             config = {"signature_version": "s3v4", "s3": {"addressing_style": self.get_option("s3_addressing_style")}}
 
             bucket_endpoint_url = self.get_option("bucket_endpoint_url")
-            s3_endpoint_url, s3_region_name = S3ClientManager.get_bucket_endpoint(
+            s3_endpoint_url, s3_region_name = self._get_bucket_endpoint(
                 bucket_name=self.get_option("bucket_name"),
                 bucket_endpoint_url=bucket_endpoint_url,
-                access_key_id=self.get_option("access_key_id"),
-                secret_key_id=self.get_option("secret_access_key"),
-                session_token=self.get_option("session_token"),
                 region_name=self.get_option("region"),
-                profile_name=self.get_option("profile"),
             )
 
-            s3_client = self._get_boto_client(
-                "s3", endpoint_url=s3_endpoint_url, region_name=s3_region_name, config=config
-            )
+            s3_client = self.client("s3", endpoint=s3_endpoint_url, region=s3_region_name, aws_config=config)
 
             self._s3_manager = S3ClientManager(s3_client)
 
@@ -483,9 +520,9 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
     @property
     def ssm_client(self):
         if self._client is None:
+            # The S3 configuration here might be a copy and paste mistake.  For now we'll keep it.
             config = {"signature_version": "s3v4", "s3": {"addressing_style": self.get_option("s3_addressing_style")}}
-
-            self._client = self._get_boto_client("ssm", region_name=self.get_option("region"), config=config)
+            self._client = self.client("ssm", aws_config=config)
         return self._client
 
     @property
@@ -502,6 +539,7 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
         try:
             self.close()
         except ReferenceError:
+            # Object being garbage collected, references may already be cleaned up
             pass
 
     def _connect(self) -> Any:
@@ -612,44 +650,56 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
             # For non-windows Hosts: Ensure the session has started, and disable command echo and prompt.
             self.terminal_manager.prepare_terminal()
 
-    def exec_communicate(self, cmd: str, mark_start: str, mark_begin: str, mark_end: str) -> Tuple[int, str, str]:
+    def exec_communicate(self, cmd: str, in_data: bytes | None, mark_begin: str, mark_end: str) -> tuple[int, str, str]:
         """Interact with session.
         Read stdout between the markers until 'mark_end' is reached.
 
         :param cmd: The command being executed.
-        :param mark_start: The marker which starts the output.
+        :param in_data: Data to send to stdin after the begin marker.
         :param mark_begin: The begin marker.
         :param mark_end: The end marker.
         :returns: A tuple with the return code, the stdout and the stderr content.
         """
         # Read stdout between the markers
         stdout = ""
-        win_line = ""
-        begin = False
         returncode = None
+        start_search = re.compile(f"^{re.escape(mark_begin)}$", re.MULTILINE)
+        end_search = re.compile(f"{re.escape(mark_end)}", re.MULTILINE)
+
+        # Wait for our start marker to come in
+        self.session_manager.wait_for_match(
+            label="EXEC_COMMUNICATE",
+            cmd="<BEGIN_MARKER>",
+            match=start_search.search,
+            is_windows=self.is_windows,
+        )
+        self.verbosity_display(4, f"EXEC_COMMUNICATE: Found Begin Marker ({mark_begin})")
+        # The command's been sent, and the begin marker has happened, send the stdin data
+        if in_data:
+            self.verbosity_display(4, "EXEC_COMMUNICATE: Sending STDIN data")
+            for chunk, is_last in _chunked_payload(in_data):
+                # self.verbosity_display(4, f"EXEC STDIN: {to_text(chunk)}\n")
+                self.session_manager.stdin_write(to_bytes(chunk, errors="surrogate_or_strict"))
+
+        self.verbosity_display(4, f"EXEC_COMMUNICATE: Polling")
         for poll_result in self.session_manager.poll("EXEC", cmd):
             if not poll_result:
                 continue
 
             line = filter_ansi(self.session_manager.stdout_readline(), self.is_windows)
-            self.verbosity_display(4, f"EXEC stdout line: \n{line}")
+            self.verbosity_display(4, f"EXEC_COMMUNICATE stdout line: '{repr(line)}'")
 
-            if not begin and self.is_windows:
-                win_line = win_line + line
-                line = win_line
+            # Check for end marker before adding line to output
+            if end_search.search(line):
+                break
 
-            if mark_start in line:
-                begin = True
-                if not line.startswith(mark_start):
-                    stdout = ""
-                continue
-            if begin:
-                if mark_end in line:
-                    self.verbosity_display(4, f"POST_PROCESS: \n{to_text(stdout)}")
-                    returncode, stdout = self._post_process(stdout, mark_begin)
-                    self.verbosity_display(4, f"POST_PROCESSED: \n{to_text(stdout)}")
-                    break
-                stdout = stdout + line
+            stdout = stdout + line
+
+
+        self.verbosity_display(4, f"EXEC_COMMUNICATE_POST_PROCESS: \n{to_text(stdout)}")
+        returncode, stdout = self._post_process(stdout, mark_begin)
+        self.verbosity_display(4, f"EXEC_COMMUNICATE_RETURN_CODE: {returncode}")
+        self.verbosity_display(4, f"EXEC_COMMUNICATE_POST_PROCESSED: \n{to_text(stdout)}")
 
         # see https://github.com/pylint-dev/pylint/issues/8909)
         return (returncode, stdout, self.session_manager.flush_stderr())
@@ -657,69 +707,69 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
     @staticmethod
     def generate_mark() -> str:
         """Generates a random string of characters to delimit SSM CLI commands"""
-        mark = "".join([random.choice(string.ascii_letters) for i in range(Connection.MARK_LENGTH)])
+        mark = "".join(
+            [random.choice(string.ascii_letters) for i in range(Connection.MARK_LENGTH)]
+        )  # nosec B311 - markers for output parsing, not security
         return mark
 
-    @ssm_retry
-    def exec_command(self, cmd: str, in_data: bool = None, sudoable: bool = True) -> Tuple[int, str, str]:
-        """When running a command on the SSM host, uses generate_mark to get delimiting strings"""
+    @AWSConnectionRetry.exponential_backoff()
+    def exec_command(self, cmd: str, in_data: bytes | None = None, sudoable: bool = True) -> tuple[int, str, str]:
+        """Execute a command on the SSM host with automatic retry on failure.
 
+        :param cmd: The command to execute.
+        :param in_data: Optional data to send to stdin.
+        :param sudoable: Whether the command can be run with sudo (unused for SSM).
+        :returns: A tuple of (exit_code, stdout, stderr).
+        """
         super().exec_command(cmd, in_data=in_data, sudoable=sudoable)
 
         self.verbosity_display(3, f"EXEC: {to_text(cmd)}")
 
         mark_begin = self.generate_mark()
-        if self.is_windows:
-            mark_start = mark_begin + " $LASTEXITCODE"
-        else:
-            mark_start = mark_begin
         mark_end = self.generate_mark()
 
         # Wrap command in markers accordingly for the shell used
-        cmd = self.terminal_manager.wrap_command(cmd, mark_start, mark_end)
+        cmd = self.terminal_manager.wrap_command(cmd, mark_begin, mark_end)
 
         self.session_manager.flush_stderr()
 
-        for chunk in chunks(cmd, 1024):
+        for chunk, is_last in _chunked_payload(cmd):
+            self.verbosity_display(4, f"STREAM_COMMAND ({is_last}): {to_text(chunk)}")
             self.session_manager.stdin_write(to_bytes(chunk, errors="surrogate_or_strict"))
 
-        return self.exec_communicate(cmd, mark_start, mark_begin, mark_end)
+        return self.exec_communicate(cmd, in_data, mark_begin, mark_end)
 
-    def _post_process(self, stdout: str, mark_begin: str) -> Tuple[str, str]:
-        """extract command status and strip unwanted lines"""
+    def _post_process(self, stdout: str, mark_begin: str) -> tuple[int, str]:
+        """Extract command status and strip unwanted lines.
 
-        if not self.is_windows:
-            # Get command return code
-            returncode = int(stdout.splitlines()[-2])
+        :param stdout: The raw stdout content containing exit code and output.
+        :param mark_begin: The begin marker (unused, kept for compatibility).
+        :returns: A tuple of (exit_code, cleaned_stdout).
+        """
+        # Get command return code (second to last line)
+        try:
+            return_data = stdout.splitlines()[-1]
+            self.verbosity_display(4, f'POST_PROCESS: Return \n"{return_data}"')
+            returncode = int(return_data)
+        except ValueError:
+            returncode = 32
 
-            # Throw away final lines
-            for _x in range(0, 3):
-                stdout = stdout[:stdout.rfind('\n')]  # fmt: skip
+        # Throw away final lines (blank line, exit code, already removed mark_end)
+        for _x in range(0, 3):
+            stdout = stdout[:stdout.rfind('\n')]  # fmt: skip
 
-            return (returncode, stdout)
+        if self.is_windows:
+            # If the return code contains #CLIXML (like a progress bar) remove it
+            clixml_filter = re.compile(r"#<\sCLIXML\s<Objs.*</Objs>")
+            stdout = clixml_filter.sub("", stdout)
 
-        # Windows is a little more complex
-        # Value of $LASTEXITCODE will be the line after the mark
-        trailer = stdout[stdout.rfind(mark_begin):]  # fmt: skip
-        last_exit_code = trailer.splitlines()[1]
-        if last_exit_code.isdigit:
-            returncode = int(last_exit_code)
-        else:
-            returncode = -1
-        # output to keep will be before the mark
-        stdout = stdout[:stdout.rfind(mark_begin)]  # fmt: skip
-
-        # If the return code contains #CLIXML (like a progress bar) remove it
-        clixml_filter = re.compile(r"#<\sCLIXML\s<Objs.*</Objs>")
-        stdout = clixml_filter.sub("", stdout)
-
-        # If it looks like JSON remove any newlines
-        if stdout.startswith("{"):
-            stdout = stdout.replace("\n", "")
+            # If it looks like JSON remove any newlines
+            if stdout.startswith("{"):
+                stdout = stdout.replace("\n", "")
 
         return (returncode, stdout)
 
-    def generate_commands(self, in_path: str, out_path: str, ssm_action: str) -> Tuple[str, str, Dict]:
+    def generate_commands(self, in_path: str, out_path: str, ssm_action: str) -> tuple[str, str, dict]:
         """
         Generate S3 path and associated transport commands for file transfer.
         :param in_path: The local file path to transfer from.
@@ -727,8 +777,8 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
         :param ssm_action: The SSM action to perform ("get" or "put").
         :return: A tuple containing:
             - s3_path (str): The S3 key used for the transfer.
-            - commands (List[Dict]): A list of commands to be executed for the transfer.
-            - put_args (Dict): Additional arguments needed for a 'put' operation.
+            - commands (str): Command to be executed for the transfer.
+            - put_args (dict): Additional arguments needed for a 'put' operation.
         """
         s3_path = escape_path(f"{self.instance_id}/{out_path}")
         command = ""

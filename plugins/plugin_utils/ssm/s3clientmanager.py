@@ -3,14 +3,15 @@
 # Copyright: Contributors to the Ansible project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-try:
-    import boto3
-except ImportError:
-    pass
-from typing import Any
-from typing import Dict
-from typing import Optional
-from typing import Tuple
+from __future__ import annotations
+
+import typing
+
+if typing.TYPE_CHECKING:
+    from typing import Any
+    from typing import Dict
+    from typing import Optional
+    from typing import Tuple
 
 
 def generate_encryption_settings(
@@ -32,72 +33,16 @@ def generate_encryption_settings(
 
 class S3ClientManager:
     def __init__(self, client: Any) -> None:
+        """
+        Initialise the S3ClientManager.
+
+        :param client: The boto3 S3 client
+        """
         self._s3_client = client
 
     @property
     def client(self) -> Any:
         return self._s3_client
-
-    @staticmethod
-    def _get_s3_client(
-        access_key_id: Optional[str],
-        secret_key_id: Optional[str],
-        session_token: Optional[str],
-        region_name: str,
-        profile_name: Optional[str],
-    ) -> Any:
-        if not region_name:
-            region_name = "us-east-1"
-        session_args = dict(
-            aws_access_key_id=access_key_id,
-            aws_secret_access_key=secret_key_id,
-            aws_session_token=session_token,
-            region_name=region_name,
-        )
-        if profile_name:
-            session_args["profile_name"] = profile_name
-        session = boto3.session.Session(**session_args)
-        return session.client("s3")
-
-    @staticmethod
-    def get_bucket_endpoint(
-        bucket_name: str,
-        bucket_endpoint_url: Optional[str],
-        access_key_id: Optional[str],
-        secret_key_id: Optional[str],
-        session_token: Optional[str],
-        region_name: Optional[str],
-        profile_name: Optional[str],
-    ) -> Tuple[str, str]:
-        """
-        Fetches the correct S3 endpoint and region for use with our bucket.
-        If we don't explicitly set the endpoint then some commands will use the global
-        endpoint and fail
-        (new AWS regions and new buckets in a region other than the one we're running in)
-        """
-        if not region_name:
-            region_name = "us-east-1"
-        tmp_s3_client = S3ClientManager._get_s3_client(
-            access_key_id, secret_key_id, session_token, region_name, profile_name
-        )
-
-        # Fetch the location of the bucket so we can open a client against the 'right' endpoint
-        # This /should/ always work
-        head_bucket = tmp_s3_client.head_bucket(Bucket=(bucket_name))
-        bucket_region = head_bucket.get("ResponseMetadata", {}).get("HTTPHeaders", {}).get("x-amz-bucket-region", None)
-        if bucket_region is None:
-            bucket_region = "us-east-1"
-
-        if bucket_endpoint_url:
-            return bucket_endpoint_url, bucket_region
-
-        # Create another client for the region the bucket lives in, so we can nab the endpoint URL
-        if bucket_region != region_name:
-            tmp_s3_client = S3ClientManager._get_s3_client(
-                access_key_id, secret_key_id, session_token, bucket_region, profile_name
-            )
-
-        return tmp_s3_client.meta.endpoint_url, tmp_s3_client.meta.region_name
 
     def get_url(
         self,

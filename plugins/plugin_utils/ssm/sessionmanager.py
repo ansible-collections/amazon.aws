@@ -3,24 +3,29 @@
 # Copyright: Contributors to the Ansible project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+from __future__ import annotations
+
 import json
 import os
 import select
 import time
+import typing
 from pty import openpty
 from subprocess import PIPE
 from subprocess import Popen
-from typing import Any
-from typing import Callable
-from typing import Dict
-from typing import NoReturn
-from typing import Optional
-from typing import Union
+
+if typing.TYPE_CHECKING:
+    from typing import Any
+    from typing import Callable
+    from typing import Dict
+    from typing import NoReturn
+    from typing import Optional
+    from typing import Union
+
+    verbosity_display_type = Callable[[int, str], None]
 
 from ansible.errors import AnsibleConnectionFailure
 from ansible.module_utils._text import to_text
-
-verbosity_display_type = Callable[[int, str], None]
 
 
 class SSMProcessManagerTimeOutFailure(AnsibleConnectionFailure):
@@ -38,6 +43,15 @@ class ProcessManager:
     def __init__(
         self, instance_id: str, session: Any, stdout: Any, timeout: int, verbosity_display: verbosity_display_type
     ) -> None:
+        """
+        Initialise the ProcessManager.
+
+        :param instance_id: The EC2 instance ID
+        :param session: The subprocess session
+        :param stdout: The stdout file descriptor
+        :param timeout: Connection timeout in seconds
+        :param verbosity_display: Function for logging verbosity messages
+        """
         self._session = session
         self._stdout = stdout
         self.verbosity_display = verbosity_display
@@ -66,7 +80,7 @@ class ProcessManager:
             if not poller.poll(1):
                 break
             line = self._session.stderr.readline()
-            self.verbosity_display(4, f"stderr line: {to_text(line)}")
+            self.verbosity_display(4, f"stderr line: {repr(to_text(line))}")
             stderr = stderr + line
         return stderr
 
@@ -89,19 +103,40 @@ class ProcessManager:
                 raise SSMProcessManagerTimeOutFailure(f"{label} command '{cmd}' timeout on host: {self.instance_id}")
             yield self.poll_stdout()
 
-    def wait_for_match(self, label: str, cmd: Union[str, bytes], match: Union[str, Callable[[str], bool]]) -> None:
+    def wait_for_match(
+        self, label: str, cmd: Union[str, bytes], match: Union[str, Callable[[str], bool]], is_windows: bool = False
+    ) -> None:
+        """Wait for stdout to match a pattern.
+
+        For callable matches (e.g. regex), tries matching on both raw and ANSI-filtered
+        stdout to handle cases where terminal control codes might interfere with matching.
+
+        Uses readline() to avoid consuming additional output beyond the matched line,
+        preventing race conditions where both start and end markers are read together.
+
+        :param label: Label for logging purposes.
+        :param cmd: The command being executed.
+        :param match: Either a string to search for or a callable that returns True when matched.
+        :param is_windows: Whether the output is from a Windows host (for ANSI filtering).
+        """
+        from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.text import filter_ansi
+
         stdout = ""
         self.verbosity_display(4, f"{label} WAIT FOR: {match} - Command = {to_text(cmd)}")
         for result in self.poll(label=label, cmd=to_text(cmd)):
             if result:
-                text = self.stdout_read_text()
-                self.verbosity_display(4, f"{label} stdout line: \n{text}")
-                stdout += text
+                line = to_text(self.stdout_readline())
+                self.verbosity_display(4, f"{label} stdout line (waiting): {repr(line)}")
+                stdout += line
+
                 if isinstance(match, str):
                     if stdout.find(match) != -1:
                         break
-                elif match(stdout):
-                    break
+                else:
+                    # For callable matches, try both raw and filtered text
+                    stdout_filtered = filter_ansi(stdout, is_windows)
+                    if match(stdout) or match(stdout_filtered):
+                        break
 
     def terminate(self) -> None:
         if self._has_timeout:
@@ -117,6 +152,14 @@ class SSMSessionManager:
     def __init__(
         self, ssm_client: Any, instance_id: str, ssm_timeout: int, verbosity_display: verbosity_display_type
     ) -> None:
+        """
+        Initialise the SSMSessionManager.
+
+        :param ssm_client: The boto3 SSM client
+        :param instance_id: The EC2 instance ID
+        :param ssm_timeout: Connection timeout in seconds
+        :param verbosity_display: Function for logging verbosity messages
+        """
         self._session_id = None
         self._instance_id = instance_id
         self.verbosity_display = verbosity_display
@@ -195,5 +238,6 @@ class SSMSessionManager:
             try:
                 self._client.terminate_session(SessionId=self._session_id)
             except ReferenceError:
+                # Client may have been garbage collected during cleanup
                 pass
             self._session_id = None

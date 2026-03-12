@@ -3,16 +3,21 @@
 # Copyright: Contributors to the Ansible project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from typing import Any
-from typing import Callable
-from typing import Dict
-from typing import Optional
+from __future__ import annotations
+
+import typing
+
+if typing.TYPE_CHECKING:
+    from typing import Any
+    from typing import Callable
+    from typing import Dict
+    from typing import Optional
 
 from ansible.errors import AnsibleError
 from ansible.module_utils._text import to_bytes
 
+from ansible_collections.amazon.aws.plugins.plugin_utils.retries import AWSConnectionRetry
 from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.common import CommandResult
-from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.common import ssm_retry
 
 
 class FileTransferManager:
@@ -29,9 +34,15 @@ class FileTransferManager:
         exec_command: Callable[[str, Optional[bool], Optional[bool]], CommandResult],
     ):
         """
-        Initializes the FileTransferManager with a given connection.
+        Initialise the FileTransferManager with connection components.
 
-        :param connection: The connection object used for S3 and remote execution.
+        :param bucket_name: The name of the S3 bucket used for file transfers
+        :param instance_id: The EC2 instance ID
+        :param s3_client: The boto3 S3 client
+        :param reconnection_retries: Number of retry attempts for failed operations
+        :param verbosity_display: Function for logging verbosity messages
+        :param close: Function to close/restart the connection
+        :param exec_command: Function to execute commands on the remote host
         """
         self.bucket_name = bucket_name
         self.instance_id = instance_id
@@ -41,7 +52,7 @@ class FileTransferManager:
         self.close = close
         self.exec_command = exec_command
 
-    @ssm_retry
+    @AWSConnectionRetry.exponential_backoff()
     def _file_transport_command(
         self,
         in_path: str,

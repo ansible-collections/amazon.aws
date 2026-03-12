@@ -29,7 +29,10 @@ def test_ensure_ssm_session_has_started(connection_aws_ssm):
 
     connection_aws_ssm.terminal_manager.ensure_ssm_session_has_started()
     connection_aws_ssm.session_manager.wait_for_match.assert_called_once_with(
-        label="START SSM SESSION", cmd="start_session", match="Starting session with SessionId"
+        label="START SSM SESSION",
+        cmd="start_session",
+        match="Starting session with SessionId",
+        is_windows=connection_aws_ssm.is_windows,
     )
 
 
@@ -45,7 +48,7 @@ def test_disable_echo_command(m_to_text, m_to_bytes, connection_aws_ssm):
     connection_aws_ssm.terminal_manager.disable_echo_command()
     connection_aws_ssm.session_manager.stdin_write.assert_called_once_with("stty -echo\n")
     connection_aws_ssm.session_manager.wait_for_match.assert_called_once_with(
-        label="DISABLE ECHO", cmd="stty -echo\n", match="stty -echo"
+        label="DISABLE ECHO", cmd="stty -echo\n", match="stty -echo", is_windows=connection_aws_ssm.is_windows
     )
 
 
@@ -71,5 +74,5 @@ def test_disable_prompt_command(m_to_text, m_to_bytes, m_random, connection_aws_
     connection_aws_ssm.session_manager.stdin_write.assert_called_once_with(prompt_cmd)
     disable_prompt_reply = re.compile(r"\r\r\n" + re.escape(end_mark) + r"\r\r\n", re.MULTILINE)
     connection_aws_ssm.session_manager.wait_for_match.assert_called_once_with(
-        label="DISABLE PROMPT", cmd=ANY, match=disable_prompt_reply.search
+        label="DISABLE PROMPT", cmd=ANY, match=disable_prompt_reply.search, is_windows=False
     )
