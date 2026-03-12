@@ -17,6 +17,7 @@ import ansible_collections.amazon.aws.plugins.plugin_utils.inventory as utils_in
 # becomes a cached property, and while there won't be any options available to pull data from, it
 # is at least available for self.region → get_aws_region() → get_options() → self.templar
 
+
 def test_boto3_regions_with_user_provided_regions(monkeypatch):
     """Test _boto3_regions when user provides regions option."""
     inventory_plugin = utils_inventory.AWSInventoryBase()
