@@ -17,6 +17,7 @@ if [[ ${#CMD_ARGS[@]} -ge 2 && "${CMD_ARGS[0]}" == "-e" ]]; then
     VAR_FILE="${VAR_FILE#@}"
 fi
 
+# join the var file and the vars.json file
 jq -s 'add' "${VAR_FILE}" vars.json > /tmp/vars.json
 
 ansible-rulebook --inventory inventory --rulebook rulebooks/aws_manage_cloudtrail_ec2_keypair.yml --vars /tmp/vars.json &
@@ -25,3 +26,5 @@ ansible-rulebook --inventory inventory --rulebook rulebooks/aws_manage_cloudtrai
 sleep 10
 
 ansible-playbook ec2_keypair.yml -i inventory -e @/tmp/vars.json
+
+rm /tmp/vars.json
