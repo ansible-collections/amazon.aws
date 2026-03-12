@@ -11,6 +11,11 @@ import pytest
 
 import ansible_collections.amazon.aws.plugins.plugin_utils.inventory as utils_inventory
 
+# Note for Ansible Core < 2.19:
+# Prior to 2.19 templar isn't available to the plugin until we start through the "parse" run (which
+# we're not # doing as part of these tests).  This means we need to patch it in.  In 2.19 it
+# becomes a cached property, and while there won't be any options available to pull data from, it
+# is at least available for self.region → get_aws_region() → get_options() → self.templar
 
 def test_boto3_regions_with_user_provided_regions(monkeypatch):
     """Test _boto3_regions when user provides regions option."""
@@ -237,6 +242,9 @@ def test_describe_regions_unauthorized_operation(monkeypatch):
     """Test _describe_regions warns on UnauthorizedOperation."""
     inventory_plugin = utils_inventory.AWSInventoryBase()
 
+    # Mock the region property
+    monkeypatch.setattr(type(inventory_plugin), "region", property(lambda self: None))
+
     test_error = botocore.exceptions.ClientError(
         error_response={"Error": {"Code": "UnauthorizedOperation"}}, operation_name="DescribeRegions"
     )
@@ -263,6 +271,9 @@ def test_describe_regions_no_region_error(monkeypatch):
     """Test _describe_regions warns on NoRegionError."""
     inventory_plugin = utils_inventory.AWSInventoryBase()
 
+    # Mock the region property
+    monkeypatch.setattr(type(inventory_plugin), "region", property(lambda self: None))
+
     test_error = botocore.exceptions.NoRegionError()
 
     mock_client = MagicMock(name="ec2_client")
@@ -285,6 +296,9 @@ def test_describe_regions_no_region_error(monkeypatch):
 def test_describe_regions_client_error(monkeypatch):
     """Test _describe_regions warns on generic ClientError."""
     inventory_plugin = utils_inventory.AWSInventoryBase()
+
+    # Mock the region property
+    monkeypatch.setattr(type(inventory_plugin), "region", property(lambda self: None))
 
     test_error = botocore.exceptions.ClientError(
         error_response={"Error": {"Code": "AccessDenied", "Message": "Not authorized"}},
@@ -312,6 +326,9 @@ def test_describe_regions_client_error(monkeypatch):
 def test_describe_regions_botocore_error(monkeypatch):
     """Test _describe_regions warns on BotoCoreError."""
     inventory_plugin = utils_inventory.AWSInventoryBase()
+
+    # Mock the region property
+    monkeypatch.setattr(type(inventory_plugin), "region", property(lambda self: None))
 
     test_error = botocore.exceptions.BotoCoreError()
 
