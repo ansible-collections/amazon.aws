@@ -13,3 +13,6 @@ cryptography
 placebo
 # Used for indirect node count tests targets
 jq
+# Used for event source AWS integration tests
+ansible-rulebook
+ansible-runner

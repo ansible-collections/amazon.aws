@@ -1,0 +1,3 @@
+{
+   "ec2_key_name": "event-source-eda-aws-cloudtrail-{{ tiny_prefix }}-key-pair"
+}

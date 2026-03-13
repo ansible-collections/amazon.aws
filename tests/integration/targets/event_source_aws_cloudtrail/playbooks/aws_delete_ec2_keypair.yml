@@ -1,0 +1,63 @@
+---
+# vars file should include the aws_region and aws credentials
+- name: Remove ec2 key for event source eda cloudtrail tests
+  hosts: localhost
+  gather_facts: false
+  vars:
+    key_name: "{{ ec2_key_name }}"
+  tasks:
+    - module_defaults:
+        group/aws:
+          region: "{{ aws_region }}"
+          access_key: "{{ aws_access_key }}"
+          secret_key: "{{ aws_secret_key }}"
+          session_token: "{{ security_token | default(omit) }}"
+    
+      block:
+
+        # ============================================================
+        # Test: remove the key by AWS
+        # ============================================================
+        
+        - name: Debug key name
+          ansible.builtin.debug:
+            msg: "Removing key {{ key_name }}"
+
+        - name: Test removing an existent key (check mode)
+          amazon.aws.ec2_key:
+            name: "{{ key_name }}"
+            state: absent
+          register: result
+          check_mode: true
+
+        - name: Assert removing an existent key
+          ansible.builtin.assert:
+            that:
+              - result is changed
+
+        - name: Assert using check_mode did not removed key pair
+          amazon.aws.ec2_key_info:
+            names:
+              - "{{ key_name }}"
+          register: keys
+          failed_when: keys.keypairs | length == 0
+
+        - name: Test removing an existent key
+          amazon.aws.ec2_key:
+            name: "{{ key_name }}"
+            state: absent
+          register: result
+
+        - name: Assert removing an existent key
+          ansible.builtin.assert:
+            that:
+              - result is changed
+              - '"key" in result'
+              - result.key == None
+
+        - name: Assert that key pair was removed
+          amazon.aws.ec2_key_info:
+            names:
+              - "{{ key_name }}"
+          register: keys
+          failed_when: keys.keypairs | length > 0
