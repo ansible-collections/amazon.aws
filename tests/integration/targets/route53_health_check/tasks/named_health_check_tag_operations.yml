@@ -99,7 +99,7 @@
     - ansible.builtin.set_fact:
         tags_keys_list: "{{ health_check_tags.ResourceTagSets[0].Tags | map(attribute='Key') | list }}"
 
-    - name: Check result - Create HTTP health check
+    - name: Check result - Update health check tags
       ansible.builtin.assert:
         that:
           - create_hc_update_tags is not failed
@@ -112,7 +112,7 @@
           - '"Name" in tags_keys_list'
 
     # Create Health Check - Update Tags - Idempotency =================================================================
-    - name: Create Health Check with name and tags - Idempotency
+    - name: Update health check tags - Idempotency
       amazon.aws.route53_health_check:
         state: present
         name: "{{ tiny_prefix }}-{{ resource_path }}-test-hc-tag-operations"
@@ -136,7 +136,7 @@
     - ansible.builtin.set_fact:
         tags_keys_list: "{{ health_check_tags.ResourceTagSets[0].Tags | map(attribute='Key') | list }}"
 
-    - name: Check result - Create HTTP health check
+    - name: Check result - Update health check tags - idempotency
       ansible.builtin.assert:
         that:
           - create_hc_update_tags_idem is not failed
@@ -173,7 +173,7 @@
     - ansible.builtin.set_fact:
         tags_keys_list: "{{ health_check_tags.ResourceTagSets[0].Tags | map(attribute='Key') | list }}"
 
-    - name: Check result - Create HTTP health check
+    - name: Check result - tags={} with purge_tags=false doesn't change tags
       ansible.builtin.assert:
         that:
           - create_hc_update_tags is not failed
@@ -183,7 +183,7 @@
           - '"NewOwner" in tags_keys_list'
           - '"Name" in tags_keys_list'
 
-    - name: Create Health Check with name with tags=None with purge_tags=true (should not remove existing tags)
+    - name: Update health check with tags=None with purge_tags=true (should not remove existing tags)
       amazon.aws.route53_health_check:
         state: present
         name: "{{ tiny_prefix }}-{{ resource_path }}-test-hc-tag-operations"
@@ -205,7 +205,7 @@
     - ansible.builtin.set_fact:
         tags_keys_list: "{{ health_check_tags.ResourceTagSets[0].Tags | map(attribute='Key') | list }}"
 
-    - name: Check result - Create HTTP health check
+    - name: Check result - tags=None with purge_tags=true doesn't change tags
       ansible.builtin.assert:
         that:
           - create_hc_update_tags is not failed
@@ -215,7 +215,7 @@
           - '"NewOwner" in tags_keys_list'
           - '"Name" in tags_keys_list'
 
-    - name: Create Health Check with name with tags={} with purge_tags=true (should remove existing tags except Name)
+    - name: Update health check with tags={} with purge_tags=true (should remove existing tags except Name)
       amazon.aws.route53_health_check:
         state: present
         name: "{{ tiny_prefix }}-{{ resource_path }}-test-hc-tag-operations"
@@ -238,7 +238,7 @@
     - ansible.builtin.set_fact:
         tags_keys_list: "{{ health_check_tags.ResourceTagSets[0].Tags | map(attribute='Key') | list }}"
 
-    - name: Check result - Create HTTP health check
+    - name: Check result - tags={} with purge_tags=true removes non-Name tags
       ansible.builtin.assert:
         that:
           - create_hc_update_tags is not failed

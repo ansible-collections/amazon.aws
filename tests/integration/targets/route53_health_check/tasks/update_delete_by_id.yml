@@ -246,7 +246,7 @@
       register: delete_result
       check_mode: true
 
-    - name: Check result - Delete Health Check by ID -check_mode
+    - name: Check result - Delete Health Check by ID - check_mode
       ansible.builtin.assert:
         that:
           - delete_result is not failed
@@ -273,7 +273,7 @@
       register: delete_result
       check_mode: true
 
-    - name: Check result - Delete Health Check by ID -idempotency -check_mode
+    - name: Check result - Delete Health Check by ID - idempotency - check_mode
       ansible.builtin.assert:
         that:
           - delete_result is not failed
@@ -286,7 +286,7 @@
         id: "{{ health_check_id }}"
       register: delete_result
 
-    - name: Check result - Delete Health Check by ID -idempotency
+    - name: Check result - Delete Health Check by ID - idempotency
       ansible.builtin.assert:
         that:
           - delete_result is not failed
