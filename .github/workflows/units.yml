@@ -46,6 +46,11 @@ jobs:
               "python-version": "3.13"
             },
             {
-              "ansible-version": "stable-2.16"
+              "ansible-version": "stable-2.16",
+              "python-version": "3.13"
+            },
+            {
+              "ansible-version": "stable-2.16",
+              "python-version": "3.14"
             }
           ]
