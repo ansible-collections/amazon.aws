@@ -92,17 +92,25 @@ class AWSInventoryBase(BaseInventoryPlugin, Constructable, Cacheable, AWSPluginB
         kw_args.update(kwargs)
         return super().resource(*args, **kw_args)
 
+    def _get_role_session_name(self):
+        """
+        Generate the role session name for assume_role operations.
+
+        Returns the session name based on the plugin's ansible_name attribute if present,
+        otherwise returns a default session name.
+        """
+        if hasattr(self, "ansible_name") and self.ansible_name:
+            return f"ansible_aws_{self.ansible_name}_dynamic_inventory"
+        return "ansible_aws_dynamic_inventory"
+
     def _freeze_iam_role(self, iam_role_arn):
-        if hasattr(self, "ansible_name"):
-            role_session_name = f"ansible_aws_{self.ansible_name}_dynamic_inventory"
-        else:
-            role_session_name = "ansible_aws_dynamic_inventory"
+        role_session_name = self._get_role_session_name()
         assume_params = {"RoleArn": iam_role_arn, "RoleSessionName": role_session_name}
 
         try:
             sts = self.client("sts")
             assumed_role = sts.assume_role(**assume_params)
-        except AnsibleBotocoreError as e:
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError, AnsibleBotocoreError) as e:
             self.fail_aws(f"Unable to assume role {iam_role_arn}", exception=e)
 
         credentials = assumed_role.get("Credentials")
@@ -149,7 +157,8 @@ class AWSInventoryBase(BaseInventoryPlugin, Constructable, Cacheable, AWSPluginB
 
         # boto3 has hard coded lists of available regions for resources, however this does bit-rot
         # As such we try to query the service, and fall back to ec2 for a list of regions
-        for resource_type in list({service, "ec2"}):
+        services_to_try = [service] if service == "ec2" else [service, "ec2"]
+        for resource_type in services_to_try:
             regions = self._describe_regions(resource_type)
             if regions:
                 return regions
