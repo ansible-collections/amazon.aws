@@ -286,6 +286,7 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.route53 import AnsibleRoute53Error
 from ansible_collections.amazon.aws.plugins.module_utils.route53 import get_tags
 from ansible_collections.amazon.aws.plugins.module_utils.route53 import manage_tags
 
@@ -425,8 +426,8 @@ def create(matching_zones):
 
         # Handle Tags
         if tags is not None:
-            changed |= manage_tags(module, client, "hostedzone", zone_id, tags, purge_tags)
-        result["tags"] = get_tags(module, client, "hostedzone", zone_id)
+            changed |= manage_tags(client, "hostedzone", zone_id, tags, purge_tags, module.check_mode)
+        result["tags"] = get_tags(client, "hostedzone", zone_id)
     else:
         result["tags"] = tags
 
@@ -678,29 +679,32 @@ def main():
         supports_check_mode=True,
     )
 
-    zone_in = module.params.get("zone").lower()
-    state = module.params.get("state").lower()
-    vpc_id = module.params.get("vpc_id")
-    vpc_region = module.params.get("vpc_region")
-    vpcs = module.params.get("vpcs")
+    try:
+        zone_in = module.params.get("zone").lower()
+        state = module.params.get("state").lower()
+        vpc_id = module.params.get("vpc_id")
+        vpc_region = module.params.get("vpc_region")
+        vpcs = module.params.get("vpcs")
 
-    if not zone_in.endswith("."):
-        zone_in += "."
+        if not zone_in.endswith("."):
+            zone_in += "."
 
-    private_zone = bool(vpcs or (vpc_id and vpc_region))
+        private_zone = bool(vpcs or (vpc_id and vpc_region))
 
-    client = module.client("route53", retry_decorator=AWSRetry.jittered_backoff())
+        client = module.client("route53", retry_decorator=AWSRetry.jittered_backoff())
 
-    zones = find_zones(zone_in, private_zone)
-    if state == "present":
-        changed, result = create(matching_zones=zones)
-    elif state == "absent":
-        changed, result = delete(matching_zones=zones)
+        zones = find_zones(zone_in, private_zone)
+        if state == "present":
+            changed, result = create(matching_zones=zones)
+        elif state == "absent":
+            changed, result = delete(matching_zones=zones)
 
-    if isinstance(result, dict):
-        module.exit_json(changed=changed, result=result, **result)
-    else:
-        module.exit_json(changed=changed, result=result)
+        if isinstance(result, dict):
+            module.exit_json(changed=changed, result=result, **result)
+        else:
+            module.exit_json(changed=changed, result=result)
+    except AnsibleRoute53Error as e:
+        module.fail_json_aws_error(e)
 
 
 if __name__ == "__main__":
