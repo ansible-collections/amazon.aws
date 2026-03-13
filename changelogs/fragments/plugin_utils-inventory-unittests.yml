@@ -1,0 +1,5 @@
+minor_changes:
+  - plugin_utils/inventory - extract role session name generation into separate method to improve code organisation (https://github.com/ansible-collections/amazon.aws/pull/2902).
+  - plugin_utils/inventory - add error handling for ClientError and BotoCoreError in _freeze_iam_role method (https://github.com/ansible-collections/amazon.aws/pull/2902).
+trivial:
+  - plugin_utils/inventory - add dedicated unit tests for region handling, role session name generation, and templated options (https://github.com/ansible-collections/amazon.aws/pull/2902).
