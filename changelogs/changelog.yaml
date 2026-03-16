@@ -3832,8 +3832,8 @@ releases:
         has been removed please use ``amazon.aws.common.modules`` instead (https://github.com/ansible-collections/amazon.aws/pull/2527).
       - docs_fragments - The previously deprecated ``amazon.aws.ec2`` docs fragment
         has been removed please use ``amazon.aws.region.modules`` instead (https://github.com/ansible-collections/amazon.aws/pull/2527).
-      - ec2_vpc_peering_info - the `result` key has been removed from the return value.
-        `vpc_peering_connections` should be used instead (https://github.com/ansible-collections/amazon.aws/pull/2618).
+      - ec2_vpc_peering_info - the ``result`` key has been removed from the return
+        value. ``vpc_peering_connections`` should be used instead (https://github.com/ansible-collections/amazon.aws/pull/2618).
       - module_utils.botocore - drop deprecated ``boto3`` parameter for ``get_aws_region()``
         and ``get_aws_connection_info()``, this parameter has had no effect since
         release 4.0.0 (https://github.com/ansible-collections/amazon.aws/pull/2443).
@@ -3864,12 +3864,13 @@ releases:
       - module_utils/s3 - add initial ErrorHandler for S3 modules (https://github.com/ansible-collections/amazon.aws/pull/2060).
       - s3_bucket - migrated to use updated error handlers for better handling of
         non-AWS errors (https://github.com/ansible-collections/amazon.aws/pull/2478).
-      release_summary: 'This major release introduces new support with the aws_ssm
-        connection plugin, which has been promoted from community.aws, several bugfixes,
-        minor changes and deprecated features.
+      release_summary: 'This major release introduces new support with the ``aws_ssm``
+        connection plugin, which has been promoted from ``community.aws``, several
+        bugfixes, minor changes and deprecated features.
 
-        Additionally, this release increases the minimum required versions of boto3
-        and botocore to 1.34.0 to align with updated AWS SDK support.
+        Additionally, this release increases the minimum required versions of ``boto3``
+        and ``botocore`` to 1.34.0 to align with updated AWS SDK support and support
+        for ansible-core < 2.17 has been dropped.
 
         Due to the AWS SDKs announcing the end of support for Python less than 3.8
         (https://aws.amazon.com/blogs/developer/python-support-policy-updates-for-aws-sdks-and-tools/),
@@ -3896,7 +3897,7 @@ releases:
   10.1.0:
     changes:
       minor_changes:
-      - inventory/aws_ec2 - Adding support for Route53 as hostname (https://github.com/ansible-collections/amazon.aws/pull/2580).
+      - inventory/aws_ec2 - Adding support for ``Route53`` as hostname (https://github.com/ansible-collections/amazon.aws/pull/2580).
       release_summary: This minor release adds support for ``Route53`` as a hostname.
     fragments:
     - 20250321-inventory_aws_ec2-add-support-for-route53.yml
@@ -3966,7 +3967,8 @@ releases:
       - sts_assume_role - improve error handling for ``MalformedPolicyDocument`` errors
         by providing a clearer error message when an invalid policy document is provided
         (https://github.com/ansible-collections/amazon.aws/pull/2778).
-      release_summary: This release adds support for the io2 storage type for RDS as well as other minor changes, several bugfixes and deprecated features.
+      release_summary: This release adds support for the io2 storage type for RDS
+        as well as other minor changes, several bugfixes and deprecated features.
     fragments:
     - 2728-reference_error_ssm_destructor.yml
     - 2734-AES_explicit_bucket_key.yml
@@ -3977,3 +3979,35 @@ releases:
     - s3_bucket-501.yml
     - sts_assume_role-malformed_policy.yml
     release_date: '2026-01-13'
+  10.3.0:
+    changes:
+      bugfixes:
+      - aws_ssm - Fixed connection being re-established on every loop iteration. The
+        plugin now properly establishes a single connection for a loop (https://github.com/ansible-collections/amazon.aws/pull/2869).
+      - elb_application_lb - fixed comparison of multi-rule default actions to properly
+        handle the ``Order`` field when determining if listener modifications are
+        needed (https://github.com/ansible-collections/amazon.aws/issues/2537).
+      - 'elb_application_lb - fixed error where creating a new application load balancer
+        with listener rules would fail with ``Parameter validation failed: Invalid
+        type for parameter ListenerArn, value: None`` (https://github.com/ansible-collections/amazon.aws/issues/2400).'
+      - s3_object - fixed error when using PUT with an empty ``content`` string (https://github.com/ansible-collections/amazon.aws/pull/2810)
+      minor_changes:
+      - meta/runtime.yml - Lowered the ``ansible-core`` minimum version to ``2.16``.
+        This expands compatibility and does not change or remove existing functionality.
+      release_summary: This minor release includes several bug fixes across ALB, S3,
+        and the SSM connection plugin, security hardening for ARN parsing, and expanded
+        compatibility with ansible-core >= 2.16.
+      security_fixes:
+      - arn - fix potential ReDoS vulnerability in ARN parsing regex by using negated
+        character class instead of non-greedy quantifier (https://github.com/ansible-collections/amazon.aws/pull/2884).
+      - ec2_security_group - fix potential ReDoS vulnerability in security group ID
+        parsing regex by using negated character classes and adding end anchor (https://github.com/ansible-collections/amazon.aws/pull/2884).
+    fragments:
+    - 2773-elb-application-lb-listener-rules.yml
+    - 2810-fix-put-empty-content.yml
+    - 2869_aws_ssm_connection_fix.yml
+    - relax_ansible_core_version.yml
+    - release_summary.yml
+    - sonarcloud_regex.yml
+    - unittests-boto3-credentials.yml
+    release_date: '2026-03-16'

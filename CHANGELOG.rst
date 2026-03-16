@@ -4,6 +4,34 @@ amazon.aws Release Notes
 
 .. contents:: Topics
 
+
+v10.3.0
+=======
+
+Release Summary
+---------------
+
+This minor release includes several bug fixes across ALB, S3, and the SSM connection plugin, security hardening for ARN parsing, and expanded compatibility with ansible-core >= 2.16.
+
+Minor Changes
+-------------
+
+- meta/runtime.yml - Lowered the ``ansible-core`` minimum version to ``2.16``. This expands compatibility and does not change or remove existing functionality.
+
+Security Fixes
+--------------
+
+- arn - fix potential ReDoS vulnerability in ARN parsing regex by using negated character class instead of non-greedy quantifier (https://github.com/ansible-collections/amazon.aws/pull/2884).
+- ec2_security_group - fix potential ReDoS vulnerability in security group ID parsing regex by using negated character classes and adding end anchor (https://github.com/ansible-collections/amazon.aws/pull/2884).
+
+Bugfixes
+--------
+
+- aws_ssm - Fixed connection being re-established on every loop iteration. The plugin now properly establishes a single connection for a loop (https://github.com/ansible-collections/amazon.aws/pull/2869).
+- elb_application_lb - fixed comparison of multi-rule default actions to properly handle the ``Order`` field when determining if listener modifications are needed (https://github.com/ansible-collections/amazon.aws/issues/2537).
+- elb_application_lb - fixed error where creating a new application load balancer with listener rules would fail with ``Parameter validation failed: Invalid type for parameter ListenerArn, value: None`` (https://github.com/ansible-collections/amazon.aws/issues/2400).
+- s3_object - fixed error when using PUT with an empty ``content`` string (https://github.com/ansible-collections/amazon.aws/pull/2810)
+
 v10.2.0
 =======
 
@@ -89,6 +117,7 @@ Release Summary
 This major release introduces new support with the ``aws_ssm`` connection plugin, which has been promoted from ``community.aws``, several bugfixes, minor changes and deprecated features.
 Additionally, this release increases the minimum required versions of ``boto3`` and ``botocore`` to 1.34.0 to align with updated AWS SDK support and support for ansible-core < 2.17 has been dropped.
 Due to the AWS SDKs announcing the end of support for Python less than 3.8 (https://aws.amazon.com/blogs/developer/python-support-policy-updates-for-aws-sdks-and-tools/), support for Python less than 3.8 by this collection was deprecated in 9.0.0 release and is removed in this 10.0.0 release.
+
 
 Major Changes
 -------------
@@ -1011,6 +1040,7 @@ Release Summary
 This release is the last planned minor release of ``amazon.aws`` prior to the release of 7.0.0.
 It includes documentation fixes as well as minor changes and bug fixes for the ``ec2_ami`` and ``elb_application_lb_info`` modules.
 
+
 Minor Changes
 -------------
 
@@ -1342,6 +1372,7 @@ Release Summary
 
 This release brings few bugfixes.
 
+
 Bugfixes
 --------
 
@@ -1361,6 +1392,7 @@ Release Summary
 ---------------
 
 This release contains a number of bugfixes, new features and new modules.  This is the last planned minor release prior to the release of version 6.0.0.
+
 
 Minor Changes
 -------------
@@ -1455,6 +1487,7 @@ Release Summary
 ---------------
 
 A minor release containing bugfixes for the ``ec2_eni_info`` module and the ``aws_rds`` inventory plugin, as well as improvements to the ``rds_instance`` module.
+
 
 Minor Changes
 -------------
@@ -1679,6 +1712,7 @@ Release Summary
 
 This release contains a minor bugfix for the ``ec2_vol`` module, some minor work on the ``ec2_key`` module, and various documentation fixes.  This is the last planned release of the 4.x series.
 
+
 Minor Changes
 -------------
 
@@ -1717,6 +1751,7 @@ Release Summary
 The amazon.aws 4.3.0 release includes a number of minor bug fixes and improvements.
 Following the release of amazon.aws 5.0.0, backports to the 4.x series will be limited to
 security issues and bugfixes.
+
 
 Minor Changes
 -------------
@@ -1871,6 +1906,7 @@ Release Summary
 ---------------
 
 Following the release of amazon.aws 5.0.0, 3.5.0 is a bugfix release and the final planned release for the 3.x series.
+
 
 Minor Changes
 -------------

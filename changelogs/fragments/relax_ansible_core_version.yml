@@ -1,2 +1,0 @@
-minor_changes:
-  - meta/runtime.yml - Lowered the ``ansible-core`` minimum version to ``2.16``. This expands compatibility and does not change or remove existing functionality.
