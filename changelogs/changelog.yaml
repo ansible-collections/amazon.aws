@@ -4076,3 +4076,104 @@ releases:
       name: ec2_instance_type_info
       namespace: ''
     release_date: '2026-02-03'
+  11.2.0:
+    changes:
+      bugfixes:
+      - aws_ssm - Fixed connection being re-established on every loop iteration. The
+        plugin now properly establishes a single connection for a loop (https://github.com/ansible-collections/amazon.aws/pull/2869).
+      deprecated_features:
+      - aws_ec2 - the ``tags`` host variable has been deprecated to avoid conflicts
+        with Ansible reserved variable names and will be removed in a release after
+        2026-12-01. Use ``ec2_tags`` instead (https://github.com/ansible-collections/amazon.aws/pull/2847).
+      - aws_ec2 - the ``use_contrib_script_compatible_ec2_tag_keys`` option has been
+        deprecated and will be removed in a release after 2026-12-01. Use the ``ec2_tags``
+        structure instead. (https://github.com/ansible-collections/amazon.aws/pull/2854)
+      - aws_ec2 - the ``use_contrib_script_compatible_sanitization`` option has been
+        deprecated and will be removed in a release after 2026-12-01. Use Ansible's
+        default group name sanitization instead. (https://github.com/ansible-collections/amazon.aws/pull/2854)
+      - aws_rds - the ``tags`` host variable has been deprecated to avoid conflicts
+        with Ansible reserved variable names and will be removed in a release after
+        2026-12-01. Use ``rds_tags`` instead (https://github.com/ansible-collections/amazon.aws/pull/2847).
+      - route53 - the ``region`` parameter for latency-based routing has been deprecated
+        and will be removed in a release after 2027-06-01. The ``routing_region``
+        parameter behaves exactly as ``region`` behaves today and should be used instead
+        (https://github.com/ansible-collections/amazon.aws/issues/2893).
+      minor_changes:
+      - autoscaling_group - Added a boolean parameter ``protected_from_scale_in``
+        to toggle protection from scale-in. This allows users to enable or disable
+        scale-in protection for instances in an autoscaling group. (https://github.com/ansible-collections/amazon.aws/pull/2207)
+      - aws_cloudtrail - replace deprecated ``datetime.utcnow()`` with timezone-aware
+        ``datetime.now(tz=timezone.utc)`` (https://github.com/ansible-collections/amazon.aws/pull/2858).
+      - aws_ec2 - added "ec2_tags" host variable (https://github.com/ansible-collections/amazon.aws/pull/2847).
+      - aws_ec2 - remove explicit ``disable_lookups=False`` parameter from template
+        calls as it is deprecated and False is the default value (https://github.com/ansible-collections/amazon.aws/pull/2864).
+      - aws_inventory_base - remove explicit ``disable_lookups=False`` parameter from
+        template calls as it is deprecated and False is the default value (https://github.com/ansible-collections/amazon.aws/pull/2864).
+      - aws_rds - added "rds_tags" host variable (https://github.com/ansible-collections/amazon.aws/pull/2847).
+      - aws_resource_actions - remove redundant ``list()`` call when using ``sorted()``,
+        improving efficiency by allowing sorted() to consume the generator expression
+        directly (https://github.com/ansible-collections/amazon.aws/pull/2882).
+      - ec2_vol - added ``volume_initialization_rate`` optional parameter to support
+        Provisioned Initialization Rate when creating a volume from snapshots. (https://github.com/ansible-collections/amazon.aws/issues/2665)
+      - ec2_vpc_endpoint - replace deprecated ``datetime.utcnow()`` with timezone-aware
+        ``datetime.now(datetime.timezone.utc)`` (https://github.com/ansible-collections/amazon.aws/pull/2866).
+      - ec2_vpc_nat_gateway - replace deprecated ``datetime.utcnow()`` with timezone-aware
+        ``datetime.now(datetime.timezone.utc)`` (https://github.com/ansible-collections/amazon.aws/pull/2866).
+      - plugin_utils/inventory - add error handling for ClientError and BotoCoreError
+        in _freeze_iam_role method (https://github.com/ansible-collections/amazon.aws/pull/2902).
+      - plugin_utils/inventory - extract role session name generation into separate
+        method to improve code organisation (https://github.com/ansible-collections/amazon.aws/pull/2902).
+      - route53 - added ``routing_region`` parameter to explicitly specify the region
+        for latency-based resource record sets (https://github.com/ansible-collections/amazon.aws/issues/2893).
+      - route53 - added temporary ``aws_region`` parameter to allow specifying the
+        AWS region for API requests while the ``region`` parameter is being transitioned
+        (https://github.com/ansible-collections/amazon.aws/issues/2893).
+      - route53 - refactored module utility to use decorator-based error handling.
+        (https://github.com/ansible-collections/amazon.aws/pull/2892)
+      - route53_health_check - refactored module to improve testability and type safety.
+        (https://github.com/ansible-collections/amazon.aws/pull/2892)
+      release_summary: 'This release introduces several new features and improvements
+        across the collection. Notable additions include support for the ``volume_initialization_rate``
+        parameter in ``ec2_vol`` to enable Provisioned Initialization Rate when creating
+        volumes from snapshots, and a new ``protected_from_scale_in`` option in ``autoscaling_group``
+        to control scale-in protection for instances. Route53 modules have been enhanced
+        with new parameters for latency-based routing, including ``routing_region``
+        and a temporary ``aws_region`` option to support the transition away from
+        the deprecated ``region`` parameter.
+
+        The release also includes security fixes addressing potential ReDoS vulnerabilities
+        in ARN and EC2 security group ID parsing, as well as several internal improvements
+        and refactorings to improve code maintainability, error handling, and testability
+        across modules and plugin utilities.
+
+        Several deprecations were introduced in inventory plugins to avoid conflicts
+        with Ansible reserved variable names and modernize configuration options.
+        In addition, the release includes code modernization updates such as replacing
+        deprecated ``datetime.utcnow()`` usage with timezone-aware alternatives, improvements
+        to inventory plugin utilities, and various testing and internal maintenance
+        updates.
+
+        '
+      security_fixes:
+      - arn - fix potential ReDoS vulnerability in ARN parsing regex by using negated
+        character class instead of non-greedy quantifier (https://github.com/ansible-collections/amazon.aws/pull/2884).
+      - ec2_security_group - fix potential ReDoS vulnerability in security group ID
+        parsing regex by using negated character classes and adding end anchor (https://github.com/ansible-collections/amazon.aws/pull/2884).
+    fragments:
+    - 2207_scale_in_protection_auto_scaling_group.yml
+    - 2665-ec2_vol-provisioned-initialization-rate.yaml
+    - 2847_tags_deprecation.yml
+    - 2854-deprecate-legacy-script-options.yml
+    - 2869_aws_ssm_connection_fix.yml
+    - aws_resource_actions_callback.yml
+    - plugin_utils-inventory-unittests.yml
+    - pytest-ansible-compatibility.yml
+    - release_summary.yml
+    - route53-region-parameter-refactor.yml
+    - route53_error_handling_refactor.yml
+    - sonarcloud_regex.yml
+    - template_disable_lookups_cleanup.yml
+    - unittests-boto3-credentials.yml
+    - unittests-common.yml
+    - utcnow-deprecation.yml
+    release_date: '2026-03-16'
