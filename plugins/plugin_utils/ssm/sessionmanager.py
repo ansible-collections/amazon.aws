@@ -27,6 +27,8 @@ if typing.TYPE_CHECKING:
 from ansible.errors import AnsibleConnectionFailure
 from ansible.module_utils._text import to_text
 
+from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.text import filter_ansi
+
 
 class SSMProcessManagerTimeOutFailure(AnsibleConnectionFailure):
     pass
@@ -63,29 +65,52 @@ class ProcessManager:
         self._has_timeout = False
 
     def stdin_write(self, command: Union[bytes, str]) -> None:
+        if isinstance(command, str):
+            command = command.encode("utf-8")
+        self.verbosity_display(5, f"stdin_write: Writing {len(command)} bytes")
+        self.verbosity_display(5, f"stdin_write: First 200 bytes: {repr(command[:200])}")
         self._session.stdin.write(command)
+        self._session.stdin.flush()
+        self.verbosity_display(5, "stdin_write: Flushed")
 
     def stdout_read_text(self, size: int = 1024) -> str:
         return to_text(self._stdout.read(size))
 
     def stdout_readline(self) -> str:
-        return self._stdout.readline()
+        self.verbosity_display(5, "stdout_readline: About to call readline()")
+        result = self._stdout.readline()
+        self.verbosity_display(5, f"stdout_readline: readline() returned {len(result)} bytes")
+        return result
 
     def flush_stderr(self) -> str:
         """read and return stderr with minimal blocking"""
 
         poller = _create_polling_obj(self._session.stderr)
         stderr = ""
-        while self._session.poll() is None:
-            if not poller.poll(1):
+        self.verbosity_display(5, "FLUSH_STDERR: Checking session.poll() status")
+        poll_result = self._session.poll()
+        self.verbosity_display(5, f"FLUSH_STDERR: session.poll() returned {poll_result}")
+        while poll_result is None:
+            self.verbosity_display(5, "FLUSH_STDERR: About to poll stderr with 1ms timeout")
+            poll_res = poller.poll(1)
+            self.verbosity_display(5, f"FLUSH_STDERR: stderr poll returned {poll_res}")
+            if not poll_res:
                 break
+            self.verbosity_display(5, "FLUSH_STDERR: About to read stderr line")
             line = self._session.stderr.readline()
+            self.verbosity_display(5, f"FLUSH_STDERR: stderr readline returned {len(line)} bytes")
             self.verbosity_display(4, f"stderr line: {repr(to_text(line))}")
             stderr = stderr + line
+            self.verbosity_display(5, "FLUSH_STDERR: Checking session.poll() status")
+            poll_result = self._session.poll()
+            self.verbosity_display(5, f"FLUSH_STDERR: session.poll() returned {poll_result}")
         return stderr
 
     def poll_stdout(self, length: int = 1000) -> bool:
-        return bool(self._poller.poll(length))
+        self.verbosity_display(5, f"poll_stdout: About to poll with {length}ms timeout")
+        result = bool(self._poller.poll(length))
+        self.verbosity_display(5, f"poll_stdout({length}ms) -> {result}")
+        return result
 
     def poll(self, label: str, cmd: str) -> NoReturn:
         """Poll session to retrieve content from stdout.
@@ -95,13 +120,19 @@ class ProcessManager:
         """
         start = round(time.time())
         yield self.poll_stdout()
-        while self._session.poll() is None:
+        self.verbosity_display(5, f"{label} POLL: Checking session.poll() status")
+        poll_result = self._session.poll()
+        self.verbosity_display(5, f"{label} POLL: session.poll() returned {poll_result}")
+        while poll_result is None:
             remaining = start + self._timeout - round(time.time())
             self.verbosity_display(4, f"{label} remaining: {remaining} second(s)")
             if remaining < 0:
                 self._has_timeout = True
                 raise SSMProcessManagerTimeOutFailure(f"{label} command '{cmd}' timeout on host: {self.instance_id}")
             yield self.poll_stdout()
+            self.verbosity_display(5, f"{label} POLL: Checking session.poll() status")
+            poll_result = self._session.poll()
+            self.verbosity_display(5, f"{label} POLL: session.poll() returned {poll_result}")
 
     def wait_for_match(
         self, label: str, cmd: Union[str, bytes], match: Union[str, Callable[[str], bool]], is_windows: bool = False
@@ -119,24 +150,93 @@ class ProcessManager:
         :param match: Either a string to search for or a callable that returns True when matched.
         :param is_windows: Whether the output is from a Windows host (for ANSI filtering).
         """
-        from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.text import filter_ansi
-
         stdout = ""
-        self.verbosity_display(4, f"{label} WAIT FOR: {match} - Command = {to_text(cmd)}")
+        wait_start = time.time()
+        last_progress_log = wait_start
+        poll_count = 0
+        line_count = 0
+
+        self.verbosity_display(4, f"{label} WAIT_FOR_MATCH: Starting to wait for pattern")
+        if isinstance(match, str):
+            self.verbosity_display(4, f"{label} WAIT_FOR_MATCH: Looking for string: {repr(match)}")
+        else:
+            self.verbosity_display(4, f"{label} WAIT_FOR_MATCH: Looking for pattern match")
+        self.verbosity_display(4, f"{label} WAIT_FOR_MATCH: Command = {to_text(cmd)}")
+
+        # Check stderr before starting to wait
+        stderr_output = self.flush_stderr()
+        if stderr_output:
+            self.verbosity_display(4, f"{label} WAIT_FOR_MATCH: stderr before wait: {repr(stderr_output)}")
+
         for result in self.poll(label=label, cmd=to_text(cmd)):
+            poll_count += 1
+            current_time = time.time()
+
+            # Log progress every 5 seconds during long waits
+            if current_time - last_progress_log >= 5.0:
+                elapsed = current_time - wait_start
+                self.verbosity_display(
+                    3,
+                    f"{label} WAIT_FOR_MATCH: Still waiting after {elapsed:.1f}s ({line_count} lines, {poll_count} polls, {len(stdout)} bytes collected)",
+                )
+                last_progress_log = current_time
+
             if result:
                 line = to_text(self.stdout_readline())
-                self.verbosity_display(4, f"{label} stdout line (waiting): {repr(line)}")
+                line_count += 1
+                self.verbosity_display(4, f"{label} WAIT_FOR_MATCH: stdout line {line_count}: {repr(line)}")
                 stdout += line
 
                 if isinstance(match, str):
                     if stdout.find(match) != -1:
+                        elapsed = time.time() - wait_start
+                        self.verbosity_display(
+                            4, f"{label} WAIT_FOR_MATCH: MATCHED! Found string in stdout after {elapsed:.2f}s"
+                        )
                         break
+                    # Log last 100 chars to help debug why match isn't found
+                    self.verbosity_display(
+                        5, f"{label} WAIT_FOR_MATCH: No match yet, last 100 chars: {repr(stdout[-100:])}"
+                    )
                 else:
                     # For callable matches, try both raw and filtered text
                     stdout_filtered = filter_ansi(stdout, is_windows)
                     if match(stdout) or match(stdout_filtered):
+                        elapsed = time.time() - wait_start
+                        self.verbosity_display(
+                            4, f"{label} WAIT_FOR_MATCH: MATCHED! Pattern matched stdout after {elapsed:.2f}s"
+                        )
                         break
+                    # Log last 100 chars to help debug why pattern doesn't match
+                    self.verbosity_display(5, f"{label} WAIT_FOR_MATCH: No pattern match yet")
+                    self.verbosity_display(5, f"{label} WAIT_FOR_MATCH: Last 100 chars (raw): {repr(stdout[-100:])}")
+                    self.verbosity_display(
+                        5, f"{label} WAIT_FOR_MATCH: Last 100 chars (filtered): {repr(stdout_filtered[-100:])}"
+                    )
+            else:
+                # No stdout data, check stderr
+                stderr_output = self.flush_stderr()
+                if stderr_output:
+                    self.verbosity_display(4, f"{label} WAIT_FOR_MATCH: stderr while waiting: {repr(stderr_output)}")
+
+        total_duration = time.time() - wait_start
+        self.verbosity_display(
+            4,
+            f"{label} WAIT_FOR_MATCH: Complete after {total_duration:.2f}s - {line_count} lines, {poll_count} polls, {len(stdout)} bytes collected",
+        )
+        self.verbosity_display(5, f"{label} WAIT_FOR_MATCH: Full stdout collected: {repr(stdout)}")
+
+        # Check if we saw command echo before the match (indicates PSReadLine wasn't removed on Windows)
+        if is_windows and label == "EXEC_COMMUNICATE" and line_count > 5:
+            # Look for signs of PowerShell command echo (base64 or PowerShell keywords)
+            if "powershell" in stdout.lower() or any(
+                char in stdout for char in ["A", "B", "C", "D"] if stdout.count(char) > 50
+            ):
+                self.verbosity_display(
+                    2,
+                    f"{label} WAIT_FOR_MATCH: WARNING - Detected possible command echo in {line_count} lines before marker. "
+                    "PSReadLine may not have been removed properly.",
+                )
 
     def terminate(self) -> None:
         if self._has_timeout:
@@ -195,7 +295,7 @@ class SSMSessionManager:
     ) -> None:
         """Start SSM Session manager session and eventually prepare terminal"""
 
-        self.verbosity_display(3, f"ESTABLISH SSM CONNECTION TO: {self.instance_id}")
+        self.verbosity_display(2, f"ESTABLISH SSM CONNECTION TO: {self.instance_id}")
         if parameters is None:
             parameters = {}
         start_session_args = dict(Target=self.instance_id, Parameters=parameters)
@@ -203,7 +303,7 @@ class SSMSessionManager:
             start_session_args["DocumentName"] = document_name
         response = self._client.start_session(**start_session_args)
         self._session_id = response["SessionId"]
-        self.verbosity_display(4, f"SSM CONNECTION ID: {self._session_id}")
+        self.verbosity_display(3, f"SSM CONNECTION ID: {self._session_id}")
 
         cmd = [
             executable,

@@ -358,6 +358,7 @@ import os
 import random
 import re
 import string
+import time
 import typing
 
 if typing.TYPE_CHECKING:
@@ -441,7 +442,6 @@ class Connection(AWSConnectionBase):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
-        self.host = self._play_context.remote_addr
         self._instance_id = None
         self.terminal_manager = TerminalManager(self)
         self.reconnection_retries = self.get_option("reconnection_retries")
@@ -546,10 +546,10 @@ class Connection(AWSConnectionBase):
         """connect to the host via ssm"""
         self._play_context.remote_user = getpass.getuser()
         if not self.session_manager:
-            self.verbosity_display(4, "NO EXISTING SESSION, STARTING NEW ONE")
+            self.verbosity_display(3, "NO EXISTING SESSION, STARTING NEW ONE")
             self.start_session()
         else:
-            self.verbosity_display(4, f"REUSING EXISTING SESSION: {self.session_manager._session_id}")
+            self.verbosity_display(3, f"REUSING EXISTING SESSION: {self.session_manager._session_id}")
 
         self._connected = True
         return self
@@ -560,7 +560,7 @@ class Connection(AWSConnectionBase):
         Delegates client initialization to specialized methods.
         """
 
-        self.verbosity_display(4, "INITIALIZE BOTO3 CLIENTS")
+        self.verbosity_display(3, "INITIALIZE BOTO3 CLIENTS")
 
         # Initialize S3 client
         self.s3_manager  # pylint: disable=pointless-statement
@@ -579,29 +579,9 @@ class Connection(AWSConnectionBase):
             exec_command=self.exec_command,
         )
 
-    def verbosity_display(self, level: int, message: str) -> None:
-        """
-        Displays the given message depending on the verbosity level.
-
-        :param message: The message to display.
-        :param display_level: The verbosity level (1-4).
-
-        :return: None
-        """
-        if self.host:
-            host_args = {"host": self.host}
-        else:
-            host_args = {}
-
-        verbosity_level = {1: display.v, 2: display.vv, 3: display.vvv, 4: display.vvvv}
-
-        if level not in verbosity_level.keys():
-            raise AnsibleError(f"Invalid verbosity level: {level}")
-        verbosity_level[level](to_text(message), **host_args)
-
     def reset(self) -> None:
         """start a fresh ssm session"""
-        self.verbosity_display(4, "reset called on ssm connection")
+        self.verbosity_display(3, "reset called on ssm connection")
         self.close()
         self.start_session()
 
@@ -624,7 +604,7 @@ class Connection(AWSConnectionBase):
     def start_session(self) -> None:
         """start ssm session"""
 
-        self.verbosity_display(3, f"ESTABLISH SSM CONNECTION TO: {self.instance_id}")
+        self.verbosity_display(2, f"ESTABLISH SSM CONNECTION TO: {self.instance_id}")
 
         executable = self.get_executable()
 
@@ -645,7 +625,7 @@ class Connection(AWSConnectionBase):
                 profile_name=self.get_option("profile") or "",
             )
 
-            self.verbosity_display(4, f"STARTED SSM SESSION: {self.session_manager._session_id}")
+            self.verbosity_display(3, f"STARTED SSM SESSION: {self.session_manager._session_id}")
 
             # For non-windows Hosts: Ensure the session has started, and disable command echo and prompt.
             self.terminal_manager.prepare_terminal()
@@ -660,6 +640,7 @@ class Connection(AWSConnectionBase):
         :param mark_end: The end marker.
         :returns: A tuple with the return code, the stdout and the stderr content.
         """
+        start_time = time.time()
         # Read stdout between the markers
         stdout = ""
         returncode = None
@@ -667,39 +648,72 @@ class Connection(AWSConnectionBase):
         end_search = re.compile(f"{re.escape(mark_end)}", re.MULTILINE)
 
         # Wait for our start marker to come in
+        self.verbosity_display(4, f"EXEC_COMMUNICATE: Waiting for begin marker ({mark_begin})")
+        marker_wait_start = time.time()
+
         self.session_manager.wait_for_match(
             label="EXEC_COMMUNICATE",
             cmd="<BEGIN_MARKER>",
             match=start_search.search,
             is_windows=self.is_windows,
         )
-        self.verbosity_display(4, f"EXEC_COMMUNICATE: Found Begin Marker ({mark_begin})")
+
+        marker_wait_duration = time.time() - marker_wait_start
+        self.verbosity_display(3, f"EXEC_COMMUNICATE: Begin marker received after {marker_wait_duration:.2f}s")
+
         # The command's been sent, and the begin marker has happened, send the stdin data
         if in_data:
-            self.verbosity_display(4, "EXEC_COMMUNICATE: Sending STDIN data")
+            stdin_size = len(in_data)
+            self.verbosity_display(4, f"EXEC_COMMUNICATE: Sending {stdin_size} bytes of STDIN data")
+            stdin_start = time.time()
+            chunk_count = 0
             for chunk, is_last in _chunked_payload(in_data):
-                # self.verbosity_display(4, f"EXEC STDIN: {to_text(chunk)}\n")
+                chunk_count += 1
+                self.verbosity_display(
+                    5, f"EXEC_COMMUNICATE: Sending STDIN chunk {chunk_count} ({len(chunk)} bytes, last={is_last})"
+                )
                 self.session_manager.stdin_write(to_bytes(chunk, errors="surrogate_or_strict"))
 
-        self.verbosity_display(4, f"EXEC_COMMUNICATE: Polling")
+            # Send EOF delimiter for PowerShell stdin wrapper (four null bytes + newline)
+            # This signals to the PowerShell script that stdin is complete
+            if self.is_windows:
+                stdin_duration = time.time() - stdin_start
+                self.verbosity_display(
+                    4,
+                    f"EXEC_COMMUNICATE: Sent {chunk_count} chunks ({stdin_size} bytes) in {stdin_duration:.2f}s, sending EOF delimiter",
+                )
+                self.session_manager.stdin_write(b"\0\0\0\0\n")
+        else:
+            self.verbosity_display(4, "EXEC_COMMUNICATE: No STDIN data to send")
+
+        self.verbosity_display(4, "EXEC_COMMUNICATE: Polling for output")
+        poll_start = time.time()
+        line_count = 0
         for poll_result in self.session_manager.poll("EXEC", cmd):
             if not poll_result:
                 continue
 
             line = filter_ansi(self.session_manager.stdout_readline(), self.is_windows)
-            self.verbosity_display(4, f"EXEC_COMMUNICATE stdout line: '{repr(line)}'")
+            line_count += 1
+            self.verbosity_display(4, f"EXEC_COMMUNICATE: stdout line {line_count}: {repr(line)}")
 
             # Check for end marker before adding line to output
             if end_search.search(line):
+                self.verbosity_display(4, f"EXEC_COMMUNICATE: Found end marker ({mark_end}) in line {line_count}")
                 break
 
             stdout = stdout + line
 
+        poll_duration = time.time() - poll_start
+        self.verbosity_display(4, f"EXEC_COMMUNICATE: Polling complete after {poll_duration:.2f}s ({line_count} lines)")
 
-        self.verbosity_display(4, f"EXEC_COMMUNICATE_POST_PROCESS: \n{to_text(stdout)}")
+        self.verbosity_display(5, f"EXEC_COMMUNICATE_POST_PROCESS: \n{to_text(stdout)}")
         returncode, stdout = self._post_process(stdout, mark_begin)
-        self.verbosity_display(4, f"EXEC_COMMUNICATE_RETURN_CODE: {returncode}")
-        self.verbosity_display(4, f"EXEC_COMMUNICATE_POST_PROCESSED: \n{to_text(stdout)}")
+        total_duration = time.time() - start_time
+        self.verbosity_display(
+            4, f"EXEC_COMMUNICATE: Complete - returncode={returncode}, total_duration={total_duration:.2f}s"
+        )
+        self.verbosity_display(5, f"EXEC_COMMUNICATE_POST_PROCESSED: \n{to_text(stdout)}")
 
         # see https://github.com/pylint-dev/pylint/issues/8909)
         return (returncode, stdout, self.session_manager.flush_stderr())
@@ -712,7 +726,7 @@ class Connection(AWSConnectionBase):
         )  # nosec B311 - markers for output parsing, not security
         return mark
 
-    @AWSConnectionRetry.exponential_backoff()
+    # @AWSConnectionRetry.exponential_backoff()
     def exec_command(self, cmd: str, in_data: bytes | None = None, sudoable: bool = True) -> tuple[int, str, str]:
         """Execute a command on the SSM host with automatic retry on failure.
 
@@ -723,21 +737,57 @@ class Connection(AWSConnectionBase):
         """
         super().exec_command(cmd, in_data=in_data, sudoable=sudoable)
 
-        self.verbosity_display(3, f"EXEC: {to_text(cmd)}")
+        self.verbosity_display(2, f"EXEC: {to_text(cmd)[:200]}...")
+        self.verbosity_display(5, f"EXEC: Full command: {to_text(cmd)}")
+        self.verbosity_display(5, f"EXEC: Command length: {len(cmd)} bytes")
+        if in_data:
+            self.verbosity_display(5, f"EXEC: Has stdin data: {len(in_data)} bytes")
+            self.verbosity_display(6, f"EXEC: First 200 bytes of stdin: {in_data[:200]}")
+        else:
+            self.verbosity_display(5, "EXEC: No stdin data")
 
         mark_begin = self.generate_mark()
         mark_end = self.generate_mark()
+        self.verbosity_display(5, f"EXEC: Generated begin marker: {mark_begin}")
+        self.verbosity_display(5, f"EXEC: Generated end marker: {mark_end}")
 
         # Wrap command in markers accordingly for the shell used
-        cmd = self.terminal_manager.wrap_command(cmd, mark_begin, mark_end)
+        # Pass has_stdin flag so PowerShell can be configured to read stdin properly
+        self.verbosity_display(5, f"EXEC: Wrapping command with has_stdin={bool(in_data)}")
+        trigger_cmd, stdin_cmd = self.terminal_manager.wrap_command(cmd, mark_begin, mark_end, has_stdin=bool(in_data))
+        self.verbosity_display(5, f"EXEC: Trigger command length: {len(trigger_cmd)} bytes")
+        self.verbosity_display(6, f"EXEC: Full trigger command: {to_text(trigger_cmd)}")
+        if stdin_cmd:
+            self.verbosity_display(5, f"EXEC: Command to send via stdin: {len(stdin_cmd)} bytes")
+            self.verbosity_display(6, f"EXEC: Full stdin command: {to_text(stdin_cmd)}")
 
         self.session_manager.flush_stderr()
 
-        for chunk, is_last in _chunked_payload(cmd):
-            self.verbosity_display(4, f"STREAM_COMMAND ({is_last}): {to_text(chunk)}")
+        # Send the trigger command
+        chunk_count = 0
+        for chunk, is_last in _chunked_payload(trigger_cmd):
+            chunk_count += 1
+            self.verbosity_display(5, f"STREAM_TRIGGER: Chunk {chunk_count} ({len(chunk)} bytes, last={is_last})")
+            self.verbosity_display(6, f"STREAM_TRIGGER: Chunk {chunk_count} content: {to_text(chunk)}")
             self.session_manager.stdin_write(to_bytes(chunk, errors="surrogate_or_strict"))
+        self.verbosity_display(5, f"EXEC: Sent {chunk_count} trigger chunks to session")
 
-        return self.exec_communicate(cmd, in_data, mark_begin, mark_end)
+        # For Windows, send the actual command via stdin (avoids PTY echo)
+        if stdin_cmd:
+            self.verbosity_display(4, f"EXEC: Sending command via stdin ({len(stdin_cmd)} bytes)")
+            cmd_chunk_count = 0
+            for chunk, is_last in _chunked_payload(stdin_cmd):
+                cmd_chunk_count += 1
+                self.verbosity_display(
+                    5, f"STREAM_STDIN_CMD: Chunk {cmd_chunk_count} ({len(chunk)} bytes, last={is_last})"
+                )
+                self.verbosity_display(6, f"STREAM_STDIN_CMD: Chunk {cmd_chunk_count} content: {to_text(chunk)}")
+                self.session_manager.stdin_write(to_bytes(chunk, errors="surrogate_or_strict"))
+            # Send EOF delimiter (four null bytes + newline)
+            self.verbosity_display(4, f"EXEC: Sent {cmd_chunk_count} command chunks, sending EOF delimiter")
+            self.session_manager.stdin_write(b"\0\0\0\0\n")
+
+        return self.exec_communicate(trigger_cmd, in_data, mark_begin, mark_end)
 
     def _post_process(self, stdout: str, mark_begin: str) -> tuple[int, str]:
         """Extract command status and strip unwanted lines.
@@ -747,26 +797,44 @@ class Connection(AWSConnectionBase):
         :returns: A tuple of (exit_code, cleaned_stdout).
         """
         # Get command return code (second to last line)
+        self.verbosity_display(
+            5, f"POST_PROCESS: Raw stdout length: {len(stdout)} bytes, {len(stdout.splitlines())} lines"
+        )
+        self.verbosity_display(6, f"POST_PROCESS: Raw stdout:\n{stdout}")
         try:
             return_data = stdout.splitlines()[-1]
-            self.verbosity_display(4, f'POST_PROCESS: Return \n"{return_data}"')
+            self.verbosity_display(4, f'POST_PROCESS: Return code line: "{return_data}"')
             returncode = int(return_data)
+            self.verbosity_display(5, f"POST_PROCESS: Parsed return code: {returncode}")
         except ValueError:
+            self.verbosity_display(4, f'POST_PROCESS: Failed to parse return code from "{return_data}", using 32')
             returncode = 32
 
         # Throw away final lines (blank line, exit code, already removed mark_end)
+        self.verbosity_display(5, "POST_PROCESS: Removing final 3 lines (blank, exit code, end marker)")
         for _x in range(0, 3):
             stdout = stdout[:stdout.rfind('\n')]  # fmt: skip
+        self.verbosity_display(
+            5, f"POST_PROCESS: After removing final lines: {len(stdout)} bytes, {len(stdout.splitlines())} lines"
+        )
 
         if self.is_windows:
             # If the return code contains #CLIXML (like a progress bar) remove it
             clixml_filter = re.compile(r"#<\sCLIXML\s<Objs.*</Objs>")
+            original_len = len(stdout)
             stdout = clixml_filter.sub("", stdout)
+            if len(stdout) != original_len:
+                self.verbosity_display(
+                    5, f"POST_PROCESS: Removed CLIXML, reduced from {original_len} to {len(stdout)} bytes"
+                )
 
             # If it looks like JSON remove any newlines
             if stdout.startswith("{"):
+                self.verbosity_display(5, "POST_PROCESS: Detected JSON output, removing newlines")
                 stdout = stdout.replace("\n", "")
 
+        self.verbosity_display(5, f"POST_PROCESS: Final stdout length: {len(stdout)} bytes")
+        self.verbosity_display(6, f"POST_PROCESS: Final stdout:\n{stdout}")
         return (returncode, stdout)
 
     def generate_commands(self, in_path: str, out_path: str, ssm_action: str) -> tuple[str, str, dict]:
@@ -818,7 +886,7 @@ class Connection(AWSConnectionBase):
 
         super().put_file(in_path, out_path)
 
-        self.verbosity_display(3, f"PUT {in_path} TO {out_path}")
+        self.verbosity_display(2, f"PUT {in_path} TO {out_path}")
         if not os.path.exists(to_bytes(in_path, errors="surrogate_or_strict")):
             raise AnsibleFileNotFound(f"file or module does not exist: {in_path}")
 
@@ -830,7 +898,7 @@ class Connection(AWSConnectionBase):
 
         super().fetch_file(in_path, out_path)
 
-        self.verbosity_display(3, f"FETCH {in_path} TO {out_path}")
+        self.verbosity_display(2, f"FETCH {in_path} TO {out_path}")
 
         s3_path, command, put_args = self.generate_commands(in_path, out_path, "get")
         return self.file_transfer_manager._file_transport_command(in_path, out_path, "get", command, put_args, s3_path)
@@ -838,7 +906,7 @@ class Connection(AWSConnectionBase):
     def close(self) -> None:
         """terminate the connection"""
         if self.session_manager is not None:
-            self.verbosity_display(3, f"TERMINATE SSM SESSION: {self.session_manager._session_id}")
+            self.verbosity_display(2, f"TERMINATE SSM SESSION: {self.session_manager._session_id}")
 
             self.session_manager.terminate()
             self.session_manager = None

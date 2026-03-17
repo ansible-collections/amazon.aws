@@ -59,8 +59,11 @@ line-length = 120
 unfixable = ["F401"]
 ignore = ["F401", "E402"]
 
-[tool.pytest]
+[tool.pytest.ini_options]
 xfail_strict = true
+markers = [
+    "limit_memory: Mark test with memory limit for pytest-memray",
+]
 
 [tool.coverage.run]
 source = [

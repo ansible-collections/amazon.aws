@@ -48,6 +48,7 @@ ami_details:
             sudo systemctl start amazon-ssm-agent
         os_type: linux
     windows:
+        instance_type: m1.large  # Windows Server 2022 requires more memory (2GB minimum)
         ssm_parameter: /aws/service/ami-windows-latest/Windows_Server-2022-English-Full-Base
         # owner: amazon
         # name: Windows_Server-2022-English-Full-Base-*

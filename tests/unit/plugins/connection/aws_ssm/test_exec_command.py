@@ -106,6 +106,11 @@ def test_connection_aws_ssm_exec_command(m_chunks, connection_aws_ssm, is_window
     in_data = MagicMock()
     sudoable = MagicMock()
     connection_aws_ssm.terminal_manager = MagicMock()
+    # wrap_command now returns a tuple (trigger_cmd, stdin_cmd)
+    # For Linux, stdin_cmd is empty string; for Windows it contains the command
+    wrapped_cmd = MagicMock()
+    stdin_cmd = MagicMock() if is_windows else ""
+    connection_aws_ssm.terminal_manager.wrap_command.return_value = (wrapped_cmd, stdin_cmd)
 
     assert result == connection_aws_ssm.exec_command(cmd, in_data, sudoable)
     # m_chunks.assert_called_once_with(chunk, 1024)
@@ -126,7 +131,9 @@ def test_connection_aws_ssm_exec_command(m_chunks, connection_aws_ssm, is_window
         ("output\n#< CLIXML <Objs></Objs>more\n\n0\n", 0, "output\nmore", True),
     ],
 )
-def test_connection_aws_ssm_post_process(connection_aws_ssm, stdout_input, expected_returncode, expected_stdout, is_windows):
+def test_connection_aws_ssm_post_process(
+    connection_aws_ssm, stdout_input, expected_returncode, expected_stdout, is_windows
+):
     connection_aws_ssm.is_windows = is_windows
     mark_begin = "MARK_START"
 
