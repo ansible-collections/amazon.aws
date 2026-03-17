@@ -4151,9 +4151,7 @@ releases:
         In addition, the release includes code modernization updates such as replacing
         deprecated ``datetime.utcnow()`` usage with timezone-aware alternatives, improvements
         to inventory plugin utilities, and various testing and internal maintenance
-        updates.
-
-        '
+        updates.'
       security_fixes:
       - arn - fix potential ReDoS vulnerability in ARN parsing regex by using negated
         character class instead of non-greedy quantifier (https://github.com/ansible-collections/amazon.aws/pull/2884).
