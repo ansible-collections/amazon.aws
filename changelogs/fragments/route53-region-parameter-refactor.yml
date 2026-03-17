@@ -1,6 +1,0 @@
----
-deprecated_features:
-  - route53 - the ``region`` parameter for latency-based routing has been deprecated and will be removed in a release after 2027-06-01. The ``routing_region`` parameter behaves exactly as ``region`` behaves today and should be used instead (https://github.com/ansible-collections/amazon.aws/issues/2893).
-minor_changes:
-  - route53 - added ``routing_region`` parameter to explicitly specify the region for latency-based resource record sets (https://github.com/ansible-collections/amazon.aws/issues/2893).
-  - route53 - added temporary ``aws_region`` parameter to allow specifying the AWS region for API requests while the ``region`` parameter is being transitioned (https://github.com/ansible-collections/amazon.aws/issues/2893).
