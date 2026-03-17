@@ -96,8 +96,12 @@ def test_connection_aws_ssm_exec_command(m_chunks, connection_aws_ssm, is_window
     connection_aws_ssm.is_windows = is_windows
     connection_aws_ssm.exec_communicate = MagicMock()
     connection_aws_ssm.reconnection_retries = 5
-    result = MagicMock()
-    connection_aws_ssm.exec_communicate.return_value = result
+    # exec_communicate returns (returncode, stdout_str, stderr_str)
+    # exec_command converts stdout/stderr to bytes
+    mock_returncode = 0
+    mock_stdout = "test output"
+    mock_stderr = "test error"
+    connection_aws_ssm.exec_communicate.return_value = (mock_returncode, mock_stdout, mock_stderr)
 
     chunk = MagicMock()
     m_chunks.return_value = [chunk]
@@ -105,11 +109,41 @@ def test_connection_aws_ssm_exec_command(m_chunks, connection_aws_ssm, is_window
     cmd = MagicMock()
     in_data = MagicMock()
     sudoable = MagicMock()
-    connection_aws_ssm.terminal_manager = MagicMock()
 
-    assert result == connection_aws_ssm.exec_command(cmd, in_data, sudoable)
-    # m_chunks.assert_called_once_with(chunk, 1024)
-    connection_aws_ssm.session_manager.flush_stderr.assert_called_once_with()
+    # Mock S3 components for Windows path
+    if is_windows:
+        # Mock the underlying _s3_manager (s3_client is a property that accesses _s3_manager.client)
+        mock_s3_client = MagicMock()
+        connection_aws_ssm._s3_manager = MagicMock()
+        connection_aws_ssm._s3_manager.client = mock_s3_client
+        connection_aws_ssm._s3_manager.get_url.return_value = "https://s3.example.com/presigned-url"
+        connection_aws_ssm.get_option = MagicMock(return_value="test-bucket")
+        connection_aws_ssm._instance_id = "i-1234567890abcdef0"
+        connection_aws_ssm.session_manager.stdin_write = MagicMock()
+    else:
+        connection_aws_ssm.terminal_manager = MagicMock()
+        # wrap_command returns a tuple (trigger_cmd, stdin_cmd)
+        # For Linux, stdin_cmd is empty string
+        wrapped_cmd = MagicMock()
+        connection_aws_ssm.terminal_manager.wrap_command.return_value = (wrapped_cmd, "")
+
+    result_returncode, result_stdout, result_stderr = connection_aws_ssm.exec_command(cmd, in_data, sudoable)
+
+    # Verify exec_command returns bytes for stdout/stderr
+    assert result_returncode == mock_returncode
+    assert result_stdout == b"test output"
+    assert result_stderr == b"test error"
+
+    # Verify appropriate methods were called based on platform
+    if is_windows:
+        # Windows: S3-based execution
+        mock_s3_client.put_object.assert_called()
+        connection_aws_ssm._s3_manager.get_url.assert_called()
+        connection_aws_ssm.session_manager.stdin_write.assert_called()
+        mock_s3_client.delete_object.assert_called()
+    else:
+        # Linux: inline execution with chunked payload
+        connection_aws_ssm.session_manager.flush_stderr.assert_called_once_with()
 
 
 @pytest.mark.parametrize(
@@ -126,7 +160,9 @@ def test_connection_aws_ssm_exec_command(m_chunks, connection_aws_ssm, is_window
         ("output\n#< CLIXML <Objs></Objs>more\n\n0\n", 0, "output\nmore", True),
     ],
 )
-def test_connection_aws_ssm_post_process(connection_aws_ssm, stdout_input, expected_returncode, expected_stdout, is_windows):
+def test_connection_aws_ssm_post_process(
+    connection_aws_ssm, stdout_input, expected_returncode, expected_stdout, is_windows
+):
     connection_aws_ssm.is_windows = is_windows
     mark_begin = "MARK_START"
 

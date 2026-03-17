@@ -7,6 +7,7 @@ from typing import NoReturn
 from typing import Optional
 
 from ansible.errors import AnsibleError
+from ansible.module_utils._text import to_text
 from ansible.module_utils.basic import to_native
 from ansible.utils.display import Display
 
@@ -25,6 +26,36 @@ class AWSPluginBase:
 
     def debug(self, message: str):
         display.debug(message)
+
+    def v_log(self, level: int, message: str, host: Optional[str] = None) -> None:
+        """
+        Display a message at the specified verbosity level.
+
+        :param level: The verbosity level (1-6)
+        :param message: The message to display
+        :param host: Optional host identifier for the message. If not provided, attempts to use self.host if available.
+        """
+        # Use the provided host, or fall back to self.host if it exists
+        if host is None:
+            host = getattr(self, "host", None)
+
+        if host:
+            host_args = {"host": host}
+        else:
+            host_args = {}
+
+        verbosity_level = {
+            1: display.v,
+            2: display.vv,
+            3: display.vvv,
+            4: display.vvvv,
+            5: display.vvvvv,
+            6: display.vvvvvv,
+        }
+
+        if level not in verbosity_level.keys():
+            raise AnsibleError(f"Invalid verbosity level: {level}")
+        verbosity_level[level](to_text(message), **host_args)
 
     # Should be overridden with the plugin-type specific exception
     def _do_fail(self, message: str) -> NoReturn:

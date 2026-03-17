@@ -147,38 +147,19 @@ class TestConnectionBaseClass:
         loaded_aws_ssm.__del__()
         loaded_aws_ssm.close.assert_called_once()
 
-    @pytest.mark.parametrize("level", ["invalid value", 5, -1])
-    @patch("ansible_collections.amazon.aws.plugins.connection.aws_ssm.display")
-    def test_verbosity_diplay_invalid_level(self, mock_display, loaded_aws_ssm, level):
-        """Testing verbosity levels"""
-        # Test exception is raised when verbosity level is not an accepted value
-        with pytest.raises(AnsibleError) as exc_info:
-            loaded_aws_ssm.verbosity_display(level, "unit testing connection aws_ssm plugin")
-        assert str(exc_info.value) == (f"Invalid verbosity level: {level}")
-        for method in ("v", "vv", "vvv", "vvvv"):
-            getattr(mock_display, method).assert_not_called()
+    @patch("ansible_collections.amazon.aws.plugins.plugin_utils.base.display")
+    def test_verbosity_display_wrapper(self, mock_display, loaded_aws_ssm):
+        """Test that verbosity_display() wrapper correctly calls v_log()
 
-    @pytest.mark.parametrize("host", [None, "test-host"])
-    @pytest.mark.parametrize(
-        "level,method",
-        [
-            (1, "v"),
-            (2, "vv"),
-            (3, "vvv"),
-            (4, "vvvv"),
-        ],
-    )
-    @patch("ansible_collections.amazon.aws.plugins.connection.aws_ssm.display")
-    def test_verbosity_diplay(self, mock_display, loaded_aws_ssm, host, level, method):
-        """Testing verbosity levels"""
-        loaded_aws_ssm.host = host
+        Comprehensive v_log() tests are in test_base.py. This test just verifies
+        the wrapper exists and delegates correctly.
+        """
+        loaded_aws_ssm.host = "test-host"
         message = "unit testing connection aws_ssm plugin"
-        loaded_aws_ssm.verbosity_display(level, message)
-        # Verify the correct display method was called with expected args
-        args = {}
-        if host:
-            args["host"] = host
-        getattr(mock_display, method).assert_called_once_with(message, **args)
+
+        # Test that verbosity_display calls the underlying v_log
+        loaded_aws_ssm.verbosity_display(3, message)
+        mock_display.vvv.assert_called_once_with(message, host="test-host")
 
 
 class TestS3ClientManager:
