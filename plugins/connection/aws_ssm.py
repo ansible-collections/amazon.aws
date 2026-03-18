@@ -353,6 +353,7 @@ EXAMPLES = r"""
       ansible.builtin.shell:
         cmd: '/tmp/date.sh'
 """
+import base64
 import getpass
 import os
 import random
@@ -726,9 +727,187 @@ class Connection(AWSConnectionBase):
         )  # nosec B311 - markers for output parsing, not security
         return mark
 
+    def _exec_command_via_s3(
+        self, cmd: str, in_data: bytes | None, mark_begin: str, mark_end: str
+    ) -> tuple[int, str, str]:
+        """Execute a Windows command by uploading to S3 and downloading via tiny command.
+
+        This avoids PTY echo timeouts by keeping the session command tiny (~100 bytes)
+        while the actual command (which may be kilobytes) is retrieved from S3.
+
+        :param cmd: The PowerShell command to execute (may be encoded command line).
+        :param in_data: Optional stdin data for the command.
+        :param mark_begin: The begin marker for output parsing.
+        :param mark_end: The end marker for output parsing.
+        :returns: A tuple of (exit_code, stdout, stderr).
+        """
+        import uuid
+
+        # Generate unique S3 key for this command
+        command_id = str(uuid.uuid4())
+        s3_key = f"{self.instance_id}/commands/{command_id}.ps1"
+        stdin_key = None  # Initialize for cleanup scope
+
+        self.verbosity_display(3, f"EXEC_VIA_S3: Uploading command to s3://{self.get_option('bucket_name')}/{s3_key}")
+        self.verbosity_display(4, f"EXEC_VIA_S3: Command length: {len(cmd)} bytes")
+
+        # DEBUG: Show command encoding details (level 6 for long-term debugging of encoding issues)
+        cmd_str = to_text(cmd)
+        self.verbosity_display(6, f"EXEC_VIA_S3: Command (str): {repr(cmd_str[:200])}")
+        if isinstance(cmd, bytes):
+            self.verbosity_display(6, f"EXEC_VIA_S3: Command (bytes): {cmd[:200]}")
+        self.verbosity_display(6, f"EXEC_VIA_S3: Command content:\n{cmd_str}")
+
+        # If the command is a PowerShell command line with -EncodedCommand, decode it to get the actual script
+        # The wrapper expects PowerShell script code, not a command line
+        script_to_upload = cmd
+        encoded_match = re.search(r'-EncodedCommand\s+["\']?([A-Za-z0-9+/=]+)["\']?', cmd_str)
+        if encoded_match:
+            self.verbosity_display(4, "EXEC_VIA_S3: Detected -EncodedCommand, decoding to extract PowerShell script")
+            try:
+                # Extract and decode the base64-encoded UTF-16LE PowerShell script
+                encoded_script = encoded_match.group(1)
+                self.verbosity_display(5, f"EXEC_VIA_S3: Base64 length: {len(encoded_script)} chars")
+                script_bytes = base64.b64decode(encoded_script)
+                script_to_upload = script_bytes.decode("utf-16-le")
+                self.verbosity_display(4, f"EXEC_VIA_S3: Decoded script length: {len(script_to_upload)} chars")
+                self.verbosity_display(6, f"EXEC_VIA_S3: Decoded script:\n{script_to_upload}")
+            except Exception as e:
+                self.verbosity_display(
+                    3, f"EXEC_VIA_S3: WARNING - Failed to decode -EncodedCommand, uploading as-is: {e}"
+                )
+                # Fall back to uploading the command line as-is
+                script_to_upload = cmd
+
+        try:
+            # Upload script to S3 with text content type so PowerShell recognizes it as text
+            script_bytes = to_bytes(script_to_upload, errors="surrogate_or_strict")
+            self.verbosity_display(6, f"EXEC_VIA_S3: Script to upload (str): {repr(to_text(script_to_upload)[:200])}")
+            self.verbosity_display(6, f"EXEC_VIA_S3: Script to upload (bytes): {script_bytes[:200]}")
+
+            self.s3_client.put_object(
+                Bucket=self.get_option("bucket_name"),
+                Key=s3_key,
+                Body=script_bytes,
+                ContentType="text/plain; charset=utf-8",
+            )
+            self.verbosity_display(4, f"EXEC_VIA_S3: Uploaded {len(script_bytes)} bytes to S3")
+
+            # Generate presigned URL (1 hour expiry)
+            presigned_url = self.s3_manager.get_url("get_object", self.get_option("bucket_name"), s3_key, "GET")
+
+            self.verbosity_display(4, f"EXEC_VIA_S3: Generated presigned URL (length: {len(presigned_url)})")
+            self.verbosity_display(6, f"EXEC_VIA_S3: Presigned URL: {presigned_url}")
+
+            # Create wrapper command that:
+            # 1. Downloads script from S3
+            # 2. Executes it with stdin if provided
+            # 3. Captures output and return code
+            if in_data:
+                # If we have stdin, we need to handle it specially
+                # Upload stdin data to S3 as well
+                stdin_key = f"{self.instance_id}/commands/{command_id}-stdin.txt"
+                self.verbosity_display(
+                    3, f"EXEC_VIA_S3: Uploading stdin data to s3://{self.get_option('bucket_name')}/{stdin_key}"
+                )
+                self.verbosity_display(4, f"EXEC_VIA_S3: Stdin data length: {len(in_data)} bytes")
+                self.verbosity_display(6, f"EXEC_VIA_S3: Stdin data (bytes): {in_data[:200]}")
+                self.verbosity_display(6, f"EXEC_VIA_S3: Stdin data (decoded): {repr(to_text(in_data, errors='surrogate_or_strict')[:200])}")
+
+                self.s3_client.put_object(
+                    Bucket=self.get_option("bucket_name"),
+                    Key=stdin_key,
+                    Body=in_data,
+                    ContentType="text/plain; charset=utf-8",
+                )
+                stdin_url = self.s3_manager.get_url("get_object", self.get_option("bucket_name"), stdin_key, "GET")
+                self.verbosity_display(4, f"EXEC_VIA_S3: Generated stdin presigned URL (length: {len(stdin_url)})")
+                self.verbosity_display(6, f"EXEC_VIA_S3: Stdin presigned URL: {stdin_url}")
+
+                # PowerShell: download script and stdin using WebClient (more reliable than Invoke-WebRequest)
+                # See https://github.com/ansible-collections/amazon.aws/pull/2820
+                # Set WebClient encoding to UTF-8 to correctly decode S3 content
+                # Save script to temp file and execute as separate process to handle exit codes correctly
+                # Scriptblocks don't set $LASTEXITCODE properly when they contain exit statements
+                wrapper = (
+                    f"try {{ "
+                    f"$wc=[System.Net.WebClient]::new() ; "
+                    f"$wc.Encoding=[System.Text.Encoding]::UTF8 ; "
+                    f"$s=$wc.DownloadString('{presigned_url}') ; "
+                    f"$i=$wc.DownloadString('{stdin_url}') ; "
+                    f"$wc.Dispose() ; "
+                    f"$t=[System.IO.Path]::GetTempFileName() ; "
+                    f"$t=[System.IO.Path]::ChangeExtension($t,'.ps1') ; "
+                    f"[System.IO.File]::WriteAllText($t,$s,[System.Text.Encoding]::UTF8) ; "
+                    f"echo '{mark_begin}' ; "
+                    f'($i -split "`r?`n") | powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $t ; '
+                    f"$e=$LASTEXITCODE ; "
+                    f"Remove-Item -LiteralPath $t -Force -ErrorAction SilentlyContinue ; "
+                    f"echo '' ; echo $e ; echo '{mark_end}' "
+                    f"}} catch {{ "
+                    f"echo '{mark_begin}' ; echo \"S3_DOWNLOAD_ERROR: $_\" ; echo '' ; echo 99 ; echo '{mark_end}' "
+                    f"}}"
+                )
+            else:
+                # No stdin: download script using WebClient and execute
+                # See https://github.com/ansible-collections/amazon.aws/pull/2820
+                # Set WebClient encoding to UTF-8 to correctly decode S3 content
+                # Save script to temp file and execute as separate process to handle exit codes correctly
+                # Scriptblocks don't set $LASTEXITCODE properly when they contain exit statements
+                wrapper = (
+                    f"try {{ "
+                    f"$wc=[System.Net.WebClient]::new() ; "
+                    f"$wc.Encoding=[System.Text.Encoding]::UTF8 ; "
+                    f"$s=$wc.DownloadString('{presigned_url}') ; "
+                    f"$wc.Dispose() ; "
+                    f"$t=[System.IO.Path]::GetTempFileName() ; "
+                    f"$t=[System.IO.Path]::ChangeExtension($t,'.ps1') ; "
+                    f"[System.IO.File]::WriteAllText($t,$s,[System.Text.Encoding]::UTF8) ; "
+                    f"echo '{mark_begin}' ; "
+                    f"powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $t ; "
+                    f"$e=$LASTEXITCODE ; "
+                    f"Remove-Item -LiteralPath $t -Force -ErrorAction SilentlyContinue ; "
+                    f"echo '' ; echo $e ; echo '{mark_end}' "
+                    f"}} catch {{ "
+                    f"echo '{mark_begin}' ; echo \"S3_DOWNLOAD_ERROR: $_\" ; echo '' ; echo 99 ; echo '{mark_end}' "
+                    f"}}"
+                )
+
+            self.verbosity_display(3, f"EXEC_VIA_S3: Wrapper command length: {len(wrapper)} bytes")
+            self.verbosity_display(5, f"EXEC_VIA_S3: Wrapper command:\n{wrapper}")
+
+            # Send wrapper command via session (tiny, won't timeout from echo)
+            wrapper_bytes = to_bytes(wrapper + "\n", errors="surrogate_or_strict")
+            self.verbosity_display(3, f"EXEC_VIA_S3: Sending wrapper command to session ({len(wrapper_bytes)} bytes)")
+            self.session_manager.stdin_write(wrapper_bytes)
+
+            # Execute via normal communicate flow (no stdin data since wrapper handles it)
+            result = self.exec_communicate(wrapper, None, mark_begin, mark_end)
+
+            self.verbosity_display(3, f"EXEC_VIA_S3: Command execution complete, returncode={result[0]}")
+            self.verbosity_display(6, f"EXEC_VIA_S3: Stdout (str): {repr(result[1][:200])}")
+            self.verbosity_display(6, f"EXEC_VIA_S3: Stderr (str): {repr(result[2][:200])}")
+            self.verbosity_display(6, f"EXEC_VIA_S3: Stdout type: {type(result[1])}, length: {len(result[1])}")
+            self.verbosity_display(6, f"EXEC_VIA_S3: Stderr type: {type(result[2])}, length: {len(result[2])}")
+            return result
+
+        finally:
+            # Clean up S3 objects
+            try:
+                self.verbosity_display(4, f"EXEC_VIA_S3: Cleaning up S3 object: {s3_key}")
+                self.s3_client.delete_object(Bucket=self.get_option("bucket_name"), Key=s3_key)
+                if stdin_key is not None:
+                    self.verbosity_display(4, f"EXEC_VIA_S3: Cleaning up S3 stdin object: {stdin_key}")
+                    self.s3_client.delete_object(Bucket=self.get_option("bucket_name"), Key=stdin_key)
+            except Exception as e:
+                self.verbosity_display(3, f"EXEC_VIA_S3: Failed to clean up S3 objects: {e}")
+
     # @AWSConnectionRetry.exponential_backoff()
-    def exec_command(self, cmd: str, in_data: bytes | None = None, sudoable: bool = True) -> tuple[int, str, str]:
+    def exec_command(self, cmd: str, in_data: bytes | None = None, sudoable: bool = True) -> tuple[int, bytes, bytes]:
         """Execute a command on the SSM host with automatic retry on failure.
+
+        For Windows, large commands are uploaded to S3 and executed via a tiny wrapper
+        command to avoid PTY echo timeouts. For Linux, commands are sent inline.
 
         :param cmd: The command to execute.
         :param in_data: Optional data to send to stdin.
@@ -751,15 +930,31 @@ class Connection(AWSConnectionBase):
         self.verbosity_display(5, f"EXEC: Generated begin marker: {mark_begin}")
         self.verbosity_display(5, f"EXEC: Generated end marker: {mark_end}")
 
-        # Wrap command in markers accordingly for the shell used
-        # Pass has_stdin flag so PowerShell can be configured to read stdin properly
+        # For Windows, use S3-based execution to avoid PTY echo timeouts
+        # The PTY echoes ALL stdin data to stdout before PowerShell can read it,
+        # causing timeouts on large commands. S3 approach keeps session command tiny.
+        if self.is_windows:
+            self.verbosity_display(3, "EXEC: Using S3-based execution for Windows (avoids PTY echo)")
+            returncode, stdout, stderr = self._exec_command_via_s3(cmd, in_data, mark_begin, mark_end)
+
+            # DEBUG: Show what we're returning to Ansible (level 6 for long-term debugging of encoding issues)
+            stdout_bytes = to_bytes(stdout, errors="surrogate_or_strict")
+            stderr_bytes = to_bytes(stderr, errors="surrogate_or_strict")
+            self.verbosity_display(6, f"EXEC: Returning stdout (str): {repr(stdout[:200])}")
+            self.verbosity_display(6, f"EXEC: Returning stdout (bytes): {stdout_bytes[:200]}")
+            self.verbosity_display(6, f"EXEC: Returning stderr (str): {repr(stderr[:200])}")
+            self.verbosity_display(6, f"EXEC: Returning stderr (bytes): {stderr_bytes[:200]}")
+
+            return (returncode, stdout_bytes, stderr_bytes)
+
+        # For Linux, use inline command execution (works fine, no PTY echo issues)
+        self.verbosity_display(3, "EXEC: Using inline execution for Linux")
+
+        # Wrap command in markers
         self.verbosity_display(5, f"EXEC: Wrapping command with has_stdin={bool(in_data)}")
         trigger_cmd, stdin_cmd = self.terminal_manager.wrap_command(cmd, mark_begin, mark_end, has_stdin=bool(in_data))
         self.verbosity_display(5, f"EXEC: Trigger command length: {len(trigger_cmd)} bytes")
         self.verbosity_display(6, f"EXEC: Full trigger command: {to_text(trigger_cmd)}")
-        if stdin_cmd:
-            self.verbosity_display(5, f"EXEC: Command to send via stdin: {len(stdin_cmd)} bytes")
-            self.verbosity_display(6, f"EXEC: Full stdin command: {to_text(stdin_cmd)}")
 
         self.session_manager.flush_stderr()
 
@@ -772,22 +967,12 @@ class Connection(AWSConnectionBase):
             self.session_manager.stdin_write(to_bytes(chunk, errors="surrogate_or_strict"))
         self.verbosity_display(5, f"EXEC: Sent {chunk_count} trigger chunks to session")
 
-        # For Windows, send the actual command via stdin (avoids PTY echo)
-        if stdin_cmd:
-            self.verbosity_display(4, f"EXEC: Sending command via stdin ({len(stdin_cmd)} bytes)")
-            cmd_chunk_count = 0
-            for chunk, is_last in _chunked_payload(stdin_cmd):
-                cmd_chunk_count += 1
-                self.verbosity_display(
-                    5, f"STREAM_STDIN_CMD: Chunk {cmd_chunk_count} ({len(chunk)} bytes, last={is_last})"
-                )
-                self.verbosity_display(6, f"STREAM_STDIN_CMD: Chunk {cmd_chunk_count} content: {to_text(chunk)}")
-                self.session_manager.stdin_write(to_bytes(chunk, errors="surrogate_or_strict"))
-            # Send EOF delimiter (four null bytes + newline)
-            self.verbosity_display(4, f"EXEC: Sent {cmd_chunk_count} command chunks, sending EOF delimiter")
-            self.session_manager.stdin_write(b"\0\0\0\0\n")
-
-        return self.exec_communicate(trigger_cmd, in_data, mark_begin, mark_end)
+        returncode, stdout, stderr = self.exec_communicate(trigger_cmd, in_data, mark_begin, mark_end)
+        return (
+            returncode,
+            to_bytes(stdout, errors="surrogate_or_strict"),
+            to_bytes(stderr, errors="surrogate_or_strict"),
+        )
 
     def _post_process(self, stdout: str, mark_begin: str) -> tuple[int, str]:
         """Extract command status and strip unwanted lines.

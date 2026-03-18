@@ -11,7 +11,7 @@ from ansible.module_utils._text import to_text
 
 
 def filter_ansi(line: str, is_windows: bool) -> str:
-    """Remove any ANSI terminal control codes.
+    """Remove any ANSI terminal control codes and PTY artifacts.
 
     :param line: The input line.
     :param is_windows: Whether the output is coming from a Windows host.
@@ -19,8 +19,11 @@ def filter_ansi(line: str, is_windows: bool) -> str:
     """
     line = to_text(line)
 
-    # Replace or strip sequence (at terminal width)
+    # Replace PTY line wrap sequences and normalize line endings
     line = line.replace("\r\r\n", "\n")
+    line = line.replace("\r\n", "\n")
+    # Remove standalone carriage returns (PTY artifacts from line wrapping)
+    line = line.replace("\r", "")
 
     if is_windows:
         osc_filter = re.compile(r"\x1b\][^\x07]*\x07")

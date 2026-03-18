@@ -63,6 +63,7 @@ class ProcessManager:
         self._session_id = None
         self._poller = _create_polling_obj(self._stdout)
         self._has_timeout = False
+        self._stderr_accumulator = ""
 
     def stdin_write(self, command: Union[bytes, str]) -> None:
         if isinstance(command, str):
@@ -74,19 +75,30 @@ class ProcessManager:
         self.verbosity_display(5, "stdin_write: Flushed")
 
     def stdout_read_text(self, size: int = 1024) -> str:
-        return to_text(self._stdout.read(size))
+        return to_text(self._stdout.read(size), encoding='utf-8', errors='surrogate_or_strict')
 
     def stdout_readline(self) -> str:
         self.verbosity_display(5, "stdout_readline: About to call readline()")
         result = self._stdout.readline()
         self.verbosity_display(5, f"stdout_readline: readline() returned {len(result)} bytes")
-        return result
+        # DEBUG: Level 6 for long-term debugging of encoding issues
+        self.verbosity_display(6, f"stdout_readline: Raw bytes: {result[:200]}")
+        # Decode as UTF-8 with surrogate escapes to handle any encoding issues
+        decoded = to_text(result, encoding='utf-8', errors='surrogate_or_strict')
+        self.verbosity_display(6, f"stdout_readline: Decoded string: {repr(decoded[:200])}")
+        return decoded
 
     def flush_stderr(self) -> str:
-        """read and return stderr with minimal blocking"""
+        """Read available stderr, accumulate it, and return all accumulated stderr.
+
+        This method reads any currently available stderr data without blocking,
+        accumulates it internally, and returns the full accumulated stderr.
+        The accumulator is then cleared so subsequent calls start fresh.
+
+        :returns: All accumulated stderr since last flush
+        """
 
         poller = _create_polling_obj(self._session.stderr)
-        stderr = ""
         self.verbosity_display(5, "FLUSH_STDERR: Checking session.poll() status")
         poll_result = self._session.poll()
         self.verbosity_display(5, f"FLUSH_STDERR: session.poll() returned {poll_result}")
@@ -97,14 +109,18 @@ class ProcessManager:
             if not poll_res:
                 break
             self.verbosity_display(5, "FLUSH_STDERR: About to read stderr line")
-            line = self._session.stderr.readline()
-            self.verbosity_display(5, f"FLUSH_STDERR: stderr readline returned {len(line)} bytes")
-            self.verbosity_display(4, f"stderr line: {repr(to_text(line))}")
-            stderr = stderr + line
+            line = to_text(self._session.stderr.readline(), encoding='utf-8', errors='surrogate_or_strict')
+            self.verbosity_display(5, f"FLUSH_STDERR: stderr readline returned {len(line)} chars")
+            self.verbosity_display(4, f"stderr line: {repr(line)}")
+            self._stderr_accumulator = self._stderr_accumulator + line
             self.verbosity_display(5, "FLUSH_STDERR: Checking session.poll() status")
             poll_result = self._session.poll()
             self.verbosity_display(5, f"FLUSH_STDERR: session.poll() returned {poll_result}")
-        return stderr
+
+        # Return accumulated stderr and clear the accumulator
+        result = self._stderr_accumulator
+        self._stderr_accumulator = ""
+        return result
 
     def poll_stdout(self, length: int = 1000) -> bool:
         self.verbosity_display(5, f"poll_stdout: About to poll with {length}ms timeout")
