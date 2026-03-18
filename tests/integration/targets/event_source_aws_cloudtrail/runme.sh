@@ -17,14 +17,18 @@ if [[ ${#CMD_ARGS[@]} -ge 2 && "${CMD_ARGS[0]}" == "-e" ]]; then
     VAR_FILE="${VAR_FILE#@}"
 fi
 
-# join the var file and the vars.json file
-jq -s 'add' "${VAR_FILE}" vars.json > /tmp/vars.json
+# Create the temp directory
+TEMP_DIR=$(mktemp -d -t event_source_aws_cloudtrail_vars)
 
-ansible-rulebook --inventory inventory --rulebook rulebooks/aws_manage_cloudtrail_ec2_keypair.yml --vars /tmp/vars.json &
+# Set a 'trap' to remove the directory when the script exits
+trap "rm -rf '$TEMP_DIR'" EXIT
+
+# join the var file and the vars.json file
+jq -s 'add' "${VAR_FILE}" vars.json > "$TEMP_DIR/vars.json"
+
+ansible-rulebook --inventory inventory --rulebook rulebooks/aws_manage_cloudtrail_ec2_keypair.yml --vars "$TEMP_DIR/vars.json" &
 
 # sleep 10 seconds for make sure ansible-rulebook had no errors
 sleep 10
 
-ansible-playbook ec2_keypair.yml -i inventory -e @/tmp/vars.json
-
-rm /tmp/vars.json
+ansible-playbook ec2_keypair.yml -i inventory -e "@$TEMP_DIR/vars.json"
