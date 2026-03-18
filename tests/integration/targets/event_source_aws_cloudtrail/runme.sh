@@ -21,7 +21,7 @@ fi
 TEMP_DIR=$(mktemp -d -t event_source_aws_cloudtrail_vars)
 
 # Set a 'trap' to remove the directory when the script exits
-trap "rm -rf '$TEMP_DIR'" EXIT
+trap 'rm -rf "$TEMP_DIR"' EXIT
 
 # join the var file and the vars.json file
 jq -s 'add' "${VAR_FILE}" vars.json > "$TEMP_DIR/vars.json"
