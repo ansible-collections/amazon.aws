@@ -1,0 +1,3 @@
+trivial:
+  - event_source_aws_cloudtrail - add event source aws cloudtrail integration tests. (https://github.com/ansible-collections/amazon.aws/pull/2868)
+  - event_source_aws_cloudtrail - add test system and python dependencies for event source aws cloudtrail integration tests. (https://github.com/ansible-collections/amazon.aws/pull/2868)
