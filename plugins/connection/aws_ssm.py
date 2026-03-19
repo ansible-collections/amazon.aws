@@ -633,6 +633,11 @@ class Connection(AWSConnectionBase):
         :returns: A tuple with the return code, the stdout and the stderr content.
         """
         start_time = time.time()
+
+        # Flush any accumulated stderr from previous commands before starting this one
+        # This ensures error messages only contain stderr from THIS command, not the entire session
+        self.session_manager.flush_stderr()
+
         # Read stdout between the markers
         stdout = ""
         returncode = None
