@@ -48,7 +48,7 @@ from ansible.errors import AnsibleConnectionFailure
         ),
     ],
 )
-@patch("ansible_collections.amazon.aws.plugins.plugin_utils.ssm.text.filter_ansi")
+@patch("ansible_collections.amazon.aws.plugins.plugin_utils.text.filter_ansi")
 def test_connection_aws_ssm_exec_communicate(
     m_filter_ansi, connection_aws_ssm, mark_start, mark_end, stdout_lines, expected_stdout
 ):
@@ -91,8 +91,8 @@ def test_connection_aws_ssm_exec_communicate_with_exception(connection_aws_ssm):
 
 
 @pytest.mark.parametrize("is_windows", [True, False])
-@patch("ansible_collections.amazon.aws.plugins.connection.aws_ssm.chunks")
-def test_connection_aws_ssm_exec_command(m_chunks, connection_aws_ssm, is_windows):
+@patch("ansible_collections.amazon.aws.plugins.module_utils.iterators.chunked_payload")
+def test_connection_aws_ssm_exec_command(m_chunked_payload, connection_aws_ssm, is_windows):
     connection_aws_ssm.is_windows = is_windows
     connection_aws_ssm.exec_communicate = MagicMock()
     connection_aws_ssm.reconnection_retries = 5
@@ -104,7 +104,8 @@ def test_connection_aws_ssm_exec_command(m_chunks, connection_aws_ssm, is_window
     connection_aws_ssm.exec_communicate.return_value = (mock_returncode, mock_stdout, mock_stderr)
 
     chunk = MagicMock()
-    m_chunks.return_value = [chunk]
+    # chunked_payload yields tuples of (chunk, is_last)
+    m_chunked_payload.return_value = [(chunk, True)]
 
     cmd = MagicMock()
     in_data = MagicMock()

@@ -5,7 +5,7 @@
 
 import pytest
 
-from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.text import filter_ansi
+from ansible_collections.amazon.aws.plugins.plugin_utils.text import filter_ansi
 
 
 @pytest.mark.parametrize(
