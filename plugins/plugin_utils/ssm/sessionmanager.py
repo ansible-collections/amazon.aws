@@ -25,7 +25,7 @@ if typing.TYPE_CHECKING:
     verbosity_display_type = Callable[[int, str], None]
 
 from ansible.errors import AnsibleConnectionFailure
-from ansible.module_utils._text import to_text
+from ansible.module_utils.common.text.converters import to_text
 
 from ansible_collections.amazon.aws.plugins.plugin_utils.text import filter_ansi
 

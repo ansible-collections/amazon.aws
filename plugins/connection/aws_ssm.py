@@ -371,17 +371,15 @@ if typing.TYPE_CHECKING:
 
 from ansible.errors import AnsibleError
 from ansible.errors import AnsibleFileNotFound
-from ansible.module_utils._text import to_bytes
-from ansible.module_utils._text import to_text
 from ansible.module_utils.common.process import get_bin_path
+from ansible.module_utils.common.text.converters import to_bytes
+from ansible.module_utils.common.text.converters import to_text
 from ansible.utils.display import Display
 
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_bucket_region
 from ansible_collections.amazon.aws.plugins.module_utils.iterators import chunked_payload
 from ansible_collections.amazon.aws.plugins.plugin_utils.connection import AWSConnectionBase
-from ansible_collections.amazon.aws.plugins.plugin_utils.retries import (  # Reserved for retry decorator; noqa: F401  pylint: disable=unused-import
-    AWSConnectionRetry,
-)
+from ansible_collections.amazon.aws.plugins.plugin_utils.retries import AWSConnectionRetry
 from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.common import CommandResult
 from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.filetransfermanager import FileTransferManager
 from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.s3clientmanager import S3ClientManager
@@ -736,7 +734,7 @@ class Connection(AWSConnectionBase):
         """
         return self.windows_executor.execute(cmd, in_data, mark_begin, mark_end)
 
-    # @AWSConnectionRetry.exponential_backoff()
+    @AWSConnectionRetry.exponential_backoff()
     def exec_command(self, cmd: str, in_data: bytes | None = None, sudoable: bool = True) -> tuple[int, bytes, bytes]:
         """Execute a command on the SSM host with automatic retry on failure.
 

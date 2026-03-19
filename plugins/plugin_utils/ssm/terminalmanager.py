@@ -20,8 +20,8 @@ except ImportError:
 
     _script = None  # For type checking
 
-from ansible.module_utils._text import to_bytes
-from ansible.module_utils._text import to_text
+from ansible.module_utils.common.text.converters import to_bytes
+from ansible.module_utils.common.text.converters import to_text
 
 
 class TerminalManager:

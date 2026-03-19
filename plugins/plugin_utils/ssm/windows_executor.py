@@ -10,6 +10,18 @@ This module provides S3-based command execution to avoid PTY echo timeouts on Wi
 The PTY echoes ALL stdin data to stdout before PowerShell can read it, causing timeouts
 on large commands. This approach keeps the session command tiny by uploading the actual
 command to S3 and executing a small wrapper that downloads and runs it.
+
+WARNING: ENCODING FLOW:
+1. PowerShell -EncodedCommand contains UTF-16LE base64-encoded scripts
+2. Decode -EncodedCommand to plain text (if present)
+3. Upload plain text script to S3 with ContentType="text/plain; charset=utf-8"
+4. PowerShell wrapper sets WebClient.Encoding to UTF8 before downloading
+5. WriteAllText saves script file with UTF8 encoding
+6. PowerShell executes the script file
+
+All steps MUST use UTF-8 (except step 1 which decodes FROM UTF-16LE).
+Breaking this chain causes Unicode corruption and module failures.
+See: https://github.com/ansible-collections/amazon.aws/pull/2820
 """
 
 from __future__ import annotations
@@ -24,8 +36,8 @@ if typing.TYPE_CHECKING:
     from typing import Callable
     from typing import Optional
 
-from ansible.module_utils._text import to_bytes
-from ansible.module_utils._text import to_text
+from ansible.module_utils.common.text.converters import to_bytes
+from ansible.module_utils.common.text.converters import to_text
 
 
 class WindowsCommandExecutor:
@@ -125,6 +137,10 @@ class WindowsCommandExecutor:
         If the command is a PowerShell command line with -EncodedCommand, decode it to get
         the actual script.
 
+        WARNING: PowerShell -EncodedCommand uses UTF-16LE base64 encoding. We must decode
+        this to plain text before uploading to S3 as UTF-8, otherwise the script will be
+        double-encoded and fail to execute.
+
         :param cmd_str: The command string to check for -EncodedCommand
         :returns: Either the decoded PowerShell script or the original command
         """
@@ -134,7 +150,9 @@ class WindowsCommandExecutor:
         if encoded_match:
             self._verbosity_display(4, "EXEC_VIA_S3: Detected -EncodedCommand, decoding to extract PowerShell script")
             try:
-                # Extract and decode the base64-encoded UTF-16LE PowerShell script
+                # WARNING: -EncodedCommand contains base64-encoded UTF-16LE PowerShell script
+                # We MUST decode this to get the plain text script before uploading to S3
+                # Changing this encoding will break execution of modules that use -EncodedCommand
                 encoded_script = encoded_match.group(1)
                 self._verbosity_display(5, f"EXEC_VIA_S3: Base64 length: {len(encoded_script)} chars")
                 script_bytes = base64.b64decode(encoded_script)
@@ -154,6 +172,11 @@ class WindowsCommandExecutor:
         """
         Upload PowerShell script to S3 and return presigned URL.
 
+        WARNING: Scripts must be uploaded with UTF-8 encoding and ContentType.
+        The PowerShell wrapper uses WebClient with UTF-8 encoding to download and
+        decode the script. Changing this encoding will cause Unicode characters
+        to be corrupted (garbled text, module failures, etc.).
+
         :param s3_key: S3 key for the script object
         :param script: PowerShell script content to upload
         :returns: Presigned URL for downloading the script
@@ -162,7 +185,8 @@ class WindowsCommandExecutor:
         self._verbosity_display(6, f"EXEC_VIA_S3: Script to upload (str): {repr(to_text(script)[:200])}")
         self._verbosity_display(6, f"EXEC_VIA_S3: Script to upload (bytes): {script_bytes[:200]}")
 
-        # Upload with UTF-8 content type so PowerShell recognizes it as text
+        # WARNING: Upload with UTF-8 ContentType - PowerShell wrapper expects UTF-8
+        # Changing this will break Unicode support and cause encoding errors
         self._s3_client.put_object(
             Bucket=self._bucket_name,
             Key=s3_key,
@@ -218,6 +242,12 @@ class WindowsCommandExecutor:
         3. Pipes stdin lines to PowerShell executing the script file
         4. Captures and outputs the exit code
 
+        WARNING: ENCODING CHAIN:
+        - S3 objects uploaded with ContentType="text/plain; charset=utf-8"
+        - WebClient.Encoding=[System.Text.Encoding]::UTF8 to decode downloads
+        - WriteAllText with UTF8 encoding to save script file
+        All three steps MUST use UTF-8 or Unicode characters will be corrupted.
+
         :param presigned_url: Presigned URL for the script
         :param stdin_url: Presigned URL for stdin data
         :param mark_begin: Begin marker for output parsing
@@ -226,18 +256,20 @@ class WindowsCommandExecutor:
         """
         # PowerShell: download script and stdin using WebClient (more reliable than Invoke-WebRequest)
         # See https://github.com/ansible-collections/amazon.aws/pull/2820
-        # Set WebClient encoding to UTF-8 to correctly decode S3 content
+        # WARNING: Set WebClient encoding to UTF-8 to correctly decode S3 content
         # Save script to temp file and execute as separate process to handle exit codes correctly
         # Scriptblocks don't set $LASTEXITCODE properly when they contain exit statements
         wrapper = (
             f"try {{ "
             f"$wc=[System.Net.WebClient]::new() ; "
+            # WARNING: WebClient.Encoding MUST be UTF8 to match S3 ContentType
             f"$wc.Encoding=[System.Text.Encoding]::UTF8 ; "
             f"$s=$wc.DownloadString('{presigned_url}') ; "
             f"$i=$wc.DownloadString('{stdin_url}') ; "
             f"$wc.Dispose() ; "
             f"$t=[System.IO.Path]::GetTempFileName() ; "
             f"$t=[System.IO.Path]::ChangeExtension($t,'.ps1') ; "
+            # WARNING: WriteAllText MUST use UTF8 encoding to preserve Unicode
             f"[System.IO.File]::WriteAllText($t,$s,[System.Text.Encoding]::UTF8) ; "
             f"echo '{mark_begin}' ; "
             f'($i -split "`r?`n") | powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $t ; '
@@ -260,6 +292,12 @@ class WindowsCommandExecutor:
         3. Executes the script file in a new PowerShell process
         4. Captures and outputs the exit code
 
+        WARNING: ENCODING CHAIN:
+        - S3 objects uploaded with ContentType="text/plain; charset=utf-8"
+        - WebClient.Encoding=[System.Text.Encoding]::UTF8 to decode downloads
+        - WriteAllText with UTF8 encoding to save script file
+        All three steps MUST use UTF-8 or Unicode characters will be corrupted.
+
         :param presigned_url: Presigned URL for the script
         :param mark_begin: Begin marker for output parsing
         :param mark_end: End marker for output parsing
@@ -267,17 +305,19 @@ class WindowsCommandExecutor:
         """
         # No stdin: download script using WebClient and execute
         # See https://github.com/ansible-collections/amazon.aws/pull/2820
-        # Set WebClient encoding to UTF-8 to correctly decode S3 content
+        # WARNING: Set WebClient encoding to UTF-8 to correctly decode S3 content
         # Save script to temp file and execute as separate process to handle exit codes correctly
         # Scriptblocks don't set $LASTEXITCODE properly when they contain exit statements
         wrapper = (
             f"try {{ "
             f"$wc=[System.Net.WebClient]::new() ; "
+            # WARNING: WebClient.Encoding MUST be UTF8 to match S3 ContentType
             f"$wc.Encoding=[System.Text.Encoding]::UTF8 ; "
             f"$s=$wc.DownloadString('{presigned_url}') ; "
             f"$wc.Dispose() ; "
             f"$t=[System.IO.Path]::GetTempFileName() ; "
             f"$t=[System.IO.Path]::ChangeExtension($t,'.ps1') ; "
+            # WARNING: WriteAllText MUST use UTF8 encoding to preserve Unicode
             f"[System.IO.File]::WriteAllText($t,$s,[System.Text.Encoding]::UTF8) ; "
             f"echo '{mark_begin}' ; "
             f"powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $t ; "

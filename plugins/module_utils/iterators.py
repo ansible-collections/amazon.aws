@@ -13,7 +13,7 @@ if typing.TYPE_CHECKING:
     from typing import Any
     from typing import Iterator
 
-from ansible.module_utils._text import to_bytes
+from ansible.module_utils.common.text.converters import to_bytes
 
 
 def chunks(lst: list, n: int) -> Iterator[list[Any]]:

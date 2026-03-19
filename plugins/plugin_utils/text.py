@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import re
 
-from ansible.module_utils._text import to_text
+from ansible.module_utils.common.text.converters import to_text
 
 
 def filter_ansi(line: str, is_windows: bool) -> str:
