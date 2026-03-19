@@ -18,6 +18,7 @@ if typing.TYPE_CHECKING:
     from typing import Any
     from typing import Callable
     from typing import Dict
+    from typing import Iterator
     from typing import NoReturn
     from typing import Optional
     from typing import Union
@@ -128,7 +129,7 @@ class ProcessManager:
         self.verbosity_display(5, f"poll_stdout({length}ms) -> {result}")
         return result
 
-    def poll(self, label: str, cmd: str) -> NoReturn:
+    def poll(self, label: str, cmd: str) -> Iterator[bool]:
         """Poll session to retrieve content from stdout.
 
         :param label: A label for the display (EXEC, PRE...)
