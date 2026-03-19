@@ -16,7 +16,6 @@ if typing.TYPE_CHECKING:
 from ansible.errors import AnsibleError
 from ansible.module_utils.common.text.converters import to_bytes
 
-from ansible_collections.amazon.aws.plugins.plugin_utils.retries import AWSConnectionRetry
 from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.common import CommandResult
 
 
@@ -52,7 +51,6 @@ class FileTransferManager:
         self.close = close
         self.exec_command = exec_command
 
-    @AWSConnectionRetry.exponential_backoff()
     def _file_transport_command(
         self,
         in_path: str,
