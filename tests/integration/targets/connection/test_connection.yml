@@ -142,10 +142,17 @@
         mode: '0644'
       loop: ["one", "two", "three"]
 
-    - name: Stat empty file
+    - name: Stat empty file (Linux)
       ansible.builtin.stat:
         path: "{{ remote_empty_file }}"
       register: stat_empty_file_cmd
+      when: "'aws_ssm_linux' in group_names"
+
+    - name: Stat empty file (Windows)
+      ansible.windows.win_stat:
+        path: "{{ remote_empty_file }}"
+      register: stat_empty_file_cmd
+      when: "'aws_ssm_windows' in group_names"
 
     - name: Check that empty file exists
       ansible.builtin.assert:
