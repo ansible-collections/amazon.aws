@@ -379,7 +379,9 @@ from ansible.utils.display import Display
 
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_bucket_region
 from ansible_collections.amazon.aws.plugins.plugin_utils.connection import AWSConnectionBase
-from ansible_collections.amazon.aws.plugins.plugin_utils.retries import AWSConnectionRetry
+from ansible_collections.amazon.aws.plugins.plugin_utils.retries import (  # Reserved for retry decorator; noqa: F401  pylint: disable=unused-import
+    AWSConnectionRetry,
+)
 from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.common import CommandResult
 from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.filetransfermanager import FileTransferManager
 from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.s3clientmanager import S3ClientManager
@@ -812,7 +814,10 @@ class Connection(AWSConnectionBase):
                 )
                 self.verbosity_display(4, f"EXEC_VIA_S3: Stdin data length: {len(in_data)} bytes")
                 self.verbosity_display(6, f"EXEC_VIA_S3: Stdin data (bytes): {in_data[:200]}")
-                self.verbosity_display(6, f"EXEC_VIA_S3: Stdin data (decoded): {repr(to_text(in_data, errors='surrogate_or_strict')[:200])}")
+                self.verbosity_display(
+                    6,
+                    f"EXEC_VIA_S3: Stdin data (decoded): {repr(to_text(in_data, errors='surrogate_or_strict')[:200])}",
+                )
 
                 self.s3_client.put_object(
                     Bucket=self.get_option("bucket_name"),

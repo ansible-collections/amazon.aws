@@ -7,7 +7,6 @@ from unittest.mock import patch
 
 import pytest
 
-from ansible.errors import AnsibleError
 from ansible.errors import AnsibleFileNotFound
 from ansible.playbook.play_context import PlayContext
 from ansible.plugins.loader import connection_loader
