@@ -39,6 +39,9 @@ if typing.TYPE_CHECKING:
 from ansible.module_utils.common.text.converters import to_bytes
 from ansible.module_utils.common.text.converters import to_text
 
+# Exit code returned when S3 download fails in error handler
+S3_DOWNLOAD_ERROR_EXIT_CODE = 99
+
 
 class WindowsCommandExecutor:
     """Executes Windows PowerShell commands via S3 upload/download to avoid PTY echo issues."""
@@ -277,7 +280,11 @@ class WindowsCommandExecutor:
             f"Remove-Item -LiteralPath $t -Force -ErrorAction SilentlyContinue ; "
             f"echo '' ; echo $e ; echo '{mark_end}' "
             f"}} catch {{ "
-            f"echo '{mark_begin}' ; echo \"S3_DOWNLOAD_ERROR: $_\" ; echo '' ; echo 99 ; echo '{mark_end}' "
+            f"Write-Host '{mark_begin}' ; "
+            f"Write-Host \"S3_DOWNLOAD_ERROR: $_\" ; "
+            f"Write-Host '' ; "
+            f"Write-Host {S3_DOWNLOAD_ERROR_EXIT_CODE} ; "
+            f"Write-Host '{mark_end}' "
             f"}}"
         )
         return wrapper
@@ -325,7 +332,11 @@ class WindowsCommandExecutor:
             f"Remove-Item -LiteralPath $t -Force -ErrorAction SilentlyContinue ; "
             f"echo '' ; echo $e ; echo '{mark_end}' "
             f"}} catch {{ "
-            f"echo '{mark_begin}' ; echo \"S3_DOWNLOAD_ERROR: $_\" ; echo '' ; echo 99 ; echo '{mark_end}' "
+            f"Write-Host '{mark_begin}' ; "
+            f"Write-Host \"S3_DOWNLOAD_ERROR: $_\" ; "
+            f"Write-Host '' ; "
+            f"Write-Host {S3_DOWNLOAD_ERROR_EXIT_CODE} ; "
+            f"Write-Host '{mark_end}' "
             f"}}"
         )
         return wrapper
