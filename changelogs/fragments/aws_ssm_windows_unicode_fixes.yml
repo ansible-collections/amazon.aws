@@ -1,0 +1,8 @@
+bugfixes:
+  - aws_ssm - Fixed Windows SSM connection failures when transferring files with Unicode characters in filenames or content. The connection plugin now properly handles UTF-8 encoding throughout the S3 upload/download process (https://github.com/ansible-collections/amazon.aws/pull/2909).
+  - aws_ssm - Fixed PowerShell command execution timeouts on Windows caused by PTY echo issues. Commands are now uploaded to S3 and executed via a small wrapper to avoid echoing large payloads to stdout (https://github.com/ansible-collections/amazon.aws/pull/2909).
+  - aws_ssm - Fixed PowerShell stdin handling for modules that require stdin input on Windows hosts (https://github.com/ansible-collections/amazon.aws/pull/2909).
+  - aws_ssm - Fixed stderr message accumulation across multiple command executions. Stderr is now flushed at the start of each command to prevent error messages from previous commands appearing in subsequent command output (https://github.com/ansible-collections/amazon.aws/pull/2909).
+minor_changes:
+  - aws_ssm - Refactored connection plugin to inherit from AWSConnectionBase for consistent AWS credential handling across plugins (https://github.com/ansible-collections/amazon.aws/pull/2909).
+  - aws_ssm - Improved code organisation by extracting Windows command execution logic into a dedicated WindowsCommandExecutor class (https://github.com/ansible-collections/amazon.aws/pull/2909).
