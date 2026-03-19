@@ -49,7 +49,10 @@ requirements:
 
 options:
   access_key:
-    description: The STS access key to use when connecting via session-manager.
+    description:
+    - The STS access key to use when connecting via session-manager.
+    - This option was renamed from O(aws_access_key_id) to O(access_key) in version 11.3.0 for consistency with other AWS plugins.
+      The old name is retained as an alias. The alias O(access_key_id) was also added.
     aliases: ['access_key_id', 'aws_access_key_id']
     vars:
     - name: ansible_aws_ssm_access_key_id
@@ -58,7 +61,10 @@ options:
     - name: AWS_ACCESS_KEY
     version_added: 1.3.0
   secret_key:
-    description: The STS secret key to use when connecting via session-manager.
+    description:
+    - The STS secret key to use when connecting via session-manager.
+    - This option was renamed from O(aws_secret_access_key) to O(secret_key) in version 11.3.0 for consistency with other AWS plugins.
+      The old name is retained as an alias. The alias O(secret_access_key) was also added.
     aliases: ['secret_access_key', 'aws_secret_access_key']
     vars:
     - name: ansible_aws_ssm_secret_access_key
@@ -67,7 +73,10 @@ options:
     - name: AWS_SECRET_KEY
     version_added: 1.3.0
   session_token:
-    description: The STS session token to use when connecting via session-manager.
+    description:
+    - The STS session token to use when connecting via session-manager.
+    - This option was renamed from O(aws_session_token) to O(session_token) in version 11.3.0 for consistency with other AWS plugins.
+      The old name is retained as an alias.
     aliases: ['aws_session_token']
     vars:
     - name: ansible_aws_ssm_session_token
@@ -90,11 +99,11 @@ options:
     description:
     - URL to connect to instead of the default AWS endpoints.
     - This is used for the SSM client connection.
+    - The alias O(aws_endpoint_url) was added in version 11.3.0 for consistency with other AWS plugins.
     aliases: ['aws_endpoint_url']
+    version_added: 11.3.0
     vars:
     - name: ansible_aws_ssm_endpoint_url
-    env:
-    - name: AWS_URL
   bucket_name:
     description: The name of the S3 bucket used for file transfers.
     vars:
@@ -115,7 +124,10 @@ options:
     env:
     - name: AWS_SESSION_MANAGER_PLUGIN
   profile:
-    description: Sets AWS profile to use.
+    description:
+    - Sets AWS profile to use.
+    - This option was renamed from O(aws_profile) to O(profile) in version 11.3.0 for consistency with other AWS plugins.
+      The old name is retained as an alias.
     aliases: ['aws_profile']
     vars:
     - name: ansible_aws_ssm_profile
