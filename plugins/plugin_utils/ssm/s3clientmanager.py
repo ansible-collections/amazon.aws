@@ -82,11 +82,17 @@ class S3ClientManager:
             url = self.get_url("put_object", bucket_name, s3_path, "PUT", extra_args=put_args)
             if is_windows:
                 put_command_headers = "; ".join([f"'{h}' = '{v}'" for h, v in put_headers.items()])
+                # Use -Body with ReadAllBytes instead of -InFile to properly handle unicode paths
+                # PowerShell's -InFile parameter can have issues with unicode file paths
+                # Using .NET ReadAllBytes ensures proper unicode path handling
+                escaped_in_path = in_path.replace("'", "''")
                 command = (
+                    "$ErrorActionPreference = 'Stop' ; "
+                    f"$fileContent = [System.IO.File]::ReadAllBytes('{escaped_in_path}') ; "
                     "Invoke-WebRequest -Method PUT "
                     # @{'key' = 'value'; 'key2' = 'value2'}
                     f"-Headers @{{{put_command_headers}}} "
-                    f"-InFile '{in_path}' "
+                    "-Body $fileContent "
                     f"-Uri '{url}' "
                     f"-UseBasicParsing"
                 )  # fmt: skip

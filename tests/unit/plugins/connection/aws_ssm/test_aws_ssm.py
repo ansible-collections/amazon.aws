@@ -207,9 +207,13 @@ class TestS3ClientManager:
             if method == "get":
                 m_generate_encryption_settings.assert_called_once_with(bucket_sse_mode, bucket_sse_kms_key_id)
                 if is_windows:
-                    assert test_command_generation.startswith("Invoke-WebRequest -Method PUT -Headers @")
+                    assert test_command_generation.startswith(
+                        "$ErrorActionPreference = 'Stop' ; "
+                        "$fileContent = [System.IO.File]::ReadAllBytes('test/in/path') ; "
+                        "Invoke-WebRequest -Method PUT -Headers @"
+                    )
                     assert test_command_generation.endswith(
-                        "-InFile 'test/in/path' -Uri 'https://test-url' -UseBasicParsing"
+                        "-Body $fileContent -Uri 'https://test-url' -UseBasicParsing"
                     )
                 else:
                     assert test_command_generation.startswith("curl --request PUT ")
