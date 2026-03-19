@@ -112,10 +112,14 @@ class S3ClientManager:
         elif method == "put":
             url = self.get_url("get_object", bucket_name, s3_path, "GET")
             if is_windows:
+                # Use .NET File.WriteAllBytes instead of -OutFile to properly handle unicode paths
+                # PowerShell's -OutFile parameter can have issues with unicode file paths
+                # Using .NET WriteAllBytes ensures proper unicode path handling
+                escaped_out_path = out_path.replace("'", "''")
                 command = (
-                    "Invoke-WebRequest "
-                    f"'{url}' "
-                    f"-OutFile '{out_path}'"
+                    "$ErrorActionPreference = 'Stop' ; "
+                    f"$response = Invoke-WebRequest -Uri '{url}' -UseBasicParsing ; "
+                    f"[System.IO.File]::WriteAllBytes('{escaped_out_path}', $response.Content)"
                 )  # fmt: skip
             else:
                 command = (
