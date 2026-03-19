@@ -27,7 +27,6 @@ if typing.TYPE_CHECKING:
 from ansible.errors import AnsibleConnectionFailure
 from ansible.module_utils.common.text.converters import to_text
 
-from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.common import MARK_LENGTH
 from ansible_collections.amazon.aws.plugins.plugin_utils.text import filter_ansi
 
 
