@@ -7,8 +7,8 @@ from typing import NoReturn
 from typing import Optional
 
 from ansible.errors import AnsibleError
-from ansible.module_utils.common.text.converters import to_text
 from ansible.module_utils.basic import to_native
+from ansible.module_utils.common.text.converters import to_text
 from ansible.utils.display import Display
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import check_sdk_version_supported

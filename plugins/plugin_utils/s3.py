@@ -15,6 +15,19 @@ if typing.TYPE_CHECKING:
     from typing import Tuple
 
 
+def escape_path(path: str) -> str:
+    """
+    Converts a file path to S3-compatible format by replacing backslashes with forward slashes.
+
+    S3 uses forward slashes as path separators regardless of the operating system.
+    Windows paths with backslashes must be converted to ensure proper S3 key formatting.
+
+    :param path: The file path to convert
+    :returns: The path with forward slashes
+    """
+    return path.replace("\\", "/")
+
+
 def generate_encryption_settings(
     bucket_sse_mode: Optional[str], bucket_sse_kms_key_id: Optional[str]
 ) -> Tuple[Dict, Dict]:

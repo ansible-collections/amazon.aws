@@ -23,6 +23,8 @@ except ImportError:
 from ansible.module_utils.common.text.converters import to_bytes
 from ansible.module_utils.common.text.converters import to_text
 
+from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.common import MARK_LENGTH
+
 
 class TerminalManager:
     def __init__(self, connection):
@@ -35,7 +37,7 @@ class TerminalManager:
 
     def generate_marker(self) -> str:
         return "".join(  # nosec B311 - markers for output parsing, not security
-            [random.choice(string.ascii_letters) for i in range(self.connection.MARK_LENGTH)]
+            [random.choice(string.ascii_letters) for i in range(MARK_LENGTH)]
         )
 
     def prestage_windows_command_executor(self) -> None:

@@ -5,6 +5,7 @@
 
 import pytest
 
+from ansible_collections.amazon.aws.plugins.plugin_utils.s3 import escape_path
 from ansible_collections.amazon.aws.plugins.plugin_utils.s3 import generate_encryption_settings
 
 
@@ -33,3 +34,20 @@ def test_generate_encryption_settings(bucket_sse_mode, bucket_sse_kms_key_id, ar
     r_args, r_headers = generate_encryption_settings(bucket_sse_mode, bucket_sse_kms_key_id)
     assert r_args == args
     assert r_headers == headers
+
+
+@pytest.mark.parametrize(
+    "input_path,expected_path",
+    [
+        ("path/to/file", "path/to/file"),
+        ("path\\to\\file", "path/to/file"),
+        ("C:\\Users\\test\\file.txt", "C:/Users/test/file.txt"),
+        ("mixed/path\\to/file", "mixed/path/to/file"),
+        ("already/unix/path", "already/unix/path"),
+        ("", ""),
+    ],
+)
+def test_escape_path(input_path, expected_path):
+    """Test escape_path() converts backslashes to forward slashes for S3 compatibility."""
+    result = escape_path(input_path)
+    assert result == expected_path

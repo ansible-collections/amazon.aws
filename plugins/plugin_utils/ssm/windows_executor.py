@@ -39,8 +39,7 @@ if typing.TYPE_CHECKING:
 from ansible.module_utils.common.text.converters import to_bytes
 from ansible.module_utils.common.text.converters import to_text
 
-# Exit code returned when S3 download fails in error handler
-S3_DOWNLOAD_ERROR_EXIT_CODE = 99
+from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.common import S3_DOWNLOAD_ERROR_EXIT_CODE
 
 
 class WindowsCommandExecutor:
@@ -281,7 +280,7 @@ class WindowsCommandExecutor:
             f"echo '' ; echo $e ; echo '{mark_end}' "
             f"}} catch {{ "
             f"Write-Host '{mark_begin}' ; "
-            f"Write-Host \"S3_DOWNLOAD_ERROR: $_\" ; "
+            f'Write-Host "S3_DOWNLOAD_ERROR: $_" ; '
             f"Write-Host '' ; "
             f"Write-Host {S3_DOWNLOAD_ERROR_EXIT_CODE} ; "
             f"Write-Host '{mark_end}' "
@@ -333,7 +332,7 @@ class WindowsCommandExecutor:
             f"echo '' ; echo $e ; echo '{mark_end}' "
             f"}} catch {{ "
             f"Write-Host '{mark_begin}' ; "
-            f"Write-Host \"S3_DOWNLOAD_ERROR: $_\" ; "
+            f'Write-Host "S3_DOWNLOAD_ERROR: $_" ; '
             f"Write-Host '' ; "
             f"Write-Host {S3_DOWNLOAD_ERROR_EXIT_CODE} ; "
             f"Write-Host '{mark_end}' "
