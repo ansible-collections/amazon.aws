@@ -376,10 +376,12 @@ from ansible.module_utils.common.text.converters import to_bytes
 from ansible.module_utils.common.text.converters import to_text
 from ansible.utils.display import Display
 
-from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_bucket_region
 from ansible_collections.amazon.aws.plugins.module_utils.iterators import chunked_payload
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_bucket_region
 from ansible_collections.amazon.aws.plugins.plugin_utils.connection import AWSConnectionBase
 from ansible_collections.amazon.aws.plugins.plugin_utils.retries import AWSConnectionRetry
+from ansible_collections.amazon.aws.plugins.plugin_utils.s3 import escape_path
+from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.common import MARK_LENGTH
 from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.common import CommandResult
 from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.filetransfermanager import FileTransferManager
 from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.s3clientmanager import S3ClientManager
@@ -389,15 +391,6 @@ from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.windows_executor im
 from ansible_collections.amazon.aws.plugins.plugin_utils.text import filter_ansi
 
 display = Display()
-
-
-def escape_path(path: str) -> str:
-    """
-    Converts a file path to a safe format by replacing backslashes with forward slashes.
-    :param path: The file path to escape.
-    :return: The escaped file path.
-    """
-    return path.replace("\\", "/")
 
 
 class Connection(AWSConnectionBase):
@@ -415,7 +408,6 @@ class Connection(AWSConnectionBase):
     _s3_manager = None
     _session_manager = None
     _windows_executor = None
-    MARK_LENGTH = 26
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
@@ -719,7 +711,7 @@ class Connection(AWSConnectionBase):
     def generate_mark() -> str:
         """Generates a random string of characters to delimit SSM CLI commands"""
         mark = "".join(
-            [random.choice(string.ascii_letters) for i in range(Connection.MARK_LENGTH)]
+            [random.choice(string.ascii_letters) for i in range(MARK_LENGTH)]
         )  # nosec B311 - markers for output parsing, not security
         return mark
 
@@ -884,24 +876,6 @@ class Connection(AWSConnectionBase):
             ssm_action,
         )
         return s3_path, command, put_args
-
-    def _exec_transport_commands(self, in_path: str, out_path: str, command: dict) -> CommandResult:
-        """
-        Execute the provided transport command.
-
-        :param in_path: The input path.
-        :param out_path: The output path.
-        :param command: A command to execute on the host.
-
-        :returns: A tuple containing the return code, stdout, and stderr.
-        """
-
-        returncode, stdout, stderr = self.exec_command(command, in_data=None, sudoable=False)
-        # Check the return code
-        if returncode != 0:
-            raise AnsibleError(f"failed to transfer file to {in_path} {out_path}:\n{stdout}\n{stderr}")
-
-        return returncode, stdout, stderr
 
     def put_file(self, in_path: str, out_path: str) -> CommandResult:
         """transfer a file from local to remote"""

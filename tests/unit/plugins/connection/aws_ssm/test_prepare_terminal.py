@@ -18,6 +18,7 @@ import pytest
 
 from ansible_collections.amazon.aws.plugins.connection.aws_ssm import TerminalManager
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOTO3
+from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.common import MARK_LENGTH
 
 if not HAS_BOTO3:
     pytestmark = pytest.mark.skip("test_poll.py requires the python modules 'boto3' and 'botocore'")
@@ -65,7 +66,7 @@ def test_disable_prompt_command(m_to_text, m_to_bytes, m_random, connection_aws_
     m_random.choice = MagicMock()
     m_random.choice.side_effect = lambda x: "a"
 
-    end_mark = "".join(["a" for i in range(connection_aws_ssm.MARK_LENGTH)])
+    end_mark = "".join(["a" for i in range(MARK_LENGTH)])
 
     prompt_cmd = f"PS1='' ; bind 'set enable-bracketed-paste off'; printf '\\n%s\\n' '{end_mark}'\n"
 
