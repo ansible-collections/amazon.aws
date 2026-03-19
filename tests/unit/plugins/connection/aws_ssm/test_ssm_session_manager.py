@@ -8,6 +8,21 @@
 # when it comes to rewriting the import paths and as such we can't import fixtures via their
 # absolute import path or across collections.
 
+# MEMORY GUARDRAILS:
+# Tests that use poll() and readline() are decorated with @pytest.mark.limit_memory
+# to prevent infinite loops from causing out-of-memory errors. If these tests exceed
+# the memory limit, they will fail fast rather than consuming all system memory.
+#
+# Usage:
+#   @pytest.mark.limit_memory(f"{MEMORY_LIMIT_MB} MB")
+#   def test_that_uses_poll_or_readline():
+#       ...
+#
+# Common pitfalls that cause memory issues:
+#   1. Mocking session.poll() to always return None creates infinite loops in flush_stderr()
+#   2. Mocking the wrong method (e.g., stdout_read_text instead of stdout_readline)
+#   3. Not providing enough mock data in side_effect, causing MagicMock to return itself infinitely
+#   4. Accumulating mocks in test class instance variables (use local vars instead)
 
 import random
 import string
@@ -22,6 +37,10 @@ from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOT
 from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.sessionmanager import ProcessManager
 from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.sessionmanager import SSMProcessManagerTimeOutFailure
 from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.sessionmanager import SSMSessionManager
+
+# Memory limit for tests that use poll/readline to prevent infinite loops from causing OOM
+# 50MB should be plenty for these unit tests
+MEMORY_LIMIT_MB = 50
 
 if not HAS_BOTO3:
     pytestmark = pytest.mark.skip("test_poll.py requires the python modules 'boto3' and 'botocore'")
@@ -55,6 +74,7 @@ def test_process_manager_poll(m_create_polling_obj, timeout, number_poll_false):
     m_create_polling_obj.assert_called_once_with(stdout)
 
 
+@pytest.mark.limit_memory(f"{MEMORY_LIMIT_MB} MB")
 @patch("time.time")
 @patch("ansible_collections.amazon.aws.plugins.plugin_utils.ssm.sessionmanager._create_polling_obj")
 def test_process_manager_poll_with_timeout(m_create_polling_obj, time_time):
@@ -82,6 +102,7 @@ def test_process_manager_poll_with_timeout(m_create_polling_obj, time_time):
     m_create_polling_obj.assert_called_once_with(stdout)
 
 
+@pytest.mark.limit_memory(f"{MEMORY_LIMIT_MB} MB")
 @patch("ansible_collections.amazon.aws.plugins.plugin_utils.ssm.sessionmanager._create_polling_obj")
 def test_process_manager_flush_stderr(m_create_polling_obj):
     session = MagicMock()
@@ -109,6 +130,7 @@ def test_process_manager_flush_stderr(m_create_polling_obj):
     poller.poll.assert_called()
 
 
+@pytest.mark.limit_memory(f"{MEMORY_LIMIT_MB} MB")
 @pytest.mark.parametrize(
     "stdout_text, match",
     [
@@ -145,6 +167,7 @@ def test_process_manager_wait_for_match(m_create_polling_obj, stdout_text, match
     proc_mgr.wait_for_match(label=label, cmd=cmd, match=match)
 
 
+@pytest.mark.limit_memory(f"{MEMORY_LIMIT_MB} MB")
 @patch("ansible_collections.amazon.aws.plugins.plugin_utils.ssm.sessionmanager._create_polling_obj")
 def test_process_manager_wait_for_match_failure(m_create_polling_obj):
     session = MagicMock()
