@@ -75,7 +75,7 @@ class ProcessManager:
         self.verbosity_display(5, "stdin_write: Flushed")
 
     def stdout_read_text(self, size: int = 1024) -> str:
-        return to_text(self._stdout.read(size), encoding='utf-8', errors='surrogate_or_strict')
+        return to_text(self._stdout.read(size), encoding="utf-8", errors="surrogate_or_strict")
 
     def stdout_readline(self) -> str:
         self.verbosity_display(5, "stdout_readline: About to call readline()")
@@ -84,7 +84,7 @@ class ProcessManager:
         # DEBUG: Level 6 for long-term debugging of encoding issues
         self.verbosity_display(6, f"stdout_readline: Raw bytes: {result[:200]}")
         # Decode as UTF-8 with surrogate escapes to handle any encoding issues
-        decoded = to_text(result, encoding='utf-8', errors='surrogate_or_strict')
+        decoded = to_text(result, encoding="utf-8", errors="surrogate_or_strict")
         self.verbosity_display(6, f"stdout_readline: Decoded string: {repr(decoded[:200])}")
         return decoded
 
@@ -109,7 +109,7 @@ class ProcessManager:
             if not poll_res:
                 break
             self.verbosity_display(5, "FLUSH_STDERR: About to read stderr line")
-            line = to_text(self._session.stderr.readline(), encoding='utf-8', errors='surrogate_or_strict')
+            line = to_text(self._session.stderr.readline(), encoding="utf-8", errors="surrogate_or_strict")
             self.verbosity_display(5, f"FLUSH_STDERR: stderr readline returned {len(line)} chars")
             self.verbosity_display(4, f"stderr line: {repr(line)}")
             self._stderr_accumulator = self._stderr_accumulator + line
