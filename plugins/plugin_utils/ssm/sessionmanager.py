@@ -27,7 +27,7 @@ if typing.TYPE_CHECKING:
 from ansible.errors import AnsibleConnectionFailure
 from ansible.module_utils._text import to_text
 
-from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.text import filter_ansi
+from ansible_collections.amazon.aws.plugins.plugin_utils.text import filter_ansi
 
 
 class SSMProcessManagerTimeOutFailure(AnsibleConnectionFailure):

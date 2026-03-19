@@ -13,7 +13,6 @@ from ansible.plugins.loader import connection_loader
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOTO3
 from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.s3clientmanager import S3ClientManager
-from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.s3clientmanager import generate_encryption_settings
 
 if not HAS_BOTO3:
     pytestmark = pytest.mark.skip("test_data_pipeline.py requires the python modules 'boto3' and 'botocore'")
@@ -274,33 +273,3 @@ class TestS3ClientManager:
             "put_object", Params=expected_params, ExpiresIn=3600, HttpMethod="PUT"
         )
         assert result == "http://test-url-extra"
-
-
-@pytest.mark.parametrize(
-    "bucket_sse_mode,bucket_sse_kms_key_id,args,headers",
-    [
-        (None, "We do not care about this", {}, {}),
-        (
-            "sse_no_kms",
-            "sse_key_id",
-            {"ServerSideEncryption": "sse_no_kms"},
-            {"x-amz-server-side-encryption": "sse_no_kms"},
-        ),
-        ("aws:kms", "", {"ServerSideEncryption": "aws:kms"}, {"x-amz-server-side-encryption": "aws:kms"}),
-        ("aws:kms", None, {"ServerSideEncryption": "aws:kms"}, {"x-amz-server-side-encryption": "aws:kms"}),
-        (
-            "aws:kms",
-            "test_kms_id",
-            {"ServerSideEncryption": "aws:kms", "SSEKMSKeyId": "test_kms_id"},
-            {"x-amz-server-side-encryption": "aws:kms", "x-amz-server-side-encryption-aws-kms-key-id": "test_kms_id"},
-        ),
-    ],
-)
-def test_generate_encryption_settings(bucket_sse_mode, bucket_sse_kms_key_id, args, headers):
-    """
-    Test generate_encryption_settings()
-    """
-
-    r_args, r_headers = generate_encryption_settings(bucket_sse_mode, bucket_sse_kms_key_id)
-    assert r_args == args
-    assert r_headers == headers

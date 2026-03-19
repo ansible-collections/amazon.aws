@@ -13,22 +13,7 @@ if typing.TYPE_CHECKING:
     from typing import Optional
     from typing import Tuple
 
-
-def generate_encryption_settings(
-    bucket_sse_mode: Optional[str], bucket_sse_kms_key_id: Optional[str]
-) -> Tuple[Dict, Dict]:
-    """Generate Encryption Settings"""
-    args = {}
-    headers = {}
-    if not bucket_sse_mode:
-        return args, headers
-
-    args["ServerSideEncryption"] = bucket_sse_mode
-    headers["x-amz-server-side-encryption"] = bucket_sse_mode
-    if bucket_sse_mode == "aws:kms" and bucket_sse_kms_key_id:
-        args["SSEKMSKeyId"] = bucket_sse_kms_key_id
-        headers["x-amz-server-side-encryption-aws-kms-key-id"] = bucket_sse_kms_key_id
-    return args, headers
+from ansible_collections.amazon.aws.plugins.plugin_utils.s3 import generate_encryption_settings
 
 
 class S3ClientManager:

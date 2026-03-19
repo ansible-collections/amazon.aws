@@ -353,7 +353,6 @@ EXAMPLES = r"""
       ansible.builtin.shell:
         cmd: '/tmp/date.sh'
 """
-import base64
 import getpass
 import os
 import random
@@ -378,6 +377,7 @@ from ansible.module_utils.common.process import get_bin_path
 from ansible.utils.display import Display
 
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_bucket_region
+from ansible_collections.amazon.aws.plugins.module_utils.iterators import chunked_payload
 from ansible_collections.amazon.aws.plugins.plugin_utils.connection import AWSConnectionBase
 from ansible_collections.amazon.aws.plugins.plugin_utils.retries import (  # Reserved for retry decorator; noqa: F401  pylint: disable=unused-import
     AWSConnectionRetry,
@@ -387,34 +387,10 @@ from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.filetransfermanager
 from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.s3clientmanager import S3ClientManager
 from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.sessionmanager import SSMSessionManager
 from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.terminalmanager import TerminalManager
-from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.text import filter_ansi
+from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.windows_executor import WindowsCommandExecutor
+from ansible_collections.amazon.aws.plugins.plugin_utils.text import filter_ansi
 
 display = Display()
-
-
-def chunks(lst: list, n: int) -> Iterator[list[Any]]:
-    """Yield successive n-sized chunks from lst.
-
-    :param lst: The list to chunk.
-    :param n: The size of each chunk.
-    :returns: Iterator yielding list chunks of size n.
-    """
-    for i in range(0, len(lst), n):
-        yield lst[i:i + n]  # fmt: skip
-
-
-def _chunked_payload(payload: bytes | string, buffer_size: int = 1024) -> Iterator[tuple[bytes, bool]]:
-    """
-    Yield successive buffer-sized chunks from payload with completion flag.
-
-    :param payload: The data to chunk (bytes or string)
-    :param buffer_size: Size of each chunk in bytes (default: 1024)
-    :returns: Iterator yielding tuples of (chunk, is_last)
-    """
-    payload_bytes = to_bytes(payload)
-    byte_count = len(payload_bytes)
-    for i in range(0, byte_count, buffer_size):
-        yield payload_bytes[i : i + buffer_size], i + buffer_size >= byte_count
 
 
 def escape_path(path: str) -> str:
@@ -440,6 +416,7 @@ class Connection(AWSConnectionBase):
     _client = None
     _s3_manager = None
     _session_manager = None
+    _windows_executor = None
     MARK_LENGTH = 26
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -519,6 +496,20 @@ class Connection(AWSConnectionBase):
     @session_manager.setter
     def session_manager(self, value):
         self._session_manager = value
+
+    @property
+    def windows_executor(self):
+        if self._windows_executor is None and self.is_windows:
+            self._windows_executor = WindowsCommandExecutor(
+                s3_client=self.s3_client,
+                s3_manager=self.s3_manager,
+                session_manager=self.session_manager,
+                exec_communicate=self.exec_communicate,
+                instance_id=self.instance_id,
+                bucket_name=self.get_option("bucket_name"),
+                verbosity_display=self.verbosity_display,
+            )
+        return self._windows_executor
 
     @property
     def ssm_client(self):
@@ -670,7 +661,7 @@ class Connection(AWSConnectionBase):
             self.verbosity_display(4, f"EXEC_COMMUNICATE: Sending {stdin_size} bytes of STDIN data")
             stdin_start = time.time()
             chunk_count = 0
-            for chunk, is_last in _chunked_payload(in_data):
+            for chunk, is_last in chunked_payload(in_data):
                 chunk_count += 1
                 self.verbosity_display(
                     5, f"EXEC_COMMUNICATE: Sending STDIN chunk {chunk_count} ({len(chunk)} bytes, last={is_last})"
@@ -743,169 +734,7 @@ class Connection(AWSConnectionBase):
         :param mark_end: The end marker for output parsing.
         :returns: A tuple of (exit_code, stdout, stderr).
         """
-        import uuid
-
-        # Generate unique S3 key for this command
-        command_id = str(uuid.uuid4())
-        s3_key = f"{self.instance_id}/commands/{command_id}.ps1"
-        stdin_key = None  # Initialize for cleanup scope
-
-        self.verbosity_display(3, f"EXEC_VIA_S3: Uploading command to s3://{self.get_option('bucket_name')}/{s3_key}")
-        self.verbosity_display(4, f"EXEC_VIA_S3: Command length: {len(cmd)} bytes")
-
-        # DEBUG: Show command encoding details (level 6 for long-term debugging of encoding issues)
-        cmd_str = to_text(cmd)
-        self.verbosity_display(6, f"EXEC_VIA_S3: Command (str): {repr(cmd_str[:200])}")
-        if isinstance(cmd, bytes):
-            self.verbosity_display(6, f"EXEC_VIA_S3: Command (bytes): {cmd[:200]}")
-        self.verbosity_display(6, f"EXEC_VIA_S3: Command content:\n{cmd_str}")
-
-        # If the command is a PowerShell command line with -EncodedCommand, decode it to get the actual script
-        # The wrapper expects PowerShell script code, not a command line
-        script_to_upload = cmd
-        encoded_match = re.search(r'-EncodedCommand\s+["\']?([A-Za-z0-9+/=]+)["\']?', cmd_str)
-        if encoded_match:
-            self.verbosity_display(4, "EXEC_VIA_S3: Detected -EncodedCommand, decoding to extract PowerShell script")
-            try:
-                # Extract and decode the base64-encoded UTF-16LE PowerShell script
-                encoded_script = encoded_match.group(1)
-                self.verbosity_display(5, f"EXEC_VIA_S3: Base64 length: {len(encoded_script)} chars")
-                script_bytes = base64.b64decode(encoded_script)
-                script_to_upload = script_bytes.decode("utf-16-le")
-                self.verbosity_display(4, f"EXEC_VIA_S3: Decoded script length: {len(script_to_upload)} chars")
-                self.verbosity_display(6, f"EXEC_VIA_S3: Decoded script:\n{script_to_upload}")
-            except Exception as e:
-                self.verbosity_display(
-                    3, f"EXEC_VIA_S3: WARNING - Failed to decode -EncodedCommand, uploading as-is: {e}"
-                )
-                # Fall back to uploading the command line as-is
-                script_to_upload = cmd
-
-        try:
-            # Upload script to S3 with text content type so PowerShell recognizes it as text
-            script_bytes = to_bytes(script_to_upload, errors="surrogate_or_strict")
-            self.verbosity_display(6, f"EXEC_VIA_S3: Script to upload (str): {repr(to_text(script_to_upload)[:200])}")
-            self.verbosity_display(6, f"EXEC_VIA_S3: Script to upload (bytes): {script_bytes[:200]}")
-
-            self.s3_client.put_object(
-                Bucket=self.get_option("bucket_name"),
-                Key=s3_key,
-                Body=script_bytes,
-                ContentType="text/plain; charset=utf-8",
-            )
-            self.verbosity_display(4, f"EXEC_VIA_S3: Uploaded {len(script_bytes)} bytes to S3")
-
-            # Generate presigned URL (1 hour expiry)
-            presigned_url = self.s3_manager.get_url("get_object", self.get_option("bucket_name"), s3_key, "GET")
-
-            self.verbosity_display(4, f"EXEC_VIA_S3: Generated presigned URL (length: {len(presigned_url)})")
-            self.verbosity_display(6, f"EXEC_VIA_S3: Presigned URL: {presigned_url}")
-
-            # Create wrapper command that:
-            # 1. Downloads script from S3
-            # 2. Executes it with stdin if provided
-            # 3. Captures output and return code
-            if in_data:
-                # If we have stdin, we need to handle it specially
-                # Upload stdin data to S3 as well
-                stdin_key = f"{self.instance_id}/commands/{command_id}-stdin.txt"
-                self.verbosity_display(
-                    3, f"EXEC_VIA_S3: Uploading stdin data to s3://{self.get_option('bucket_name')}/{stdin_key}"
-                )
-                self.verbosity_display(4, f"EXEC_VIA_S3: Stdin data length: {len(in_data)} bytes")
-                self.verbosity_display(6, f"EXEC_VIA_S3: Stdin data (bytes): {in_data[:200]}")
-                self.verbosity_display(
-                    6,
-                    f"EXEC_VIA_S3: Stdin data (decoded): {repr(to_text(in_data, errors='surrogate_or_strict')[:200])}",
-                )
-
-                self.s3_client.put_object(
-                    Bucket=self.get_option("bucket_name"),
-                    Key=stdin_key,
-                    Body=in_data,
-                    ContentType="text/plain; charset=utf-8",
-                )
-                stdin_url = self.s3_manager.get_url("get_object", self.get_option("bucket_name"), stdin_key, "GET")
-                self.verbosity_display(4, f"EXEC_VIA_S3: Generated stdin presigned URL (length: {len(stdin_url)})")
-                self.verbosity_display(6, f"EXEC_VIA_S3: Stdin presigned URL: {stdin_url}")
-
-                # PowerShell: download script and stdin using WebClient (more reliable than Invoke-WebRequest)
-                # See https://github.com/ansible-collections/amazon.aws/pull/2820
-                # Set WebClient encoding to UTF-8 to correctly decode S3 content
-                # Save script to temp file and execute as separate process to handle exit codes correctly
-                # Scriptblocks don't set $LASTEXITCODE properly when they contain exit statements
-                wrapper = (
-                    f"try {{ "
-                    f"$wc=[System.Net.WebClient]::new() ; "
-                    f"$wc.Encoding=[System.Text.Encoding]::UTF8 ; "
-                    f"$s=$wc.DownloadString('{presigned_url}') ; "
-                    f"$i=$wc.DownloadString('{stdin_url}') ; "
-                    f"$wc.Dispose() ; "
-                    f"$t=[System.IO.Path]::GetTempFileName() ; "
-                    f"$t=[System.IO.Path]::ChangeExtension($t,'.ps1') ; "
-                    f"[System.IO.File]::WriteAllText($t,$s,[System.Text.Encoding]::UTF8) ; "
-                    f"echo '{mark_begin}' ; "
-                    f'($i -split "`r?`n") | powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $t ; '
-                    f"$e=$LASTEXITCODE ; "
-                    f"Remove-Item -LiteralPath $t -Force -ErrorAction SilentlyContinue ; "
-                    f"echo '' ; echo $e ; echo '{mark_end}' "
-                    f"}} catch {{ "
-                    f"echo '{mark_begin}' ; echo \"S3_DOWNLOAD_ERROR: $_\" ; echo '' ; echo 99 ; echo '{mark_end}' "
-                    f"}}"
-                )
-            else:
-                # No stdin: download script using WebClient and execute
-                # See https://github.com/ansible-collections/amazon.aws/pull/2820
-                # Set WebClient encoding to UTF-8 to correctly decode S3 content
-                # Save script to temp file and execute as separate process to handle exit codes correctly
-                # Scriptblocks don't set $LASTEXITCODE properly when they contain exit statements
-                wrapper = (
-                    f"try {{ "
-                    f"$wc=[System.Net.WebClient]::new() ; "
-                    f"$wc.Encoding=[System.Text.Encoding]::UTF8 ; "
-                    f"$s=$wc.DownloadString('{presigned_url}') ; "
-                    f"$wc.Dispose() ; "
-                    f"$t=[System.IO.Path]::GetTempFileName() ; "
-                    f"$t=[System.IO.Path]::ChangeExtension($t,'.ps1') ; "
-                    f"[System.IO.File]::WriteAllText($t,$s,[System.Text.Encoding]::UTF8) ; "
-                    f"echo '{mark_begin}' ; "
-                    f"powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $t ; "
-                    f"$e=$LASTEXITCODE ; "
-                    f"Remove-Item -LiteralPath $t -Force -ErrorAction SilentlyContinue ; "
-                    f"echo '' ; echo $e ; echo '{mark_end}' "
-                    f"}} catch {{ "
-                    f"echo '{mark_begin}' ; echo \"S3_DOWNLOAD_ERROR: $_\" ; echo '' ; echo 99 ; echo '{mark_end}' "
-                    f"}}"
-                )
-
-            self.verbosity_display(3, f"EXEC_VIA_S3: Wrapper command length: {len(wrapper)} bytes")
-            self.verbosity_display(5, f"EXEC_VIA_S3: Wrapper command:\n{wrapper}")
-
-            # Send wrapper command via session (tiny, won't timeout from echo)
-            wrapper_bytes = to_bytes(wrapper + "\n", errors="surrogate_or_strict")
-            self.verbosity_display(3, f"EXEC_VIA_S3: Sending wrapper command to session ({len(wrapper_bytes)} bytes)")
-            self.session_manager.stdin_write(wrapper_bytes)
-
-            # Execute via normal communicate flow (no stdin data since wrapper handles it)
-            result = self.exec_communicate(wrapper, None, mark_begin, mark_end)
-
-            self.verbosity_display(3, f"EXEC_VIA_S3: Command execution complete, returncode={result[0]}")
-            self.verbosity_display(6, f"EXEC_VIA_S3: Stdout (str): {repr(result[1][:200])}")
-            self.verbosity_display(6, f"EXEC_VIA_S3: Stderr (str): {repr(result[2][:200])}")
-            self.verbosity_display(6, f"EXEC_VIA_S3: Stdout type: {type(result[1])}, length: {len(result[1])}")
-            self.verbosity_display(6, f"EXEC_VIA_S3: Stderr type: {type(result[2])}, length: {len(result[2])}")
-            return result
-
-        finally:
-            # Clean up S3 objects
-            try:
-                self.verbosity_display(4, f"EXEC_VIA_S3: Cleaning up S3 object: {s3_key}")
-                self.s3_client.delete_object(Bucket=self.get_option("bucket_name"), Key=s3_key)
-                if stdin_key is not None:
-                    self.verbosity_display(4, f"EXEC_VIA_S3: Cleaning up S3 stdin object: {stdin_key}")
-                    self.s3_client.delete_object(Bucket=self.get_option("bucket_name"), Key=stdin_key)
-            except Exception as e:
-                self.verbosity_display(3, f"EXEC_VIA_S3: Failed to clean up S3 objects: {e}")
+        return self.windows_executor.execute(cmd, in_data, mark_begin, mark_end)
 
     # @AWSConnectionRetry.exponential_backoff()
     def exec_command(self, cmd: str, in_data: bytes | None = None, sudoable: bool = True) -> tuple[int, bytes, bytes]:
@@ -965,7 +794,7 @@ class Connection(AWSConnectionBase):
 
         # Send the trigger command
         chunk_count = 0
-        for chunk, is_last in _chunked_payload(trigger_cmd):
+        for chunk, is_last in chunked_payload(trigger_cmd):
             chunk_count += 1
             self.verbosity_display(5, f"STREAM_TRIGGER: Chunk {chunk_count} ({len(chunk)} bytes, last={is_last})")
             self.verbosity_display(6, f"STREAM_TRIGGER: Chunk {chunk_count} content: {to_text(chunk)}")

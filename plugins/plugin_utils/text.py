@@ -3,6 +3,8 @@
 # Copyright: Contributors to the Ansible project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+"""Generic text processing utilities for AWS plugins."""
+
 from __future__ import annotations
 
 import re
@@ -19,7 +21,7 @@ def filter_ansi(line: str, is_windows: bool) -> str:
     """
     line = to_text(line)
 
-    # Replace PTY line wrap sequences and normalize line endings
+    # Replace PTY line wrap sequences and normalise line endings
     line = line.replace("\r\r\n", "\n")
     line = line.replace("\r\n", "\n")
     # Remove standalone carriage returns (PTY artifacts from line wrapping)
