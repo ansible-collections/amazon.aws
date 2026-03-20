@@ -3,101 +3,31 @@
 # Copyright: Contributors to the Ansible project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-try:
-    import boto3
-except ImportError:
-    pass
-from typing import Any
-from typing import Dict
-from typing import Optional
-from typing import Tuple
+from __future__ import annotations
 
+import typing
 
-def generate_encryption_settings(
-    bucket_sse_mode: Optional[str], bucket_sse_kms_key_id: Optional[str]
-) -> Tuple[Dict, Dict]:
-    """Generate Encryption Settings"""
-    args = {}
-    headers = {}
-    if not bucket_sse_mode:
-        return args, headers
+if typing.TYPE_CHECKING:
+    from typing import Any
+    from typing import Dict
+    from typing import Optional
+    from typing import Tuple
 
-    args["ServerSideEncryption"] = bucket_sse_mode
-    headers["x-amz-server-side-encryption"] = bucket_sse_mode
-    if bucket_sse_mode == "aws:kms" and bucket_sse_kms_key_id:
-        args["SSEKMSKeyId"] = bucket_sse_kms_key_id
-        headers["x-amz-server-side-encryption-aws-kms-key-id"] = bucket_sse_kms_key_id
-    return args, headers
+from ansible_collections.amazon.aws.plugins.plugin_utils.s3 import generate_encryption_settings
 
 
 class S3ClientManager:
     def __init__(self, client: Any) -> None:
+        """
+        Initialise the S3ClientManager.
+
+        :param client: The boto3 S3 client
+        """
         self._s3_client = client
 
     @property
     def client(self) -> Any:
         return self._s3_client
-
-    @staticmethod
-    def _get_s3_client(
-        access_key_id: Optional[str],
-        secret_key_id: Optional[str],
-        session_token: Optional[str],
-        region_name: str,
-        profile_name: Optional[str],
-    ) -> Any:
-        if not region_name:
-            region_name = "us-east-1"
-        session_args = dict(
-            aws_access_key_id=access_key_id,
-            aws_secret_access_key=secret_key_id,
-            aws_session_token=session_token,
-            region_name=region_name,
-        )
-        if profile_name:
-            session_args["profile_name"] = profile_name
-        session = boto3.session.Session(**session_args)
-        return session.client("s3")
-
-    @staticmethod
-    def get_bucket_endpoint(
-        bucket_name: str,
-        bucket_endpoint_url: Optional[str],
-        access_key_id: Optional[str],
-        secret_key_id: Optional[str],
-        session_token: Optional[str],
-        region_name: Optional[str],
-        profile_name: Optional[str],
-    ) -> Tuple[str, str]:
-        """
-        Fetches the correct S3 endpoint and region for use with our bucket.
-        If we don't explicitly set the endpoint then some commands will use the global
-        endpoint and fail
-        (new AWS regions and new buckets in a region other than the one we're running in)
-        """
-        if not region_name:
-            region_name = "us-east-1"
-        tmp_s3_client = S3ClientManager._get_s3_client(
-            access_key_id, secret_key_id, session_token, region_name, profile_name
-        )
-
-        # Fetch the location of the bucket so we can open a client against the 'right' endpoint
-        # This /should/ always work
-        head_bucket = tmp_s3_client.head_bucket(Bucket=(bucket_name))
-        bucket_region = head_bucket.get("ResponseMetadata", {}).get("HTTPHeaders", {}).get("x-amz-bucket-region", None)
-        if bucket_region is None:
-            bucket_region = "us-east-1"
-
-        if bucket_endpoint_url:
-            return bucket_endpoint_url, bucket_region
-
-        # Create another client for the region the bucket lives in, so we can nab the endpoint URL
-        if bucket_region != region_name:
-            tmp_s3_client = S3ClientManager._get_s3_client(
-                access_key_id, secret_key_id, session_token, bucket_region, profile_name
-            )
-
-        return tmp_s3_client.meta.endpoint_url, tmp_s3_client.meta.region_name
 
     def get_url(
         self,
@@ -152,11 +82,17 @@ class S3ClientManager:
             url = self.get_url("put_object", bucket_name, s3_path, "PUT", extra_args=put_args)
             if is_windows:
                 put_command_headers = "; ".join([f"'{h}' = '{v}'" for h, v in put_headers.items()])
+                # Use -Body with ReadAllBytes instead of -InFile to properly handle unicode paths
+                # PowerShell's -InFile parameter can have issues with unicode file paths
+                # Using .NET ReadAllBytes ensures proper unicode path handling
+                escaped_in_path = in_path.replace("'", "''")
                 command = (
+                    "$ErrorActionPreference = 'Stop' ; "
+                    f"$fileContent = [System.IO.File]::ReadAllBytes('{escaped_in_path}') ; "
                     "Invoke-WebRequest -Method PUT "
                     # @{'key' = 'value'; 'key2' = 'value2'}
                     f"-Headers @{{{put_command_headers}}} "
-                    f"-InFile '{in_path}' "
+                    "-Body $fileContent "
                     f"-Uri '{url}' "
                     f"-UseBasicParsing"
                 )  # fmt: skip
@@ -176,10 +112,14 @@ class S3ClientManager:
         elif method == "put":
             url = self.get_url("get_object", bucket_name, s3_path, "GET")
             if is_windows:
+                # Use .NET File.WriteAllBytes instead of -OutFile to properly handle unicode paths
+                # PowerShell's -OutFile parameter can have issues with unicode file paths
+                # Using .NET WriteAllBytes ensures proper unicode path handling
+                escaped_out_path = out_path.replace("'", "''")
                 command = (
-                    "Invoke-WebRequest "
-                    f"'{url}' "
-                    f"-OutFile '{out_path}'"
+                    "$ErrorActionPreference = 'Stop' ; "
+                    f"$response = Invoke-WebRequest -Uri '{url}' -UseBasicParsing ; "
+                    f"[System.IO.File]::WriteAllBytes('{escaped_out_path}', $response.Content)"
                 )  # fmt: skip
             else:
                 command = (

@@ -6,6 +6,8 @@
 # Based on the ssh connection plugin by Michael DeHaan
 
 
+from __future__ import annotations
+
 DOCUMENTATION = r"""
 name: aws_ssm
 author:
@@ -46,22 +48,36 @@ requirements:
     `s3:GetObject`, `s3:PutObject`, `s3:ListBucket`, `s3:DeleteObject` and `s3:GetBucketLocation`.
 
 options:
-  access_key_id:
-    description: The STS access key to use when connecting via session-manager.
+  access_key:
+    description:
+    - The STS access key to use when connecting via session-manager.
+    - This option was renamed from O(aws_access_key_id) to O(access_key) in version 11.3.0 for consistency with other AWS plugins.
+      The old name is retained as an alias. The alias O(access_key_id) was also added.
+    aliases: ['access_key_id', 'aws_access_key_id']
     vars:
     - name: ansible_aws_ssm_access_key_id
     env:
     - name: AWS_ACCESS_KEY_ID
+    - name: AWS_ACCESS_KEY
     version_added: 1.3.0
-  secret_access_key:
-    description: The STS secret key to use when connecting via session-manager.
+  secret_key:
+    description:
+    - The STS secret key to use when connecting via session-manager.
+    - This option was renamed from O(aws_secret_access_key) to O(secret_key) in version 11.3.0 for consistency with other AWS plugins.
+      The old name is retained as an alias. The alias O(secret_access_key) was also added.
+    aliases: ['secret_access_key', 'aws_secret_access_key']
     vars:
     - name: ansible_aws_ssm_secret_access_key
     env:
     - name: AWS_SECRET_ACCESS_KEY
+    - name: AWS_SECRET_KEY
     version_added: 1.3.0
   session_token:
-    description: The STS session token to use when connecting via session-manager.
+    description:
+    - The STS session token to use when connecting via session-manager.
+    - This option was renamed from O(aws_session_token) to O(session_token) in version 11.3.0 for consistency with other AWS plugins.
+      The old name is retained as an alias.
+    aliases: ['aws_session_token']
     vars:
     - name: ansible_aws_ssm_session_token
     env:
@@ -79,6 +95,15 @@ options:
     - name: AWS_REGION
     - name: AWS_DEFAULT_REGION
     default: 'us-east-1'
+  endpoint_url:
+    description:
+    - URL to connect to instead of the default AWS endpoints.
+    - This is used for the SSM client connection.
+    - The alias O(aws_endpoint_url) was added in version 11.3.0 for consistency with other AWS plugins.
+    aliases: ['aws_endpoint_url']
+    version_added: 11.3.0
+    vars:
+    - name: ansible_aws_ssm_endpoint_url
   bucket_name:
     description: The name of the S3 bucket used for file transfers.
     vars:
@@ -99,11 +124,16 @@ options:
     env:
     - name: AWS_SESSION_MANAGER_PLUGIN
   profile:
-    description: Sets AWS profile to use.
+    description:
+    - Sets AWS profile to use.
+    - This option was renamed from O(aws_profile) to O(profile) in version 11.3.0 for consistency with other AWS plugins.
+      The old name is retained as an alias.
+    aliases: ['aws_profile']
     vars:
     - name: ansible_aws_ssm_profile
     env:
     - name: AWS_PROFILE
+    - name: AWS_DEFAULT_PROFILE
     version_added: 1.5.0
   reconnection_retries:
     description: Number of attempts to connect.
@@ -337,75 +367,43 @@ EXAMPLES = r"""
 """
 import getpass
 import os
-import random
 import re
-import string
-from typing import Any
-from typing import Dict
-from typing import Iterator
-from typing import List
-from typing import Tuple
+import time
+import typing
+
+if typing.TYPE_CHECKING:
+    from typing import Any
+    from typing import Dict
+    from typing import Iterator
+    from typing import List
+    from typing import Optional
+    from typing import Tuple
 
 from ansible.errors import AnsibleError
 from ansible.errors import AnsibleFileNotFound
-from ansible.module_utils._text import to_bytes
-from ansible.module_utils._text import to_text
-from ansible.module_utils.basic import missing_required_lib
 from ansible.module_utils.common.process import get_bin_path
-from ansible.plugins.connection import ConnectionBase
+from ansible.module_utils.common.text.converters import to_bytes
+from ansible.module_utils.common.text.converters import to_text
 from ansible.utils.display import Display
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOTO3
-from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.base import AwsConnectionPluginBase
+from ansible_collections.amazon.aws.plugins.module_utils.iterators import chunked_payload
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_bucket_region
+from ansible_collections.amazon.aws.plugins.plugin_utils.connection import AWSConnectionBase
+from ansible_collections.amazon.aws.plugins.plugin_utils.retries import AWSConnectionRetry
+from ansible_collections.amazon.aws.plugins.plugin_utils.s3 import escape_path
 from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.common import CommandResult
-from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.common import ssm_retry
+from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.common import generate_mark
 from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.filetransfermanager import FileTransferManager
 from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.s3clientmanager import S3ClientManager
 from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.sessionmanager import SSMSessionManager
 from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.terminalmanager import TerminalManager
+from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.windows_executor import WindowsCommandExecutor
+from ansible_collections.amazon.aws.plugins.plugin_utils.text import filter_ansi
 
 display = Display()
 
 
-def chunks(lst: List, n: int) -> Iterator[List[Any]]:
-    """Yield successive n-sized chunks from lst."""
-    for i in range(0, len(lst), n):
-        yield lst[i:i + n]  # fmt: skip
-
-
-def filter_ansi(line: str, is_windows: bool) -> str:
-    """Remove any ANSI terminal control codes.
-
-    :param line: The input line.
-    :param is_windows: Whether the output is coming from a Windows host.
-    :returns: The result line.
-    """
-    line = to_text(line)
-
-    if is_windows:
-        osc_filter = re.compile(r"\x1b\][^\x07]*\x07")
-        line = osc_filter.sub("", line)
-        ansi_filter = re.compile(r"(\x9B|\x1B\[)[0-?]*[ -/]*[@-~]")
-        line = ansi_filter.sub("", line)
-
-        # Replace or strip sequence (at terminal width)
-        line = line.replace("\r\r\n", "\n")
-        if len(line) == 201:
-            line = line[:-1]
-
-    return line
-
-
-def escape_path(path: str) -> str:
-    """
-    Converts a file path to a safe format by replacing backslashes with forward slashes.
-    :param path: The file path to escape.
-    :return: The escaped file path.
-    """
-    return path.replace("\\", "/")
-
-
-class Connection(ConnectionBase, AwsConnectionPluginBase):
+class Connection(AWSConnectionBase):
     """AWS SSM based connections"""
 
     transport = "amazon.aws.aws_ssm"
@@ -419,15 +417,11 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
     _client = None
     _s3_manager = None
     _session_manager = None
-    MARK_LENGTH = 26
+    _windows_executor = None
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
-        if not HAS_BOTO3:
-            raise AnsibleError(missing_required_lib("boto3"))
-
-        self.host = self._play_context.remote_addr
         self._instance_id = None
         self.terminal_manager = TerminalManager(self)
         self.reconnection_retries = self.get_option("reconnection_retries")
@@ -442,6 +436,35 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
             self._shell_type = "powershell"
             self.is_windows = True
 
+    def _get_bucket_endpoint(
+        self, bucket_name: str, bucket_endpoint_url: str | None, region_name: str | None
+    ) -> tuple[str, str]:
+        """
+        Fetch the correct S3 endpoint and region for use with our bucket.
+
+        If we don't explicitly set the endpoint then some commands will use the global
+        endpoint and fail (new AWS regions and new buckets in a region other than the one we're running in).
+
+        :param bucket_name: The name of the S3 bucket
+        :param bucket_endpoint_url: Optional explicit endpoint URL
+        :param region_name: The region name
+        :returns: Tuple of (endpoint_url, region_name)
+        """
+        # Create a temporary S3 client in the specified region to determine bucket location
+        tmp_s3_client = self.client("s3", region=region_name)
+
+        # Get the bucket region using head_bucket (preferred over get_bucket_location)
+        bucket_region = get_bucket_region(tmp_s3_client, bucket_name)
+
+        if bucket_endpoint_url:
+            return bucket_endpoint_url, bucket_region
+
+        # Create another client for the region the bucket lives in, so we can get the endpoint URL
+        if bucket_region != region_name:
+            tmp_s3_client = self.client("s3", region=bucket_region)
+
+        return tmp_s3_client.meta.endpoint_url, tmp_s3_client.meta.region_name
+
     @property
     def s3_client(self) -> None:
         if self._s3_manager is not None:
@@ -454,19 +477,13 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
             config = {"signature_version": "s3v4", "s3": {"addressing_style": self.get_option("s3_addressing_style")}}
 
             bucket_endpoint_url = self.get_option("bucket_endpoint_url")
-            s3_endpoint_url, s3_region_name = S3ClientManager.get_bucket_endpoint(
+            s3_endpoint_url, s3_region_name = self._get_bucket_endpoint(
                 bucket_name=self.get_option("bucket_name"),
                 bucket_endpoint_url=bucket_endpoint_url,
-                access_key_id=self.get_option("access_key_id"),
-                secret_key_id=self.get_option("secret_access_key"),
-                session_token=self.get_option("session_token"),
                 region_name=self.get_option("region"),
-                profile_name=self.get_option("profile"),
             )
 
-            s3_client = self._get_boto_client(
-                "s3", endpoint_url=s3_endpoint_url, region_name=s3_region_name, config=config
-            )
+            s3_client = self.client("s3", endpoint=s3_endpoint_url, region=s3_region_name, aws_config=config)
 
             self._s3_manager = S3ClientManager(s3_client)
 
@@ -481,11 +498,25 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
         self._session_manager = value
 
     @property
+    def windows_executor(self):
+        if self._windows_executor is None and self.is_windows:
+            self._windows_executor = WindowsCommandExecutor(
+                s3_client=self.s3_client,
+                s3_manager=self.s3_manager,
+                session_manager=self.session_manager,
+                exec_communicate=self.exec_communicate,
+                instance_id=self.instance_id,
+                bucket_name=self.get_option("bucket_name"),
+                verbosity_display=self.verbosity_display,
+            )
+        return self._windows_executor
+
+    @property
     def ssm_client(self):
         if self._client is None:
+            # The S3 configuration here might be a copy and paste mistake.  For now we'll keep it.
             config = {"signature_version": "s3v4", "s3": {"addressing_style": self.get_option("s3_addressing_style")}}
-
-            self._client = self._get_boto_client("ssm", region_name=self.get_option("region"), config=config)
+            self._client = self.client("ssm", aws_config=config)
         return self._client
 
     @property
@@ -502,16 +533,17 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
         try:
             self.close()
         except ReferenceError:
+            # Object being garbage collected, references may already be cleaned up
             pass
 
     def _connect(self) -> Any:
         """connect to the host via ssm"""
         self._play_context.remote_user = getpass.getuser()
         if not self.session_manager:
-            self.verbosity_display(4, "NO EXISTING SESSION, STARTING NEW ONE")
+            self.verbosity_display(3, "NO EXISTING SESSION, STARTING NEW ONE")
             self.start_session()
         else:
-            self.verbosity_display(4, f"REUSING EXISTING SESSION: {self.session_manager._session_id}")
+            self.verbosity_display(3, f"REUSING EXISTING SESSION: {self.session_manager._session_id}")
 
         self._connected = True
         return self
@@ -522,7 +554,7 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
         Delegates client initialization to specialized methods.
         """
 
-        self.verbosity_display(4, "INITIALIZE BOTO3 CLIENTS")
+        self.verbosity_display(3, "INITIALIZE BOTO3 CLIENTS")
 
         # Initialize S3 client
         self.s3_manager  # pylint: disable=pointless-statement
@@ -541,29 +573,9 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
             exec_command=self.exec_command,
         )
 
-    def verbosity_display(self, level: int, message: str) -> None:
-        """
-        Displays the given message depending on the verbosity level.
-
-        :param message: The message to display.
-        :param display_level: The verbosity level (1-4).
-
-        :return: None
-        """
-        if self.host:
-            host_args = {"host": self.host}
-        else:
-            host_args = {}
-
-        verbosity_level = {1: display.v, 2: display.vv, 3: display.vvv, 4: display.vvvv}
-
-        if level not in verbosity_level.keys():
-            raise AnsibleError(f"Invalid verbosity level: {level}")
-        verbosity_level[level](to_text(message), **host_args)
-
     def reset(self) -> None:
         """start a fresh ssm session"""
-        self.verbosity_display(4, "reset called on ssm connection")
+        self.verbosity_display(3, "reset called on ssm connection")
         self.close()
         self.start_session()
 
@@ -586,7 +598,7 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
     def start_session(self) -> None:
         """start ssm session"""
 
-        self.verbosity_display(3, f"ESTABLISH SSM CONNECTION TO: {self.instance_id}")
+        self.verbosity_display(2, f"ESTABLISH SSM CONNECTION TO: {self.instance_id}")
 
         executable = self.get_executable()
 
@@ -607,119 +619,241 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
                 profile_name=self.get_option("profile") or "",
             )
 
-            self.verbosity_display(4, f"STARTED SSM SESSION: {self.session_manager._session_id}")
+            self.verbosity_display(3, f"STARTED SSM SESSION: {self.session_manager._session_id}")
 
             # For non-windows Hosts: Ensure the session has started, and disable command echo and prompt.
             self.terminal_manager.prepare_terminal()
 
-    def exec_communicate(self, cmd: str, mark_start: str, mark_begin: str, mark_end: str) -> Tuple[int, str, str]:
+    def exec_communicate(self, cmd: str, in_data: bytes | None, mark_begin: str, mark_end: str) -> tuple[int, str, str]:
         """Interact with session.
         Read stdout between the markers until 'mark_end' is reached.
 
         :param cmd: The command being executed.
-        :param mark_start: The marker which starts the output.
+        :param in_data: Data to send to stdin after the begin marker.
         :param mark_begin: The begin marker.
         :param mark_end: The end marker.
         :returns: A tuple with the return code, the stdout and the stderr content.
         """
+        start_time = time.time()
+
+        # Flush any accumulated stderr from previous commands before starting this one
+        # This ensures error messages only contain stderr from THIS command, not the entire session
+        self.session_manager.flush_stderr()
+
         # Read stdout between the markers
         stdout = ""
-        win_line = ""
-        begin = False
         returncode = None
+        start_search = re.compile(f"^{re.escape(mark_begin)}$", re.MULTILINE)
+        end_search = re.compile(f"{re.escape(mark_end)}", re.MULTILINE)
+
+        # Wait for our start marker to come in
+        self.verbosity_display(4, f"EXEC_COMMUNICATE: Waiting for begin marker ({mark_begin})")
+        marker_wait_start = time.time()
+
+        self.session_manager.wait_for_match(
+            label="EXEC_COMMUNICATE",
+            cmd="<BEGIN_MARKER>",
+            match=start_search.search,
+            is_windows=self.is_windows,
+        )
+
+        marker_wait_duration = time.time() - marker_wait_start
+        self.verbosity_display(3, f"EXEC_COMMUNICATE: Begin marker received after {marker_wait_duration:.2f}s")
+
+        # The command's been sent, and the begin marker has happened, send the stdin data
+        if in_data:
+            stdin_size = len(in_data)
+            self.verbosity_display(4, f"EXEC_COMMUNICATE: Sending {stdin_size} bytes of STDIN data")
+            stdin_start = time.time()
+            chunk_count = 0
+            for chunk, is_last in chunked_payload(in_data):
+                chunk_count += 1
+                self.verbosity_display(
+                    5, f"EXEC_COMMUNICATE: Sending STDIN chunk {chunk_count} ({len(chunk)} bytes, last={is_last})"
+                )
+                self.session_manager.stdin_write(to_bytes(chunk, errors="surrogate_or_strict"))
+
+            # Send EOF delimiter for PowerShell stdin wrapper (four null bytes + newline)
+            # This signals to the PowerShell script that stdin is complete
+            if self.is_windows:
+                stdin_duration = time.time() - stdin_start
+                self.verbosity_display(
+                    4,
+                    f"EXEC_COMMUNICATE: Sent {chunk_count} chunks ({stdin_size} bytes) in {stdin_duration:.2f}s, sending EOF delimiter",
+                )
+                self.session_manager.stdin_write(b"\0\0\0\0\n")
+        else:
+            self.verbosity_display(4, "EXEC_COMMUNICATE: No STDIN data to send")
+
+        self.verbosity_display(4, "EXEC_COMMUNICATE: Polling for output")
+        poll_start = time.time()
+        line_count = 0
         for poll_result in self.session_manager.poll("EXEC", cmd):
             if not poll_result:
                 continue
 
             line = filter_ansi(self.session_manager.stdout_readline(), self.is_windows)
-            self.verbosity_display(4, f"EXEC stdout line: \n{line}")
+            line_count += 1
+            self.verbosity_display(4, f"EXEC_COMMUNICATE: stdout line {line_count}: {repr(line)}")
 
-            if not begin and self.is_windows:
-                win_line = win_line + line
-                line = win_line
+            # Check for end marker before adding line to output
+            if end_search.search(line):
+                self.verbosity_display(4, f"EXEC_COMMUNICATE: Found end marker ({mark_end}) in line {line_count}")
+                break
 
-            if mark_start in line:
-                begin = True
-                if not line.startswith(mark_start):
-                    stdout = ""
-                continue
-            if begin:
-                if mark_end in line:
-                    self.verbosity_display(4, f"POST_PROCESS: \n{to_text(stdout)}")
-                    returncode, stdout = self._post_process(stdout, mark_begin)
-                    self.verbosity_display(4, f"POST_PROCESSED: \n{to_text(stdout)}")
-                    break
-                stdout = stdout + line
+            stdout = stdout + line
+
+        poll_duration = time.time() - poll_start
+        self.verbosity_display(4, f"EXEC_COMMUNICATE: Polling complete after {poll_duration:.2f}s ({line_count} lines)")
+
+        self.verbosity_display(5, f"EXEC_COMMUNICATE_POST_PROCESS: \n{to_text(stdout)}")
+        returncode, stdout = self._post_process(stdout, mark_begin)
+        total_duration = time.time() - start_time
+        self.verbosity_display(
+            4, f"EXEC_COMMUNICATE: Complete - returncode={returncode}, total_duration={total_duration:.2f}s"
+        )
+        self.verbosity_display(5, f"EXEC_COMMUNICATE_POST_PROCESSED: \n{to_text(stdout)}")
 
         # see https://github.com/pylint-dev/pylint/issues/8909)
         return (returncode, stdout, self.session_manager.flush_stderr())
 
-    @staticmethod
-    def generate_mark() -> str:
-        """Generates a random string of characters to delimit SSM CLI commands"""
-        mark = "".join([random.choice(string.ascii_letters) for i in range(Connection.MARK_LENGTH)])
-        return mark
+    def _exec_command_via_s3(
+        self, cmd: str, in_data: bytes | None, mark_begin: str, mark_end: str
+    ) -> tuple[int, str, str]:
+        """Execute a Windows command by uploading to S3 and downloading via tiny command.
 
-    @ssm_retry
-    def exec_command(self, cmd: str, in_data: bool = None, sudoable: bool = True) -> Tuple[int, str, str]:
-        """When running a command on the SSM host, uses generate_mark to get delimiting strings"""
+        This avoids PTY echo timeouts by keeping the session command tiny (~100 bytes)
+        while the actual command (which may be kilobytes) is retrieved from S3.
 
+        :param cmd: The PowerShell command to execute (may be encoded command line).
+        :param in_data: Optional stdin data for the command.
+        :param mark_begin: The begin marker for output parsing.
+        :param mark_end: The end marker for output parsing.
+        :returns: A tuple of (exit_code, stdout, stderr).
+        """
+        return self.windows_executor.execute(cmd, in_data, mark_begin, mark_end)
+
+    @AWSConnectionRetry.exponential_backoff()
+    def exec_command(self, cmd: str, in_data: bytes | None = None, sudoable: bool = True) -> tuple[int, bytes, bytes]:
+        """Execute a command on the SSM host with automatic retry on failure.
+
+        For Windows, large commands are uploaded to S3 and executed via a tiny wrapper
+        command to avoid PTY echo timeouts. For Linux, commands are sent inline.
+
+        :param cmd: The command to execute.
+        :param in_data: Optional data to send to stdin.
+        :param sudoable: Whether the command can be run with sudo (unused for SSM).
+        :returns: A tuple of (exit_code, stdout, stderr).
+        """
         super().exec_command(cmd, in_data=in_data, sudoable=sudoable)
 
-        self.verbosity_display(3, f"EXEC: {to_text(cmd)}")
-
-        mark_begin = self.generate_mark()
-        if self.is_windows:
-            mark_start = mark_begin + " $LASTEXITCODE"
+        self.verbosity_display(2, f"EXEC: {to_text(cmd)[:200]}...")
+        self.verbosity_display(5, f"EXEC: Full command: {to_text(cmd)}")
+        self.verbosity_display(5, f"EXEC: Command length: {len(cmd)} bytes")
+        if in_data:
+            self.verbosity_display(5, f"EXEC: Has stdin data: {len(in_data)} bytes")
+            self.verbosity_display(6, f"EXEC: First 200 bytes of stdin: {in_data[:200]}")
         else:
-            mark_start = mark_begin
-        mark_end = self.generate_mark()
+            self.verbosity_display(5, "EXEC: No stdin data")
 
-        # Wrap command in markers accordingly for the shell used
-        cmd = self.terminal_manager.wrap_command(cmd, mark_start, mark_end)
+        mark_begin = generate_mark()
+        mark_end = generate_mark()
+        self.verbosity_display(5, f"EXEC: Generated begin marker: {mark_begin}")
+        self.verbosity_display(5, f"EXEC: Generated end marker: {mark_end}")
+
+        # For Windows, use S3-based execution to avoid PTY echo timeouts
+        # The PTY echoes ALL stdin data to stdout before PowerShell can read it,
+        # causing timeouts on large commands. S3 approach keeps session command tiny.
+        if self.is_windows:
+            self.verbosity_display(3, "EXEC: Using S3-based execution for Windows (avoids PTY echo)")
+            returncode, stdout, stderr = self._exec_command_via_s3(cmd, in_data, mark_begin, mark_end)
+
+            # DEBUG: Show what we're returning to Ansible (level 6 for long-term debugging of encoding issues)
+            stdout_bytes = to_bytes(stdout, errors="surrogate_or_strict")
+            stderr_bytes = to_bytes(stderr, errors="surrogate_or_strict")
+            self.verbosity_display(6, f"EXEC: Returning stdout (str): {repr(stdout[:200])}")
+            self.verbosity_display(6, f"EXEC: Returning stdout (bytes): {stdout_bytes[:200]}")
+            self.verbosity_display(6, f"EXEC: Returning stderr (str): {repr(stderr[:200])}")
+            self.verbosity_display(6, f"EXEC: Returning stderr (bytes): {stderr_bytes[:200]}")
+
+            return (returncode, stdout_bytes, stderr_bytes)
+
+        # For Linux, use inline command execution (works fine, no PTY echo issues)
+        self.verbosity_display(3, "EXEC: Using inline execution for Linux")
+
+        # Wrap command in markers
+        self.verbosity_display(5, f"EXEC: Wrapping command with has_stdin={bool(in_data)}")
+        trigger_cmd = self.terminal_manager.wrap_command(cmd, mark_begin, mark_end, has_stdin=bool(in_data))[0]
+        self.verbosity_display(5, f"EXEC: Trigger command length: {len(trigger_cmd)} bytes")
+        self.verbosity_display(6, f"EXEC: Full trigger command: {to_text(trigger_cmd)}")
 
         self.session_manager.flush_stderr()
 
-        for chunk in chunks(cmd, 1024):
+        # Send the trigger command
+        chunk_count = 0
+        for chunk, is_last in chunked_payload(trigger_cmd):
+            chunk_count += 1
+            self.verbosity_display(5, f"STREAM_TRIGGER: Chunk {chunk_count} ({len(chunk)} bytes, last={is_last})")
+            self.verbosity_display(6, f"STREAM_TRIGGER: Chunk {chunk_count} content: {to_text(chunk)}")
             self.session_manager.stdin_write(to_bytes(chunk, errors="surrogate_or_strict"))
+        self.verbosity_display(5, f"EXEC: Sent {chunk_count} trigger chunks to session")
 
-        return self.exec_communicate(cmd, mark_start, mark_begin, mark_end)
+        returncode, stdout, stderr = self.exec_communicate(trigger_cmd, in_data, mark_begin, mark_end)
+        return (
+            returncode,
+            to_bytes(stdout, errors="surrogate_or_strict"),
+            to_bytes(stderr, errors="surrogate_or_strict"),
+        )
 
-    def _post_process(self, stdout: str, mark_begin: str) -> Tuple[str, str]:
-        """extract command status and strip unwanted lines"""
+    def _post_process(self, stdout: str, mark_begin: str) -> tuple[int, str]:
+        """Extract command status and strip unwanted lines.
 
-        if not self.is_windows:
-            # Get command return code
-            returncode = int(stdout.splitlines()[-2])
+        :param stdout: The raw stdout content containing exit code and output.
+        :param mark_begin: The begin marker (unused, kept for compatibility).
+        :returns: A tuple of (exit_code, cleaned_stdout).
+        """
+        # Get command return code (second to last line)
+        self.verbosity_display(
+            5, f"POST_PROCESS: Raw stdout length: {len(stdout)} bytes, {len(stdout.splitlines())} lines"
+        )
+        self.verbosity_display(6, f"POST_PROCESS: Raw stdout:\n{stdout}")
+        try:
+            return_data = stdout.splitlines()[-1]
+            self.verbosity_display(4, f'POST_PROCESS: Return code line: "{return_data}"')
+            returncode = int(return_data)
+            self.verbosity_display(5, f"POST_PROCESS: Parsed return code: {returncode}")
+        except ValueError:
+            self.verbosity_display(4, f'POST_PROCESS: Failed to parse return code from "{return_data}", using 32')
+            returncode = 32
 
-            # Throw away final lines
-            for _x in range(0, 3):
-                stdout = stdout[:stdout.rfind('\n')]  # fmt: skip
+        # Throw away final lines (blank line, exit code, already removed mark_end)
+        self.verbosity_display(5, "POST_PROCESS: Removing final 3 lines (blank, exit code, end marker)")
+        for _x in range(0, 3):
+            stdout = stdout[:stdout.rfind('\n')]  # fmt: skip
+        self.verbosity_display(
+            5, f"POST_PROCESS: After removing final lines: {len(stdout)} bytes, {len(stdout.splitlines())} lines"
+        )
 
-            return (returncode, stdout)
+        if self.is_windows:
+            # If the return code contains #CLIXML (like a progress bar) remove it
+            clixml_filter = re.compile(r"#<\sCLIXML\s<Objs.*</Objs>")
+            original_len = len(stdout)
+            stdout = clixml_filter.sub("", stdout)
+            if len(stdout) != original_len:
+                self.verbosity_display(
+                    5, f"POST_PROCESS: Removed CLIXML, reduced from {original_len} to {len(stdout)} bytes"
+                )
 
-        # Windows is a little more complex
-        # Value of $LASTEXITCODE will be the line after the mark
-        trailer = stdout[stdout.rfind(mark_begin):]  # fmt: skip
-        last_exit_code = trailer.splitlines()[1]
-        if last_exit_code.isdigit:
-            returncode = int(last_exit_code)
-        else:
-            returncode = -1
-        # output to keep will be before the mark
-        stdout = stdout[:stdout.rfind(mark_begin)]  # fmt: skip
+            # If it looks like JSON remove any newlines
+            if stdout.startswith("{"):
+                self.verbosity_display(5, "POST_PROCESS: Detected JSON output, removing newlines")
+                stdout = stdout.replace("\n", "")
 
-        # If the return code contains #CLIXML (like a progress bar) remove it
-        clixml_filter = re.compile(r"#<\sCLIXML\s<Objs.*</Objs>")
-        stdout = clixml_filter.sub("", stdout)
-
-        # If it looks like JSON remove any newlines
-        if stdout.startswith("{"):
-            stdout = stdout.replace("\n", "")
-
+        self.verbosity_display(5, f"POST_PROCESS: Final stdout length: {len(stdout)} bytes")
+        self.verbosity_display(6, f"POST_PROCESS: Final stdout:\n{stdout}")
         return (returncode, stdout)
 
-    def generate_commands(self, in_path: str, out_path: str, ssm_action: str) -> Tuple[str, str, Dict]:
+    def generate_commands(self, in_path: str, out_path: str, ssm_action: str) -> tuple[str, str, dict]:
         """
         Generate S3 path and associated transport commands for file transfer.
         :param in_path: The local file path to transfer from.
@@ -727,8 +861,8 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
         :param ssm_action: The SSM action to perform ("get" or "put").
         :return: A tuple containing:
             - s3_path (str): The S3 key used for the transfer.
-            - commands (List[Dict]): A list of commands to be executed for the transfer.
-            - put_args (Dict): Additional arguments needed for a 'put' operation.
+            - commands (str): Command to be executed for the transfer.
+            - put_args (dict): Additional arguments needed for a 'put' operation.
         """
         s3_path = escape_path(f"{self.instance_id}/{out_path}")
         command = ""
@@ -745,30 +879,12 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
         )
         return s3_path, command, put_args
 
-    def _exec_transport_commands(self, in_path: str, out_path: str, command: dict) -> CommandResult:
-        """
-        Execute the provided transport command.
-
-        :param in_path: The input path.
-        :param out_path: The output path.
-        :param command: A command to execute on the host.
-
-        :returns: A tuple containing the return code, stdout, and stderr.
-        """
-
-        returncode, stdout, stderr = self.exec_command(command, in_data=None, sudoable=False)
-        # Check the return code
-        if returncode != 0:
-            raise AnsibleError(f"failed to transfer file to {in_path} {out_path}:\n{stdout}\n{stderr}")
-
-        return returncode, stdout, stderr
-
     def put_file(self, in_path: str, out_path: str) -> CommandResult:
         """transfer a file from local to remote"""
 
         super().put_file(in_path, out_path)
 
-        self.verbosity_display(3, f"PUT {in_path} TO {out_path}")
+        self.verbosity_display(2, f"PUT {in_path} TO {out_path}")
         if not os.path.exists(to_bytes(in_path, errors="surrogate_or_strict")):
             raise AnsibleFileNotFound(f"file or module does not exist: {in_path}")
 
@@ -780,7 +896,7 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
 
         super().fetch_file(in_path, out_path)
 
-        self.verbosity_display(3, f"FETCH {in_path} TO {out_path}")
+        self.verbosity_display(2, f"FETCH {in_path} TO {out_path}")
 
         s3_path, command, put_args = self.generate_commands(in_path, out_path, "get")
         return self.file_transfer_manager._file_transport_command(in_path, out_path, "get", command, put_args, s3_path)
@@ -788,7 +904,7 @@ class Connection(ConnectionBase, AwsConnectionPluginBase):
     def close(self) -> None:
         """terminate the connection"""
         if self.session_manager is not None:
-            self.verbosity_display(3, f"TERMINATE SSM SESSION: {self.session_manager._session_id}")
+            self.verbosity_display(2, f"TERMINATE SSM SESSION: {self.session_manager._session_id}")
 
             self.session_manager.terminate()
             self.session_manager = None

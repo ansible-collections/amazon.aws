@@ -261,6 +261,37 @@ def get_bucket_location(client: ClientType, bucket_name: str) -> Dict:
     return client.get_bucket_location(Bucket=bucket_name)
 
 
+@S3ErrorHandler.common_error_handler("get bucket region")
+@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=["NoSuchBucket", "OperationAborted"])
+def get_bucket_region(client: ClientType, bucket_name: str) -> str:
+    """
+    Retrieve the AWS region where an S3 bucket is located using head_bucket.
+
+    This function uses head_bucket instead of get_bucket_location because:
+    - head_bucket works with Virtual Hosted-Style addressing required by FIPS endpoints
+    - head_bucket performs better than list_buckets, especially with many buckets
+    - See: https://github.com/ansible-collections/amazon.aws/pull/357
+    - See: https://github.com/ansible-collections/community.aws/pull/1987
+
+    Parameters:
+        client (boto3.client): The Boto3 S3 client object.
+        bucket_name (str): The name of the S3 bucket.
+
+    Returns:
+        str: The AWS region where the bucket is located. Defaults to 'us-east-1' if the
+             region cannot be determined from the response headers.
+
+    Raises:
+        AnsibleS3PermissionsError: If access is denied (403).
+        AnsibleS3Error: For other S3 errors including if bucket doesn't exist (404).
+    """
+    head_bucket = client.head_bucket(Bucket=bucket_name)
+    bucket_region = head_bucket.get("ResponseMetadata", {}).get("HTTPHeaders", {}).get("x-amz-bucket-region", None)
+    if bucket_region is None:
+        bucket_region = "us-east-1"
+    return bucket_region
+
+
 @AWSRetry.jittered_backoff()
 def s3_bucket_exists(client: ClientType, bucket_name: str) -> bool:
     """

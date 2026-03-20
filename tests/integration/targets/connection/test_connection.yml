@@ -39,16 +39,30 @@
         mode: '0644'
       delegate_to: localhost
 
-    - name: Remove remote file with unicode filename and content
+    - name: Remove remote file with unicode filename and content (Linux)
       ansible.builtin.file:
         path: "{{ remote_file }}"
         state: absent
+      when: "'aws_ssm_linux' in group_names"
 
-    - name: Create remote directory with unicode name
+    - name: Remove remote file with unicode filename and content (Windows)
+      ansible.windows.win_file:
+        path: "{{ remote_file }}"
+        state: absent
+      when: "'aws_ssm_windows' in group_names"
+
+    - name: Create remote directory with unicode name (Linux)
       ansible.builtin.file:
         path: "{{ remote_dir }}"
         state: directory
         mode: '0755'
+      when: "'aws_ssm_linux' in group_names"
+
+    - name: Create remote directory with unicode name (Windows)
+      ansible.windows.win_file:
+        path: "{{ remote_dir }}"
+        state: directory
+      when: "'aws_ssm_windows' in group_names"
 
     - name: Copy local file with unicode filename and content
       ansible.builtin.copy:
@@ -78,10 +92,17 @@
         mode: '0644'
       delegate_to: localhost
 
-    - name: Remove remote temp file
+    - name: Remove remote temp file (Linux)
       ansible.builtin.file:
         path: "{{ remote_file }}"
         state: absent
+      when: "'aws_ssm_linux' in group_names"
+
+    - name: Remove remote temp file (Windows)
+      ansible.windows.win_file:
+        path: "{{ remote_file }}"
+        state: absent
+      when: "'aws_ssm_windows' in group_names"
 
     - name: Test user manipulation
       when: "'aws_ssm_linux' in group_names"
@@ -121,10 +142,17 @@
         mode: '0644'
       loop: ["one", "two", "three"]
 
-    - name: Stat empty file
+    - name: Stat empty file (Linux)
       ansible.builtin.stat:
         path: "{{ remote_empty_file }}"
       register: stat_empty_file_cmd
+      when: "'aws_ssm_linux' in group_names"
+
+    - name: Stat empty file (Windows)
+      ansible.windows.win_stat:
+        path: "{{ remote_empty_file }}"
+      register: stat_empty_file_cmd
+      when: "'aws_ssm_windows' in group_names"
 
     - name: Check that empty file exists
       ansible.builtin.assert:
