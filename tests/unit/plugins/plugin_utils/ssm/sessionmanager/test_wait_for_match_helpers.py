@@ -11,7 +11,7 @@ from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.sessionmanager impo
 
 
 class TestTryMatchString:
-    """Tests for the _try_match_string helper method."""
+    """Tests for the _try_match helper method with string matches."""
 
     @pytest.fixture
     def process_manager(self, monkeypatch):
@@ -37,10 +37,10 @@ class TestTryMatchString:
         return pm
 
     def test_match_found_returns_true(self, process_manager):
-        """Test that _try_match_string returns True when match is found."""
+        """Test that _try_match returns True when string match is found."""
         stdout = "some output with marker here and more"
         match = "marker"
-        result = process_manager._try_match_string(stdout, match, "TEST", 1.5)
+        result = process_manager._try_match(stdout, match, False, "TEST", 1.5)
 
         assert result is True
         # Should log success message
@@ -51,10 +51,10 @@ class TestTryMatchString:
         assert "1.50s" in call_args[1]
 
     def test_match_not_found_returns_false(self, process_manager):
-        """Test that _try_match_string returns False when match not found."""
+        """Test that _try_match returns False when string match not found."""
         stdout = "some output without the expected text"
         match = "marker"
-        result = process_manager._try_match_string(stdout, match, "TEST", 2.0)
+        result = process_manager._try_match(stdout, match, False, "TEST", 2.0)
 
         assert result is False
         # Should log debug message with last 100 chars
@@ -67,7 +67,7 @@ class TestTryMatchString:
         """Test matching string at beginning of stdout."""
         stdout = "marker at the start"
         match = "marker"
-        result = process_manager._try_match_string(stdout, match, "TEST", 0.1)
+        result = process_manager._try_match(stdout, match, False, "TEST", 0.1)
 
         assert result is True
 
@@ -75,7 +75,7 @@ class TestTryMatchString:
         """Test matching string at end of stdout."""
         stdout = "lots of output before the marker"
         match = "marker"
-        result = process_manager._try_match_string(stdout, match, "TEST", 0.1)
+        result = process_manager._try_match(stdout, match, False, "TEST", 0.1)
 
         assert result is True
 
@@ -83,14 +83,14 @@ class TestTryMatchString:
         """Test that substring matches are found correctly."""
         stdout = "some output with mark but not complete marker"
         match = "marker"
-        result = process_manager._try_match_string(stdout, match, "TEST", 0.1)
+        result = process_manager._try_match(stdout, match, False, "TEST", 0.1)
 
         # str.find() looks for substrings, so "marker" will be found
         assert result is True
 
 
 class TestTryMatchCallable:
-    """Tests for the _try_match_callable helper method."""
+    """Tests for the _try_match helper method with callable matches."""
 
     @pytest.fixture
     def process_manager(self, monkeypatch):
@@ -122,7 +122,7 @@ class TestTryMatchCallable:
         def match(text):
             return "PATTERN" in text
 
-        result = process_manager._try_match_callable(stdout, match, False, "TEST", 1.0)
+        result = process_manager._try_match(stdout, match, False, "TEST", 1.0)
 
         assert result is True
         process_manager.verbosity_display.assert_called_once()
@@ -139,7 +139,7 @@ class TestTryMatchCallable:
             return "PATTERN" in text and "\x1b" not in text
 
         # Must use is_windows=True for ANSI filtering to actually happen
-        result = process_manager._try_match_callable(stdout, match, True, "TEST", 1.0)
+        result = process_manager._try_match(stdout, match, True, "TEST", 1.0)
 
         # Should succeed because filtered stdout will match
         assert result is True
@@ -151,7 +151,7 @@ class TestTryMatchCallable:
         def match(text):
             return "PATTERN" in text
 
-        result = process_manager._try_match_callable(stdout, match, False, "TEST", 1.0)
+        result = process_manager._try_match(stdout, match, False, "TEST", 1.0)
 
         assert result is False
         # Should log multiple debug messages (3 total)
@@ -162,7 +162,7 @@ class TestTryMatchCallable:
         # This tests that filter_ansi is called with is_windows=True
         stdout = "some output"
         match = Mock(return_value=False)
-        result = process_manager._try_match_callable(stdout, match, True, "TEST", 1.0)
+        result = process_manager._try_match(stdout, match, True, "TEST", 1.0)
 
         assert result is False
         # Match should be called twice (raw and filtered)
@@ -313,3 +313,135 @@ class TestCheckAndWarnCommandEcho:
         process_manager._check_and_warn_command_echo(stdout, 10, True, "EXEC_COMMUNICATE")
 
         process_manager.verbosity_display.assert_not_called()
+
+
+class TestCheckAndLogStderr:
+    """Tests for the _check_and_log_stderr helper method."""
+
+    @pytest.fixture
+    def process_manager(self, monkeypatch):
+        """Create a minimal ProcessManager instance."""
+        session = Mock()
+        stdout = Mock()
+        stdout.fileno = Mock(return_value=1)
+
+        mock_poller = Mock()
+        monkeypatch.setattr(
+            "ansible_collections.amazon.aws.plugins.plugin_utils.ssm.sessionmanager._create_polling_obj",
+            lambda fd: mock_poller,
+        )
+
+        verbosity_display = Mock()
+        pm = ProcessManager(
+            instance_id="i-test",
+            session=session,
+            stdout=stdout,
+            timeout=60,
+            verbosity_display=verbosity_display,
+        )
+        return pm
+
+    def test_logs_when_stderr_has_output(self, process_manager):
+        """Test that stderr output is logged when present."""
+        process_manager.flush_stderr = Mock(return_value="some error output")
+        process_manager._check_and_log_stderr("TEST")
+
+        process_manager.verbosity_display.assert_called_once()
+        call_args = process_manager.verbosity_display.call_args[0]
+        assert call_args[0] == 4
+        assert "stderr while waiting" in call_args[1]
+        assert "some error output" in call_args[1]
+
+    def test_does_not_log_when_stderr_empty(self, process_manager):
+        """Test that nothing is logged when stderr is empty."""
+        process_manager.flush_stderr = Mock(return_value="")
+        process_manager._check_and_log_stderr("TEST")
+
+        process_manager.verbosity_display.assert_not_called()
+
+    def test_does_not_log_when_stderr_none(self, process_manager):
+        """Test that nothing is logged when stderr is None."""
+        process_manager.flush_stderr = Mock(return_value=None)
+        process_manager._check_and_log_stderr("TEST")
+
+        process_manager.verbosity_display.assert_not_called()
+
+
+class TestLogMatchStart:
+    """Tests for the _log_match_start helper method."""
+
+    @pytest.fixture
+    def process_manager(self, monkeypatch):
+        """Create a minimal ProcessManager instance."""
+        session = Mock()
+        stdout = Mock()
+        stdout.fileno = Mock(return_value=1)
+
+        mock_poller = Mock()
+        monkeypatch.setattr(
+            "ansible_collections.amazon.aws.plugins.plugin_utils.ssm.sessionmanager._create_polling_obj",
+            lambda fd: mock_poller,
+        )
+
+        verbosity_display = Mock()
+        pm = ProcessManager(
+            instance_id="i-test",
+            session=session,
+            stdout=stdout,
+            timeout=60,
+            verbosity_display=verbosity_display,
+        )
+        return pm
+
+    def test_logs_string_match(self, process_manager):
+        """Test logging when match is a string."""
+        process_manager._log_match_start("TEST", "echo hello", "expected_output")
+
+        assert process_manager.verbosity_display.call_count == 3
+        calls = [call[0] for call in process_manager.verbosity_display.call_args_list]
+
+        # First call: Starting to wait
+        assert calls[0][0] == 4
+        assert "Starting to wait for pattern" in calls[0][1]
+
+        # Second call: Looking for string
+        assert calls[1][0] == 4
+        assert "Looking for string" in calls[1][1]
+        assert "expected_output" in calls[1][1]
+
+        # Third call: Command
+        assert calls[2][0] == 4
+        assert "Command =" in calls[2][1]
+        assert "echo hello" in calls[2][1]
+
+    def test_logs_callable_match(self, process_manager):
+        """Test logging when match is a callable."""
+
+        def match_func(text):
+            return "pattern" in text
+
+        process_manager._log_match_start("TEST", "echo hello", match_func)
+
+        assert process_manager.verbosity_display.call_count == 3
+        calls = [call[0] for call in process_manager.verbosity_display.call_args_list]
+
+        # First call: Starting to wait
+        assert calls[0][0] == 4
+        assert "Starting to wait for pattern" in calls[0][1]
+
+        # Second call: Looking for pattern match
+        assert calls[1][0] == 4
+        assert "Looking for pattern match" in calls[1][1]
+
+        # Third call: Command
+        assert calls[2][0] == 4
+        assert "Command =" in calls[2][1]
+        assert "echo hello" in calls[2][1]
+
+    def test_handles_bytes_command(self, process_manager):
+        """Test logging when command is bytes."""
+        process_manager._log_match_start("TEST", b"echo hello", "output")
+
+        # Should convert bytes to text
+        calls = [call[0] for call in process_manager.verbosity_display.call_args_list]
+        assert "echo hello" in calls[2][1]
