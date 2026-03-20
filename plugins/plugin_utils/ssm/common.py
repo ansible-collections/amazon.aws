@@ -18,7 +18,7 @@ S3_DOWNLOAD_ERROR_EXIT_CODE = 99
 
 def generate_mark() -> str:
     """Generates a random string of characters to delimit SSM CLI commands."""
-    return "".join([secrets.choice(string.ascii_letters) for i in range(MARK_LENGTH)])
+    return "".join([secrets.choice(string.ascii_letters) for _i in range(MARK_LENGTH)])
 
 
 class CommandResult(TypedDict):
