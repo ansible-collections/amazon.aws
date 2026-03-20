@@ -150,6 +150,115 @@ class ProcessManager:
             poll_result = self._session.poll()
             self.verbosity_display(5, f"{label} POLL: session.poll() returned {poll_result}")
 
+    def _try_match(
+        self, stdout: str, match: str | Callable[[str], bool], is_windows: bool, label: str, elapsed: float
+    ) -> bool:
+        """Check if match is found in stdout and log result.
+
+        For string matches, searches directly. For callable matches, tries matching
+        on both raw and ANSI-filtered stdout.
+
+        :param stdout: Accumulated stdout content.
+        :param match: String to search for or callable that returns True when matched.
+        :param is_windows: Whether output is from Windows (for ANSI filtering).
+        :param label: Label for logging.
+        :param elapsed: Time elapsed since wait started.
+        :return: True if match found, False otherwise.
+        """
+        if isinstance(match, str):
+            if stdout.find(match) != -1:
+                self.verbosity_display(
+                    4, f"{label} WAIT_FOR_MATCH: MATCHED! Found string in stdout after {elapsed:.2f}s"
+                )
+                return True
+            self.verbosity_display(5, f"{label} WAIT_FOR_MATCH: No match yet, last 100 chars: {repr(stdout[-100:])}")
+            return False
+
+        # Callable match - try both raw and filtered
+        stdout_filtered = filter_ansi(stdout, is_windows)
+        if match(stdout) or match(stdout_filtered):
+            self.verbosity_display(4, f"{label} WAIT_FOR_MATCH: MATCHED! Pattern matched stdout after {elapsed:.2f}s")
+            return True
+
+        self.verbosity_display(5, f"{label} WAIT_FOR_MATCH: No pattern match yet")
+        self.verbosity_display(5, f"{label} WAIT_FOR_MATCH: Last 100 chars (raw): {repr(stdout[-100:])}")
+        self.verbosity_display(5, f"{label} WAIT_FOR_MATCH: Last 100 chars (filtered): {repr(stdout_filtered[-100:])}")
+        return False
+
+    def _log_progress_if_needed(
+        self,
+        current_time: float,
+        last_progress_log: float,
+        wait_start: float,
+        label: str,
+        line_count: int,
+        poll_count: int,
+        stdout_len: int,
+    ) -> float:
+        """Log progress message if enough time has elapsed.
+
+        :param current_time: Current timestamp.
+        :param last_progress_log: Timestamp of last progress log.
+        :param wait_start: Timestamp when waiting started.
+        :param label: Label for logging.
+        :param line_count: Number of lines read so far.
+        :param poll_count: Number of polls performed.
+        :param stdout_len: Length of accumulated stdout.
+        :return: Updated last_progress_log timestamp.
+        """
+        if current_time - last_progress_log >= 5.0:
+            elapsed = current_time - wait_start
+            self.verbosity_display(
+                3,
+                f"{label} WAIT_FOR_MATCH: Still waiting after {elapsed:.1f}s ({line_count} lines, {poll_count} polls, {stdout_len} bytes collected)",
+            )
+            return current_time
+        return last_progress_log
+
+    def _check_and_log_stderr(self, label: str) -> None:
+        """Check stderr and log any output found.
+
+        :param label: Label for logging.
+        """
+        stderr_output = self.flush_stderr()
+        if stderr_output:
+            self.verbosity_display(4, f"{label} WAIT_FOR_MATCH: stderr while waiting: {repr(stderr_output)}")
+
+    def _log_match_start(self, label: str, cmd: str | bytes, match: str | Callable[[str], bool]) -> None:
+        """Log the start of waiting for a match.
+
+        :param label: Label for logging.
+        :param cmd: Command being executed.
+        :param match: Pattern to match (string or callable).
+        """
+        self.verbosity_display(4, f"{label} WAIT_FOR_MATCH: Starting to wait for pattern")
+        if isinstance(match, str):
+            self.verbosity_display(4, f"{label} WAIT_FOR_MATCH: Looking for string: {repr(match)}")
+        else:
+            self.verbosity_display(4, f"{label} WAIT_FOR_MATCH: Looking for pattern match")
+        self.verbosity_display(4, f"{label} WAIT_FOR_MATCH: Command = {to_text(cmd)}")
+
+    def _check_and_warn_command_echo(self, stdout: str, line_count: int, is_windows: bool, label: str) -> None:
+        """Check for PowerShell command echo and log warning if detected.
+
+        :param stdout: Accumulated stdout content.
+        :param line_count: Number of lines read.
+        :param is_windows: Whether output is from Windows.
+        :param label: Label for logging.
+        """
+        if not (is_windows and label == "EXEC_COMMUNICATE" and line_count > 5):
+            return
+
+        # Look for signs of PowerShell command echo (base64 or PowerShell keywords)
+        if "powershell" in stdout.lower() or any(
+            char in stdout for char in ["A", "B", "C", "D"] if stdout.count(char) > 50
+        ):
+            self.verbosity_display(
+                2,
+                f"{label} WAIT_FOR_MATCH: WARNING - Detected possible command echo in {line_count} lines before marker. "
+                "PSReadLine may not have been removed properly.",
+            )
+
     def wait_for_match(
         self, label: str, cmd: str | bytes, match: str | Callable[[str], bool], is_windows: bool = False
     ) -> None:
@@ -172,30 +281,16 @@ class ProcessManager:
         poll_count = 0
         line_count = 0
 
-        self.verbosity_display(4, f"{label} WAIT_FOR_MATCH: Starting to wait for pattern")
-        if isinstance(match, str):
-            self.verbosity_display(4, f"{label} WAIT_FOR_MATCH: Looking for string: {repr(match)}")
-        else:
-            self.verbosity_display(4, f"{label} WAIT_FOR_MATCH: Looking for pattern match")
-        self.verbosity_display(4, f"{label} WAIT_FOR_MATCH: Command = {to_text(cmd)}")
-
-        # Check stderr before starting to wait
-        stderr_output = self.flush_stderr()
-        if stderr_output:
-            self.verbosity_display(4, f"{label} WAIT_FOR_MATCH: stderr before wait: {repr(stderr_output)}")
+        self._log_match_start(label, cmd, match)
+        self._check_and_log_stderr(label)
 
         for result in self.poll(label=label, cmd=to_text(cmd)):
             poll_count += 1
             current_time = time.time()
 
-            # Log progress every 5 seconds during long waits
-            if current_time - last_progress_log >= 5.0:
-                elapsed = current_time - wait_start
-                self.verbosity_display(
-                    3,
-                    f"{label} WAIT_FOR_MATCH: Still waiting after {elapsed:.1f}s ({line_count} lines, {poll_count} polls, {len(stdout)} bytes collected)",
-                )
-                last_progress_log = current_time
+            last_progress_log = self._log_progress_if_needed(
+                current_time, last_progress_log, wait_start, label, line_count, poll_count, len(stdout)
+            )
 
             if result:
                 line = to_text(self.stdout_readline())
@@ -203,37 +298,11 @@ class ProcessManager:
                 self.verbosity_display(4, f"{label} WAIT_FOR_MATCH: stdout line {line_count}: {repr(line)}")
                 stdout += line
 
-                if isinstance(match, str):
-                    if stdout.find(match) != -1:
-                        elapsed = time.time() - wait_start
-                        self.verbosity_display(
-                            4, f"{label} WAIT_FOR_MATCH: MATCHED! Found string in stdout after {elapsed:.2f}s"
-                        )
-                        break
-                    # Log last 100 chars to help debug why match isn't found
-                    self.verbosity_display(
-                        5, f"{label} WAIT_FOR_MATCH: No match yet, last 100 chars: {repr(stdout[-100:])}"
-                    )
-                else:
-                    # For callable matches, try both raw and filtered text
-                    stdout_filtered = filter_ansi(stdout, is_windows)
-                    if match(stdout) or match(stdout_filtered):
-                        elapsed = time.time() - wait_start
-                        self.verbosity_display(
-                            4, f"{label} WAIT_FOR_MATCH: MATCHED! Pattern matched stdout after {elapsed:.2f}s"
-                        )
-                        break
-                    # Log last 100 chars to help debug why pattern doesn't match
-                    self.verbosity_display(5, f"{label} WAIT_FOR_MATCH: No pattern match yet")
-                    self.verbosity_display(5, f"{label} WAIT_FOR_MATCH: Last 100 chars (raw): {repr(stdout[-100:])}")
-                    self.verbosity_display(
-                        5, f"{label} WAIT_FOR_MATCH: Last 100 chars (filtered): {repr(stdout_filtered[-100:])}"
-                    )
+                elapsed = time.time() - wait_start
+                if self._try_match(stdout, match, is_windows, label, elapsed):
+                    break
             else:
-                # No stdout data, check stderr
-                stderr_output = self.flush_stderr()
-                if stderr_output:
-                    self.verbosity_display(4, f"{label} WAIT_FOR_MATCH: stderr while waiting: {repr(stderr_output)}")
+                self._check_and_log_stderr(label)
 
         total_duration = time.time() - wait_start
         self.verbosity_display(
@@ -242,17 +311,7 @@ class ProcessManager:
         )
         self.verbosity_display(5, f"{label} WAIT_FOR_MATCH: Full stdout collected: {repr(stdout)}")
 
-        # Check if we saw command echo before the match (indicates PSReadLine wasn't removed on Windows)
-        if is_windows and label == "EXEC_COMMUNICATE" and line_count > 5:
-            # Look for signs of PowerShell command echo (base64 or PowerShell keywords)
-            if "powershell" in stdout.lower() or any(
-                char in stdout for char in ["A", "B", "C", "D"] if stdout.count(char) > 50
-            ):
-                self.verbosity_display(
-                    2,
-                    f"{label} WAIT_FOR_MATCH: WARNING - Detected possible command echo in {line_count} lines before marker. "
-                    "PSReadLine may not have been removed properly.",
-                )
+        self._check_and_warn_command_echo(stdout, line_count, is_windows, label)
 
     def terminate(self) -> None:
         if self._has_timeout:

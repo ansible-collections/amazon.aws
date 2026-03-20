@@ -12,7 +12,12 @@ from ansible_collections.amazon.aws.plugins.plugin_utils.retries import AWSConne
 
 
 class TestAWSConnectionRetry:
-    """Tests for the AWSConnectionRetry decorator."""
+    """Integration tests for the AWSConnectionRetry exponential_backoff decorator.
+
+    These tests verify the full retry behaviour including interaction between
+    helper methods, backoff timing, connection restart, and error handling.
+    Individual helper methods are tested in test_helper_methods.py.
+    """
 
     def test_successful_execution_no_retry(self):
         """Test that successful execution doesn't trigger retries."""

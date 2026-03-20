@@ -35,6 +35,42 @@ class AWSConnectionRetry:
             pass
     """
 
+    @staticmethod
+    def _get_max_retries(instance: Any, retries_param: int | None) -> int:
+        """Get the maximum retry count from parameter or instance attribute."""
+        if retries_param is not None:
+            return retries_param
+        return int(getattr(instance, "reconnection_retries", 0))
+
+    @staticmethod
+    def _get_cmd_summary(args: tuple) -> str:
+        """Extract command summary from arguments for logging."""
+        if args:
+            return f"{args[0]}..."
+        return "command"
+
+    @staticmethod
+    def _get_display_func(instance: Any) -> Callable:
+        """Get verbosity display function or return no-op."""
+        return getattr(instance, "verbosity_display", lambda level, msg: None)
+
+    @staticmethod
+    def _restart_connection(instance: Any) -> None:
+        """Close and restart connection if close method exists."""
+        if hasattr(instance, "close"):
+            instance.close()
+
+    @staticmethod
+    def _format_retry_message(
+        attempt: int, max_retries: int, exception: Exception, cmd_summary: str, pause: float
+    ) -> str:
+        """Format the retry log message."""
+        return (
+            f"AWSConnectionRetry: attempt {attempt}/{max_retries + 1}, "
+            f"caught exception ({type(exception).__name__}: {exception}) "
+            f"from cmd ({cmd_summary}), pausing for {pause} seconds"
+        )
+
     @classmethod
     def exponential_backoff(
         cls,
@@ -61,15 +97,9 @@ class AWSConnectionRetry:
         def retry_decorator(func: Callable) -> Callable:
             @wraps(func)
             def wrapped(self, *args: Any, **kwargs: Any) -> Any:
-                # Get retry count from decorator parameter or instance attribute
-                if retries is not None:
-                    max_retries = retries
-                else:
-                    max_retries = int(getattr(self, "reconnection_retries"))
-
-                # Use verbosity_display if available, otherwise no-op
-                display = getattr(self, "verbosity_display", lambda level, msg: None)
-                cmd_summary = f"{args[0]}..." if args else "command"
+                max_retries = cls._get_max_retries(self, retries)
+                display = cls._get_display_func(self)
+                cmd_summary = cls._get_cmd_summary(args)
 
                 # Create backoff iterator for delay calculations
                 backoff_iterator = BackoffIterator(
@@ -87,19 +117,10 @@ class AWSConnectionRetry:
                         if attempt > max_retries:
                             raise
 
-                        msg = (
-                            f"AWSConnectionRetry: attempt {attempt}/{max_retries + 1}, "
-                            f"caught exception ({type(e).__name__}: {e}) "
-                            f"from cmd ({cmd_summary}), pausing for {pause} seconds"
-                        )
+                        msg = cls._format_retry_message(attempt, max_retries, e, cmd_summary, pause)
                         display(2, msg)
-
                         time.sleep(pause)
-
-                        # Restart the connection before retrying
-                        # This ensures we don't reuse a broken connection
-                        if hasattr(self, "close"):
-                            self.close()
+                        cls._restart_connection(self)
 
             return wrapped
 
