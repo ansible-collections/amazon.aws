@@ -21,7 +21,6 @@ if typing.TYPE_CHECKING:
     from typing import Iterator
     from typing import NoReturn
     from typing import Optional
-    from typing import Union
 
     verbosity_display_type = Callable[[int, str], None]
 
@@ -66,7 +65,7 @@ class ProcessManager:
         self._has_timeout = False
         self._stderr_accumulator = ""
 
-    def stdin_write(self, command: Union[bytes, str]) -> None:
+    def stdin_write(self, command: bytes | str) -> None:
         if isinstance(command, str):
             command = command.encode("utf-8")
         self.verbosity_display(5, f"stdin_write: Writing {len(command)} bytes")
@@ -152,7 +151,7 @@ class ProcessManager:
             self.verbosity_display(5, f"{label} POLL: session.poll() returned {poll_result}")
 
     def wait_for_match(
-        self, label: str, cmd: Union[str, bytes], match: Union[str, Callable[[str], bool]], is_windows: bool = False
+        self, label: str, cmd: str | bytes, match: str | Callable[[str], bool], is_windows: bool = False
     ) -> None:
         """Wait for stdout to match a pattern.
 

@@ -783,7 +783,7 @@ class Connection(AWSConnectionBase):
 
         # Wrap command in markers
         self.verbosity_display(5, f"EXEC: Wrapping command with has_stdin={bool(in_data)}")
-        trigger_cmd, stdin_cmd = self.terminal_manager.wrap_command(cmd, mark_begin, mark_end, has_stdin=bool(in_data))
+        trigger_cmd = self.terminal_manager.wrap_command(cmd, mark_begin, mark_end, has_stdin=bool(in_data))[0]
         self.verbosity_display(5, f"EXEC: Trigger command length: {len(trigger_cmd)} bytes")
         self.verbosity_display(6, f"EXEC: Full trigger command: {to_text(trigger_cmd)}")
 
