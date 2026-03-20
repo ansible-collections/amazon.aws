@@ -367,9 +367,7 @@ EXAMPLES = r"""
 """
 import getpass
 import os
-import random
 import re
-import string
 import time
 import typing
 
@@ -393,8 +391,8 @@ from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_bucket_re
 from ansible_collections.amazon.aws.plugins.plugin_utils.connection import AWSConnectionBase
 from ansible_collections.amazon.aws.plugins.plugin_utils.retries import AWSConnectionRetry
 from ansible_collections.amazon.aws.plugins.plugin_utils.s3 import escape_path
-from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.common import MARK_LENGTH
 from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.common import CommandResult
+from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.common import generate_mark
 from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.filetransfermanager import FileTransferManager
 from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.s3clientmanager import S3ClientManager
 from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.sessionmanager import SSMSessionManager
@@ -719,14 +717,6 @@ class Connection(AWSConnectionBase):
         # see https://github.com/pylint-dev/pylint/issues/8909)
         return (returncode, stdout, self.session_manager.flush_stderr())
 
-    @staticmethod
-    def generate_mark() -> str:
-        """Generates a random string of characters to delimit SSM CLI commands"""
-        mark = "".join(
-            [random.choice(string.ascii_letters) for i in range(MARK_LENGTH)]
-        )  # nosec B311 - markers for output parsing, not security
-        return mark
-
     def _exec_command_via_s3(
         self, cmd: str, in_data: bytes | None, mark_begin: str, mark_end: str
     ) -> tuple[int, str, str]:
@@ -766,8 +756,8 @@ class Connection(AWSConnectionBase):
         else:
             self.verbosity_display(5, "EXEC: No stdin data")
 
-        mark_begin = self.generate_mark()
-        mark_end = self.generate_mark()
+        mark_begin = generate_mark()
+        mark_end = generate_mark()
         self.verbosity_display(5, f"EXEC: Generated begin marker: {mark_begin}")
         self.verbosity_display(5, f"EXEC: Generated end marker: {mark_end}")
 
