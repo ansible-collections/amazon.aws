@@ -26,7 +26,7 @@ class TestGenerateMark:
         """Test that generate_mark produces different results (probabilistically)."""
         # Generate multiple marks and ensure they're not all identical
         # With 26 characters from 52 choices, probability of collision is extremely low
-        marks = [generate_mark() for _ in range(10)]
+        marks = [generate_mark() for i in range(10)]
         # At least 8 out of 10 should be unique (allows for rare collisions)
         assert len(set(marks)) >= 8
 
