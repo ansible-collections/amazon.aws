@@ -226,9 +226,10 @@ class TestS3ClientManager:
                 m_generate_encryption_settings.assert_not_called()
                 if is_windows:
                     assert (
-                        "$ErrorActionPreference = 'Stop' ; $response = Invoke-WebRequest -Uri 'https://test-url' -UseBasicParsing ; [System.IO.File]::WriteAllBytes('test/out/path', $response.Content)"
-                        == test_command_generation
-                    )
+                        "$ErrorActionPreference = 'Stop' ; "
+                        "$response = Invoke-WebRequest -Uri 'https://test-url' -UseBasicParsing ; "
+                        "[System.IO.File]::WriteAllBytes('test/out/path', $response.Content)"
+                    ) == test_command_generation
                 else:
                     assert "curl -o 'test/out/path' 'https://test-url';touch 'test/out/path'" == test_command_generation
                 assert put_args is None

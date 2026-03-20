@@ -4,9 +4,7 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 import base64
-import random
 import re
-import string
 import time
 
 try:
@@ -22,7 +20,7 @@ except ImportError:
 from ansible.module_utils.common.text.converters import to_bytes
 from ansible.module_utils.common.text.converters import to_text
 
-from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.common import MARK_LENGTH
+from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.common import generate_mark
 
 
 class TerminalManager:
@@ -33,11 +31,6 @@ class TerminalManager:
         :param connection: The AWS SSM connection object
         """
         self.connection = connection
-
-    def generate_marker(self) -> str:
-        return "".join(  # nosec B311 - markers for output parsing, not security
-            [random.choice(string.ascii_letters) for i in range(MARK_LENGTH)]
-        )
 
     def prestage_windows_command_executor(self) -> None:
         """Pre-stage a PowerShell function to execute commands from stdin.
@@ -234,7 +227,7 @@ class TerminalManager:
         PSReadLine provides interactive features including command echo with syntax
         highlighting. The Windows Console also echoes input via ENABLE_ECHO_INPUT flag.
         """
-        end_mark = self.generate_marker()
+        end_mark = generate_mark()
         # Remove PSReadLine and disable console echo via Windows API
         # This is equivalent to 'stty -echo' on Linux
         command = (
@@ -284,7 +277,7 @@ class TerminalManager:
 
         This mirrors the Linux behavior where PS1='' sets an empty prompt.
         """
-        end_mark = self.generate_marker()
+        end_mark = generate_mark()
         command = f'function prompt {{ "" }} ; echo {end_mark}\n'
         disable_prompt_cmd = to_bytes(command, errors="surrogate_or_strict")
         end_marker_rex = f"^{re.escape(end_mark)}$"
@@ -307,7 +300,7 @@ class TerminalManager:
         This mirrors the Windows behavior of setting an empty prompt function.
         Also disables bracketed paste mode which can interfere with output parsing.
         """
-        end_mark = self.generate_marker()
+        end_mark = generate_mark()
         command = (
             "PS1='' ; "
             "bind 'set enable-bracketed-paste off'; "

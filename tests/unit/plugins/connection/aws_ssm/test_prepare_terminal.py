@@ -53,18 +53,18 @@ def test_disable_echo_command(m_to_text, m_to_bytes, connection_aws_ssm):
     )
 
 
-@patch("ansible_collections.amazon.aws.plugins.plugin_utils.ssm.terminalmanager.random")
+@patch("ansible_collections.amazon.aws.plugins.plugin_utils.ssm.common.secrets")
 @patch("ansible_collections.amazon.aws.plugins.plugin_utils.ssm.terminalmanager.to_bytes")
 @patch("ansible_collections.amazon.aws.plugins.plugin_utils.ssm.terminalmanager.to_text")
-def test_disable_prompt_command(m_to_text, m_to_bytes, m_random, connection_aws_ssm):
+def test_disable_prompt_command(m_to_text, m_to_bytes, m_secrets, connection_aws_ssm):
     m_to_text.side_effect = str
     m_to_bytes.side_effect = lambda x, **kw: str(x)
 
     if not hasattr(connection_aws_ssm, "terminal_manager"):
         connection_aws_ssm.terminal_manager = TerminalManager(connection_aws_ssm)
 
-    m_random.choice = MagicMock()
-    m_random.choice.side_effect = lambda x: "a"
+    m_secrets.choice = MagicMock()
+    m_secrets.choice.side_effect = lambda x: "a"
 
     end_mark = "".join(["a" for i in range(MARK_LENGTH)])
 
