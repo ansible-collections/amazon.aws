@@ -49,6 +49,13 @@ except ImportError:
 
 
 class LookupModule(LookupBase):
+    def _validate_terms(self, terms):
+        """Validate that exactly one term is provided"""
+        if not terms:
+            raise AnsibleLookupError("Constant name not provided")
+        if len(terms) > 1:
+            raise AnsibleLookupError("Multiple constant names provided")
+
     def lookup_constant(self, name):  # pylint: disable=too-many-return-statements
         if name == "MINIMUM_BOTOCORE_VERSION":
             return botocore_utils.MINIMUM_BOTOCORE_VERSION
@@ -73,10 +80,7 @@ class LookupModule(LookupBase):
 
     def run(self, terms, variables, **kwargs):
         self.set_options(var_options=variables, direct=kwargs)
-        if not terms:
-            raise AnsibleLookupError("Constant name not provided")
-        if len(terms) > 1:
-            raise AnsibleLookupError("Multiple constant names provided")
+        self._validate_terms(terms)
         name = terms[0].upper()
 
         return [self.lookup_constant(name)]
