@@ -228,8 +228,12 @@ class LookupModule(AWSLookupBase):
 
         for term in terms:
             value = self.get_parameter_value(term, ssm_dict)
-            if value is not None:
-                ret.append(value)
+            ret.append(value)
+
+        # Filter out None values only if ALL values are None
+        # This handles the case where all parameters are missing/denied with on_missing=skip/on_denied=skip
+        if ret and all(v is None for v in ret):
+            ret = []
 
         display.vvvv(f"aws_ssm path lookup returning: {to_native(ret)} ")
         return ret

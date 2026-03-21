@@ -250,17 +250,17 @@ class TestGetPathParameters:
 class TestLookupByName:
     """Unit tests for _lookup_by_name orchestration"""
 
-    def test_lookup_by_name_filters_none_values(self, lookup_plugin):
-        """Test that None values are filtered (on_missing/on_denied='skip')"""
+    def test_lookup_by_name_preserves_none_values(self, lookup_plugin):
+        """Test that None values are preserved (on_missing/on_denied='skip')"""
         lookup_plugin.params = {"recursive": False}
         lookup_plugin.get_parameter_value = MagicMock(side_effect=["value-1", None, "value-3"])
 
         result = lookup_plugin._lookup_by_name({}, ["param-1", "param-2", "param-3"])
 
-        assert result == ["value-1", "value-3"]
+        assert result == ["value-1", None, "value-3"]
 
-    def test_lookup_by_name_all_none_returns_empty(self, lookup_plugin):
-        """Test that all None values returns empty list"""
+    def test_lookup_by_name_all_none_returns_empty_list(self, lookup_plugin):
+        """Test that all None values returns empty list (all params missing/denied)"""
         lookup_plugin.params = {"recursive": False}
         lookup_plugin.get_parameter_value = MagicMock(return_value=None)
 
