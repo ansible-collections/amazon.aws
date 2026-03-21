@@ -1,4 +1,4 @@
 minor_changes:
-  - lookup plugins - created centralised LookupErrorHandler decorator pattern to reduce code duplication and cognitive complexity in lookup plugins.
-  - secretsmanager_secret - refactored to use LookupErrorHandler decorator, reducing cognitive complexity from 36 to <15.
-  - ssm_parameter - refactored to use LookupErrorHandler decorator, reducing cognitive complexity from 28 to <15.
+  - lookup plugins - created centralised LookupErrorHandler decorator pattern to reduce code duplication and cognitive complexity in lookup plugins. (https://github.com/ansible-collections/amazon.aws/pull/2914)
+  - secretsmanager_secret - refactored to use LookupErrorHandler decorator, reducing cognitive complexity from 36 to <15. (https://github.com/ansible-collections/amazon.aws/pull/2914)
+  - ssm_parameter - refactored to use LookupErrorHandler decorator, reducing cognitive complexity from 28 to <15. (https://github.com/ansible-collections/amazon.aws/pull/2914)
