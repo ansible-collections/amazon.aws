@@ -51,7 +51,7 @@ import json
 import ansible.module_utils.six.moves.urllib.error
 import ansible.module_utils.urls
 from ansible.errors import AnsibleLookupError
-from ansible.module_utils._text import to_native
+from ansible.module_utils.common.text.converters import to_native
 from ansible.plugins.lookup import LookupBase
 
 
