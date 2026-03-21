@@ -324,3 +324,87 @@ class TestLookupErrorHandler:
                 mock_lookup._display.warning.assert_called_once_with(
                     "Skipping nested key config.database.port in SSM parameter"
                 )
+
+    def test_handle_botocore_error(self):
+        """Test decorator handles BotoCoreError (not ClientError)"""
+        from botocore.exceptions import BotoCoreError
+
+        mock_lookup = MockLookup()
+
+        # Create a BotoCoreError
+        botocore_error = BotoCoreError()
+        mock_lookup.aws_client.get_value.side_effect = botocore_error
+
+        @LookupErrorHandler.handle_lookup_errors("secret")
+        def get_value(self, term):
+            return self.aws_client.get_value(Name=term)
+
+        with pytest.raises(AnsibleLookupError) as exc_info:
+            get_value(mock_lookup, "test-secret")
+        assert "Failed to retrieve secret:" in str(exc_info.value)
+
+    def test_term_extraction_from_positional_args(self):
+        """Test decorator extracts term from positional args when not in kwargs"""
+        mock_lookup = MockLookup()
+        mock_lookup.on_missing = "error"
+        mock_lookup.aws_client.get_value.side_effect = _raise_boto_clienterror(
+            "ResourceNotFoundException", "Not found"
+        )
+
+        @LookupErrorHandler.handle_lookup_errors("parameter")
+        def get_value(self, term):
+            return self.aws_client.get_value(Name=term)
+
+        # Call with positional arg (not kwargs)
+        with pytest.raises(AnsibleLookupError) as exc_info:
+            get_value(mock_lookup, "my-param")
+        assert "Failed to find parameter my-param (ResourceNotFound)" == str(exc_info.value)
+
+    def test_default_value_with_warn_action(self):
+        """Test decorator returns default_value with warn action"""
+        mock_lookup = MockLookup()
+        mock_lookup.on_missing = "warn"
+        mock_lookup.aws_client.get_value.side_effect = _raise_boto_clienterror(
+            "ResourceNotFoundException", "Not found"
+        )
+
+        default_dict = {"default": "value"}
+
+        @LookupErrorHandler.handle_lookup_errors("secret", default_value=default_dict)
+        def get_value(self, term):
+            return self.aws_client.get_value(Name=term)
+
+        result = get_value(mock_lookup, "missing-secret")
+        assert result == default_dict
+        mock_lookup._display.warning.assert_called_once()
+
+    def test_default_value_with_access_denied(self):
+        """Test decorator returns default_value when access is denied"""
+        mock_lookup = MockLookup()
+        mock_lookup.on_denied = "skip"
+        mock_lookup.aws_client.get_value.side_effect = _raise_boto_clienterror(
+            "AccessDeniedException", "Access denied"
+        )
+
+        default_list = [{"default": "item"}]
+
+        @LookupErrorHandler.handle_lookup_errors("secret", default_value=default_list)
+        def get_value(self, term):
+            return self.aws_client.get_value(Name=term)
+
+        result = get_value(mock_lookup, "denied-secret")
+        assert result == default_list
+
+    def test_default_value_with_deleted_resource(self):
+        """Test decorator returns default_value for deleted resources"""
+        mock_lookup = MockLookup()
+        mock_lookup.on_deleted = "skip"
+        error = _raise_boto_clienterror("InvalidParameterValue", "marked for deletion")
+        mock_lookup.aws_client.get_value.side_effect = error
+
+        @LookupErrorHandler.handle_lookup_errors("secret", default_value=[])
+        def get_value(self, term):
+            return self.aws_client.get_value(Name=term)
+
+        result = get_value(mock_lookup, "deleted-secret")
+        assert result == []
