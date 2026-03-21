@@ -224,8 +224,58 @@ class TestRun:
 
         assert result == [{"default-vpc": ["vpc-12345678"], "max-instances": ["20"]}]
 
-    def test_run_client_error(self, lookup_plugin):
-        """Test run with ClientError from AWS"""
+    def test_run_access_denied_error(self, lookup_plugin):
+        """Test run with AccessDeniedException - on_denied defaults to error"""
+        import botocore.exceptions
+
+        error = botocore.exceptions.ClientError(
+            {"Error": {"Code": "AccessDeniedException", "Message": "Access denied"}}, "DescribeAccountAttributes"
+        )
+        lookup_plugin._cached_client.describe_account_attributes.side_effect = error
+
+        with patch.object(lookup_plugin, "run", wraps=lookup_plugin.run):
+            with pytest.raises(AnsibleLookupError) as exc_info:
+                lookup_plugin.run([], {}, attribute="default-vpc")
+
+        assert "Failed to access account attribute default-vpc" in str(exc_info.value)
+
+    def test_run_access_denied_warn(self, lookup_plugin):
+        """Test run with AccessDeniedException - on_denied=warn"""
+        import botocore.exceptions
+
+        error = botocore.exceptions.ClientError(
+            {"Error": {"Code": "AccessDeniedException", "Message": "Access denied"}}, "DescribeAccountAttributes"
+        )
+        lookup_plugin._cached_client.describe_account_attributes.side_effect = error
+        lookup_plugin._cached_on_denied = "warn"
+
+        with patch.object(lookup_plugin, "run", wraps=lookup_plugin.run):
+            result = lookup_plugin.run([], {}, attribute="default-vpc")
+
+        assert result is None
+        lookup_plugin._display.warning.assert_called_once()
+        assert (
+            "access denied for account attribute default-vpc" in lookup_plugin._display.warning.call_args[0][0].lower()
+        )
+
+    def test_run_access_denied_skip(self, lookup_plugin):
+        """Test run with AccessDeniedException - on_denied=skip"""
+        import botocore.exceptions
+
+        error = botocore.exceptions.ClientError(
+            {"Error": {"Code": "AccessDeniedException", "Message": "Access denied"}}, "DescribeAccountAttributes"
+        )
+        lookup_plugin._cached_client.describe_account_attributes.side_effect = error
+        lookup_plugin._cached_on_denied = "skip"
+
+        with patch.object(lookup_plugin, "run", wraps=lookup_plugin.run):
+            result = lookup_plugin.run([], {}, attribute="default-vpc")
+
+        assert result is None
+        lookup_plugin._display.warning.assert_not_called()
+
+    def test_run_other_client_error(self, lookup_plugin):
+        """Test run with other ClientError from AWS"""
         import botocore.exceptions
 
         error = botocore.exceptions.ClientError(
@@ -237,7 +287,7 @@ class TestRun:
             with pytest.raises(AnsibleLookupError) as exc_info:
                 lookup_plugin.run([], {}, attribute="default-vpc")
 
-        assert "Failed to describe account attributes" in str(exc_info.value)
+        assert "Failed to retrieve account attribute" in str(exc_info.value)
 
     def test_run_botocore_error(self, lookup_plugin):
         """Test run with BotoCoreError from AWS"""
@@ -250,7 +300,7 @@ class TestRun:
             with pytest.raises(AnsibleLookupError) as exc_info:
                 lookup_plugin.run([], {}, attribute="default-vpc")
 
-        assert "Failed to describe account attributes" in str(exc_info.value)
+        assert "Failed to retrieve account attribute" in str(exc_info.value)
 
     def test_run_calls_describe_with_correct_params(self, lookup_plugin):
         """Test that run calls describe_account_attributes with correct parameters"""
@@ -258,18 +308,20 @@ class TestRun:
             "AccountAttributes": [{"AttributeName": "max-instances", "AttributeValues": [{"AttributeValue": "20"}]}]
         }
 
-        with patch.object(lookup_plugin, "run", wraps=lookup_plugin.run):
+        with patch.object(
+            lookup_plugin, "_describe_account_attributes", wraps=lookup_plugin._describe_account_attributes
+        ) as mock_describe:
             lookup_plugin.run([], {}, attribute="max-instances")
 
-        lookup_plugin._cached_client.describe_account_attributes.assert_called_once_with(
-            aws_retry=True, AttributeNames=["max-instances"]
-        )
+        mock_describe.assert_called_once_with(term="max-instances", AttributeNames=["max-instances"])
 
     def test_run_all_attributes_empty_params(self, lookup_plugin):
         """Test that run calls describe_account_attributes with empty AttributeNames for all attributes"""
         lookup_plugin._cached_client.describe_account_attributes.return_value = {"AccountAttributes": []}
 
-        with patch.object(lookup_plugin, "run", wraps=lookup_plugin.run):
+        with patch.object(
+            lookup_plugin, "_describe_account_attributes", wraps=lookup_plugin._describe_account_attributes
+        ) as mock_describe:
             lookup_plugin.run([], {})
 
-        lookup_plugin._cached_client.describe_account_attributes.assert_called_once_with(aws_retry=True, AttributeNames=[])
+        mock_describe.assert_called_once_with(term="all attributes", AttributeNames=[])

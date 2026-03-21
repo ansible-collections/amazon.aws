@@ -22,6 +22,16 @@ options:
       - max-elastic-ips
       - vpc-max-elastic-ips
       - has-ec2-classic
+  on_denied:
+    description:
+      - Action to take if access to the account attribute is denied.
+      - V(error) will raise a fatal error when access to the account attribute is denied.
+      - V(skip) will silently ignore the denied account attribute.
+      - V(warn) will skip over the denied account attribute but issue a warning.
+    default: error
+    type: str
+    choices: ["error", "skip", "warn"]
+    version_added: "11.3.0"
 extends_documentation_fragment:
   - amazon.aws.boto3
   - amazon.aws.common.plugins
@@ -48,14 +58,7 @@ _raw:
       (or all attributes if one is not specified).
 """
 
-try:
-    import botocore
-except ImportError:
-    pass  # Handled by AWSLookupBase
-
-from ansible.errors import AnsibleLookupError
-from ansible.module_utils._text import to_native
-
+from ansible_collections.amazon.aws.plugins.plugin_utils._lookup.common import LookupErrorHandler
 from ansible_collections.amazon.aws.plugins.plugin_utils.lookup import AWSLookupBase
 
 
@@ -130,10 +133,15 @@ class LookupModule(AWSLookupBase):
         attribute = kwargs.get("attribute")
         params, check_ec2_classic = self._build_api_params(attribute)
 
-        try:
-            response = self._describe_account_attributes(**params)["AccountAttributes"]
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            raise AnsibleLookupError(f"Failed to describe account attributes: {to_native(e)}")
+        # Pass attribute name as term for error messages
+        term = attribute or "all attributes"
+        result = self._describe_account_attributes(term=term, **params)
+
+        # Handle case where access was denied with on_denied=warn/skip
+        if result is None:
+            return result
+
+        response = result["AccountAttributes"]
 
         if check_ec2_classic:
             return [self._process_response_for_ec2_classic(response)]
@@ -143,6 +151,7 @@ class LookupModule(AWSLookupBase):
 
         return [self._process_response_for_all_attributes(response)]
 
-    def _describe_account_attributes(self, **params):
+    @LookupErrorHandler.handle_lookup_errors("account attribute")
+    def _describe_account_attributes(self, term, **params):
         """Describe EC2 account attributes"""
         return self.aws_client.describe_account_attributes(aws_retry=True, **params)
