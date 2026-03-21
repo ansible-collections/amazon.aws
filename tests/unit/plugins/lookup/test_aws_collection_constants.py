@@ -74,15 +74,17 @@ class TestLookupConstant:
         assert result is not None
         assert isinstance(result, str)
 
-    @patch("ansible_collections.amazon.aws.plugins.lookup.aws_collection_constants.HAS_COMMUNITY", True)
     def test_lookup_community_aws_collection_version_when_available(self, lookup_plugin):
         """Test looking up COMMUNITY_AWS_COLLECTION_VERSION when community collection is available"""
-        with patch(
-            "ansible_collections.amazon.aws.plugins.lookup.aws_collection_constants.community_utils"
-        ) as mock_utils:
-            mock_utils.COMMUNITY_AWS_COLLECTION_VERSION = "1.0.0"
-            result = lookup_plugin.lookup_constant("COMMUNITY_AWS_COLLECTION_VERSION")
-            assert result == "1.0.0"
+        import ansible_collections.amazon.aws.plugins.lookup.aws_collection_constants as constants_module
+
+        mock_utils = MagicMock()
+        mock_utils.COMMUNITY_AWS_COLLECTION_VERSION = "1.0.0"
+
+        with patch.object(constants_module, "HAS_COMMUNITY", True):
+            with patch.object(constants_module, "community_utils", mock_utils):
+                result = lookup_plugin.lookup_constant("COMMUNITY_AWS_COLLECTION_VERSION")
+                assert result == "1.0.0"
 
     @patch("ansible_collections.amazon.aws.plugins.lookup.aws_collection_constants.HAS_COMMUNITY", False)
     def test_lookup_community_aws_collection_version_when_unavailable(self, lookup_plugin):
@@ -91,15 +93,17 @@ class TestLookupConstant:
             lookup_plugin.lookup_constant("COMMUNITY_AWS_COLLECTION_VERSION")
         assert "Unable to load ansible_collections.community.aws" in str(exc_info.value)
 
-    @patch("ansible_collections.amazon.aws.plugins.lookup.aws_collection_constants.HAS_COMMUNITY", True)
     def test_lookup_community_aws_collection_name_when_available(self, lookup_plugin):
         """Test looking up COMMUNITY_AWS_COLLECTION_NAME when community collection is available"""
-        with patch(
-            "ansible_collections.amazon.aws.plugins.lookup.aws_collection_constants.community_utils"
-        ) as mock_utils:
-            mock_utils.COMMUNITY_AWS_COLLECTION_NAME = "community.aws"
-            result = lookup_plugin.lookup_constant("COMMUNITY_AWS_COLLECTION_NAME")
-            assert result == "community.aws"
+        import ansible_collections.amazon.aws.plugins.lookup.aws_collection_constants as constants_module
+
+        mock_utils = MagicMock()
+        mock_utils.COMMUNITY_AWS_COLLECTION_NAME = "community.aws"
+
+        with patch.object(constants_module, "HAS_COMMUNITY", True):
+            with patch.object(constants_module, "community_utils", mock_utils):
+                result = lookup_plugin.lookup_constant("COMMUNITY_AWS_COLLECTION_NAME")
+                assert result == "community.aws"
 
     @patch("ansible_collections.amazon.aws.plugins.lookup.aws_collection_constants.HAS_COMMUNITY", False)
     def test_lookup_community_aws_collection_name_when_unavailable(self, lookup_plugin):
