@@ -108,7 +108,7 @@ def test_aws_client_without_service_defined():
     # AWSLookupBase has _SERVICE = None by default
 
     with pytest.raises(NotImplementedError) as exc_info:
-        _ = lookup_plugin.aws_client
+        _client = lookup_plugin.aws_client
 
     assert "must define _SERVICE class attribute" in str(exc_info.value)
 
