@@ -62,17 +62,73 @@ from ansible_collections.amazon.aws.plugins.plugin_utils.lookup import AWSLookup
 class LookupModule(AWSLookupBase):
     _SERVICE = "ec2"
 
-    def run(self, terms, variables, **kwargs):
-        super().run(terms, variables, **kwargs)
+    def _build_api_params(self, attribute):
+        """
+        Build API parameters for describe_account_attributes call.
 
-        attribute = kwargs.get("attribute")
+        Args:
+            attribute: The attribute name to query, or None for all attributes
+
+        Returns:
+            Tuple of (params dict, check_ec2_classic boolean)
+        """
         params = {"AttributeNames": []}
         check_ec2_classic = False
-        if "has-ec2-classic" == attribute:
+
+        if attribute == "has-ec2-classic":
             check_ec2_classic = True
             params["AttributeNames"] = ["supported-platforms"]
         elif attribute:
             params["AttributeNames"] = [attribute]
+
+        return params, check_ec2_classic
+
+    def _process_response_for_ec2_classic(self, response):
+        """
+        Process response to check if account has EC2-Classic support.
+
+        Args:
+            response: List of account attributes from AWS API
+
+        Returns:
+            Boolean indicating if EC2-Classic is supported
+        """
+        attr = response[0]
+        return any(value["AttributeValue"] == "EC2" for value in attr["AttributeValues"])
+
+    def _process_response_for_attribute(self, response):
+        """
+        Process response to extract values for a specific attribute.
+
+        Args:
+            response: List of account attributes from AWS API
+
+        Returns:
+            List of attribute values
+        """
+        attr = response[0]
+        return [value["AttributeValue"] for value in attr["AttributeValues"]]
+
+    def _process_response_for_all_attributes(self, response):
+        """
+        Process response to extract all account attributes as a dictionary.
+
+        Args:
+            response: List of account attributes from AWS API
+
+        Returns:
+            Dictionary mapping attribute names to lists of values
+        """
+        flattened = {}
+        for k_v_dict in response:
+            flattened[k_v_dict["AttributeName"]] = [value["AttributeValue"] for value in k_v_dict["AttributeValues"]]
+        return flattened
+
+    def run(self, terms, variables, **kwargs):
+        super().run(terms, variables, **kwargs)
+
+        attribute = kwargs.get("attribute")
+        params, check_ec2_classic = self._build_api_params(attribute)
 
         try:
             response = self._describe_account_attributes(**params)["AccountAttributes"]
@@ -80,17 +136,12 @@ class LookupModule(AWSLookupBase):
             raise AnsibleLookupError(f"Failed to describe account attributes: {to_native(e)}")
 
         if check_ec2_classic:
-            attr = response[0]
-            return [any(value["AttributeValue"] == "EC2" for value in attr["AttributeValues"])]
+            return [self._process_response_for_ec2_classic(response)]
 
         if attribute:
-            attr = response[0]
-            return [value["AttributeValue"] for value in attr["AttributeValues"]]
+            return self._process_response_for_attribute(response)
 
-        flattened = {}
-        for k_v_dict in response:
-            flattened[k_v_dict["AttributeName"]] = [value["AttributeValue"] for value in k_v_dict["AttributeValues"]]
-        return [flattened]
+        return [self._process_response_for_all_attributes(response)]
 
     def _describe_account_attributes(self, **params):
         """Describe EC2 account attributes"""
