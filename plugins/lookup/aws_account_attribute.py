@@ -56,19 +56,14 @@ except ImportError:
 from ansible.errors import AnsibleLookupError
 from ansible.module_utils._text import to_native
 
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.plugin_utils.lookup import AWSLookupBase
 
 
-def _describe_account_attributes(client, **params):
-    return client.describe_account_attributes(aws_retry=True, **params)
-
-
 class LookupModule(AWSLookupBase):
+    _SERVICE = "ec2"
+
     def run(self, terms, variables, **kwargs):
         super().run(terms, variables, **kwargs)
-
-        client = self.client("ec2", AWSRetry.jittered_backoff())
 
         attribute = kwargs.get("attribute")
         params = {"AttributeNames": []}
@@ -80,7 +75,7 @@ class LookupModule(AWSLookupBase):
             params["AttributeNames"] = [attribute]
 
         try:
-            response = _describe_account_attributes(client, **params)["AccountAttributes"]
+            response = self._describe_account_attributes(**params)["AccountAttributes"]
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             raise AnsibleLookupError(f"Failed to describe account attributes: {to_native(e)}")
 
@@ -96,3 +91,7 @@ class LookupModule(AWSLookupBase):
         for k_v_dict in response:
             flattened[k_v_dict["AttributeName"]] = [value["AttributeValue"] for value in k_v_dict["AttributeValues"]]
         return [flattened]
+
+    def _describe_account_attributes(self, **params):
+        """Describe EC2 account attributes"""
+        return self.aws_client.describe_account_attributes(aws_retry=True, **params)

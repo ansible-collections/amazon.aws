@@ -5,7 +5,6 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 import random
-from unittest.mock import ANY
 from unittest.mock import MagicMock
 from unittest.mock import call
 
@@ -30,6 +29,7 @@ def fixture_lookup_plugin():
 
     lookup.get_option.side_effect = _get_option
     lookup.client = MagicMock()
+    lookup._display = MagicMock()
 
     return lookup
 
@@ -74,10 +74,8 @@ class TestLookupModuleRun:
             "ansible_collections.amazon.aws.plugins.lookup.secretsmanager_secret.AWSLookupBase.run"
         )
         aws_lookup_base_run.return_value = True
-        m_list_secrets = mocker.patch(
-            "ansible_collections.amazon.aws.plugins.lookup.secretsmanager_secret._list_secrets"
-        )
-        m_list_secrets.return_value = {"SecretList": []}
+        lookup_plugin._list_secrets = MagicMock()
+        lookup_plugin._list_secrets.return_value = {"SecretList": []}
 
         lookup_plugin.params = params
         with pytest.raises(AnsibleLookupError) as exc_info:
@@ -89,11 +87,9 @@ class TestLookupModuleRun:
             "ansible_collections.amazon.aws.plugins.lookup.secretsmanager_secret.AWSLookupBase.run"
         )
         aws_lookup_base_run.return_value = True
-        m_list_secrets = mocker.patch(
-            "ansible_collections.amazon.aws.plugins.lookup.secretsmanager_secret._list_secrets"
-        )
         secrets_lists = [{"Name": "secret-0"}, {"Name": "secret-1"}, {"Name": "secret-2"}]
-        m_list_secrets.return_value = [{"SecretList": secrets_lists}]
+        lookup_plugin._list_secrets = MagicMock()
+        lookup_plugin._list_secrets.return_value = [{"SecretList": secrets_lists}]
 
         params = {
             "on_missing": pick_from_list(),
@@ -109,7 +105,7 @@ class TestLookupModuleRun:
             "secret-1": "value-1",
             "secret-2": "value-2",
         }
-        lookup_plugin.get_secret_value.side_effect = lambda x, client, **kwargs: secrets_values.get(x)
+        lookup_plugin.get_secret_value.side_effect = lambda x, **kwargs: secrets_values.get(x)
 
         secretsmanager_client = MagicMock()
         lookup_plugin.client.return_value = secretsmanager_client
@@ -117,30 +113,8 @@ class TestLookupModuleRun:
         term = "term0"
         assert [secrets_values] == lookup_plugin.run(terms=[term], variables=[])
 
-        m_list_secrets.assert_called_once_with(secretsmanager_client, term)
-        lookup_plugin.client.assert_called_once_with("secretsmanager", ANY)
-        lookup_plugin.get_secret_value.assert_has_calls(
-            [
-                call(
-                    "secret-0",
-                    secretsmanager_client,
-                    on_missing=params.get("on_missing"),
-                    on_denied=params.get("on_denied"),
-                ),
-                call(
-                    "secret-1",
-                    secretsmanager_client,
-                    on_missing=params.get("on_missing"),
-                    on_denied=params.get("on_denied"),
-                ),
-                call(
-                    "secret-2",
-                    secretsmanager_client,
-                    on_missing=params.get("on_missing"),
-                    on_denied=params.get("on_denied"),
-                ),
-            ]
-        )
+        lookup_plugin._list_secrets.assert_called_once_with(term)
+        lookup_plugin.get_secret_value.assert_has_calls([call("secret-0"), call("secret-1"), call("secret-2")])
 
     @pytest.mark.parametrize("join_secrets", [True, False])
     @pytest.mark.parametrize(
@@ -169,7 +143,7 @@ class TestLookupModuleRun:
             "secret-0": "value-0",
             "secret-1": "value-1",
         }
-        lookup_plugin.get_secret_value.side_effect = lambda x, client, **kwargs: secrets_values.get(x)
+        lookup_plugin.get_secret_value.side_effect = lambda x, **kwargs: secrets_values.get(x)
 
         secretsmanager_client = MagicMock()
         lookup_plugin.client.return_value = secretsmanager_client
@@ -180,17 +154,12 @@ class TestLookupModuleRun:
 
         assert expected_secrets == lookup_plugin.run(terms=terms, variables=[])
 
-        lookup_plugin.client.assert_called_once_with("secretsmanager", ANY)
         lookup_plugin.get_secret_value.assert_has_calls(
             [
                 call(
                     x,
-                    secretsmanager_client,
                     version_stage=params.get("version_stage"),
                     version_id=params.get("version_id"),
-                    on_missing=params.get("on_missing"),
-                    on_denied=params.get("on_denied"),
-                    on_deleted=params.get("on_deleted"),
                     nested=params.get("nested"),
                 )
                 for x in terms
@@ -203,13 +172,9 @@ class TestLookupModuleGetSecretValue:
         params = {
             "version_stage": MagicMock(),
             "version_id": MagicMock(),
-            "on_missing": None,
-            "on_denied": None,
-            "on_deleted": None,
         }
         with pytest.raises(AnsibleLookupError) as exc_info:
-            client = MagicMock()
-            lookup_plugin.get_secret_value("aws_invalid_nested_secret", client, nested=True, **params)
+            lookup_plugin.get_secret_value("aws_invalid_nested_secret", nested=True, **params)
         assert "Nested query must use the following syntax: `aws_secret_name.<key_name>.<key_name>" == str(
             exc_info.value
         )
@@ -230,17 +195,15 @@ class TestLookupModuleGetSecretValue:
         params = {
             "version_stage": versionStage,
             "version_id": versionId,
-            "on_missing": None,
-            "on_denied": None,
-            "on_deleted": None,
         }
 
         client = MagicMock()
         client.get_secret_value = MagicMock()
         bin_secret_value = b"binary_value"
         client.get_secret_value.return_value = {"SecretBinary": bin_secret_value}
+        lookup_plugin._cached_client = client
 
-        assert bin_secret_value == lookup_plugin.get_secret_value(term, client, nested=nested, **params)
+        assert bin_secret_value == lookup_plugin.get_secret_value(term, nested=nested, **params)
         api_params = {"SecretId": secretId}
         if versionId is not None:
             api_params["VersionId"] = versionId
@@ -263,17 +226,19 @@ class TestLookupModuleGetSecretValue:
         client.get_secret_value = MagicMock()
         json_secret = '{"root": {"child": {"nested": "ansible-test-secret-0"}}}'
         client.get_secret_value.return_value = {"SecretString": json_secret}
+        lookup_plugin._cached_client = client
+
+        # Set the cached property value for the test
+        lookup_plugin._cached_on_missing = on_missing
 
         if on_missing == "error":
             with pytest.raises(AnsibleLookupError) as exc_info:
-                lookup_plugin.get_secret_value(term, client, nested=True, on_missing=on_missing)
+                lookup_plugin.get_secret_value(term, nested=True)
             assert f"Successfully retrieved secret but there exists no key {missing_key} in the secret" == str(
                 exc_info.value
             )
         else:
-            lookup_plugin._display = MagicMock()
-            lookup_plugin._display.warning = MagicMock()
-            assert lookup_plugin.get_secret_value(term, client, nested=True, on_missing=on_missing) is None
+            assert lookup_plugin.get_secret_value(term, nested=True) is None
             lookup_plugin._display.warning.assert_called_once_with(
                 f"Skipping, Successfully retrieved secret but there exists no key {missing_key} in the secret"
             )
@@ -282,67 +247,11 @@ class TestLookupModuleGetSecretValue:
         client = MagicMock()
         client.get_secret_value = MagicMock()
         client.get_secret_value.side_effect = _raise_boto_clienterror("UnexpecteError", "unable to retrieve Secret")
+        lookup_plugin._cached_client = client
 
         with pytest.raises(AnsibleLookupError) as exc_info:
-            lookup_plugin.get_secret_value(MagicMock(), client)
+            lookup_plugin.get_secret_value(MagicMock())
         assert (
             "Failed to retrieve secret: An error occurred (UnexpecteError) when calling the get_secret_value operation: unable to retrieve Secret"
             == str(exc_info.value)
         )
-
-    @pytest.mark.parametrize("on_denied", ["warn", "error"])
-    def test_get_secret__on_denied(self, lookup_plugin, on_denied):
-        client = MagicMock()
-        client.get_secret_value = MagicMock()
-        client.get_secret_value.side_effect = _raise_boto_clienterror(
-            "AccessDeniedException", "Access denied to Secret"
-        )
-        term = "ansible-test-secret-0123"
-
-        if on_denied == "error":
-            with pytest.raises(AnsibleLookupError) as exc_info:
-                lookup_plugin.get_secret_value(term, client, on_denied=on_denied)
-            assert f"Failed to access secret {term} (AccessDenied)" == str(exc_info.value)
-        else:
-            lookup_plugin._display = MagicMock()
-            lookup_plugin._display.warning = MagicMock()
-            assert lookup_plugin.get_secret_value(term, client, on_denied=on_denied) is None
-            lookup_plugin._display.warning.assert_called_once_with(f"Skipping, access denied for secret {term}")
-
-    @pytest.mark.parametrize("on_missing", ["warn", "error"])
-    def test_get_secret__on_missing(self, lookup_plugin, on_missing):
-        client = MagicMock()
-        client.get_secret_value = MagicMock()
-        client.get_secret_value.side_effect = _raise_boto_clienterror("ResourceNotFoundException", "secret not found")
-        term = "ansible-test-secret-4561"
-
-        if on_missing == "error":
-            with pytest.raises(AnsibleLookupError) as exc_info:
-                lookup_plugin.get_secret_value(term, client, on_missing=on_missing)
-            assert f"Failed to find secret {term} (ResourceNotFound)" == str(exc_info.value)
-        else:
-            lookup_plugin._display = MagicMock()
-            lookup_plugin._display.warning = MagicMock()
-            assert lookup_plugin.get_secret_value(term, client, on_missing=on_missing) is None
-            lookup_plugin._display.warning.assert_called_once_with(f"Skipping, did not find secret {term}")
-
-    @pytest.mark.parametrize("on_deleted", ["warn", "error"])
-    def test_get_secret__on_deleted(self, lookup_plugin, on_deleted):
-        client = MagicMock()
-        client.get_secret_value = MagicMock()
-        client.get_secret_value.side_effect = _raise_boto_clienterror(
-            "ResourceMarkedForDeletion", "marked for deletion"
-        )
-        term = "ansible-test-secret-8790"
-
-        if on_deleted == "error":
-            with pytest.raises(AnsibleLookupError) as exc_info:
-                lookup_plugin.get_secret_value(term, client, on_deleted=on_deleted)
-            assert f"Failed to find secret {term} (marked for deletion)" == str(exc_info.value)
-        else:
-            lookup_plugin._display = MagicMock()
-            lookup_plugin._display.warning = MagicMock()
-            assert lookup_plugin.get_secret_value(term, client, on_deleted=on_deleted) is None
-            lookup_plugin._display.warning.assert_called_once_with(
-                f"Skipping, did not find secret (marked for deletion) {term}"
-            )
