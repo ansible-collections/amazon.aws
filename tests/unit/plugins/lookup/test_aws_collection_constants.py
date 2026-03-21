@@ -81,10 +81,16 @@ class TestLookupConstant:
         mock_utils = MagicMock()
         mock_utils.COMMUNITY_AWS_COLLECTION_VERSION = "1.0.0"
 
-        with patch.object(constants_module, "HAS_COMMUNITY", True):
-            with patch.object(constants_module, "community_utils", mock_utils):
+        # Set the attribute before patching since it may not exist
+        setattr(constants_module, "community_utils", mock_utils)
+        try:
+            with patch.object(constants_module, "HAS_COMMUNITY", True):
                 result = lookup_plugin.lookup_constant("COMMUNITY_AWS_COLLECTION_VERSION")
                 assert result == "1.0.0"
+        finally:
+            # Clean up the attribute
+            if hasattr(constants_module, "community_utils"):
+                delattr(constants_module, "community_utils")
 
     @patch("ansible_collections.amazon.aws.plugins.lookup.aws_collection_constants.HAS_COMMUNITY", False)
     def test_lookup_community_aws_collection_version_when_unavailable(self, lookup_plugin):
@@ -100,10 +106,16 @@ class TestLookupConstant:
         mock_utils = MagicMock()
         mock_utils.COMMUNITY_AWS_COLLECTION_NAME = "community.aws"
 
-        with patch.object(constants_module, "HAS_COMMUNITY", True):
-            with patch.object(constants_module, "community_utils", mock_utils):
+        # Set the attribute before patching since it may not exist
+        setattr(constants_module, "community_utils", mock_utils)
+        try:
+            with patch.object(constants_module, "HAS_COMMUNITY", True):
                 result = lookup_plugin.lookup_constant("COMMUNITY_AWS_COLLECTION_NAME")
                 assert result == "community.aws"
+        finally:
+            # Clean up the attribute
+            if hasattr(constants_module, "community_utils"):
+                delattr(constants_module, "community_utils")
 
     @patch("ansible_collections.amazon.aws.plugins.lookup.aws_collection_constants.HAS_COMMUNITY", False)
     def test_lookup_community_aws_collection_name_when_unavailable(self, lookup_plugin):
