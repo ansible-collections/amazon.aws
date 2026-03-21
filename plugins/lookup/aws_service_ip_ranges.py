@@ -51,19 +51,39 @@ import json
 import ansible.module_utils.six.moves.urllib.error
 import ansible.module_utils.urls
 from ansible.errors import AnsibleLookupError
-from ansible.module_utils._text import to_native
+from ansible.module_utils.common.text.converters import to_native
 from ansible.plugins.lookup import LookupBase
 
 
 class LookupModule(LookupBase):
-    def run(self, terms, variables, **kwargs):
-        if "ipv6_prefixes" in kwargs and kwargs["ipv6_prefixes"]:
-            prefixes_label = "ipv6_prefixes"
-            ip_prefix_label = "ipv6_prefix"
-        else:
-            prefixes_label = "prefixes"
-            ip_prefix_label = "ip_prefix"
+    def _determine_prefix_labels(self, use_ipv6):
+        """
+        Determine the JSON field names for IP prefix data.
 
+        Args:
+            use_ipv6: Boolean indicating whether to use IPv6 prefixes
+
+        Returns:
+            Tuple of (prefixes_label, ip_prefix_label)
+        """
+        if use_ipv6:
+            return ("ipv6_prefixes", "ipv6_prefix")
+        else:
+            return ("prefixes", "ip_prefix")
+
+    def _fetch_ip_ranges(self, prefixes_label):
+        """
+        Fetch and parse IP ranges from AWS.
+
+        Args:
+            prefixes_label: The JSON field name to extract from the response
+
+        Returns:
+            List of IP range dictionaries from AWS
+
+        Raises:
+            AnsibleLookupError: If fetching or parsing fails
+        """
         try:
             resp = ansible.module_utils.urls.open_url("https://ip-ranges.amazonaws.com/ip-ranges.json")
             amazon_response = json.load(resp)[prefixes_label]
@@ -79,12 +99,57 @@ class LookupModule(LookupBase):
             raise AnsibleLookupError(f"Failed look up IP range service: {to_native(e)}")
         except ansible.module_utils.urls.ConnectionError as e:
             raise AnsibleLookupError(f"Error connecting to IP range service: {to_native(e)}")
+        return amazon_response
+
+    def _filter_by_region(self, ip_ranges, region):
+        """
+        Filter IP ranges by AWS region.
+
+        Args:
+            ip_ranges: Iterator or list of IP range dictionaries
+            region: AWS region string to filter by
+
+        Returns:
+            Generator of IP ranges matching the region
+        """
+        return (item for item in ip_ranges if item["region"] == region)
+
+    def _filter_by_service(self, ip_ranges, service):
+        """
+        Filter IP ranges by AWS service.
+
+        Args:
+            ip_ranges: Iterator or list of IP range dictionaries
+            service: AWS service name to filter by (case-insensitive)
+
+        Returns:
+            Generator of IP ranges matching the service
+        """
+        service_upper = str.upper(service)
+        return (item for item in ip_ranges if item["service"] == service_upper)
+
+    def _extract_ip_addresses(self, ip_ranges, ip_prefix_label):
+        """
+        Extract IP address strings from IP range dictionaries.
+
+        Args:
+            ip_ranges: Iterator or list of IP range dictionaries
+            ip_prefix_label: The field name containing the IP prefix
+
+        Returns:
+            List of IP address/CIDR strings
+        """
+        return [item[ip_prefix_label] for item in ip_ranges]
+
+    def run(self, terms, variables, **kwargs):
+        prefixes_label, ip_prefix_label = self._determine_prefix_labels(kwargs.get("ipv6_prefixes", False))
+
+        amazon_response = self._fetch_ip_ranges(prefixes_label)
 
         if "region" in kwargs:
-            region = kwargs["region"]
-            amazon_response = (item for item in amazon_response if item["region"] == region)
+            amazon_response = self._filter_by_region(amazon_response, kwargs["region"])
         if "service" in kwargs:
-            service = str.upper(kwargs["service"])
-            amazon_response = (item for item in amazon_response if item["service"] == service)
-        iprange = [item[ip_prefix_label] for item in amazon_response]
+            amazon_response = self._filter_by_service(amazon_response, kwargs["service"])
+
+        iprange = self._extract_ip_addresses(amazon_response, ip_prefix_label)
         return iprange
