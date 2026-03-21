@@ -119,13 +119,7 @@ _raw:
 
 import json
 
-try:
-    import botocore
-except ImportError:
-    pass  # Handled by AWSLookupBase
-
 from ansible.errors import AnsibleLookupError
-from ansible.module_utils._text import to_native
 
 from ansible_collections.amazon.aws.plugins.plugin_utils.lookup import AWSLookupBase
 from ansible_collections.amazon.aws.plugins.plugin_utils.lookup import LookupErrorHandler
@@ -152,9 +146,9 @@ class LookupModule(AWSLookupBase):
         self._validate_options(on_missing, on_denied, on_deleted)
 
         if self.get_option("bypath"):
-            return self._lookup_by_path(terms, on_missing, on_denied)
+            return self._lookup_by_path(terms)
         else:
-            return self._lookup_by_name(terms, on_missing, on_denied, on_deleted)
+            return self._lookup_by_name(terms)
 
     def _validate_options(self, on_missing, on_denied, on_deleted):
         """Validate on_missing, on_denied and on_deleted options"""
@@ -177,28 +171,33 @@ class LookupModule(AWSLookupBase):
                 f'"on_deleted" must be a string and one of "error", "warn" or "skip", not {on_deleted}'
             )
 
-    def _list_secrets(self, term):
-        """List secrets matching the given term"""
-        paginator = self.aws_client.get_paginator("list_secrets")
-        return paginator.paginate(Filters=[{"Key": "name", "Values": [term]}])
+    @LookupErrorHandler.handle_lookup_errors("secret path", default_value=[])
+    def _fetch_secret_list(self, term):
+        """
+        Fetch list of secrets matching term.
 
-    def _lookup_by_path(self, terms, on_missing, on_denied):
+        Note: on_missing and on_denied are read by the decorator from self.on_missing/self.on_denied.
+        """
+        paginator = self.aws_client.get_paginator("list_secrets")
+        results = []
+        for page in paginator.paginate(Filters=[{"Key": "name", "Values": [term]}]):
+            if "SecretList" in page:
+                results.extend(page["SecretList"])
+        return results
+
+    def _lookup_by_path(self, terms):
         """Lookup secrets by path"""
         secrets = {}
         for term in terms:
-            try:
-                for secret_wrapper in self._list_secrets(term):
-                    if "SecretList" in secret_wrapper:
-                        for secret_obj in secret_wrapper["SecretList"]:
-                            secrets.update({secret_obj["Name"]: self.get_secret_value(secret_obj["Name"])})
-                secrets = [secrets]
+            secret_list = self._fetch_secret_list(term)
+            for secret_obj in secret_list:
+                value = self.get_secret_value(secret_obj["Name"])
+                if value is not None:
+                    secrets[secret_obj["Name"]] = value
 
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                raise AnsibleLookupError(f"Failed to retrieve secret: {to_native(e)}")
+        return [secrets] if secrets else []
 
-        return secrets
-
-    def _lookup_by_name(self, terms, on_missing, on_denied, on_deleted):
+    def _lookup_by_name(self, terms):
         """Lookup secrets by name"""
         secrets = []
         for term in terms:
@@ -208,7 +207,7 @@ class LookupModule(AWSLookupBase):
                 version_id=self.get_option("version_id"),
                 nested=self.get_option("nested"),
             )
-            if value:
+            if value is not None:
                 secrets.append(value)
 
         if self.get_option("join"):

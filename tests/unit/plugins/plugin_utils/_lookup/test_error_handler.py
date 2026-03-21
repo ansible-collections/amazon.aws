@@ -347,9 +347,7 @@ class TestLookupErrorHandler:
         """Test decorator extracts term from positional args when not in kwargs"""
         mock_lookup = MockLookup()
         mock_lookup.on_missing = "error"
-        mock_lookup.aws_client.get_value.side_effect = _raise_boto_clienterror(
-            "ResourceNotFoundException", "Not found"
-        )
+        mock_lookup.aws_client.get_value.side_effect = _raise_boto_clienterror("ResourceNotFoundException", "Not found")
 
         @LookupErrorHandler.handle_lookup_errors("parameter")
         def get_value(self, term):
@@ -364,9 +362,7 @@ class TestLookupErrorHandler:
         """Test decorator returns default_value with warn action"""
         mock_lookup = MockLookup()
         mock_lookup.on_missing = "warn"
-        mock_lookup.aws_client.get_value.side_effect = _raise_boto_clienterror(
-            "ResourceNotFoundException", "Not found"
-        )
+        mock_lookup.aws_client.get_value.side_effect = _raise_boto_clienterror("ResourceNotFoundException", "Not found")
 
         default_dict = {"default": "value"}
 
@@ -382,9 +378,7 @@ class TestLookupErrorHandler:
         """Test decorator returns default_value when access is denied"""
         mock_lookup = MockLookup()
         mock_lookup.on_denied = "skip"
-        mock_lookup.aws_client.get_value.side_effect = _raise_boto_clienterror(
-            "AccessDeniedException", "Access denied"
-        )
+        mock_lookup.aws_client.get_value.side_effect = _raise_boto_clienterror("AccessDeniedException", "Access denied")
 
         default_list = [{"default": "item"}]
 

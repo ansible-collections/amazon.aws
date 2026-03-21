@@ -2,3 +2,5 @@ minor_changes:
   - lookup plugins - created centralised LookupErrorHandler decorator pattern to reduce code duplication and cognitive complexity in lookup plugins. (https://github.com/ansible-collections/amazon.aws/pull/2914)
   - secretsmanager_secret - refactored to use LookupErrorHandler decorator, reducing cognitive complexity from 36 to <15. (https://github.com/ansible-collections/amazon.aws/pull/2914)
   - ssm_parameter - refactored to use LookupErrorHandler decorator, reducing cognitive complexity from 28 to <15. (https://github.com/ansible-collections/amazon.aws/pull/2914)
+bugfixes:
+  - secretsmanager_secret - fixed bug where falsy values (0, empty string, False) were incorrectly filtered when on_missing/on_denied was set to skip or warn. Now only None values are filtered. (https://github.com/ansible-collections/amazon.aws/pull/2914)

@@ -171,9 +171,9 @@ class LookupModule(AWSLookupBase):
         ssm_dict = {"WithDecryption": self.get_option("decrypt")}
 
         if self.get_option("bypath"):
-            return self._lookup_by_path(ssm_dict, terms, on_missing, on_denied)
+            return self._lookup_by_path(ssm_dict, terms)
         else:
-            return self._lookup_by_name(ssm_dict, terms, on_missing, on_denied)
+            return self._lookup_by_name(ssm_dict, terms)
 
     def _validate_options(self, on_missing, on_denied):
         """Validate on_missing, on_denied, shortnames and droppath options"""
@@ -203,7 +203,7 @@ class LookupModule(AWSLookupBase):
             for param in paramlist:
                 param["Name"] = param["Name"].replace(path, "")
 
-    def _lookup_by_path(self, ssm_dict, terms, on_missing, on_denied):
+    def _lookup_by_path(self, ssm_dict, terms):
         """Lookup SSM parameters by path"""
         ssm_dict["Recursive"] = self.get_option("recursive")
         ret = []
@@ -221,13 +221,15 @@ class LookupModule(AWSLookupBase):
         display.vvvv(f"aws_ssm path lookup returning: {to_native(ret)} ")
         return ret
 
-    def _lookup_by_name(self, ssm_dict, terms, on_missing, on_denied):
+    def _lookup_by_name(self, ssm_dict, terms):
         """Lookup SSM parameters by name"""
         display.vvv(f"aws_ssm name lookup term: {terms}")
         ret = []
 
         for term in terms:
-            ret.append(self.get_parameter_value(term, ssm_dict))
+            value = self.get_parameter_value(term, ssm_dict)
+            if value is not None:
+                ret.append(value)
 
         display.vvvv(f"aws_ssm path lookup returning: {to_native(ret)} ")
         return ret
