@@ -46,3 +46,57 @@ def test_run(monkeypatch):
         botocore_version=sentinel.PARAM_BOTOCORE, boto3_version=sentinel.PARAM_BOTO3
     )
     assert set_options.call_args == call(var_options=sentinel.PARAM_VARS, direct=kwargs)
+
+
+def test_on_missing_property_with_option():
+    """Test on_missing property when get_option returns a value"""
+    lookup_plugin = utils_lookup.AWSLookupBase()
+    lookup_plugin.get_option = MagicMock(return_value="warn")
+
+    assert lookup_plugin.on_missing == "warn"
+    lookup_plugin.get_option.assert_called_once_with("on_missing")
+
+
+def test_on_missing_property_without_option():
+    """Test on_missing property when get_option raises KeyError (option not defined)"""
+    lookup_plugin = utils_lookup.AWSLookupBase()
+    lookup_plugin.get_option = MagicMock(side_effect=KeyError("on_missing"))
+
+    # Should default to "error" when option doesn't exist
+    assert lookup_plugin.on_missing == "error"
+
+
+def test_on_denied_property_with_option():
+    """Test on_denied property when get_option returns a value"""
+    lookup_plugin = utils_lookup.AWSLookupBase()
+    lookup_plugin.get_option = MagicMock(return_value="skip")
+
+    assert lookup_plugin.on_denied == "skip"
+    lookup_plugin.get_option.assert_called_once_with("on_denied")
+
+
+def test_on_denied_property_without_option():
+    """Test on_denied property when get_option raises KeyError (option not defined)"""
+    lookup_plugin = utils_lookup.AWSLookupBase()
+    lookup_plugin.get_option = MagicMock(side_effect=KeyError("on_denied"))
+
+    # Should default to "error" when option doesn't exist
+    assert lookup_plugin.on_denied == "error"
+
+
+def test_on_deleted_property_with_option():
+    """Test on_deleted property when get_option returns a value"""
+    lookup_plugin = utils_lookup.AWSLookupBase()
+    lookup_plugin.get_option = MagicMock(return_value="warn")
+
+    assert lookup_plugin.on_deleted == "warn"
+    lookup_plugin.get_option.assert_called_once_with("on_deleted")
+
+
+def test_on_deleted_property_without_option():
+    """Test on_deleted property when get_option raises KeyError (option not defined)"""
+    lookup_plugin = utils_lookup.AWSLookupBase()
+    lookup_plugin.get_option = MagicMock(side_effect=KeyError("on_deleted"))
+
+    # Should default to "error" when option doesn't exist
+    assert lookup_plugin.on_deleted == "error"

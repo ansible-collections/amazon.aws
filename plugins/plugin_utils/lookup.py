@@ -51,9 +51,13 @@ class AWSLookupBase(AWSPluginBase, LookupBase):
         Cached error handling behavior for missing resources.
 
         Returns 'error', 'warn', or 'skip' based on plugin configuration.
+        Defaults to 'error' if the option is not defined by the plugin.
         """
         if self._cached_on_missing is None:
-            self._cached_on_missing = self.get_option("on_missing") or "error"
+            try:
+                self._cached_on_missing = self.get_option("on_missing") or "error"
+            except (KeyError, AttributeError):
+                self._cached_on_missing = "error"
         return self._cached_on_missing
 
     @property
@@ -62,9 +66,13 @@ class AWSLookupBase(AWSPluginBase, LookupBase):
         Cached error handling behavior for access denied errors.
 
         Returns 'error', 'warn', or 'skip' based on plugin configuration.
+        Defaults to 'error' if the option is not defined by the plugin.
         """
         if self._cached_on_denied is None:
-            self._cached_on_denied = self.get_option("on_denied") or "error"
+            try:
+                self._cached_on_denied = self.get_option("on_denied") or "error"
+            except (KeyError, AttributeError):
+                self._cached_on_denied = "error"
         return self._cached_on_denied
 
     @property
@@ -73,9 +81,13 @@ class AWSLookupBase(AWSPluginBase, LookupBase):
         Cached error handling behavior for deleted resources.
 
         Returns 'error', 'warn', or 'skip' based on plugin configuration.
+        Defaults to 'error' if the option is not defined by the plugin.
         """
         if self._cached_on_deleted is None:
-            self._cached_on_deleted = self.get_option("on_deleted") or "error"
+            try:
+                self._cached_on_deleted = self.get_option("on_deleted") or "error"
+            except (KeyError, AttributeError):
+                self._cached_on_deleted = "error"
         return self._cached_on_deleted
 
     def _do_fail(self, message):
